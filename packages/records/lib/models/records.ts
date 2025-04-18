@@ -1,6 +1,16 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
+
+import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
+
+import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
+import { deepMergeRecordData } from '../helpers/merge.js';
+import { getUniqueId, removeDuplicateKey } from '../helpers/uniqueKey.js';
+import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
+import { logger } from '../utils/logger.js';
+
 import type {
     CombinedFilterAction,
     FormattedRecord,
@@ -11,16 +21,9 @@ import type {
     ReturnedRecord,
     UpsertSummary
 } from '../types.js';
-import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
-import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
-import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
-import { logger } from '../utils/logger.js';
-import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
+import type { CursorOffset, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-import { Cursor } from '../cursor.js';
-import { deepMergeRecordData } from '../helpers/merge.js';
-import type { MergingStrategy, CursorOffset } from '@nangohq/types';
 
 dayjs.extend(utc);
 
@@ -623,13 +626,13 @@ export async function deleteRecordsBySyncId({
     environmentId,
     model,
     syncId,
-    limit = 5000
+    batchSize = 5000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
     syncId: string;
-    limit?: number;
+    batchSize?: number;
 }): Promise<{ totalDeletedRecords: number }> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
@@ -640,11 +643,11 @@ export async function deleteRecordsBySyncId({
             .from(RECORDS_TABLE)
             .where({ connection_id: connectionId, model })
             .whereIn('id', function (sub) {
-                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(limit);
+                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
             })
             .del();
         totalDeletedRecords += deletedRecords;
-    } while (deletedRecords >= limit);
+    } while (deletedRecords >= batchSize);
     await deleteRecordCount({ connectionId, environmentId, model });
 
     return { totalDeletedRecords };

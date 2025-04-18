@@ -9,7 +9,7 @@ import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
-interface DBConnectSession {
+export interface DBConnectSession {
     readonly id: number;
     readonly end_user_id: number;
     readonly account_id: number;
