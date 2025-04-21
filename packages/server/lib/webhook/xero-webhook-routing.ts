@@ -16,16 +16,13 @@ interface XeroWebhookBody {
 }
 
 function validate(integration: ProviderConfig, signature: string, rawBody: string): boolean {
-    // Check for webhook key in the integration configuration
+    // TODO:Check for location to store webhook key integration configuration
     const webhookKey = integration.custom?.['webhookKey'] || integration.custom?.['webhookSecret'];
 
     if (!webhookKey) {
         logger.error('Missing webhook key for signature validation', { configId: integration.id });
         return false;
     }
-    console.log('webhookKey', webhookKey);
-    console.log('signature', signature);
-    console.log('rawBody', rawBody);
 
     try {
         // Create HMAC with the webhook key
@@ -37,12 +34,6 @@ function validate(integration: ProviderConfig, signature: string, rawBody: strin
         // Get the base64 encoded signature
         const calculatedSignature = hmac.digest('base64');
 
-        console.log('Calculated signature:', calculatedSignature);
-        console.log('Received signature:', signature);
-        console.log('Match:', calculatedSignature.replace(/\//g, '') === signature.replace(/\//g, ''));
-        console.log('--------------------------------');
-
-        // return calculatedSignature === signature;
         return calculatedSignature.replace(/\//g, '') === signature.replace(/\//g, '');
     } catch (err) {
         logger.error('Error validating signature', { configId: integration.id, err });
@@ -59,7 +50,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
 
     logger.info('Received Xero webhook', { configId: integration.id });
 
-    // Check if this is an "Intent to receive" validation request
+    // "Intent to receive" validation request checks for proper response with valid and invalid payloads
     const isIntentToReceive = rawBody.includes('"events":[]');
 
     if (isIntentToReceive) {
@@ -78,7 +69,6 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
         return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
     }
 
-    // For regular webhook events, validate the signature
     const isValidSignature = validate(integration, signature, rawBody);
 
     if (!isValidSignature) {
@@ -86,12 +76,11 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
         return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
     }
 
-    // For valid signatures, we return 200
     const parsedBody = body as XeroWebhookBody;
     logger.info('Valid webhook received', { configId: integration.id });
 
-    // For empty events, just return success
     if (parsedBody.events.length === 0) {
+        logger.info('Empty events array, returning success', { configId: integration.id });
         return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
     }
 
