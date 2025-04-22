@@ -7,12 +7,6 @@ import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost }
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
-
 export enum NodeEnv {
     Dev = 'development',
     Staging = 'staging',
@@ -153,14 +147,24 @@ export function getWebsocketsPath(): string {
  * @remarks
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
-export function interpolateString(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+export function interpolateString(str: string, replacers: Record<string, any>): string {
+    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         if (b === 'now') {
             return new Date().toISOString();
+        }
+        if (b.startsWith('base64(')) {
+            return a;
         }
         const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
+
+    return interpolated;
 }
 function resolveKey(key: string, replacers: Record<string, any>): any {
     const keys = key.split('.');
@@ -176,11 +180,17 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 
     return value;
 }
-export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
+    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateStringFromObject(inner, replacers);
+        return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
+    return interpolated;
 }
 
 export function interpolateObjectValues(obj: Record<string, string | undefined>, connectionConfig: Record<string, any>): Record<string, string | undefined> {

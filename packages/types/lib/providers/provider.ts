@@ -144,8 +144,13 @@ export interface ProviderTableau extends BaseProvider {
     auth_mode: 'TABLEAU';
 }
 
+export interface ProviderBill extends BaseProvider {
+    auth_mode: 'BILL';
+}
+
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
+    token_request_method?: 'GET';
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
@@ -177,7 +182,16 @@ export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
 
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature | ProviderApiKey | ProviderTableau;
+export type Provider =
+    | BaseProvider
+    | ProviderOAuth1
+    | ProviderOAuth2
+    | ProviderJwt
+    | ProviderTwoStep
+    | ProviderSignature
+    | ProviderApiKey
+    | ProviderTableau
+    | ProviderBill;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type
