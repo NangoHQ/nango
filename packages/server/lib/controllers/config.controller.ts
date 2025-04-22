@@ -1,9 +1,7 @@
 import crypto from 'crypto';
 
 import {
-    AnalyticsTypes,
     NangoError,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -19,7 +17,7 @@ import { isHosted } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Config as ProviderConfig, Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
-import type { NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
+import type { IntegrationConfig, NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 interface FlowConfigs {
@@ -237,7 +235,6 @@ class ConfigController {
     async createProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -327,7 +324,8 @@ class ConfigController {
                 return;
             }
 
-            const config: ProviderConfig = {
+            const config: IntegrationConfig = {
+                display_name: null,
                 unique_key: uniqueConfigKey,
                 provider: providerName,
                 oauth_client_id,
@@ -352,7 +350,6 @@ class ConfigController {
             const result = await configService.createProviderConfig(config, provider);
 
             if (result) {
-                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: result.provider });
                 res.status(200).send({
                     config: {
                         unique_key: result.unique_key,

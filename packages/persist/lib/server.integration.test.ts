@@ -90,7 +90,7 @@ describe('Persist API', () => {
             }
         });
         expect(response.status).toEqual(400);
-        expect(await response.json()).toStrictEqual({ error: 'Entity too large' });
+        expect(await response.json()).toStrictEqual({ error: { code: 'request_too_large', message: 'Entity too large' } });
     });
 
     describe('save records', () => {
@@ -461,11 +461,9 @@ const initDb = async () => {
     const connectionRes = await connectionService.upsertConnection({
         connectionId: `conn-test`,
         providerConfigKey: `provider-test`,
-        provider: 'google',
         parsedRawCredentials: {} as AuthCredentials,
         connectionConfig: {},
-        environmentId: env.id,
-        accountId: 0
+        environmentId: env.id
     });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');

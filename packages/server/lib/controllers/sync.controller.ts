@@ -1,40 +1,41 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { HTTP_METHOD, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import type { Span } from 'dd-trace';
+
+import { billing } from '@nangohq/billing';
+import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { getInterval } from '@nangohq/nango-yaml';
+import { records as recordsService } from '@nangohq/records';
 import {
-    connectionService,
-    getSyncs,
-    verifyOwnership,
-    getSyncsByProviderConfigKey,
-    getSyncConfigsWithConnectionsByEnvironmentId,
-    SyncCommand,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
     NangoError,
+    SyncCommand,
     configService,
-    syncManager,
-    getAttributes,
+    connectionService,
+    errorManager,
     flowService,
     getActionOrModelByEndpoint,
-    setFrequency,
+    getAttributes,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    syncCommandToOperation,
     getSyncConfigRaw,
-    getSyncsByConnectionId
+    getSyncConfigsWithConnectionsByEnvironmentId,
+    getSyncs,
+    getSyncsByConnectionId,
+    getSyncsByProviderConfigKey,
+    setFrequency,
+    syncCommandToOperation,
+    syncManager,
+    verifyOwnership
 } from '@nangohq/shared';
-import type { LogContextOrigin } from '@nangohq/logs';
-import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import type { Result } from '@nangohq/utils';
-import { getHeaders, isHosted, truncateJson, Ok, Err, redactHeaders } from '@nangohq/utils';
-import { records as recordsService } from '@nangohq/records';
-import type { RequestLocals } from '../utils/express.js';
+import { Err, Ok, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+
 import { getOrchestrator } from '../utils/utils.js';
-import { getInterval } from '@nangohq/nango-yaml';
 import { getPublicRecords } from './records/getRecords.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { LogContextOrigin } from '@nangohq/logs';
+import type { HTTP_METHOD, Sync } from '@nangohq/shared';
 import type { DBConnectionDecrypted } from '@nangohq/types';
-import { billing } from '@nangohq/billing';
+import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -438,7 +439,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, sync_variant, provider, delete_records } = req.body;
+            const { command, nango_connection_id, sync_id, sync_name, sync_variant, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -496,32 +497,6 @@ class SyncController {
 
             void logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
             await logCtx.success();
-
-            let event = AnalyticsTypes.SYNC_RUN;
-
-            switch (command) {
-                case SyncCommand.PAUSE:
-                    event = AnalyticsTypes.SYNC_PAUSE;
-                    break;
-                case SyncCommand.UNPAUSE:
-                    event = AnalyticsTypes.SYNC_UNPAUSE;
-                    break;
-                case SyncCommand.RUN:
-                    event = AnalyticsTypes.SYNC_RUN;
-                    break;
-                case SyncCommand.CANCEL:
-                    event = AnalyticsTypes.SYNC_CANCEL;
-                    break;
-            }
-
-            void analytics.trackByEnvironmentId(event, environment.id, {
-                sync_id,
-                sync_name,
-                provider,
-                provider_config_key: connection?.provider_config_key,
-                connection_id: connection?.connection_id,
-                schedule_id
-            });
 
             res.status(200).json({ data: { success: true } });
         } catch (err) {

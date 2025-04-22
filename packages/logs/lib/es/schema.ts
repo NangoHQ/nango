@@ -83,7 +83,9 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
             updated: { type: 'integer' },
             updatedKeys: { type: 'keyword', copy_to: 'meta_search' },
             deleted: { type: 'integer' },
-            deleteKeys: { type: 'keyword', copy_to: 'meta_search' }
+            deleteKeys: { type: 'keyword', copy_to: 'meta_search' },
+            unchanged: { type: 'integer' },
+            unchangedKeys: { type: 'keyword', copy_to: 'meta_search' }
         }
     },
     error: {

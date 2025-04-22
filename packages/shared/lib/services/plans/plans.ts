@@ -2,8 +2,6 @@ import ms from 'ms';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import analytics, { AnalyticsTypes } from '../../utils/analytics.js';
-
 import type { DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -57,12 +55,6 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
 }
 
 export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
-    if (plan.trial_start_at) {
-        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXTENDED, plan.account_id);
-    } else {
-        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_STARTED, plan.account_id);
-    }
-
     return await updatePlan(db, {
         id: plan.id,
         trial_start_at: plan.trial_start_at || new Date(),
