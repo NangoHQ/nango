@@ -19,8 +19,8 @@ import {
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
-import { eventTracking } from '../utils/eventTracking.js';
 import { loggedFetch } from '../utils/http.js';
+import { productTracking } from '../utils/productTracking.js';
 import {
     extractStepNumber,
     extractValueByPath,
@@ -1506,9 +1506,9 @@ class ConnectionService {
         if (count > plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
-                eventTracking.track({ name: 'server:resource_capped:script_deploy_is_disabled', team, user });
+                productTracking.track({ name: 'server:resource_capped:script_deploy_is_disabled', team, user });
             } else {
-                eventTracking.track({ name: 'server:resource_capped:script_activate', team, user });
+                productTracking.track({ name: 'server:resource_capped:script_activate', team, user });
             }
             return true;
         }

@@ -4,10 +4,10 @@ import {
     NangoError,
     ProxyRequest,
     errorNotificationService,
-    eventTracking,
     externalWebhookService,
     getProxyConfiguration,
     getSyncConfigsWithConnections,
+    productTracking,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
@@ -71,9 +71,9 @@ export const connectionCreationStartCapCheck = async ({
         if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (creationType === 'create') {
-                eventTracking.track({ name: 'server:resource_capped:connection_creation', team });
+                productTracking.track({ name: 'server:resource_capped:connection_creation', team });
             } else {
-                eventTracking.track({ name: 'server:resource_capped:connection_imported', team });
+                productTracking.track({ name: 'server:resource_capped:connection_imported', team });
             }
             return true;
         }

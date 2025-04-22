@@ -17,7 +17,7 @@ import userService from './services/user.service.js';
 import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
-export { eventTracking } from './utils/eventTracking.js';
+export { productTracking } from './utils/productTracking.js';
 export * as jwtClient from './auth/jwt.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';

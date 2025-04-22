@@ -4,7 +4,7 @@ import { NANGO_VERSION, baseUrl, report } from '@nangohq/utils';
 
 import type { DBTeam, DBUser } from '@nangohq/types';
 
-export type EventTrackingTypes =
+export type ProductTrackingTypes =
     | 'account:trial:extend'
     | 'account:trial:started'
     | 'server:resource_capped:connection_creation'
@@ -13,7 +13,7 @@ export type EventTrackingTypes =
     | 'server:resource_capped:script_deploy_is_disabled'
     | 'deploy:success';
 
-class EventTracking {
+class ProductTracking {
     client: PostHog | undefined;
 
     constructor() {
@@ -39,7 +39,7 @@ class EventTracking {
         eventProperties,
         userProperties
     }: {
-        name: EventTrackingTypes;
+        name: ProductTrackingTypes;
         team: Pick<DBTeam, 'id' | 'name'>;
         user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
         eventProperties?: Record<string | number, any>;
@@ -76,4 +76,4 @@ class EventTracking {
     }
 }
 
-export const eventTracking = new EventTracking();
+export const productTracking = new ProductTracking();

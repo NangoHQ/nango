@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { eventTracking, startTrial } from '@nangohq/shared';
+import { productTracking, startTrial } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -32,7 +32,7 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
 
     await startTrial(db.knex, plan);
 
-    eventTracking.track({ name: 'account:trial:extend', team: account, user });
+    productTracking.track({ name: 'account:trial:extend', team: account, user });
 
     res.status(200).send({
         data: { success: true }
