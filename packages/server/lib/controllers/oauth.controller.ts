@@ -71,7 +71,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                    ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -313,7 +313,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                    ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -821,13 +821,23 @@ class OAuthController {
             await oAuthSessionService.delete(state as string);
         }
 
-        let logCtx = await logContextGetter.get({ id: session.activityLogId });
+        let logCtx: LogContext | undefined;
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
         try {
+            const environment = await environmentService.getById(session.environmentId);
+            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
+            if (!environment || !account) {
+                const error = WSErrBuilder.EnvironmentOrAccountNotFound();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
+            }
+
+            logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
+
             void logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
             const provider = getProvider(session.provider);
@@ -841,20 +851,6 @@ class OAuthController {
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
-
-            const environment = await environmentService.getById(session.environmentId);
-            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
-
-            if (!environment || !account) {
-                const error = WSErrBuilder.EnvironmentOrAccountNotFound();
-                void logCtx.error(error.message);
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
@@ -875,8 +871,8 @@ class OAuthController {
 
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH, environmentId: session.environmentId });
 
-            void logCtx.error('Unknown error', { error: err, url: req.originalUrl });
-            await logCtx.failed();
+            void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
+            await logCtx?.failed();
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
 

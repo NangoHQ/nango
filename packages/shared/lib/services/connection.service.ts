@@ -7,6 +7,7 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 
 import configService from './config.service.js';
 import * as jwtClient from '../auth/jwt.js';
+import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import environmentService from '../services/environment.service.js';
@@ -30,7 +31,6 @@ import {
     interpolateObjectValues,
     interpolateString,
     interpolateStringFromObject,
-    parseTableauTokenExpirationDate,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -70,6 +70,7 @@ import type {
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
+    ProviderTableau,
     ProviderTwoStep,
     SignatureCredentials,
     TableauCredentials,
@@ -940,26 +941,6 @@ class ConnectionService {
                 return oauth2Creds;
             }
 
-            case 'TABLEAU': {
-                if (!rawCreds['credentials']['token']) {
-                    throw new NangoError(`incomplete_raw_credentials`);
-                }
-                let expiresAt: Date | undefined;
-                if (rawCreds['credentials']['estimatedTimeToExpiration']) {
-                    expiresAt = parseTableauTokenExpirationDate(rawCreds['credentials']['estimatedTimeToExpiration']);
-                }
-                const tableauCredentials: TableauCredentials = {
-                    type: 'TABLEAU',
-                    token: rawCreds['credentials']['token'],
-                    expires_at: expiresAt,
-                    raw: rawCreds,
-                    pat_name: '',
-                    pat_secret: '',
-                    content_url: ''
-                };
-                return tableauCredentials;
-            }
-
             case 'BILL': {
                 if (!rawCreds['sessionId']) {
                     throw new NangoError(`incomplete_raw_credentials`);
@@ -1241,59 +1222,6 @@ class ConnectionService {
         return { success: true, error: null, response: parsedCreds };
     }
 
-    public async getTableauCredentials(
-        provider: Provider,
-        patName: string,
-        patSecret: string,
-        connectionConfig: Record<string, string>,
-        contentUrl?: string
-    ): Promise<ServiceResponse<TableauCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
-        const postBody = {
-            credentials: {
-                personalAccessTokenName: patName,
-                personalAccessTokenSecret: patSecret,
-                site: {
-                    contentUrl: contentUrl ?? ''
-                }
-            }
-        };
-
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-        };
-
-        const requestOptions = { headers };
-
-        try {
-            const response = await axios.post(url, postBody, requestOptions);
-
-            if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_tableau_credentials'), response: null };
-            }
-
-            const { data } = response;
-
-            const parsedCreds = this.parseRawCredentials(data, 'TABLEAU') as TableauCredentials;
-            parsedCreds.pat_name = patName;
-            parsedCreds.pat_secret = patSecret;
-            parsedCreds.content_url = contentUrl ?? '';
-
-            return { success: true, error: null, response: parsedCreds };
-        } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching Tableau credentials tokens ${stringifyError(err)}`);
-            const error = new NangoError('tableau_tokens_fetch_error', errorPayload);
-
-            return { success: false, error, response: null };
-        }
-    }
-
     public async getBillCredentials(
         provider: Provider,
         username: string,
@@ -1380,11 +1308,18 @@ class ConnectionService {
             postBody = interpolateObjectValues(postBody, connectionConfig);
         }
 
-        const headers: Record<string, string> = {};
+        const headers: Record<string, any> | string = {};
 
         if (provider.token_headers) {
             for (const [key, value] of Object.entries(provider.token_headers)) {
-                headers[key] = value;
+                const strippedValue = stripCredential(value);
+                if (typeof strippedValue === 'object' && strippedValue !== null) {
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                } else if (typeof strippedValue === 'string') {
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                } else {
+                    headers[key] = strippedValue;
+                }
             }
         }
 
@@ -1403,7 +1338,12 @@ class ConnectionService {
                       ? new URLSearchParams(postBody).toString()
                       : JSON.stringify(postBody);
 
-            const response = await axios.post(url.toString(), bodyContent, requestOptions);
+            let response: any;
+            if (provider.token_request_method === 'GET') {
+                response = await axios.get(url.toString(), requestOptions);
+            } else {
+                response = await axios.post(url.toString(), bodyContent, requestOptions);
+            }
 
             if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
@@ -1631,17 +1571,19 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'TABLEAU') {
             const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
-            const {
-                success,
-                error,
-                response: credentials
-            } = await this.getTableauCredentials(provider, pat_name, pat_secret, connection.connection_config, content_url);
+            const create = await tableauClient.createCredentials({
+                provider: provider as ProviderTableau,
+                patName: pat_name,
+                patSecret: pat_secret,
+                contentUrl: content_url,
+                connectionConfig: connection.connection_config
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'BILL') {
             const { username, password, organization_id, dev_key } = connection.credentials as BillCredentials;
             const { success, error, response: credentials } = await this.getBillCredentials(provider, username, password, organization_id, dev_key);

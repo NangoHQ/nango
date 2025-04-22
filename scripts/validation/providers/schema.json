@@ -404,6 +404,10 @@
                 "token_expiration_buffer": {
                     "type": "number"
                 },
+                "token_request_method": {
+                    "type": "string",
+                    "enum": ["GET"]
+                },
                 "token_params": {
                     "type": "object",
                     "additionalProperties": true,
