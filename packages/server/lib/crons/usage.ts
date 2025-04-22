@@ -1,12 +1,14 @@
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
+import { billing as usageBilling } from '@nangohq/billing';
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
-import { getLogger, metrics, report, flagHasUsage } from '@nangohq/utils';
-import { billing as usageBilling } from '@nangohq/billing';
+import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+
+import type { BillingMetric } from '@nangohq/billing';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -80,9 +82,11 @@ const billing = {
                 if (res.isErr()) {
                     throw res.error;
                 }
-                const events = res.value.map(({ accountId, count }) => {
-                    return { type: 'billable_connections' as const, value: count, properties: { accountId, timestamp: now } };
+
+                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
+                    return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
                 });
+
                 await usageBilling.sendAll(events);
             } catch (err) {
                 span.setTag('error', err);

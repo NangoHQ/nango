@@ -1574,6 +1574,13 @@ class ConnectionService {
         return Err(new NangoError('failed_to_get_connections_count'));
     }
 
+    /**
+     * Note:
+     * a billable connection is a connection that is not deleted and has not been deleted during the month
+     * connections are pro-rated based on the number of seconds they were existing in the month
+     *
+     * This method only returns returns data for paying customer
+     */
     async billableConnections(referenceDate: Date): Promise<
         Result<
             {
@@ -1585,15 +1592,11 @@ class ConnectionService {
             NangoError
         >
     > {
-        // Note:
-        // a billable connection is a connection that is not deleted and has not been deleted during the month
-        // connections are pro-rated based on the number of seconds they were existing in the month
-
         const targetDate = new Date(Date.UTC(referenceDate.getUTCFullYear(), referenceDate.getUTCMonth(), referenceDate.getUTCDate(), 0, 0, 0, 0));
         const year = referenceDate.getUTCFullYear();
         const month = referenceDate.getUTCMonth() + 1; // js months are 0-based
 
-        const res = await db.readOnly
+        const q = db.readOnly
             .with('month_info', (qb) => {
                 qb.select(
                     db.readOnly.raw(`DATE_TRUNC('month', ?::date) AS month_start`, [targetDate]),
@@ -1614,8 +1617,10 @@ class ConnectionService {
                     db.readOnly.raw(`(SELECT month_end FROM month_info) AS month_end`),
                     db.readOnly.raw(`(SELECT total_seconds_in_month FROM month_info) AS total_seconds_in_month`)
                 )
-                    .from('nango._nango_connections as c')
-                    .join('nango._nango_environments as e', 'c.environment_id', 'e.id')
+                    .from('_nango_connections as c')
+                    .join('_nango_environments as e', 'c.environment_id', 'e.id')
+                    .join('plans', 'plans.account_id', 'e.account_id')
+                    .where('plans.name', '<>', 'free')
                     .where((builder) => {
                         builder.where('c.deleted_at', null).orWhereRaw(`c.deleted_at >= (SELECT month_start FROM month_info)`);
                     })
@@ -1652,6 +1657,7 @@ class ConnectionService {
             .from('totals')
             .where('count', '>', 0);
 
+        const res = await q;
         if (res) {
             return Ok(res);
         }

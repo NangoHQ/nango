@@ -1,7 +1,9 @@
-import type { Result } from '@nangohq/utils';
-import { Err, flagHasUsage, Ok, report } from '@nangohq/utils';
-import type { BillingClient, BillingMetric, IngestEvent } from './types.js';
 import { uuidv7 } from 'uuidv7';
+
+import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
+
+import type { BillingClient, BillingIngestEvent, BillingMetric } from './types.js';
+import type { Result } from '@nangohq/utils';
 
 export class Billing {
     constructor(private client: BillingClient) {
@@ -17,6 +19,7 @@ export class Billing {
             if (event.value === 0) {
                 return [];
             }
+
             return [
                 {
                     type: event.type,
@@ -29,14 +32,16 @@ export class Billing {
                 }
             ];
         });
+
         return this.ingest(mapped);
     }
 
     // Note: Events are sent immediately
-    private async ingest(events: IngestEvent[]): Promise<Result<void>> {
+    private async ingest(events: BillingIngestEvent[]): Promise<Result<void>> {
         if (!flagHasUsage) {
             return Ok(undefined);
         }
+
         try {
             await this.client.ingest(events);
             return Ok(undefined);

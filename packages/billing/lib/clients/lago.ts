@@ -1,12 +1,14 @@
-import type { EventInput } from 'lago-javascript-client';
 import { Client as LagoClient, getLagoError } from 'lago-javascript-client';
+
 import { envs } from '../envs.js';
-import type { BillingClient, IngestEvent } from '../types.js';
+
+import type { BillingClient, BillingIngestEvent } from '../types.js';
+import type { EventInput } from 'lago-javascript-client';
 
 const lagoClient = LagoClient(envs.LAGO_API_KEY || '');
 
 export const lago: BillingClient = {
-    ingest: async (events: IngestEvent[]): Promise<void> => {
+    ingest: async (events: BillingIngestEvent[]): Promise<void> => {
         const batchSize = 100;
         for (let i = 0; i < events.length; i += batchSize) {
             try {
@@ -20,7 +22,7 @@ export const lago: BillingClient = {
     }
 };
 
-function toLagoEvent(event: IngestEvent): EventInput['event'] {
+function toLagoEvent(event: BillingIngestEvent): EventInput['event'] {
     return {
         code: event.type,
         transaction_id: event.idempotencyKey,

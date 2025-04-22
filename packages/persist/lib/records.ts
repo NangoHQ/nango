@@ -1,15 +1,15 @@
 import tracer from 'dd-trace';
 
+import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import type { MergingStrategy } from '@nangohq/types';
+import type { DBPlan, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
-import { billing } from '@nangohq/billing';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -19,6 +19,7 @@ export async function persistRecords({
     accountId,
     environmentId,
     connectionId,
+    plan,
     providerConfigKey,
     nangoConnectionId,
     syncId,
@@ -32,6 +33,7 @@ export async function persistRecords({
     accountId: number;
     environmentId: number;
     connectionId: string;
+    plan: DBPlan | null;
     providerConfigKey: string;
     nangoConnectionId: number;
     syncId: string;
@@ -154,7 +156,9 @@ export async function persistRecords({
 
         const mar = new Set(summary.billedKeys).size;
 
-        void billing.send('monthly_active_records', mar, { accountId });
+        if (plan && plan.name !== 'free') {
+            void billing.send('monthly_active_records', mar, { accountId });
+        }
 
         metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);

@@ -156,7 +156,7 @@ class SyncController {
         });
 
         const { input, action_name } = req.body;
-        const { account, environment } = res.locals;
+        const { account, environment, plan } = res.locals;
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
@@ -235,7 +235,9 @@ class SyncController {
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
 
-                void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                if (plan && plan.name !== 'free') {
+                    void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                }
 
                 return;
             } else {

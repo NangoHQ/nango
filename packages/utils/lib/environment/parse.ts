@@ -130,7 +130,7 @@ export const ENVS = z.object({
 
     // Billing
     FLAG_PLAN_ENABLED: bool,
-    FLAG_BILLING_ENABLED: bool,
+    FLAG_USAGE_ENABLED: bool,
     LAGO_API_KEY: z.string().optional(),
 
     // --- Third parties

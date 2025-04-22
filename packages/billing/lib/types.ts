@@ -1,8 +1,8 @@
 export interface BillingClient {
-    ingest: (events: IngestEvent[]) => Promise<void>;
+    ingest: (events: BillingIngestEvent[]) => Promise<void>;
 }
 
-export interface IngestEvent {
+export interface BillingIngestEvent {
     type: 'monthly_active_records' | 'billable_connections' | 'billable_actions';
     idempotencyKey: string;
     accountId: number;
@@ -11,7 +11,7 @@ export interface IngestEvent {
 }
 
 export interface BillingMetric {
-    type: IngestEvent['type'];
+    type: BillingIngestEvent['type'];
     value: number;
     properties: { accountId: number; timestamp?: Date | undefined; idempotencyKey?: string | undefined };
 }
