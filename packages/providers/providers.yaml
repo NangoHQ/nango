@@ -2926,7 +2926,7 @@ docuware:
             pattern: ^https?:\/\/.*
             example: https://example.docuware.cloud
             order: 1
-            doc_section: '#step-1-finding-your-hostname'
+            doc_section: '#step-1-finding-your-host-name'
     credentials:
         username:
             type: string
