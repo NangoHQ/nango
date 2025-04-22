@@ -156,10 +156,9 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             connectionConfig,
             contentUrl
         });
-
         if (credentialsRes.isErr()) {
             report(credentialsRes.error);
-            void logCtx.error('Error during Tableau credentials creation', { error: credentialsRes.error, provider: config.provider });
+            void logCtx.error('Error during Tableau credentials creation', { error: credentialsRes.error });
             await logCtx.failed();
             return;
         }
