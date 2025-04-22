@@ -5062,7 +5062,7 @@ jira-basic:
         verification:
             method: GET
             endpoints:
-                - /rest/api/3/events
+                - /rest/api/2/applicationrole
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
         subdomain:
