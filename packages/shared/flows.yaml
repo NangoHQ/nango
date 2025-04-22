@@ -11715,16 +11715,13 @@ integrations:
                     group: Org Units
                 scopes:
                     - GroupMember.Read.All
-                version: 1.0.2
+                version: 1.0.3
             users:
                 runs: every hour
                 description: |
                     Continuously fetches users from either Microsoft 365 or Azure Active
                     Directory given specified
-                    groups to sync. Expects an `orgsToSync` metadata property with an
-                    array of organization ids.
-                    Details: full refresh, doesn't support deletes, goes back all time,
-                    metadata is required.
+                    groups to sync.
                 input: Metadata
                 auto_start: false
                 output: User
@@ -11735,7 +11732,7 @@ integrations:
                     group: Users
                 scopes:
                     - User.Read.All
-                version: 1.0.2
+                version: 1.0.3
             messages:
                 runs: every hour
                 description: >
@@ -11743,6 +11740,7 @@ integrations:
 
                     Details: incremental sync, goes back 10 days on first sync, metadata
                     tracks last sync per channel/chat.
+                input: Metadata
                 output: TeamsMessage
                 sync_type: incremental
                 endpoint:
@@ -18509,10 +18507,12 @@ integrations:
         syncs:
             employees:
                 runs: every hour
-                track_deletes: true
-                sync_type: full
+                description: |
+                    Fetches a list of current employees from Workday
+                version: 1.0.0
                 output: Employee
-                description: Fetches Employees
+                sync_type: full
+                track_deletes: true
                 endpoint:
                     method: GET
                     path: /employees
@@ -18537,12 +18537,25 @@ integrations:
                     method: GET
                     path: /locations
                     group: Locations
+            unified-employees:
+                runs: every hour
+                description: >
+                    Fetches a list of current employees from Workday and maps them to the
+                    standard HRIS model
+                output: StandardEmployee
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         models:
             Employee:
                 id: string
                 user_name: string | null
                 first_name?: string
                 last_name?: string
+                active?: boolean | undefined
                 email: string
                 role: string
                 department: string
@@ -18572,6 +18585,61 @@ integrations:
                 name: string
                 abbrev: string
                 iso_code: string
+            Address:
+                street: string
+                city: string
+                state: string
+                country: string
+                postalCode: string
+                type: WORK | HOME
+            WorkLocation:
+                name: string
+                type: OFFICE | REMOTE | HYBRID
+                primaryAddress?: Address | undefined
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?: UnifiedAddress | undefined
+                addresses?: UnifiedAddress[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            UnifiedAddress:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     xero:
         syncs:
             contacts:
