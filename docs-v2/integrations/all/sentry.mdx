@@ -1,0 +1,62 @@
+---
+title: Sentry
+sidebarTitle: Sentry
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sentry/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sentry/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Free tier available but paid account recommended for production |
+| Paid test account | ✅ | Free tier available for testing |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+
+## Setup guide
+
+To get started with the Sentry integration:
+
+1. Create a Sentry account if you don't have one
+2. Generate an Auth Token with required scopes (see [Connect guide](/integrations/all/sentry/connect))
+3. Configure your domain (e.g. sentry.io or region-specific like us.sentry.io)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sentry.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate a Sentry Auth Token](https://sentry.com/create/tokens/new)
+-   [Sentry Authentication](https://docs.sentry.io/api/auth/)
+-   [Auth Token Scopes](https://docs.sentry.io/api/permissions/)
+-   [API Rate Limiting](https://docs.sentry.io/api/auth/)
+-   [Web API docs (their REST API)](https://docs.sentry.io/api/)
+-   [SCIM API docs (their REST SCIM API)](https://docs.sentry.io/api/scim/)
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sentry.mdx)</Note>
+
+## API gotchas
+- Sentry offers both `Auth Tokens` and Basic Auth with `API Keys`(Deprecated) for authentication
+- Sentry uses API_KEY auth mode with `authorization: Bearer <Auth Token>` in the request header
+- Different regions use different domains (e.g. us.sentry.io for US)
+- Rate limits vary by tier and endpoint
+- Some API endpoints require specific token scopes to access
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sentry.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Sentry" icon="link" href="/integrations/all/sentry/connect" horizontal>
+  Guide to connect to Sentry with an Auth Token using Connect UI
+</Card>
