@@ -50,3 +50,17 @@ export type DeleteSyncVariant = Endpoint<{
     Error: ApiError<'invalid_variant' | 'unknown_connection' | 'failed_sync_variant_deletion'>;
     Success: { success: boolean };
 }>;
+
+export type PutPublicSyncConnectionFrequency = Endpoint<{
+    Method: 'PUT';
+    Path: '/sync/update-connection-frequency';
+    Body: {
+        sync_name: string;
+        sync_variant?: string | undefined;
+        provider_config_key: string;
+        connection_id: string;
+        frequency: string | null;
+    };
+    Success: { frequency: string };
+    Error: ApiError<'unknown_connection' | 'unknown_sync'>;
+}>;
