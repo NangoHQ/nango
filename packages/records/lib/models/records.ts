@@ -732,6 +732,10 @@ async function getRecordsToUpdate({
 }
 
 function newLockId(connectionId: number, model: string): bigint {
-    const modelHash = stringToHash(model);
+    // convert modelHash to unsigned 32-bit integer to ensure
+    // negative hash values don't cause sign extension problems
+    // when combined with connectionId in the bitwise OR operation
+    const modelHash = stringToHash(model) >>> 0;
+
     return (BigInt(connectionId) << 32n) | BigInt(modelHash);
 }
