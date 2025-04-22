@@ -7,7 +7,7 @@ import { LogActionEnum } from '../models/Telemetry.js';
 import connectionsManager from '../services/connection.service.js';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { encodeParameters, interpolateString } from '../utils/utils.js';
+import { makeUrl } from '../utils/utils.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
@@ -199,11 +199,4 @@ export async function getFreshOAuth2Credentials({
         });
         return { success: false, error, response: null };
     }
-}
-
-function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    const cleanTemplate = template.replace(/connectionConfig\./g, '');
-    const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
-    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
-    return new URL(interpolatedUrl);
 }

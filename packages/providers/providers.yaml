@@ -9985,6 +9985,53 @@ workday:
             description: Workday API Password
             doc_section: '#step-5-finding-your-password'
 
+workday-oauth:
+    display_name: Workday (OAuth)
+    categories:
+        - hr
+        - popular
+    auth_mode: OAUTH2
+    token_request_auth_method: basic
+    authorization_url: https://${connectionConfig.authorizationHostname}/${connectionConfig.tenant}/authorize
+    token_url: https://${connectionConfig.tokenHostname}/ccx/oauth2/${connectionConfig.tenant}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.tokenHostname}/ccx/api
+    docs: https://docs.nango.dev/integrations/all/workday-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/workday-oauth/connect
+    connection_config:
+        authorizationHostname:
+            type: string
+            title: Authorization Hostname
+            description: The hostname used to authorize your Workday account
+            format: hostname
+            example: impl.workday.com
+            prefix: https://
+            order: 1
+            suffix: /mytenant
+            doc_section: '#step-1-finding-your-authorization-hostname'
+        tokenHostname:
+            type: string
+            title: Token Hostname
+            description: The hostname used to obtain the token for your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 2
+            suffix: /ccx
+            doc_section: '#step-2-finding-your-token-hostname'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: yourtenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
 wrike:
     display_name: Wrike
     categories:

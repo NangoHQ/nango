@@ -2,12 +2,13 @@ import braintree from 'braintree';
 import type { Config as ProviderConfig, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
 import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
-import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import { parseTokenExpirationDate, isTokenExpired, makeUrl } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import { getLogger, axiosInstance as axios, stringifyError } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
+const workdayOauthExpiresIn = 3600;
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -24,6 +25,7 @@ class ProviderClient {
             case 'tiktok-accounts':
             case 'stripe-app':
             case 'stripe-app-sandbox':
+            case 'workday-oauth':
                 return true;
             default:
                 return false;
@@ -61,6 +63,8 @@ class ProviderClient {
                 return this.createStripeAppToken(tokenUrl, code, config.oauth_client_secret, callBackUrl);
             case 'tiktok-accounts':
                 return this.createTiktokAccountsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'workday-oauth':
+                return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -72,6 +76,7 @@ class ProviderClient {
         }
 
         const credentials = connection.credentials;
+        const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
 
         if (config.provider !== 'facebook' && !credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
@@ -107,6 +112,13 @@ class ProviderClient {
             case 'stripe-app':
             case 'stripe-app-sandbox':
                 return this.refreshStripeAppToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_secret);
+            case 'workday-oauth':
+                return this.refreshWorkdayAccessToken(
+                    interpolatedTokenUrl.origin + interpolatedTokenUrl.pathname,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -475,6 +487,73 @@ class ProviderClient {
             refresh_token: creds['refreshToken'],
             expires_at: creds['expiresAt']
         };
+    }
+
+    private async createWorkdayOauthAccessToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        client_secret: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<object> {
+        try {
+            const body = {
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri,
+                code_verifier
+            };
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    access_token: response.data['access_token'],
+                    refresh_token: response.data['refresh_token'],
+                    expires_in: workdayOauthExpiresIn
+                };
+            }
+
+            throw new NangoError('request_token_external_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('request_token_external_error', err.message);
+        }
+    }
+
+    private async refreshWorkdayAccessToken(
+        refreshTokenUrl: string,
+        refreshToken: string,
+        client_id: string,
+        client_secret: string
+    ): Promise<RefreshTokenResponse> {
+        try {
+            const body = {
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            };
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data) {
+                return {
+                    refresh_token: response.data['refresh_token'],
+                    access_token: response.data['access_token'],
+                    expires_in: workdayOauthExpiresIn
+                };
+            }
+            throw new NangoError('refresh_token_external_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('refresh_token_external_error', err.message);
+        }
     }
 
     private async introspectedSalesforceTokenExpired(

@@ -357,3 +357,10 @@ export function getConnectionMetadataFromTokenResponse(params: any, provider: Pr
 
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
+
+export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
+    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
+    return new URL(interpolatedUrl);
+}
