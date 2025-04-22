@@ -7,12 +7,6 @@ import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost }
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
-
 export enum NodeEnv {
     Dev = 'development',
     Staging = 'staging',
