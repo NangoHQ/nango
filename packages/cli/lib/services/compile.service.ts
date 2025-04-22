@@ -122,6 +122,7 @@ export async function compileSingleFile({
     fullPath,
     file,
     tsconfig,
+    parsed,
     debug = false
 }: {
     fullPath: string;
@@ -132,7 +133,7 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
-    const cachedParser = getCachedParser({ fullPath, debug });
+    const cachedParser = parsed ? () => parsed : getCachedParser({ fullPath, debug });
 
     try {
         const compiler = tsNode.create({
