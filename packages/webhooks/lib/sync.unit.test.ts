@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { sendSync } from './sync.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoSyncWebhookBodySuccess, DBExternalWebhook, DBEnvironment, DBTeam, DBSyncConfig, IntegrationConfig, ConnectionJobs } from '@nangohq/types';
+
+import { sendSync } from './sync.js';
+
+import type { ConnectionJobs, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig, NangoSyncWebhookBodySuccess } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -17,6 +20,7 @@ const account: DBTeam = {
 
 const providerConfig: IntegrationConfig = {
     id: 1,
+    display_name: null,
     provider: 'provider',
     unique_key: 'unique_key',
     oauth_client_id: '',

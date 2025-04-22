@@ -103,9 +103,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         integration.unique_key = body.integrationId;
     }
 
-    // Custom display name
-    if ('customDisplayName' in body && body.customDisplayName) {
-        integration.custom_display_name = body.customDisplayName;
+    // Custom display name, we want to allow empty string to remove override
+    if ('customDisplayName' in body) {
+        integration.display_name = body.customDisplayName || null;
     }
 
     // Credentials

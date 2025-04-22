@@ -5,12 +5,8 @@ import type { NangoSyncConfig } from '../flow';
 import type { Provider } from '../providers/provider';
 import type { Merge } from 'type-fest';
 
-export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'custom_display_name'>,
-    ApiTimestamps
-> & {
+export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name'>, ApiTimestamps> & {
     logo: string;
-    display_name: string;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;

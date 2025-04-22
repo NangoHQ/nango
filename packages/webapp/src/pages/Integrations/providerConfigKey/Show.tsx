@@ -1,22 +1,23 @@
-import { useParams, Routes, Route, useLocation } from 'react-router-dom';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { ButtonLink, Button } from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { useStore } from '../../../store';
 import { Pencil1Icon, PlusIcon } from '@radix-ui/react-icons';
-import { apiPatchIntegration, useGetIntegration } from '../../../hooks/useIntegration';
-import { Skeleton } from '../../../components/ui/Skeleton';
-import PageNotFound from '../../PageNotFound';
 import { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { mutate } from 'swr';
+
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
-import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { LeftNavBarItems } from '../../../components/LeftNavBar';
+import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+import { Skeleton } from '../../../components/ui/Skeleton';
+import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
+import { apiPatchIntegration, useGetIntegration } from '../../../hooks/useIntegration';
 import { useToast } from '../../../hooks/useToast';
-import { mutate } from 'swr';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
+import PageNotFound from '../../PageNotFound';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -49,10 +50,8 @@ export const ShowIntegration: React.FC = () => {
     }, [location]);
 
     useEffect(() => {
-        if (data?.integration?.custom_display_name) {
-            setCustomDisplayName(data.integration.custom_display_name);
-        } else if (data?.template?.display_name) {
-            setCustomDisplayName(data.template.display_name);
+        if (data?.integration?.display_name) {
+            setCustomDisplayName(data.integration.display_name);
         }
     }, [data]);
 
@@ -141,7 +140,7 @@ export const ShowIntegration: React.FC = () => {
                                         size={'sm'}
                                         variant={'emptyFaded'}
                                         onClick={() => {
-                                            setCustomDisplayName(data.integration.custom_display_name || data.template.display_name);
+                                            setCustomDisplayName(data.integration.display_name || '');
                                             setShowEditCustomDisplayName(false);
                                             setLoadingSave(false);
                                         }}
@@ -156,7 +155,7 @@ export const ShowIntegration: React.FC = () => {
                         ) : (
                             <div className="flex gap-4 items-center">
                                 <h2 className="text-left text-3xl font-semibold text-white break-all">
-                                    {data.integration.custom_display_name ?? data.template.display_name}
+                                    {data.integration.display_name ?? data.template.display_name}
                                 </h2>
                                 <div className="flex items-center">
                                     <Button variant={'icon'} onClick={() => setShowEditCustomDisplayName(true)} size={'xs'}>

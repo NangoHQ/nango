@@ -83,7 +83,7 @@ export default function IntegrationList() {
                                         )}
                                     </div>
                                     <div className="flex items-center w-2/6">
-                                        <p className="truncate">{integration.custom_display_name || integration.meta.displayName}</p>
+                                        <p className="truncate">{integration.display_name || integration.meta.displayName}</p>
                                     </div>
                                     <div className="flex items-center w-1/6">
                                         <p className="">{integration.meta.connectionCount}</p>

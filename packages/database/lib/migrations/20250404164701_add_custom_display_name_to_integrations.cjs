@@ -4,7 +4,7 @@
 exports.up = async function (knex) {
     await knex.raw(`
         ALTER TABLE _nango_configs
-        ADD COLUMN custom_display_name VARCHAR(255)
+        ADD COLUMN display_name VARCHAR(255)
     `);
 };
 
@@ -14,6 +14,6 @@ exports.up = async function (knex) {
 exports.down = async function (knex) {
     await knex.raw(`
         ALTER TABLE _nango_configs
-        DROP COLUMN custom_display_name
+        DROP COLUMN display_name
     `);
 };

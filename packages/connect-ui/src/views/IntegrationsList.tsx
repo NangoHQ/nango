@@ -158,7 +158,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
                 <div className="w-[50px] h-[50px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                     <img src={integration.logo} />
                 </div>
-                <div className="text-zinc-900">{integration.custom_display_name || integration.display_name}</div>
+                <div className="text-zinc-900">{integration.display_name}</div>
                 {error && (
                     <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded gap-2">
                         <IconExclamationCircle size={17} stroke={1} /> {error}
