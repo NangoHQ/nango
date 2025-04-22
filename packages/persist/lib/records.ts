@@ -138,7 +138,7 @@ export async function persistRecords({
                     addedKeys: summary.addedKeys,
                     updatedKeys: summary.updatedKeys,
                     deleteKeys: summary.deletedKeys || [],
-                    unchangedKeys: summary.unchangedKeys
+                    unchangedKeys: [] // TODO: reup summary.unchangedKeys
                 }
             }
         );
