@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
-import { AnalyticsTypes, acceptInvitation, accountService, analytics, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, getLogger, isCloud, nanoid } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
+import { basePublicUrl, getLogger, nanoid } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -133,7 +133,6 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
                 return;
             }
 
-            void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, invitation.account_id, {}, isCloud ? { email: invitation.email } : {});
             // @ts-expect-error you got to love passport
             req.session.passport.user.account_id = invitation.account_id;
         }

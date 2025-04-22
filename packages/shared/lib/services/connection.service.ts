@@ -6,23 +6,18 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as billClient from '../auth/bill.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import environmentService from '../services/environment.service.js';
 import syncManager from './sync/manager.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
-import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import {
-    DEFAULT_BILL_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
+import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
+import { productTracking } from '../utils/productTracking.js';
 import {
     extractStepNumber,
     extractValueByPath,
@@ -63,10 +58,12 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
+    DBUser,
     JwtCredentials,
     MaybePromise,
     Metadata,
     Provider,
+    ProviderBill,
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
@@ -92,20 +89,16 @@ class ConnectionService {
     public async upsertConnection({
         connectionId,
         providerConfigKey,
-        provider,
         parsedRawCredentials,
         connectionConfig,
         environmentId,
-        accountId,
         metadata
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         parsedRawCredentials: AuthCredentials;
         connectionConfig?: ConnectionConfig;
         environmentId: number;
-        accountId: number;
         metadata?: Metadata | null;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environmentId);
@@ -134,8 +127,6 @@ class ConnectionService {
                 .update(encryptedConnection)
                 .returning('*');
 
-            void analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
-
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
@@ -161,8 +152,6 @@ class ConnectionService {
         });
         const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
-        void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
-
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
@@ -173,8 +162,7 @@ class ConnectionService {
         connectionConfig,
         metadata,
         config,
-        environment,
-        account
+        environment
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -191,7 +179,6 @@ class ConnectionService {
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
-        account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
         const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
             connection_id: connectionId,
@@ -239,33 +226,21 @@ class ConnectionService {
 
         const operation = connection ? 'creation' : 'override';
 
-        if (credentials.type) {
-            await analytics.trackConnectionEvent({
-                provider_type: credentials.type,
-                operation,
-                accountId: account.id
-            });
-        }
-
         return [{ connection: connection!, operation }];
     }
 
     public async upsertUnauthConnection({
         connectionId,
         providerConfigKey,
-        provider,
         metadata,
         connectionConfig,
-        environment,
-        account
+        environment
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
         environment: DBEnvironment;
-        account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
@@ -290,8 +265,6 @@ class ConnectionService {
                 })
                 .returning('*');
 
-            void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, account.id, { provider });
-
             return [{ connection: connection[0]!, operation: 'override' }];
         }
         const connection = await db.knex
@@ -312,17 +285,13 @@ class ConnectionService {
             })
             .returning('*');
 
-        void analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, account.id, { provider });
-
         return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
     public async importOAuthConnection({
         connectionId,
         providerConfigKey,
-        provider,
         environment,
-        account,
         metadata = null,
         connectionConfig = {},
         parsedRawCredentials,
@@ -330,9 +299,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         environment: DBEnvironment;
-        account: DBTeam;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
@@ -341,11 +308,9 @@ class ConnectionService {
         const [importedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey,
-            provider,
             parsedRawCredentials,
             connectionConfig,
             environmentId: environment.id,
-            accountId: account.id,
             metadata
         });
 
@@ -361,7 +326,6 @@ class ConnectionService {
         providerConfigKey,
         metadata = null,
         environment,
-        account,
         connectionConfig = {},
         credentials,
         connectionCreatedHook
@@ -370,7 +334,6 @@ class ConnectionService {
         providerConfigKey: string;
         provider: string;
         environment: DBEnvironment;
-        account: DBTeam;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
         credentials: BasicApiCredentials | ApiKeyCredentials;
@@ -390,8 +353,7 @@ class ConnectionService {
             connectionConfig,
             metadata,
             config,
-            environment,
-            account
+            environment
         });
 
         if (importedConnection) {
@@ -941,25 +903,6 @@ class ConnectionService {
                 return oauth2Creds;
             }
 
-            case 'BILL': {
-                if (!rawCreds['sessionId']) {
-                    throw new NangoError(`incomplete_raw_credentials`);
-                }
-                const expiresAt = new Date(Date.now() + DEFAULT_BILL_EXPIRES_AT_MS);
-                const billCredentials: BillCredentials = {
-                    type: 'BILL',
-                    username: '',
-                    password: '',
-                    organization_id: rawCreds['organizationId'],
-                    dev_key: '',
-                    raw: rawCreds,
-                    session_id: rawCreds['sessionId'],
-                    user_id: rawCreds['userId'],
-                    expires_at: expiresAt
-                };
-                return billCredentials;
-            }
-
             case 'TWO_STEP': {
                 if (!template || !('token_response' in template)) {
                     throw new NangoError(`Token response structure is missing for TWO_STEP.`);
@@ -1078,16 +1021,12 @@ class ConnectionService {
             return;
         }
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
-
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            provider: integration.provider,
             parsedRawCredentials: credentials as unknown as AuthCredentials,
             connectionConfig,
-            environmentId: integration.environment_id,
-            accountId: accountId as number
+            environmentId: integration.environment_id
         });
 
         if (updatedConnection) {
@@ -1222,65 +1161,6 @@ class ConnectionService {
         return { success: true, error: null, response: parsedCreds };
     }
 
-    public async getBillCredentials(
-        provider: Provider,
-        username: string,
-        password: string,
-        organizationId: string,
-        devKey: string
-    ): Promise<ServiceResponse<BillCredentials>> {
-        let tokenUrl: string;
-        if (typeof provider.token_url === 'string') {
-            tokenUrl = provider.token_url;
-        } else {
-            logger.error('Token URL is missing or invalid');
-            return {
-                success: false,
-                error: new NangoError('missing_token_url', { message: 'Token URL is missing' }),
-                response: null
-            };
-        }
-
-        const postBody = {
-            username: username,
-            password: password,
-            organizationId: organizationId,
-            devKey: devKey
-        };
-
-        const headers: Record<string, string> = {
-            'content-type': 'application/json'
-        };
-
-        const requestOptions = { headers };
-
-        try {
-            const response = await axios.post(tokenUrl, postBody, requestOptions);
-
-            if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_bill_credentials'), response: null };
-            }
-
-            const { data } = response;
-
-            const parsedCreds = this.parseRawCredentials(data, 'BILL') as BillCredentials;
-            parsedCreds.username = username;
-            parsedCreds.password = password;
-            parsedCreds.dev_key = devKey;
-
-            return { success: true, error: null, response: parsedCreds };
-        } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching Bill credentials ${stringifyError(err)}`);
-            const error = new NangoError('bill_credentials_fetch_error', errorPayload);
-
-            return { success: false, error, response: null };
-        }
-    }
-
     public async getTwoStepCredentials(
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
@@ -1308,11 +1188,18 @@ class ConnectionService {
             postBody = interpolateObjectValues(postBody, connectionConfig);
         }
 
-        const headers: Record<string, string> = {};
+        const headers: Record<string, any> | string = {};
 
         if (provider.token_headers) {
             for (const [key, value] of Object.entries(provider.token_headers)) {
-                headers[key] = value;
+                const strippedValue = stripCredential(value);
+                if (typeof strippedValue === 'object' && strippedValue !== null) {
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                } else if (typeof strippedValue === 'string') {
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                } else {
+                    headers[key] = strippedValue;
+                }
             }
         }
 
@@ -1331,7 +1218,12 @@ class ConnectionService {
                       ? new URLSearchParams(postBody).toString()
                       : JSON.stringify(postBody);
 
-            const response = await axios.post(url.toString(), bodyContent, requestOptions);
+            let response: any;
+            if (provider.token_request_method === 'GET') {
+                response = await axios.get(url.toString(), requestOptions);
+            } else {
+                response = await axios.post(url.toString(), bodyContent, requestOptions);
+            }
 
             if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
@@ -1453,11 +1345,15 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         type,
+        team,
+        user,
         plan
     }: {
         providerConfigKey: string;
         environmentId: number;
         type: 'activate' | 'deploy';
+        team: DBTeam;
+        user?: DBUser;
         plan: DBPlan | null;
     }): Promise<boolean> {
         if (!plan || !plan.connection_with_scripts_max) {
@@ -1469,9 +1365,9 @@ class ConnectionService {
         if (count > plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
-                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
+                productTracking.track({ name: 'server:resource_capped:script_deploy_is_disabled', team, user });
             } else {
-                void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_ACTIVATE, environmentId);
+                productTracking.track({ name: 'server:resource_capped:script_activate', team, user });
             }
             return true;
         }
@@ -1574,13 +1470,19 @@ class ConnectionService {
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'BILL') {
             const { username, password, organization_id, dev_key } = connection.credentials as BillCredentials;
-            const { success, error, response: credentials } = await this.getBillCredentials(provider, username, password, organization_id, dev_key);
+            const create = await billClient.createCredentials({
+                provider: provider as ProviderBill,
+                username,
+                password,
+                organizationId: organization_id,
+                devKey: dev_key
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'TWO_STEP') {
             const { token, expires_at, type, raw, ...dynamicCredentials } = connection.credentials as TwoStepCredentials;
             const {
