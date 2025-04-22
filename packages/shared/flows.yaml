@@ -11711,10 +11711,11 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /microsoft-teams/microsoft-org-unit
+                    path: /org-units
+                    group: Org Units
                 scopes:
                     - GroupMember.Read.All
-                version: 1.0.1
+                version: 1.0.2
             users:
                 runs: every hour
                 description: |
@@ -11730,13 +11731,34 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /microsoft-teams/microsoft-users
+                    path: /users
+                    group: Users
                 scopes:
                     - User.Read.All
-                version: 1.0.1
+                version: 1.0.2
+            messages:
+                runs: every hour
+                description: >
+                    Continuously fetches messages from Microsoft Teams channels and chats.
+
+                    Details: incremental sync, goes back 10 days on first sync, metadata
+                    tracks last sync per channel/chat.
+                output: TeamsMessage
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /messages
+                    group: Messsages
+                scopes:
+                    - ChannelMessage.Read.All
+                    - Chat.Read.All
         models:
             Metadata:
                 orgsToSync: string[]
+                channelsLastSyncDate?:
+                    __string: string
+                chatsLastSyncDate?:
+                    __string: string
             OrganizationalUnit:
                 id: string
                 name: string
@@ -11763,6 +11785,49 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
+            TeamsMessage:
+                id: string
+                channelId: string | null
+                chatId: string | null
+                content: string | null
+                createdDateTime: string
+                lastModifiedDateTime: string | null
+                deletedDateTime: string | null
+                from:
+                    user:
+                        id: string | null
+                        displayName: string | null
+                        email: string | null
+                importance: string | null
+                messageType: string
+                subject: string | null
+                webUrl: string | null
+                attachments: TeamsMessageAttachment[] | null
+                reactions: TeamsMessageReaction[] | null
+                replies: TeamsMessageReply[] | null
+                raw_json: string
+            TeamsMessageAttachment:
+                id: string
+                contentType: string
+                contentUrl: string | null
+                name: string | null
+                thumbnailUrl: string | null
+            TeamsMessageReaction:
+                reactionType: string
+                createdDateTime: string
+                user:
+                    id: string
+                    displayName: string | null
+                    email: string | null
+            TeamsMessageReply:
+                id: string
+                content: string | null
+                createdDateTime: string
+                from:
+                    user:
+                        id: string | null
+                        displayName: string | null
+                        email: string | null
     netsuite-tba:
         syncs:
             customers:
