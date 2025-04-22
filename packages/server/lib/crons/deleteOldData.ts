@@ -10,13 +10,13 @@ import { getLogger, metrics, report } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
-import { batchDelete } from './utils/batchDelete.js';
-import { deleteConnectionData } from './utils/deleteConnectionData.js';
-import { deleteEnvironmentData } from './utils/deleteEnvironmentData.js';
-import { deleteProviderConfigData } from './utils/deleteProviderConfigData.js';
-import { deleteSyncConfigData } from './utils/deleteSyncConfigData.js';
+import { batchDelete } from './delete/batchDelete.js';
+import { deleteConnectionData } from './delete/deleteConnectionData.js';
+import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
 
-import type { BatchDeleteSharedOptions } from './utils/batchDelete.js';
+import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { Config } from '@nangohq/shared';
 
