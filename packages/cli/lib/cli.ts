@@ -1,17 +1,19 @@
 import fs from 'node:fs';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import ejs from 'ejs';
 import * as dotenv from 'dotenv';
+import ejs from 'ejs';
 
-import { getNangoRootPath, printDebug } from './utils.js';
-import { loadYamlAndGenerate } from './services/model.service.js';
+import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
+
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { loadYamlAndGenerate } from './services/model.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
-import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
+import { getNangoRootPath, printDebug } from './utils.js';
 import { NANGO_VERSION } from './version.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,13 +21,13 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
-export const version = (debug: boolean) => {
+export const getVersionOutput = (debug: boolean): string => {
     if (debug) {
         printDebug('Looking up the version first for a local path first then globally');
     }
     const version = NANGO_VERSION;
 
-    console.log(chalk.green('Nango CLI version:'), version);
+    return `${chalk.green('Nango CLI version:')}: ${version}`;
 };
 
 export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
