@@ -382,7 +382,7 @@
                             "type": "string"
                         }
                     },
-                    "required": ["body_format", "token_params", "token_headers", "token_url"]
+                    "required": ["body_format", "token_params", "token_headers", "token_url", "request_method"]
                 },
                 "scope_separator": {
                     "type": "string"
@@ -404,7 +404,7 @@
                 "token_expiration_buffer": {
                     "type": "number"
                 },
-                "token_request_method": {
+                "request_method": {
                     "type": "string",
                     "enum": ["GET"]
                 },

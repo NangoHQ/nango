@@ -1219,7 +1219,7 @@ class ConnectionService {
                       : JSON.stringify(postBody);
 
             let response: any;
-            if (provider.token_request_method === 'GET') {
+            if (provider.request_method === 'GET') {
                 response = await axios.get(url.toString(), requestOptions);
             } else {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
@@ -1256,14 +1256,18 @@ class ConnectionService {
                             const stepNumber = extractStepNumber(value);
                             const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
 
-                            const strippedValue = stripStepResponse(value, stepResponsesObj);
-                            if (typeof strippedValue === 'object' && strippedValue !== null) {
-                                stepPostBody[key] = interpolateObject(strippedValue, dynamicCredentials);
-                            } else if (typeof strippedValue === 'string') {
-                                stepPostBody[key] = interpolateString(strippedValue, dynamicCredentials);
-                            } else {
-                                stepPostBody[key] = strippedValue;
-                            }
+                            const applyTransform = (input: any) => {
+                                if (typeof input === 'object' && input !== null) {
+                                    return interpolateObject(input, dynamicCredentials);
+                                } else if (typeof input === 'string') {
+                                    return interpolateString(input, dynamicCredentials);
+                                }
+                                return input;
+                            };
+                            const strippedResponse = stripStepResponse(value, stepResponsesObj);
+                            const strippedCredential = stripCredential(value);
+                            const finalValue = strippedCredential ?? strippedResponse;
+                            stepPostBody[key] = applyTransform(finalValue);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
@@ -1284,7 +1288,14 @@ class ConnectionService {
                     }
 
                     const stepRequestOptions = { headers: stepHeaders };
-                    const stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+
+                    let stepResponse: any;
+
+                    if (step.request_method === 'GET') {
+                        stepResponse = await axios.get(stepUrl, requestOptions);
+                    } else {
+                        stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+                    }
 
                     if (stepResponse.status !== 200) {
                         return { success: false, error: new NangoError(`invalid_two_step_credentials_step_${stepIndex}`), response: null };

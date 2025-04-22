@@ -150,7 +150,7 @@ export interface ProviderBill extends BaseProvider {
 
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
-    token_request_method?: 'GET';
+    request_method?: 'GET';
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
@@ -162,6 +162,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_params?: Record<string, string>;
         token_headers?: Record<string, string>;
         token_url: string;
+        request_method?: 'GET';
     }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
