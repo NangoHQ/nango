@@ -18,7 +18,6 @@ import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
 
 import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
-import type { Config } from '@nangohq/shared';
 
 const logger = getLogger('cron.deleteOldData');
 
@@ -125,7 +124,7 @@ export async function exec(): Promise<void> {
             deleteFn: async () => {
                 const integrations = await configService.getSoftDeleted({ limit, olderThan: deleteConfigsOlderThan });
                 for (const integration of integrations) {
-                    await deleteProviderConfigData(integration as Config, opts);
+                    await deleteProviderConfigData(integration, opts);
                 }
 
                 return integrations.length;

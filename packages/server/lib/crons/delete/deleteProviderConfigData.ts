@@ -5,10 +5,9 @@ import { batchDelete } from './batchDelete.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
-import type { Config } from '@nangohq/shared';
-import type { DBOnEventScript, DBSyncConfig } from '@nangohq/types';
+import type { DBOnEventScript, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-export async function deleteProviderConfigData(providerConfig: Config, opts: BatchDeleteSharedOptions) {
+export async function deleteProviderConfigData(providerConfig: IntegrationConfig, opts: BatchDeleteSharedOptions) {
     if (!providerConfig.id) {
         return;
     }
