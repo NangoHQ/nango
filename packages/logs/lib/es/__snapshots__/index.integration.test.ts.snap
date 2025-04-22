@@ -148,6 +148,15 @@ exports[`mapping > should create one index automatically on log 1`] = `
           "model": {
             "type": "keyword",
           },
+          "unchanged": {
+            "type": "integer",
+          },
+          "unchangedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
           "updated": {
             "type": "integer",
           },

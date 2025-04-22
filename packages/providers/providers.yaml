@@ -804,7 +804,7 @@ attio:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://app.attio.com
+        base_url: https://api.attio.com
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
@@ -4909,6 +4909,30 @@ hubspot:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
 
+incident-io:
+    display_name: Incident.io
+    categories:
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.incident.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/identity
+    docs: https://docs.nango.dev/integrations/all/incident-io
+    docs_connect: https://docs.nango.dev/integrations/all/incident-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Incident.io account
+            example: 'inc_************************************f2c5e6a7b3d4**********'
+            pattern: 'inc_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 insightly:
     display_name: Insightly
     categories:
@@ -5038,7 +5062,7 @@ jira-basic:
         verification:
             method: GET
             endpoints:
-                - /rest/api/3/events
+                - /rest/api/2/applicationrole
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
         subdomain:
@@ -7602,6 +7626,43 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://docs.nango.dev/integrations/all/reddit
 
+redtail-crm-sandbox:
+    display_name: Redtail CRM (Sandbox)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    token_url: https://review.crm.redtailtechnology.com/api/public/v1/authentication
+    token_request_method: GET
+    token_headers:
+        authorization: Basic ${base64(${credentials.apiKey}:${credentials.username}:${credentials.password})}
+    token_response:
+        token: authenticated_user.user_key
+    proxy:
+        headers:
+            authorization: Userkeyauth ${base64(${credentials.apiKey}:${accessToken})}
+        base_url: https://review.crm.redtailtechnology.com/api/public
+    docs: https://docs.nango.dev/integrations/all/redtail-crm-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/redtail-crm-sandbox/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username for your Redtail CRM account
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Redtail CRM account
+            secret: true
+            doc_section: '#step-2-finding-your-credentials'
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Redtail CRM account
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            format: uuid
+            secret: true
+            doc_section: '#step-1-finding-your-api-token'
 refiner:
     display_name: Refiner
     categories:
@@ -8148,6 +8209,38 @@ sendgrid:
             title: API Key
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
+
+sentry:
+    display_name: Sentry
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/sentry
+    docs_connect: https://docs.nango.dev/integrations/all/sentry/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname of your Sentry account
+            example: us.sentry.io
+            format: hostname
+            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Auth Token
+            description: The Authentication token for your Sentry account
+            example: sntryu_795225***************b9864a*********************
+            pattern: '^sntryu_[a-f0-9]{64}$'
+            doc_section: '#step-2-generating-your-sentry-auth-token'
 
 sedna:
     display_name: Sedna (OAuth)

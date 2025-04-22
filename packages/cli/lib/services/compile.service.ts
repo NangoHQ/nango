@@ -179,17 +179,24 @@ function compileImportedFile({
 
     for (const importedFile of importedFiles) {
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
-        const importedFilePathWithoutExtension = path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)));
-        const importedFilePathWithExtension = importedFilePathWithoutExtension + '.ts';
+        let importedFilePathResolved: string;
+        if (importedFilePath.endsWith('.ts')) {
+            importedFilePathResolved = importedFilePath;
+        } else if (importedFilePath.endsWith('.js')) {
+            importedFilePathResolved = `${path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)))}.ts`;
+        } else {
+            importedFilePathResolved = `${importedFilePath}.ts`;
+        }
 
-        /// if it is a library import then we can skip it
-        if (!fs.existsSync(importedFilePathWithExtension)) {
+        if (!fs.existsSync(importedFilePathResolved)) {
             // if the library is not allowed then we should let the user know
             // that it is not allowed and won't work early on
             if (!ALLOWED_IMPORTS.includes(importedFile)) {
                 console.log(chalk.red(`Importing libraries is not allowed. Please remove the import "${importedFile}" from "${path.basename(filePath)}"`));
                 return false;
             }
+
+            // if it is a library import then we can skip it
             continue;
         }
 
@@ -197,8 +204,8 @@ function compileImportedFile({
         // then we should not compile it
         // if the parts of the path are shorter than the current that means it is higher
         // than the nango-integrations directory
-        if (importedFilePathWithExtension.split(path.sep).length < fullPath.split(path.sep).length) {
-            const importedFileName = path.basename(importedFilePathWithExtension);
+        if (importedFilePathResolved.split(path.sep).length < fullPath.split(path.sep).length) {
+            const importedFileName = path.basename(importedFilePathResolved);
 
             console.log(
                 chalk.red(
@@ -208,14 +215,14 @@ function compileImportedFile({
             return false;
         }
 
-        if (importedFilePathWithExtension.includes('models.ts')) {
+        if (importedFilePathResolved.includes('models.ts')) {
             continue;
         }
 
-        compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
-        console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
+        compiler.compile(fs.readFileSync(importedFilePathResolved, 'utf8'), importedFilePathResolved);
+        console.log(chalk.green(`Compiled "${importedFilePathResolved}" successfully`));
 
-        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, parsed });
+        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathResolved, compiler, type, parsed });
     }
 
     return finalResult;

@@ -1,6 +1,6 @@
-import type { SetOptional } from 'type-fest';
 import type { TimestampsAndDeleted } from '../db.js';
 import type { NullablePartial } from '../utils.js';
+import type { SetOptional } from 'type-fest';
 
 export interface IntegrationConfig extends TimestampsAndDeleted {
     id?: number | undefined;
@@ -15,6 +15,7 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     app_link?: string | null | undefined;
     custom?: Record<string, string> | undefined | null;
     missing_fields: string[];
+    display_name: string | null;
 }
 
 export type DBCreateIntegration = SetOptional<NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>, 'missing_fields'>;

@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { startTrial } from '@nangohq/shared';
+import { productTracking, startTrial } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -19,7 +19,7 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
         return;
     }
 
-    const { plan } = res.locals;
+    const { plan, account, user } = res.locals;
     if (!flagHasPlan) {
         res.status(400).send({ error: { code: 'feature_disabled' } });
         return;
@@ -31,6 +31,8 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
     }
 
     await startTrial(db.knex, plan);
+
+    productTracking.track({ name: 'account:trial:extend', team: account, user });
 
     res.status(200).send({
         data: { success: true }

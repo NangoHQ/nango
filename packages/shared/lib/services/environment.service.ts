@@ -4,11 +4,12 @@ import db from '@nangohq/database';
 import { isCloud } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
-import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
+import type { Orchestrator } from '../index.js';
 import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
@@ -20,7 +21,10 @@ const hashLocalCache = new Map<string, string>();
 class EnvironmentService {
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
         try {
-            const result = await db.knex.select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name').from<DBEnvironment>(TABLE).where({ account_id });
+            const result = await db.knex
+                .select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name')
+                .from<DBEnvironment>(TABLE)
+                .where({ account_id, deleted: false });
 
             if (result == null || result.length == 0) {
                 return [];
@@ -54,7 +58,7 @@ class EnvironmentService {
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)
-                        .where({ name: envName })
+                        .where({ name: envName, deleted: false })
                         .first();
 
                     if (!env) {
@@ -70,7 +74,7 @@ class EnvironmentService {
     }
 
     async getAccountIdFromEnvironment(environment_id: number): Promise<number | null> {
-        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ id: environment_id });
+        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ id: environment_id, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -105,7 +109,7 @@ class EnvironmentService {
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)
-                        .where({ name: envName })
+                        .where({ name: envName, deleted: false })
                         .first();
                     if (!env) {
                         return null;
@@ -136,6 +140,7 @@ class EnvironmentService {
             }>(db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'))
             .from<DBEnvironment>(TABLE)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where('_nango_environments.deleted', false)
             .first();
 
         let hash: string | undefined;
@@ -175,30 +180,13 @@ class EnvironmentService {
     }
 
     async getById(id: number): Promise<DBEnvironment | null> {
-        try {
-            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id });
-
-            if (result == null || result.length == 0 || result[0] == null) {
-                return null;
-            }
-
-            return encryptionManager.decryptEnvironment(result[0]);
-        } catch (err) {
-            errorManager.report(err, {
-                environmentId: id,
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE,
-                metadata: {
-                    id
-                }
-            });
-            return null;
-        }
+        const raw = await this.getRawById(id);
+        return encryptionManager.decryptEnvironment(raw);
     }
 
     async getRawById(id: number): Promise<DBEnvironment | null> {
         try {
-            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id });
+            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id, deleted: false });
 
             if (result == null || result.length == 0 || result[0] == null) {
                 return null;
@@ -219,18 +207,13 @@ class EnvironmentService {
     }
 
     async getByEnvironmentName(accountId: number, name: string): Promise<DBEnvironment | null> {
-        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ account_id: accountId, name });
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ account_id: accountId, name, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
         }
 
         return encryptionManager.decryptEnvironment(result[0]);
-    }
-
-    async getAll(): Promise<{ environmentId: number; accountId: number }[]> {
-        const result = await db.knex.select('id as environmentId', 'account_id as accountId').from<{ environmentId: number; accountId: number }[]>(TABLE);
-        return result || [];
     }
 
     async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
@@ -265,7 +248,7 @@ class EnvironmentService {
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
-        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereNotNull('otlp_settings');
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ deleted: false }).whereNotNull('otlp_settings');
         if (result == null) {
             return [];
         }
@@ -273,7 +256,7 @@ class EnvironmentService {
     }
 
     async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
-        const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
+        const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -291,7 +274,7 @@ class EnvironmentService {
         environmentId: number;
         data: Omit<Partial<DBEnvironment>, 'account_id' | 'id' | 'created_at' | 'updated_at'>;
     }): Promise<DBEnvironment | null> {
-        const [res] = await db.knex.from<DBEnvironment>(TABLE).where({ account_id: accountId, id: environmentId }).update(data).returning('*');
+        const [res] = await db.knex.from<DBEnvironment>(TABLE).where({ account_id: accountId, id: environmentId, deleted: false }).update(data).returning('*');
         return res || null;
     }
 
@@ -482,6 +465,21 @@ class EnvironmentService {
         }
 
         return globalCallbackUrl;
+    }
+
+    async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
+        const configs = await configService.listProviderConfigs(environmentId);
+        for (const config of configs) {
+            // This handles deleting connections and syncs down the line
+            await configService.deleteProviderConfig({
+                id: config.id!,
+                environmentId,
+                providerConfigKey: config.unique_key,
+                orchestrator
+            });
+        }
+
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 }
 

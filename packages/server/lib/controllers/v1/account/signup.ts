@@ -3,8 +3,8 @@ import util from 'util';
 
 import { z } from 'zod';
 
-import { AnalyticsTypes, acceptInvitation, accountService, analytics, getInvitation, userService } from '@nangohq/shared';
-import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { acceptInvitation, accountService, getInvitation, userService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -79,7 +79,6 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
         }
-        void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, account.id, {}, isCloud ? { email } : {});
 
         await acceptInvitation(token);
     } else {
