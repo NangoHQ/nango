@@ -1,12 +1,14 @@
-import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
-import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import type { Span } from 'dd-trace';
+
 import { logContextGetter } from '@nangohq/logs';
-import type { Result } from '@nangohq/utils';
+import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
+import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import type { MergingStrategy } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -120,10 +122,26 @@ export async function persistRecords({
         await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
         const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
-        void logCtx.info(`Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''}`, {
-            persistType,
-            updatedResults
-        });
+        const total = allModifiedKeys.size + summary.unchangedKeys.length;
+
+        void logCtx.info(
+            `Successfully batched ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
+            { persistType },
+            {
+                persistResults: {
+                    model: baseModel,
+                    added: summary.addedKeys.length,
+                    updated: summary.updatedKeys.length,
+                    deleted: summary.deletedKeys?.length || 0,
+                    unchanged: summary.unchangedKeys.length,
+
+                    addedKeys: summary.addedKeys,
+                    updatedKeys: summary.updatedKeys,
+                    deleteKeys: summary.deletedKeys || [],
+                    unchangedKeys: [] // TODO: reup summary.unchangedKeys
+                }
+            }
+        );
 
         const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
         const modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {

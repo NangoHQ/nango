@@ -17,6 +17,7 @@ fi
 
 if [ -z $GIT_HASH ]; then
   echo -e "${RED}GIT_HASH is empty${NC}"
+  echo "$USAGE"
   exit
 fi
 

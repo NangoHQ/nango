@@ -1,37 +1,39 @@
 import { BookOpenIcon } from '@heroicons/react/24/outline';
-import { Pencil1Icon, PlusIcon } from '@radix-ui/react-icons';
+import { PlusIcon } from '@radix-ui/react-icons';
+import { IconBolt, IconRefresh } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { mutate } from 'swr';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
+import { ErrorCircle } from '../../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Button, ButtonLink } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
-import { apiPatchIntegration, useGetIntegration } from '../../../hooks/useIntegration';
+import { Tag } from '../../../components/ui/label/Tag';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useGetIntegration } from '../../../hooks/useIntegration';
+import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import PageNotFound from '../../PageNotFound';
 
 export const ShowIntegration: React.FC = () => {
+    const { toast } = useToast();
     const { providerConfigKey } = useParams();
     const location = useLocation();
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
+    const { plan, mutate: mutateEnv } = useEnvironment(env);
     const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
-    const { toast } = useToast();
 
     const [tab, setTab] = useState<string>('');
-    const [showEditCustomDisplayName, setShowEditCustomDisplayName] = useState(false);
-    const [customDisplayName, setCustomDisplayName] = useState('');
-    const [loadingSave, setLoadingSave] = useState(false);
+    const [trialLoading, setTrialLoading] = useState(false);
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -49,26 +51,21 @@ export const ShowIntegration: React.FC = () => {
         }
     }, [location]);
 
-    useEffect(() => {
-        if (data?.integration?.display_name) {
-            setCustomDisplayName(data.integration.display_name);
-        }
-    }, [data]);
+    const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
-    const onSaveCustomDisplayName = async () => {
-        if (!data) {
+    const onClickTrialExtend = async () => {
+        setTrialLoading(true);
+        const res = await apiPostPlanExtendTrial(env);
+        setTrialLoading(false);
+
+        if ('error' in res.json) {
+            toast({ title: 'There was an issue extending your trial', variant: 'error' });
             return;
         }
-        setLoadingSave(true);
-        const updated = await apiPatchIntegration(env, data.integration.unique_key, { customDisplayName });
-        setLoadingSave(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
-            toast({ title: "Successfully updated integration's name", variant: 'success' });
-            setShowEditCustomDisplayName(false);
-            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
-        }
+
+        void mutateEnv();
+
+        toast({ title: 'Your trial was extended successfully!', variant: 'success' });
     };
 
     if (loadingIntegration) {
@@ -120,55 +117,19 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <div className="my-2">
                         <div className="text-left text-lg font-semibold text-gray-400">Integration</div>
-                        {showEditCustomDisplayName ? (
-                            <div className="flex gap-2 grow">
-                                <Input
-                                    value={customDisplayName}
-                                    variant={'flat'}
-                                    inputSize="lg"
-                                    onChange={(e) => {
-                                        setCustomDisplayName(e.target.value);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            void onSaveCustomDisplayName();
-                                        }
-                                    }}
-                                />
-                                <div className="flex justify-end gap-2 items-center">
-                                    <Button
-                                        size={'sm'}
-                                        variant={'emptyFaded'}
-                                        onClick={() => {
-                                            setCustomDisplayName(data.integration.display_name || '');
-                                            setShowEditCustomDisplayName(false);
-                                            setLoadingSave(false);
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button size={'sm'} variant={'primary'} onClick={() => onSaveCustomDisplayName()} isLoading={loadingSave}>
-                                        Save
-                                    </Button>
-                                </div>
+
+                        <div className="flex gap-4 items-center">
+                            <h2 className="text-left text-3xl font-semibold text-white break-all">
+                                {data.integration.display_name ?? data.template.display_name}
+                            </h2>
+                            <div className="flex items-center">
+                                {data.template.docs && (
+                                    <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
+                                        <BookOpenIcon className="h-5 w-5" />
+                                    </ButtonLink>
+                                )}
                             </div>
-                        ) : (
-                            <div className="flex gap-4 items-center">
-                                <h2 className="text-left text-3xl font-semibold text-white break-all">
-                                    {data.integration.display_name ?? data.template.display_name}
-                                </h2>
-                                <div className="flex items-center">
-                                    <Button variant={'icon'} onClick={() => setShowEditCustomDisplayName(true)} size={'xs'}>
-                                        <Pencil1Icon />
-                                    </Button>
-                                    {data.template.docs && (
-                                        <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
-                                            <BookOpenIcon className="h-5 w-5" />
-                                        </ButtonLink>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
                 <div className="shrink-0">
@@ -188,6 +149,30 @@ export const ShowIntegration: React.FC = () => {
                     {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                 </ButtonLink>
             </nav>
+            {isTrial && (
+                <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
+                    <div className="flex gap-2 items-center">
+                        <div className="flex gap-3 items-center">
+                            <ErrorCircle icon="clock" variant="warning" />
+                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial'}</Tag>
+                            {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left!</span>}
+                        </div>
+                        <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button size={'sm'} variant={'tertiary'} onClick={onClickTrialExtend} isLoading={trialLoading}>
+                            <IconRefresh stroke={1} size={18} />
+                            {isTrialOver ? 'Restart trial' : 'Extend trial'}
+                        </Button>
+                        <Link to={`mailto:upgrade@nango.dev?subject=Upgrade%20my%20plan%20`}>
+                            <Button size={'sm'} variant={'secondary'}>
+                                <IconBolt stroke={1} size={18} />
+                                Upgrade plan
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
             <Routes>
                 <Route path="/*" element={<EndpointsShow integration={data} />} />
                 <Route path="/settings" element={<SettingsShow data={data} />} />

@@ -36,7 +36,7 @@ export const ENVS = z.object({
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
-    CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(5),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
@@ -154,6 +154,13 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_INDEX: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
 
+    // Koala
+    PUBLIC_KOALA_API_URL: z.string().url().optional(),
+    PUBLIC_KOALA_CDN_URL: z.string().url().optional(),
+
+    // Logodev
+    PUBLIC_LOGODEV_KEY: z.string().optional(),
+
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.string().url().optional(),
@@ -218,7 +225,6 @@ export const ENVS = z.object({
     NANGO_TELEMETRY_SDK: bool,
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
-    TELEMETRY: bool,
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 

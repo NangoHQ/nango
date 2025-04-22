@@ -510,6 +510,7 @@ export class Orchestrator {
     async runSyncCommand({
         connectionId,
         syncId,
+        syncVariant,
         command,
         environmentId,
         logCtx,
@@ -519,6 +520,7 @@ export class Orchestrator {
     }: {
         connectionId: number;
         syncId: string;
+        syncVariant: string;
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
@@ -559,7 +561,10 @@ export class Orchestrator {
                     await clearLastSyncDate(syncId);
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
-                        for (const model of syncConfig?.models || []) {
+                        for (let model of syncConfig?.models || []) {
+                            if (syncVariant !== 'base') {
+                                model = `${model}::${syncVariant}`;
+                            }
                             const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
                             void logCtx.info(`Records for model ${model} were deleted successfully`, del);
                         }

@@ -4,10 +4,14 @@ export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
     name: string;
+
+    // Trial
+    // Remove all values when you upgrade a customer
     trial_start_at: Date | null;
     trial_end_at: Date | null;
     trial_extension_count: number;
     trial_end_notified_at: Date | null;
+    trial_expired: boolean | null;
 
     /**
      * Limit the number of connections with active scripts
@@ -33,11 +37,17 @@ export interface DBPlan extends Timestamps {
      * Enable or disabled sync variant
      * @default false
      */
-    has_sync_variant: boolean;
+    has_sync_variants: boolean;
 
     /**
      * Enable or disabled open telemetry export
      * @default false
      */
     has_otel: boolean;
+
+    /**
+     * Change the applied rate limit for the public API
+     * @default "m"
+     */
+    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
 }

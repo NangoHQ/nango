@@ -3,7 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
 import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
@@ -503,7 +503,25 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
+        const account = await accountService.getAccountById(user.account_id);
+        if (!account) {
+            res.status(401).send({ error: { code: 'unknown_account' } });
+            return;
+        }
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: user.account_id });
+            if (planRes.isErr()) {
+                res.status(401).send({ error: { code: 'plan_not_found' } });
+                return;
+            }
+            plan = planRes.value;
+        }
+
         res.locals['user'] = user;
+        res.locals['account'] = account;
+        res.locals['plan'] = plan;
 
         const fullPath = path.join(req.baseUrl, req.route.path);
         if (ignoreEnvPaths.includes(fullPath)) {
@@ -517,26 +535,14 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        const result = await environmentService.getAccountAndEnvironment({ accountId: user.account_id, envName: currentEnv });
-        if (!result) {
+        const environment = await environmentService.getByEnvironmentName(account.id, currentEnv);
+        if (!environment) {
             res.status(401).send({ error: { code: 'unknown_account_or_env' } });
             return;
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                res.status(401).send({ error: { code: 'plan_not_found' } });
-                return;
-            }
-            plan = planRes.value;
-        }
-
-        res.locals['account'] = result.account;
-        res.locals['environment'] = result.environment;
-        res.locals['plan'] = plan;
-        tagTraceUser(result);
+        res.locals['environment'] = environment;
+        tagTraceUser({ account, environment, plan });
         next();
     } catch (err) {
         errorManager.report(err);

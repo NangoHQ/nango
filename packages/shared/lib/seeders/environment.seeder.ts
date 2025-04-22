@@ -41,6 +41,8 @@ export function getTestEnvironment(data?: Partial<DBEnvironment>): DBEnvironment
         websockets_path: null,
         webhook_url: null,
         webhook_url_secondary: null,
+        deleted: false,
+        deleted_at: null,
         ...data
     };
 }

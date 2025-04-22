@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.58.2",
+    "version": "0.58.5",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -16,7 +16,6 @@
         "ts-build": "tsc -b tsconfig.build.json",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
-        "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",
         "webapp-build": "cd ./packages/webapp && npm run build && cd ../..",
         "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
         "docker-build:unified": "./scripts/build_docker.sh",

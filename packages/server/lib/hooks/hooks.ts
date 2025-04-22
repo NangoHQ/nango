@@ -1,14 +1,13 @@
 import tracer from 'dd-trace';
 
 import {
-    AnalyticsTypes,
     NangoError,
     ProxyRequest,
-    analytics,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
     getSyncConfigsWithConnections,
+    productTracking,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
@@ -48,11 +47,13 @@ export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
     creationType,
+    team,
     plan
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
     creationType: 'create' | 'import';
+    team: DBTeam;
     plan: DBPlan;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
@@ -69,9 +70,11 @@ export const connectionCreationStartCapCheck = async ({
 
         if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            const analyticsType =
-                creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
-            void analytics.trackByEnvironmentId(analyticsType, environmentId);
+            if (creationType === 'create') {
+                productTracking.track({ name: 'server:resource_capped:connection_creation', team });
+            } else {
+                productTracking.track({ name: 'server:resource_capped:connection_imported', team });
+            }
             return true;
         }
     }
@@ -295,7 +298,7 @@ export async function credentialsTest({
         }
     });
 
-    const { method, base_url_override: baseUrlOverride, headers, endpoints } = providerVerification;
+    const { method, base_url_override: baseUrlOverride, headers, endpoints, data } = providerVerification;
 
     const connection: DBConnectionDecrypted = {
         id: -1,
@@ -346,6 +349,10 @@ export async function credentialsTest({
 
         if (baseUrlOverride) {
             configBody.baseUrlOverride = baseUrlOverride;
+        }
+
+        if (data) {
+            configBody.data = data;
         }
 
         try {

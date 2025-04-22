@@ -18,6 +18,7 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
+    CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
@@ -92,10 +93,16 @@ export enum Types {
 type Dimensions = Record<string, string | number> | undefined;
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
 export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 

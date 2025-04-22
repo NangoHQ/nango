@@ -41,7 +41,7 @@ import type {
 } from './connection/api/get';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api';
-import type { PatchEnvironment, PostEnvironment } from './environment/api';
+import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api';
 import type { PatchWebhook } from './environment/api/webhook';
 import type { PostEnvironmentVariables } from './environment/variable/api';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
@@ -60,6 +60,7 @@ import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
 import type { GetMeta } from './meta/api';
 import type { PatchOnboarding } from './onboarding/api';
+import type { PostPlanExtendTrial } from './plans/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { GetPublicRecords } from './record/api';
 import type { GetPublicScriptsConfig } from './scripts/http.api';
@@ -109,6 +110,7 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
+    | PostPlanExtendTrial
     | GetUser
     | PatchUser
     | PostInvite
@@ -145,6 +147,7 @@ export type PrivateApiEndpoints =
     | PostPreBuiltDeploy
     | PostEnvironment
     | PatchEnvironment
+    | DeleteEnvironment
     | PatchWebhook
     | PostEnvironmentVariables;
 

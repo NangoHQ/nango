@@ -81,7 +81,7 @@ export class NangoActionCLI extends NangoActionBase {
         _providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        _fullResync?: boolean
+        _syncMode?: unknown
     ): Promise<void | string> {
         const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
         return this.dryRunService.run({
@@ -95,6 +95,23 @@ export class NangoActionCLI extends NangoActionBase {
     public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {
         this.log(`This has no effect but on a remote Nango instance would start a schedule`);
         return Promise.resolve();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseLock(_props: { key: string }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
     }
 }
 
@@ -129,6 +146,9 @@ export class NangoSyncCLI extends NangoSyncBase {
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
     startSync = NangoActionCLI['prototype']['startSync'];
+    tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
+    releaseLock = NangoActionCLI['prototype']['releaseLock'];
+    releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {

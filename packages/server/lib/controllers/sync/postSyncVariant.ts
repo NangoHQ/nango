@@ -49,7 +49,7 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
     const params: PostSyncVariant['Params'] = parsedParams.data;
     const { environment, plan } = res.locals;
 
-    if (plan && !plan.has_sync_variant) {
+    if (plan && !plan.has_sync_variants) {
         res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating sync variant is only available for paying customer' } });
         return;
     }

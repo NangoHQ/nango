@@ -281,6 +281,9 @@
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "data": {
+                                    "type": "object"
                                 }
                             }
                         }
@@ -292,7 +295,7 @@
                         "expires_in_ms": {
                             "type": "number"
                         },
-                        "headers": {
+                        "header": {
                             "type": "object",
                             "properties": {
                                 "alg": {
@@ -393,13 +396,17 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE"]
+                            "enum": ["WSSE", "RSA", "HMAC"]
                         }
                     },
                     "required": ["protocol"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"
+                },
+                "token_request_method": {
+                    "type": "string",
+                    "enum": ["GET"]
                 },
                 "token_params": {
                     "type": "object",

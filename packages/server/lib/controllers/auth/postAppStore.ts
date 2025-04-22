@@ -1,27 +1,20 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
-import type { AuthCredentials } from '@nangohq/shared';
-import {
-    analytics,
-    configService,
-    AnalyticsTypes,
-    connectionService,
-    errorManager,
-    ErrorSourceEnum,
-    LogActionEnum,
-    getProvider,
-    linkConnection
-} from '@nangohq/shared';
-import type { PostPublicAppStoreAuthorization } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+
 import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { ErrorSourceEnum, LogActionEnum, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { AuthCredentials } from '@nangohq/shared';
+import type { PostPublicAppStoreAuthorization } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
 const bodyValidation = z
     .object({
@@ -88,7 +81,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -97,7 +90,6 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_APP_STORE_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -178,11 +170,9 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         const [updatedConnection] = await connectionService.upsertConnection({
             connectionId,
             providerConfigKey,
-            provider: config.provider,
             parsedRawCredentials: credentials as unknown as AuthCredentials,
             connectionConfig,
-            environmentId: environment.id,
-            accountId: account.id
+            environmentId: environment.id
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

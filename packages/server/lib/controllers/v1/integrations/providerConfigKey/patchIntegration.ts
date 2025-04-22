@@ -14,7 +14,7 @@ const validationBody = z
     .object({
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.string().min(0).max(255).optional(),
-        customDisplayName: z.string().min(1).max(255).optional()
+        displayName: z.string().min(1).max(255).optional()
     })
     .strict()
     .or(
@@ -103,9 +103,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         integration.unique_key = body.integrationId;
     }
 
-    // Custom display name, we want to allow empty string to remove override
-    if ('customDisplayName' in body) {
-        integration.display_name = body.customDisplayName || null;
+    // Custom display name
+    if ('displayName' in body && body.displayName) {
+        integration.display_name = body.displayName;
     }
 
     // Credentials

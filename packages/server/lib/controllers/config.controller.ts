@@ -1,9 +1,7 @@
 import crypto from 'crypto';
 
 import {
-    AnalyticsTypes,
     NangoError,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -237,7 +235,6 @@ class ConfigController {
     async createProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -353,7 +350,6 @@ class ConfigController {
             const result = await configService.createProviderConfig(config, provider);
 
             if (result) {
-                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: result.provider });
                 res.status(200).send({
                     config: {
                         unique_key: result.unique_key,

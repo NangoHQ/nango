@@ -1,5 +1,6 @@
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, enableScriptConfig, getSyncConfigById, syncManager } from '@nangohq/shared';
+import { configService, connectionService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationBody, validationParams } from './patchDisable.js';
@@ -33,7 +34,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, plan } = res.locals;
+    const { environment, account, plan, user } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -47,17 +48,28 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    if (plan && plan.connection_with_scripts_max) {
-        const isCapped = await connectionService.shouldCapUsage({
-            providerConfigKey: body.providerConfigKey,
-            environmentId: environment.id,
-            type: 'activate',
-            limit: plan.connection_with_scripts_max
+    if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
+        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
+        return;
+    }
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        await startTrial(db.knex, plan);
+        productTracking.track({ name: 'account:trial:started', team: account, user });
+    }
+
+    const isCapped = await connectionService.shouldCapUsage({
+        providerConfigKey: body.providerConfigKey,
+        environmentId: environment.id,
+        type: 'activate',
+        team: account,
+        user,
+        plan
+    });
+    if (isCapped) {
+        res.status(400).send({
+            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
         });
-        if (isCapped) {
-            res.status(400).send({ error: { code: 'resource_capped' } });
-            return;
-        }
+        return;
     }
 
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });

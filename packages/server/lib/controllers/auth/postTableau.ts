@@ -1,27 +1,29 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    analytics,
-    configService,
-    AnalyticsTypes,
-    getConnectionConfig,
-    connectionService,
-    errorManager,
     ErrorSourceEnum,
     LogActionEnum,
+    configService,
+    connectionService,
+    errorManager,
+    getConnectionConfig,
     getProvider,
-    linkConnection
+    linkConnection,
+    tableauClient
 } from '@nangohq/shared';
-import type { PostPublicTableauAuthorization } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import db from '@nangohq/database';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicTableauAuthorization, ProviderTableau } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
 const bodyValidation = z
     .object({
@@ -89,7 +91,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     try {
         const logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -98,7 +100,6 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -148,20 +149,21 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const {
-            success,
-            error,
-            response: credentials
-        } = await connectionService.getTableauCredentials(provider, patName, patSecret, connectionConfig, contentUrl);
-
-        if (!success || !credentials) {
-            void logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });
+        const credentialsRes = await tableauClient.createCredentials({
+            provider: provider as ProviderTableau,
+            patName,
+            patSecret,
+            connectionConfig,
+            contentUrl
+        });
+        if (credentialsRes.isErr()) {
+            report(credentialsRes.error);
+            void logCtx.error('Error during Tableau credentials creation', { error: credentialsRes.error });
             await logCtx.failed();
-
-            errorManager.errRes(res, 'tableau_error');
-
             return;
         }
+
+        const credentials = credentialsRes.value;
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
@@ -170,8 +172,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

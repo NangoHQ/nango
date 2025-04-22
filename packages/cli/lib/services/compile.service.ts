@@ -1,29 +1,36 @@
 import fs from 'fs';
+import path from 'path';
+
+import chalk from 'chalk';
 import { glob } from 'glob';
 import * as tsNode from 'ts-node';
-import chalk from 'chalk';
-import path from 'path';
 import { build } from 'tsup';
+
+import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 import { getNangoRootPath, printDebug, slash } from '../utils.js';
 import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
+
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
-import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
-let lastYamlModifiedTime = 0;
-let cachedParsed: NangoYamlParsed | null = null;
 
-function getOrLoadParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): NangoYamlParsed | null {
+function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean }): () => NangoYamlParsed | null {
+    let lastYamlModifiedTime = 0;
+    let cachedParsed: NangoYamlParsed | null = null;
     const yamlPath = path.join(fullPath, 'nango.yaml');
-    const stats = fs.statSync(yamlPath);
 
-    if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
-        cachedParsed = loadYamlAndGenerate({ fullPath, debug });
-        lastYamlModifiedTime = stats.mtimeMs;
-    }
-    return cachedParsed;
+    return () => {
+        const stats = fs.statSync(yamlPath);
+
+        if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
+            cachedParsed = loadYamlAndGenerate({ fullPath, debug });
+            lastYamlModifiedTime = stats.mtimeMs;
+        }
+
+        return cachedParsed;
+    };
 }
 
 export async function compileAllFiles({
@@ -49,7 +56,8 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const parsed = getOrLoadParsed({ fullPath, debug });
+    const cachedParser = getCachedParser({ fullPath, debug });
+    const parsed = cachedParser();
     if (!parsed) {
         return false;
     }
@@ -76,7 +84,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, compiler, debug });
+            const completed = await compile({ fullPath, file, compiler, debug, cachedParser });
             if (completed === false) {
                 allSuccess = false;
                 compilationErrors.push(`Failed to compile ${file.inputPath}`);
@@ -116,6 +124,8 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
+    const cachedParser = getCachedParser({ fullPath, debug });
+
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -126,6 +136,7 @@ export async function compileSingleFile({
             fullPath,
             file,
             compiler,
+            cachedParser,
             debug
         });
 
@@ -159,17 +170,24 @@ function compileImportedFile({
 
     for (const importedFile of importedFiles) {
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
-        const importedFilePathWithoutExtension = path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)));
-        const importedFilePathWithExtension = importedFilePathWithoutExtension + '.ts';
+        let importedFilePathResolved: string;
+        if (importedFilePath.endsWith('.ts')) {
+            importedFilePathResolved = importedFilePath;
+        } else if (importedFilePath.endsWith('.js')) {
+            importedFilePathResolved = `${path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)))}.ts`;
+        } else {
+            importedFilePathResolved = `${importedFilePath}.ts`;
+        }
 
-        /// if it is a library import then we can skip it
-        if (!fs.existsSync(importedFilePathWithExtension)) {
+        if (!fs.existsSync(importedFilePathResolved)) {
             // if the library is not allowed then we should let the user know
             // that it is not allowed and won't work early on
             if (!ALLOWED_IMPORTS.includes(importedFile)) {
                 console.log(chalk.red(`Importing libraries is not allowed. Please remove the import "${importedFile}" from "${path.basename(filePath)}"`));
                 return false;
             }
+
+            // if it is a library import then we can skip it
             continue;
         }
 
@@ -177,8 +195,8 @@ function compileImportedFile({
         // then we should not compile it
         // if the parts of the path are shorter than the current that means it is higher
         // than the nango-integrations directory
-        if (importedFilePathWithExtension.split(path.sep).length < fullPath.split(path.sep).length) {
-            const importedFileName = path.basename(importedFilePathWithExtension);
+        if (importedFilePathResolved.split(path.sep).length < fullPath.split(path.sep).length) {
+            const importedFileName = path.basename(importedFilePathResolved);
 
             console.log(
                 chalk.red(
@@ -188,14 +206,14 @@ function compileImportedFile({
             return false;
         }
 
-        if (importedFilePathWithExtension.includes('models.ts')) {
+        if (importedFilePathResolved.includes('models.ts')) {
             continue;
         }
 
-        compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
-        console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
+        compiler.compile(fs.readFileSync(importedFilePathResolved, 'utf8'), importedFilePathResolved);
+        console.log(chalk.green(`Compiled "${importedFilePathResolved}" successfully`));
 
-        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, parsed });
+        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathResolved, compiler, type, parsed });
     }
 
     return finalResult;
@@ -205,14 +223,16 @@ async function compile({
     fullPath,
     file,
     compiler,
+    cachedParser,
     debug = false
 }: {
     fullPath: string;
+    cachedParser: () => NangoYamlParsed | null;
     file: ListedFile;
     compiler: tsNode.Service;
     debug: boolean;
 }): Promise<boolean | null> {
-    const parsed = getOrLoadParsed({ fullPath, debug });
+    const parsed = cachedParser();
     if (!parsed) {
         return false;
     }
@@ -301,12 +321,12 @@ export function resolveTsFileLocation({
     providerConfigKey: string;
     type: ScriptFileType;
 }): string {
-    const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const nestedPath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
-        return fs.realpathSync(path.resolve(nestedPath, '../'));
+        return path.join(nestedPath, '../');
     }
 
-    return fs.realpathSync(path.join(fullPath, './'));
+    return path.join(fullPath, './');
 }
 
 export function listFilesToCompile({
