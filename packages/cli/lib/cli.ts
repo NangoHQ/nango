@@ -239,22 +239,12 @@ export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPat
         const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
         const jsFilePath = `./dist/${fileName}`;
 
+        failedFiles.delete(filePath);
+
         try {
             fs.unlinkSync(jsFilePath);
         } catch {
             console.log(chalk.red(`Error deleting ${jsFilePath}`));
         }
-    });
-}
-
-export function configWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
-    const watchPath = path.join(fullPath, nangoConfigFile);
-    if (debug) {
-        printDebug(`Watching ${watchPath}`);
-    }
-    const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
-
-    watcher.on('change', () => {
-        loadYamlAndGenerate({ fullPath, debug });
     });
 }
