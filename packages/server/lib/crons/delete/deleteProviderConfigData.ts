@@ -35,11 +35,7 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
         ...opts,
         name: 'on_event_scripts < providerConfig',
         deleteFn: async () => {
-            const onEventScriptsDeletedCount = await db.knex
-                .from<DBOnEventScript>('on_event_scripts')
-                .where({ config_id: providerConfig.id! })
-                .limit(opts.limit)
-                .delete();
+            const onEventScriptsDeletedCount = await db.knex.from<DBOnEventScript>('on_event_scripts').where({ config_id: providerConfig.id! }).delete();
 
             return onEventScriptsDeletedCount;
         }

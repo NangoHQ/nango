@@ -59,7 +59,6 @@ async function deleteExternalWebhooksByEnvironmentId(environment: DBEnvironment,
             const externalWebhooksDeletedCount = await db.knex
                 .from<DBExternalWebhook>('_nango_external_webhooks')
                 .where({ environment_id: environment.id })
-                .limit(opts.limit)
                 .delete();
 
             return externalWebhooksDeletedCount;
@@ -77,8 +76,9 @@ async function deleteSlackNotificationsByEnvironmentId(environment: DBEnvironmen
         deleteFn: async () => {
             const slackNotifications = await db.knex
                 .from<DBSlackNotification>('_nango_slack_notifications')
-                .where({ environment_id: environment.id })
-                .limit(opts.limit)
+                .whereIn('id', function (sub) {
+                    sub.select('id').from<DBSlackNotification>('_nango_slack_notifications').where({ environment_id: environment.id }).limit(opts.limit);
+                })
                 .delete();
 
             return slackNotifications;
@@ -97,7 +97,6 @@ async function deleteEnvironmentVariablesByEnvironmentId(environment: DBEnvironm
             const environmentVariablesDeletedCount = await db.knex
                 .from<DBEnvironmentVariable>('_nango_environment_variables')
                 .where({ environment_id: environment.id })
-                .limit(opts.limit)
                 .delete();
 
             return environmentVariablesDeletedCount;

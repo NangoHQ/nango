@@ -25,7 +25,12 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig, opts:
         ...opts,
         name: 'active_logs < sync',
         deleteFn: async () => {
-            const activeLogs = await db.knex.from<ActiveLog>('_nango_active_logs').where({ sync_id: sync.id }).limit(limit).delete();
+            const activeLogs = await db.knex
+                .from<ActiveLog>('_nango_active_logs')
+                .whereIn('id', function (sub) {
+                    sub.select('id').from<ActiveLog>('_nango_active_logs').where({ sync_id: sync.id }).limit(limit);
+                })
+                .delete();
             return activeLogs;
         }
     });

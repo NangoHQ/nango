@@ -1,12 +1,9 @@
 import db from '@nangohq/database';
 import { connectionService } from '@nangohq/shared';
 
-import { batchDelete } from './batchDelete.js';
-import { deleteConnectSessionData } from './deleteConnectSessionData.js';
 import { deleteSyncData } from './deleteSyncData.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
-import type { DBConnectSession } from '../../services/connectSession.service.js';
 import type { Sync } from '@nangohq/shared';
 import type { DBConnection, DBSyncConfig } from '@nangohq/types';
 
@@ -29,19 +26,7 @@ export async function deleteConnectionData(connection: DBConnection, opts: Batch
         await deleteSyncData(res.sync, res.syncConfig, opts);
     }
 
-    await batchDelete({
-        ...opts,
-        name: 'connect_sessions < connection',
-        deleteFn: async () => {
-            const connectSessions = await db.knex.from<DBConnectSession>('connect_sessions').where({ connection_id: connection.id }).limit(opts.limit);
-
-            for (const connectSession of connectSessions) {
-                await deleteConnectSessionData(connectSession, opts);
-            }
-
-            return connectSessions.length;
-        }
-    });
+    // Connect session and oauth sessions are deleted on expiration
 
     await connectionService.hardDelete(connection.id);
 }
