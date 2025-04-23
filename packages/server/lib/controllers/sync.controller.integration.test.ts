@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Request, Response, NextFunction } from 'express';
-import syncController from './sync.controller.js';
-import type { DBTeam, DBEnvironment, ConnectSession, DBUser, EndUser } from '@nangohq/types';
-import type { RequestLocals } from '../utils/express.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { syncManager } from '@nangohq/shared';
+
+import syncController from './sync.controller.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { ConnectSession, DBEnvironment, DBTeam, DBUser, EndUser } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 const mockRunSyncCommand = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({
     success: true,
@@ -274,109 +277,6 @@ describe('start', () => {
                     ]
                 })
             );
-        });
-    });
-});
-
-describe('updateFrequencyForConnection', () => {
-    let mockNext: NextFunction;
-
-    beforeEach(() => {
-        mockNext = vi.fn();
-        vi.clearAllMocks();
-    });
-
-    describe('input validation', () => {
-        it('should return 400 if provider_config_key is missing', async () => {
-            const req = createMockRequest({
-                body: {
-                    connection_id: 'conn-123',
-                    sync_name: 'sync1',
-                    frequency: '1h'
-                }
-            });
-            const res = createMockResponse();
-
-            await syncController.updateFrequencyForConnection(req, res, mockNext);
-
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.send).toHaveBeenCalledWith({
-                message: 'provider_config_key must be a string'
-            });
-        });
-
-        it('should return 400 if connection_id is missing', async () => {
-            const req = createMockRequest({
-                body: {
-                    provider_config_key: 'provider-123',
-                    sync_name: 'sync1',
-                    frequency: '1h'
-                }
-            });
-            const res = createMockResponse();
-
-            await syncController.updateFrequencyForConnection(req, res, mockNext);
-
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.send).toHaveBeenCalledWith({
-                message: 'connection_id must be a string'
-            });
-        });
-
-        it('should return 400 if sync_name is missing', async () => {
-            const req = createMockRequest({
-                body: {
-                    provider_config_key: 'provider-123',
-                    connection_id: 'conn-123',
-                    frequency: '1h'
-                }
-            });
-            const res = createMockResponse();
-
-            await syncController.updateFrequencyForConnection(req, res, mockNext);
-
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.send).toHaveBeenCalledWith({
-                message: 'Missing sync name'
-            });
-        });
-
-        it('should return 400 if sync_name format is invalid', async () => {
-            const req = createMockRequest({
-                body: {
-                    provider_config_key: 'provider-123',
-                    connection_id: 'conn-123',
-                    sync_name: { invalid: 'format' },
-                    frequency: '1h'
-                }
-            });
-            const res = createMockResponse();
-
-            await syncController.updateFrequencyForConnection(req, res, mockNext);
-
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.send).toHaveBeenCalledWith({
-                message: 'syncs must be either strings or { name: string, variant: string } objects'
-            });
-        });
-
-        it('should return 400 if frequency is invalid type', async () => {
-            const req = createMockRequest({
-                body: {
-                    provider_config_key: 'provider-123',
-                    connection_id: 'conn-123',
-                    sync_name: 'sync1',
-                    frequency: 123
-                }
-            });
-            const res = createMockResponse();
-
-            await syncController.updateFrequencyForConnection(req, res, mockNext);
-
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.send).toHaveBeenCalledWith({
-                message: 'frequency must be a string or null'
-            });
         });
     });
 });

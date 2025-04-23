@@ -39,6 +39,12 @@ export const variantSchema = z
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
 
+export const frequencySchema = z
+    .string()
+    .regex(
+        /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/
+    );
+
 export const connectionCredential = z.union([
     z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),
     z.object({ connect_session_token: connectSessionTokenSchema })
