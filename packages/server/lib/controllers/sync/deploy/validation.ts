@@ -38,7 +38,7 @@ export const flowConfig = z
     .object({
         type: z.enum(['action', 'sync']),
         models: z.array(z.string().min(1).max(255)),
-        runs: frequencySchema.nullable(),
+        runs: z.string().min(0).max(0).or(frequencySchema).nullable(), // TODO: remove or after >0.58.5 is widely adopted
         auto_start: z.boolean().optional().default(false),
         attributes: z.object({}).optional(),
         metadata: z
