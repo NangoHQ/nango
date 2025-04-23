@@ -1,4 +1,4 @@
-import { Client as LagoClient, getLagoError } from 'lago-javascript-client';
+import { Client as LagoClient } from 'lago-javascript-client';
 
 import { envs } from '../envs.js';
 
@@ -11,13 +11,11 @@ export const lago: BillingClient = {
     ingest: async (events: BillingIngestEvent[]): Promise<void> => {
         const batchSize = 100;
         for (let i = 0; i < events.length; i += batchSize) {
-            try {
-                await lagoClient.events.createBatchEvents({
-                    events: events.slice(i, i + batchSize).map(toLagoEvent)
-                });
-            } catch (err) {
-                throw await getLagoError<typeof lagoClient.events.createBatchEvents>(err);
-            }
+            // Any fail will bubble up on purpose
+            // getLagoError is useless and modifying the error
+            await lagoClient.events.createBatchEvents({
+                events: events.slice(i, i + batchSize).map(toLagoEvent)
+            });
         }
     }
 };

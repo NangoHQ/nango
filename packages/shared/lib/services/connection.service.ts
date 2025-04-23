@@ -1596,7 +1596,7 @@ class ConnectionService {
         const year = referenceDate.getUTCFullYear();
         const month = referenceDate.getUTCMonth() + 1; // js months are 0-based
 
-        const q = db.readOnly
+        const res = await db.readOnly
             .with('month_info', (qb) => {
                 qb.select(
                     db.readOnly.raw(`DATE_TRUNC('month', ?::date) AS month_start`, [targetDate]),
@@ -1657,7 +1657,6 @@ class ConnectionService {
             .from('totals')
             .where('count', '>', 0);
 
-        const res = await q;
         if (res) {
             return Ok(res);
         }

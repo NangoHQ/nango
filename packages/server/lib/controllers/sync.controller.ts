@@ -229,7 +229,6 @@ class SyncController {
                 logCtx
             });
 
-            // Note: all executed actions are billed
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
