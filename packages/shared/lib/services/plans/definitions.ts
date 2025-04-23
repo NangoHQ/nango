@@ -13,6 +13,7 @@ export const plansList: PlanDefinition[] = [
             environments_max: 2,
             has_otel: false,
             has_sync_variants: false,
+            connections_max: 1000,
             name: 'free',
             sync_frequency_secs_min: 3600
         }

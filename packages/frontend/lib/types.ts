@@ -8,7 +8,8 @@ export type AuthErrorType =
     | 'request_error'
     | 'missing_ws_client_id'
     | 'connection_test_failed'
-    | 'missing_connect_session_token';
+    | 'missing_connect_session_token'
+    | 'resource_capped';
 
 export interface AuthResult {
     providerConfigKey: string;
