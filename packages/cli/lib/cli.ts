@@ -171,6 +171,9 @@ export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPat
 
     watcher.on('add', (filePath: string) => {
         async function onAdd() {
+            if (debug) {
+                printDebug(`Added ${filePath}`);
+            }
             if (filePath === nangoConfigFile || !parsed) {
                 return;
             }
@@ -194,6 +197,9 @@ export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPat
 
     watcher.on('change', (filePath: string) => {
         async function onChange() {
+            if (debug) {
+                printDebug(`Changed ${filePath}`);
+            }
             if (filePath === nangoConfigFile) {
                 parsed = loadYamlAndGenerate({ fullPath, debug });
 
@@ -227,6 +233,9 @@ export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPat
     });
 
     watcher.on('unlink', (filePath: string) => {
+        if (debug) {
+            printDebug(`Unlinked ${filePath}`);
+        }
         if (filePath === nangoConfigFile || !parsed) {
             return;
         }

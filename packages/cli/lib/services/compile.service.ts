@@ -149,7 +149,7 @@ export async function compileSingleFile({
             debug
         });
 
-        return result === true;
+        return result === true || result === null;
     } catch (err) {
         console.error(chalk.red(`Error compiling ${file.inputPath}:`));
         console.error(err);
