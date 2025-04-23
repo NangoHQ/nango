@@ -160,7 +160,7 @@ class ConnectionController {
 
             const providerName = integration.provider;
 
-            if (plan) {
+            if (plan && provider_config_key) {
                 const isCapped = await connectionCreationStartCapCheckHook({
                     providerConfigKey: provider_config_key,
                     environmentId: environment.id,
@@ -168,16 +168,8 @@ class ConnectionController {
                     team: account,
                     plan
                 });
-                if (isCapped.capped) {
-                    res.status(400).send({
-                        error: {
-                            code: 'resource_capped',
-                            message:
-                                isCapped.code === 'max'
-                                    ? 'Reached maximum number of allowed connections for your plan'
-                                    : 'Reached maximum number of connections with scripts enabled'
-                        }
-                    });
+                if (isCapped) {
+                    errorManager.errRes(res, 'resource_capped');
                     return;
                 }
             }

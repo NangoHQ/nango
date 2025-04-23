@@ -250,10 +250,6 @@ export const Go: React.FC = () => {
                         setConnectionFailed(true);
                         setError(`${provider.display_name} did not validate your credentials. Please check the values and try again.`);
                         return;
-                    } else if (err.type === 'resource_capped') {
-                        setConnectionFailed(true);
-                        setError(`You have reached the maximum number of connections allowed. Please reach out to the admin.`);
-                        return;
                     }
                 }
 
