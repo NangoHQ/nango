@@ -41,7 +41,6 @@ export const plansList: PlanDefinition[] = [
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
         canDowngrade: false,
-        stripLookupKey: 'growth_2025_04_monthly',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -65,7 +64,7 @@ export const plansList: PlanDefinition[] = [
             environments_max: 10,
             has_otel: true,
             has_sync_variants: true,
-            name: 'free',
+            name: 'enterprise',
             sync_frequency_secs_min: 30
         }
     },
@@ -84,7 +83,7 @@ export const plansList: PlanDefinition[] = [
             environments_max: 3,
             has_otel: false,
             has_sync_variants: true,
-            name: 'growth',
+            name: 'starter',
             sync_frequency_secs_min: 30
         }
     },
@@ -101,7 +100,7 @@ export const plansList: PlanDefinition[] = [
             environments_max: 3,
             has_otel: false,
             has_sync_variants: true,
-            name: 'growth',
+            name: 'scale',
             sync_frequency_secs_min: 30
         }
     }

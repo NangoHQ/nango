@@ -21,7 +21,5 @@ export interface PlanDefinition {
     canDowngrade: false;
     cta?: string;
     hidden?: boolean;
-    // We use the lookup id instead of price_id, so it's unique across prod and staging env
-    stripLookupKey?: string;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
 }
