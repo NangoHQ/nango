@@ -21,12 +21,8 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
-export const getVersionOutput = (debug: boolean): string => {
-    if (debug) {
-        printDebug('Looking up the version first for a local path first then globally');
-    }
+export const getVersionOutput = (): string => {
     const version = NANGO_VERSION;
-
     return `${chalk.green('Nango CLI version:')}: ${version}`;
 };
 

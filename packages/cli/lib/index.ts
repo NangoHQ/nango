@@ -81,7 +81,7 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 `
     )
-    .version(getVersionOutput(false), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
+    .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
@@ -89,8 +89,7 @@ program
     .command('version')
     .description('Print the version of the Nango CLI and Nango Server.')
     .action(function (this: Command) {
-        const { debug } = this.opts();
-        const versionOutput = getVersionOutput(debug);
+        const versionOutput = getVersionOutput();
         console.log(versionOutput);
     });
 
