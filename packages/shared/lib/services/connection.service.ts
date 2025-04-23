@@ -6,6 +6,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as billClient from '../auth/bill.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
@@ -63,6 +64,7 @@ import type {
     MaybePromise,
     Metadata,
     Provider,
+    ProviderAppleAppStore,
     ProviderBill,
     ProviderJwt,
     ProviderOAuth2,
@@ -951,61 +953,6 @@ class ConnectionService {
         }
     }
 
-    public async getAppStoreCredentials(
-        provider: Provider,
-        connectionConfig: DBConnection['connection_config'],
-        privateKey: string
-    ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP_STORE'] as string);
-        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 15 * 60;
-
-        const payload: Record<string, string | number> = {
-            iat: now,
-            exp: expiration,
-            iss: connectionConfig['issuerId']
-        };
-
-        if (provider.authorization_params && provider.authorization_params['audience']) {
-            payload['aud'] = provider.authorization_params['audience'];
-        }
-
-        if (connectionConfig['scope']) {
-            payload['scope'] = connectionConfig['scope'];
-        }
-
-        const create = await jwtClient.createCredentialsFromURL({
-            privateKey,
-            url: tokenUrl,
-            payload,
-            additionalApiHeaders: null,
-            options: {
-                header: {
-                    alg: 'ES256',
-                    kid: connectionConfig['privateKeyId'],
-                    typ: 'JWT'
-                }
-            }
-        });
-
-        if (create.isErr()) {
-            return { success: false, error: create.error, response: null };
-        }
-
-        const rawCredentials = create.value;
-        const credentials: AppStoreCredentials = {
-            type: 'APP_STORE',
-            access_token: rawCredentials.token!,
-            private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
-        };
-
-        return { success: true, error: null, response: credentials };
-    }
-
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
@@ -1397,13 +1344,17 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
-            const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
+            const create = await appleAppStoreClient.createCredentials({
+                provider: provider as ProviderAppleAppStore,
+                connectionConfig: connection.connection_config,
+                private_key
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
