@@ -502,16 +502,17 @@ export async function getConnectionCountsByProviderConfigKey(
         )
         .from('_nango_connections')
         .join('_nango_configs', function () {
-            this.on('_nango_connections.provider_config_key', '_nango_configs.unique_key')
-                .andOnVal('_nango_configs.environment_id', environmentId)
-                .andOnVal('_nango_configs.deleted', false);
+            this.on('_nango_connections.config_id', '_nango_configs.id').andOnVal('_nango_configs.deleted', false);
         })
         .leftJoin('_nango_sync_configs', function () {
-            this.on(`_nango_sync_configs.nango_config_id`, '=', '_nango_configs.id').andOnVal('_nango_sync_configs.environment_id', environmentId);
+            this.on(`_nango_sync_configs.nango_config_id`, '=', '_nango_configs.id')
+                // While this should not be necessary; without this the query execution time is multiplied by 1000x
+                .andOnVal('_nango_sync_configs.environment_id', environmentId);
         })
         .where('_nango_connections.environment_id', environmentId)
         .andWhere('_nango_connections.deleted', false)
         .groupByRaw('ROLLUP("_nango_configs"."unique_key")');
+
     const res = await q;
     const rollup = res.pop();
 
