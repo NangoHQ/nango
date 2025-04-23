@@ -4,8 +4,6 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import {
-    AnalyticsTypes,
-    analytics,
     disableScriptConfig,
     environmentService,
     errorNotificationService,
@@ -62,7 +60,7 @@ export async function exec(): Promise<void> {
     let lock: Lock | undefined;
     try {
         try {
-            lock = await locking.acquire(lockKey, cronMinutes);
+            lock = await locking.acquire(lockKey, cronMinutes * 60 * 1000);
         } catch (err) {
             logger.info(`Could not acquire lock, skipping`, err);
             return;
@@ -75,7 +73,6 @@ export async function exec(): Promise<void> {
                 await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
 
                 logger.info('Trial soon to be over for account', plan.account_id);
-                void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXPIRING_MAIL, plan.account_id);
 
                 const users = await userService.getUsersByAccountId(plan.account_id);
 
@@ -116,7 +113,6 @@ export async function exec(): Promise<void> {
 
             await updatePlan(db.knex, { id: plan.id, trial_expired: true });
 
-            void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXPIRED, plan.account_id);
             const users = await userService.getUsersByAccountId(plan.account_id);
 
             // Send in parallel

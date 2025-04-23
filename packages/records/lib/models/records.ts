@@ -318,7 +318,7 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [] };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [], unchangedKeys: [] };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -424,6 +424,7 @@ export async function upsert({
                     summary.addedKeys.push(...addedKeys);
                     summary.updatedKeys.push(...updatedKeys);
                     summary.billedKeys.push(...billableKeys);
+                    summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
                 }
 
                 if (merging.strategy === 'ignore_if_modified_after_cursor') {
@@ -606,7 +607,8 @@ export async function update({
             deletedKeys: [],
             billedKeys,
             nonUniqueKeys,
-            nextMerging
+            nextMerging,
+            unchangedKeys: []
         });
     } catch (err: any) {
         let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
@@ -735,6 +737,10 @@ async function getRecordsToUpdate({
 }
 
 function newLockId(connectionId: number, model: string): bigint {
-    const modelHash = stringToHash(model);
+    // convert modelHash to unsigned 32-bit integer to ensure
+    // negative hash values don't cause sign extension problems
+    // when combined with connectionId in the bitwise OR operation
+    const modelHash = stringToHash(model) >>> 0;
+
     return (BigInt(connectionId) << 32n) | BigInt(modelHash);
 }

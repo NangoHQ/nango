@@ -729,6 +729,7 @@ async function compileDeployInfo({
         providerConfigKey,
         environmentId: environment_id,
         type: 'deploy',
+        team: account,
         plan
     });
 

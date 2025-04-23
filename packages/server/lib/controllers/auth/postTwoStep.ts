@@ -3,10 +3,8 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -96,7 +94,6 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_TWO_STEP_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -175,8 +172,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
 
         if (!updatedConnection) {
