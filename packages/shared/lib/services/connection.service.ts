@@ -8,11 +8,11 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 import configService from './config.service.js';
 import * as billClient from '../auth/bill.js';
 import * as jwtClient from '../auth/jwt.js';
+import * as signatureClient from '../auth/signature.js';
 import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import syncManager from './sync/manager.service.js';
-import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -1314,33 +1314,6 @@ class ConnectionService {
         }
     }
 
-    public getSignatureCredentials(provider: ProviderSignature, username: string, password: string): ServiceResponse<SignatureCredentials> {
-        try {
-            let token: string;
-
-            if (provider.signature.protocol === 'WSSE') {
-                token = generateWsseSignature(username, password);
-            } else {
-                throw new NangoError('unsupported_signature_protocol', { message: 'Signature protocol not supported' });
-            }
-
-            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
-
-            const credentials: SignatureCredentials = {
-                type: 'SIGNATURE',
-                username,
-                password,
-                token,
-                expires_at: expiresAt
-            };
-
-            return { success: true, error: null, response: credentials };
-        } catch (err) {
-            const error = new NangoError('signature_token_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
-            return { success: false, error, response: null };
-        }
-    }
-
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
@@ -1498,13 +1471,17 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'SIGNATURE') {
             const { username, password } = connection.credentials as SignatureCredentials;
-            const { success, error, response: credentials } = this.getSignatureCredentials(provider as ProviderSignature, username, password);
+            const create = signatureClient.createCredentials({
+                provider: provider as ProviderSignature,
+                username,
+                password
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else {
             const {
                 success,
