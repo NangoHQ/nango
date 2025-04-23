@@ -2891,15 +2891,15 @@ docuware:
     categories:
         - productivity
     auth_mode: TWO_STEP
-    token_url: ${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
+    token_url: https://${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
     body_format: form
-    request_method: GET
+    token_request_method: GET
     token_headers:
         content-type: application/x-www-form-urlencoded
     additional_steps:
         - body_format: form
           token_url: ${step1.IdentityServiceUrl}/.well-known/openid-configuration
-          request_method: GET
+          token_request_method: GET
         - body_format: form
           token_url: ${step2.token_endpoint}
           token_headers:
@@ -2911,7 +2911,7 @@ docuware:
               username: ${credentials.username}
               password: ${credentials.password}
     proxy:
-        base_url: ${connectionConfig.domain}/DocuWare/Platform
+        base_url: https://${connectionConfig.domain}/DocuWare/Platform
     token_response:
         token: access_token
         token_expiration: expires_in
@@ -2923,8 +2923,9 @@ docuware:
             type: string
             title: Domain
             description: The domain to your DocuWare account
-            pattern: ^https?:\/\/.*
-            example: https://example.docuware.cloud
+            format: hostname
+            prefix: https://
+            example: example.docuware.cloud
             order: 1
             doc_section: '#step-1-finding-your-domain'
     credentials:
@@ -7686,7 +7687,7 @@ redtail-crm-sandbox:
         - crm
     auth_mode: TWO_STEP
     token_url: https://review.crm.redtailtechnology.com/api/public/v1/authentication
-    request_method: GET
+    token_request_method: GET
     token_headers:
         authorization: Basic ${base64(${credentials.apiKey}:${credentials.username}:${credentials.password})}
     token_response:

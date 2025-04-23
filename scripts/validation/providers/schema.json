@@ -390,7 +390,7 @@
                 "token_expiration_buffer": {
                     "type": "number"
                 },
-                "request_method": {
+                "token_request_method": {
                     "type": "string",
                     "enum": ["GET"]
                 },

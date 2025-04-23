@@ -1219,7 +1219,7 @@ class ConnectionService {
                       : JSON.stringify(postBody);
 
             let response: any;
-            if (provider.request_method === 'GET') {
+            if (provider.token_request_method === 'GET') {
                 response = await axios.get(url.toString(), requestOptions);
             } else {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
@@ -1291,7 +1291,7 @@ class ConnectionService {
 
                     let stepResponse: any;
 
-                    if (step.request_method === 'GET') {
+                    if (step.token_request_method === 'GET') {
                         stepResponse = await axios.get(stepUrl, stepRequestOptions);
                     } else {
                         stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
