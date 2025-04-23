@@ -584,7 +584,7 @@ class DeployService {
                         providerConfigKey,
                         models: action.output || [],
                         version: version || action.version,
-                        runs: '',
+                        runs: null,
                         metadata: metadata,
                         input: action.input || undefined,
                         type: action.type,
