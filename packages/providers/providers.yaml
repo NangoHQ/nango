@@ -2891,7 +2891,7 @@ docuware:
     categories:
         - productivity
     auth_mode: TWO_STEP
-    token_url: ${connectionConfig.hostName}/DocuWare/Platform/Home/IdentityServiceInfo
+    token_url: ${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
     body_format: form
     request_method: GET
     token_headers:
@@ -2911,7 +2911,7 @@ docuware:
               username: ${credentials.username}
               password: ${credentials.password}
     proxy:
-        base_url: ${connectionConfig.hostName}/DocuWare/Platform
+        base_url: ${connectionConfig.domain}/DocuWare/Platform
     token_response:
         token: access_token
         token_expiration: expires_in
@@ -2919,14 +2919,14 @@ docuware:
     docs: https://docs.nango.dev/integrations/all/docuware
     docs_connect: https://docs.nango.dev/integrations/all/docuware/connect
     connection_config:
-        hostName:
+        domain:
             type: string
-            title: Host Name
-            description: The host name to your DocuWare account
+            title: Domain
+            description: The domain to your DocuWare account
             pattern: ^https?:\/\/.*
             example: https://example.docuware.cloud
             order: 1
-            doc_section: '#step-1-finding-your-host-name'
+            doc_section: '#step-1-finding-your-domain'
     credentials:
         username:
             type: string
