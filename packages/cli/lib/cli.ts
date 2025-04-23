@@ -23,7 +23,7 @@ dotenv.config();
 
 export const getVersionOutput = (): string => {
     const version = NANGO_VERSION;
-    return `${chalk.green('Nango CLI version:')}: ${version}`;
+    return `${chalk.green('Nango CLI version:')} ${version}`;
 };
 
 export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
