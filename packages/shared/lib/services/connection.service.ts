@@ -1256,27 +1256,27 @@ class ConnectionService {
                             const stepNumber = extractStepNumber(value);
                             const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
 
-                            const applyTransform = (input: any) => {
+                            const applyInterpolation = (input: any, source: Record<string, any>) => {
                                 if (typeof input === 'object' && input !== null) {
-                                    return interpolateObject(input, dynamicCredentials);
+                                    return interpolateObject(input, source);
                                 } else if (typeof input === 'string') {
-                                    return interpolateString(input, dynamicCredentials);
+                                    return interpolateString(input, source);
                                 }
                                 return input;
                             };
-                            const strippedResponse = stripStepResponse(value, stepResponsesObj);
-                            const strippedCredential = stripCredential(value);
-                            const finalValue = strippedCredential ?? strippedResponse;
-                            stepPostBody[key] = applyTransform(finalValue);
+
+                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
+                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
 
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
-                    const interpolatedTokenUrl = stripStepResponse(step.token_url, stepResponsesObjForURL);
-                    const stepUrl = new URL(interpolatedTokenUrl).toString();
-
+                    const strippedTokenUrl = stripStepResponse(step.token_url);
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1292,7 +1292,7 @@ class ConnectionService {
                     let stepResponse: any;
 
                     if (step.request_method === 'GET') {
-                        stepResponse = await axios.get(stepUrl, requestOptions);
+                        stepResponse = await axios.get(stepUrl, stepRequestOptions);
                     } else {
                         stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
                     }
