@@ -3,9 +3,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { TRIAL_DURATION, getPlan, seeders, updatePlan } from '@nangohq/shared';
 
-import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
-const route = '/api/v1/plan/trial/extension';
+const route = '/api/v1/plans/trial/extension';
 let api: Awaited<ReturnType<typeof runServer>>;
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
