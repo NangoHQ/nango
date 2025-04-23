@@ -2,7 +2,6 @@ import db from '@nangohq/database';
 import { environmentService } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
-import { deleteEndUserData } from './deleteEndUserData.js';
 import { deleteProviderConfigData } from './deleteProviderConfigData.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
@@ -27,25 +26,32 @@ export async function deleteEnvironmentData(environment: DBEnvironment, opts: Ba
         }
     });
 
-    await batchDelete({
-        ...opts,
-        name: 'end_users < environment',
-        deleteFn: async () => {
-            const endUsers = await db.knex.from<DBEndUser>('end_users').where({ environment_id: environment.id }).limit(opts.limit);
-
-            for (const endUser of endUsers) {
-                await deleteEndUserData(endUser, opts);
-            }
-
-            return endUsers.length;
-        }
-    });
-
+    await deleteEndUserData(environment, opts);
     await deleteExternalWebhooksByEnvironmentId(environment, opts);
     await deleteSlackNotificationsByEnvironmentId(environment, opts);
     await deleteEnvironmentVariablesByEnvironmentId(environment, opts);
 
     await environmentService.hardDelete(environment.id);
+}
+
+async function deleteEndUserData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
+    const { logger } = opts;
+    logger.info('Deleting all end users in environment...', environment.id, environment.name);
+
+    await batchDelete({
+        ...opts,
+        name: 'end_users < environment',
+        deleteFn: async () => {
+            const endUsers = await db.knex
+                .from<DBEndUser>('end_users')
+                .whereIn('id', function (sub) {
+                    sub.select('id').from<DBEndUser>('end_users').where({ environment_id: environment.id }).limit(opts.limit);
+                })
+                .delete();
+
+            return endUsers;
+        }
+    });
 }
 
 async function deleteExternalWebhooksByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {

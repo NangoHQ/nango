@@ -2,10 +2,11 @@ import db from '@nangohq/database';
 import { configService } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
+import { deleteConnectionData } from './deleteConnectionData.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
-import type { DBOnEventScript, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
+import type { DBConnection, DBOnEventScript, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
 export async function deleteProviderConfigData(providerConfig: IntegrationConfig, opts: BatchDeleteSharedOptions) {
     if (!providerConfig.id) {
@@ -14,6 +15,20 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
 
     const { logger, deadline, limit } = opts;
     logger.info('Deleting provider config...', providerConfig.id, providerConfig.unique_key);
+
+    await batchDelete({
+        ...opts,
+        name: 'connections < providerConfigs',
+        deleteFn: async () => {
+            const connections = await db.knex.from<DBConnection>('_nango_connections').where({ config_id: providerConfig.id! }).limit(opts.limit);
+
+            for (const connection of connections) {
+                await deleteConnectionData(connection, opts);
+            }
+
+            return connections.length;
+        }
+    });
 
     await batchDelete({
         name: 'syncConfigs < providerConfigs',
