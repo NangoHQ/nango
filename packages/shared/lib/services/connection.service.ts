@@ -7,14 +7,15 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 
 import configService from './config.service.js';
 import * as billClient from '../auth/bill.js';
+import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
 import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
+import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import { productTracking } from '../utils/productTracking.js';
@@ -43,6 +44,7 @@ import type {
 } from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { AuthCredentialsError } from '../utils/error.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -64,6 +66,7 @@ import type {
     Metadata,
     Provider,
     ProviderBill,
+    ProviderGithubApp,
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
@@ -1009,22 +1012,24 @@ class ConnectionService {
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
-        provider: Provider,
+        provider: ProviderGithubApp,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
-    ): Promise<void> {
-        const { success, error, response: credentials } = await this.getAppCredentials(provider, integration, connectionConfig);
-
-        if (!success || !credentials) {
-            logger.error(error);
-            return;
+    ): Promise<Result<void, AuthCredentialsError>> {
+        const create = await githubAppClient.createCredentials({
+            integration,
+            provider,
+            connectionConfig
+        });
+        if (create.isErr()) {
+            return Err(create.error);
         }
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials: credentials as unknown as AuthCredentials,
+            parsedRawCredentials: create.value,
             connectionConfig,
             environmentId: integration.environment_id
         });
@@ -1034,58 +1039,7 @@ class ConnectionService {
         }
 
         void logCtx.info('App connection was approved and credentials were saved');
-    }
-
-    public async getAppCredentials(
-        provider: Provider,
-        config: ProviderConfig,
-        connectionConfig: DBConnection['connection_config']
-    ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP'] as string);
-
-        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = config.custom ? config.custom['private_key'] : config.oauth_client_secret;
-
-        const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
-
-        const headers = {
-            Accept: 'application/vnd.github.v3+json'
-        };
-
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 10 * 60;
-
-        const payload: Record<string, string | number> = {
-            iat: now,
-            exp: expiration,
-            iss: (config.custom ? config.custom['app_id'] : config.oauth_client_id) as string
-        };
-
-        if (!payload['iss'] && connectionConfig['app_id']) {
-            payload['iss'] = connectionConfig['app_id'];
-        }
-
-        const create = await jwtClient.createCredentialsFromURL({
-            privateKey,
-            url: tokenUrl,
-            payload,
-            additionalApiHeaders: headers,
-            options: { algorithm: 'RS256' }
-        });
-
-        if (create.isErr()) {
-            return { success: false, error: create.error, response: null };
-        }
-
-        const rawCredentials = create.value;
-        const credentials: AppCredentials = {
-            type: 'APP',
-            access_token: rawCredentials.token!,
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
-        };
-
-        return { success: true, error: null, response: credentials };
+        return Ok(undefined);
     }
 
     public async getOauthClientCredentials({
@@ -1419,13 +1373,16 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
-
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            const create = await githubAppClient.createCredentials({
+                integration: providerConfig,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            });
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'TABLEAU') {
             const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
             const create = await tableauClient.createCredentials({
