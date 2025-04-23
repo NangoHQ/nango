@@ -3,6 +3,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { CopyText } from '../../components/CopyText';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
@@ -60,9 +61,10 @@ export default function IntegrationList() {
                     <div className="h-fit rounded-md text-white text-sm">
                         <div className="w-full">
                             <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md justify-between">
-                                <div className="w-2/3">Name</div>
-                                <div className="w-1/3">Connections</div>
-                                <div className="w-24">Active Scripts</div>
+                                <div className="w-5/12">Name</div>
+                                <div className="w-4/12">ID</div>
+                                <div className="w-2/12">Connections</div>
+                                <div className="w-2/12">Active Scripts</div>
                             </div>
                             {list.map((integration) => (
                                 <div
@@ -74,11 +76,11 @@ export default function IntegrationList() {
                                         navigate(`/${env}/integrations/${integration.unique_key}`);
                                     }}
                                 >
-                                    <div className="flex items-center w-2/3 gap-2 py-2 truncate">
+                                    <div className="flex items-center w-5/12 gap-2 py-2 truncate">
                                         <div className="w-10 shrink-0">
                                             <IntegrationLogo provider={integration.provider} height={7} width={7} />
                                         </div>
-                                        <p className="truncate">{integration.unique_key}</p>
+                                        <p className="truncate">{integration.display_name || integration.meta.displayName}</p>
                                         {integration.meta.missingFieldsCount > 0 && (
                                             <SimpleTooltip tooltipContent="Missing configuration">
                                                 <ErrorCircle icon="!" variant="warning" />
@@ -90,10 +92,13 @@ export default function IntegrationList() {
                                             </SimpleTooltip>
                                         )}
                                     </div>
-                                    <div className="flex items-center w-1/3">
+                                    <div className="flex items-center w-4/12">
+                                        <CopyText className="text-s font-code" text={integration.unique_key} showOnHover />
+                                    </div>
+                                    <div className="flex items-center w-2/12">
                                         <p className="">{integration.meta.connectionCount}</p>
                                     </div>
-                                    <div className="flex items-center w-24">
+                                    <div className="flex items-center w-2/12">
                                         <p className="">{integration.meta.scriptsCount}</p>
                                     </div>
                                 </div>

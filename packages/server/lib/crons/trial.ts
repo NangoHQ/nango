@@ -60,7 +60,7 @@ export async function exec(): Promise<void> {
     let lock: Lock | undefined;
     try {
         try {
-            lock = await locking.acquire(lockKey, cronMinutes);
+            lock = await locking.acquire(lockKey, cronMinutes * 60 * 1000);
         } catch (err) {
             logger.info(`Could not acquire lock, skipping`, err);
             return;

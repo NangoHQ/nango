@@ -3262,8 +3262,7 @@ exact-online:
     display_name: Exact Online
     categories:
         - accounting
-        - hr
-        - productivity
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
     token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
@@ -3834,7 +3833,7 @@ google-gemini:
 gem:
     display_name: Gem
     categories:
-        - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.gem.com
@@ -5062,7 +5061,7 @@ jira-basic:
         verification:
             method: GET
             endpoints:
-                - /rest/api/3/events
+                - /rest/api/2/applicationrole
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
         subdomain:

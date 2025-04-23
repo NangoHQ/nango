@@ -130,6 +130,7 @@ describe('Sync config create', () => {
             return Promise.resolve({
                 id: 1,
                 unique_key: 'google',
+                display_name: null,
                 provider: 'google',
                 oauth_client_id: '123',
                 oauth_client_secret: '123',

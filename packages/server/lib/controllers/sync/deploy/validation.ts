@@ -1,6 +1,8 @@
 import { z } from 'zod';
+
+import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
+
 import type { NangoModelField } from '@nangohq/types';
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -36,7 +38,7 @@ export const flowConfig = z
     .object({
         type: z.enum(['action', 'sync']),
         models: z.array(z.string().min(1).max(255)),
-        runs: z.string().nullable(),
+        runs: frequencySchema.nullable(),
         auto_start: z.boolean().optional().default(false),
         attributes: z.object({}).optional(),
         metadata: z
@@ -70,7 +72,7 @@ export const flowConfig = z
                 ])
             )
             .optional(),
-        syncName: z.string(),
+        syncName: syncNameSchema,
         providerConfigKey: providerConfigKeySchema,
         fileBody,
         version: z.string().optional(),

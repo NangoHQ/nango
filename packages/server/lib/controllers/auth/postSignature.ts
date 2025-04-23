@@ -10,9 +10,10 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    linkConnection,
+    signatureClient
 } from '@nangohq/shared';
-import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import {
@@ -152,16 +153,15 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const { success, error, response: credentials } = connectionService.getSignatureCredentials(provider as ProviderSignature, username, password);
-
-        if (!success || !credentials) {
-            void logCtx.error('Error during Signature credentials creation', { error, provider: config.provider });
+        const credentialsRes = signatureClient.createCredentials({ provider: provider as ProviderSignature, username, password });
+        if (credentialsRes.isErr()) {
+            report(credentialsRes.error);
+            void logCtx.error('Error during Signature credentials creation', { error: credentialsRes.error });
             await logCtx.failed();
-
-            errorManager.errRes(res, 'signature_error');
-
             return;
         }
+
+        const credentials = credentialsRes.value;
 
         const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider, logCtx });
         if (connectionResponse.isErr()) {
