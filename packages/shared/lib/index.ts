@@ -20,6 +20,7 @@ import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 export { productTracking } from './utils/productTracking.js';
 export * as billClient from './auth/bill.js';
 export * as jwtClient from './auth/jwt.js';
+export * as signatureClient from './auth/signature.js';
 export * as tableauClient from './auth/tableau.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';
