@@ -490,7 +490,6 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
 export async function getConnectionCountsByProviderConfigKey(
     environmentId: number
 ): Promise<{ data: { providerConfigKey: string; total: string }[]; total: number }> {
-    // Yes postgres needs the 3
     const q = db.knex
         .select<{ providerConfigKey: string; total: string }[]>(
             '_nango_configs.unique_key as providerConfigKey',
@@ -513,7 +512,6 @@ export async function getConnectionCountsByProviderConfigKey(
         .where('_nango_connections.environment_id', environmentId)
         .andWhere('_nango_connections.deleted', false)
         .groupByRaw('ROLLUP("_nango_configs"."unique_key")');
-    console.log(q.toSQL().sql);
     const res = await q;
     const rollup = res.pop();
 
