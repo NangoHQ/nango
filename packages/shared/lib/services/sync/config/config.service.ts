@@ -502,7 +502,7 @@ export async function getConnectionCountsByProviderConfigKey(
         )
         .from('_nango_connections')
         .join('_nango_configs', function () {
-            this.on('_nango_connections.config_id', '_nango_configs.id').andOnVal('_nango_configs.deleted', false);
+            this.on('_nango_configs.id', '_nango_connections.config_id').andOnVal('_nango_configs.deleted', false);
         })
         .leftJoin('_nango_sync_configs', function () {
             this.on(`_nango_sync_configs.nango_config_id`, '=', '_nango_configs.id')
