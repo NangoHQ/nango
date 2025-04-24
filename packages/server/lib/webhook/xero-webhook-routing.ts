@@ -43,32 +43,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const signature = headers['x-xero-signature'];
     if (!signature) {
         logger.error('Missing x-xero-signature header', { configId: integration.id });
-        return { statusCode: 401 };
+        return { statusCode: 401, acknowledgementResponse: { error: 'Missing signature' } };
     }
 
     logger.info('Received Xero webhook', { configId: integration.id });
 
-    // "Intent to receive" validation request checks for proper response with valid and invalid payloads
-    const isIntentToReceive = rawBody.includes('"events":[]');
-
-    if (isIntentToReceive) {
-        logger.info('Intent to receive validation detected', { configId: integration.id });
-
-        // For "Intent to receive" validation, we need to validate the signature
-        const isValidSignature = validate(integration, signature, rawBody);
-
-        // Return 401 for incorrectly signed payloads, 200 for correctly signed payloads
-        if (!isValidSignature) {
-            logger.error('Invalid signature for Intent to receive validation', { configId: integration.id });
-            return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
-        }
-
-        logger.info('Valid signature for Intent to receive validation', { configId: integration.id });
-        return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
-    }
-
     const isValidSignature = validate(integration, signature, rawBody);
-
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: integration.id });
         return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
@@ -77,6 +57,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const parsedBody = body as XeroWebhookBody;
     logger.info('Valid webhook received', { configId: integration.id });
 
+    // For empty events, just return success
     if (parsedBody.events.length === 0) {
         logger.info('Empty events array, returning success', { configId: integration.id });
         return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
