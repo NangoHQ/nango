@@ -2,6 +2,7 @@ import { IconSettings } from '@tabler/icons-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { EditableInput } from './EditableInput';
+import { Info } from '../../../components/Info';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { apiPatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
@@ -23,20 +24,25 @@ export const MainSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Main</h3>
             </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <EditableInput
-                    title="Environment Name"
-                    name="environmentName"
-                    originalValue={env}
-                    apiCall={(name) => apiPatchEnvironment(env, { name })}
-                    onSuccess={async (newName) => {
-                        // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
-                        navigate(`/${newName}/environment-settings`);
-                        await mutateMeta();
-                        setEnv(newName);
-                    }}
-                    blocked={env === PROD_ENVIRONMENT_NAME}
-                    blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
-                />
+                <div className="flex flex-col gap-4">
+                    <EditableInput
+                        title="Environment Name"
+                        name="environmentName"
+                        originalValue={env}
+                        apiCall={(name) => apiPatchEnvironment(env, { name })}
+                        onSuccess={async (newName) => {
+                            // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
+                            navigate(`/${newName}/environment-settings`);
+                            await mutateMeta();
+                            setEnv(newName);
+                        }}
+                        blocked={env === PROD_ENVIRONMENT_NAME}
+                        blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
+                    />
+                    <Info>
+                        In your nango integrations project, name the secret key environment variable in your .env file as NANGO_SECRET_KEY_{env.toUpperCase()}
+                    </Info>
+                </div>
             </div>
         </div>
     );
