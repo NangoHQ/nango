@@ -1,6 +1,16 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
+
+import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
+
+import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
+import { deepMergeRecordData } from '../helpers/merge.js';
+import { getUniqueId, removeDuplicateKey } from '../helpers/uniqueKey.js';
+import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
+import { logger } from '../utils/logger.js';
+
 import type {
     CombinedFilterAction,
     FormattedRecord,
@@ -11,16 +21,9 @@ import type {
     ReturnedRecord,
     UpsertSummary
 } from '../types.js';
-import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
-import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
-import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
-import { logger } from '../utils/logger.js';
-import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
+import type { CursorOffset, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-import { Cursor } from '../cursor.js';
-import { deepMergeRecordData } from '../helpers/merge.js';
-import type { MergingStrategy, CursorOffset } from '@nangohq/types';
 
 dayjs.extend(utc);
 
@@ -315,7 +318,7 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [] };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [], unchangedKeys: [] };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -421,6 +424,7 @@ export async function upsert({
                     summary.addedKeys.push(...addedKeys);
                     summary.updatedKeys.push(...updatedKeys);
                     summary.billedKeys.push(...billableKeys);
+                    summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
                 }
 
                 if (merging.strategy === 'ignore_if_modified_after_cursor') {
@@ -603,7 +607,8 @@ export async function update({
             deletedKeys: [],
             billedKeys,
             nonUniqueKeys,
-            nextMerging
+            nextMerging,
+            unchangedKeys: []
         });
     } catch (err: any) {
         let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
@@ -732,6 +737,10 @@ async function getRecordsToUpdate({
 }
 
 function newLockId(connectionId: number, model: string): bigint {
-    const modelHash = stringToHash(model);
+    // convert modelHash to unsigned 32-bit integer to ensure
+    // negative hash values don't cause sign extension problems
+    // when combined with connectionId in the bitwise OR operation
+    const modelHash = stringToHash(model) >>> 0;
+
     return (BigInt(connectionId) << 32n) | BigInt(modelHash);
 }

@@ -21,7 +21,6 @@ export const OperationRow: React.FC<{
             }}
             data-index={virtualRow.index} //needed for dynamic row height measurement
             ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
-            key={row.id}
             style={{
                 transform: `translateY(${virtualRow.start}px)` //this should always be a `style` as it changes on scroll
             }}

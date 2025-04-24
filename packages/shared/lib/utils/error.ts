@@ -123,21 +123,6 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'api_key'.`;
                 break;
 
-            case 'missing_private_key':
-                this.status = 400;
-                this.message = `Missing param 'missing_private_key'.`;
-                break;
-
-            case 'missing_private_key_id':
-                this.status = 400;
-                this.message = `Missing param 'private_key_id'.`;
-                break;
-
-            case 'missing_issuer_id':
-                this.status = 400;
-                this.message = `Missing param 'missing_issuer_id'.`;
-                break;
-
             case 'missing_app_id':
                 this.status = 400;
                 this.message = `Missing param 'app_id'.`;
@@ -188,19 +173,9 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'provider_config_key'.`;
                 break;
 
-            case 'missing_callback_url':
-                this.status = 400;
-                this.message = `Missing param 'callback_url'.`;
-                break;
-
             case 'missing_token_url':
                 this.status = 400;
                 this.message = `Token URL is missing or invalid.`;
-                break;
-
-            case 'bill_credentials_fetch_error':
-                this.status = 400;
-                this.message = `Error fetching Bill credentials`;
                 break;
 
             case 'provider_config_creation_failure':
@@ -372,11 +347,6 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Error creating a zip of the integration file(s). Make sure you have recently deployed the integration file(s).';
                 break;
 
-            case 'sync_interval_invalid':
-                this.status = 400;
-                this.message = 'Sync interval is invalid. The interval should be a time unit.';
-                break;
-
             case 'sync_script_failure':
                 this.message = `The sync script failed with an error: ${stringifyError(this.payload)}`;
                 break;
@@ -409,16 +379,6 @@ export class NangoError extends NangoInternalError {
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
-                break;
-
-            case 'invalid_jwt_private_key':
-                this.status = 400;
-                this.message = `Invalid private key provided for JWT creation.`;
-                break;
-
-            case 'invalid_jwt_private_key_id':
-                this.status = 400;
-                this.message = `Invalid private key Id provided for JWT creation.`;
                 break;
 
             case 'action_script_failure':

@@ -1,16 +1,18 @@
-import { expect, describe, it, afterEach, vi } from 'vitest';
-import path, { join } from 'node:path';
-import os from 'node:os';
 import fs from 'node:fs';
+import os from 'node:os';
+import path, { join } from 'node:path';
+
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import { generate } from './cli.js';
-import { init } from './services/init.service.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { parse } from './services/config.service.js';
+import { init } from './services/init.service.js';
+import { directoryMigration, endpointMigration } from './services/migration.service.js';
 import parserService from './services/parser.service.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from './tests/helpers.js';
-import { parse } from './services/config.service.js';
-import { directoryMigration, endpointMigration } from './services/migration.service.js';
 
 describe('generate function tests', () => {
     // Not the best but until we have a logger it will work
@@ -415,15 +417,24 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
 
-        const success = await compileAllFiles({ fullPath: dir, debug: true });
+        {
+            // Compile everything
+            const success = await compileAllFiles({ fullPath: dir, debug: true });
 
-        //. these should report any failed paths somehow, not just true!=false
-        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
+            //. these should report any failed paths somehow, not just true!=false
+            expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
 
-        expect(success).toBe(true);
+            expect(success).toBe(true);
+        }
+
+        {
+            // Compile one file
+            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(success).toBe(true);
+        }
     });
 
     it('should be backwards compatible with the single directory for integration files', async () => {
@@ -556,5 +567,32 @@ describe('generate function tests', () => {
         const content = await fs.promises.readFile(dest, 'utf8');
 
         expect(content).toMatchSnapshot();
+    });
+
+    // Windows symlink are annoying to create
+    it.skipIf(os.platform() === 'win32')('should be able to compile files in symlink', async () => {
+        const dir = await getTestDirectory('symlink');
+        init({ absolutePath: dir });
+
+        await fs.promises.rm(join(dir, 'nango.yaml'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/hubspot'), join(dir, 'hubspot'));
+
+        {
+            // Compile everything
+            const success = await compileAllFiles({ fullPath: dir, debug: true });
+            expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
+            expect(success).toBe(true);
+        }
+
+        {
+            // Compile one file
+            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(success).toBe(true);
+        }
     });
 });

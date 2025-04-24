@@ -1,16 +1,18 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { AuthCredentials, NangoError } from '@nangohq/shared';
-import { environmentService, errorManager, analytics, AnalyticsTypes, configService, connectionService, getProvider, linkConnection } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, environmentService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
+import { stringifyError } from '@nangohq/utils';
+
+import publisher from '../clients/publisher.client.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { getConnectSession } from '../services/connectSession.service.js';
+import oAuthSessionService from '../services/oauth-session.service.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
-import oAuthSessionService from '../services/oauth-session.service.js';
-import publisher from '../clients/publisher.client.js';
-import { logContextGetter } from '@nangohq/logs';
-import { stringifyError } from '@nangohq/utils';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import db from '@nangohq/database';
+
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import { getConnectSession } from '../services/connectSession.service.js';
+import type { AuthCredentials, NangoError } from '@nangohq/shared';
+import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
     async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
@@ -48,10 +50,8 @@ class AppAuthController {
 
         const { environment, account } = environmentAndAccountLookup;
 
-        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
-
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
-        const logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
+        const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
         try {
             if (!providerConfigKey) {
@@ -154,11 +154,9 @@ class AppAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: session.provider,
                 parsedRawCredentials: credentials as unknown as AuthCredentials,
                 connectionConfig,
-                environmentId: environment.id,
-                accountId: account.id
+                environmentId: environment.id
             });
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');

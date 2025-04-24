@@ -1,5 +1,5 @@
-import type { AuthModeType, AuthOperationType, DBConnection } from '@nangohq/types';
 import type { ServiceResponse } from './Generic.js';
+import type { AuthModeType, AuthOperationType, DBConnection } from '@nangohq/types';
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -69,7 +69,8 @@ export type AuthCredentials =
     | SignatureCredentials
     | JwtCredentials
     | ApiKeyCredentials
-    | BasicApiCredentials;
+    | BasicApiCredentials
+    | AppStoreCredentials;
 
 export interface AppCredentials {
     type?: 'APP';

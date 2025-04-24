@@ -75,7 +75,8 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     }
 ];
 
-export const defaultLimit = 50;
+export const defaultLimit = 25;
+export const refreshInterval = 2_500;
 
 export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = [
     { name: 'All', value: 'all' },

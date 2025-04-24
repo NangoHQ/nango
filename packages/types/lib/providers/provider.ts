@@ -1,6 +1,6 @@
-import type { RetryHeaderConfig, CursorPagination, LinkPagination, OffsetPagination } from '../proxy/api.js';
-import type { AuthModeType, OAuthAuthorizationMethodType, OAuthBodyFormatType } from '../auth/api.js';
 import type { EndpointMethod } from '../api.js';
+import type { AuthModeType, OAuthAuthorizationMethodType, OAuthBodyFormatType } from '../auth/api.js';
+import type { CursorPagination, LinkPagination, OffsetPagination, RetryHeaderConfig } from '../proxy/api.js';
 
 export interface TokenUrlObject {
     OAUTH1?: string;
@@ -139,8 +139,23 @@ export interface ProviderJwt extends BaseProvider {
         };
     };
 }
+
+export interface ProviderAppleAppStore extends BaseProvider {
+    auth_mode: 'APP_STORE';
+    token_url: string;
+}
+
+export interface ProviderTableau extends BaseProvider {
+    auth_mode: 'TABLEAU';
+}
+
+export interface ProviderBill extends BaseProvider {
+    auth_mode: 'BILL';
+}
+
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
+    token_request_method?: 'GET';
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
@@ -152,11 +167,13 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_params?: Record<string, string>;
         token_headers?: Record<string, string>;
         token_url: string;
+        token_request_method?: 'GET';
     }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
     body_format?: 'xml' | 'json' | 'form';
 }
+
 export interface ProviderSignature extends BaseProvider {
     auth_mode: 'SIGNATURE';
     signature: {
@@ -166,11 +183,22 @@ export interface ProviderSignature extends BaseProvider {
         expires_in_ms: number;
     };
 }
+
 export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
 
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature | ProviderApiKey;
+export type Provider =
+    | BaseProvider
+    | ProviderOAuth1
+    | ProviderOAuth2
+    | ProviderJwt
+    | ProviderTwoStep
+    | ProviderSignature
+    | ProviderApiKey
+    | ProviderTableau
+    | ProviderBill
+    | ProviderAppleAppStore;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

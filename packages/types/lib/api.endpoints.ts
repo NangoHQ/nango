@@ -41,7 +41,7 @@ import type {
 } from './connection/api/get';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api';
-import type { PatchEnvironment, PostEnvironment } from './environment/api';
+import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api';
 import type { PatchWebhook } from './environment/api/webhook';
 import type { PostEnvironmentVariables } from './environment/variable/api';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
@@ -64,7 +64,7 @@ import type { PostPlanExtendTrial } from './plans/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { GetPublicRecords } from './record/api';
 import type { GetPublicScriptsConfig } from './scripts/http.api';
-import type { PostPublicTrigger } from './sync/api';
+import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
 import type { GetUser, PatchUser } from './user/api';
 import type { PostPublicWebhook } from './webhooks/http.api';
@@ -102,7 +102,8 @@ export type PublicApiEndpoints =
     | PostPublicWebhook
     | GetPublicRecords
     | GetPublicScriptsConfig
-    | PostPublicConnectTelemetry;
+    | PostPublicConnectTelemetry
+    | PutPublicSyncConnectionFrequency;
 
 export type PrivateApiEndpoints =
     | PostSignup
@@ -147,6 +148,7 @@ export type PrivateApiEndpoints =
     | PostPreBuiltDeploy
     | PostEnvironment
     | PatchEnvironment
+    | DeleteEnvironment
     | PatchWebhook
     | PostEnvironmentVariables;
 

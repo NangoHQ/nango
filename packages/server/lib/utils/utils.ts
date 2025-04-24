@@ -207,6 +207,15 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | P
         matches.push(...tokenMatches);
     }
 
+    if (
+        'additional_steps' in provider &&
+        Array.isArray(provider.additional_steps) &&
+        provider.additional_steps.every((step) => typeof step === 'object' && step !== null)
+    ) {
+        const additionalSteps = extractCredentialParams(provider.additional_steps);
+        matches.push(...additionalSteps);
+    }
+
     return [...new Set(matches.map(cleanParamName))]; // Remove duplicates
 }
 
