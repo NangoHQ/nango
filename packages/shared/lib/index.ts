@@ -18,6 +18,7 @@ import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking } from './utils/productTracking.js';
+export * as appleAppStoreClient from './auth/appleAppStore.js';
 export * as billClient from './auth/bill.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';

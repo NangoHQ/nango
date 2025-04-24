@@ -140,6 +140,11 @@ export interface ProviderJwt extends BaseProvider {
     };
 }
 
+export interface ProviderAppleAppStore extends BaseProvider {
+    auth_mode: 'APP_STORE';
+    token_url: string;
+}
+
 export interface ProviderTableau extends BaseProvider {
     auth_mode: 'TABLEAU';
 }
@@ -191,7 +196,8 @@ export type Provider =
     | ProviderSignature
     | ProviderApiKey
     | ProviderTableau
-    | ProviderBill;
+    | ProviderBill
+    | ProviderAppleAppStore;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type
