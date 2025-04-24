@@ -114,7 +114,7 @@ class ProviderClient {
                 return this.refreshStripeAppToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_secret);
             case 'workday-oauth':
                 return this.refreshWorkdayAccessToken(
-                    interpolatedTokenUrl.origin + interpolatedTokenUrl.pathname,
+                    interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
                     config.oauth_client_secret
