@@ -153,6 +153,11 @@ export interface ProviderBill extends BaseProvider {
     auth_mode: 'BILL';
 }
 
+export interface ProviderGithubApp extends BaseProvider {
+    auth_mode: 'APP';
+    token_url: string;
+}
+
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
     token_request_method?: 'GET';
@@ -198,6 +203,7 @@ export type Provider =
     | ProviderApiKey
     | ProviderTableau
     | ProviderBill
+    | ProviderGithubApp
     | ProviderAppleAppStore;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
