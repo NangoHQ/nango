@@ -10029,8 +10029,8 @@ workday-oauth:
         - popular
     auth_mode: OAUTH2
     token_request_auth_method: basic
-    authorization_url: https://${connectionConfig.authorizationHostname}/${connectionConfig.tenant}/authorize
-    token_url: https://${connectionConfig.tokenHostname}/ccx/oauth2/${connectionConfig.tenant}/token
+    authorization_url: https://${connectionConfig.authorizationDomain}/${connectionConfig.tenant}/authorize
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
     authorization_params:
         response_type: code
     token_params:
@@ -10038,30 +10038,30 @@ workday-oauth:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.tokenHostname}/ccx/api
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
     docs: https://docs.nango.dev/integrations/all/workday-oauth
     docs_connect: https://docs.nango.dev/integrations/all/workday-oauth/connect
     connection_config:
-        authorizationHostname:
+        authorizationDomain:
             type: string
-            title: Authorization Hostname
-            description: The hostname used to authorize your Workday account
+            title: Authorization Domain
+            description: The domain used to authorize your Workday account
             format: hostname
             example: impl.workday.com
             prefix: https://
             order: 1
             suffix: /mytenant
-            doc_section: '#step-1-finding-your-authorization-hostname'
-        tokenHostname:
+            doc_section: '#step-1-finding-your-authorization-domain'
+        tokenDomain:
             type: string
-            title: Token Hostname
-            description: The hostname used to obtain the token for your Workday account
+            title: Token Domain
+            description: The domain used to obtain the token for your Workday account
             format: hostname
             example: wd3-impl-services1.workday.com
             prefix: https://
             order: 2
             suffix: /ccx
-            doc_section: '#step-2-finding-your-token-hostname'
+            doc_section: '#step-2-finding-your-token-domain'
         tenant:
             type: string
             title: Tenant
