@@ -140,6 +140,11 @@ export interface ProviderJwt extends BaseProvider {
     };
 }
 
+export interface ProviderAppleAppStore extends BaseProvider {
+    auth_mode: 'APP_STORE';
+    token_url: string;
+}
+
 export interface ProviderTableau extends BaseProvider {
     auth_mode: 'TABLEAU';
 }
@@ -162,6 +167,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_params?: Record<string, string>;
         token_headers?: Record<string, string>;
         token_url: string;
+        token_request_method?: 'GET';
     }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
@@ -191,7 +197,8 @@ export type Provider =
     | ProviderSignature
     | ProviderApiKey
     | ProviderTableau
-    | ProviderBill;
+    | ProviderBill
+    | ProviderAppleAppStore;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

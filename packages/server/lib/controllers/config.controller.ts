@@ -17,7 +17,7 @@ import { isHosted } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Config as ProviderConfig, Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
-import type { NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
+import type { IntegrationConfig, NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 interface FlowConfigs {
@@ -324,7 +324,8 @@ class ConfigController {
                 return;
             }
 
-            const config: ProviderConfig = {
+            const config: IntegrationConfig = {
+                display_name: null,
                 unique_key: uniqueConfigKey,
                 provider: providerName,
                 oauth_client_id,

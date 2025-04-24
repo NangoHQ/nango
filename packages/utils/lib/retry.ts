@@ -1,8 +1,10 @@
-import type { MaybePromise } from '@nangohq/types';
-import { AxiosError } from 'axios';
-import type { BackoffOptions } from 'exponential-backoff';
-import { backOff } from 'exponential-backoff';
 import { setTimeout } from 'node:timers/promises';
+
+import { AxiosError } from 'axios';
+import { backOff } from 'exponential-backoff';
+
+import type { MaybePromise } from '@nangohq/types';
+import type { BackoffOptions } from 'exponential-backoff';
 
 export interface RetryConfig<T = unknown> {
     maxAttempts: number;
@@ -96,7 +98,8 @@ export async function retryWithBackoff<T extends () => any>(fn: T, options?: Bac
     return await backOff(fn, { numOfAttempts: 5, ...options });
 }
 
-export const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'];
+export const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'ECONNREFUSED', 'EHOSTUNREACH', 'EAI_AGAIN'];
+export const nonRetryableNetworkError = ['ENOTFOUND', 'ERRADDRINUSE'];
 export function httpRetryStrategy(error: unknown, _attemptNumber: number): boolean {
     if (!(error instanceof AxiosError)) {
         // debatable
@@ -105,6 +108,10 @@ export function httpRetryStrategy(error: unknown, _attemptNumber: number): boole
 
     if (error.code && networkError.includes(error.code)) {
         return true;
+    }
+
+    if (error.code && nonRetryableNetworkError.includes(error.code)) {
+        return false;
     }
 
     if (!error.response || !error.status) {
