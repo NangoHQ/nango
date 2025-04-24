@@ -270,7 +270,7 @@ export async function setTimeouted(opts: Pick<OperationRow, 'id' | 'createdAt'>)
  * List messages
  */
 export async function listMessages(opts: {
-    parentId?: string;
+    parentId: string;
     limit: number;
     states?: SearchOperationsState[] | undefined;
     search?: string | undefined;
@@ -278,14 +278,8 @@ export async function listMessages(opts: {
     cursorAfter?: string | null | undefined;
 }): Promise<ListMessages> {
     const query: estypes.QueryDslQueryContainer = {
-        bool: { must: [], should: [] }
+        bool: { must: [{ term: { parentId: opts.parentId } }], should: [] }
     };
-
-    if (opts.parentId) {
-        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ term: { parentId: opts.parentId } });
-    } else {
-        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ exists: { field: 'parentId' } });
-    }
 
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
         // Where or
@@ -381,6 +375,7 @@ export async function searchForMessagesInsideOperations(opts: { search: string; 
         track_total_hits: false,
         query,
         aggs: {
+            // We aggregate because we can have N match per operation
             parentIdAgg: { terms: { size: opts.operationsIds.length + 1, field: 'parentId' } }
         }
     });

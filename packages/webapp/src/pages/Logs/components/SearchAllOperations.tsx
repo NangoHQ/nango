@@ -113,9 +113,9 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     connections,
                     syncs,
                     period: periodCopy,
-                    // Because search is post-filtering it's changing the actual number of returned operations
-                    // It's more efficient to increase the limit of pre-filtered operations we get and do less round trip
-                    // The "drawbacks" is that if every operations are matching, it can be slower and return more row that expected
+                    // Search is post-filtering the list of operations, it can change the actual number of returned operations
+                    // It's more efficient to increase the limit of pre-filtered operations we get, and do less round trip
+                    // The "drawbacks" is that if every operations are matching, it can be slower and return more rows that expected
                     limit: debouncedSearch ? defaultLimit * 10 : defaultLimit,
                     cursor: pageParam,
                     search: debouncedSearch
@@ -207,7 +207,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
             const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
 
-            // We don't want to refresh or trim the page when searching
+            // We don't want to refresh or trim the pages when searching
             if (manualLoadMore) {
                 return;
             }
@@ -233,7 +233,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         setManualLoadMore(false);
     }, []);
     useEffect(() => {
-        // When searching pagination is incomplete it can be daunting to manually click the button a lot
+        // When searching, pagination is incomplete it can be daunting to manually click the button a lot
         // So we disable manual load more until we find a next page
         if (!debouncedSearch || manualLoadMore) {
             return;
