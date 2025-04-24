@@ -6,15 +6,17 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as billClient from '../auth/bill.js';
+import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
 import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
+import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import { productTracking } from '../utils/productTracking.js';
@@ -25,7 +27,6 @@ import {
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
-    interpolateStringFromObject,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -43,6 +44,7 @@ import type {
 } from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { AuthCredentialsError } from '../utils/error.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -63,7 +65,9 @@ import type {
     MaybePromise,
     Metadata,
     Provider,
+    ProviderAppleAppStore,
     ProviderBill,
+    ProviderGithubApp,
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
@@ -951,80 +955,27 @@ class ConnectionService {
         }
     }
 
-    public async getAppStoreCredentials(
-        provider: Provider,
-        connectionConfig: DBConnection['connection_config'],
-        privateKey: string
-    ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP_STORE'] as string);
-        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 15 * 60;
-
-        const payload: Record<string, string | number> = {
-            iat: now,
-            exp: expiration,
-            iss: connectionConfig['issuerId']
-        };
-
-        if (provider.authorization_params && provider.authorization_params['audience']) {
-            payload['aud'] = provider.authorization_params['audience'];
-        }
-
-        if (connectionConfig['scope']) {
-            payload['scope'] = connectionConfig['scope'];
-        }
-
-        const create = await jwtClient.createCredentialsFromURL({
-            privateKey,
-            url: tokenUrl,
-            payload,
-            additionalApiHeaders: null,
-            options: {
-                header: {
-                    alg: 'ES256',
-                    kid: connectionConfig['privateKeyId'],
-                    typ: 'JWT'
-                }
-            }
-        });
-
-        if (create.isErr()) {
-            return { success: false, error: create.error, response: null };
-        }
-
-        const rawCredentials = create.value;
-        const credentials: AppStoreCredentials = {
-            type: 'APP_STORE',
-            access_token: rawCredentials.token!,
-            private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
-        };
-
-        return { success: true, error: null, response: credentials };
-    }
-
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
-        provider: Provider,
+        provider: ProviderGithubApp,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
-    ): Promise<void> {
-        const { success, error, response: credentials } = await this.getAppCredentials(provider, integration, connectionConfig);
-
-        if (!success || !credentials) {
-            logger.error(error);
-            return;
+    ): Promise<Result<void, AuthCredentialsError>> {
+        const create = await githubAppClient.createCredentials({
+            integration,
+            provider,
+            connectionConfig
+        });
+        if (create.isErr()) {
+            return Err(create.error);
         }
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials: credentials as unknown as AuthCredentials,
+            parsedRawCredentials: create.value,
             connectionConfig,
             environmentId: integration.environment_id
         });
@@ -1034,58 +985,7 @@ class ConnectionService {
         }
 
         void logCtx.info('App connection was approved and credentials were saved');
-    }
-
-    public async getAppCredentials(
-        provider: Provider,
-        config: ProviderConfig,
-        connectionConfig: DBConnection['connection_config']
-    ): Promise<ServiceResponse<AppCredentials>> {
-        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP'] as string);
-
-        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = config.custom ? config.custom['private_key'] : config.oauth_client_secret;
-
-        const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
-
-        const headers = {
-            Accept: 'application/vnd.github.v3+json'
-        };
-
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 10 * 60;
-
-        const payload: Record<string, string | number> = {
-            iat: now,
-            exp: expiration,
-            iss: (config.custom ? config.custom['app_id'] : config.oauth_client_id) as string
-        };
-
-        if (!payload['iss'] && connectionConfig['app_id']) {
-            payload['iss'] = connectionConfig['app_id'];
-        }
-
-        const create = await jwtClient.createCredentialsFromURL({
-            privateKey,
-            url: tokenUrl,
-            payload,
-            additionalApiHeaders: headers,
-            options: { algorithm: 'RS256' }
-        });
-
-        if (create.isErr()) {
-            return { success: false, error: create.error, response: null };
-        }
-
-        const rawCredentials = create.value;
-        const credentials: AppCredentials = {
-            type: 'APP',
-            access_token: rawCredentials.token!,
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
-        };
-
-        return { success: true, error: null, response: credentials };
+        return Ok(undefined);
     }
 
     public async getOauthClientCredentials({
@@ -1256,23 +1156,27 @@ class ConnectionService {
                             const stepNumber = extractStepNumber(value);
                             const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
 
-                            const strippedValue = stripStepResponse(value, stepResponsesObj);
-                            if (typeof strippedValue === 'object' && strippedValue !== null) {
-                                stepPostBody[key] = interpolateObject(strippedValue, dynamicCredentials);
-                            } else if (typeof strippedValue === 'string') {
-                                stepPostBody[key] = interpolateString(strippedValue, dynamicCredentials);
-                            } else {
-                                stepPostBody[key] = strippedValue;
-                            }
+                            const applyInterpolation = (input: any, source: Record<string, any>) => {
+                                if (typeof input === 'object' && input !== null) {
+                                    return interpolateObject(input, source);
+                                } else if (typeof input === 'string') {
+                                    return interpolateString(input, source);
+                                }
+                                return input;
+                            };
+
+                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
+                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
 
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
-                    const interpolatedTokenUrl = stripStepResponse(step.token_url, stepResponsesObjForURL);
-                    const stepUrl = new URL(interpolatedTokenUrl).toString();
-
+                    const strippedTokenUrl = stripStepResponse(step.token_url);
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1284,7 +1188,14 @@ class ConnectionService {
                     }
 
                     const stepRequestOptions = { headers: stepHeaders };
-                    const stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+
+                    let stepResponse: any;
+
+                    if (step.token_request_method === 'GET') {
+                        stepResponse = await axios.get(stepUrl, stepRequestOptions);
+                    } else {
+                        stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+                    }
 
                     if (stepResponse.status !== 200) {
                         return { success: false, error: new NangoError(`invalid_two_step_credentials_step_${stepIndex}`), response: null };
@@ -1397,13 +1308,17 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
-            const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
+            const create = await appleAppStoreClient.createCredentials({
+                provider: provider as ProviderAppleAppStore,
+                connectionConfig: connection.connection_config,
+                private_key
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
@@ -1419,13 +1334,16 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
-
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            const create = await githubAppClient.createCredentials({
+                integration: providerConfig,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            });
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'TABLEAU') {
             const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
             const create = await tableauClient.createCredentials({
@@ -1551,6 +1469,13 @@ class ConnectionService {
         return Err(new NangoError('failed_to_get_connections_count'));
     }
 
+    /**
+     * Note:
+     * a billable connection is a connection that is not deleted and has not been deleted during the month
+     * connections are pro-rated based on the number of seconds they were existing in the month
+     *
+     * This method only returns returns data for paying customer
+     */
     async billableConnections(referenceDate: Date): Promise<
         Result<
             {
@@ -1562,10 +1487,6 @@ class ConnectionService {
             NangoError
         >
     > {
-        // Note:
-        // a billable connection is a connection that is not deleted and has not been deleted during the month
-        // connections are pro-rated based on the number of seconds they were existing in the month
-
         const targetDate = new Date(Date.UTC(referenceDate.getUTCFullYear(), referenceDate.getUTCMonth(), referenceDate.getUTCDate(), 0, 0, 0, 0));
         const year = referenceDate.getUTCFullYear();
         const month = referenceDate.getUTCMonth() + 1; // js months are 0-based
@@ -1591,8 +1512,10 @@ class ConnectionService {
                     db.readOnly.raw(`(SELECT month_end FROM month_info) AS month_end`),
                     db.readOnly.raw(`(SELECT total_seconds_in_month FROM month_info) AS total_seconds_in_month`)
                 )
-                    .from('nango._nango_connections as c')
-                    .join('nango._nango_environments as e', 'c.environment_id', 'e.id')
+                    .from('_nango_connections as c')
+                    .join('_nango_environments as e', 'c.environment_id', 'e.id')
+                    .join('plans', 'plans.account_id', 'e.account_id')
+                    .where('plans.name', '<>', 'free')
                     .where((builder) => {
                         builder.where('c.deleted_at', null).orWhereRaw(`c.deleted_at >= (SELECT month_start FROM month_info)`);
                     })

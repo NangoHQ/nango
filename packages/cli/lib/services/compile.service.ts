@@ -33,6 +33,11 @@ function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean
     };
 }
 
+interface CompileAllFilesResult {
+    success: boolean;
+    failedFiles: string[];
+}
+
 export async function compileAllFiles({
     debug,
     fullPath,
@@ -45,7 +50,7 @@ export async function compileAllFiles({
     scriptName?: string;
     providerConfigKey?: string;
     type?: ScriptFileType;
-}): Promise<boolean> {
+}): Promise<CompileAllFilesResult> {
     const tsconfig = fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
     const distDir = path.join(fullPath, 'dist');
@@ -59,7 +64,7 @@ export async function compileAllFiles({
     const cachedParser = getCachedParser({ fullPath, debug });
     const parsed = cachedParser();
     if (!parsed) {
-        return false;
+        return { success: false, failedFiles: [] };
     }
 
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
@@ -80,6 +85,7 @@ export async function compileAllFiles({
 
     const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug, providerConfigKey });
     let allSuccess = true;
+    const failedFiles: string[] = [];
     const compilationErrors: string[] = [];
 
     for (const file of integrationFiles) {
@@ -87,6 +93,7 @@ export async function compileAllFiles({
             const completed = await compile({ fullPath, file, compiler, debug, cachedParser });
             if (completed === false) {
                 allSuccess = false;
+                failedFiles.push(file.inputPath);
                 compilationErrors.push(`Failed to compile ${file.inputPath}`);
                 continue;
             }
@@ -94,6 +101,7 @@ export async function compileAllFiles({
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
             console.error(err);
             allSuccess = false;
+            failedFiles.push(file.inputPath);
             compilationErrors.push(`Error compiling ${file.inputPath}: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
@@ -107,13 +115,14 @@ export async function compileAllFiles({
         console.log(chalk.green('Successfully compiled all files present in the Nango YAML config file.'));
     }
 
-    return allSuccess;
+    return { success: allSuccess, failedFiles };
 }
 
 export async function compileSingleFile({
     fullPath,
     file,
     tsconfig,
+    parsed,
     debug = false
 }: {
     fullPath: string;
@@ -124,7 +133,7 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
-    const cachedParser = getCachedParser({ fullPath, debug });
+    const cachedParser = parsed ? () => parsed : getCachedParser({ fullPath, debug });
 
     try {
         const compiler = tsNode.create({
@@ -140,9 +149,9 @@ export async function compileSingleFile({
             debug
         });
 
-        return result === true;
+        return result === true || result === null;
     } catch (err) {
-        console.error(`Error compiling ${file.inputPath}:`);
+        console.error(chalk.red(`Error compiling ${file.inputPath}:`));
         console.error(err);
         return false;
     }

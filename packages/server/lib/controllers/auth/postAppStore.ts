@@ -2,8 +2,17 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { ErrorSourceEnum, LogActionEnum, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
-import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+import {
+    ErrorSourceEnum,
+    LogActionEnum,
+    appleAppStoreClient,
+    configService,
+    connectionService,
+    errorManager,
+    getProvider,
+    linkConnection
+} from '@nangohq/shared';
+import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
@@ -12,8 +21,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/aut
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { AuthCredentials } from '@nangohq/shared';
-import type { PostPublicAppStoreAuthorization } from '@nangohq/types';
+import type { ConnectionConfig, PostPublicAppStoreAuthorization, ProviderAppleAppStore } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -139,30 +147,20 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const connectionConfig = {
+        const connectionConfig: ConnectionConfig = {
             privateKeyId,
             issuerId,
             scope
         };
 
-        const { success, error, response: credentials } = await connectionService.getAppStoreCredentials(provider, connectionConfig, privateKey);
-        if (!success || !credentials) {
-            void connectionCreationFailedHook(
-                {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                    environment,
-                    account,
-                    auth_mode: 'APP_STORE',
-                    error: {
-                        type: 'credential_fetch_failure',
-                        description: `Error during App store credentials auth: ${error?.message}`
-                    },
-                    operation: 'unknown'
-                },
-                account,
-                config
-            );
-            void logCtx.error('Failed to credentials');
+        const credentialsRes = await appleAppStoreClient.createCredentials({
+            provider: provider as ProviderAppleAppStore,
+            connectionConfig,
+            private_key: privateKey
+        });
+        if (credentialsRes.isErr()) {
+            report(credentialsRes.error);
+            void logCtx.error('Error during App store credentials creation', { error: credentialsRes.error });
             await logCtx.failed();
             return;
         }
@@ -170,7 +168,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         const [updatedConnection] = await connectionService.upsertConnection({
             connectionId,
             providerConfigKey,
-            parsedRawCredentials: credentials as unknown as AuthCredentials,
+            parsedRawCredentials: credentialsRes.value,
             connectionConfig,
             environmentId: environment.id
         });
