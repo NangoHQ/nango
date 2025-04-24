@@ -126,6 +126,8 @@ export interface MessageRow {
               addedKeys: string[];
               updated: number;
               updatedKeys: string[];
+              unchanged: number;
+              unchangedKeys: string[];
               deleted: number;
               deleteKeys: string[];
           }

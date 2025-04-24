@@ -1,6 +1,6 @@
-import type { AuthModeType, DBConnection, DBSyncConfig } from '@nangohq/types';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { Action } from './Sync.js';
+import type { AuthModeType, DBConnection, DBSyncConfig } from '@nangohq/types';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number | undefined;
@@ -15,6 +15,7 @@ export interface Config extends TimestampsAndDeleted {
     app_link?: string | null | undefined;
     custom?: Record<string, string> | undefined;
     missing_fields: string[];
+    display_name: string | null;
 }
 
 export interface IntegrationWithCreds extends Integration {

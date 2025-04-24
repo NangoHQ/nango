@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { AnalyticsTypes, analytics, configService, connectionService, environmentService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
-import { stringifyError } from '@nangohq/utils';
+import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, linkConnection } from '@nangohq/shared';
+import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
@@ -11,7 +11,7 @@ import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import type { AuthCredentials, NangoError } from '@nangohq/shared';
+import type { ProviderGithubApp } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
@@ -49,8 +49,6 @@ class AppAuthController {
         }
 
         const { environment, account } = environmentAndAccountLookup;
-
-        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
@@ -127,40 +125,21 @@ class AppAuthController {
                 return;
             }
 
-            const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
-
-            if (!success || !credentials) {
-                void logCtx.error('Error during app token retrieval call', { error });
+            const credentialsRes = await githubAppClient.createCredentials({ provider: provider as ProviderGithubApp, integration: config, connectionConfig });
+            if (credentialsRes.isErr()) {
+                report(credentialsRes.error);
+                void logCtx.error('Error during Github App credentials creation', { error: credentialsRes.error });
                 await logCtx.failed();
-
-                void connectionCreationFailedHook(
-                    {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                        environment,
-                        account,
-                        auth_mode: 'APP',
-                        error: {
-                            type: 'unknown',
-                            description: `Error during app token retrieval call: ${error?.message}`
-                        },
-                        operation: 'unknown'
-                    },
-                    account,
-                    config
-                );
-
-                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, credentialsRes.error);
                 return;
             }
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: session.provider,
-                parsedRawCredentials: credentials as unknown as AuthCredentials,
+                parsedRawCredentials: credentialsRes.value,
                 connectionConfig,
-                environmentId: environment.id,
-                accountId: account.id
+                environmentId: environment.id
             });
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
