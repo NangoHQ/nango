@@ -45,7 +45,7 @@ import type { ConnectSessionAndEndUser } from '../services/connectSession.servic
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
-import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderGithubApp, ProviderOAuth2 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class OAuthController {
@@ -1197,7 +1197,20 @@ class OAuthController {
                         { initiateSync: true, runPostConnectionScript: false }
                     );
                 };
-                await connectionService.getAppCredentialsAndFinishConnection(connectionId, config, provider, connectionConfig, logCtx, connCreatedHook);
+                const createRes = await connectionService.getAppCredentialsAndFinishConnection(
+                    connectionId,
+                    config,
+                    provider as unknown as ProviderGithubApp,
+                    connectionConfig,
+                    logCtx,
+                    connCreatedHook
+                );
+                if (createRes.isErr()) {
+                    void logCtx.error('Failed to create credentials');
+                    await logCtx.failed();
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
+                    return;
+                }
             }
 
             await logCtx.success();

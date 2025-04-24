@@ -59,17 +59,11 @@ const Integrations: React.FC = () => {
     });
 
     const integrations = useMemo<ApiPublicIntegration[]>(() => {
-        const uniquesNames: Record<string, number> = {};
-        for (const integration of data.data) {
-            uniquesNames[integration.display_name] = (uniquesNames[integration.display_name] || 0) + 1;
-        }
-
         const list: ApiPublicIntegration[] = [];
         for (const integration of data.data) {
             list.push({
                 ...integration,
-                display_name:
-                    uniquesNames[integration.display_name] > 1 ? `${integration.display_name} - (${integration.unique_key})` : integration.display_name
+                display_name: integration.display_name
             });
         }
         return list;

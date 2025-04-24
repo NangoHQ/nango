@@ -1,31 +1,31 @@
 import fs from 'node:fs';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import ejs from 'ejs';
 import * as dotenv from 'dotenv';
+import ejs from 'ejs';
 
-import { getNangoRootPath, printDebug } from './utils.js';
-import { loadYamlAndGenerate } from './services/model.service.js';
+import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
+
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
+import { loadYamlAndGenerate } from './services/model.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
-import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
+import { getNangoRootPath, printDebug } from './utils.js';
 import { NANGO_VERSION } from './version.js';
+
+import type { NangoYamlParsed } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 dotenv.config();
 
-export const version = (debug: boolean) => {
-    if (debug) {
-        printDebug('Looking up the version first for a local path first then globally');
-    }
+export const getVersionOutput = (): string => {
     const version = NANGO_VERSION;
-
-    console.log(chalk.green('Nango CLI version:'), version);
+    return `${chalk.green('Nango CLI version:')} ${version}`;
 };
 
 export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
@@ -129,14 +129,19 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
     }
 }
 
-export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
-    const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
-    const parsed = loadYamlAndGenerate({ fullPath, debug });
-    if (!parsed) {
-        return;
+function showCompilationMessage(failedFiles: Set<string>) {
+    if (failedFiles.size === 0) {
+        console.log(chalk.green('Compilation success! Watching files…'));
     }
+}
 
-    const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
+export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPath: string; debug?: boolean; watchConfigFile: boolean }) {
+    const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+
+    const watchPath = ['./**/*.ts'];
+    if (watchConfigFile) {
+        watchPath.push(`./${nangoConfigFile}`);
+    }
 
     if (debug) {
         printDebug(`Watching ${watchPath.join(', ')}`);
@@ -146,7 +151,7 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
         ignoreInitial: false,
         ignored: (filePath: string) => {
             const relativePath = path.relative(__dirname, filePath);
-            return relativePath.includes('node_modules') || path.basename(filePath) === TYPES_FILE_NAME;
+            return relativePath.includes('node_modules') || path.basename(filePath) === TYPES_FILE_NAME || relativePath.includes('.nango');
         }
     });
 
@@ -159,15 +164,79 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
         fs.mkdirSync(distDir);
     }
 
-    watcher.on('add', async (filePath: string) => {
-        if (filePath === nangoConfigFile) {
-            return;
+    // First parsing of the config file
+    let parsed: NangoYamlParsed | null = loadYamlAndGenerate({ fullPath, debug });
+
+    const failedFiles = new Set<string>();
+
+    watcher.on('add', (filePath: string) => {
+        async function onAdd() {
+            if (debug) {
+                printDebug(`Added ${filePath}`);
+            }
+            if (filePath === nangoConfigFile || !parsed) {
+                return;
+            }
+            const success = await compileSingleFile({
+                fullPath,
+                file: getFileToCompile({ fullPath, filePath }),
+                tsconfig,
+                parsed,
+                debug
+            });
+            if (success) {
+                failedFiles.delete(filePath);
+            } else {
+                failedFiles.add(filePath);
+            }
+            showCompilationMessage(failedFiles);
         }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), tsconfig, parsed, debug });
+
+        void onAdd();
+    });
+
+    watcher.on('change', (filePath: string) => {
+        async function onChange() {
+            if (debug) {
+                printDebug(`Changed ${filePath}`);
+            }
+            if (filePath === nangoConfigFile) {
+                parsed = loadYamlAndGenerate({ fullPath, debug });
+
+                if (!parsed) {
+                    return;
+                }
+
+                const { failedFiles: newFailedFiles } = await compileAllFiles({ fullPath, debug });
+                failedFiles.clear();
+                for (const file of newFailedFiles) {
+                    failedFiles.add(file);
+                }
+                showCompilationMessage(failedFiles);
+                return;
+            }
+
+            if (!parsed) {
+                return;
+            }
+
+            const success = await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
+            if (success) {
+                failedFiles.delete(filePath);
+            } else {
+                failedFiles.add(filePath);
+            }
+            showCompilationMessage(failedFiles);
+        }
+
+        void onChange();
     });
 
     watcher.on('unlink', (filePath: string) => {
-        if (filePath === nangoConfigFile) {
+        if (debug) {
+            printDebug(`Unlinked ${filePath}`);
+        }
+        if (filePath === nangoConfigFile || !parsed) {
             return;
         }
         const providerConfiguration = getProviderConfigurationFromPath({ filePath, parsed });
@@ -175,30 +244,12 @@ export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?
         const fileName = providerConfiguration ? `${baseName}-${providerConfiguration.providerConfigKey}.js` : `${baseName}.js`;
         const jsFilePath = `./dist/${fileName}`;
 
+        failedFiles.delete(filePath);
+
         try {
             fs.unlinkSync(jsFilePath);
         } catch {
             console.log(chalk.red(`Error deleting ${jsFilePath}`));
         }
-    });
-
-    watcher.on('change', async (filePath: string) => {
-        if (filePath === nangoConfigFile) {
-            await compileAllFiles({ fullPath, debug });
-            return;
-        }
-        await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
-    });
-}
-
-export function configWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
-    const watchPath = path.join(fullPath, nangoConfigFile);
-    if (debug) {
-        printDebug(`Watching ${watchPath}`);
-    }
-    const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
-
-    watcher.on('change', () => {
-        loadYamlAndGenerate({ fullPath, debug });
     });
 }

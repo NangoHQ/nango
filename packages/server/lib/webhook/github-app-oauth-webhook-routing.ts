@@ -10,7 +10,7 @@ import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import type { ConnectionConfig } from '@nangohq/types';
+import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -116,7 +116,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
-            provider,
+            provider as ProviderGithubApp,
             connectionConfig,
             logCtx,
             connCreatedHook

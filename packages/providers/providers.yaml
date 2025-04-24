@@ -2886,6 +2886,61 @@ docusign-sandbox:
     post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign-sandbox
 
+docuware:
+    display_name: DocuWare
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
+    body_format: form
+    token_request_method: GET
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    additional_steps:
+        - body_format: form
+          token_url: ${step1.IdentityServiceUrl}/.well-known/openid-configuration
+          token_request_method: GET
+        - body_format: form
+          token_url: ${step2.token_endpoint}
+          token_headers:
+              content-type: application/x-www-form-urlencoded
+          token_params:
+              grant_type: password
+              scope: docuware.platform
+              client_id: docuware.platform.net.client
+              username: ${credentials.username}
+              password: ${credentials.password}
+    proxy:
+        base_url: https://${connectionConfig.domain}/DocuWare/Platform
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/docuware
+    docs_connect: https://docs.nango.dev/integrations/all/docuware/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain to your DocuWare account
+            format: hostname
+            prefix: https://
+            example: example.docuware.cloud
+            order: 1
+            doc_section: '#step-1-finding-your-domain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The Username to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: The Password to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -3262,8 +3317,7 @@ exact-online:
     display_name: Exact Online
     categories:
         - accounting
-        - hr
-        - productivity
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
     token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
@@ -3834,12 +3888,13 @@ google-gemini:
 gem:
     display_name: Gem
     categories:
-        - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.gem.com
         headers:
             x-api-key: ${apiKey}
+            x-application-secret: ${connectionConfig.appSecret}
         verification:
             method: GET
             endpoints:
@@ -3849,9 +3904,20 @@ gem:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API Key for your Gem account
-            doc_section: '#step-1-finding-your-api-key'
+            title: Shareable Access Key
+            description: The Shareable Access Key for your Integration
+            example: Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz
+            pattern: '^[a-zA-Z0-9]{40}$'
+            doc_section: '#step-1-finding-your-shareable-access-key'
+    connection_config:
+        appSecret:
+            type: string
+            title: Application Secret
+            description: The Application Secret for your Gem Integration
+            pattern: '^[a-f0-9]{128}$'
+            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
+            secret: true
+            doc_section: '#step-2-finding-your-application-secret'
 
 gerrit:
     display_name: Gerrit
@@ -5062,7 +5128,7 @@ jira-basic:
         verification:
             method: GET
             endpoints:
-                - /rest/api/2/applicationrole
+                - /rest/api/3/myself
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
         subdomain:

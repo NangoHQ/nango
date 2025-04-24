@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+import { NangoError, accountService, configService, connectionService, errorManager, getProvider, githubAppClient } from '@nangohq/shared';
 
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
@@ -13,8 +13,16 @@ import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuthCredentials, ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
-import type { ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials, TbaCredentials } from '@nangohq/types';
+import type { ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
+import type {
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    ConnectionConfig,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    ProviderGithubApp,
+    TbaCredentials
+} from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
@@ -160,7 +168,7 @@ class ConnectionController {
 
             const providerName = integration.provider;
 
-            if (plan && provider_config_key) {
+            if (plan) {
                 const isCapped = await connectionCreationStartCapCheckHook({
                     providerConfigKey: provider_config_key,
                     environmentId: environment.id,
@@ -168,8 +176,16 @@ class ConnectionController {
                     team: account,
                     plan
                 });
-                if (isCapped) {
-                    errorManager.errRes(res, 'resource_capped');
+                if (isCapped.capped) {
+                    res.status(400).send({
+                        error: {
+                            code: 'resource_capped',
+                            message:
+                                isCapped.code === 'max'
+                                    ? 'Reached maximum number of allowed connections for your plan'
+                                    : 'Reached maximum number of connections with scripts enabled'
+                        }
+                    });
                     return;
                 }
             }
@@ -486,17 +502,20 @@ class ConnectionController {
                     return;
                 }
 
-                const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
-
-                if (!success || !credentials) {
-                    errorManager.errResFromNangoErr(res, error);
+                const credentialsRes = await githubAppClient.createCredentials({
+                    provider: provider as ProviderGithubApp,
+                    integration: config,
+                    connectionConfig
+                });
+                if (credentialsRes.isErr()) {
+                    errorManager.errResFromNangoErr(res, credentialsRes.error);
                     return;
                 }
 
                 const [imported] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    parsedRawCredentials: credentials as unknown as AuthCredentials,
+                    parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
                     environmentId: environment.id,
                     metadata
