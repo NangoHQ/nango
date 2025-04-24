@@ -1,25 +1,22 @@
 {
-    "name": "@nangohq/kvstore",
+    "name": "@nangohq/billing",
     "version": "1.0.0",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.js",
     "private": true,
-    "scripts": {
-        "build": "rimraf ./dist && tsc"
-    },
+    "scripts": {},
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/kvstore"
+        "directory": "packages/billing"
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "redis": "4.6.13"
+        "lago-javascript-client": "1.22.0",
+        "uuidv7": "1.0.2"
     },
-    "devDependencies": {
-        "vitest": "3.1.1"
-    },
+    "devDependencies": {},
     "files": [
         "dist/**/*"
     ]

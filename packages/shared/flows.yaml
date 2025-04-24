@@ -18739,6 +18739,19 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.3
+            credit-notes:
+                description: |
+                    Fetches all credit notes in Xero. Incremental sync.
+                runs: every hour
+                output: CreditNote
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /credit-notes
+                    group: Credit Notes
+                scopes:
+                    - accounting.transactions
+                version: 1.0.0
         actions:
             create-contact:
                 description: |
@@ -19098,14 +19111,14 @@ integrations:
                 fees: CreditNoteFee[]
             CreditNoteFee:
                 item_id: string
-                item_code: string
-                description: string
-                units: number
-                precise_unit_amount: number
-                account_code: string
-                account_external_id: string
-                amount_cents: number
-                taxes_amount_cents: number
+                item_code?: string | null
+                description?: string | null
+                units?: number | null
+                precise_unit_amount?: number | null
+                account_code?: string | null
+                account_external_id?: string | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
             FailedCreditNote:
                 id: string
                 type: string
