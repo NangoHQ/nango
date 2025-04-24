@@ -64,6 +64,6 @@ export async function createCredentials({
 
         return Ok(credentials);
     } catch (err) {
-        return Err(new AuthCredentialsError('bill_tokens_fetch_error', { cause: err }));
+        return Err(new AuthCredentialsError('github_app_token_fetch_error', { cause: err }));
     }
 }
