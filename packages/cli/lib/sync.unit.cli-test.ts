@@ -419,7 +419,7 @@ describe('generate function tests', () => {
 
         {
             // Compile everything
-            const success = await compileAllFiles({ fullPath: dir, debug: true });
+            const result = await compileAllFiles({ fullPath: dir, debug: true });
 
             //. these should report any failed paths somehow, not just true!=false
             expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
@@ -427,13 +427,19 @@ describe('generate function tests', () => {
             expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
             expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
 
-            expect(success).toBe(true);
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
 
         {
             // Compile one file
-            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
-            expect(success).toBe(true);
+            const result = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
     });
 
@@ -443,12 +449,15 @@ describe('generate function tests', () => {
 
         await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/non-nested-integrations'), dir);
 
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
 
         expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
-        expect(success).toBe(true);
+        expect(result).toEqual({
+            success: true,
+            failedFiles: []
+        });
     });
 
     it('should be able to migrate-to-directories', async () => {
@@ -463,11 +472,14 @@ describe('generate function tests', () => {
         expect(fs.existsSync(join(dir, 'contacts.ts'))).toBe(false);
         expect(fs.existsSync(join(dir, 'create-contacts.ts'))).toBe(false);
 
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
         expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
         expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
 
-        expect(success).toBe(true);
+        expect(result).toEqual({
+            success: true,
+            failedFiles: []
+        });
     });
 
     it('should be able to compile and run imported files', async () => {
@@ -477,14 +489,17 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/relative-imports/github'), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/relative-imports/nango.yaml'), join(dir, 'nango.yaml'));
 
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
+        const compileResult = await compileAllFiles({ fullPath: dir, debug: false });
 
         const module = await import(path.normalize(join(dir, 'dist/issues-github.js')));
 
         const result = module.default.default();
         expect(result).toBe('Hello, world!');
 
-        expect(success).toBe(true);
+        expect(compileResult).toEqual({
+            success: true,
+            failedFiles: []
+        });
     });
 
     it('should compile helper functions and throw an error if there is a complication error with an imported file', async () => {
@@ -581,18 +596,24 @@ describe('generate function tests', () => {
 
         {
             // Compile everything
-            const success = await compileAllFiles({ fullPath: dir, debug: true });
+            const result = await compileAllFiles({ fullPath: dir, debug: true });
             expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
             expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
             expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
             expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
-            expect(success).toBe(true);
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
 
         {
             // Compile one file
-            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
-            expect(success).toBe(true);
+            const result = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
     });
 });

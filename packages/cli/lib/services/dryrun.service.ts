@@ -247,9 +247,9 @@ export class DryRunService {
             type = 'on-events';
         }
 
-        const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
+        const { success } = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
 
-        if (!result) {
+        if (!success) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
             return;
         }

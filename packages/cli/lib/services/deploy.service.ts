@@ -49,9 +49,9 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+        const { success } = await compileAllFiles({ fullPath, debug });
 
-        if (!successfulCompile) {
+        if (!success) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
@@ -199,14 +199,16 @@ class DeployService {
             }
         } else if (integrationIdMode) {
             // Only compile files for the specified integration
-            successfulCompile = await compileAllFiles({
+            const { success } = await compileAllFiles({
                 fullPath,
                 debug,
                 providerConfigKey: integrationId!
             });
+            successfulCompile = success;
         } else {
             // Compile all files
-            successfulCompile = await compileAllFiles({ fullPath, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            successfulCompile = success;
         }
 
         if (!successfulCompile) {
@@ -408,14 +410,16 @@ class DeployService {
         let successfulCompile: boolean = false;
         if (integration) {
             // Only compile files for the specified integration
-            successfulCompile = await compileAllFiles({
+            const { success } = await compileAllFiles({
                 fullPath,
                 debug,
                 providerConfigKey: integration
             });
+            successfulCompile = success;
         } else {
             // Compile all files
-            successfulCompile = await compileAllFiles({ fullPath, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            successfulCompile = success;
         }
 
         if (!successfulCompile) {
