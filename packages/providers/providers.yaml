@@ -3840,6 +3840,7 @@ gem:
         base_url: https://api.gem.com
         headers:
             x-api-key: ${apiKey}
+            x-application-secret: ${connectionConfig.appSecret}
         verification:
             method: GET
             endpoints:
@@ -3849,9 +3850,19 @@ gem:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API Key for your Gem account
-            doc_section: '#step-1-finding-your-api-key'
+            title: Shareable Access Key
+            description: The Shareable Access Key for your Integration
+            example: Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz
+            pattern: '^[a-zA-Z0-9]{40}$'
+            doc_section: '#step-1-finding-your-shareable-access-key'
+    connection_config:
+        appSecret:
+            type: string
+            title: Application Secret
+            description: The Appication Secret for your Gem Integration
+            pattern: '^[a-f0-9]{128}$'
+            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
+            doc_section: '#step-2-finding-your-app-secret'
 
 gerrit:
     display_name: Gerrit
