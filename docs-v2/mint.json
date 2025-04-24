@@ -368,6 +368,7 @@
                 "integrations/all/coros",
                 "integrations/all/coros-sandbox",
                 "integrations/all/coupa-compass",
+                "integrations/all/cyberimpact",
                 "integrations/all/databricks-account",
                 "integrations/all/databricks-workspace",
                 "integrations/all/datadog",
