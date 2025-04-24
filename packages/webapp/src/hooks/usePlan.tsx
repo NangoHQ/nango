@@ -17,7 +17,7 @@ export async function apiPostPlanExtendTrial(env: string) {
 }
 
 export function useApiGetPlans(env: string) {
-    return useQuery({
+    return useQuery<GetPlans['Success'], APIError>({
         enabled: Boolean(env),
         queryKey: ['plans'],
         queryFn: async (): Promise<GetPlans['Success']> => {

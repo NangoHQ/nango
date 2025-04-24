@@ -176,9 +176,11 @@ export function useGetHmacAPI(env: string) {
 }
 
 export class APIError extends Error {
-    details;
-    constructor(details: { res: Response; json: Record<string, any> | ApiError<any> }) {
-        super('err');
-        this.details = details;
+    json;
+    res;
+    constructor({ res, json }: { res: Response; json: Record<string, any> | ApiError<any> }) {
+        super('api_error');
+        this.json = json;
+        this.res = res;
     }
 }
