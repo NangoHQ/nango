@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { globalEnv } from './env';
 import { useSignout } from './user';
 
-import type { PostSignup } from '@nangohq/types';
+import type { ApiError, PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
@@ -173,4 +173,12 @@ export function useGetHmacAPI(env: string) {
             requestErrorToast();
         }
     };
+}
+
+export class APIError extends Error {
+    details;
+    constructor(details: { res: Response; json: Record<string, any> | ApiError<any> }) {
+        super('err');
+        this.details = details;
+    }
 }

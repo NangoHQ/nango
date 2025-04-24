@@ -23,3 +23,12 @@ export interface PlanDefinition {
     hidden?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
 }
+
+export type GetPlans = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans';
+    Querystring: { env: string };
+    Success: {
+        data: PlanDefinition[];
+    };
+}>;
