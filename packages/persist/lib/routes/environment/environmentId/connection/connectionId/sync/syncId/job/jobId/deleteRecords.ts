@@ -1,9 +1,11 @@
-import type { ApiError, DeleteRecordsSuccess, Endpoint, MergingStrategy } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import { recordsRequestParser } from './validate.js';
+import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
+import type { ApiError, DeleteRecordsSuccess, Endpoint, MergingStrategy } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 type DeleteRecords = Endpoint<{
     Method: typeof method;
@@ -34,8 +36,9 @@ const validate = validateRequest<DeleteRecords>(recordsRequestParser);
 const handler = async (req: EndpointRequest<DeleteRecords>, res: EndpointResponse<DeleteRecords, AuthLocals>) => {
     const { environmentId, nangoConnectionId, syncId, syncJobId }: DeleteRecords['Params'] = req.params;
     const { model, records, providerConfigKey, connectionId, activityLogId, merging }: DeleteRecords['Body'] = req.body;
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     const result = await persistRecords({
+        plan,
         persistType: 'delete',
         environmentId,
         accountId: account.id,

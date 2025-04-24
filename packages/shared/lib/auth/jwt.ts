@@ -1,13 +1,12 @@
-import axios from 'axios';
 import jwt from 'jsonwebtoken';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios } from '@nangohq/utils';
 
 import { AuthCredentialsError } from '../utils/error.js';
+import { interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
 import type { JwtCredentials, ProviderJwt } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import { interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
 /**
  * Create JWT credentials

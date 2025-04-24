@@ -130,6 +130,8 @@ export const ENVS = z.object({
 
     // Billing
     FLAG_PLAN_ENABLED: bool,
+    FLAG_USAGE_ENABLED: bool,
+    LAGO_API_KEY: z.string().optional(),
 
     // --- Third parties
     // AWS
@@ -229,7 +231,6 @@ export const ENVS = z.object({
     NANGO_TELEMETRY_SDK: bool,
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
-    TELEMETRY: bool,
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 

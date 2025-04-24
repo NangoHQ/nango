@@ -59,7 +59,7 @@ export const queryClient = new QueryClient({
             refetchInterval: 0,
             refetchOnWindowFocus: false,
             refetchOnMount: true,
-            staleTime: 60 * 1000 * 5,
+            staleTime: 30 * 1000,
             retry: 0,
             retryDelay: (attemptIndex) => {
                 return Math.min(2000 * 2 ** attemptIndex, 30000);

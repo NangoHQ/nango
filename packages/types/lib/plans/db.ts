@@ -21,6 +21,13 @@ export interface DBPlan extends Timestamps {
     connection_with_scripts_max: number | null;
 
     /**
+     * Limit the number of total non-deleted connections
+     * Set to null to remove limit
+     * @default null
+     */
+    connections_max: number | null;
+
+    /**
      * Limit the number of environments that can be created
      * @default 2
      */

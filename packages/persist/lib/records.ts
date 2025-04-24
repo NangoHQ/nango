@@ -1,12 +1,13 @@
 import tracer from 'dd-trace';
 
+import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import type { MergingStrategy } from '@nangohq/types';
+import type { DBPlan, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -18,6 +19,7 @@ export async function persistRecords({
     accountId,
     environmentId,
     connectionId,
+    plan,
     providerConfigKey,
     nangoConnectionId,
     syncId,
@@ -31,6 +33,7 @@ export async function persistRecords({
     accountId: number;
     environmentId: number;
     connectionId: string;
+    plan: DBPlan | null;
     providerConfigKey: string;
     nangoConnectionId: number;
     syncId: string;
@@ -122,9 +125,10 @@ export async function persistRecords({
         await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
         const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
+        const total = allModifiedKeys.size + summary.unchangedKeys.length;
 
         void logCtx.info(
-            `Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`,
+            `Successfully batched ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
             { persistType },
             {
                 persistResults: {
@@ -132,10 +136,12 @@ export async function persistRecords({
                     added: summary.addedKeys.length,
                     updated: summary.updatedKeys.length,
                     deleted: summary.deletedKeys?.length || 0,
+                    unchanged: summary.unchangedKeys.length,
 
                     addedKeys: summary.addedKeys,
                     updatedKeys: summary.updatedKeys,
-                    deleteKeys: summary.deletedKeys || []
+                    deleteKeys: summary.deletedKeys || [],
+                    unchangedKeys: [] // TODO: reup summary.unchangedKeys
                 }
             }
         );
@@ -148,7 +154,13 @@ export async function persistRecords({
             return acc;
         }, 0);
 
-        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, new Set(summary.billedKeys).size, { accountId });
+        const mar = new Set(summary.billedKeys).size;
+
+        if (plan && plan.name !== 'free') {
+            void billing.send('monthly_active_records', mar, { accountId });
+        }
+
+        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
