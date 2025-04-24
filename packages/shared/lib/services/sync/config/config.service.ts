@@ -487,43 +487,39 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
     return result;
 }
 
-export async function getSyncConfigsWithConnections(
-    providerConfigKey: string,
-    environment_id: number
-): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
-    const result = await db.readOnly
-        .select(
-            `${TABLE}.id`,
-            '_nango_configs.provider',
-            '_nango_configs.unique_key',
-            db.knex.raw(
-                `(
-                    SELECT json_agg(
-                        json_build_object(
-                            'connection_id', _nango_connections.connection_id
-                        )
-                    )
-                    FROM _nango_connections
-                    WHERE _nango_configs.environment_id = _nango_connections.environment_id
-                    AND _nango_configs.unique_key = _nango_connections.provider_config_key
-                    AND _nango_configs.deleted = false
-                    AND _nango_connections.deleted = false
-                ) as connections
-                `
-            )
+export async function getConnectionCountsByProviderConfigKey(
+    environmentId: number
+): Promise<{ data: { providerConfigKey: string; total: string }[]; total: number }> {
+    const q = db.knex
+        .select<{ providerConfigKey: string; total: string }[]>(
+            '_nango_configs.unique_key as providerConfigKey',
+            db.knex.raw(`
+                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as connectionsWithScripts
+            `),
+            db.knex.raw(`
+                COUNT(DISTINCT _nango_connections.id) as total
+            `)
         )
-        .from<DBSyncConfig>(TABLE)
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            '_nango_configs.environment_id': environment_id,
-            '_nango_configs.unique_key': providerConfigKey,
-            active: true,
-            enabled: true,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false
-        });
+        .from('_nango_connections')
+        .join('_nango_configs', function () {
+            this.on('_nango_configs.id', '_nango_connections.config_id').andOnVal('_nango_configs.deleted', false);
+        })
+        .leftJoin('_nango_sync_configs', function () {
+            this.on(`_nango_sync_configs.nango_config_id`, '=', '_nango_configs.id')
+                // While this should not be necessary; without this the query execution time is multiplied by 1000x
+                .andOnVal('_nango_sync_configs.environment_id', environmentId);
+        })
+        .where('_nango_connections.environment_id', environmentId)
+        .andWhere('_nango_connections.deleted', false)
+        .groupByRaw('ROLLUP("_nango_configs"."unique_key")');
 
-    return result;
+    const res = await q;
+    const rollup = res.pop();
+
+    return {
+        data: res,
+        total: parseInt(rollup!.total, 10)
+    };
 }
 
 /**
