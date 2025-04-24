@@ -20,7 +20,8 @@ import {
     interpolateStringFromObject,
     linkConnection,
     oauth2Client,
-    providerClientManager
+    providerClientManager,
+    makeUrl
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -985,8 +986,16 @@ class OAuthController {
 
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
+            const interpolatedTokenUrl = makeUrl(tokenUrl, session.connectionConfig, provider.token_url_skip_encode);
+
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, tokenUrl, authorizationCode, session.callbackUrl, session.codeVerifier);
+                rawCredentials = await providerClientManager.getToken(
+                    config,
+                    interpolatedTokenUrl.href,
+                    authorizationCode,
+                    session.callbackUrl,
+                    session.codeVerifier
+                );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
