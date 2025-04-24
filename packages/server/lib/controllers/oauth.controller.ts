@@ -991,7 +991,7 @@ class OAuthController {
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
-                    interpolatedTokenUrl.origin + interpolatedTokenUrl.pathname,
+                    interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
                     session.codeVerifier
