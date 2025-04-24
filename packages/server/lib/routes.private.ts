@@ -62,7 +62,8 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
-import { postPlanExtendTrial } from './controllers/v1/plan/postPlanExtendTrial.js';
+import { getPlans } from './controllers/v1/plans/getPlans.js';
+import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -138,7 +139,9 @@ web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
-web.route('/plan/trial/extension').post(webAuth, postPlanExtendTrial);
+
+web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);

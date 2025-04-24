@@ -70,7 +70,8 @@ export type AuthCredentials =
     | JwtCredentials
     | ApiKeyCredentials
     | BasicApiCredentials
-    | AppCredentials;
+    | AppCredentials
+    | AppStoreCredentials;
 
 export interface AppCredentials {
     type?: 'APP';

@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import {
@@ -152,7 +153,7 @@ class SyncController {
         });
 
         const { input, action_name } = req.body;
-        const { account, environment } = res.locals;
+        const { account, environment, plan } = res.locals;
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
@@ -229,6 +230,10 @@ class SyncController {
                 span.finish();
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
+
+                if (plan && plan.name !== 'free') {
+                    void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                }
 
                 return;
             } else {

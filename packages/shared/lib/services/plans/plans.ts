@@ -25,9 +25,6 @@ export async function createPlan(
         const res = await db
             .from<DBPlan>('plans')
             .insert({
-                connection_with_scripts_max: 50,
-                has_sync_variants: true,
-                sync_frequency_secs_min: 30,
                 ...rest,
                 created_at: new Date(),
                 updated_at: new Date(),
