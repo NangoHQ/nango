@@ -1,8 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { apiFetch } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiPlan, PostPlanExtendTrial } from '@nangohq/types';
+import type { ApiPlan, GetPlans, PostPlanExtendTrial } from '@nangohq/types';
 
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
@@ -13,6 +14,25 @@ export async function apiPostPlanExtendTrial(env: string) {
         res,
         json: (await res.json()) as PostPlanExtendTrial['Reply']
     };
+}
+
+export function useApiGetPlans(env: string) {
+    return useQuery<GetPlans['Success'], APIError>({
+        enabled: Boolean(env),
+        queryKey: ['plans'],
+        queryFn: async (): Promise<GetPlans['Success']> => {
+            const res = await apiFetch(`/api/v1/plans?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetPlans['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
 }
 
 export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver: boolean; daysRemaining: number } {
