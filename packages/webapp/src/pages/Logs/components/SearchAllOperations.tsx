@@ -1,4 +1,4 @@
-import { IconSearch } from '@tabler/icons-react';
+import { IconSearch, IconX } from '@tabler/icons-react';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -13,6 +13,7 @@ import { MultiSelect } from '../../../components/MultiSelect';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Spinner from '../../../components/ui/Spinner';
 import * as Table from '../../../components/ui/Table';
+import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList } from '../constants';
@@ -62,11 +63,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
+    const [manualLoadMore, setManualLoadMore] = useState(true);
 
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(() => search);
     useDebounce(
         () => {
             setDebouncedSearch(search);
+            setManualLoadMore(search !== ''); // Because it can spam the backend we disable infinite scroll
         },
         250,
         [search]
@@ -82,7 +85,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
      * - When you scroll to the bottom, we disable interval refresh, and the infiniteQuery load the next pages
      * - When you scroll back to the top we trim all the pages so they don't get refresh, and we re-enable the interval refresh
      */
-    const { data, isLoading, isFetching, fetchNextPage, refetch } = useInfiniteQuery<
+    const { data, isLoading, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery<
         SearchOperations['Success'],
         SearchOperations['Errors'],
         { pages: SearchOperations['Success'][] },
@@ -110,7 +113,10 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     connections,
                     syncs,
                     period: periodCopy,
-                    limit: defaultLimit,
+                    // Because search is post-filtering it's changing the actual number of returned operations
+                    // It's more efficient to increase the limit of pre-filtered operations we get and do less round trip
+                    // The "drawbacks" is that if every operations are matching, it can be slower and return more row that expected
+                    limit: debouncedSearch ? defaultLimit * 10 : defaultLimit,
                     cursor: pageParam,
                     search: debouncedSearch
                 } satisfies SearchOperations['Body']),
@@ -138,7 +144,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         async () => {
             await refetch({ cancelRefetch: true });
         },
-        isLive && isScrollTop ? refreshInterval : null
+        isLive && isScrollTop && !debouncedSearch ? refreshInterval : null
     );
     useMount(async () => {
         // We can't use standard refetchOnMount because it will refresh every pages so we force refresh the first one
@@ -148,17 +154,20 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     });
 
     const trim = useCallback(() => {
-        queryClient.setQueryData([env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period], (oldData: any) => {
-            if (!oldData || !oldData.pages || oldData.pages.length <= 1) {
-                return oldData;
-            }
+        queryClient.setQueryData(
+            [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period, debouncedSearch],
+            (oldData: any) => {
+                if (!oldData || !oldData.pages || oldData.pages.length <= 1) {
+                    return oldData;
+                }
 
-            return {
-                ...oldData,
-                pages: [oldData.pages[0]],
-                pageParams: [oldData.pageParams[0]]
-            };
-        });
+                return {
+                    ...oldData,
+                    pages: [oldData.pages[0]],
+                    pageParams: [oldData.pageParams[0]]
+                };
+            }
+        );
     }, [env, states, types, integrations, connections, syncs, period]);
 
     const flatData = useMemo<OperationRowType[]>(() => {
@@ -197,6 +206,12 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
             }
 
             const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
+
+            // We don't want to refresh or trim the page when searching
+            if (manualLoadMore) {
+                return;
+            }
+
             // once the user has scrolled within 200px of the bottom of the table, fetch more data if we can
             if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && totalFetched < totalOperations) {
                 void fetchNextPage({ cancelRefetch: true });
@@ -209,11 +224,29 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 setIsScrollTop(false);
             }
         },
-        [fetchNextPage, isFetching, totalFetched, totalOperations, isLive, isScrollTop]
+        [fetchNextPage, isFetching, totalFetched, totalOperations, isLive, isScrollTop, manualLoadMore]
     );
     useEffect(() => {
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
+    const onClickLoadMore = useCallback(() => {
+        setManualLoadMore(false);
+    }, []);
+    useEffect(() => {
+        // When searching pagination is incomplete it can be daunting to manually click the button a lot
+        // So we disable manual load more until we find a next page
+        if (!debouncedSearch || manualLoadMore) {
+            return;
+        }
+
+        if (!hasNextPage) {
+            setManualLoadMore(true);
+        }
+
+        if (data?.pages && data.pages.length > 0 && data.pages.at(-1)!.data.length > 0) {
+            setManualLoadMore(true);
+        }
+    }, [data, hasNextPage]);
 
     // --- Period
     const onPeriodChange = (range: DateRange, live: boolean) => {
@@ -233,6 +266,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 <div className="w-full">
                     <Input
                         before={<IconSearch stroke={1} size={16} />}
+                        after={
+                            search && (
+                                <Button variant={'icon'} size={'xs'} onClick={() => setSearch('')}>
+                                    <IconX stroke={1} size={18} />
+                                </Button>
+                            )
+                        }
                         placeholder="Search logs..."
                         className="border-grayscale-900"
                         onChange={(e) => setSearch(e.target.value)}
@@ -247,7 +287,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />
 
-                    <DatePicker isLive={isLive} period={{ from: period[0], to: period[1] }} onChange={onPeriodChange} />
+                    <DatePicker isLive={!manualLoadMore && isLive} period={{ from: period[0], to: period[1] }} onChange={onPeriodChange} />
                 </div>
             </div>
             <div
@@ -279,6 +319,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     </Table.Header>
 
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
+
+                    {flatData.length > 0 && hasNextPage && (
+                        <Button onClick={onClickLoadMore} variant={'emptyFaded'} className="justify-center mt-4 text-s" isLoading={isFetchingNextPage}>
+                            Load more...
+                        </Button>
+                    )}
+                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-grayscale-500 p-4 mt-2">Nothing more to load...</div>}
 
                     {isLoading && (
                         <Table.Body>

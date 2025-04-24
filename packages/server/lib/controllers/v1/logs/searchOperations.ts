@@ -78,16 +78,6 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
 
-    let operationIds: string[] | undefined;
-    if (body.search) {
-        const bucket = await model.searchForMessagesInsideOperations({ limit: body.limit || 100, search: body.search, period: body.period });
-        const tmp = new Set<string>();
-        for (const item of bucket.items) {
-            tmp.add(item.key);
-        }
-        operationIds = Array.from(tmp);
-    }
-
     const rawOps = await model.listOperations({
         accountId: env.account_id,
         environmentId: env.id,
@@ -98,9 +88,13 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         connections: body.connections,
         syncs: body.syncs,
         period: body.period,
-        cursor: body.cursor,
-        operationIds
+        cursor: body.cursor
     });
+    if (body.search && rawOps.items.length > 0) {
+        const bucket = await model.searchForMessagesInsideOperations({ search: body.search, operationsIds: rawOps.items.map((op) => op.id) });
+        const matched = new Set(bucket.items.map((item) => item.key));
+        rawOps.items = rawOps.items.filter((item) => matched.has(item.id));
+    }
 
     res.status(200).send({
         data: rawOps.items,

@@ -72,7 +72,6 @@ export async function listOperations(opts: {
     accountId: number;
     environmentId?: number;
     limit: number;
-    operationIds?: string[] | undefined;
     states?: SearchOperationsState[] | undefined;
     types?: SearchOperationsType[] | undefined;
     integrations?: SearchOperationsIntegration[] | undefined;
@@ -160,12 +159,6 @@ export async function listOperations(opts: {
             range: {
                 createdAt: { gte: opts.period.from, lte: opts.period.to }
             }
-        });
-    }
-
-    if (opts.operationIds) {
-        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
-            ids: { values: opts.operationIds }
         });
     }
 
@@ -361,12 +354,7 @@ export async function listMessages(opts: {
 /**
  * This method is searching logs inside each operations, returning a list of matching operations.
  */
-export async function searchForMessagesInsideOperations(opts: {
-    search: string;
-    limit: number;
-    period?: SearchOperationsPeriod | undefined;
-    cursor?: string | null | undefined;
-}): Promise<{
+export async function searchForMessagesInsideOperations(opts: { search: string; operationsIds: string[] }): Promise<{
     items: { key: string; doc_count: number }[];
 }> {
     const query: estypes.QueryDslQueryContainer = {
@@ -375,20 +363,12 @@ export async function searchForMessagesInsideOperations(opts: {
                 { exists: { field: 'parentId' } },
                 {
                     match_phrase_prefix: { meta_search: { query: opts.search } }
-                }
+                },
+                { terms: { parentId: opts.operationsIds } }
             ]
         }
     };
 
-    if (opts.period) {
-        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
-            range: {
-                createdAt: { gte: opts.period.from, lte: opts.period.to }
-            }
-        });
-    }
-
-    const cursor = opts.cursor ? parseCursor(opts.cursor) : undefined;
     const res = await client.search<
         OperationRow,
         {
@@ -398,11 +378,10 @@ export async function searchForMessagesInsideOperations(opts: {
         index: indexMessages.index,
         size: 0,
         sort: [{ createdAt: 'desc' }, 'id'],
-        track_total_hits: true,
-        search_after: cursor,
+        track_total_hits: false,
         query,
         aggs: {
-            parentIdAgg: { terms: { size: opts.limit + 1, field: 'parentId' } }
+            parentIdAgg: { terms: { size: opts.operationsIds.length + 1, field: 'parentId' } }
         }
     });
 
