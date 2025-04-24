@@ -2886,6 +2886,61 @@ docusign-sandbox:
     post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign-sandbox
 
+docuware:
+    display_name: DocuWare
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
+    body_format: form
+    token_request_method: GET
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    additional_steps:
+        - body_format: form
+          token_url: ${step1.IdentityServiceUrl}/.well-known/openid-configuration
+          token_request_method: GET
+        - body_format: form
+          token_url: ${step2.token_endpoint}
+          token_headers:
+              content-type: application/x-www-form-urlencoded
+          token_params:
+              grant_type: password
+              scope: docuware.platform
+              client_id: docuware.platform.net.client
+              username: ${credentials.username}
+              password: ${credentials.password}
+    proxy:
+        base_url: https://${connectionConfig.domain}/DocuWare/Platform
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/docuware
+    docs_connect: https://docs.nango.dev/integrations/all/docuware/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain to your DocuWare account
+            format: hostname
+            prefix: https://
+            example: example.docuware.cloud
+            order: 1
+            doc_section: '#step-1-finding-your-domain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The Username to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: The Password to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+
 dropbox:
     display_name: Dropbox
     categories:

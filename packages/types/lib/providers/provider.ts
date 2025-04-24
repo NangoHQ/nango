@@ -167,6 +167,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_params?: Record<string, string>;
         token_headers?: Record<string, string>;
         token_url: string;
+        token_request_method?: 'GET';
     }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;

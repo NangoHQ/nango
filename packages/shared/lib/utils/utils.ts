@@ -234,15 +234,13 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
-export function stripStepResponse(obj: any, step: Record<string, any>): any {
+export function stripStepResponse(obj: any): any {
     if (typeof obj === 'string') {
-        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
-            return step[key] || '';
-        });
+        return obj.replace(/step\d+\./g, '');
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
-            strippedObject[key] = stripStepResponse(value, step);
+            strippedObject[key] = stripStepResponse(value);
         }
         return strippedObject;
     }
