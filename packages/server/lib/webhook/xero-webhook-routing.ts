@@ -16,9 +16,7 @@ interface XeroWebhookBody {
 }
 
 function validate(integration: ProviderConfig, signature: string, rawBody: string): boolean {
-    // TODO:Check for location to store webhook key integration configuration
-    const webhookKey = integration.custom?.['webhookKey'] || integration.custom?.['webhookSecret'];
-
+    const webhookKey = integration.custom?.['webhookSecret'];
     if (!webhookKey) {
         logger.error('Missing webhook key for signature validation', { configId: integration.id });
         return false;
