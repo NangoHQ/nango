@@ -6,6 +6,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as billClient from '../auth/bill.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
@@ -63,6 +64,7 @@ import type {
     MaybePromise,
     Metadata,
     Provider,
+    ProviderAppleAppStore,
     ProviderBill,
     ProviderJwt,
     ProviderOAuth2,
@@ -951,61 +953,6 @@ class ConnectionService {
         }
     }
 
-    public async getAppStoreCredentials(
-        provider: Provider,
-        connectionConfig: DBConnection['connection_config'],
-        privateKey: string
-    ): Promise<ServiceResponse<AppStoreCredentials>> {
-        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP_STORE'] as string);
-        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + 15 * 60;
-
-        const payload: Record<string, string | number> = {
-            iat: now,
-            exp: expiration,
-            iss: connectionConfig['issuerId']
-        };
-
-        if (provider.authorization_params && provider.authorization_params['audience']) {
-            payload['aud'] = provider.authorization_params['audience'];
-        }
-
-        if (connectionConfig['scope']) {
-            payload['scope'] = connectionConfig['scope'];
-        }
-
-        const create = await jwtClient.createCredentialsFromURL({
-            privateKey,
-            url: tokenUrl,
-            payload,
-            additionalApiHeaders: null,
-            options: {
-                header: {
-                    alg: 'ES256',
-                    kid: connectionConfig['privateKeyId'],
-                    typ: 'JWT'
-                }
-            }
-        });
-
-        if (create.isErr()) {
-            return { success: false, error: create.error, response: null };
-        }
-
-        const rawCredentials = create.value;
-        const credentials: AppStoreCredentials = {
-            type: 'APP_STORE',
-            access_token: rawCredentials.token!,
-            private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
-        };
-
-        return { success: true, error: null, response: credentials };
-    }
-
     public async getAppCredentialsAndFinishConnection(
         connectionId: string,
         integration: ProviderConfig,
@@ -1256,23 +1203,27 @@ class ConnectionService {
                             const stepNumber = extractStepNumber(value);
                             const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
 
-                            const strippedValue = stripStepResponse(value, stepResponsesObj);
-                            if (typeof strippedValue === 'object' && strippedValue !== null) {
-                                stepPostBody[key] = interpolateObject(strippedValue, dynamicCredentials);
-                            } else if (typeof strippedValue === 'string') {
-                                stepPostBody[key] = interpolateString(strippedValue, dynamicCredentials);
-                            } else {
-                                stepPostBody[key] = strippedValue;
-                            }
+                            const applyInterpolation = (input: any, source: Record<string, any>) => {
+                                if (typeof input === 'object' && input !== null) {
+                                    return interpolateObject(input, source);
+                                } else if (typeof input === 'string') {
+                                    return interpolateString(input, source);
+                                }
+                                return input;
+                            };
+
+                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
+                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
 
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
-                    const interpolatedTokenUrl = stripStepResponse(step.token_url, stepResponsesObjForURL);
-                    const stepUrl = new URL(interpolatedTokenUrl).toString();
-
+                    const strippedTokenUrl = stripStepResponse(step.token_url);
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1284,7 +1235,14 @@ class ConnectionService {
                     }
 
                     const stepRequestOptions = { headers: stepHeaders };
-                    const stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+
+                    let stepResponse: any;
+
+                    if (step.token_request_method === 'GET') {
+                        stepResponse = await axios.get(stepUrl, stepRequestOptions);
+                    } else {
+                        stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+                    }
 
                     if (stepResponse.status !== 200) {
                         return { success: false, error: new NangoError(`invalid_two_step_credentials_step_${stepIndex}`), response: null };
@@ -1397,13 +1355,17 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'APP_STORE') {
             const { private_key } = connection.credentials as AppStoreCredentials;
-            const { success, error, response: credentials } = await this.getAppStoreCredentials(provider, connection.connection_config, private_key);
+            const create = await appleAppStoreClient.createCredentials({
+                provider: provider as ProviderAppleAppStore,
+                connectionConfig: connection.connection_config,
+                private_key
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;

@@ -18,6 +18,7 @@ import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking } from './utils/productTracking.js';
+export * as appleAppStoreClient from './auth/appleAppStore.js';
 export * as billClient from './auth/bill.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
@@ -36,6 +37,7 @@ export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
+export * from './services/plans/definitions.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 
