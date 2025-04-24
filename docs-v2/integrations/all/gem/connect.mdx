@@ -6,9 +6,11 @@ sidebarTitle: Gem
 # Overview
 
 To authenticate with Gem, you need:
-1. **API key** - A key that grants Nango permission to interact with Gem's APIs resources and services.
+1. **Shareable Access Key** - A key that grants Nango permission to interact with Gem's APIs resources and services.
+2. **Application Secret** - The secret key for your integration, provided externally by Gem.
 
-This guide will walk you through obtaining your **API Key** within Gem.
+
+This guide will walk you through obtaining your **Shareable Access Key** and **Application Secret** within Gem.
 
 ### Prerequisites:
 
@@ -17,19 +19,21 @@ This guide will walk you through obtaining your **API Key** within Gem.
 
 ### Instructions:
 
-#### Step 1: Finding Your API Key
-1. Login to your [Gem](https://www.gem.com/login) account.
-2. Navigate to your **Team Settings**.
-3. Go to the **Additional Settings** section.
-4. Scroll to the bottom of the page to find the **API Keys** section.
-5. In the **API Keys** section, click **Create API Key** to generate a new **API Key**.
-<img src="/integrations/all/gem/api_section.png" />
+#### Step 1: Finding Your Shareable Access Key
+1. Log in to your [Gem](https://www.gem.com/login) account.
+2. Select your profile at the bottom left then navigate to **Admin Settings** > **Integrations**.
+3. Scroll to the bottom of the page to find **Third party applications** section.
+4. Click **Add Integration** to add your integration and copy the **Shareable Access Key**.
+<img src="/integrations/all/gem/integrations_page.png" />
 
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2: Finding Your Application Secret
+- This secret is provided externally by Gem.
 
-Once you have your **API Key**:
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Shareable Access Key** and **Application Secret**:
 1. Open the form where you need to authenticate with Gem.
-2. Enter your **API Key** in its respective field.
+2. Enter your **Shareable Access Key** and **Application Secret** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 
