@@ -19,9 +19,9 @@ import {
     interpolateObjectValues,
     interpolateStringFromObject,
     linkConnection,
+    makeUrl,
     oauth2Client,
-    providerClientManager,
-    makeUrl
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -45,7 +45,7 @@ import type { ConnectSessionAndEndUser } from '../services/connectSession.servic
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
-import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderGithubApp, ProviderOAuth2 } from '@nangohq/types';
+import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderCustom, ProviderGithubApp, ProviderOAuth2 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class OAuthController {
@@ -873,7 +873,7 @@ class OAuthController {
     }
 
     private async oauth2Callback(
-        provider: ProviderOAuth2,
+        provider: ProviderOAuth2 | ProviderCustom,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,
