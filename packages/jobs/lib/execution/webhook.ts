@@ -168,7 +168,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 }
 
 export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
     const content = `The webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
