@@ -38,6 +38,12 @@ _No setup guide yet._
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
+## API gotchas
+
+-   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
+    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
+    - Set the scopes to `.default` to ensure the permissions remain the same as those granted at the organization level.
+
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
 ## Going further
