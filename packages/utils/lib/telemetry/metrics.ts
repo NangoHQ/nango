@@ -135,10 +135,10 @@ export function time<F extends (...args: unknown[]) => unknown>(metricName: Type
         const start = process.hrtime();
 
         try {
-            const res = func(...args);
-            if (res[Symbol.toStringTag] === 'Promise') {
+            const res = func(...args) as any;
+            if (typeof res === 'object' && res && res[Symbol.toStringTag] === 'Promise') {
                 return res.then(
-                    (v) => {
+                    (v: unknown) => {
                         computeDuration(start);
                         return v;
                     },
