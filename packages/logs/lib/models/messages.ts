@@ -87,9 +87,11 @@ export async function listOperations(opts: {
             should: []
         }
     };
+
     if (opts.environmentId) {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ term: { environmentId: opts.environmentId } });
     }
+
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
         // Where or
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
@@ -100,6 +102,7 @@ export async function listOperations(opts: {
             }
         });
     }
+
     if (opts.integrations && (opts.integrations.length > 1 || opts.integrations[0] !== 'all')) {
         // Where or
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
@@ -110,6 +113,7 @@ export async function listOperations(opts: {
             }
         });
     }
+
     if (opts.connections && (opts.connections.length > 1 || opts.connections[0] !== 'all')) {
         // Where or
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
@@ -120,6 +124,7 @@ export async function listOperations(opts: {
             }
         });
     }
+
     if (opts.syncs && (opts.syncs.length > 1 || opts.syncs[0] !== 'all')) {
         // Where or
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
@@ -130,6 +135,7 @@ export async function listOperations(opts: {
             }
         });
     }
+
     if (opts.types && (opts.types.length > 1 || opts.types[0] !== 'all')) {
         const types: estypes.QueryDslQueryContainer[] = [];
         for (const couple of opts.types) {
@@ -147,6 +153,7 @@ export async function listOperations(opts: {
             }
         });
     }
+
     if (opts.period) {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             range: {
@@ -271,10 +278,7 @@ export async function listMessages(opts: {
     cursorAfter?: string | null | undefined;
 }): Promise<ListMessages> {
     const query: estypes.QueryDslQueryContainer = {
-        bool: {
-            must: [{ term: { parentId: opts.parentId } }],
-            should: []
-        }
+        bool: { must: [{ term: { parentId: opts.parentId } }], should: [] }
     };
 
     if (opts.states && (opts.states.length > 1 || opts.states[0] !== 'all')) {
@@ -339,6 +343,46 @@ export async function listMessages(opts: {
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
         cursorAfter: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
+}
+
+/**
+ * This method is searching logs inside each operations, returning a list of matching operations.
+ */
+export async function searchForMessagesInsideOperations(opts: { search: string; operationsIds: string[] }): Promise<{
+    items: { key: string; doc_count: number }[];
+}> {
+    const query: estypes.QueryDslQueryContainer = {
+        bool: {
+            must: [
+                { exists: { field: 'parentId' } },
+                {
+                    match_phrase_prefix: { meta_search: { query: opts.search } }
+                },
+                { terms: { parentId: opts.operationsIds } }
+            ]
+        }
+    };
+
+    const res = await client.search<
+        OperationRow,
+        {
+            parentIdAgg: estypes.AggregationsTermsAggregateBase<{ key: string; doc_count: number }>;
+        }
+    >({
+        index: indexMessages.index,
+        size: 0,
+        sort: [{ createdAt: 'desc' }, 'id'],
+        track_total_hits: false,
+        query,
+        aggs: {
+            // We aggregate because we can have N match per operation
+            parentIdAgg: { terms: { size: opts.operationsIds.length + 1, field: 'parentId' } }
+        }
+    });
+
+    const aggs = res.aggregations!['parentIdAgg']['buckets'];
+
+    return { items: aggs as any };
 }
 
 /**
