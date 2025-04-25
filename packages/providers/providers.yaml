@@ -2130,6 +2130,32 @@ clari-copilot:
             title: API Key
             description: The API key for your Clari Copilot account
 
+clicksend:
+    display_name: ClickSend
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://rest.clicksend.com/v3
+        verification:
+            method: GET
+            endpoints:
+                - /account
+    docs: https://docs.nango.dev/integrations/all/clicksend
+    docs_connect: https://docs.nango.dev/integrations/all/clicksend/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your ClickSend account username
+            doc_section: '#step-1-finding-your-username'
+        password:
+            type: string
+            title: API Key
+            description: Your ClickSend API Key
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
+
 clickup:
     display_name: ClickUp
     categories:
