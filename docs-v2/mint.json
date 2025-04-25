@@ -701,6 +701,7 @@
                 "integrations/all/workable",
                 "integrations/all/workable-oauth",
                 "integrations/all/workday",
+                "integrations/all/workday-oauth",
                 "integrations/all/wrike",
                 "integrations/all/xai",
                 "integrations/all/xero",
