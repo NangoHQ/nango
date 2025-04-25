@@ -1,8 +1,11 @@
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import crypto from 'node:crypto';
+
+import { WebhookRoutingError } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
-import crypto from 'crypto';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
 const logger = getLogger('Webhook.Hubspot');
 
@@ -24,7 +27,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
     if (!valid) {
         logger.error('webhook signature invalid');
-        return { response: { error: 'invalid signature' }, statusCode: 401 };
+        throw new WebhookRoutingError('invalid_signature');
     }
 
     if (Array.isArray(body)) {

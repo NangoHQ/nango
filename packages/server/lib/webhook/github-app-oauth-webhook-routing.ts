@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import get from 'lodash-es/get.js';
 
-import { connectionService, environmentService, getProvider } from '@nangohq/shared';
+import { WebhookRoutingError, connectionService, environmentService, getProvider } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
@@ -36,7 +36,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
-            return { response: { error: 'invalid signature' }, statusCode: 401 };
+            throw new WebhookRoutingError('invalid_signature');
         }
     }
 
@@ -82,13 +82,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
             logger.info('no connection or existing installation_id');
-            return;
+            throw new WebhookRoutingError('no_connection_or_existing_installation_id');
         }
 
         const provider = getProvider(integration.provider);
         if (!provider) {
             logger.error('unknown provider');
-            return;
+            throw new WebhookRoutingError('unknown_provider');
         }
 
         const activityLogId = connection.connection_config['pendingLog'];

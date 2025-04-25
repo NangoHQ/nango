@@ -1,11 +1,13 @@
-import type { WebhookHandler } from './types.js';
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import crypto from 'node:crypto';
+
+import { WebhookRoutingError } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import crypto from 'crypto';
+import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
-const logger = getLogger('Webook.GithubApp');
+const logger = getLogger('Webhook.GithubApp');
 
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
@@ -28,7 +30,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid');
-            return { response: { error: 'invalid signature' }, statusCode: 401 };
+            throw new WebhookRoutingError('invalid_signature');
         }
     }
 

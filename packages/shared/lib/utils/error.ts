@@ -23,6 +23,8 @@ export class NangoInternalError extends Error {
 
 export class AuthCredentialsError extends NangoInternalError {}
 
+export class WebhookRoutingError extends NangoInternalError {}
+
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
@@ -487,6 +489,21 @@ export class NangoError extends NangoInternalError {
             case 'concurrent_deployment':
                 this.status = 409;
                 this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
+                break;
+
+            case 'invalid_signature':
+                this.status = 401;
+                this.message = 'Invalid webhook signature';
+                break;
+
+            case 'missing_signature':
+                this.status = 401;
+                this.message = 'Missing webhook signature';
+                break;
+
+            case 'invalid_payload':
+                this.status = 400;
+                this.message = 'Invalid webhook payload';
                 break;
 
             default:

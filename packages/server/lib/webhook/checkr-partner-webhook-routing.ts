@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
 
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import { WebhookRoutingError } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
 const logger = getLogger('Webhook.Checkr');
 
@@ -30,7 +32,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const signature = headers['x-checkr-signature'];
     if (!signature) {
         logger.error('missing signature', { configId: integration.id });
-        return { response: { error: 'missing signature' }, statusCode: 401 };
+        throw new WebhookRoutingError('missing_signature');
     }
 
     logger.info('received', { configId: integration.id });

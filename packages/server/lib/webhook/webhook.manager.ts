@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { externalWebhookService, getProvider } from '@nangohq/shared';
+import { WebhookRoutingError, externalWebhookService, getProvider } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -53,27 +53,43 @@ export async function routeWebhook({
             return await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
+            if (err instanceof WebhookRoutingError) {
+                return {
+                    response: { error: err.message },
+                    statusCode: 401
+                };
+            }
+            return {
+                response: { error: 'internal_error' },
+                statusCode: 500
+            };
         }
+    });
+
+    if (!res) {
         return null;
-    });
+    }
 
-    const webhookBodyToForward = res && 'toForward' in res ? res.toForward : body;
-    const connectionIds = res && 'connectionIds' in res ? (res.connectionIds as string[]) : [];
+    // Only forward webhook if there was no error
+    if (res.statusCode === 200) {
+        const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
+        const connectionIds = 'connectionIds' in res ? (res.connectionIds as string[]) : [];
 
-    const webhookSettings = await externalWebhookService.get(environment.id);
+        const webhookSettings = await externalWebhookService.get(environment.id);
 
-    await tracer.trace('webhook.forward', async () => {
-        await forwardWebhook({
-            integration,
-            account,
-            environment,
-            webhookSettings,
-            connectionIds,
-            payload: webhookBodyToForward,
-            webhookOriginalHeaders: headers,
-            logContextGetter
+        await tracer.trace('webhook.forward', async () => {
+            await forwardWebhook({
+                integration,
+                account,
+                environment,
+                webhookSettings,
+                connectionIds,
+                payload: webhookBodyToForward,
+                webhookOriginalHeaders: headers,
+                logContextGetter
+            });
         });
-    });
+    }
 
     return res;
 }
