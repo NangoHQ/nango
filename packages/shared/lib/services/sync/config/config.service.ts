@@ -489,12 +489,12 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
 
 export async function getConnectionCountsByProviderConfigKey(
     environmentId: number
-): Promise<{ data: { providerConfigKey: string; total: string }[]; total: number }> {
+): Promise<{ data: { providerConfigKey: string; connectionsWithScripts: string }[]; total: number }> {
     const q = db.knex
-        .select<{ providerConfigKey: string; total: string }[]>(
+        .select<{ providerConfigKey: string; connectionsWithScripts: string; total: string }[]>(
             '_nango_configs.unique_key as providerConfigKey',
             db.knex.raw(`
-                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as connectionsWithScripts
+                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as "connectionsWithScripts"
             `),
             db.knex.raw(`
                 COUNT(DISTINCT _nango_connections.id) as total

@@ -1,9 +1,20 @@
 import { clsx } from 'clsx';
-import type { ClassValue } from 'clsx';
 import { format } from 'date-fns';
-import { twMerge } from 'tailwind-merge';
-import type { SyncResult } from '../types';
+import { extendTailwindMerge } from 'tailwind-merge';
+
 import { globalEnv } from './env';
+
+import type { SyncResult } from '../types';
+import type { ClassValue } from 'clsx';
+
+const customTwMerge = extendTailwindMerge({
+    extend: {
+        classGroups: {
+            // Limitation: it's a custom size. Without this it would get confused with a text-color
+            'font-size': ['text-s']
+        }
+    }
+});
 
 export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
 export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
@@ -169,7 +180,7 @@ export function getRunTime(created_at: string, updated_at: string): string {
 }
 
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
+    return customTwMerge(clsx(inputs));
 }
 
 const quantityFormatter = Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 });
