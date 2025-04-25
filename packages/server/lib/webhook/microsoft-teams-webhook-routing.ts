@@ -5,7 +5,7 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _rawBod
     const response = await nango.executeScriptForWebhooks(integration, body, 'type', 'channelData.tenant.id', logContextGetter, 'tenantId');
 
     return {
-        response: { status: 'success' },
+        content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
         toForward: body

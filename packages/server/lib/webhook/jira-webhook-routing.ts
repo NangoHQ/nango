@@ -19,7 +19,7 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _rawBod
         }
 
         return {
-            response: { status: 'success' },
+            content: { status: 'success' },
             statusCode: 200,
             connectionIds
         };
@@ -33,7 +33,7 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _rawBod
             'accountId'
         );
         return {
-            response: { status: 'success' },
+            content: { status: 'success' },
             statusCode: 200,
             connectionIds: response?.connectionIds || [],
             toForward: body

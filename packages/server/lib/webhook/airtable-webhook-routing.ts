@@ -7,7 +7,7 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, integratio
     const editedBodyWithCatchAll = { ...body, type: '*' };
     const response = await nango.executeScriptForWebhooks(integration, editedBodyWithCatchAll, 'type', 'webhook.id', logContextGetter, 'metadata.webhooks');
     return {
-        response: { status: 'success' },
+        content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
         toForward: body

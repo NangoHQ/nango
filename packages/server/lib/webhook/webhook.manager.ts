@@ -7,7 +7,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import * as webhookHandlers from './index.js';
 import { internalNango } from './internal-nango.js';
 
-import type { RouteWebhookResponse, WebhookHandlersMap } from './types.js';
+import type { WebhookResponse, WebhookHandlersMap } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -32,20 +32,29 @@ export async function routeWebhook({
     body: any;
     rawBody: string;
     logContextGetter: LogContextGetter;
-}): Promise<RouteWebhookResponse | null> {
+}): Promise<WebhookResponse> {
     if (!body) {
-        return null;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     const provider = getProvider(integration.provider);
     if (!provider || !provider['webhook_routing_script']) {
-        return null;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     const webhookRoutingScript = provider['webhook_routing_script'];
     const handler = handlers[webhookRoutingScript];
     if (!handler) {
-        return null;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     const res = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
@@ -55,19 +64,22 @@ export async function routeWebhook({
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
             if (err instanceof WebhookRoutingError) {
                 return {
-                    response: { error: err.message },
+                    content: { error: err.message },
                     statusCode: 401
                 };
             }
             return {
-                response: { error: 'internal_error' },
+                content: { error: 'internal_error' },
                 statusCode: 500
             };
         }
     });
 
     if (!res) {
-        return null;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     // Only forward webhook if there was no error

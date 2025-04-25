@@ -53,11 +53,11 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
             }
         }
 
-        return { response: { status: 'success' }, statusCode: 200, connectionIds };
+        return { content: { status: 'success' }, statusCode: 200, connectionIds };
     } else {
         const response = await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
         return {
-            response: { status: 'success' },
+            content: { status: 'success' },
             statusCode: 200,
             connectionIds: response?.connectionIds || [],
             toForward: body

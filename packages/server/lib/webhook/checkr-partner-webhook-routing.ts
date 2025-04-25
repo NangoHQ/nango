@@ -49,7 +49,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'account_id', logContextGetter, 'checkr_account_id');
 
     return {
-        response: { status: 'success' },
+        content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
         toForward: parsedBody

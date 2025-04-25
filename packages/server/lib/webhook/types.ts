@@ -11,17 +11,25 @@ export type WebhookHandler<T = any> = (
     logContextGetter: LogContextGetter
 ) => Promise<WebhookResponse>;
 
-// Base response type that all webhook responses must include
 export interface WebhookResponseOnly {
-    response: string | Record<string, any> | null;
+    content: string | Record<string, any> | null;
     statusCode: number;
 }
 
-// Union type for all possible webhook response structures
-export type WebhookResponse =
-    | WebhookResponseOnly
-    | (WebhookResponseOnly & { connectionIds: string[] })
-    | (WebhookResponseOnly & { toForward: unknown; connectionIds: string[] });
+export interface WebhookResponseWithConnectionIds extends WebhookResponseOnly {
+    connectionIds: string[];
+}
+
+export interface WebhookResponseWithForward extends WebhookResponseWithConnectionIds {
+    toForward: unknown;
+}
+
+export interface WebhookResponseNoAction {
+    content: null;
+    statusCode: 204;
+}
+
+export type WebhookResponse = WebhookResponseOnly | WebhookResponseWithConnectionIds | WebhookResponseWithForward | WebhookResponseNoAction;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
 
@@ -33,11 +41,4 @@ export interface AirtableWebhookReference {
         id: string;
     };
     timestamp: string;
-}
-
-export interface RouteWebhookResponse {
-    response: string | Record<string, any> | null;
-    statusCode: number;
-    connectionIds?: string[];
-    toForward?: unknown;
 }

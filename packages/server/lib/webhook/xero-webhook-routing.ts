@@ -61,7 +61,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     // For empty events, just return success
     if (parsedBody.events.length === 0) {
         logger.info('Empty events array, returning success', { configId: integration.id });
-        return { response: { status: 'success' }, statusCode: 200 };
+        return { content: { status: 'success' }, statusCode: 200 };
     }
 
     let connectionIds: string[] = [];
@@ -73,7 +73,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     }
 
     return {
-        response: { status: 'success' },
+        content: { status: 'success' },
         statusCode: 200,
         connectionIds,
         toForward: parsedBody
