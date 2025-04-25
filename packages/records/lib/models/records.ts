@@ -322,7 +322,7 @@ export async function upsert({
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [newLockId(connectionId, model)]);
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 const encryptedRecords = encryptRecords(chunk);
