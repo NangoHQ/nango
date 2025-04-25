@@ -7,7 +7,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import * as webhookHandlers from './index.js';
 import { internalNango } from './internal-nango.js';
 
-import type { WebhookHandlersMap } from './types.js';
+import type { RouteWebhookResponse, WebhookHandlersMap } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -32,20 +32,20 @@ export async function routeWebhook({
     body: any;
     rawBody: string;
     logContextGetter: LogContextGetter;
-}): Promise<unknown> {
+}): Promise<RouteWebhookResponse | null> {
     if (!body) {
-        return;
+        return null;
     }
 
     const provider = getProvider(integration.provider);
     if (!provider || !provider['webhook_routing_script']) {
-        return;
+        return null;
     }
 
     const webhookRoutingScript = provider['webhook_routing_script'];
     const handler = handlers[webhookRoutingScript];
     if (!handler) {
-        return;
+        return null;
     }
 
     const res = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
@@ -57,8 +57,8 @@ export async function routeWebhook({
         return null;
     });
 
-    const webhookBodyToForward = res?.parsedBody || body;
-    const connectionIds = res?.connectionIds || [];
+    const webhookBodyToForward = res && 'toForward' in res ? res.toForward : body;
+    const connectionIds = res && 'connectionIds' in res ? (res.connectionIds as string[]) : [];
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
@@ -75,5 +75,5 @@ export async function routeWebhook({
         });
     });
 
-    return res ? { acknowledgementResponse: res.acknowledgementResponse, statusCode: res.statusCode } : null;
+    return res;
 }

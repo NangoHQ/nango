@@ -6,7 +6,13 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _, logC
      * Only accepted format
      * { type: '__STRING__', connectionId: '__STRING__', ... }
      */
-    return await nango.executeScriptForWebhooks(integration, body, 'type', 'connectionId', logContextGetter, 'connectionId');
+    const response = await nango.executeScriptForWebhooks(integration, body, 'type', 'connectionId', logContextGetter, 'connectionId');
+    return {
+        response: { status: 'success' },
+        statusCode: 200,
+        connectionIds: response?.connectionIds || [],
+        toForward: body
+    };
 };
 
 export default route;

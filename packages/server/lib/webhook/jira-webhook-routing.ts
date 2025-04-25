@@ -18,9 +18,26 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _rawBod
             }
         }
 
-        return { connectionIds };
+        return {
+            response: { status: 'success' },
+            statusCode: 200,
+            connectionIds
+        };
     } else {
-        return nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', logContextGetter, 'accountId');
+        const response = await nango.executeScriptForWebhooks(
+            integration,
+            body,
+            'payload.webhookEvent',
+            'payload.user.accountId',
+            logContextGetter,
+            'accountId'
+        );
+        return {
+            response: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: body
+        };
     }
 };
 

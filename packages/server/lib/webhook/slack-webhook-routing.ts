@@ -16,14 +16,19 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
     }
 
     if (payload['type'] === 'url_verification') {
-        return { acknowledgementResponse: body['challenge'] };
+        return { response: body['challenge'], statusCode: 200 };
     } else {
         // the team.id is sometimes stored in the team_id field, and sometimes in the team.id field
         // so we need to check both
         const teamId = payload['team_id'] || payload['team']['id'];
         const response = await nango.executeScriptForWebhooks(integration, { ...payload, teamId }, 'type', 'teamId', logContextGetter, 'team.id');
 
-        return { parsedBody: payload, connectionIds: response?.connectionIds || [] };
+        return {
+            response: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: payload
+        };
     }
 };
 

@@ -43,7 +43,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const signature = headers['x-xero-signature'];
     if (!signature) {
         logger.error('Missing x-xero-signature header', { configId: integration.id });
-        return { statusCode: 401, acknowledgementResponse: { error: 'Missing signature' } };
+        return { response: { error: 'Missing signature' }, statusCode: 401 };
     }
 
     logger.info('Received Xero webhook', { configId: integration.id });
@@ -51,7 +51,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const isValidSignature = validate(integration, signature, rawBody);
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: integration.id });
-        return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
+        return { response: { error: 'Invalid signature' }, statusCode: 401 };
     }
 
     const parsedBody = body as XeroWebhookBody;
@@ -60,7 +60,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     // For empty events, just return success
     if (parsedBody.events.length === 0) {
         logger.info('Empty events array, returning success', { configId: integration.id });
-        return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
+        return { response: { status: 'success' }, statusCode: 200 };
     }
 
     let connectionIds: string[] = [];
@@ -70,13 +70,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
             connectionIds = connectionIds.concat(response.connectionIds);
         }
     }
-    const response = { connectionIds };
 
     return {
+        response: { status: 'success' },
         statusCode: 200,
-        acknowledgementResponse: { status: 'success' },
-        parsedBody,
-        connectionIds: response?.connectionIds || []
+        connectionIds,
+        toForward: parsedBody
     };
 };
 

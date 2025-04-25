@@ -27,14 +27,14 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const signature = headers['linear-signature'];
     if (!signature) {
         logger.error('missing signature', { configId: integration.id });
-        return;
+        return { response: { error: 'missing signature' }, statusCode: 401 };
     }
 
     logger.info('received', { configId: integration.id });
 
     if (!validate(integration, signature, rawBody)) {
         logger.error('invalid signature', { configId: integration.id });
-        return;
+        return { response: { error: 'invalid signature' }, statusCode: 401 };
     }
 
     const parsedBody = body as LinearBody;
@@ -42,7 +42,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
 
     const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'organizationId', logContextGetter, 'organizationId');
 
-    return { parsedBody, connectionIds: response?.connectionIds || [] };
+    return {
+        response: { status: 'success' },
+        statusCode: 200,
+        connectionIds: response?.connectionIds || [],
+        toForward: parsedBody
+    };
 };
 
 export default route;

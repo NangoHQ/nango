@@ -36,7 +36,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
-            return;
+            return { response: { error: 'invalid signature' }, statusCode: 401 };
         }
     }
 
@@ -44,7 +44,13 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
         await handleCreateWebhook(integration, body, logContextGetter);
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+    const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+    return {
+        response: { status: 'success' },
+        statusCode: 200,
+        connectionIds: response?.connectionIds || [],
+        toForward: body
+    };
 };
 
 async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {

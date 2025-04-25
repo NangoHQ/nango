@@ -75,12 +75,10 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
-            const typedResponse = response as { statusCode?: number; acknowledgementResponse?: unknown };
-
-            if (typedResponse.statusCode) {
-                res.status(typedResponse.statusCode).send(typedResponse.acknowledgementResponse || {});
+            if (response.statusCode) {
+                res.status(response.statusCode).send(response.response || {});
             } else {
-                res.status(200).send(typedResponse.acknowledgementResponse || {});
+                res.status(200).send(response.response || {});
             }
         } catch (err) {
             span.setTag('nango.error', err);

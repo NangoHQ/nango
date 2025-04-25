@@ -24,7 +24,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
     if (!valid) {
         logger.error('webhook signature invalid');
-        return;
+        return { response: { error: 'invalid signature' }, statusCode: 401 };
     }
 
     if (Array.isArray(body)) {
@@ -50,9 +50,15 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
             }
         }
 
-        return { connectionIds };
+        return { response: { status: 'success' }, statusCode: 200, connectionIds };
     } else {
-        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
+        const response = await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
+        return {
+            response: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: body
+        };
     }
 };
 
