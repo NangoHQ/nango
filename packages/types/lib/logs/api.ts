@@ -12,6 +12,7 @@ export type SearchOperations = Endpoint<{
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
     Body: {
+        search?: string | undefined;
         limit?: number;
         states?: SearchOperationsState[];
         types?: SearchOperationsType[];
