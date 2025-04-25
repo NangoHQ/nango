@@ -1,11 +1,13 @@
 import https from 'node:https';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
 import axios, { AxiosError, isAxiosError } from 'axios';
-import { getPersistAPIUrl } from '@nangohq/shared';
+
 import { getUserAgent } from '@nangohq/node';
-import { httpRetryStrategy, retryWithBackoff, Ok, Err } from '@nangohq/utils';
+import { getPersistAPIUrl } from '@nangohq/shared';
+import { Err, Ok, httpRetryStrategy, retryWithBackoff } from '@nangohq/utils';
+
 import { logger } from '../logger.js';
-import type { Result } from '@nangohq/utils';
+
 import type {
     CursorOffset,
     DeleteRecordsSuccess,
@@ -15,6 +17,8 @@ import type {
     PostRecordsSuccess,
     PutRecordsSuccess
 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export class PersistClient {
     private httpClient: AxiosInstance;
@@ -38,7 +42,7 @@ export class PersistClient {
         const configWithAuth = {
             ...requestConfig,
             headers: {
-                ...requestConfig.headers,
+                ...(requestConfig.headers as Record<string, string>),
                 Authorization: `Bearer ${this.secretKey}`
             }
         };
