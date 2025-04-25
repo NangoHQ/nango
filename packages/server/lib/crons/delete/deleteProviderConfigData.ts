@@ -17,20 +17,6 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
     logger.info('Deleting provider config...', providerConfig.id, providerConfig.unique_key);
 
     await batchDelete({
-        ...opts,
-        name: 'connections < providerConfigs',
-        deleteFn: async () => {
-            const connections = await db.knex.from<DBConnection>('_nango_connections').where({ config_id: providerConfig.id! }).limit(opts.limit);
-
-            for (const connection of connections) {
-                await deleteConnectionData(connection, opts);
-            }
-
-            return connections.length;
-        }
-    });
-
-    await batchDelete({
         name: 'syncConfigs < providerConfigs',
         deadline,
         limit,
@@ -43,6 +29,20 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
             }
 
             return syncConfigs?.length || 0;
+        }
+    });
+
+    await batchDelete({
+        ...opts,
+        name: 'connections < providerConfigs',
+        deleteFn: async () => {
+            const connections = await db.knex.from<DBConnection>('_nango_connections').where({ config_id: providerConfig.id! }).limit(opts.limit);
+
+            for (const connection of connections) {
+                await deleteConnectionData(connection, opts);
+            }
+
+            return connections.length;
         }
     });
 
