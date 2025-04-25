@@ -66,8 +66,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         <button ref={ref} className={cn(buttonStyles({ variant, size }), 'relative flex gap-2 items-center', className, isLoading && 'opacity-0')} {...props}>
             {children}
             {isLoading && (
-                <div className="py-1.5 h-full">
-                    <Loader className="animate-spin h-full" />
+                <div className={cn('h-full w-4 flex items-center justify-center', size === 'xs' && 'w-3')}>
+                    <Loader className="animate-spin h-full w-full" />
                 </div>
             )}
         </button>

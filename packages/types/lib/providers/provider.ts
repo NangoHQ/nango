@@ -89,7 +89,7 @@ export interface BaseProvider {
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
-    auth_mode: 'OAUTH2' | 'CUSTOM';
+    auth_mode: 'OAUTH2';
 
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
 
@@ -118,6 +118,15 @@ export interface ProviderOAuth1 extends BaseProvider {
     token_http_method?: 'GET' | 'PUT' | 'POST'; // Defaults to POST if not provided
 
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
+}
+
+// Github APP Oauth
+export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
+    auth_mode: 'CUSTOM';
+    token_url: {
+        OAUTH2: string;
+        APP: string;
+    };
 }
 
 export interface ProviderJwt extends BaseProvider {
@@ -204,7 +213,8 @@ export type Provider =
     | ProviderTableau
     | ProviderBill
     | ProviderGithubApp
-    | ProviderAppleAppStore;
+    | ProviderAppleAppStore
+    | ProviderCustom;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type
