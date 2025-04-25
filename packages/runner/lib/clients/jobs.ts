@@ -10,7 +10,7 @@ const defaultRetryOptions = {
     numOfAttempts: 3
 };
 
-class JobsClient {
+export class JobsClient {
     private baseUrl: string;
 
     constructor({ baseUrl }: { baseUrl: string }) {

@@ -75,9 +75,12 @@ export const ENVS = z.object({
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-    RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_NODE_ID: z.coerce.number().default(0),
     RUNNER_URL: z.string().url().optional(),
-    RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
+    RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    RUNNER_MEMORY_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
+    RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(80),
+    RUNNER_MEMORY_WARNING_DEBOUNCE_MS: z.coerce.number().optional().default(30_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.string().url().optional(),

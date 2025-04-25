@@ -4,14 +4,11 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
 import { RunnerMonitor } from './monitor.js';
-import { exec } from './exec.js';
-import { abort } from './abort.js';
 import superjson from 'superjson';
-import { abortControllers } from './state.js';
-import { envs, heartbeatIntervalMs } from './env.js';
+import { envs, jobsServiceUrl } from './env.js';
 import type { NangoProps } from '@nangohq/types';
-import { jobsClient } from './clients/jobs.js';
 import { logger } from './logger.js';
+import { RunnerWorker } from './workers/worker.js';
 import { Locks } from './sdk/locks.js';
 
 export const t = initTRPC.create({
@@ -43,8 +40,8 @@ function healthProcedure() {
     });
 }
 
-const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
-const locks = new Locks();
+const monitor = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
+const locks = Locks.create();
 
 function startProcedure() {
     return publicProcedure
@@ -60,31 +57,28 @@ function startProcedure() {
                 fileLocation: nangoProps.syncConfig.file_location,
                 input: codeParams
             });
-            usage.track(nangoProps);
-            // executing in the background and returning immediately
-            // sending the result to the jobs service when done
-            setImmediate(async () => {
-                const heartbeat = setInterval(async () => {
-                    await jobsClient.postHeartbeat({ taskId });
-                }, heartbeatIntervalMs);
-                try {
-                    const abortController = new AbortController();
-                    abortControllers.set(taskId, abortController);
-
-                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
-
-                    await jobsClient.putTask({
-                        taskId,
-                        nangoProps,
-                        ...(error ? { error } : { output: output as any })
-                    });
-                } finally {
-                    clearInterval(heartbeat);
-                    abortControllers.delete(taskId);
-                    usage.untrack(nangoProps);
-                    logger.info(`Task ${taskId} completed`);
-                }
+            const worker = new RunnerWorker({
+                taskId,
+                jobsServiceUrl,
+                heartbeatIntervalMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS,
+                memoryCheckIntervalMs: envs.RUNNER_MEMORY_CHECK_INTERVAL_MS,
+                locksBuffer: locks.getBuffer(),
+                nangoProps,
+                code,
+                codeParams
             });
+            worker.start();
+            worker.on('error', (err) => {
+                logger.error(`Task ${taskId} failed`, { err });
+            });
+            worker.on('exit', (exitCode) => {
+                if (exitCode) {
+                    logger.error(`Task ${taskId} exited with code ${exitCode}`);
+                }
+                monitor.untrack(worker);
+            });
+            monitor.track(worker);
+
             return true;
         });
 }
@@ -94,14 +88,14 @@ function abortProcedure() {
         .input((input) => input as { taskId: string })
         .mutation(({ input }) => {
             logger.info('Received cancel', { input });
-            return abort(input.taskId);
+            return monitor.abort(input.taskId);
         });
 }
 
 function notifyWhenIdleProcedure() {
     return publicProcedure.mutation(() => {
         logger.info('Received notifyWhenIdle');
-        usage.resetIdleMaxDurationMs();
+        monitor.resetIdleMaxDurationMs();
         return true;
     });
 }

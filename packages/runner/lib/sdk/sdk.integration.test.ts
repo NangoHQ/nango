@@ -7,7 +7,7 @@ import { Locks } from './locks.js';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
-    const locks = new Locks();
+    const locks = Locks.create();
     beforeAll(async () => {
         await multipleMigrations();
         env = await seeders.createEnvironmentSeed();

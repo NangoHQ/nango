@@ -14,8 +14,7 @@ export default defineConfig({
             NANGO_LOGS_ES_USER: '',
             NANGO_LOGS_ES_PWD: '',
             NANGO_LOGS_ENABLED: 'false',
-            NANGO_DB_NAME: 'nango_test',
-            RUNNER_NODE_ID: '1'
+            NANGO_DB_NAME: 'nango_test'
         },
         chaiConfig: {
             truncateThreshold: 10000

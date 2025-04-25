@@ -13,9 +13,9 @@ import * as zod from 'zod';
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 
-import { logger } from './logger.js';
-import { Locks } from './sdk/locks.js';
-import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
+import { logger } from '../logger.js';
+import { Locks } from '../sdk/locks.js';
+import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from '../sdk/sdk.js';
 
 import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
@@ -25,12 +25,20 @@ interface ScriptExports {
     default: (nango: NangoActionBase, payload?: object) => Promise<unknown>;
 }
 
+export interface ExecOpts {
+    nangoProps: NangoProps;
+    code: string;
+    codeParams?: object | undefined;
+    abortController?: AbortController;
+    locks?: Locks;
+}
+
 export async function exec({
     nangoProps,
     code,
     codeParams,
     abortController = new AbortController(),
-    locks = new Locks()
+    locks = Locks.create()
 }: {
     nangoProps: NangoProps;
     code: string;

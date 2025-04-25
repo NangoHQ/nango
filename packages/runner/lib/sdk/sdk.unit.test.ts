@@ -37,7 +37,7 @@ const nangoProps: NangoProps = {
     endUser: null
 };
 
-const locks = new Locks();
+const locks = Locks.create();
 
 describe('cache', () => {
     let nangoAction: NangoActionRunner;

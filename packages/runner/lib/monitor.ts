@@ -3,12 +3,12 @@ import fs from 'fs';
 import { logger } from './logger.js';
 import { idle } from './idle.js';
 import { envs } from './env.js';
-import type { NangoProps } from '@nangohq/types';
 import { persistClient } from './clients/persist.js';
+import type { RunnerWorker } from './workers/worker.js';
 
 export class RunnerMonitor {
     private runnerId: number;
-    private tracked: Map<number, NangoProps> = new Map<number, NangoProps>();
+    private workers = new Map<string, RunnerWorker>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -19,29 +19,41 @@ export class RunnerMonitor {
         this.runnerId = runnerId;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
-        process.on('SIGTERM', this.onExit.bind(this));
+        process.on('SIGTERM', this.cleanup.bind(this));
     }
 
-    private onExit(): void {
+    private cleanup(): void {
         if (this.idleInterval) {
             clearInterval(this.idleInterval);
         }
         if (this.memoryInterval) {
             clearInterval(this.memoryInterval);
         }
-    }
-
-    track(nangoProps: NangoProps): void {
-        if (nangoProps.syncJobId) {
-            this.lastIdleTrackingDate = Date.now();
-            this.tracked.set(nangoProps.syncJobId, nangoProps);
+        for (const worker of this.workers.values()) {
+            worker.abort();
         }
     }
 
-    untrack(nangoProps: NangoProps): void {
-        if (nangoProps.syncJobId) {
-            this.tracked.delete(nangoProps.syncJobId);
+    abort(taskId: string): boolean {
+        const worker = this.workers.get(taskId);
+        if (worker) {
+            worker.abort();
+            this.workers.delete(taskId);
+            logger.info(`Aborted task ${taskId}`);
+            return true;
+        } else {
+            logger.error(`Error aborting task ${taskId}: task not found`);
+            return false;
         }
+    }
+
+    track(worker: RunnerWorker): void {
+        this.lastIdleTrackingDate = Date.now();
+        this.workers.set(worker.taskId, worker);
+    }
+
+    untrack(worker: RunnerWorker): void {
+        this.workers.delete(worker.taskId);
     }
 
     resetIdleMaxDurationMs(): void {
@@ -51,26 +63,42 @@ export class RunnerMonitor {
     private checkMemoryUsage(): NodeJS.Timeout {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
-            const rss = process.memoryUsage().rss;
             const total = getTotalMemoryInBytes();
-            const memoryUsagePercentage = (rss / total) * 100;
-            if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
-                await this.reportHighMemoryUsage(memoryUsagePercentage);
+            const used = Array.from(this.workers.values()).reduce((acc, worker) => {
+                return acc + (worker.memoryUsage?.memoryInBytes || 0);
+            }, 0);
+            const totalUsedMemoryPercentage = (used / total) * 100;
+            if (totalUsedMemoryPercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
+                await this.reportHighMemoryUsage({
+                    totalMemoryInBytes: total,
+                    totalUsedMemoryInBytes: used,
+                    totalUsedMemoryPercentage
+                });
             }
-        }, 1000);
+        }, 1_000);
     }
 
-    private async reportHighMemoryUsage(memoryUsagePercentage: number): Promise<void> {
-        // only report if it has been more than 30 seconds since the last report
+    private async reportHighMemoryUsage({
+        totalMemoryInBytes,
+        totalUsedMemoryInBytes,
+        totalUsedMemoryPercentage
+    }: {
+        totalMemoryInBytes: number;
+        totalUsedMemoryInBytes: number;
+        totalUsedMemoryPercentage: number;
+    }): Promise<void> {
+        // debounce the memory report to avoid spamming the logs
         if (this.lastMemoryReportDate) {
             const now = new Date();
-            const diffInSecs = (now.getTime() - this.lastMemoryReportDate.getTime()) / 1000;
-            if (diffInSecs < 30) {
+            const diffInMs = now.getTime() - this.lastMemoryReportDate.getTime();
+            if (diffInMs < envs.RUNNER_MEMORY_WARNING_DEBOUNCE_MS) {
                 return;
             }
         }
+        const count = this.workers.size;
         this.lastMemoryReportDate = new Date();
-        for (const { environmentId, activityLogId, secretKey } of this.tracked.values()) {
+        for (const worker of this.workers.values()) {
+            const { environmentId, activityLogId, secretKey } = worker.nangoProps;
             if (!environmentId || !activityLogId) {
                 continue;
             }
@@ -82,7 +110,17 @@ export class RunnerMonitor {
                     log: {
                         type: 'log',
                         level: 'warn',
-                        message: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`,
+                        message: `Memory usage is high: ${totalUsedMemoryPercentage.toFixed(2)}% of the total available memory`,
+                        meta: {
+                            memoryUsage: {
+                                total: formatMemory(totalMemoryInBytes),
+                                used: formatMemory(totalUsedMemoryInBytes),
+                                thisScript: formatMemory(worker.memoryUsage?.memoryInBytes)
+                            },
+                            scripts: {
+                                concurrent: count
+                            }
+                        },
                         createdAt: new Date().toISOString()
                     }
                 }
@@ -94,7 +132,7 @@ export class RunnerMonitor {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setTimeout(async () => {
             let nextTimeout = timeoutMs;
-            if (this.idleMaxDurationMs > 0 && this.tracked.size == 0) {
+            if (this.idleMaxDurationMs > 0 && this.workers.size == 0) {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
@@ -131,4 +169,12 @@ function getTotalMemoryInBytes(): number {
     // process.constrainedMemory() is supposed to return the memory limit of the container but it doesn't work on Render
     // so we need to use a workaround to get the memory limit of the container on Render
     return process.constrainedMemory() || getRenderTotalMemoryInBytes() || os.totalmem();
+}
+
+function formatMemory(bytes: number | undefined): string {
+    if (bytes === undefined) {
+        return 'unknown';
+    }
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(1)} MB`;
 }
