@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
 import { CopyIcon, Link2Icon } from '@radix-ui/react-icons';
-import type { ClassValue } from 'clsx';
-import { cn } from '../../../utils/utils';
+import { useEffect, useRef, useState } from 'react';
+
 import { Button } from './Button';
+import { cn } from '../../../utils/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip';
+
+import type { ClassValue } from 'clsx';
 
 interface ClipboardButtonProps {
     text: string;
