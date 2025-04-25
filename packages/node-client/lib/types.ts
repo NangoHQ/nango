@@ -1,101 +1,101 @@
 import type {
-    NangoSyncWebhookBodySuccess,
-    NangoSyncWebhookBodyError,
-    NangoSyncWebhookBody,
-    NangoAuthWebhookBodySuccess,
-    NangoAuthWebhookBodyError,
-    NangoAuthWebhookBody,
-    NangoWebhookBody,
-    AuthOperation,
-    AuthOperationType,
-    AuthModeType,
-    AuthModes,
-    HTTP_METHOD,
-    NangoSyncEndpointV2,
     AllAuthCredentials,
-    OAuth1Token,
-    OAuth1Credentials,
-    OAuth2Credentials,
-    OAuth2ClientCredentials,
-    BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
     AppStoreCredentials,
-    UnauthCredentials,
-    CustomCredentials,
-    TbaCredentials,
-    RecordMetadata,
-    RecordLastAction,
-    NangoRecord,
-    JwtCredentials,
-    TwoStepCredentials,
-    CredentialsCommon,
-    TableauCredentials,
+    AuthModeType,
+    AuthModes,
+    AuthOperation,
+    AuthOperationType,
+    BasicApiCredentials,
     BillCredentials,
-    GetPublicProviders,
-    GetPublicProvider,
+    CredentialsCommon,
+    CustomCredentials,
+    GetPublicConnection,
+    GetPublicConnections,
+    GetPublicIntegration,
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
-    GetPublicIntegration,
-    GetPublicConnections,
-    GetPublicConnection,
+    GetPublicProvider,
+    GetPublicProviders,
+    GetPublicRecords,
+    HTTP_METHOD,
+    JwtCredentials,
+    NangoAuthWebhookBody,
+    NangoAuthWebhookBodyError,
+    NangoAuthWebhookBodySuccess,
+    NangoRecord,
+    NangoSyncConfig,
+    NangoSyncEndpointV2,
+    NangoSyncWebhookBody,
+    NangoSyncWebhookBodyError,
+    NangoSyncWebhookBodySuccess,
+    NangoWebhookBody,
+    OAuth1Credentials,
+    OAuth1Token,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
-    GetPublicRecords,
-    UserProvidedProxyConfiguration,
+    RecordLastAction,
+    RecordMetadata,
     StandardNangoConfig,
-    NangoSyncConfig
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials,
+    UnauthCredentials,
+    UserProvidedProxyConfiguration
 } from '@nangohq/types';
 
 export type {
-    NangoSyncWebhookBodySuccess,
-    NangoSyncWebhookBodyError,
-    NangoSyncWebhookBody,
-    NangoAuthWebhookBodySuccess,
-    NangoAuthWebhookBodyError,
     NangoAuthWebhookBody,
+    NangoAuthWebhookBodyError,
+    NangoAuthWebhookBodySuccess,
+    NangoSyncWebhookBody,
+    NangoSyncWebhookBodyError,
+    NangoSyncWebhookBodySuccess,
     NangoWebhookBody
 };
 export type {
-    AuthOperation,
-    AuthOperationType,
-    AuthModeType,
-    AuthModes,
     AllAuthCredentials,
-    OAuth1Token,
-    OAuth1Credentials,
-    OAuth2Credentials,
-    OAuth2ClientCredentials,
-    BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
     AppStoreCredentials,
-    UnauthCredentials,
-    CustomCredentials,
-    CredentialsCommon,
-    TableauCredentials,
+    AuthModeType,
+    AuthModes,
+    AuthOperation,
+    AuthOperationType,
+    BasicApiCredentials,
     BillCredentials,
-    TbaCredentials,
+    CredentialsCommon,
+    CustomCredentials,
     JwtCredentials,
-    TwoStepCredentials
+    OAuth1Credentials,
+    OAuth1Token,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials,
+    UnauthCredentials
 };
 export type { HTTP_METHOD, NangoSyncEndpointV2 };
-export type { RecordMetadata, RecordLastAction, NangoRecord };
+export type { NangoRecord, RecordLastAction, RecordMetadata };
 
 export type {
-    GetPublicProviders,
-    GetPublicProvider,
+    GetPublicConnection,
+    GetPublicConnections,
+    GetPublicIntegration,
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
-    GetPublicIntegration,
-    GetPublicConnections,
-    GetPublicConnection,
+    GetPublicProvider,
+    GetPublicProviders,
+    GetPublicRecords,
     PostConnectSessions,
-    PostPublicConnectSessionsReconnect,
-    GetPublicRecords
+    PostPublicConnectSessionsReconnect
 };
 
-export type { StandardNangoConfig, NangoSyncConfig };
+export type { NangoSyncConfig, StandardNangoConfig };
 
 export interface NangoProps {
     host?: string;
@@ -155,7 +155,7 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
-    created_at: Date;
+    created_at: string;
     has_webhook: boolean;
     webhook_url?: string;
 }
@@ -193,7 +193,7 @@ export interface Integration {
 export interface SyncStatus {
     id: string;
     type: SyncType;
-    finishedAt: string;
+    finishedAt: string | undefined;
     nextScheduledSyncAt: string;
     name: string;
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
