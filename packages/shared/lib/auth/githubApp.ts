@@ -4,7 +4,7 @@ import * as jwtClient from './jwt.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { interpolateStringFromObject } from '../utils/utils.js';
 
-import type { AppCredentials, ConnectionConfig, IntegrationConfig, ProviderGithubApp } from '@nangohq/types';
+import type { AppCredentials, ConnectionConfig, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
@@ -15,12 +15,13 @@ export async function createCredentials({
     integration,
     connectionConfig
 }: {
-    provider: ProviderGithubApp;
+    provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
-        const tokenUrl = interpolateStringFromObject(provider.token_url, { connectionConfig });
+        const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
+        const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
         const privateKeyBase64 = integration.custom ? integration.custom['private_key'] : integration.oauth_client_secret;
 
         const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');

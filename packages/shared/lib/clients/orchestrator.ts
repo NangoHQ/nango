@@ -304,13 +304,11 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            void logCtx.info('The webhook was successfully run', {
+            void logCtx.info('The webhook was successfully scheduled for immediate execution', {
                 action: webhookName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
-
-            await logCtx.success();
 
             return res as Result<T, NangoError>;
         } catch (err) {
