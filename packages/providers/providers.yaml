@@ -2136,11 +2136,11 @@ clicksend:
         - communication
     auth_mode: BASIC
     proxy:
-        base_url: https://rest.clicksend.com/v3
+        base_url: https://rest.clicksend.com
         verification:
             method: GET
             endpoints:
-                - /account
+                - /v3/account
     docs: https://docs.nango.dev/integrations/all/clicksend
     docs_connect: https://docs.nango.dev/integrations/all/clicksend/connect
     credentials:
@@ -2148,13 +2148,13 @@ clicksend:
             type: string
             title: Username
             description: Your ClickSend account username
-            doc_section: '#step-1-finding-your-username'
+            doc_section: '#step-1-finding-your-username-and-api-key'
         password:
             type: string
             title: API Key
             description: Your ClickSend API Key
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-1-finding-your-username-and-api-key'
 
 clickup:
     display_name: ClickUp
