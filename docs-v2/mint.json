@@ -538,6 +538,8 @@
                 "integrations/all/monday",
                 "integrations/all/mural",
                 "integrations/all/nationbuilder",
+                "integrations/all/namely",
+                "integrations/all/namely-pat",
                 "integrations/all/netsuite",
                 "integrations/all/netsuite-tba",
                 "integrations/all/next-cloud-ocs",

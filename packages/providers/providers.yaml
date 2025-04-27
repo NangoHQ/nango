@@ -6474,6 +6474,55 @@ nationbuilder:
             title: Account ID
             description: The account ID of your NationBuilder account
 
+namely:
+    display_name: Namely
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.company}.namely.com/api/v1/oauth2/authorize
+    token_url: https://${connectionConfig.company}.namely.com/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.company}.namely.com/api
+    docs: https://docs.nango.dev/integrations/all/namely-pat
+    docs_connect: https://docs.nango.dev/integrations/all/namely-pat/connect
+    connection_config:
+        company:
+            type: string
+            title: Company
+            description: The name of your Namely company
+            example: example
+
+namely-pat:
+    display_name: Namely (PAT)
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.company}.namely.com/api
+    docs: https://docs.nango.dev/integrations/all/namely
+    docs_connect: https://docs.nango.dev/integrations/all/namely/connect
+    connection_config:
+        company:
+            type: string
+            title: Company Name
+            description: The name of your Namely company
+            example: example
+            order: 1
+            doc_section: '#step-1-finding-your-company-name'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token for your Namely account
+
 netsuite:
     display_name: NetSuite (OAuth)
     categories:
