@@ -3958,7 +3958,6 @@ grammarly:
             endpoints:
                 - /v2/analytics/users
     docs: https://docs.nango.dev/integrations/all/grammarly
-    docs_connect: https://docs.nango.dev/integrations/all/grammarly/connect
     default_scopes:
         - users-api:read
         - users-api:write
