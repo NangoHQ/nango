@@ -105,7 +105,7 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 
 -   Refreshing tokens require the `offline_access` scope when creating the integration on the Nango UI.
 -   When connecting to Jira, you have two options for specifying which Jira site to connect to:
-    1. Provide a `Domain` during connection creation (recommended): This ensures you connect to the specific Jira site you want (e.g., "https://nango-hq.atlassian.net").
+    1. Provide a `baseUrl` during connection creation (recommended)
     2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
 
 ```ts
