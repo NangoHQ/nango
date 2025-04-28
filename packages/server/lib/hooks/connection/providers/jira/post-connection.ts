@@ -1,8 +1,11 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
 import axios from 'axios';
+
+import type { InternalNango as Nango } from '../../post-connection.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
+    const connectionConfig = connection.connection_config || {};
+
     const response = await nango.proxy({
         endpoint: `oauth/token/accessible-resources`,
         providerConfigKey: connection.provider_config_key
@@ -12,20 +15,32 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    const cloudId = response.data[0].id;
-    const baseUrl = response.data[0].url;
+    // If baseUrl is provided, find the matching site
+    let site = response.data[0]; // Default to first site
+    if (connectionConfig['baseUrl']) {
+        const matchingSite = response.data.find((s: any) => s.url === connectionConfig['baseUrl']);
+        if (!matchingSite) {
+            return;
+        }
+        site = matchingSite;
+    }
 
     const accountResponse = await nango.proxy({
-        endpoint: `ex/jira/${cloudId}/rest/api/3/myself`,
+        endpoint: `ex/jira/${site.id}/rest/api/3/myself`,
         providerConfigKey: connection.provider_config_key
     });
 
-    if (axios.isAxiosError(accountResponse) || !accountResponse || !accountResponse.data || accountResponse.data.length === 0) {
-        await nango.updateConnectionConfig({ cloudId, baseUrl });
+    if (axios.isAxiosError(accountResponse) || !accountResponse || !accountResponse.data) {
+        await nango.updateConnectionConfig({
+            cloudId: site.id,
+            baseUrl: site.url
+        });
         return;
     }
 
-    const { accountId } = accountResponse.data;
-
-    await nango.updateConnectionConfig({ cloudId, baseUrl, accountId });
+    await nango.updateConnectionConfig({
+        cloudId: site.id,
+        baseUrl: site.url,
+        accountId: accountResponse.data.accountId
+    });
 }
