@@ -129,6 +129,7 @@ export class RunnerChild {
                 nangoProps: this.execOpts.nangoProps,
                 ...(error ? { error } : { output: output as any })
             });
+            this.logger.info(`Completed task: ${this.taskId}`);
         } finally {
             clearInterval(heartbeat);
             clearInterval(memoryUsage);
