@@ -17,7 +17,7 @@ export default async function execute(nango: Nango) {
 
     // If baseUrl is provided, find the matching site
     let site = response.data[0]; // Default to first site
-    if (connectionConfig['baseUrl']) {
+    if (connectionConfig['baseUrl']?.length) {
         const matchingSite = response.data.find((s: any) => s.url === connectionConfig['baseUrl']);
         if (!matchingSite) {
             return;
