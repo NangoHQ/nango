@@ -31,7 +31,7 @@ export default async function execute(nango: Nango) {
     }
 
     // Check if the site has Confluence scopes to determine if it's a Confluence site
-    const isConfluence = site.scopes.some((scope: string) => scope.includes('confluence'));
+    const isConfluence = site.scopes?.some((scope: string) => scope.includes('confluence')) || false;
 
     const endpoint = isConfluence ? `ex/confluence/${site.id}/wiki/rest/api/user/current` : `ex/jira/${site.id}/rest/api/3/myself`;
 
