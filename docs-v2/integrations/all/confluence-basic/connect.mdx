@@ -32,9 +32,11 @@ This guide will walk you through setting up Basic Authentication for Confluence.
 
 5. Copy the API token immediately - you won't be able to see it again
 
-Important: Store this token securely and never share it. It provides the same access as your password.
+Important: 
+- Store this token securely and never share it. It provides the same access as your password.
+- Basic authentication is not as secure as other methods. We recommend using it for scripts and manual calls to the REST APIs.
 
-Note: As of March 13, 2024, API tokens have a maximum lifespan of 1 year.
+Note: As of March 13, 2024, API tokens have a lifespan of 1 to 365 days before a new one has to be generated.
 
 #### Step 2: Finding your Atlassian Domain
 
