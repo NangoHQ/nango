@@ -3942,6 +3942,30 @@ gerrit:
             doc_section: '#step-1-finding-your-host'
             order: 1
 
+grammarly:
+    display_name: Grammarly
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.grammarly.com/v4/api/oauth2/token
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.grammarly.com/ecosystem/api
+        verification:
+            method: GET
+            endpoints:
+                - /v2/analytics/users
+    docs: https://docs.nango.dev/integrations/all/grammarly
+    docs_connect: https://docs.nango.dev/integrations/all/grammarly/connect
+    default_scopes:
+        - users-api:read
+        - users-api:write
+        - scores-api:read
+        - scores-api:write
+        - analytics-api:read
+
 guru:
     display_name: Guru
     categories:
