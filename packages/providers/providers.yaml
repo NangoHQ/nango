@@ -6489,8 +6489,8 @@ namely:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.company}.namely.com/api
-    docs: https://docs.nango.dev/integrations/all/namely-pat
-    docs_connect: https://docs.nango.dev/integrations/all/namely-pat/connect
+    docs: https://docs.nango.dev/integrations/all/namely
+    docs_connect: https://docs.nango.dev/integrations/all/namely/connect
     connection_config:
         company:
             type: string
@@ -6507,8 +6507,8 @@ namely-pat:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.company}.namely.com/api
-    docs: https://docs.nango.dev/integrations/all/namely
-    docs_connect: https://docs.nango.dev/integrations/all/namely/connect
+    docs: https://docs.nango.dev/integrations/all/namely-pat
+    docs_connect: https://docs.nango.dev/integrations/all/namely-pat/connect
     connection_config:
         company:
             type: string
