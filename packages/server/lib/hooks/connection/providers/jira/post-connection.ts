@@ -17,16 +17,26 @@ export default async function execute(nango: Nango) {
 
     // If baseUrl is provided, find the matching site
     let site = response.data[0]; // Default to first site
+
     if (connectionConfig['baseUrl']?.length) {
-        const matchingSite = response.data.find((s: any) => s.url === connectionConfig['baseUrl']);
-        if (!matchingSite) {
-            return;
+        const providedBaseUrl = connectionConfig['baseUrl'];
+
+        const matchingSite = response.data.find((s: any) => {
+            return s.url.includes(providedBaseUrl) || (s.name && s.name === providedBaseUrl) || s.url === providedBaseUrl;
+        });
+
+        if (matchingSite) {
+            site = matchingSite;
         }
-        site = matchingSite;
     }
 
+    // Check if the site has Confluence scopes to determine if it's a Confluence site
+    const isConfluence = site.scopes.some((scope: string) => scope.includes('confluence'));
+
+    const endpoint = isConfluence ? `ex/confluence/${site.id}/wiki/rest/api/user/current` : `ex/jira/${site.id}/rest/api/3/myself`;
+
     const accountResponse = await nango.proxy({
-        endpoint: `ex/jira/${site.id}/rest/api/3/myself`,
+        endpoint,
         providerConfigKey: connection.provider_config_key
     });
 

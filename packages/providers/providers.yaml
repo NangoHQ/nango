@@ -5104,7 +5104,9 @@ jira:
         - cloudId
         - accountId
     proxy:
-        base_url: https://${connectionConfig.domain}.atlassian.net
+        base_url: https://api.atlassian.com
+        connection_config:
+            baseUrl: ${connectionConfig.baseUrl}
         paginate:
             type: link
             link_rel_in_response_header: next
@@ -5115,7 +5117,7 @@ jira:
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
     connection_config:
-        domain:
+        baseUrl:
             type: string
             title: Domain
             optional: true
