@@ -1,0 +1,67 @@
+---
+title: Confluence Basic
+sidebarTitle: Confluence Basic
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/confluence-basic/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/confluence-basic/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Atlassian account](https://id.atlassian.com/signup/). |
+| Paid test account | ✅ Not required | Free Confluence Cloud instance can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Not required for Basic Auth. |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+<Steps>
+  <Step title="Create an Atlassian account">
+    If you don't already have one, sign up for an [Atlassian account](https://id.atlassian.com/signup/).
+  </Step>
+  <Step title="Generate an API token">
+    1. Go to [https://id.atlassian.com/manage/api-tokens](https://id.atlassian.com/manage/api-tokens)
+    2. Click **Create API token**
+    3. Give your token a name and click **Create**
+    4. Copy the token value - you won't be able to see it again
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) using:
+    - Your Atlassian account email as the username
+    - Your API token as the password
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## Useful links
+
+| Topic | Links | 
+| - | - | 
+| General | [Atlassian Developer Portal](https://developer.atlassian.com/) |
+| | [Confluence Cloud Platform Documentation](https://developer.atlassian.com/cloud/confluence/) |
+| Developer | [Basic Auth Documentation](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/) |
+| | [Confluence REST API Documentation](https://developer.atlassian.com/cloud/confluence/rest/intro/) |
+| | [API Rate Limits](https://developer.atlassian.com/cloud/confluence/rate-limiting/) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/confluence-basic.mdx)</Note>
+
+## API gotchas
+
+- Basic authentication requires your Atlassian account email and an API token. Never use your account password.
+- Because Confluence permits anonymous access by default, it does not supply a typical authentication challenge. Some HTTP clients may behave unexpectedly.
+- When making API calls, remember that the permissions of your Atlassian account will limit what you can access, regardless of the authentication method.
+- The Confluence REST API has different versions. Make sure you're using the correct version for your needs.
+- Your API token is sensitive information - keep it secure and never share it.
+- Basic authentication is recommended for scripts and manual API calls. For production applications, consider using OAuth 2.0 instead.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/confluence-basic.mdx)</Note>
