@@ -51,9 +51,14 @@ export class RunnerMonitor {
     private checkMemoryUsage(): NodeJS.Timeout {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
-            const rss = process.memoryUsage().rss;
+            // TODO: remove;
+            const mem = process.memoryUsage();
+            logger.info(
+                `Memory usage: ${formatMemory(mem.heapUsed)} heap, ${formatMemory(mem.rss)} rss, ${formatMemory(mem.external)} external, ${formatMemory(mem.arrayBuffers)} arrayBuffers`
+            );
+
             const total = getTotalMemoryInBytes();
-            const memoryUsagePercentage = (rss / total) * 100;
+            const memoryUsagePercentage = (mem.rss / total) * 100;
             if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage(memoryUsagePercentage);
             }
@@ -131,4 +136,12 @@ function getTotalMemoryInBytes(): number {
     // process.constrainedMemory() is supposed to return the memory limit of the container but it doesn't work on Render
     // so we need to use a workaround to get the memory limit of the container on Render
     return process.constrainedMemory() || getRenderTotalMemoryInBytes() || os.totalmem();
+}
+
+function formatMemory(bytes: number | undefined): string {
+    if (bytes === undefined) {
+        return 'unknown';
+    }
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(1)} MB`;
 }
