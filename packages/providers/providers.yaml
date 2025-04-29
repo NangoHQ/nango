@@ -150,6 +150,19 @@ adobe-umapi:
             description: ''
             automated: true
 
+adp:
+    display_name: ADP
+    auth_mode: OAUTH2_CC
+    categories:
+        - ats
+    proxy:
+        base_url: https://api.adp.com
+    token_url: https://accounts.adp.com/auth/oauth/v2/token
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/adp
+    docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+
 adyen:
     display_name: Adyen
     categories:
@@ -3953,12 +3966,9 @@ gem:
     connection_config:
         appSecret:
             type: string
-            title: Application Secret
-            description: The Application Secret for your Gem Integration
-            pattern: '^[a-f0-9]{128}$'
-            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
-            secret: true
-            doc_section: '#step-2-finding-your-application-secret'
+            title: ''
+            description: ''
+            hidden: true
 
 gerrit:
     display_name: Gerrit
@@ -6526,6 +6536,57 @@ nationbuilder:
             type: string
             title: Account ID
             description: The account ID of your NationBuilder account
+
+namely:
+    display_name: Namely
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.company}.namely.com/api/v1/oauth2/authorize
+    token_url: https://${connectionConfig.company}.namely.com/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.company}.namely.com/api
+    docs: https://docs.nango.dev/integrations/all/namely
+    docs_connect: https://docs.nango.dev/integrations/all/namely/connect
+    connection_config:
+        company:
+            type: string
+            title: Company
+            description: The name of your Namely company
+            example: example
+            doc_section: '#step-1-finding-your-company-name'
+
+namely-pat:
+    display_name: Namely (PAT)
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.company}.namely.com/api
+    docs: https://docs.nango.dev/integrations/all/namely-pat
+    docs_connect: https://docs.nango.dev/integrations/all/namely-pat/connect
+    connection_config:
+        company:
+            type: string
+            title: Company Name
+            description: The name of your Namely company
+            example: example
+            order: 1
+            doc_section: '#step-1-finding-your-company-name'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token for your Namely account
+            doc_section: '#step-2-generating-your-personal-access-token'
 
 netsuite:
     display_name: NetSuite (OAuth)
@@ -9754,6 +9815,43 @@ uber:
     proxy:
         base_url: https://api.uber.com
     docs: https://docs.nango.dev/integrations/all/uber
+
+ukg-pro-wfm:
+    display_name: UKG Pro (Workforce Management)
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://welcome-us.ukg.net/authorize
+    token_url: https://welcome-us.ukg.net/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        audience: https://wfm.ukg.net/api
+        realm: ${connectionConfig.tenantName}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://docs.nango.dev/integrations/all/ukg-pro-wfm
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-pro-wfm/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Pro instance
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The tenant name of your UKG Pro instance
+            example: wfm
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
 unanet:
     display_name: Unanet
