@@ -804,7 +804,7 @@ attio:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://app.attio.com
+        base_url: https://api.attio.com
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
@@ -2421,6 +2421,47 @@ confluence:
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 
+confluence-basic:
+    display_name: Confluence (Basic Auth)
+    categories:
+        - knowledge-base
+        - popular
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.atlassian.net
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /wiki/api/v2/spaces
+    docs: https://docs.nango.dev/integrations/all/confluence-basic
+    docs_connect: https://docs.nango.dev/integrations/all/confluence-basic/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Confluence Subdomain
+            description: The subdomain of your Confluence account
+            pattern: '^[a-z0-9_-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-atlassian-domain'
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            format: email
+            description: The email address for your Confluence account
+            doc_section: '#step-1-getting-your-api-token'
+        password:
+            type: string
+            title: API token
+            description: The API token for your Confluence account
+            secret: true
+            doc_section: '#step-1-getting-your-api-token'
+
 contentful:
     display_name: Contentful
     categories:
@@ -2886,6 +2927,61 @@ docusign-sandbox:
     post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign-sandbox
 
+docuware:
+    display_name: DocuWare
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/DocuWare/Platform/Home/IdentityServiceInfo
+    body_format: form
+    token_request_method: GET
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    additional_steps:
+        - body_format: form
+          token_url: ${step1.IdentityServiceUrl}/.well-known/openid-configuration
+          token_request_method: GET
+        - body_format: form
+          token_url: ${step2.token_endpoint}
+          token_headers:
+              content-type: application/x-www-form-urlencoded
+          token_params:
+              grant_type: password
+              scope: docuware.platform
+              client_id: docuware.platform.net.client
+              username: ${credentials.username}
+              password: ${credentials.password}
+    proxy:
+        base_url: https://${connectionConfig.domain}/DocuWare/Platform
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/docuware
+    docs_connect: https://docs.nango.dev/integrations/all/docuware/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain to your DocuWare account
+            format: hostname
+            prefix: https://
+            example: example.docuware.cloud
+            order: 1
+            doc_section: '#step-1-finding-your-domain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The Username to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: The Password to your DocuWare account
+            doc_section: '#step-2-finding-your-credentials'
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -3262,8 +3358,7 @@ exact-online:
     display_name: Exact Online
     categories:
         - accounting
-        - hr
-        - productivity
+        - erp
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
     token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
@@ -3834,12 +3929,13 @@ google-gemini:
 gem:
     display_name: Gem
     categories:
-        - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.gem.com
         headers:
             x-api-key: ${apiKey}
+            x-application-secret: ${connectionConfig.appSecret}
         verification:
             method: GET
             endpoints:
@@ -3849,9 +3945,20 @@ gem:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API Key for your Gem account
-            doc_section: '#step-1-finding-your-api-key'
+            title: Shareable Access Key
+            description: The Shareable Access Key for your Integration
+            example: Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz
+            pattern: '^[a-zA-Z0-9]{40}$'
+            doc_section: '#step-1-finding-your-shareable-access-key'
+    connection_config:
+        appSecret:
+            type: string
+            title: Application Secret
+            description: The Application Secret for your Gem Integration
+            pattern: '^[a-f0-9]{128}$'
+            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
+            secret: true
+            doc_section: '#step-2-finding-your-application-secret'
 
 gerrit:
     display_name: Gerrit
@@ -4909,6 +5016,30 @@ hubspot:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
 
+incident-io:
+    display_name: Incident.io
+    categories:
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.incident.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/identity
+    docs: https://docs.nango.dev/integrations/all/incident-io
+    docs_connect: https://docs.nango.dev/integrations/all/incident-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Incident.io account
+            example: 'inc_************************************f2c5e6a7b3d4**********'
+            pattern: 'inc_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 insightly:
     display_name: Insightly
     categories:
@@ -5038,7 +5169,7 @@ jira-basic:
         verification:
             method: GET
             endpoints:
-                - /rest/api/3/events
+                - /rest/api/3/myself
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
         subdomain:
@@ -7602,6 +7733,43 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://docs.nango.dev/integrations/all/reddit
 
+redtail-crm-sandbox:
+    display_name: Redtail CRM (Sandbox)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    token_url: https://review.crm.redtailtechnology.com/api/public/v1/authentication
+    token_request_method: GET
+    token_headers:
+        authorization: Basic ${base64(${credentials.apiKey}:${credentials.username}:${credentials.password})}
+    token_response:
+        token: authenticated_user.user_key
+    proxy:
+        headers:
+            authorization: Userkeyauth ${base64(${credentials.apiKey}:${accessToken})}
+        base_url: https://review.crm.redtailtechnology.com/api/public
+    docs: https://docs.nango.dev/integrations/all/redtail-crm-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/redtail-crm-sandbox/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username for your Redtail CRM account
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Redtail CRM account
+            secret: true
+            doc_section: '#step-2-finding-your-credentials'
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Redtail CRM account
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            format: uuid
+            secret: true
+            doc_section: '#step-1-finding-your-api-token'
 refiner:
     display_name: Refiner
     categories:
@@ -8148,6 +8316,38 @@ sendgrid:
             title: API Key
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
+
+sentry:
+    display_name: Sentry
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/sentry
+    docs_connect: https://docs.nango.dev/integrations/all/sentry/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname of your Sentry account
+            example: us.sentry.io
+            format: hostname
+            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Auth Token
+            description: The Authentication token for your Sentry account
+            example: sntryu_795225***************b9864a*********************
+            pattern: '^sntryu_[a-f0-9]{64}$'
+            doc_section: '#step-2-generating-your-sentry-auth-token'
 
 sedna:
     display_name: Sedna (OAuth)
@@ -9929,6 +10129,53 @@ workday:
             description: Workday API Password
             doc_section: '#step-5-finding-your-password'
 
+workday-oauth:
+    display_name: Workday (OAuth)
+    categories:
+        - hr
+        - popular
+    auth_mode: OAUTH2
+    token_request_auth_method: basic
+    authorization_url: https://${connectionConfig.authorizationDomain}/${connectionConfig.tenant}/authorize
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://docs.nango.dev/integrations/all/workday-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/workday-oauth/connect
+    connection_config:
+        authorizationDomain:
+            type: string
+            title: Authorization Domain
+            description: The domain used to authorize your Workday account
+            format: hostname
+            example: impl.workday.com
+            prefix: https://
+            order: 1
+            suffix: /mytenant
+            doc_section: '#step-1-finding-your-authorization-domain'
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The domain used to obtain the token for your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 2
+            suffix: /ccx
+            doc_section: '#step-2-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: yourtenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
 wrike:
     display_name: Wrike
     categories:

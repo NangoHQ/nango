@@ -33,6 +33,7 @@ import { getConnection as getConnectionWeb } from './controllers/v1/connections/
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
 import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
@@ -61,7 +62,8 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
-import { postPlanExtendTrial } from './controllers/v1/plan/postPlanExtendTrial.js';
+import { getPlans } from './controllers/v1/plans/getPlans.js';
+import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -137,10 +139,13 @@ web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
-web.route('/plan/trial/extension').post(webAuth, postPlanExtendTrial);
+
+web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
+web.route('/environments/').delete(webAuth, deleteEnvironment);
 web.route('/environments/current').get(webAuth, getEnvironment);
 web.route('/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/environments/variables').post(webAuth, postEnvironmentVariables);

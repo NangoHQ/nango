@@ -5,6 +5,7 @@
         "../logs/dist",
         "../records/dist",
         "../utils/dist",
+        "../billing/dist",
         "../webhooks/dist",
         "../keystore/dist",
         "../../.env",
