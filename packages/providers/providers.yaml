@@ -9940,7 +9940,7 @@ vercel:
             endpoints:
                 - /v1/sessions
     docs: https://docs.nango.dev/integrations/all/vercel
-    docs_connect: https://docs.nango.dev/integrations/all/devin/vercel
+    docs_connect: https://docs.nango.dev/integrations/all/vercel
     credentials:
         apiKey:
             type: string
