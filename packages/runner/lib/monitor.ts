@@ -67,6 +67,11 @@ export class RunnerMonitor {
             const used = Array.from(this.workers.values()).reduce((acc, worker) => {
                 return acc + (worker.memoryUsage?.memoryInBytes || 0);
             }, 0);
+            const mem = process.memoryUsage();
+            logger.info(
+                `Memory usage: ${formatMemory(mem.heapUsed)} heap, ${formatMemory(mem.rss)} rss, ${formatMemory(mem.external)} external, ${formatMemory(mem.arrayBuffers)} arrayBuffers`
+            );
+
             const totalUsedMemoryPercentage = (used / total) * 100;
             if (totalUsedMemoryPercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage({
