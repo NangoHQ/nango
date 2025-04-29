@@ -360,6 +360,7 @@
                 "integrations/all/companycam",
                 "integrations/all/connectwise-psa",
                 "integrations/all/confluence",
+                "integrations/all/confluence-basic",
                 "integrations/all/connectwise-psa",
                 "integrations/all/connectwise-psa-staging",
                 "integrations/all/contentful",
