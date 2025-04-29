@@ -1,14 +1,15 @@
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import db from '@nangohq/database';
 import { isCloud, nanoid } from '@nangohq/utils';
-import { NangoError } from '../utils/error.js';
+
+import { getProvider } from './providers.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
 import syncManager from './sync/manager.service.js';
-import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
+import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { AuthModeType, DBConnection, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
-import { getProvider } from './providers.js';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
