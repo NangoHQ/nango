@@ -5,7 +5,7 @@ import { envs } from '../envs.js';
 import type { BillingIngestEvent } from '../types.js';
 
 const orbSDK = new Orb({
-    apiKey: envs.ORB_API_KEY,
+    apiKey: envs.ORB_API_KEY || 'empty',
     maxRetries: 3
 });
 
