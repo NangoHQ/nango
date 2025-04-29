@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { WebhookRoutingError } from '@nangohq/shared';
+import { NangoError } from '@nangohq/shared';
 import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
@@ -44,7 +44,7 @@ const route: WebhookHandler<XeroWebhookBody> = async (nango, integration, header
     const signature = headers['x-xero-signature'];
     if (!signature) {
         logger.error('Missing x-xero-signature header', { configId: integration.id });
-        return Err(new WebhookRoutingError('webhook_missing_signature'));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
     logger.info('Received Xero webhook', { configId: integration.id });
@@ -52,7 +52,7 @@ const route: WebhookHandler<XeroWebhookBody> = async (nango, integration, header
     const isValidSignature = validate(integration, signature, rawBody);
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: integration.id });
-        return Err(new WebhookRoutingError('webhook_invalid_signature'));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const parsedBody = body;

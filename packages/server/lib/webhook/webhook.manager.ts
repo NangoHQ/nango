@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { WebhookRoutingError, externalWebhookService, getProvider } from '@nangohq/shared';
+import { NangoError, externalWebhookService, getProvider } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
@@ -70,10 +70,10 @@ export async function routeWebhook({
 
     if (result.isErr()) {
         const err = result.error;
-        if (err instanceof WebhookRoutingError) {
+        if (err instanceof NangoError) {
             return {
                 content: { error: err.message },
-                statusCode: 401
+                statusCode: err.status
             };
         }
         return {

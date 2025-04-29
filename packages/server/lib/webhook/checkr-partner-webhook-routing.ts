@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { WebhookRoutingError } from '@nangohq/shared';
+import { NangoError } from '@nangohq/shared';
 import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
@@ -32,7 +32,7 @@ const route: WebhookHandler<CheckrBody> = async (nango, integration, headers, bo
     const signature = headers['x-checkr-signature'];
     if (!signature) {
         logger.error('missing signature', { configId: integration.id });
-        return Err(new WebhookRoutingError('webhook_missing_signature'));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
     logger.info('received', { configId: integration.id });

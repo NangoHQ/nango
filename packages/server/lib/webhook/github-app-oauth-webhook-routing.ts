@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import get from 'lodash-es/get.js';
 
-import { WebhookRoutingError, connectionService, environmentService, getProvider } from '@nangohq/shared';
+import { NangoError, connectionService, environmentService, getProvider } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Ok, Err } from '@nangohq/utils';
 
@@ -37,7 +37,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
-            return Err(new WebhookRoutingError('webhook_invalid_signature'));
+            return Err(new NangoError('webhook_invalid_signature'));
         }
     }
 
@@ -57,7 +57,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
     });
 };
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter): Promise<Result<void, WebhookRoutingError>> {
+async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter): Promise<Result<void, NangoError>> {
     if (!get(body, 'requester.login')) {
         return Ok(undefined);
     }
@@ -86,13 +86,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
             logger.info('no connection or existing installation_id');
-            return Err(new WebhookRoutingError('webhook_no_connection_or_existing_installation_id'));
+            return Err(new NangoError('webhook_no_connection_or_existing_installation_id'));
         }
 
         const provider = getProvider(integration.provider);
         if (!provider) {
             logger.error('unknown provider');
-            return Err(new WebhookRoutingError('webhook_unknown_provider'));
+            return Err(new NangoError('webhook_unknown_provider'));
         }
 
         const activityLogId = connection.connection_config['pendingLog'];

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { WebhookRoutingError } from '@nangohq/shared';
+import { NangoError } from '@nangohq/shared';
 import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
@@ -30,7 +30,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid');
-            return Err(new WebhookRoutingError('webhook_invalid_signature'));
+            return Err(new NangoError('webhook_invalid_signature'));
         }
     }
 

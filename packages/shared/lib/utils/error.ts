@@ -23,8 +23,6 @@ export class NangoInternalError extends Error {
 
 export class AuthCredentialsError extends NangoInternalError {}
 
-export class WebhookRoutingError extends NangoInternalError {}
-
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;

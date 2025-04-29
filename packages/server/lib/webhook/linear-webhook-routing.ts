@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { WebhookRoutingError } from '@nangohq/shared';
+import { NangoError } from '@nangohq/shared';
 import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
@@ -29,14 +29,14 @@ const route: WebhookHandler<LinearBody> = async (nango, integration, headers, bo
     const signature = headers['linear-signature'];
     if (!signature) {
         logger.error('missing signature', { configId: integration.id });
-        return Err(new WebhookRoutingError('webhook_missing_signature'));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
     logger.info('received', { configId: integration.id });
 
     if (!validate(integration, signature, rawBody)) {
         logger.error('invalid signature', { configId: integration.id });
-        return Err(new WebhookRoutingError('webhook_invalid_signature'));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const parsedBody = body;
