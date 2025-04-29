@@ -560,6 +560,9 @@
                                 },
                                 "automated": {
                                     "type": "boolean"
+                                },
+                                "hidden": {
+                                    "type": "boolean"
                                 }
                             }
                         }

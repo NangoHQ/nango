@@ -1,20 +1,24 @@
-import { isAxiosError } from 'axios';
 import { Buffer } from 'buffer';
+import * as crypto from 'crypto';
 import * as vm from 'node:vm';
 import * as url from 'url';
-import * as crypto from 'crypto';
-import * as zod from 'zod';
-import * as soap from 'soap';
+
+import { isAxiosError } from 'axios';
 import * as botbuilder from 'botbuilder';
-import * as unzipper from 'unzipper';
 import tracer from 'dd-trace';
-import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
-import { logger } from './logger.js';
-import type { NangoProps, RunnerOutput } from '@nangohq/types';
-import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
-import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import * as soap from 'soap';
+import * as unzipper from 'unzipper';
+import * as zod from 'zod';
+
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
+import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
+
+import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
+import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
+
+import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;

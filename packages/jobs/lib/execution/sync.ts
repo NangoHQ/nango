@@ -770,6 +770,7 @@ async function onFailure({
         }
     }
 
+    void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     if (isCancel) {
         await logCtx?.cancel();
