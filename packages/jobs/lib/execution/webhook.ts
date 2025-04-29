@@ -418,6 +418,8 @@ async function onFailure({
         });
     }
 
+    void logCtx?.error(error.message, { error });
+    await logCtx?.enrichOperation({ error });
     await logCtx?.failed();
 
     metrics.increment(metrics.Types.WEBHOOK_FAILURE);
