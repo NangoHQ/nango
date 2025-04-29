@@ -3953,12 +3953,9 @@ gem:
     connection_config:
         appSecret:
             type: string
-            title: Application Secret
-            description: The Application Secret for your Gem Integration
-            pattern: '^[a-f0-9]{128}$'
-            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
-            secret: true
-            doc_section: '#step-2-finding-your-application-secret'
+            title: ''
+            description: ''
+            hidden: true
 
 gerrit:
     display_name: Gerrit
