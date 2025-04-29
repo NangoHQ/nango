@@ -5119,9 +5119,9 @@ jira:
     connection_config:
         baseUrl:
             type: string
-            title: Domain
+            title: Subdomain
             optional: true
-            description: The domain of your Attlassian account
+            description: The subdomain of your Attlassian account
             pattern: '^[a-zA-Z0-9.-]+$'
             example: subdomain
             suffix: .atlassian.net
@@ -5136,14 +5136,14 @@ jira-basic:
     proxy:
         retry:
             after: 'retry-after'
-        base_url: https://${connectionConfig.baseUrl}.atlassian.net
+        base_url: https://${connectionConfig.subdomain}.atlassian.net
         verification:
             method: GET
             endpoints:
                 - /rest/api/3/myself
     docs: https://docs.nango.dev/integrations/all/jira-basic
     connection_config:
-        baseUrl:
+        subdomain:
             type: string
             title: Jira Domain
             description: The subdomain of your Jira account
