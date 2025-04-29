@@ -67,6 +67,8 @@ export class RunnerMonitor {
             const used = Array.from(this.workers.values()).reduce((acc, worker) => {
                 return acc + (worker.memoryUsage?.memoryInBytes || 0);
             }, 0);
+
+            // TODO: remove;
             const mem = process.memoryUsage();
             logger.info(
                 `Memory usage: ${formatMemory(mem.heapUsed)} heap, ${formatMemory(mem.rss)} rss, ${formatMemory(mem.external)} external, ${formatMemory(mem.arrayBuffers)} arrayBuffers`

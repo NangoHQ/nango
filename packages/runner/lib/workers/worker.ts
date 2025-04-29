@@ -110,13 +110,18 @@ export class RunnerChild {
     }
 
     async run(): Promise<void> {
-        const heartbeat = setInterval(async () => {
+        // using setTimeout and not setInterval to avoid overlapping calls
+        let heartbeatInterval: NodeJS.Timeout | null = null;
+        const sendHeartbeat = async () => {
             try {
                 await this.jobsClient.postHeartbeat({ taskId: this.taskId });
             } catch (err) {
                 this.logger.error('Heartbeat failed', { err });
+            } finally {
+                heartbeatInterval = setTimeout(sendHeartbeat, this.heartbeatIntervalMs);
             }
-        }, this.heartbeatIntervalMs);
+        };
+        heartbeatInterval = setTimeout(sendHeartbeat, this.heartbeatIntervalMs);
 
         const memoryUsage = setInterval(() => {
             this.reportMemory(process.memoryUsage().heapUsed + process.memoryUsage().external);
@@ -131,9 +136,11 @@ export class RunnerChild {
             });
             this.logger.info(`Completed task: ${this.taskId}`);
         } finally {
-            clearInterval(heartbeat);
+            if (heartbeatInterval) {
+                clearTimeout(heartbeatInterval);
+            }
             clearInterval(memoryUsage);
-            process.exit(0);
+            this.parent.close(); // close the parent port to signal completion
         }
     }
 

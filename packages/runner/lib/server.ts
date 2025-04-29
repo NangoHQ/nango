@@ -67,7 +67,7 @@ function startProcedure() {
                 code,
                 codeParams
             });
-            worker.start();
+            monitor.track(worker);
             worker.on('error', (err) => {
                 logger.error(`Task ${taskId} failed`, { err });
             });
@@ -77,7 +77,7 @@ function startProcedure() {
                 }
                 monitor.untrack(worker);
             });
-            monitor.track(worker);
+            worker.start();
 
             return true;
         });
