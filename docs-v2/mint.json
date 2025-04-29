@@ -272,6 +272,7 @@
                 "integrations/all/active-campaign",
                 "integrations/all/adobe",
                 "integrations/all/adobe-umapi",
+                "integrations/all/adp",
                 "integrations/all/adyen",
                 "integrations/all/affinity",
                 "integrations/all/aircall",

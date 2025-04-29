@@ -150,6 +150,19 @@ adobe-umapi:
             description: ''
             automated: true
 
+adp:
+    display_name: ADP
+    auth_mode: OAUTH2_CC
+    categories:
+        - ats
+    proxy:
+        base_url: https://api.adp.com
+    token_url: https://accounts.adp.com/auth/oauth/v2/token
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/adp
+    docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+
 adyen:
     display_name: Adyen
     categories:
