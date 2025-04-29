@@ -85,7 +85,6 @@ class ConfigService {
         if (provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');
         }
-        console.log('this is the config to insert', configToInsert);
         const res = await db.knex.from<IntegrationConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
