@@ -6497,6 +6497,7 @@ namely:
             title: Company
             description: The name of your Namely company
             example: example
+            doc_section: '#step-1-finding-your-company-name'
 
 namely-pat:
     display_name: Namely (PAT)
@@ -6522,6 +6523,7 @@ namely-pat:
             type: string
             title: Personal Access Token
             description: The Personal Access Token for your Namely account
+            doc_section: '#step-2-generating-your-personal-access-token'
 
 netsuite:
     display_name: NetSuite (OAuth)
