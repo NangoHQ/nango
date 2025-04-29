@@ -5106,7 +5106,7 @@ jira:
     proxy:
         base_url: https://api.atlassian.com
         connection_config:
-            baseUrl: ${connectionConfig.baseUrl}
+            baseUrl: ${connectionConfig.subdomain}
         paginate:
             type: link
             link_rel_in_response_header: next
@@ -5117,7 +5117,7 @@ jira:
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
     connection_config:
-        baseUrl:
+        subdomain:
             type: string
             title: Subdomain
             optional: true
