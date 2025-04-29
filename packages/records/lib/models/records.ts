@@ -322,7 +322,7 @@ export async function upsert({
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_upsert`, [newLockId(connectionId, model)]);
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 const encryptedRecords = encryptRecords(chunk);
@@ -628,13 +628,13 @@ export async function deleteRecordsBySyncId({
     environmentId,
     model,
     syncId,
-    limit = 5000
+    batchSize = 5000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
     syncId: string;
-    limit?: number;
+    batchSize?: number;
 }): Promise<{ totalDeletedRecords: number }> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
@@ -645,11 +645,11 @@ export async function deleteRecordsBySyncId({
             .from(RECORDS_TABLE)
             .where({ connection_id: connectionId, model })
             .whereIn('id', function (sub) {
-                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(limit);
+                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
             })
             .del();
         totalDeletedRecords += deletedRecords;
-    } while (deletedRecords >= limit);
+    } while (deletedRecords >= batchSize);
     await deleteRecordCount({ connectionId, environmentId, model });
 
     return { totalDeletedRecords };

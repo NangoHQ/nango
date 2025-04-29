@@ -199,7 +199,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 }
 
 export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
             getFormattedOperation(
@@ -770,6 +770,7 @@ async function onFailure({
         }
     }
 
+    void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     if (isCancel) {
         await logCtx?.cancel();

@@ -2956,7 +2956,7 @@ integrations:
                     path: /events
                 output: Event
                 description: Retrieve all events per a user
-                version: 1.0.0
+                version: 2.0.0
             event-types:
                 sync_type: incremental
                 runs: every hour
@@ -2965,7 +2965,7 @@ integrations:
                     path: /event/types
                 output: EventType
                 description: Retrieve all event types per a user
-                version: 1.0.0
+                version: 2.0.0
             event-invitees:
                 sync_type: incremental
                 runs: every hour
@@ -2978,7 +2978,7 @@ integrations:
             users:
                 runs: every day
                 description: Fetches a list of users from Calendly
-                version: 1.0.0
+                version: 2.0.0
                 output: User
                 track_deletes: true
                 sync_type: full
@@ -3062,6 +3062,8 @@ integrations:
                 user: string
                 user_email: string | null
                 user_name: string
+                buffered_end_time?: string
+                buffered_start_time?: string
             EventGuest:
                 email: string
                 created_at: string
@@ -3071,15 +3073,15 @@ integrations:
                 active: number
                 limit: number
             EventLocation:
-                type: string
-                location?: string
-                join_url?: string
-                status: string | null
-                additional_info: string
+                type?: string
+                location?: string | null
+                join_url?: string | null
+                status?: string | null
+                additional_info?: string | null
             EventTypeLocation:
                 kind: string
-                phone_number: number
-                additional_info: string
+                phone_number?: number | null
+                additional_info?: string | null
             EventQuestion:
                 name: string
                 type: string
@@ -3101,6 +3103,7 @@ integrations:
                 slug: string | null
                 scheduling_url: string
                 duration: number
+                duration_options: number[] | null
                 kind: string
                 pooling_type: string | null
                 type: string
@@ -3108,9 +3111,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 internal_note: string | null
-                description_plain: string
-                description_html: string
-                profile: Profile | null
+                description_plain: string | null
+                description_html: string | null
+                profile: EventProfile | null
                 secret: boolean
                 deleted_at: string | null
                 admin_managed: boolean
