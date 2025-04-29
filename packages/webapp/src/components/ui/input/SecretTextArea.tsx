@@ -1,36 +1,25 @@
-import type { ChangeEvent, TextareaHTMLAttributes } from 'react';
-import { forwardRef, useCallback, useState } from 'react';
-import { CopyButton } from '../button/CopyButton';
-import { cn } from '../../../utils/utils';
 import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons';
-import { Button } from '../button/Button';
+import { forwardRef, useCallback, useState } from 'react';
+
 import { Input } from './Input';
+import { cn } from '../../../utils/utils';
+import { Button } from '../button/Button';
+import { CopyButton } from '../button/CopyButton';
+
+import type { TextareaHTMLAttributes } from 'react';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     copy?: boolean;
-    optionalValue?: string;
-    setOptionalValue?: (value: string) => void;
-    additionalClass?: string;
+    onUpdate: (value: string) => void;
 }
 
-const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(function SecretTextarea(
-    { className, copy, optionalValue, setOptionalValue, additionalClass, defaultValue, ...rest },
-    ref
-) {
+export const SecretTextArea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(function SecretTextArea({ className, copy, value, onUpdate, ...rest }, ref) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
-    const [changedValue, setChangedValue] = useState(defaultValue);
-
-    const value = optionalValue || changedValue;
-    const updateValue = setOptionalValue || setChangedValue;
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
 
-    const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        updateValue(e.currentTarget.value);
-    };
-
     return (
-        <div className={cn('relative flex', additionalClass)}>
+        <div className={cn('relative flex w-full')}>
             {isSecretVisible ? (
                 <textarea
                     ref={ref}
@@ -40,7 +29,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                         'h-48'
                     )}
                     value={value}
-                    onChange={handleTextareaChange}
+                    onChange={(e) => onUpdate(e.currentTarget.value)}
                     {...rest}
                 />
             ) : (
@@ -49,7 +38,7 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
                     variant={'flat'}
                     value={value}
                     // @ts-expect-error we are mixing input and textarea props
-                    onChange={(e) => updateValue(e.currentTarget.value)}
+                    onChange={(e) => onUpdate(e.currentTarget.value)}
                     {...rest}
                 />
             )}
@@ -62,5 +51,3 @@ const SecretTextarea = forwardRef<HTMLTextAreaElement, SecretTextareaProps>(func
         </div>
     );
 });
-
-export default SecretTextarea;

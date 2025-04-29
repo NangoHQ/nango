@@ -19,6 +19,7 @@ const account: DBTeam = {
 
 const providerConfig: IntegrationConfig = {
     id: 1,
+    display_name: null,
     provider: 'provider',
     unique_key: 'unique_key',
     oauth_client_id: '',

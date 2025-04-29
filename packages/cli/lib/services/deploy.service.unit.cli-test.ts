@@ -1,9 +1,11 @@
 import fs from 'node:fs';
-import { describe, expect, it, beforeAll } from 'vitest';
+
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import { compileAllFiles } from './compile.service';
 import { parse } from './config.service.js';
 import deployService from './deploy.service';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory, removeVersion } from '../tests/helpers.js';
-import { compileAllFiles } from './compile.service';
 
 describe('package', () => {
     let dir: string;
@@ -19,8 +21,11 @@ describe('package', () => {
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `${dir}/nango.yaml`);
 
         // Compile only once
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
-        expect(success).toBe(true);
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(result).toEqual({
+            success: true,
+            failedFiles: []
+        });
     });
 
     it('should package correctly', () => {

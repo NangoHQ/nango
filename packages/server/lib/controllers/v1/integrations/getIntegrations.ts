@@ -33,7 +33,8 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
                 scriptsCount: activeSyncConfig.get(integration.id!) || 0,
                 connectionCount: Number(integration.connection_count),
                 creationDate: integration.created_at.toISOString(),
-                missingFieldsCount: integration.missing_fields.length
+                missingFieldsCount: integration.missing_fields.length,
+                displayName: provider.display_name
             }
         };
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 
+import { CopyText } from '../../../../../components/CopyText';
 import { Info } from '../../../../../components/Info';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
@@ -63,9 +64,26 @@ export const SettingsGeneral: React.FC<{
 
     const env = useStore((state) => state.env);
     const [showEditIntegrationId, setShowEditIntegrationId] = useState(false);
+    const [showEditDisplayName, setShowEditDisplayName] = useState(false);
+    const [displayName, setDisplayName] = useState(integration.display_name || template.display_name);
     const [integrationId, setIntegrationId] = useState(integration.unique_key);
     const [webhookSecret, setWebhookSecret] = useState(integration.custom?.webhookSecret || '');
     const [loading, setLoading] = useState(false);
+
+    const onSaveDisplayName = async () => {
+        setLoading(true);
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, { displayName });
+
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated display name', variant: 'success' });
+            setShowEditDisplayName(false);
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+        }
+    };
 
     const onSaveIntegrationID = async () => {
         setLoading(true);
@@ -107,6 +125,48 @@ export const SettingsGeneral: React.FC<{
 
             <div className="grid grid-cols-2 gap-10">
                 <InfoBloc title="API Provider">{integration?.provider}</InfoBloc>
+
+                <InfoBloc title="Display Name">
+                    {showEditDisplayName ? (
+                        <div className="flex flex-col gap-5 grow">
+                            <Input
+                                value={displayName}
+                                variant={'flat'}
+                                onChange={(e) => {
+                                    setDisplayName(e.target.value);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        void onSaveDisplayName();
+                                    }
+                                }}
+                            />
+                            <div className="flex justify-end gap-2 items-center">
+                                <Button
+                                    size={'xs'}
+                                    variant={'emptyFaded'}
+                                    onClick={() => {
+                                        setDisplayName(integration.display_name || template.display_name);
+                                        setShowEditDisplayName(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button size={'xs'} variant={'primary'} onClick={() => onSaveDisplayName()} isLoading={loading}>
+                                    Save
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center text-white text-sm">
+                            <div className="mr-2">{displayName}</div>
+                            <Button variant={'icon'} onClick={() => setShowEditDisplayName(true)} size={'xs'}>
+                                <Pencil1Icon />
+                            </Button>
+                        </div>
+                    )}
+                </InfoBloc>
+
                 <InfoBloc title="Integration ID">
                     {showEditIntegrationId ? (
                         <div className="flex flex-col gap-5 grow">
@@ -140,7 +200,9 @@ export const SettingsGeneral: React.FC<{
                         </div>
                     ) : (
                         <div className="flex items-center text-white text-sm">
-                            <div className="mr-2">{integration.unique_key}</div>
+                            <div className="-ml-2">
+                                <CopyText className="text-s font-code" text={integration.unique_key} showOnHover />
+                            </div>
                             <SimpleTooltip
                                 tooltipContent={meta.connectionsCount > 0 ? "You can't change an integration id when you have active connections" : ''}
                             >

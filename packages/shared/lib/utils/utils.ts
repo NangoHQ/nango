@@ -7,12 +7,6 @@ import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost }
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
-
 export enum NodeEnv {
     Dev = 'development',
     Staging = 'staging',
@@ -240,15 +234,13 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
-export function stripStepResponse(obj: any, step: Record<string, any>): any {
+export function stripStepResponse(obj: any): any {
     if (typeof obj === 'string') {
-        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
-            return step[key] || '';
-        });
+        return obj.replace(/step\d+\./g, '');
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
-            strippedObject[key] = stripStepResponse(value, step);
+            strippedObject[key] = stripStepResponse(value);
         }
         return strippedObject;
     }
@@ -372,4 +364,11 @@ export function getConnectionMetadataFromTokenResponse(params: any, provider: Pr
     const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
 
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
+}
+
+export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
+    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
+    return new URL(interpolatedUrl);
 }

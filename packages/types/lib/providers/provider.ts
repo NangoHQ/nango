@@ -89,7 +89,7 @@ export interface BaseProvider {
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
-    auth_mode: 'OAUTH2' | 'CUSTOM';
+    auth_mode: 'OAUTH2';
 
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
 
@@ -120,6 +120,15 @@ export interface ProviderOAuth1 extends BaseProvider {
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
+// Github APP Oauth
+export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
+    auth_mode: 'CUSTOM';
+    token_url: {
+        OAUTH2: string;
+        APP: string;
+    };
+}
+
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
@@ -140,8 +149,22 @@ export interface ProviderJwt extends BaseProvider {
     };
 }
 
+export interface ProviderAppleAppStore extends BaseProvider {
+    auth_mode: 'APP_STORE';
+    token_url: string;
+}
+
 export interface ProviderTableau extends BaseProvider {
     auth_mode: 'TABLEAU';
+}
+
+export interface ProviderBill extends BaseProvider {
+    auth_mode: 'BILL';
+}
+
+export interface ProviderGithubApp extends BaseProvider {
+    auth_mode: 'APP';
+    token_url: string;
 }
 
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
@@ -158,6 +181,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_params?: Record<string, string>;
         token_headers?: Record<string, string>;
         token_url: string;
+        token_request_method?: 'GET';
     }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
@@ -178,7 +202,19 @@ export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
 
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature | ProviderApiKey | ProviderTableau;
+export type Provider =
+    | BaseProvider
+    | ProviderOAuth1
+    | ProviderOAuth2
+    | ProviderJwt
+    | ProviderTwoStep
+    | ProviderSignature
+    | ProviderApiKey
+    | ProviderTableau
+    | ProviderBill
+    | ProviderGithubApp
+    | ProviderAppleAppStore
+    | ProviderCustom;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

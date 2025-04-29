@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
+import { configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -73,7 +73,6 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -126,10 +125,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         const [updatedConnection] = await connectionService.upsertUnauthConnection({
             connectionId,
             providerConfigKey,
-            provider: config.provider,
             connectionConfig,
-            environment,
-            account
+            environment
         });
 
         if (!updatedConnection) {
