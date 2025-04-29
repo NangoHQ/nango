@@ -7,15 +7,14 @@ sidebarTitle: Gem
 
 To authenticate with Gem, you need:
 1. **Shareable Access Key** - A key that grants Nango permission to interact with Gem's APIs resources and services.
-2. **Application Secret** - The secret key for your integration, provided externally by Gem.
 
-
-This guide will walk you through obtaining your **Shareable Access Key** and **Application Secret** within Gem.
+This guide will walk you through obtaining your **Shareable Access Key** within Gem.
 
 ### Prerequisites:
 
 - You must have an account with Gem.
 - The API must be enabled for your account before you can generate **API keys**. To request access, reach out to your Gem point of contact (Customer Success Manager or Account Executive).
+- You have already configured the `appSecret` in the **connection configuration**, which was provided externally by Gem when creating a [session](https://docs.nango.dev/reference/api/connect/sessions/create#body-integrations-config-defaults-key-connection-config)
 
 ### Instructions:
 
@@ -26,14 +25,11 @@ This guide will walk you through obtaining your **Shareable Access Key** and **A
 4. Click **Add Integration** to add your integration and copy the **Shareable Access Key**.
 <img src="/integrations/all/gem/integrations_page.png" />
 
-#### Step 2: Finding Your Application Secret
-- This secret is provided externally by Gem.
+#### Step 2: Enter credentials in the Connect UI
 
-#### Step 3: Enter credentials in the Connect UI
-
-Once you have your **Shareable Access Key** and **Application Secret**:
+Once you have your **Shareable Access Key**
 1. Open the form where you need to authenticate with Gem.
-2. Enter your **Shareable Access Key** and **Application Secret** in their respective fields.
+2. Enter your **Shareable Access Key** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 

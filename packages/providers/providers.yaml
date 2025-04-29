@@ -150,6 +150,19 @@ adobe-umapi:
             description: ''
             automated: true
 
+adp:
+    display_name: ADP
+    auth_mode: OAUTH2_CC
+    categories:
+        - ats
+    proxy:
+        base_url: https://api.adp.com
+    token_url: https://accounts.adp.com/auth/oauth/v2/token
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/adp
+    docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+
 adyen:
     display_name: Adyen
     categories:
@@ -2421,6 +2434,47 @@ confluence:
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 
+confluence-basic:
+    display_name: Confluence (Basic Auth)
+    categories:
+        - knowledge-base
+        - popular
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.atlassian.net
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /wiki/api/v2/spaces
+    docs: https://docs.nango.dev/integrations/all/confluence-basic
+    docs_connect: https://docs.nango.dev/integrations/all/confluence-basic/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Confluence Subdomain
+            description: The subdomain of your Confluence account
+            pattern: '^[a-z0-9_-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-atlassian-domain'
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            format: email
+            description: The email address for your Confluence account
+            doc_section: '#step-1-getting-your-api-token'
+        password:
+            type: string
+            title: API token
+            description: The API token for your Confluence account
+            secret: true
+            doc_section: '#step-1-getting-your-api-token'
+
 contentful:
     display_name: Contentful
     categories:
@@ -3912,12 +3966,9 @@ gem:
     connection_config:
         appSecret:
             type: string
-            title: Application Secret
-            description: The Application Secret for your Gem Integration
-            pattern: '^[a-f0-9]{128}$'
-            example: a4c8e1d99f0b7d3c2f5bca0419ae4e5a91fcd42ba001e2a7c3d53c07aa4eb3f47e0bd7cf9e6d1e2faff3b9312d54f013e9c4ba2a17a8f3de12cdfe145d7a8c90
-            secret: true
-            doc_section: '#step-2-finding-your-application-secret'
+            title: ''
+            description: ''
+            hidden: true
 
 gerrit:
     display_name: Gerrit
