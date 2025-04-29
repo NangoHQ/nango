@@ -273,6 +273,7 @@
                 "integrations/all/adobe",
                 "integrations/all/adobe-umapi",
                 "integrations/all/adyen",
+                "integrations/all/adp",
                 "integrations/all/affinity",
                 "integrations/all/aircall",
                 "integrations/all/aircall-basic",
