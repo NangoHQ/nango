@@ -83,12 +83,6 @@ export async function routeWebhook({
     }
 
     const res = result.value;
-    if (!res) {
-        return {
-            content: null,
-            statusCode: 204
-        };
-    }
 
     // Only forward webhook if there was no error
     if (res.statusCode === 200) {
