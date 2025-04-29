@@ -9926,6 +9926,30 @@ unipile:
             pattern: '^[0-9]+$'
             example: '13113'
 
+vercel:
+    display_name: Vercel
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.vercel.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/sessions
+    docs: https://docs.nango.dev/integrations/all/vercel
+    docs_connect: https://docs.nango.dev/integrations/all/devin/vercel
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Vercel account
+            pattern: '^[A-Za-z0-9]{24}$'
+            example: 'oo7W9rGs3liLWhTwmERWrsFs'
+            doc_section: '#step-1-finding-your-api-key'
+
 vimeo:
     display_name: Vimeo (OAuth)
     categories:
@@ -10666,3 +10690,4 @@ zuora:
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
+
