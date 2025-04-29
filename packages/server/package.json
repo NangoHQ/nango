@@ -85,7 +85,7 @@
         "@types/ws": "8.5.4",
         "get-port": "7.1.0",
         "nodemon": "3.1.9",
-        "type-fest": "4.32.0",
+        "type-fest": "4.40.0",
         "typescript": "5.7.3",
         "vitest": "3.1.2"
     }
