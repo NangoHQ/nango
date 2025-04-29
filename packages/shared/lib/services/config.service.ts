@@ -82,7 +82,10 @@ class ConfigService {
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
-
+        if (provider.default_scopes?.length) {
+            configToInsert.oauth_scopes = provider.default_scopes.join(',');
+        }
+        console.log('this is the config to insert', configToInsert);
         const res = await db.knex.from<IntegrationConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
