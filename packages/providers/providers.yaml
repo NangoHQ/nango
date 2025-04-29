@@ -9995,6 +9995,29 @@ wealthbox:
     proxy:
         base_url: https://api.crmworkspace.com
     docs: https://docs.nango.dev/integrations/all/wealthbox
+    
+precisefp:
+    display_name: PreciseFP
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.precisefp.com/oauth/authorize
+    token_url: https://app.precisefp.com/oauth/token
+    authorization_params:
+        response_type: code
+        scope: "*"
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.precisefp.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v3/user
+    docs: https://docs.nango.dev/integrations/all/precisefp
 
 webflow:
     display_name: Webflow
