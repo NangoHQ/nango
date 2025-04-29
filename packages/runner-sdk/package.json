@@ -15,9 +15,9 @@
     "devDependencies": {
         "@nangohq/types": "0.58.6",
         "@types/json-schema": "7.0.15",
-        "axios": "1.8.4",
+        "axios": "1.9.0",
         "json-schema": "0.4.0",
-        "vitest": "3.1.1",
+        "vitest": "3.1.2",
         "zod": "3.24.2"
     },
     "files": [

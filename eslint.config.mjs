@@ -202,7 +202,8 @@ export default tseslint.config(
             '@typescript-eslint/no-misused-promises': 'warn',
             '@typescript-eslint/no-unsafe-return': 'warn',
             '@typescript-eslint/no-empty-function': 'warn',
-            '@typescript-eslint/no-unsafe-enum-comparison': 'warn'
+            '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
+            '@typescript-eslint/no-unnecessary-type-parameters': 'off'
         }
     },
     {
