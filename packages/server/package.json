@@ -36,7 +36,7 @@
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/billing": "file:../billing",
         "@workos-inc/node": "6.2.0",
-        "axios": "^1.8.4",
+        "axios": "1.8.4",
         "body-parser": "1.20.3",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.6",
