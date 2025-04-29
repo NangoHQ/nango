@@ -10017,6 +10017,9 @@ precisefp:
             method: GET
             endpoints:
                 - /api/v3/user
+        rate_limit:
+            rate: 60
+            period: 60
     docs: https://docs.nango.dev/integrations/all/precisefp
 
 webflow:
