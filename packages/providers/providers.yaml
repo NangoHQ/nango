@@ -3914,7 +3914,6 @@ gem:
             type: string
             title: ''
             description: ''
-            default_value: ''
             hidden: true
 
 gerrit:
