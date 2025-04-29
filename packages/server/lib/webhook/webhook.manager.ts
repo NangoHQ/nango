@@ -1,7 +1,8 @@
 import tracer from 'dd-trace';
 
 import { WebhookRoutingError, externalWebhookService, getProvider } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { getLogger, Err } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
@@ -57,24 +58,31 @@ export async function routeWebhook({
         };
     }
 
-    const res = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
+    const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            return await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
+            const handlerResult = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
+            return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
-            if (err instanceof WebhookRoutingError) {
-                return {
-                    content: { error: err.message },
-                    statusCode: 401
-                };
-            }
-            return {
-                content: { error: 'internal_error' },
-                statusCode: 500
-            };
+            return Err(err instanceof Error ? err : new Error(String(err)));
         }
     });
 
+    if (result.isErr()) {
+        const err = result.error;
+        if (err instanceof WebhookRoutingError) {
+            return {
+                content: { error: err.message },
+                statusCode: 401
+            };
+        }
+        return {
+            content: { error: 'internal_error' },
+            statusCode: 500
+        };
+    }
+
+    const res = result.value;
     if (!res) {
         return {
             content: null,
@@ -85,7 +93,7 @@ export async function routeWebhook({
     // Only forward webhook if there was no error
     if (res.statusCode === 200) {
         const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
-        const connectionIds = 'connectionIds' in res ? (res.connectionIds as string[]) : [];
+        const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 

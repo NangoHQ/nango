@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { WebhookRoutingError } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -27,7 +27,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
     if (!valid) {
         logger.error('webhook signature invalid');
-        throw new WebhookRoutingError('invalid_signature');
+        return Err(new WebhookRoutingError('webhook_invalid_signature'));
     }
 
     if (Array.isArray(body)) {
@@ -53,15 +53,15 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
             }
         }
 
-        return { content: { status: 'success' }, statusCode: 200, connectionIds };
+        return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds });
     } else {
         const response = await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
-        return {
+        return Ok({
             content: { status: 'success' },
             statusCode: 200,
             connectionIds: response?.connectionIds || [],
             toForward: body
-        };
+        });
     }
 };
 

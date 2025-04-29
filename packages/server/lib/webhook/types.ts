@@ -1,6 +1,7 @@
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { InternalNango } from './internal-nango.js';
+import type { Result } from '@nangohq/utils';
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
@@ -9,7 +10,7 @@ export type WebhookHandler<T = any> = (
     body: T,
     rawBody: string,
     logContextGetter: LogContextGetter
-) => Promise<WebhookResponse>;
+) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
     content: string | Record<string, any> | null;
@@ -24,12 +25,12 @@ export interface WebhookResponseWithForward extends WebhookResponseWithConnectio
     toForward: unknown;
 }
 
-export interface WebhookResponseNoAction {
+export interface WebhookResponseNoContent {
     content: null;
     statusCode: 204;
 }
 
-export type WebhookResponse = WebhookResponseOnly | WebhookResponseWithConnectionIds | WebhookResponseWithForward | WebhookResponseNoAction;
+export type WebhookResponse = WebhookResponseOnly | WebhookResponseWithConnectionIds | WebhookResponseWithForward | WebhookResponseNoContent;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
 

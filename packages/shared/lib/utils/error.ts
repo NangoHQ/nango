@@ -491,19 +491,29 @@ export class NangoError extends NangoInternalError {
                 this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
                 break;
 
-            case 'invalid_signature':
+            case 'webhook_invalid_signature':
                 this.status = 401;
                 this.message = 'Invalid webhook signature';
                 break;
 
-            case 'missing_signature':
+            case 'webhook_missing_signature':
                 this.status = 401;
                 this.message = 'Missing webhook signature';
                 break;
 
-            case 'invalid_payload':
+            case 'webhook_invalid_payload':
                 this.status = 400;
                 this.message = 'Invalid webhook payload';
+                break;
+
+            case 'webhook_no_connection_or_existing_installation_id':
+                this.status = 400;
+                this.message = 'No connection or existing installation_id';
+                break;
+
+            case 'webhook_unknown_provider':
+                this.status = 400;
+                this.message = 'Unknown provider';
                 break;
 
             default:

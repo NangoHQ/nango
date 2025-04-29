@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { WebhookRoutingError } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -40,11 +40,11 @@ function validate(integration: ProviderConfig, signature: string, rawBody: strin
     }
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler<XeroWebhookBody> = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['x-xero-signature'];
     if (!signature) {
         logger.error('Missing x-xero-signature header', { configId: integration.id });
-        throw new WebhookRoutingError('missing_signature');
+        return Err(new WebhookRoutingError('webhook_missing_signature'));
     }
 
     logger.info('Received Xero webhook', { configId: integration.id });
@@ -52,16 +52,16 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     const isValidSignature = validate(integration, signature, rawBody);
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: integration.id });
-        throw new WebhookRoutingError('invalid_signature');
+        return Err(new WebhookRoutingError('webhook_invalid_signature'));
     }
 
-    const parsedBody = body as XeroWebhookBody;
+    const parsedBody = body;
     logger.info('Valid webhook received', { configId: integration.id });
 
     // For empty events, just return success
     if (parsedBody.events.length === 0) {
         logger.info('Empty events array, returning success', { configId: integration.id });
-        return { content: { status: 'success' }, statusCode: 200 };
+        return Ok({ content: { status: 'success' }, statusCode: 200 });
     }
 
     let connectionIds: string[] = [];
@@ -72,12 +72,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
         }
     }
 
-    return {
+    return Ok({
         content: { status: 'success' },
         statusCode: 200,
         connectionIds,
         toForward: parsedBody
-    };
+    });
 };
 
 export default route;

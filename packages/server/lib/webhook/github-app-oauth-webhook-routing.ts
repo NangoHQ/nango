@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import get from 'lodash-es/get.js';
 
 import { WebhookRoutingError, connectionService, environmentService, getProvider } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
@@ -36,26 +37,29 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
-            throw new WebhookRoutingError('invalid_signature');
+            return Err(new WebhookRoutingError('webhook_invalid_signature'));
         }
     }
 
     if (get(body, 'action') === 'created') {
-        await handleCreateWebhook(integration, body, logContextGetter);
+        const createResult = await handleCreateWebhook(integration, body, logContextGetter);
+        if (createResult.isErr()) {
+            return Err(createResult.error);
+        }
     }
 
     const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
-    return {
+    return Ok({
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
         toForward: body
-    };
+    });
 };
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {
+async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter): Promise<Result<void, WebhookRoutingError>> {
     if (!get(body, 'requester.login')) {
-        return;
+        return Ok(undefined);
     }
 
     const connections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
@@ -65,13 +69,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
 
     if (!connections || connections.length === 0) {
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
-        return;
+        return Ok(undefined);
     } else {
         const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id });
 
         if (!environmentAndAccountLookup) {
             logger.error('Environment or account not found');
-            return;
+            return Ok(undefined);
         }
 
         const { environment, account } = environmentAndAccountLookup;
@@ -82,13 +86,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
             logger.info('no connection or existing installation_id');
-            throw new WebhookRoutingError('no_connection_or_existing_installation_id');
+            return Err(new WebhookRoutingError('webhook_no_connection_or_existing_installation_id'));
         }
 
         const provider = getProvider(integration.provider);
         if (!provider) {
             logger.error('unknown provider');
-            throw new WebhookRoutingError('unknown_provider');
+            return Err(new WebhookRoutingError('webhook_unknown_provider'));
         }
 
         const activityLogId = connection.connection_config['pendingLog'];
@@ -128,6 +132,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             connCreatedHook
         );
         await logCtx.success();
+
+        return Ok(undefined);
     }
 }
 

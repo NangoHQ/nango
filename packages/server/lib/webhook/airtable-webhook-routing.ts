@@ -1,3 +1,5 @@
+import { Ok } from '@nangohq/utils';
+
 import type { WebhookHandler, AirtableWebhookReference } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 
@@ -6,12 +8,12 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, integratio
     // able to route it correctly
     const editedBodyWithCatchAll = { ...body, type: '*' };
     const response = await nango.executeScriptForWebhooks(integration, editedBodyWithCatchAll, 'type', 'webhook.id', logContextGetter, 'metadata.webhooks');
-    return {
+    return Ok({
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: response?.connectionIds || [],
         toForward: body
-    };
+    });
 };
 
 export default route;
