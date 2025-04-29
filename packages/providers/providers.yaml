@@ -3958,12 +3958,6 @@ grammarly:
             endpoints:
                 - /v2/analytics/users
     docs: https://docs.nango.dev/integrations/all/grammarly
-    default_scopes:
-        - users-api:read
-        - users-api:write
-        - scores-api:read
-        - scores-api:write
-        - analytics-api:read
 
 guru:
     display_name: Guru
