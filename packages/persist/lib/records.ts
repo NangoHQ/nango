@@ -156,7 +156,7 @@ export async function persistRecords({
 
         const mar = new Set(summary.billedKeys).size;
 
-        if (plan && plan.name !== 'free') {
+        if (plan) {
             void billing.send('monthly_active_records', mar, { accountId });
         }
 

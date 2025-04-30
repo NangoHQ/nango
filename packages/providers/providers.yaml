@@ -154,7 +154,7 @@ adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
     categories:
-        - ats
+        - hr
     proxy:
         base_url: https://api.adp.com
     token_url: https://accounts.adp.com/auth/oauth/v2/token
@@ -824,6 +824,8 @@ attio:
 
 auth0:
     display_name: Auth0
+    categories:
+        - other
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
     token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
@@ -846,6 +848,43 @@ auth0:
             example: domain
             suffix: .auth0.com
             prefix: https://
+
+auth0-cc:
+    display_name: Auth0 (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.hostname}/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+        organization: ${connectionConfig.organization}
+    docs: https://docs.nango.dev/integrations/all/auth0-cc
+    docs_connect: https://docs.nango.dev/integrations/all/auth0-cc/connect
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    connection_config:
+        hostname:
+            type: string
+            title: HostName
+            description: Your Auth0 host name
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-hostname'
+        audience:
+            type: string
+            title: Audience
+            description: The audience for the token
+            example: https://api.example.com/foobar
+            doc_section: '#step-3-finding-your-audience'
+        organization:
+            type: string
+            title: Organization
+            description: The organization name you want the request to be associated with
+            example: example
+            optional: true
+            doc_section: '#step-4-finding-your-organization'
 
 avalara:
     display_name: Avalara
@@ -2142,6 +2181,32 @@ clari-copilot:
             type: string
             title: API Key
             description: The API key for your Clari Copilot account
+
+clicksend:
+    display_name: ClickSend
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://rest.clicksend.com
+        verification:
+            method: GET
+            endpoints:
+                - /v3/account
+    docs: https://docs.nango.dev/integrations/all/clicksend
+    docs_connect: https://docs.nango.dev/integrations/all/clicksend/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your ClickSend account username
+            doc_section: '#step-1-finding-your-username-and-api-key'
+        password:
+            type: string
+            title: API Key
+            description: Your ClickSend API Key
+            secret: true
+            doc_section: '#step-1-finding-your-username-and-api-key'
 
 clickup:
     display_name: ClickUp
@@ -3992,6 +4057,23 @@ gerrit:
             example: http://localhost:8080
             doc_section: '#step-1-finding-your-host'
             order: 1
+
+grammarly:
+    display_name: Grammarly
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.grammarly.com/v4/api/oauth2/token
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.grammarly.com/ecosystem/api
+        verification:
+            method: GET
+            endpoints:
+                - /v2/analytics/users
+    docs: https://docs.nango.dev/integrations/all/grammarly
 
 guru:
     display_name: Guru
@@ -9937,6 +10019,30 @@ unipile:
             description: The port of your Unipile instance
             pattern: '^[0-9]+$'
             example: '13113'
+
+vercel:
+    display_name: Vercel
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.vercel.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/sessions
+    docs: https://docs.nango.dev/integrations/all/vercel
+    docs_connect: https://docs.nango.dev/integrations/all/vercel
+    credentials:
+        apiKey:
+            type: string
+            title: Token
+            description: The Token for your Vercel account
+            pattern: '^[A-Za-z0-9]{24}$'
+            example: 'oo7W9rGs3liLWhTwmERWrsFs'
+            doc_section: '#step-1-finding-your-api-key'
 
 vimeo:
     display_name: Vimeo (OAuth)
