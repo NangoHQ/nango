@@ -1,18 +1,14 @@
 ---
 title: 'Create an integration'
-openapi: 'POST /integrations'
+openapi: 'POST /config'
 ---
 
 <ResponseExample>
 ```json Example Response
 {
-  "data": {
+  "config": {
     "unique_key": "slack-nango-community",
-    "display_name": "Slack",
-    "provider": "slack",
-    "logo": "http://localhost:3003/images/template-logos/github.svg",
-    "created_at": "2023-10-16T08:45:26.241Z",
-    "updated_at": "2023-10-16T08:45:26.241Z",
+    "provider": "slack"
   }
 }
 ```
