@@ -49,18 +49,9 @@ _No setup guide yet._
 
 ```typescript
 const { data } = await nango.createConnectSession({
-  end_user: {
-    id: '<END-USER-ID>',
-    email: '<END-USER-EMAIL>',
-    display_name: '<END-USER-NAME>'
-  },
-  organization: {
-    id: '<ORGANIZATION-ID>',
-    display_name: '<ORGANIZATION-NAME>'
-  },
-  allowed_integrations: ['microsoft-ads'],
+  [...],
   integrations_config_defaults: {
-    "microsoft-ads": {
+    "microsoft-power-bi": {
       authorization_params: {
         response_type: 'code'
       },
