@@ -1,20 +1,24 @@
+import { setTimeout } from 'node:timers/promises';
+
 import tracer from 'dd-trace';
-import type { DatabaseClient } from '../db/client.js';
-import type { Knex } from 'knex';
-import { logger } from '../utils/logger.js';
-import * as nodes from '../models/nodes.js';
+
+import { Err, Ok, errorToObject, report, retryWithBackoff } from '@nangohq/utils';
+
+import { envs } from '../env.js';
+import { Operation } from './operation.js';
 import * as deployments from '../models/deployments.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { Err, errorToObject, Ok, report, retryWithBackoff } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+import * as nodes from '../models/nodes.js';
 import { FleetError } from '../utils/errors.js';
+import { withPgLock } from '../utils/locking.js';
+import { logger } from '../utils/logger.js';
+
+import type { DatabaseClient } from '../db/client.js';
+import type { NodeProvider } from '../node-providers/node_provider.js';
 import type { Node, NodeConfigOverride } from '../types.js';
 import type { Deployment, NodeConfig } from '@nangohq/types';
-import { setTimeout } from 'node:timers/promises';
-import type { NodeProvider } from '../node-providers/node_provider.js';
-import { envs } from '../env.js';
-import { withPgLock } from '../utils/locking.js';
-import { Operation } from './operation.js';
+import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 type SupervisorState = 'stopped' | 'running' | 'stopping';
 

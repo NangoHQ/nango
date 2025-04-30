@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
-import { $, echo, chalk, glob, spinner, fs, minimist } from 'zx';
 import figures from 'figures';
+import { $, chalk, echo, fs, glob, minimist, spinner } from 'zx';
 
 // npx zx ./publish.mjs --version=0.0.1
 const argv = minimist(process.argv.slice(2));

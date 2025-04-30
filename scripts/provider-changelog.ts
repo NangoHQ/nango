@@ -1,6 +1,7 @@
-import { $ } from 'zx';
-import type { Provider } from '@nangohq/types';
 import yaml from 'js-yaml';
+import { $ } from 'zx';
+
+import type { Provider } from '@nangohq/types';
 
 const primaryBranch = (await $`git remote show origin | grep \"HEAD branch\" | sed \"s/.*: //\"`.text()).trim();
 const commits = await $`git log ${primaryBranch} --date=iso-strict --format=%cd`.lines();
