@@ -154,7 +154,7 @@ adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
     categories:
-        - ats
+        - hr
     proxy:
         base_url: https://api.adp.com
     token_url: https://accounts.adp.com/auth/oauth/v2/token
@@ -824,6 +824,8 @@ attio:
 
 auth0:
     display_name: Auth0
+    categories:
+        - other
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
     token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
@@ -846,6 +848,43 @@ auth0:
             example: domain
             suffix: .auth0.com
             prefix: https://
+
+auth0-cc:
+    display_name: Auth0 (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.hostname}/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+        organization: ${connectionConfig.organization}
+    docs: https://docs.nango.dev/integrations/all/auth0-cc
+    docs_connect: https://docs.nango.dev/integrations/all/auth0-cc/connect
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    connection_config:
+        hostname:
+            type: string
+            title: HostName
+            description: Your Auth0 host name
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-hostname'
+        audience:
+            type: string
+            title: Audience
+            description: The audience for the token
+            example: https://api.example.com/foobar
+            doc_section: '#step-3-finding-your-audience'
+        organization:
+            type: string
+            title: Organization
+            description: The organization name you want the request to be associated with
+            example: example
+            optional: true
+            doc_section: '#step-4-finding-your-organization'
 
 avalara:
     display_name: Avalara
