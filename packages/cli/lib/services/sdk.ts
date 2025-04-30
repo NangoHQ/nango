@@ -109,7 +109,6 @@ export class NangoActionCLI extends NangoActionBase {
         return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public override async releaseAllLocks(): Promise<void> {
         // Not applicable to CLI
     }
