@@ -1,9 +1,11 @@
-import type knex from 'knex';
-import type { Result } from '@nangohq/utils';
-import { Ok, Err } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
 import { FleetError } from '../utils/errors.js';
+
 import type { NodeConfigOverride } from '../types.js';
 import type { RoutingId } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
 
 export const NODE_CONFIG_OVERRIDES_TABLE = 'node_config_overrides';
 
