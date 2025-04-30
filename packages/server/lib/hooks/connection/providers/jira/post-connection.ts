@@ -39,18 +39,10 @@ export default async function execute(nango: Nango) {
         endpoint,
         providerConfigKey: connection.provider_config_key
     });
-
-    if (axios.isAxiosError(accountResponse) || !accountResponse || !accountResponse.data) {
-        await nango.updateConnectionConfig({
-            cloudId: site.id,
-            baseUrl: site.url
-        });
-        return;
-    }
-
+    const accountId = accountResponse && !axios.isAxiosError(accountResponse) ? accountResponse.data?.accountId : undefined;
     await nango.updateConnectionConfig({
         cloudId: site.id,
         baseUrl: site.url,
-        accountId: accountResponse.data.accountId
+        ...(accountId ? { accountId } : {})
     });
 }
