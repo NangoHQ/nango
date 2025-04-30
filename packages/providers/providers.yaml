@@ -9944,8 +9944,8 @@ vercel:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API Key for your Vercel account
+            title: Token
+            description: The Token for your Vercel account
             pattern: '^[A-Za-z0-9]{24}$'
             example: 'oo7W9rGs3liLWhTwmERWrsFs'
             doc_section: '#step-1-finding-your-api-key'
@@ -10690,4 +10690,3 @@ zuora:
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
-
