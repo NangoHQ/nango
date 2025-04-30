@@ -481,6 +481,22 @@ class EnvironmentService {
 
         await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
+
+    async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBEnvironment[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .select('*')
+            .from<DBEnvironment>(`_nango_environments`)
+            .where('deleted', true)
+            .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+    }
+
+    async hardDelete(id: number): Promise<number> {
+        return await db.knex.from<DBEnvironment>(TABLE).where({ id }).delete();
+    }
 }
 
 export async function hashSecretKey(key: string) {

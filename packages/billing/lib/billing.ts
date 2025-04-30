@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok, flagHasUsage, networkError, report, retryFlexible } from '@nangohq/utils';
+import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
 import type { BillingClient, BillingIngestEvent, BillingMetric } from './types.js';
 import type { Result } from '@nangohq/utils';
@@ -43,29 +43,7 @@ export class Billing {
         }
 
         try {
-            await retryFlexible(
-                async () => {
-                    await this.client.ingest(events);
-                },
-                {
-                    max: 3,
-                    onError: ({ err }) => {
-                        if (
-                            err instanceof TypeError &&
-                            err.cause &&
-                            typeof err.cause === 'object' &&
-                            'code' in err.cause &&
-                            networkError.includes(err.cause.code as string)
-                        ) {
-                            return { retry: true, reason: 'maybe_unreachable' };
-                        }
-                        if (err instanceof Response && err.status >= 500) {
-                            return { retry: true, reason: 'status_code' };
-                        }
-                        return { retry: false, reason: 'unknown' };
-                    }
-                }
-            );
+            await this.client.ingest(events);
             return Ok(undefined);
         } catch (err: unknown) {
             const e = new Error(`Failed to send billing event`, { cause: err });

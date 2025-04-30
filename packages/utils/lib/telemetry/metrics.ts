@@ -118,7 +118,7 @@ export function duration(metricName: Types, value: number, dimensions?: Dimensio
     tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
 }
 
-export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F, dimensions?: Dimensions): F {
+export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {
     const computeDuration = (start: [number, number]) => {
         const durationComponents = process.hrtime(start);
         const seconds = durationComponents[0];
@@ -135,10 +135,10 @@ export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: T
         const start = process.hrtime();
 
         try {
-            const res = func(...args);
-            if (res[Symbol.toStringTag] === 'Promise') {
+            const res = func(...args) as any;
+            if (typeof res === 'object' && res && res[Symbol.toStringTag] === 'Promise') {
                 return res.then(
-                    (v) => {
+                    (v: unknown) => {
                         computeDuration(start);
                         return v;
                     },
