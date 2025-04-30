@@ -440,20 +440,17 @@ class ConfigController {
                 return;
             }
 
-            await configService.editProviderConfig(
-                {
-                    ...oldConfig,
-                    unique_key: uniqueKey,
-                    provider: providerName,
-                    oauth_client_id: req.body['oauth_client_id'],
-                    oauth_client_secret,
-                    oauth_scopes: req.body['oauth_scopes'],
-                    app_link: req.body['app_link'],
-                    environment_id: environmentId,
-                    custom
-                },
-                provider
-            );
+            await configService.editProviderConfig({
+                ...oldConfig,
+                unique_key: uniqueKey,
+                provider: providerName,
+                oauth_client_id: req.body['oauth_client_id'],
+                oauth_client_secret,
+                oauth_scopes: req.body['oauth_scopes'],
+                app_link: req.body['app_link'],
+                environment_id: environmentId,
+                custom
+            });
             res.status(200).send({
                 config: {
                     unique_key: uniqueKey,
