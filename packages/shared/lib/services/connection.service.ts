@@ -1004,7 +1004,11 @@ class ConnectionService {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        let tokenParams = provider.token_params && Object.keys(provider.token_params).length > 0 ? new URLSearchParams(provider.token_params).toString() : '';
+        let interpolatedParams: Record<string, any> = {};
+        if (provider.token_params) {
+            interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
+        }
+        let tokenParams = interpolatedParams && Object.keys(interpolatedParams).length > 0 ? new URLSearchParams(interpolatedParams).toString() : '';
 
         if (connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string') {
             const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
