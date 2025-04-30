@@ -231,7 +231,7 @@ class SyncController {
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
 
-                if (plan && plan.name !== 'free') {
+                if (plan) {
                     void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
                 }
 
