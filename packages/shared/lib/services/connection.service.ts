@@ -1519,7 +1519,6 @@ class ConnectionService {
                     .from('_nango_connections as c')
                     .join('_nango_environments as e', 'c.environment_id', 'e.id')
                     .join('plans', 'plans.account_id', 'e.account_id')
-                    .where('plans.name', '<>', 'free')
                     .where((builder) => {
                         builder.where('c.deleted_at', null).orWhereRaw(`c.deleted_at >= (SELECT month_start FROM month_info)`);
                     })
