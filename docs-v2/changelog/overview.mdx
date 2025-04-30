@@ -8,6 +8,125 @@ description: "New updates and improvements."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
+<Update label="April 2025">
+
+    ## April catalog update
+
+    <AccordionGroup>
+        <Accordion title="22 new APIs" icon="webhook">
+            - [ADP](/integrations/all/adp)
+            - [Azure DevOps](/integrations/all/azure-devops)
+            - [CompanyCam](/integrations/all/companycam)
+            - [Confluence (Basic Auth)](/integrations/all/confluence-basic)
+            - [Devin](/integrations/all/devin)
+            - [DocuWare](/integrations/all/docuware)
+            - [Employment Hero](/integrations/all/employment-hero)
+            - [Gem](/integrations/all/gem)
+            - [Github (Personal Access Token)](/integrations/all/github-pat)
+            - [Incident.io](/integrations/all/incident-io)
+            - [Jira Data Center (Basic Auth)](/integrations/all/jira-data-center-basic)
+            - [Namely](/integrations/all/namely)
+            - [Namely (PAT)](/integrations/all/namely-pat)
+            - [Redtail CRM (Sandbox)](/integrations/all/redtail-crm-sandbox)
+            - [Rock Gym Pro](/integrations/all/rock-gym-pro)
+            - [Rootly](/integrations/all/rootly)
+            - [Sentry](/integrations/all/sentry)
+            - [Shopify Partner](/integrations/all/shopify-partner)
+            - [Smartlead.ai](/integrations/all/smartlead-ai)
+            - [Snowflake (JWT)](/integrations/all/snowflake-jwt)
+            - [UKG Pro (Workforce Management)](/integrations/all/ukg-pro-wfm)
+            - [Workday (OAuth)](/integrations/all/workday-oauth)
+        </Accordion>
+
+        <Accordion title="16 new pre-built integrations" icon="plug">
+            - [BambooHR (Basic Auth)](/integrations/all/bamboohr-basic)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/unified-employees.md)
+
+            - [Gong (Basic Auth)](/integrations/all/gong)
+                - [GET /fetch-call-transcripts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.md)
+                - [GET /calls](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/calls.md)
+
+            - [Gong (Oauth)](/integrations/all/gong-oauth)
+                - [GET /fetch-call-transcripts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong-oauth/actions/fetch-call-transcripts.md)
+                - [GET /calls](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong-oauth/syncs/calls.md)
+
+            - [Gusto](/integrations/all/gusto)
+                - [GET /employees](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/employees.md)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/unified-employees.md)
+
+            - [Gusto (Demo)](/integrations/all/gusto-demo)
+                - [GET /employees](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto-demo/syncs/employees.md)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto-demo/syncs/unified-employees.md)
+
+            - [Hibob Service User](/integrations/all/hibob-service-user)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hibob-service-user/syncs/unified-employees.md)
+
+            - [Microsoft Teams](/integrations/all/microsoft-teams)
+                - [GET /org-units](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/org-units.md)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/users.md)
+                - [GET /messages](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/messages.md)
+
+            - [Workday](/integrations/all/workday)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/workday/syncs/unified-employees.md)
+
+            - [Xero](/integrations/all/xero)
+                - [GET /BankTransactions](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/bank-transactions.md)
+                - [GET /credit-notes](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/credit-notes.md)
+        </Accordion>
+    </AccordionGroup>
+
+    ## Usage-based pricing
+
+    <Frame>
+        <img src="/images/changelog/usage-based-pricing.png" alt="Usage-based pricing illustration" />
+    </Frame>
+
+    Nango now offers transparent, usage-based pricing starting at $50/month.
+
+    - Pricing scales with usage: connections, action executions & record syncs
+    - Volume discounts up to 100x included
+    - 1,000 free connections still available on the Free plan (unlimited on Free Self-Hosted)
+    - Add-ons are priced individually on a monthly basis—no large annual commitments
+
+    ## Logs search 
+
+    <Frame>
+        <img src="/images/changelog/search-logs.png" alt="Logs search  illustration" />
+    </Frame>
+
+    The *Logs* tab is now much more powerful with full-text search and performance improvements.
+
+    - Search across log and sub-log contents via the top-level search bar
+    - Filter logs using record IDs to investigate when records were synced
+    - Improved navigation and load times across the tab
+
+    ## Enterprise self-hosting with ECS + Terraform
+
+    <Frame>
+        <img src="/images/changelog/ecs-terraform.png" alt="Enterprise self-hosting with ECS + Terraform illustration" />
+    </Frame>
+
+    We’ve published a new [guide](https://docs.nango.dev/guides/self-hosting/enterprise-self-hosting/ecs) for self-hosting Nango on AWS ECS, including a ready-to-use Terraform configuration.
+
+    - Automates installation for Enterprise customers
+    - Complements our existing Helm chart for Kubernetes
+    - Ongoing work to further simplify self-hosting
+
+    The Terraform configuration is available upon request.
+
+    ## Create, edit & delete environments
+
+    <Frame>
+        <img src="/images/changelog/manage-environments.png" alt="Create, edit & delete environments illustration" />
+    </Frame>
+
+    You can now manage multiple environments directly from the Nango dashboard. This makes it easier to isolate development stages or segment customer-specific setups.
+
+    - Growth plan includes 3 environments by default
+    - Additional environments available via paid add-on
+
+</Update>
+
 <Update label="March 2025">
 
     ## March catalog update
@@ -131,7 +250,7 @@ description: "New updates and improvements."
     ## Authorization logs
 
     <Frame>
-        <img src="/images/changelog/authorization-logs.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/authorization-logs.png" alt="Authorization logs illustration" />
     </Frame>
 
     Gain visibility into how your users interact with the Connect UI during the authorization process.
@@ -166,7 +285,7 @@ description: "New updates and improvements."
     ## AI agent support
 
     <Frame>
-        <img src="/images/changelog/ai-agent-support.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/ai-agent-support.png" alt="AI agent support illustration" />
     </Frame>
 
     We’ve added support for AI agents to consume Nango as part of automated workflows involving external APIs.
@@ -186,7 +305,7 @@ description: "New updates and improvements."
     ## AI agent demo video
 
     <Frame>
-        <img src="/images/changelog/ai-agent-demo-video.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/ai-agent-demo-video.png" alt="AI agent demo video illustration" />
     </Frame>
 
     We published a demo showing how AI agents can use Nango to trigger actions across 400+ APIs and 600+ integrations.
@@ -296,7 +415,7 @@ description: "New updates and improvements."
     ## Sync partitioning
 
     <Frame>
-        <img src="/images/changelog/sync-partitioning.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/sync-partitioning.png" alt="Sync partitioning illustration" />
     </Frame>
 
     Syncing is now **faster and more efficient** with **Sync partinioning**. Instead of processing large syncs at once, you can now break them down into smaller, parallel syncs, improving performance and responsiveness.
@@ -310,7 +429,7 @@ description: "New updates and improvements."
     ## Revamped environment settings
 
     <Frame>
-        <img src="/images/changelog/revamped-environment-settings.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/revamped-environment-settings.png" alt="Revamped environment settings illustration" />
     </Frame>
 
     We overhauled the *Environment Settings* UI. This was one of the oldest sections of the app but is critical for setting up and configuring Nango.
@@ -324,7 +443,7 @@ description: "New updates and improvements."
     ## Detailed webhook logs
 
     <Frame>
-        <img src="/images/changelog/detailed-webhook-logs.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/detailed-webhook-logs.png" alt="Detailed webhook logs illustration" />
     </Frame>
 
     Webhooks are a key part of Nango, notifying you of critical events such as authorization completion, sync completion, and error cases.
@@ -336,7 +455,7 @@ description: "New updates and improvements."
     ## Real-time syncing strategies
 
     <Frame>
-        <img src="/images/changelog/real-time-syncing-strategies.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/real-time-syncing-strategies.png" alt="Real-time syncing strategies illustration" />
     </Frame>
 
     Syncing real-time webhooks alongside periodic polling can cause conflicts, especially when APIs send partial updates. To solve this, we have introduced **new merging strategies** for better data accuracy.

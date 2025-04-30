@@ -18,6 +18,7 @@ export function exportUsageCron(): void {
         logger.info(`Skipping (flagHasUsage=${flagHasUsage}, cronMinutes=${cronMinutes})`);
         return;
     }
+
     // add some jitter to avoid all instances running at the same time
     const jitter = Math.floor(Math.random() * cronMinutes);
     cron.schedule(`*/${cronMinutes + jitter} * * * *`, () => {
