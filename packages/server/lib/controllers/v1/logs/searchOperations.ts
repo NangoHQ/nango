@@ -1,11 +1,15 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import { envs, model } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { SearchOperations } from '@nangohq/types';
-import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
+        search: z.string().max(256).optional(),
         limit: z.number().max(500).optional().default(100),
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
@@ -73,6 +77,7 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
+
     const rawOps = await model.listOperations({
         accountId: env.account_id,
         environmentId: env.id,
@@ -85,6 +90,11 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         period: body.period,
         cursor: body.cursor
     });
+    if (body.search && rawOps.items.length > 0) {
+        const bucket = await model.searchForMessagesInsideOperations({ search: body.search, operationsIds: rawOps.items.map((op) => op.id) });
+        const matched = new Set(bucket.items.map((item) => item.key));
+        rawOps.items = rawOps.items.filter((item) => matched.has(item.id));
+    }
 
     res.status(200).send({
         data: rawOps.items,

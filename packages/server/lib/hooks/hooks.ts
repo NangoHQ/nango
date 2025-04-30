@@ -1,14 +1,13 @@
 import tracer from 'dd-trace';
 
 import {
-    AnalyticsTypes,
     NangoError,
     ProxyRequest,
-    analytics,
     errorNotificationService,
     externalWebhookService,
+    getConnectionCountsByProviderConfigKey,
     getProxyConfiguration,
-    getSyncConfigsWithConnections,
+    productTracking,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
@@ -48,35 +47,51 @@ export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
     creationType,
+    team,
     plan
 }: {
-    providerConfigKey: string | undefined;
+    providerConfigKey: string;
     environmentId: number;
     creationType: 'create' | 'import';
+    team: DBTeam;
     plan: DBPlan;
-}): Promise<boolean> => {
-    if (!providerConfigKey) {
-        return false;
-    }
-    if (!plan.connection_with_scripts_max) {
-        return false;
+}): Promise<{ capped: false } | { capped: true; code: 'max' | 'max_with_scripts' }> => {
+    const connectionCount = await getConnectionCountsByProviderConfigKey(environmentId);
+    if (connectionCount.total <= 0) {
+        return { capped: false };
     }
 
-    const scriptConfigs = await getSyncConfigsWithConnections(providerConfigKey, environmentId);
+    if (plan.connections_max && connectionCount.total >= plan.connections_max) {
+        logger.info(`Reached total cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+        if (creationType === 'create') {
+            productTracking.track({ name: 'server:resource_capped:connection_creation', team });
+        } else {
+            productTracking.track({ name: 'server:resource_capped:connection_imported', team });
+        }
+        return { capped: true, code: 'max' };
+    }
 
-    for (const script of scriptConfigs) {
-        const { connections } = script;
+    if (plan.connection_with_scripts_max) {
+        for (const byProvider of connectionCount.data) {
+            const totalByProvider = parseInt(byProvider.connectionsWithScripts, 10);
+            if (byProvider.providerConfigKey !== providerConfigKey) {
+                continue;
+            }
+            if (totalByProvider < plan.connection_with_scripts_max) {
+                continue;
+            }
 
-        if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            const analyticsType =
-                creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
-            void analytics.trackByEnvironmentId(analyticsType, environmentId);
-            return true;
+            if (creationType === 'create') {
+                productTracking.track({ name: 'server:resource_capped:connection_creation', team });
+            } else {
+                productTracking.track({ name: 'server:resource_capped:connection_imported', team });
+            }
+            return { capped: true, code: 'max_with_scripts' };
         }
     }
 
-    return false;
+    return { capped: false };
 };
 
 export async function testConnectionCredentials({
@@ -295,7 +310,7 @@ export async function credentialsTest({
         }
     });
 
-    const { method, base_url_override: baseUrlOverride, headers, endpoints } = providerVerification;
+    const { method, base_url_override: baseUrlOverride, headers, endpoints, data } = providerVerification;
 
     const connection: DBConnectionDecrypted = {
         id: -1,
@@ -346,6 +361,10 @@ export async function credentialsTest({
 
         if (baseUrlOverride) {
             configBody.baseUrlOverride = baseUrlOverride;
+        }
+
+        if (data) {
+            configBody.data = data;
         }
 
         try {

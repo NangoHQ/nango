@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, deployPreBuilt, flowService, startTrial, syncManager } from '@nangohq/shared';
+import { configService, connectionService, deployPreBuilt, flowService, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -55,12 +55,14 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     }
     if (plan && !plan.trial_end_at && plan.name === 'free') {
         await startTrial(db.knex, plan);
+        productTracking.track({ name: 'account:trial:started', team: account });
     }
 
     const isCapped = await connectionService.shouldCapUsage({
         providerConfigKey: body.providerConfigKey,
         environmentId,
         type: 'deploy',
+        team: account,
         plan
     });
     if (isCapped) {
@@ -95,7 +97,8 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
                 models: flow.returns,
                 track_deletes: flow.track_deletes === true,
                 metadata: { description: flow.description, scopes: flow.scopes },
-                input: flow.input
+                input: flow.input,
+                version: flow.version ?? null
             }
         ],
         logContextGetter,

@@ -2956,7 +2956,7 @@ integrations:
                     path: /events
                 output: Event
                 description: Retrieve all events per a user
-                version: 1.0.0
+                version: 2.0.0
             event-types:
                 sync_type: incremental
                 runs: every hour
@@ -2965,7 +2965,7 @@ integrations:
                     path: /event/types
                 output: EventType
                 description: Retrieve all event types per a user
-                version: 1.0.0
+                version: 2.0.0
             event-invitees:
                 sync_type: incremental
                 runs: every hour
@@ -2978,7 +2978,7 @@ integrations:
             users:
                 runs: every day
                 description: Fetches a list of users from Calendly
-                version: 1.0.0
+                version: 2.0.0
                 output: User
                 track_deletes: true
                 sync_type: full
@@ -3062,6 +3062,8 @@ integrations:
                 user: string
                 user_email: string | null
                 user_name: string
+                buffered_end_time?: string
+                buffered_start_time?: string
             EventGuest:
                 email: string
                 created_at: string
@@ -3071,15 +3073,15 @@ integrations:
                 active: number
                 limit: number
             EventLocation:
-                type: string
-                location?: string
-                join_url?: string
-                status: string | null
-                additional_info: string
+                type?: string
+                location?: string | null
+                join_url?: string | null
+                status?: string | null
+                additional_info?: string | null
             EventTypeLocation:
                 kind: string
-                phone_number: number
-                additional_info: string
+                phone_number?: number | null
+                additional_info?: string | null
             EventQuestion:
                 name: string
                 type: string
@@ -3101,6 +3103,7 @@ integrations:
                 slug: string | null
                 scheduling_url: string
                 duration: number
+                duration_options: number[] | null
                 kind: string
                 pooling_type: string | null
                 type: string
@@ -3108,9 +3111,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 internal_note: string | null
-                description_plain: string
-                description_html: string
-                profile: Profile | null
+                description_plain: string | null
+                description_html: string | null
+                profile: EventProfile | null
                 secret: boolean
                 deleted_at: string | null
                 admin_managed: boolean
@@ -5363,7 +5366,7 @@ integrations:
                 description: |
                     Sync calendar events on the primary calendar going back one month and
                     save the entire object as specified by the Google API
-                version: 1.0.0
+                version: 1.0.1
                 runs: every 5 minutes
                 output: GoogleCalendarEvent
                 sync_type: incremental
@@ -5426,52 +5429,34 @@ integrations:
                 etag: string
                 id: string
                 status: string
-                htmlLink?: string
-                created?: string
-                updated?: string
-                summary?: string
+                htmlLink: string
+                created: string
+                updated: string
+                summary: string
                 description?: string
                 location?: string
                 colorId?: string
-                creator?:
-                    id?: string
-                    email: string
-                    displayName?: string
-                    self?: boolean
-                organizer?:
-                    id?: string
-                    email: string
-                    displayName?: string
-                    self?: boolean
-                start?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
-                end?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
+                creator?: CalendarUser
+                organizer?: CalendarUser
+                start: EventDateTime
+                end: EventDateTime
                 endTimeUnspecified?: boolean
-                recurrence?:
-                    - string
+                recurrence?: string[]
                 recurringEventId?: string
-                originalStartTime?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
+                originalStartTime?: EventDateTime
                 transparency?: string
                 visibility?: string
                 iCalUID?: string
                 sequence?: integer
                 attendees?:
                     - id?: string
-                      email: string
+                      email?: string
                       displayName?: string
                       organizer?: boolean
                       self?: boolean
                       resource?: boolean
                       optional?: boolean
-                      responseStatus: string
+                      responseStatus?: string
                       comment?: string
                       additionalGuests?: integer
                 attendeesOmitted?: boolean
@@ -5488,9 +5473,9 @@ integrations:
                             type: string
                         status:
                             statusCode: string
-                    entryPoints:
+                    entryPoints?:
                         - entryPointType: string
-                          uri: string
+                          uri?: string
                           label?: string
                           pin?: string
                           accessCode?: string
@@ -5498,28 +5483,28 @@ integrations:
                           passcode?: string
                           password?: string
                           regionCode?: string
-                    conferenceSolution:
+                    conferenceSolution?:
                         key:
                             type: string
                         name: string
                         iconUri: string
-                    conferenceId: string
+                    conferenceId?: string
                     signature?: string
                     notes?: string
                     parameters?:
                         addOnParameters?:
-                            parameters:
+                            parameters?:
                                 __string: string
                 gadget?:
-                    type: string
-                    title: string
-                    link: string
-                    iconLink: string
-                    width: integer
-                    height: integer
-                    display: string
-                    preferences:
-                        key: string
+                    type?: string
+                    title?: string
+                    link?: string
+                    iconLink?: string
+                    width?: integer
+                    height?: integer
+                    display?: string
+                    preferences?:
+                        __string: string
                 anyoneCanAddSelf?: boolean
                 guestsCanInviteOthers?: boolean
                 guestsCanModify?: boolean
@@ -5532,29 +5517,38 @@ integrations:
                         - method: string
                           minutes: integer
                 outOfOfficeProperties?:
-                    autoDeclineMode: string
-                    declineMessage: string
+                    autoDeclineMode?: string
+                    declineMessage?: string
                 source?:
-                    url: string
-                    title: string
+                    url?: string
+                    title?: string
                 workingLocationProperties?:
                     type: string
-                    homeOffice: string
-                    customLocation:
-                        label: string
-                    officeLocation:
-                        buildingId: string
-                        floorId: string
-                        floorSectionId: string
-                        deskId: string
-                        label: string
+                    homeOffice?: any
+                    customLocation?:
+                        label?: string
+                    officeLocation?:
+                        buildingId?: string
+                        floorId?: string
+                        floorSectionId?: string
+                        deskId?: string
+                        label?: string
                 attachments?:
                     - fileUrl: string
-                      title: string
-                      mimeType: string
-                      iconLink: string
-                      fileId: string
+                      title?: string
+                      mimeType?: string
+                      iconLink?: string
+                      fileId?: string
                 eventType?: string
+            CalendarUser:
+                id?: string
+                email?: string
+                displayName?: string
+                self?: boolean
+            EventDateTime:
+                date?: string
+                dateTime?: string
+                timeZone?: string
     google-docs:
         actions:
             fetch-document:
@@ -11720,32 +11714,52 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /microsoft-teams/microsoft-org-unit
+                    path: /org-units
+                    group: Org Units
                 scopes:
                     - GroupMember.Read.All
-                version: 1.0.1
+                version: 1.0.3
             users:
                 runs: every hour
                 description: |
                     Continuously fetches users from either Microsoft 365 or Azure Active
                     Directory given specified
-                    groups to sync. Expects an `orgsToSync` metadata property with an
-                    array of organization ids.
-                    Details: full refresh, doesn't support deletes, goes back all time,
-                    metadata is required.
+                    groups to sync.
                 input: Metadata
                 auto_start: false
                 output: User
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /microsoft-teams/microsoft-users
+                    path: /users
+                    group: Users
                 scopes:
                     - User.Read.All
-                version: 1.0.1
+                version: 1.0.3
+            messages:
+                runs: every hour
+                description: >
+                    Continuously fetches messages from Microsoft Teams channels and chats.
+
+                    Details: incremental sync, goes back 10 days on first sync, metadata
+                    tracks last sync per channel/chat.
+                input: Metadata
+                output: TeamsMessage
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /messages
+                    group: Messsages
+                scopes:
+                    - ChannelMessage.Read.All
+                    - Chat.Read.All
         models:
             Metadata:
                 orgsToSync: string[]
+                channelsLastSyncDate?:
+                    __string: string
+                chatsLastSyncDate?:
+                    __string: string
             OrganizationalUnit:
                 id: string
                 name: string
@@ -11772,6 +11786,49 @@ integrations:
                 organizationPath: string | null | undefined
                 isAdmin: boolean | null
                 department: string | null
+            TeamsMessage:
+                id: string
+                channelId: string | null
+                chatId: string | null
+                content: string | null
+                createdDateTime: string
+                lastModifiedDateTime: string | null
+                deletedDateTime: string | null
+                from:
+                    user:
+                        id: string | null
+                        displayName: string | null
+                        email: string | null
+                importance: string | null
+                messageType: string
+                subject: string | null
+                webUrl: string | null
+                attachments: TeamsMessageAttachment[] | null
+                reactions: TeamsMessageReaction[] | null
+                replies: TeamsMessageReply[] | null
+                raw_json: string
+            TeamsMessageAttachment:
+                id: string
+                contentType: string
+                contentUrl: string | null
+                name: string | null
+                thumbnailUrl: string | null
+            TeamsMessageReaction:
+                reactionType: string
+                createdDateTime: string
+                user:
+                    id: string
+                    displayName: string | null
+                    email: string | null
+            TeamsMessageReply:
+                id: string
+                content: string | null
+                createdDateTime: string
+                from:
+                    user:
+                        id: string | null
+                        displayName: string | null
+                        email: string | null
     netsuite-tba:
         syncs:
             customers:
@@ -18453,10 +18510,12 @@ integrations:
         syncs:
             employees:
                 runs: every hour
-                track_deletes: true
-                sync_type: full
+                description: |
+                    Fetches a list of current employees from Workday
+                version: 1.0.0
                 output: Employee
-                description: Fetches Employees
+                sync_type: full
+                track_deletes: true
                 endpoint:
                     method: GET
                     path: /employees
@@ -18481,12 +18540,25 @@ integrations:
                     method: GET
                     path: /locations
                     group: Locations
+            unified-employees:
+                runs: every hour
+                description: >
+                    Fetches a list of current employees from Workday and maps them to the
+                    standard HRIS model
+                output: StandardEmployee
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         models:
             Employee:
                 id: string
                 user_name: string | null
                 first_name?: string
                 last_name?: string
+                active?: boolean | undefined
                 email: string
                 role: string
                 department: string
@@ -18516,6 +18588,61 @@ integrations:
                 name: string
                 abbrev: string
                 iso_code: string
+            Address:
+                street: string
+                city: string
+                state: string
+                country: string
+                postalCode: string
+                type: WORK | HOME
+            WorkLocation:
+                name: string
+                type: OFFICE | REMOTE | HYBRID
+                primaryAddress?: Address | undefined
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?: UnifiedAddress | undefined
+                addresses?: UnifiedAddress[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            UnifiedAddress:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     xero:
         syncs:
             contacts:
@@ -18575,6 +18702,20 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.3
+            bank-transactions:
+                description: >
+                    Fetches all bank transactions in Xero. Incremental sync, detects
+                    deletes, metadata is not required.
+                runs: every hour
+                output: BankTransaction
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /BankTransactions
+                    group: Bank Transactions
+                scopes:
+                    - accounting.transactions
+                version: 1.0.0
             general-ledger:
                 description: |
                     Fetch all general ledger entries in Xero
@@ -18601,6 +18742,19 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.3
+            credit-notes:
+                description: |
+                    Fetches all credit notes in Xero. Incremental sync.
+                runs: every hour
+                output: CreditNote
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /credit-notes
+                    group: Credit Notes
+                scopes:
+                    - accounting.transactions
+                version: 1.0.0
         actions:
             create-contact:
                 description: |
@@ -18960,14 +19114,14 @@ integrations:
                 fees: CreditNoteFee[]
             CreditNoteFee:
                 item_id: string
-                item_code: string
-                description: string
-                units: number
-                precise_unit_amount: number
-                account_code: string
-                account_external_id: string
-                amount_cents: number
-                taxes_amount_cents: number
+                item_code?: string | null
+                description?: string | null
+                units?: number | null
+                precise_unit_amount?: number | null
+                account_code?: string | null
+                account_external_id?: string | null
+                amount_cents?: number | null
+                taxes_amount_cents?: number | null
             FailedCreditNote:
                 id: string
                 type: string
@@ -19022,6 +19176,39 @@ integrations:
                 trackingCategoryId: string
                 trackingOptionId: string
                 options: string[]
+            BankTransaction:
+                id: string
+                type: string
+                bank_account_id: string
+                bank_account_code: string
+                bank_account_name: string
+                contact_id: string
+                contact_name: string
+                date: string | null
+                status: string
+                reference: string | null
+                is_reconciled: boolean
+                currency_code: string
+                currency_rate: number | null
+                total: number
+                sub_total: number
+                total_tax: number
+                line_amount_types: string
+                line_items: BankTransactionLineItem[]
+                updated_date: string | null
+                url: string | null
+                has_attachments: boolean
+            BankTransactionLineItem:
+                description: string
+                quantity: number
+                unit_amount: number
+                account_code: string
+                item_code: string | null
+                line_item_id: string
+                tax_type: string | null
+                tax_amount: number
+                line_amount: number
+                tracking: TrackingCategory[] | null
     zendesk:
         syncs:
             tickets:

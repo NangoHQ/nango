@@ -1,12 +1,16 @@
-import get from 'lodash-es/get.js';
-import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import { environmentService, connectionService, getProvider } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+
+import get from 'lodash-es/get.js';
+
+import { connectionService, environmentService, getProvider } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
+
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
-import type { ConnectionConfig } from '@nangohq/types';
+import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
+import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -90,7 +94,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             installation_id: installationId
         };
 
-        const logCtx = await logContextGetter.get({ id: activityLogId, accountId: account.id });
+        const logCtx = logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(
@@ -112,7 +116,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
-            provider,
+            provider as ProviderGithubApp,
             connectionConfig,
             logCtx,
             connCreatedHook

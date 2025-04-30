@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
 import { PROD_ENVIRONMENT_NAME } from './constants';
@@ -51,3 +52,18 @@ export const useStore = create<State>((set, get) => ({
         set({ debugMode: value });
     }
 }));
+
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchInterval: 0,
+            refetchOnWindowFocus: false,
+            refetchOnMount: true,
+            staleTime: 30 * 1000,
+            retry: 0,
+            retryDelay: (attemptIndex) => {
+                return Math.min(2000 * 2 ** attemptIndex, 30000);
+            }
+        }
+    }
+});

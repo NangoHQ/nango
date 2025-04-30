@@ -33,6 +33,11 @@ function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean
     };
 }
 
+interface CompileAllFilesResult {
+    success: boolean;
+    failedFiles: string[];
+}
+
 export async function compileAllFiles({
     debug,
     fullPath,
@@ -45,7 +50,7 @@ export async function compileAllFiles({
     scriptName?: string;
     providerConfigKey?: string;
     type?: ScriptFileType;
-}): Promise<boolean> {
+}): Promise<CompileAllFilesResult> {
     const tsconfig = fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
     const distDir = path.join(fullPath, 'dist');
@@ -59,7 +64,7 @@ export async function compileAllFiles({
     const cachedParser = getCachedParser({ fullPath, debug });
     const parsed = cachedParser();
     if (!parsed) {
-        return false;
+        return { success: false, failedFiles: [] };
     }
 
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
@@ -80,6 +85,7 @@ export async function compileAllFiles({
 
     const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug, providerConfigKey });
     let allSuccess = true;
+    const failedFiles: string[] = [];
     const compilationErrors: string[] = [];
 
     for (const file of integrationFiles) {
@@ -87,6 +93,7 @@ export async function compileAllFiles({
             const completed = await compile({ fullPath, file, compiler, debug, cachedParser });
             if (completed === false) {
                 allSuccess = false;
+                failedFiles.push(file.inputPath);
                 compilationErrors.push(`Failed to compile ${file.inputPath}`);
                 continue;
             }
@@ -94,6 +101,7 @@ export async function compileAllFiles({
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
             console.error(err);
             allSuccess = false;
+            failedFiles.push(file.inputPath);
             compilationErrors.push(`Error compiling ${file.inputPath}: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
@@ -107,13 +115,14 @@ export async function compileAllFiles({
         console.log(chalk.green('Successfully compiled all files present in the Nango YAML config file.'));
     }
 
-    return allSuccess;
+    return { success: allSuccess, failedFiles };
 }
 
 export async function compileSingleFile({
     fullPath,
     file,
     tsconfig,
+    parsed,
     debug = false
 }: {
     fullPath: string;
@@ -124,7 +133,7 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
-    const cachedParser = getCachedParser({ fullPath, debug });
+    const cachedParser = parsed ? () => parsed : getCachedParser({ fullPath, debug });
 
     try {
         const compiler = tsNode.create({
@@ -140,9 +149,9 @@ export async function compileSingleFile({
             debug
         });
 
-        return result === true;
+        return result === true || result === null;
     } catch (err) {
-        console.error(`Error compiling ${file.inputPath}:`);
+        console.error(chalk.red(`Error compiling ${file.inputPath}:`));
         console.error(err);
         return false;
     }
@@ -170,17 +179,24 @@ function compileImportedFile({
 
     for (const importedFile of importedFiles) {
         const importedFilePath = path.resolve(path.dirname(filePath), importedFile);
-        const importedFilePathWithoutExtension = path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)));
-        const importedFilePathWithExtension = importedFilePathWithoutExtension + '.ts';
+        let importedFilePathResolved: string;
+        if (importedFilePath.endsWith('.ts')) {
+            importedFilePathResolved = importedFilePath;
+        } else if (importedFilePath.endsWith('.js')) {
+            importedFilePathResolved = `${path.join(path.dirname(importedFilePath), path.basename(importedFilePath, path.extname(importedFilePath)))}.ts`;
+        } else {
+            importedFilePathResolved = `${importedFilePath}.ts`;
+        }
 
-        /// if it is a library import then we can skip it
-        if (!fs.existsSync(importedFilePathWithExtension)) {
+        if (!fs.existsSync(importedFilePathResolved)) {
             // if the library is not allowed then we should let the user know
             // that it is not allowed and won't work early on
             if (!ALLOWED_IMPORTS.includes(importedFile)) {
                 console.log(chalk.red(`Importing libraries is not allowed. Please remove the import "${importedFile}" from "${path.basename(filePath)}"`));
                 return false;
             }
+
+            // if it is a library import then we can skip it
             continue;
         }
 
@@ -188,8 +204,8 @@ function compileImportedFile({
         // then we should not compile it
         // if the parts of the path are shorter than the current that means it is higher
         // than the nango-integrations directory
-        if (importedFilePathWithExtension.split(path.sep).length < fullPath.split(path.sep).length) {
-            const importedFileName = path.basename(importedFilePathWithExtension);
+        if (importedFilePathResolved.split(path.sep).length < fullPath.split(path.sep).length) {
+            const importedFileName = path.basename(importedFilePathResolved);
 
             console.log(
                 chalk.red(
@@ -199,14 +215,14 @@ function compileImportedFile({
             return false;
         }
 
-        if (importedFilePathWithExtension.includes('models.ts')) {
+        if (importedFilePathResolved.includes('models.ts')) {
             continue;
         }
 
-        compiler.compile(fs.readFileSync(importedFilePathWithExtension, 'utf8'), importedFilePathWithExtension);
-        console.log(chalk.green(`Compiled "${importedFilePathWithExtension}" successfully`));
+        compiler.compile(fs.readFileSync(importedFilePathResolved, 'utf8'), importedFilePathResolved);
+        console.log(chalk.green(`Compiled "${importedFilePathResolved}" successfully`));
 
-        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathWithExtension, compiler, type, parsed });
+        finalResult = compileImportedFile({ fullPath, filePath: importedFilePathResolved, compiler, type, parsed });
     }
 
     return finalResult;
@@ -314,12 +330,12 @@ export function resolveTsFileLocation({
     providerConfigKey: string;
     type: ScriptFileType;
 }): string {
-    const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const nestedPath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
-        return fs.realpathSync(path.resolve(nestedPath, '../'));
+        return path.join(nestedPath, '../');
     }
 
-    return fs.realpathSync(path.join(fullPath, './'));
+    return path.join(fullPath, './');
 }
 
 export function listFilesToCompile({

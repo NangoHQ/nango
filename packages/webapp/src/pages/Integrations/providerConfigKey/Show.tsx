@@ -5,14 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
-import { Skeleton } from '../../../components/ui/Skeleton';
-import PageNotFound from '../../PageNotFound';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 import { ErrorCircle } from '../../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+import { Skeleton } from '../../../components/ui/Skeleton';
 import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
@@ -21,6 +20,7 @@ import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
+import PageNotFound from '../../PageNotFound';
 
 export const ShowIntegration: React.FC = () => {
     const { toast } = useToast();
@@ -29,9 +29,9 @@ export const ShowIntegration: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
+    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
 
-    const { plan, mutate } = useEnvironment(env);
-    const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
     const [trialLoading, setTrialLoading] = useState(false);
 
@@ -63,12 +63,12 @@ export const ShowIntegration: React.FC = () => {
             return;
         }
 
-        void mutate();
+        void mutateEnv();
 
         toast({ title: 'Your trial was extended successfully!', variant: 'success' });
     };
 
-    if (loading) {
+    if (loadingIntegration) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Helmet>
@@ -117,13 +117,18 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <div className="my-2">
                         <div className="text-left text-lg font-semibold text-gray-400">Integration</div>
+
                         <div className="flex gap-4 items-center">
-                            <h2 className="text-left text-3xl font-semibold text-white break-all">{data.integration.unique_key}</h2>
-                            {data.template.docs && (
-                                <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
-                                    <BookOpenIcon className="h-5 w-5" />
-                                </ButtonLink>
-                            )}
+                            <h2 className="text-left text-3xl font-semibold text-white break-all">
+                                {data.integration.display_name ?? data.template.display_name}
+                            </h2>
+                            <div className="flex items-center">
+                                {data.template.docs && (
+                                    <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
+                                        <BookOpenIcon className="h-5 w-5" />
+                                    </ButtonLink>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,7 +154,7 @@ export const ShowIntegration: React.FC = () => {
                     <div className="flex gap-2 items-center">
                         <div className="flex gap-3 items-center">
                             <ErrorCircle icon="clock" variant="warning" />
-                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial Plan'}</Tag>
+                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial'}</Tag>
                             {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left!</span>}
                         </div>
                         <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>

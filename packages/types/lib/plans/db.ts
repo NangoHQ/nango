@@ -21,6 +21,13 @@ export interface DBPlan extends Timestamps {
     connection_with_scripts_max: number | null;
 
     /**
+     * Limit the number of total non-deleted connections
+     * Set to null to remove limit
+     * @default null
+     */
+    connections_max: number | null;
+
+    /**
      * Limit the number of environments that can be created
      * @default 2
      */
@@ -44,4 +51,10 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     has_otel: boolean;
+
+    /**
+     * Change the applied rate limit for the public API
+     * @default "m"
+     */
+    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
 }

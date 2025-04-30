@@ -1,5 +1,5 @@
 import { envs } from '@nangohq/logs';
-import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, flagHasSlack, isCloud } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasPlan, flagHasScripts, flagHasSlack, isCloud } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -24,7 +24,8 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
             gettingStarted: true,
-            slack: flagHasSlack
+            slack: flagHasSlack,
+            plan: flagHasPlan
         }
     };
     res.setHeader('content-type', 'text/javascript');

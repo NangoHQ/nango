@@ -7,7 +7,7 @@ import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Input } from '../../../../../components/ui/input/Input';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
-import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
+import { SecretTextArea } from '../../../../../components/ui/input/SecretTextArea';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
@@ -61,7 +61,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                             required
                             minLength={1}
                             variant={'flat'}
-                            after={<CopyButton text={integration.oauth_client_id || ''} />}
+                            after={<CopyButton text={appId} />}
                         />
                     </InfoBloc>
                     <InfoBloc title="App Public Link">
@@ -75,7 +75,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                             required
                             minLength={1}
                             variant={'flat'}
-                            after={<CopyButton text={integration.app_link || ''} />}
+                            after={<CopyButton text={appLink} />}
                         />
                     </InfoBloc>
                 </div>
@@ -92,7 +92,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                         required
                         minLength={1}
                         variant={'flat'}
-                        after={<CopyButton text={integration.oauth_client_id || ''} />}
+                        after={<CopyButton text={clientId} />}
                     />
                 </InfoBloc>
 
@@ -113,13 +113,13 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
                     title="App Private Key"
                     help={<p>Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here</p>}
                 >
-                    <SecretTextarea
+                    <SecretTextArea
                         copy={true}
                         id="private_key"
                         name="private_key"
                         value={privateKey}
-                        onChange={(e) => setPrivateKey(e.target.value)}
-                        additionalClass={`w-full`}
+                        onUpdate={(value) => setPrivateKey(value)}
+                        className={`w-full`}
                         required
                     />
                 </InfoBloc>

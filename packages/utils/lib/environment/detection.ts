@@ -27,3 +27,5 @@ export const flagHasAPIRateLimit = process.env['FLAG_API_RATE_LIMIT_ENABLED'] !=
 export const flagHasBigQuery = process.env['FLAG_BIG_QUERY_EXPORT_ENABLED'] === 'true';
 export const flagHasSlack = !isHosted;
 export const flagHasPlan = process.env['FLAG_PLAN_ENABLED'] === 'true';
+export const flagHasUsage = process.env['FLAG_USAGE_ENABLED'] === 'true';
+export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] === 'true';

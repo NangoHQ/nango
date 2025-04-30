@@ -16,7 +16,7 @@ Build your first integration with Nango using the following guides:
         Continuously sync data from an API to your app.
     </Card>
     <Card title="Guide 3: Write data back to an API" icon="pen" href="/guides/actions/use-an-action">
-        Write data back from you app to an API. 
+        Write data back from your app to an API. 
     </Card>
     <Card title="Guide 4: Build custom integrations" icon="wrench" href="/guides/custom-integrations/overview">
         Extend pre-built integrations or build new ones.
@@ -33,7 +33,7 @@ Alternatively, the sample app is a practical demonstration of integrating Nango 
   <img src="/images/sample-app.png" />
 </Frame>
 
-The sample app uses Slack as an example integration and is showcased in this [demo video](/getting-started/intro-to-nango#what-is-nango).
+The sample app uses both Slack and Google Drive as example integrations and is showcased in this [demo video](/getting-started/intro-to-nango#what-is-nango).
 
 ### Access the repository
 
@@ -58,6 +58,15 @@ The sample app uses Slack as an example integration and is showcased in this [de
       - `chat:write`
     - Add `https://api.nango.dev/oauth/callback` as a **redirect URL** in your Slack OAuth app.
     - Go back to Nango. In the "Authorization" tab, add credentials in the Slack integration in the `Authorization` tab. In the "Endpoints" tab, activate endpoint `GET /users` and `POST /send-message`.
+  </Step>
+  <Step title="Create a Google Drive integration">
+    - Go to [Integrations](https://app.nango.dev/dev/integrations?source=sample-app) and create a Google Drive integration.
+    - Go to [Google Cloud Console](https://console.cloud.google.com/auth/clients) and create a new OAuth Client with **Redirect URIs**: `https://api.nango.dev/oauth/callback`.
+    - Go back to the Google Drive integration in Nango. In the "Authorization" tab, add the credentials:
+      - `client_id`: from Google Cloud Console
+      - `client_secret`: from Google Cloud Console
+    - Use the `https://www.googleapis.com/auth/drive.readonly` scope.
+    - In the "Endpoints" tab, activate `GET /documents` endpoint.
   </Step>
   <Step title="Prepare your env">
     - Install: `NodeJS`, `Docker`. Then run:

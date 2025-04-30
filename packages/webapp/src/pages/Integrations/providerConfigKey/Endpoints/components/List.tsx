@@ -74,7 +74,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                         <Table.Head className="w-[220px] bg-pure-black p-0"></Table.Head>
                                         <Table.Head className="w-[330px] bg-pure-black p-0"></Table.Head>
                                         <Table.Head className="w-[100px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[50px] bg-pure-black p-0"></Table.Head>
+                                        <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>

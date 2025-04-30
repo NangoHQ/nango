@@ -112,11 +112,26 @@ export interface MessageRow {
     // Operation row id
     parentId: string;
 
+    accountId: number;
+
     // Associated meta
     error?: MessageError | undefined;
     request?: MessageHTTPRequest | undefined;
     response?: MessageHTTPResponse | undefined;
     meta?: MessageMeta | null | undefined;
+    persistResults?:
+        | {
+              model: string;
+              added: number;
+              addedKeys: string[];
+              updated: number;
+              updatedKeys: string[];
+              unchanged: number;
+              unchangedKeys: string[];
+              deleted: number;
+              deleteKeys: string[];
+          }
+        | undefined;
     retry?: MessageHTTPRetry | undefined;
 
     // Dates
