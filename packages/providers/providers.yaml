@@ -854,7 +854,7 @@ auth0-cc:
     categories:
         - other
     auth_mode: OAUTH2_CC
-    data_format: json
+    body_format: json
     token_url: https://${connectionConfig.hostname}/oauth/token
     token_params:
         grant_type: client_credentials

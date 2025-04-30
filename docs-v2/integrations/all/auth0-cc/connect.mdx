@@ -18,7 +18,7 @@ This guide will walk you through finding or generating these credentials within 
 
 ### Prerequisites:
 
-- You must set have an Auth0 account.
+- You must set an Auth0 account.
 
 
 #### Step 1: Finding Your Client Credentials
@@ -36,14 +36,15 @@ This guide will walk you through finding or generating these credentials within 
 
 
 #### Step 2: Finding Your HostName
-
+- From the **Quickstart** tab of your newly created application, Auth0 provides an example request for obtaining an access token. Your **HostName** is the text that appears after `https://` and before `/oauth/token`.
+- In the example below, the HostName is `dev-tb1x5mahjyey84y4.us.auth0.com`.
+<img src="/integrations/all/auth0-cc/domain.png" />
 
 #### Step 3: Finding Your Audience
-- This can be obtaned from the **Identifier** field on your recently created app, **APIs** tab.
+- You can find this in the **Identifier** field of your newly created application under the **APIs** tab.
 <img src="/integrations/all/auth0-cc/audience.png" />
 #### Step 4: Finding Your Organization
-- <Tip>This is optional and can be obtained from the Organizations page if your tenant is configured to use Organizations.</Tip>
-
+- <Tip>This is optional and can be obtained from the **Organizations** page of your newly created application if your tenant is configured to use **Organizations**.</Tip>
 
 #### Step 5: Enter credentials in the Connect UI
 

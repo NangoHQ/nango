@@ -1004,8 +1004,8 @@ class ConnectionService {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        let interpolatedParams: Record<string, any> | string = {};
-        if (provider.token_params != null && typeof provider.token_params === 'object') {
+        let interpolatedParams: Record<string, any> = {};
+        if (provider.token_params) {
             interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
         }
         let tokenParams = interpolatedParams && Object.keys(interpolatedParams).length > 0 ? new URLSearchParams(interpolatedParams).toString() : '';
