@@ -1,9 +1,12 @@
 import * as crypto from 'crypto';
-import type knex from 'knex';
-import type { Result } from '@nangohq/utils';
-import { Ok, Err } from '@nangohq/utils';
-import type { EntityType, PrivateKey } from '@nangohq/types';
+
+import { Err, Ok } from '@nangohq/utils';
+
 import { getEncryption, hashValue } from '../utils/encryption.js';
+
+import type { EntityType, PrivateKey } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
 
 export const PRIVATE_KEYS_TABLE = 'private_keys';
 
