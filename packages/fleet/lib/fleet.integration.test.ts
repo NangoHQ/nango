@@ -1,11 +1,13 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
-import { Fleet } from './fleet.js';
-import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
-import { generateImage } from './models/helpers.js';
-import { noopNodeProvider } from './node-providers/noop.js';
-import * as nodeConfigOverrides from './models/node_config_overrides.js';
-import { createNodeWithAttributes } from './models/helpers.test.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { nanoid } from '@nangohq/utils';
+
+import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
+import { Fleet } from './fleet.js';
+import { generateImage } from './models/helpers.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import { noopNodeProvider } from './node-providers/noop.js';
 
 describe('fleet', () => {
     const fleetId = 'nango_runners';

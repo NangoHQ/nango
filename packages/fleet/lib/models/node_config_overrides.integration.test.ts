@@ -1,4 +1,5 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import * as node_config_overrides from './node_config_overrides.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 

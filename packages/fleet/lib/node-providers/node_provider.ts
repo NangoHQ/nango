@@ -1,5 +1,5 @@
-import type { NodeConfig } from '@nangohq/types';
 import type { Node } from '../types';
+import type { NodeConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface NodeProvider {
