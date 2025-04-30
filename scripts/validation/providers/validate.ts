@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import Ajv from 'ajv';
 import chalk from 'chalk';
+
+import Ajv from 'ajv';
 import jsYaml from 'js-yaml';
 
 import type { Provider } from '@nangohq/types';
