@@ -18728,7 +18728,7 @@ integrations:
                     group: General Ledger
                 scopes:
                     - accounting.journals.read
-                version: 1.0.0
+                version: 1.0.1
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
