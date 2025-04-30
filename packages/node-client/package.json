@@ -37,7 +37,7 @@
         "README.md"
     ],
     "devDependencies": {
-        "tsup": "^8.2.4",
+        "tsup": "8.4.0",
         "vitest": "3.1.2"
     }
 }
