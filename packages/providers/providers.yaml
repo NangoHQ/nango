@@ -5262,6 +5262,8 @@ jira:
         - accountId
     proxy:
         base_url: https://api.atlassian.com
+        connection_config:
+            baseUrl: ${connectionConfig.subdomain}
         paginate:
             type: link
             link_rel_in_response_header: next
@@ -5271,6 +5273,16 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Attlassian account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
 
 jira-basic:
     display_name: Jira (Basic Auth)

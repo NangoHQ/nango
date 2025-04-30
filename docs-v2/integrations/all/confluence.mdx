@@ -105,7 +105,11 @@ import PreBuiltUseCases from "/snippets/generated/confluence/PreBuiltUseCases.md
 ## API gotchas
 
 -   To allow the possibility of refreshing the token, you must add `offline_access` to your scopes when creating the integration on the Nango UI.
+-   When connecting to Confluence, you have two options for specifying which Confluence site to connect to:
+    1. Provide a `domain` during connection creation (recommended): This ensures you connect to the specific Confluence site you want.
+    2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
 -   You will need to fetch your Cloud ID to be able to make API requests to the Confluence API. You can do this with the proxy by calling:
+
 
 ```ts
 const response = await nango.get({
@@ -115,7 +119,7 @@ const response = await nango.get({
 const cloudId = response.data[0].id;
 ```
 
-You can then construct your URL as follows: `https://api.atlassian.com/ex/confluence/${cloudId}/rest/api/<endpoint>`
+You can then construct your URL as follows: `https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/<endpoint>`
 
 -   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
 -   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
