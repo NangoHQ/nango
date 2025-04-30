@@ -54,7 +54,9 @@ import type {
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
     PatchIntegration,
-    PostIntegration
+    PatchPublicIntegration,
+    PostIntegration,
+    PostPublicIntegration
 } from './integration/api';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
@@ -103,7 +105,9 @@ export type PublicApiEndpoints =
     | GetPublicRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
-    | PutPublicSyncConnectionFrequency;
+    | PutPublicSyncConnectionFrequency
+    | PostPublicIntegration
+    | PatchPublicIntegration;
 
 export type PrivateApiEndpoints =
     | PostSignup
