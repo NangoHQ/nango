@@ -2663,6 +2663,30 @@ coupa-compass:
             format: hostname
             prefix: https://
 
+cyberimpact:
+    display_name: Cyberimpact
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cyberimpact.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /ping
+    docs: https://docs.nango.dev/integrations/all/cyberimpact
+    docs_connect: https://docs.nango.dev/integrations/all/cyberimpact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cyberimpact account
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
+            doc_section: '#step-1-creating-a-cyberimpact-api-key'
+
 databricks-account:
     display_name: Databricks (Account Level)
     categories:
