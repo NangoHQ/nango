@@ -15,7 +15,7 @@ import { waitUntilHealthy } from './utils/url.js';
 
 import type { FleetId } from './instances.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
-import type { Node } from './types.js';
+import type { Node, NodeConfigOverride } from './types.js';
 import type { Deployment, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -154,5 +154,27 @@ export class Fleet {
 
     public async idleNode({ nodeId }: { nodeId: number }): Promise<Result<Node>> {
         return nodes.idle(this.dbClient.db, { nodeId });
+    }
+
+    public async overrideNodeConfig(override: Omit<NodeConfigOverride, 'id' | 'createdAt' | 'updatedAt'>): Promise<Result<NodeConfigOverride>> {
+        const defaultConfig = this.nodeProvider.defaultNodeConfig;
+        const search = await nodeConfigOverrides.search(this.dbClient.db, { routingIds: [override.routingId] });
+        if (search.isErr()) {
+            return Err(search.error);
+        }
+        const existing = search.value.get(override.routingId);
+
+        const image = override.image ?? existing?.image;
+        const isDefault =
+            !image &&
+            defaultConfig.cpuMilli === override.cpuMilli &&
+            defaultConfig.memoryMb === override.memoryMb &&
+            defaultConfig.storageMb === override.storageMb;
+
+        if (isDefault) {
+            return nodeConfigOverrides.remove(this.dbClient.db, override.routingId);
+        }
+
+        return nodeConfigOverrides.upsert(this.dbClient.db, override);
     }
 }
