@@ -32,7 +32,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             token: env.secret_key,
             // @ts-expect-error on purpose
-            body: { provider: 'invalid', uniqueKey: '1832_@$ùé&', displayName: false, credentials: { authType: 'INVALID' } }
+            body: { provider: 'invalid', unique_key: '1832_@$ùé&', display_name: false, credentials: { authType: 'INVALID' } }
         });
 
         isError(res.json);
@@ -40,9 +40,9 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_string', message: 'Invalid', path: ['uniqueKey'] },
-                    { code: 'invalid_type', message: 'Expected string, received boolean', path: ['displayName'] },
-                    { code: 'invalid_union_discriminator', message: 'invalid credentials object', path: ['credentials', 'authType'] }
+                    { code: 'invalid_string', message: 'Invalid', path: ['unique_key'] },
+                    { code: 'invalid_type', message: 'Expected string, received boolean', path: ['display_name'] },
+                    { code: 'invalid_union_discriminator', message: 'invalid credentials object', path: ['credentials', 'type'] }
                 ]
             }
         });
@@ -58,7 +58,7 @@ describe(`POST ${endpoint}`, () => {
 
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['uniqueKey'] }] }
+            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['unique_key'] }] }
         });
     });
 

@@ -36,7 +36,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
     const provider = getProvider(body.provider);
     if (!provider) {
         res.status(400).send({
-            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['uniqueKey'] }] }
+            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['unique_key'] }] }
         });
         return;
     }
