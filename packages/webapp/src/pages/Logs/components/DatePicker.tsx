@@ -22,7 +22,7 @@ export const DatePicker: React.FC<{
     const [open, setOpen] = useState<boolean>(false);
 
     const [synced, setSynced] = useState<boolean>(false);
-    const [date, setDate] = useState<DateRange | undefined>();
+    const [date, setDate] = useState<DateRange>(period);
 
     const [customRangeInputValue, setCustomRangeInputValue] = useState<string>('');
     const [rangeInputErrorMessage, setRangeInputErrorMessage] = useState<string>('');
@@ -104,7 +104,7 @@ export const DatePicker: React.FC<{
                 setOpen(open);
 
                 if (open) {
-                    setCustomRangeInputValue(`${format(period.from, dateTimeFormat)} - ${format(new Date(), dateTimeFormat)}`);
+                    setCustomRangeInputValue(`${format(date?.from, dateTimeFormat)} - ${format(date?.to || new Date(), dateTimeFormat)}`);
                     setRangeInputErrorMessage('');
                 }
             }}
