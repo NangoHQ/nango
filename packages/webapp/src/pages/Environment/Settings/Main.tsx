@@ -39,9 +39,12 @@ export const MainSettings: React.FC = () => {
                         blocked={env === PROD_ENVIRONMENT_NAME}
                         blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
                     />
-                    <Info>
-                        In your nango integrations project, name the secret key environment variable in your .env file as NANGO_SECRET_KEY_{env.toUpperCase()}
-                    </Info>
+                    {env !== PROD_ENVIRONMENT_NAME && (
+                        <Info>
+                            If you’re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable name
+                            is based on your Nango environment name, update it if you rename the environment.
+                        </Info>
+                    )}
                 </div>
             </div>
         </div>
