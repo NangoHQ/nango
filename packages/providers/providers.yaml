@@ -625,19 +625,19 @@ apollo:
         - marketing
     auth_mode: API_KEY
     proxy:
+        headers:
+            x-api-key: ${apiKey}
         base_url: https://app.apollo.io/api
-        verification:
-            method: GET
-            endpoints:
-                - /v1/contact_stages
-        query:
-            api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
+    credentials_verification_script: apolloCredentialsVerification
+    docs_connect: https://docs.nango.dev/integrations/all/apollo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Apollo account
+            example: eh_3LUIFtj04rG4KF_FoFw
+            doc_section: '#step-1-finding-your-api-key'
 
 apollo-oauth:
     display_name: Apollo (OAuth)
@@ -2662,6 +2662,30 @@ coupa-compass:
             description: The domain of your Coupa Compass account
             format: hostname
             prefix: https://
+
+cyberimpact:
+    display_name: Cyberimpact
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cyberimpact.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /ping
+    docs: https://docs.nango.dev/integrations/all/cyberimpact
+    docs_connect: https://docs.nango.dev/integrations/all/cyberimpact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cyberimpact account
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
+            doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -5238,6 +5262,8 @@ jira:
         - accountId
     proxy:
         base_url: https://api.atlassian.com
+        connection_config:
+            baseUrl: ${connectionConfig.subdomain}
         paginate:
             type: link
             link_rel_in_response_header: next
@@ -5247,6 +5273,16 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Attlassian account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
 
 jira-basic:
     display_name: Jira (Basic Auth)
@@ -10451,6 +10487,8 @@ xero:
         retry:
             after: 'retry-after'
     post_connection_script: xeroPostConnection
+    webhook_routing_script: xeroWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/xero
 
 xero-oauth2-cc:

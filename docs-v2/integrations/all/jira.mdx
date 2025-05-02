@@ -59,11 +59,11 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
   </Step>
   <Step title="Make your app available to users (optional)">
     If you want to distribute your app to other users:
-    
+
     1. In the left sidebar, select **Distribution**.
     2. In **Distribution controls**, click the **Edit** button, then select the **Sharing** radio button.
     3. Return to the Authorization page and copy the Authorization URL to share with your users.
-    
+
     Note: By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.
   </Step>
   <Step title="Next">
@@ -76,8 +76,8 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
+| Topic | Links |
+| - | - |
 | General | [Atlassian Developer Portal](https://developer.atlassian.com/) |
 | | [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/) |
 | | [Jira Cloud Platform Documentation](https://developer.atlassian.com/cloud/jira/platform/) |
@@ -104,7 +104,9 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 ## API gotchas
 
 -   Refreshing tokens require the `offline_access` scope when creating the integration on the Nango UI.
--   You will need to fetch your Cloud ID to be able to make API requests to the Jira API v3. You can do this with the proxy by calling:
+-   When connecting to Jira, you have two options for specifying which Jira site to connect to:
+    1. Provide a `baseUrl` during connection creation (recommended)
+    2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
 
 ```ts
 const response = await nango.get({
@@ -114,12 +116,20 @@ const response = await nango.get({
 const cloudId = response.data[0].id;
 ```
 
+-   A single Jira OAuth token can be valid for multiple Atlassian sites. For example, the same token might grant access to both "nango-hq.atlassian.net" and "nango-test.atlassian.net". This is why specifying the `baseUrl` during connection creation is important if you need to connect to a specific site.
+
+-   The connection process works as follows:
+    1. Nango fetches all accessible sites for the OAuth token
+    2. If you specified a `domain`, Nango finds the matching site and sets its `cloudId`
+    3. If no `domain` is specified, Nango uses the first available site
+    4. The selected site's `cloudId` and `domain` are stored in the connection configuration
+-   The `cloudId` is required for making API requests to the Jira API v3. Nango handles this automatically by matching it to your specified `baseUrl` or selecting the first available site. Your API URLs will be constructed as: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
+
 You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
 
 -   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
 -   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
 -   Nango also supports `BASIC` auth for REST APIs in Jira. To use this feature, provide your `email` as the username and your `api_token` as the password. To generate an `api_token`, please refer to the [Manage Atlassian API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) section
--   You will also need to supply your `subdomain`. When logged into your Atlassian account or Jira instance, look at the URL in your web browser. The `subdomain` part before `.atlassian.net` is your Jira subdomain.
 -   The `state` parameter is required for security in the OAuth flow to prevent CSRF attacks. Nango handles this automatically.
 -   Jira's OAuth implementation uses rotating refresh tokens. Each time you refresh an access token, you'll receive a new refresh token that invalidates the previous one.
 -   When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
