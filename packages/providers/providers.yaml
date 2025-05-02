@@ -5239,12 +5239,13 @@ jamf:
             title: Jamf Pro URL
             description: Your Jamf Pro instance URL (e.g. https://yourinstance.jamfcloud.com)
             pattern: '^[a-z0-9_-]+$'
-            example: yourinstance.jamfcloud.com
+            example: domain
             prefix: https://
+            suffix: .jamfcloud.com
             order: 1
 
 jamf-basic:
-    display_name: Jamf Pro (Bearer Token)
+    display_name: Jamf Pro (Basic Auth)
     categories:
         - other
     auth_mode: TWO_STEP
@@ -5257,8 +5258,8 @@ jamf-basic:
     token_headers:
         authorization: Basic ${base64(${credentials.username}:${credentials.password})}
     token_response:
-        token: response.token
-        token_expiration: response.expires
+        token: token
+        token_expiration: expires
         token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/jamf-basic
     connection_config:
@@ -5267,8 +5268,9 @@ jamf-basic:
             title: Jamf Pro URL
             description: Your Jamf Pro instance URL (e.g. https://yourinstance.jamfcloud.com)
             pattern: '^[a-z0-9_-]+$'
-            example: yourinstance.jamfcloud.com
+            example: domain
             prefix: https://
+            suffix: .jamfcloud.com
             order: 1
     credentials:
         username:
