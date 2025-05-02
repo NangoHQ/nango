@@ -158,23 +158,25 @@ export class Fleet {
 
     public async overrideNodeConfig(override: Omit<NodeConfigOverride, 'id' | 'createdAt' | 'updatedAt'>): Promise<Result<NodeConfigOverride>> {
         const defaultConfig = this.nodeProvider.defaultNodeConfig;
-        const search = await nodeConfigOverrides.search(this.dbClient.db, { routingIds: [override.routingId] });
-        if (search.isErr()) {
-            return Err(search.error);
-        }
-        const existing = search.value.get(override.routingId);
+        return this.dbClient.db.transaction(async (trx) => {
+            const search = await nodeConfigOverrides.search(trx, { routingIds: [override.routingId] });
+            if (search.isErr()) {
+                return Err(search.error);
+            }
+            const existing = search.value.get(override.routingId);
 
-        const image = override.image ?? existing?.image;
-        const isDefault =
-            !image &&
-            defaultConfig.cpuMilli === override.cpuMilli &&
-            defaultConfig.memoryMb === override.memoryMb &&
-            defaultConfig.storageMb === override.storageMb;
+            const image = override.image ?? existing?.image;
+            const isDefault =
+                !image &&
+                defaultConfig.cpuMilli === override.cpuMilli &&
+                defaultConfig.memoryMb === override.memoryMb &&
+                defaultConfig.storageMb === override.storageMb;
 
-        if (isDefault) {
-            return nodeConfigOverrides.remove(this.dbClient.db, override.routingId);
-        }
+            if (isDefault) {
+                return nodeConfigOverrides.remove(trx, override.routingId);
+            }
 
-        return nodeConfigOverrides.upsert(this.dbClient.db, override);
+            return nodeConfigOverrides.upsert(trx, override);
+        });
     }
 }

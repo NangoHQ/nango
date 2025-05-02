@@ -116,12 +116,16 @@ export async function search(
     db: knex.Knex,
     params: {
         routingIds?: RoutingId[];
+        forUpdate?: boolean;
     }
 ): Promise<Result<Map<RoutingId, NodeConfigOverride>, FleetError>> {
     try {
         const query = db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).select('*');
         if (params.routingIds) {
             query.whereIn('routing_id', params.routingIds);
+        }
+        if (params.forUpdate) {
+            query.forUpdate();
         }
         const nodeConfigOverrides = await query;
         const nodeConfigOverridesMap = new Map<RoutingId, NodeConfigOverride>();
