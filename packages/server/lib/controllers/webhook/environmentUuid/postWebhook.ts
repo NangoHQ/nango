@@ -74,7 +74,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 res.status(200).send();
                 return;
             }
-            res.status(200).send(response);
+
+            res.status(response.statusCode).send(response.content);
         } catch (err) {
             span.setTag('nango.error', err);
 

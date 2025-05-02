@@ -10487,6 +10487,8 @@ xero:
         retry:
             after: 'retry-after'
     post_connection_script: xeroPostConnection
+    webhook_routing_script: xeroWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/xero
 
 xero-oauth2-cc:
