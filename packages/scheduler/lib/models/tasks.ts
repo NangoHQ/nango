@@ -231,6 +231,7 @@ export async function transitionState(
 
 export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
+        const groupKeyPattern = groupKey.replace(/\*/g, '%');
         const tasks = await db
             .update({
                 state: 'STARTED',
@@ -242,7 +243,8 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                 db
                     .select('id')
                     .from<DbTask>(TASKS_TABLE)
-                    .where({ group_key: groupKey, state: 'CREATED' })
+                    .where('state', 'CREATED')
+                    .whereLike('group_key', groupKeyPattern)
                     .where('starts_after', '<=', db.fn.now())
                     .orderBy('id')
                     .limit(limit)
