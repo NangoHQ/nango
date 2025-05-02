@@ -5260,10 +5260,9 @@ jamf:
     connection_config:
         instance:
             type: string
-            title: Jamf Pro URL
-            description: Your Jamf Pro instance URL (e.g. https://yourinstance.jamfcloud.com)
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
+            title: Jamf Pro Instance
+            description: Your Jamf Pro instance
+            example: example
             prefix: https://
             suffix: .jamfcloud.com
             order: 1
@@ -5276,9 +5275,8 @@ jamf-basic:
     proxy:
         base_url: https://${connectionConfig.instance}.jamfcloud.com
         headers:
-            authorization: Bearer ${token}
+            authorization: Bearer ${accessToken}
     token_url: https://${connectionConfig.instance}.jamfcloud.com/api/v1/auth/token
-    token_request_method: POST
     token_headers:
         authorization: Basic ${base64(${credentials.username}:${credentials.password})}
     token_response:
@@ -5289,10 +5287,9 @@ jamf-basic:
     connection_config:
         instance:
             type: string
-            title: Jamf Pro URL
-            description: Your Jamf Pro instance URL (e.g. https://yourinstance.jamfcloud.com)
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
+            title: Jamf Pro Instance
+            description: Your Jamf Pro instance
+            example: example
             prefix: https://
             suffix: .jamfcloud.com
             order: 1
