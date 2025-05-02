@@ -119,9 +119,10 @@ export const DatePicker: React.FC<{
                     {display} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-fit p-4 rounded-md text-sm text-grayscale-11 bg-grayscale-1" align="end">
+            <PopoverContent className="w-fit p-4 pt-0 rounded-md text-sm text-grayscale-11 bg-grayscale-1" align="end">
                 <div className="flex flex-col gap-4 w-80">
                     <div className="flex flex-col gap-1">
+                        <span className="text-xs text-grayscale-8 self-end">UTC{format(new Date(), 'XXX')}</span>
                         <div
                             className={cn(
                                 'h-10 flex items-center bg-grayscale-3 rounded-md',
