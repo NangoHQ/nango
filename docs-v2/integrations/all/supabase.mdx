@@ -1,59 +1,66 @@
 ---
 title: Supabase
-sidebar_position: 1
+sidebarTitle: Supabase
 ---
 
-# Supabase
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/supabase/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/supabase/PreBuiltUseCases.mdx"
 
-Integrate with [Supabase](https://supabase.com/) to access your project's RESTful API using an API key. This integration allows you to connect to your Supabase project's Postgres database and other features via the REST API.
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-## Overview
+## Access requirements
+| Pre-Requisites      | Status | Comment |
+|---------------------|--------|---------|
+| Supabase project    | ✅     | Required for all API access |
+| API Key             | ✅     | `anon` or `service_role` key required |
+| Paid account        | ❌     | Free tier available |
+| Partnership         | ❌     | Not required |
+| App review          | ❌     | Not required |
+| Security audit      | ❌     | Not required |
 
-Supabase provides a RESTful API for your Postgres database and other services. You can use the `anon` or `service_role` API key to authenticate requests. This integration uses the API key in the `Authorization` and `apikey` headers.
 
-- **Base URL:** `https://<projectRef>.supabase.co/rest/v1`
-- **Authentication:** API Key (Bearer token)
-- **Docs:** [Supabase API Docs](https://supabase.com/docs/guides/api)
+## Setup guide
 
-## Prerequisites
+To get started with the Supabase integration:
 
-- A Supabase project
-- Access to your project's API keys (found in the Supabase dashboard)
-
-## Setup
-
-1. **Find your Project Reference**
-   - Go to your Supabase project dashboard.
-   - The project reference (projectRef) is visible in the project URL and in the settings.
-   - Example: `abcd1234efgh5678ijkl`
+1. **Find your Project URL**
+   - In your Supabase dashboard, go to `Project Settings` > `Data API`.
+   - Under the `Project URL` section, copy the full URL (e.g., `https://abcd1234efgh5678ijkl.supabase.co` or your self-hosted URL).
 
 2. **Get your API Key**
-   - In the Supabase dashboard, go to `Project Settings` > `API`.
-   - Copy the `anon` or `service_role` key under `Project API keys`.
+   - In your Supabase dashboard, go to `Project Settings` > `Data API`.
+   - Under `Project API keys`, copy the `anon` or `service_role` key.
    - Use the `service_role` key for admin access, or `anon` for public access.
 
-3. **Configure the Integration**
-   - Enter your `projectRef` and `apiKey` when connecting.
+3. **Connect your Supabase account**
+   - In the connection form, enter:
+     - **Project URL:** Your Supabase project URL (e.g., `https://abcd1234efgh5678ijkl.supabase.co`)
+     - **API Key:** Your Supabase `anon` or `service_role` key
 
-## Example Configuration
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-```yaml
-connection_config:
-  projectRef: abcd1234efgh5678ijkl
-credentials:
-  apiKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/supabase.mdx)</Note>
 
-## Making Requests
 
-All requests are made to the REST endpoint for your project. For example, to list rows from a table:
-
-```http
-GET https://<projectRef>.supabase.co/rest/v1/<table>
-Authorization: Bearer <apiKey>
-apikey: <apiKey>
-```
-
-## References
+## Useful links
+- [Supabase API Docs](https://supabase.com/docs/guides/api)
 - [Supabase API Quickstart](https://supabase.com/docs/guides/api/quickstart)
-- [Supabase API Keys](https://supabase.com/docs/guides/api/api-keys) 
+- [Supabase API Keys](https://supabase.com/docs/guides/api/api-keys)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/supabase.mdx)</Note>
+
+## API gotchas
+- Use the `service_role` key for admin access, or `anon` for public access
+- Rate limits and permissions depend on your Supabase plan and the key used
+- The REST API exposes your Postgres tables directly; be careful with permissions
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/supabase.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Supabase" icon="link" href="/integrations/all/supabase/connect" horizontal>
+  Guide to connect to Supabase with an API Key using Connect UI
+</Card> 
