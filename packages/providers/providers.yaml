@@ -2359,6 +2359,40 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+supabase:
+    display_name: Supabase
+    categories:
+        - dev-tools
+        - storage
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.projectRef}.supabase.co/rest/v1
+        headers:
+            authorization: Bearer ${apiKey}
+            apikey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /
+    docs: https://supabase.com/docs/guides/api
+    docs_connect: https://supabase.com/docs/guides/api/api-keys
+    connection_config:
+        projectRef:
+            type: string
+            title: Project Reference
+            description: The unique project reference for your Supabase project
+            example: abcd1234efgh5678ijkl
+            pattern: '^[a-z0-9]{15,}$'
+            doc_section: '#find-your-project-ref-in-the-dashboard'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The anon or service_role API key for your Supabase project
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            pattern: '^[A-Za-z0-9\._-]+$'
+            doc_section: '#find-your-api-keys-in-the-dashboard'
+
 companycam:
     display_name: CompanyCam
     categories:
