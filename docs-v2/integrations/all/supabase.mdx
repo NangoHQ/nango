@@ -1,0 +1,59 @@
+---
+title: Supabase
+sidebar_position: 1
+---
+
+# Supabase
+
+Integrate with [Supabase](https://supabase.com/) to access your project's RESTful API using an API key. This integration allows you to connect to your Supabase project's Postgres database and other features via the REST API.
+
+## Overview
+
+Supabase provides a RESTful API for your Postgres database and other services. You can use the `anon` or `service_role` API key to authenticate requests. This integration uses the API key in the `Authorization` and `apikey` headers.
+
+- **Base URL:** `https://<projectRef>.supabase.co/rest/v1`
+- **Authentication:** API Key (Bearer token)
+- **Docs:** [Supabase API Docs](https://supabase.com/docs/guides/api)
+
+## Prerequisites
+
+- A Supabase project
+- Access to your project's API keys (found in the Supabase dashboard)
+
+## Setup
+
+1. **Find your Project Reference**
+   - Go to your Supabase project dashboard.
+   - The project reference (projectRef) is visible in the project URL and in the settings.
+   - Example: `abcd1234efgh5678ijkl`
+
+2. **Get your API Key**
+   - In the Supabase dashboard, go to `Project Settings` > `API`.
+   - Copy the `anon` or `service_role` key under `Project API keys`.
+   - Use the `service_role` key for admin access, or `anon` for public access.
+
+3. **Configure the Integration**
+   - Enter your `projectRef` and `apiKey` when connecting.
+
+## Example Configuration
+
+```yaml
+connection_config:
+  projectRef: abcd1234efgh5678ijkl
+credentials:
+  apiKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## Making Requests
+
+All requests are made to the REST endpoint for your project. For example, to list rows from a table:
+
+```http
+GET https://<projectRef>.supabase.co/rest/v1/<table>
+Authorization: Bearer <apiKey>
+apikey: <apiKey>
+```
+
+## References
+- [Supabase API Quickstart](https://supabase.com/docs/guides/api/quickstart)
+- [Supabase API Keys](https://supabase.com/docs/guides/api/api-keys) 

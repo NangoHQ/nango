@@ -1,0 +1,39 @@
+---
+title: Connect Supabase
+sidebar_position: 1
+---
+
+# Connect to Supabase
+
+Follow these steps to connect your Supabase project to Nango using an API key.
+
+## 1. Find your Project Reference
+- Go to your [Supabase dashboard](https://app.supabase.com/).
+- Select your project.
+- The project reference (`projectRef`) is visible in the project URL and in the project settings.
+- Example: `abcd1234efgh5678ijkl`
+
+## 2. Get your API Key
+- In your Supabase dashboard, go to `Project Settings` > `API`.
+- Under `Project API keys`, copy the `anon` or `service_role` key.
+- Use the `service_role` key for admin access, or `anon` for public access.
+- [Supabase API Keys Documentation](https://supabase.com/docs/guides/api/api-keys)
+
+## 3. Enter your credentials
+Fill in the following fields when connecting:
+
+- **Project Reference:** Your Supabase projectRef (e.g., `abcd1234efgh5678ijkl`)
+- **API Key:** Your Supabase `anon` or `service_role` key
+
+## Example Connection
+
+```yaml
+connection_config:
+  projectRef: abcd1234efgh5678ijkl
+credentials:
+  apiKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+For more details, see the [Supabase API documentation](https://supabase.com/docs/guides/api). 
