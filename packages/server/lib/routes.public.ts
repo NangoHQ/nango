@@ -17,7 +17,7 @@ import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -33,10 +33,7 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
-import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
-import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
-import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -167,25 +164,18 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
 
-// @deprecated
 publicAPI.use('/config', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
 // @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
-// @deprecated
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
-// @deprecated
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegrationDeprecated);
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
-publicAPI.route('/integrations').post(apiAuth, postPublicIntegration);
-publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, patchPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
-publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, deletePublicIntegration);
 
 publicAPI.use('/connection', jsonContentTypeMiddleware);
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
