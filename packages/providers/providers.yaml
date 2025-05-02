@@ -9323,7 +9323,7 @@ supabase:
             example: project.supabase.co
             format: hostname
             prefix: https://
-            doc_section: '#step-1-find-your-project-reference'
+            doc_section: '#step-1-find-your-project-url'
     credentials:
         apiKey:
             type: string
