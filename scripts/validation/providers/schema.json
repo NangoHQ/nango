@@ -392,7 +392,7 @@
                 },
                 "token_request_method": {
                     "type": "string",
-                    "enum": ["GET"]
+                    "enum": ["GET", "POST"]
                 },
                 "token_params": {
                     "type": "object",
