@@ -126,7 +126,7 @@ export function parseDateRange(input: string, dateTimeFormat: string): { dateRan
     }
 
     if (range.from > range.to) {
-        return { dateRange: null, error: 'From date must be before to date' };
+        return { dateRange: null, error: "'from' date must be before 'to' date" };
     }
 
     return { dateRange: range, error: null };
