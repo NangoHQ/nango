@@ -30,6 +30,7 @@ import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
 import { Root } from './pages/Root';
+import { TeamBilling } from './pages/Team/Billing/Show';
 import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { useStore } from './store';
@@ -114,6 +115,7 @@ const App = () => {
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                             <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
                             <Route path="/:env/team-settings" element={<TeamSettings />} />
+                            <Route path="/:env/team/billing" element={<TeamBilling />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                         </Route>
                         {<Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
