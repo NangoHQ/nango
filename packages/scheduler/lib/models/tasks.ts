@@ -8,7 +8,6 @@ import { uuidv7 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 export const TASKS_TABLE = 'tasks';
-export const GROUPS_TABLE = 'groups';
 
 export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
 
