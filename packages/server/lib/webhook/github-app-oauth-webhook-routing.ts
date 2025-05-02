@@ -2,15 +2,16 @@ import crypto from 'crypto';
 
 import get from 'lodash-es/get.js';
 
-import { connectionService, environmentService, getProvider } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { NangoError, connectionService, environmentService, getProvider } from '@nangohq/shared';
+import type { Result } from '@nangohq/utils';
+import { getLogger, Ok, Err } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import type { ConnectionConfig } from '@nangohq/types';
+import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -36,20 +37,29 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
-            return;
+            return Err(new NangoError('webhook_invalid_signature'));
         }
     }
 
     if (get(body, 'action') === 'created') {
-        await handleCreateWebhook(integration, body, logContextGetter);
+        const createResult = await handleCreateWebhook(integration, body, logContextGetter);
+        if (createResult.isErr()) {
+            return Err(createResult.error);
+        }
     }
 
-    return nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+    const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+    return Ok({
+        content: { status: 'success' },
+        statusCode: 200,
+        connectionIds: response?.connectionIds || [],
+        toForward: body
+    });
 };
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter) {
+async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter): Promise<Result<void, NangoError>> {
     if (!get(body, 'requester.login')) {
-        return;
+        return Ok(undefined);
     }
 
     const connections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
@@ -59,13 +69,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
 
     if (!connections || connections.length === 0) {
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
-        return;
+        return Ok(undefined);
     } else {
         const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id });
 
         if (!environmentAndAccountLookup) {
             logger.error('Environment or account not found');
-            return;
+            return Ok(undefined);
         }
 
         const { environment, account } = environmentAndAccountLookup;
@@ -76,13 +86,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
             logger.info('no connection or existing installation_id');
-            return;
+            return Err(new NangoError('webhook_no_connection_or_existing_installation_id'));
         }
 
         const provider = getProvider(integration.provider);
         if (!provider) {
             logger.error('unknown provider');
-            return;
+            return Err(new NangoError('webhook_unknown_provider'));
         }
 
         const activityLogId = connection.connection_config['pendingLog'];
@@ -116,12 +126,14 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
             integration,
-            provider,
+            provider as ProviderGithubApp,
             connectionConfig,
             logCtx,
             connCreatedHook
         );
         await logCtx.success();
+
+        return Ok(undefined);
     }
 }
 

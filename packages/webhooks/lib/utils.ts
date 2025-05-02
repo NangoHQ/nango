@@ -1,10 +1,13 @@
 import crypto from 'crypto';
-import type { AxiosResponse, AxiosError } from 'axios';
+
 import { isAxiosError } from 'axios';
-import type { Result } from '@nangohq/utils';
-import { Err, Ok, axiosInstance as axios, redactHeaders, retryFlexible, networkError } from '@nangohq/utils';
+
+import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible } from '@nangohq/utils';
+
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncOperationType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow, MessageHTTPResponse } from '@nangohq/types';
+import type { AuthOperationType, DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, SyncOperationType, WebhookTypes } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 export const RETRY_ATTEMPTS = 7;
 

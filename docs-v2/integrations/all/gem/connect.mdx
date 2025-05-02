@@ -6,30 +6,30 @@ sidebarTitle: Gem
 # Overview
 
 To authenticate with Gem, you need:
-1. **API key** - A key that grants Nango permission to interact with Gem's APIs resources and services.
+1. **Shareable Access Key** - A key that grants Nango permission to interact with Gem's APIs resources and services.
 
-This guide will walk you through obtaining your **API Key** within Gem.
+This guide will walk you through obtaining your **Shareable Access Key** within Gem.
 
 ### Prerequisites:
 
 - You must have an account with Gem.
 - The API must be enabled for your account before you can generate **API keys**. To request access, reach out to your Gem point of contact (Customer Success Manager or Account Executive).
+- You have already configured the `appSecret` in the **connection configuration**, which was provided externally by Gem when creating a [session](https://docs.nango.dev/reference/api/connect/sessions/create#body-integrations-config-defaults-key-connection-config)
 
 ### Instructions:
 
-#### Step 1: Finding Your API Key
-1. Login to your [Gem](https://www.gem.com/login) account.
-2. Navigate to your **Team Settings**.
-3. Go to the **Additional Settings** section.
-4. Scroll to the bottom of the page to find the **API Keys** section.
-5. In the **API Keys** section, click **Create API Key** to generate a new **API Key**.
-<img src="/integrations/all/gem/api_section.png" />
+#### Step 1: Finding Your Shareable Access Key
+1. Log in to your [Gem](https://www.gem.com/login) account.
+2. Select your profile at the bottom left then navigate to **Admin Settings** > **Integrations**.
+3. Scroll to the bottom of the page to find **Third party applications** section.
+4. Click **Add Integration** to add your integration and copy the **Shareable Access Key**.
+<img src="/integrations/all/gem/integrations_page.png" />
 
 #### Step 2: Enter credentials in the Connect UI
 
-Once you have your **API Key**:
+Once you have your **Shareable Access Key**
 1. Open the form where you need to authenticate with Gem.
-2. Enter your **API Key** in its respective field.
+2. Enter your **Shareable Access Key** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 

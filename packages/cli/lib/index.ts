@@ -14,7 +14,7 @@ import figlet from 'figlet';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
-import { configWatch, generate, getVersionOutput, tscWatch } from './cli.js';
+import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
@@ -168,11 +168,7 @@ program
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
-        if (compileInterfaces) {
-            configWatch({ fullPath, debug });
-        }
-
-        tscWatch({ fullPath, debug });
+        tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
     });
 
 program
@@ -267,7 +263,7 @@ program
             return;
         }
 
-        const success = await compileAllFiles({ fullPath, debug });
+        const { success } = await compileAllFiles({ fullPath, debug });
         if (!success) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exitCode = 1;

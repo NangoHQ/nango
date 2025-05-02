@@ -1,20 +1,23 @@
+import { setTimeout } from 'node:timers/promises';
+
 import { Err, Ok } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+
 import { DatabaseClient } from './db/client.js';
+import { envs } from './env.js';
 import * as deployments from './models/deployments.js';
-import * as nodes from './models/nodes.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import * as nodes from './models/nodes.js';
+import { noopNodeProvider } from './node-providers/noop.js';
+import { Supervisor } from './supervisor/supervisor.js';
+import { FleetError } from './utils/errors.js';
+import { withPgLock } from './utils/locking.js';
+import { waitUntilHealthy } from './utils/url.js';
+
+import type { FleetId } from './instances.js';
+import type { NodeProvider } from './node-providers/node_provider.js';
 import type { Node } from './types.js';
 import type { Deployment, RoutingId } from '@nangohq/types';
-import { FleetError } from './utils/errors.js';
-import { setTimeout } from 'node:timers/promises';
-import { Supervisor } from './supervisor/supervisor.js';
-import type { NodeProvider } from './node-providers/node_provider.js';
-import type { FleetId } from './instances.js';
-import { envs } from './env.js';
-import { withPgLock } from './utils/locking.js';
-import { noopNodeProvider } from './node-providers/noop.js';
-import { waitUntilHealthy } from './utils/url.js';
+import type { Result } from '@nangohq/utils';
 
 const defaultDbUrl =
     envs.RUNNERS_DATABASE_URL ||

@@ -36,7 +36,7 @@
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/billing": "file:../billing",
         "@workos-inc/node": "6.2.0",
-        "axios": "^1.8.4",
+        "axios": "1.9.0",
         "body-parser": "1.20.3",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.6",
@@ -86,8 +86,8 @@
         "@types/ws": "8.5.4",
         "get-port": "7.1.0",
         "nodemon": "3.1.9",
-        "type-fest": "4.32.0",
+        "type-fest": "4.40.0",
         "typescript": "5.7.3",
-        "vitest": "3.1.1"
+        "vitest": "3.1.2"
     }
 }

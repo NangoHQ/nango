@@ -1,17 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { apiFetch } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiError, ApiPlan, GetPlans, PostPlanExtendTrial } from '@nangohq/types';
-
-export class APIError extends Error {
-    details;
-    constructor(details: { res: Response; json: Record<string, any> | ApiError<any> }) {
-        super('err');
-        this.details = details;
-    }
-}
+import type { ApiPlan, GetPlans, PostPlanExtendTrial } from '@nangohq/types';
 
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
@@ -25,7 +17,7 @@ export async function apiPostPlanExtendTrial(env: string) {
 }
 
 export function useApiGetPlans(env: string) {
-    return useQuery({
+    return useQuery<GetPlans['Success'], APIError>({
         enabled: Boolean(env),
         queryKey: ['plans'],
         queryFn: async (): Promise<GetPlans['Success']> => {

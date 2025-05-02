@@ -148,6 +148,8 @@ web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
+
+web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 web.route('/plans').get(webAuth, getPlans);
 

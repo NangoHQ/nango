@@ -128,7 +128,7 @@ export async function persistRecords({
         const total = allModifiedKeys.size + summary.unchangedKeys.length;
 
         void logCtx.info(
-            `Successfully batched ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
+            `Successfully batch ${persistType}d ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
             { persistType },
             {
                 persistResults: {
@@ -156,7 +156,7 @@ export async function persistRecords({
 
         const mar = new Set(summary.billedKeys).size;
 
-        if (plan && plan.name !== 'free') {
+        if (plan) {
             void billing.send('monthly_active_records', mar, { accountId });
         }
 

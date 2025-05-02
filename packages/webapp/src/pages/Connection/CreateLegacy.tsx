@@ -12,7 +12,7 @@ import Nango, { AuthError } from '@nangohq/frontend';
 
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
-import SecretTextArea from '../../components/ui/input/SecretTextArea';
+import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegration } from '../../hooks/useIntegration';
@@ -1066,7 +1066,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
@@ -1156,8 +1156,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             copy={true}
                                             id="private_key"
                                             name="private_key"
-                                            optionalValue={privateKey}
-                                            setOptionalValue={(value) => setPrivateKey(value)}
+                                            value={privateKey}
+                                            onUpdate={(value) => setPrivateKey(value)}
                                             required
                                         />
                                     </div>
