@@ -1,8 +1,11 @@
-import type { Knex } from 'knex';
-import { Err, stringToHash } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
-import type { Result } from '@nangohq/utils';
+
+import { Err, stringToHash } from '@nangohq/utils';
+
 import { FleetError } from './errors.js';
+
+import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 export async function withPgLock<T>({
     db,

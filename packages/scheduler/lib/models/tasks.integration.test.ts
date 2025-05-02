@@ -97,6 +97,17 @@ describe('Task', () => {
         dequeued = (await tasks.dequeue(db, { groupKey: t1.groupKey, limit: 1 })).unwrap();
         expect(dequeued).toHaveLength(0); // no tasks left
     });
+    it('should be dequeued by group key pattern', async () => {
+        const t0 = await createTask(db, { groupKey: 'A:B:C' });
+        const t1 = await createTask(db, { groupKey: 'A:B:D' });
+        await createTask(db, { groupKey: 'A:X:Y' });
+        await createTask(db, { groupKey: 'Z:A:B' });
+
+        const dequeued = (await tasks.dequeue(db, { groupKey: 'A:B*', limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(2);
+        expect(dequeued[0]).toMatchObject({ id: t0.id, state: 'STARTED' });
+        expect(dequeued[1]).toMatchObject({ id: t1.id, state: 'STARTED' });
+    });
     it('should not be dequeued if startsAfter is in the future', async () => {
         const tomorrow = (() => {
             const date = new Date();

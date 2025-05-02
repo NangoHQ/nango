@@ -1,20 +1,23 @@
-import { Err, Ok } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import { DatabaseClient } from './db/client.js';
-import * as deployments from './models/deployments.js';
-import * as nodes from './models/nodes.js';
-import * as nodeConfigOverrides from './models/node_config_overrides.js';
-import type { Node } from './types.js';
-import type { Deployment, RoutingId } from '@nangohq/types';
-import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
-import { Supervisor } from './supervisor/supervisor.js';
-import type { NodeProvider } from './node-providers/node_provider.js';
-import type { FleetId } from './instances.js';
+
+import { Err, Ok } from '@nangohq/utils';
+
+import { DatabaseClient } from './db/client.js';
 import { envs } from './env.js';
-import { withPgLock } from './utils/locking.js';
+import * as deployments from './models/deployments.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import * as nodes from './models/nodes.js';
 import { noopNodeProvider } from './node-providers/noop.js';
+import { Supervisor } from './supervisor/supervisor.js';
+import { FleetError } from './utils/errors.js';
+import { withPgLock } from './utils/locking.js';
 import { waitUntilHealthy } from './utils/url.js';
+
+import type { FleetId } from './instances.js';
+import type { NodeProvider } from './node-providers/node_provider.js';
+import type { Node, NodeConfigOverride } from './types.js';
+import type { Deployment, RoutingId } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const defaultDbUrl =
     envs.RUNNERS_DATABASE_URL ||
@@ -151,5 +154,29 @@ export class Fleet {
 
     public async idleNode({ nodeId }: { nodeId: number }): Promise<Result<Node>> {
         return nodes.idle(this.dbClient.db, { nodeId });
+    }
+
+    public async overrideNodeConfig(override: Omit<NodeConfigOverride, 'id' | 'createdAt' | 'updatedAt'>): Promise<Result<NodeConfigOverride>> {
+        const defaultConfig = this.nodeProvider.defaultNodeConfig;
+        return this.dbClient.db.transaction(async (trx) => {
+            const search = await nodeConfigOverrides.search(trx, { routingIds: [override.routingId] });
+            if (search.isErr()) {
+                return Err(search.error);
+            }
+            const existing = search.value.get(override.routingId);
+
+            const image = override.image ?? existing?.image;
+            const isDefault =
+                !image &&
+                defaultConfig.cpuMilli === override.cpuMilli &&
+                defaultConfig.memoryMb === override.memoryMb &&
+                defaultConfig.storageMb === override.storageMb;
+
+            if (isDefault) {
+                return nodeConfigOverrides.remove(trx, override.routingId);
+            }
+
+            return nodeConfigOverrides.upsert(trx, override);
+        });
     }
 }

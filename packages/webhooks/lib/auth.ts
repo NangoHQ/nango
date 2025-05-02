@@ -1,20 +1,22 @@
-import type {
-    NangoAuthWebhookBodySuccess,
-    NangoAuthWebhookBodyError,
-    DBExternalWebhook,
-    AuthModeType,
-    ErrorPayload,
-    AuthOperationType,
-    NangoAuthWebhookBodyBase,
-    DBEnvironment,
-    EndUser,
-    IntegrationConfig,
-    DBTeam,
-    DBConnection
-} from '@nangohq/types';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { deliver, shouldSend } from './utils.js';
+import { OtlpSpan, logContextGetter } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
+
+import { deliver, shouldSend } from './utils.js';
+
+import type {
+    AuthModeType,
+    AuthOperationType,
+    DBConnection,
+    DBEnvironment,
+    DBExternalWebhook,
+    DBTeam,
+    EndUser,
+    ErrorPayload,
+    IntegrationConfig,
+    NangoAuthWebhookBodyBase,
+    NangoAuthWebhookBodyError,
+    NangoAuthWebhookBodySuccess
+} from '@nangohq/types';
 
 export async function sendAuth({
     connection,

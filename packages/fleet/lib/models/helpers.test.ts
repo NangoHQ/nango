@@ -1,8 +1,10 @@
-import type { NodeState, Node } from '../types.js';
+import { nanoid } from '@nangohq/utils';
+
+import * as nodes from './nodes.js';
+
+import type { Node, NodeState } from '../types.js';
 import type { RoutingId } from '@nangohq/types';
 import type { knex } from 'knex';
-import { nanoid } from '@nangohq/utils';
-import * as nodes from './nodes.js';
 
 export async function createNodeWithAttributes(
     db: knex.Knex,

@@ -1,7 +1,8 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import * as deployments from './deployments.js';
-import { getTestDbClient } from '../db/helpers.test.js';
 import { generateImage } from './helpers.js';
+import { getTestDbClient } from '../db/helpers.test.js';
 
 describe('Deployments', () => {
     const dbClient = getTestDbClient('deployments');
