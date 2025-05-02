@@ -12,8 +12,8 @@ import type { PatchPublicIntegration } from '@nangohq/types';
 
 const validationBody = z
     .object({
-        uniqueKey: providerConfigKeySchema.optional(),
-        displayName: integrationDisplayNameSchema.optional(),
+        unique_key: providerConfigKeySchema.optional(),
+        display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional()
     })
     .strict();

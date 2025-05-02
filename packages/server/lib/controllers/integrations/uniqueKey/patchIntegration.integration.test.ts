@@ -34,7 +34,7 @@ describe(`PATCH ${endpoint}`, () => {
             token: env.secret_key,
             params: { uniqueKey: 'github' },
             // @ts-expect-error on purpose
-            body: { uniqueKey: '1832_@$ùé&', displayName: false, credentials: { authType: 'INVALID' } }
+            body: { unique_key: '1832_@$ùé&', display_name: false, credentials: { type: 'INVALID' } }
         });
 
         isError(res.json);
@@ -42,9 +42,9 @@ describe(`PATCH ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_string', message: 'Invalid', path: ['uniqueKey'] },
-                    { code: 'invalid_type', message: 'Expected string, received boolean', path: ['displayName'] },
-                    { code: 'invalid_union_discriminator', message: 'invalid credentials object', path: ['credentials', 'authType'] }
+                    { code: 'invalid_string', message: 'Invalid', path: ['unique_key'] },
+                    { code: 'invalid_type', message: 'Expected string, received boolean', path: ['display_name'] },
+                    { code: 'invalid_union_discriminator', message: 'invalid credentials object', path: ['credentials', 'type'] }
                 ]
             }
         });
