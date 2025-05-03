@@ -1,5 +1,13 @@
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
+    getUsage: (subscriptionId: string) => Promise<BillingUsageMetric[]>;
+    getUsagePrevious: (subscriptionId: string) => Promise<BillingUsageMetric[]>;
+}
+
+export interface BillingUsageMetric {
+    id: string;
+    name: string;
+    quantity: number;
 }
 
 export interface BillingIngestEvent {

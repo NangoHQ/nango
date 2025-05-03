@@ -21,6 +21,7 @@ export type * from './syncConfigs/db.js';
 export type * from './syncConfigs/api.js';
 export type * from './team/api.js';
 export type * from './team/db.js';
+export type * from './billing/types.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';

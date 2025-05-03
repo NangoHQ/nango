@@ -6,8 +6,9 @@ import { Link } from 'react-router-dom';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import * as Table from '../../../components/ui/Table';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useApiGetPlans } from '../../../hooks/usePlan';
+import { useApiGetPlans, useApiGetUsage } from '../../../hooks/usePlan';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
@@ -82,7 +83,11 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing - Nango</title>
             </Helmet>
             <h2 className="text-3xl font-semibold text-white mb-16">Billing</h2>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-10">
+                <div className="flex flex-col gap-2.5">
+                    <h2 className="text-grayscale-10">Usage</h2>
+                    <UsageTable />
+                </div>
                 <div className="flex flex-col gap-2.5">
                     <h2 className="text-grayscale-10">Plan</h2>
                     <div className="grid grid-cols-3 gap-4">
@@ -100,6 +105,53 @@ export const TeamBilling: React.FC = () => {
                 </div>
             </div>
         </DashboardLayout>
+    );
+};
+
+const UsageTable: React.FC = () => {
+    const env = useStore((state) => state.env);
+    const { data, isLoading } = useApiGetUsage(env);
+
+    const currentMonth = useMemo(() => {
+        return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
+    }, []);
+    const previousMonth = useMemo(() => {
+        const prev = new Date();
+        prev.setMonth(prev.getMonth() - 1);
+        return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(prev);
+    }, []);
+
+    if (isLoading || !data) {
+        return (
+            <div className="flex flex-col gap-2">
+                <Skeleton className="w-1/2" />
+                <Skeleton className="w-1/2" />
+                <Skeleton className="w-1/2" />
+            </div>
+        );
+    }
+
+    return (
+        <Table.Table>
+            <Table.Header>
+                <Table.Row>
+                    <Table.Head className="w-1/2"></Table.Head>
+                    <Table.Head className="text-center">Current ({currentMonth})</Table.Head>
+                    <Table.Head className="text-center">Previous ({previousMonth})</Table.Head>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
+                {data.data.current.map((row) => {
+                    return (
+                        <Table.Row key={row.id}>
+                            <Table.Cell>{row.name}</Table.Cell>
+                            <Table.Cell className="text-center">{row.quantity}</Table.Cell>
+                            <Table.Cell className="text-center">{data.data.previous.find((prev) => prev.id === row.id)?.quantity}</Table.Cell>
+                        </Table.Row>
+                    );
+                })}
+            </Table.Body>
+        </Table.Table>
     );
 };
 

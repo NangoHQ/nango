@@ -1,3 +1,4 @@
+import type { BillingUsageMetric } from '../billing/types';
 import type { ReplaceInObject } from '../utils';
 import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api';
@@ -30,5 +31,17 @@ export type GetPlans = Endpoint<{
     Querystring: { env: string };
     Success: {
         data: PlanDefinition[];
+    };
+}>;
+
+export type GetUsage = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/usage';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            current: BillingUsageMetric[];
+            previous: BillingUsageMetric[];
+        };
     };
 }>;
