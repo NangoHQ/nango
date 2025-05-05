@@ -96,9 +96,14 @@ export const EnvironmentSettings: React.FC = () => {
 
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Environment Settings</h2>
-                {env !== PROD_ENVIRONMENT_NAME && (
-                    <DeleteButton environmentName={env} onDelete={handleDelete} open={showDeleteAlert} onOpenChange={setShowDeleteAlert} />
-                )}
+                <DeleteButton
+                    environmentName={env}
+                    onDelete={handleDelete}
+                    open={showDeleteAlert}
+                    onOpenChange={setShowDeleteAlert}
+                    disabled={env === PROD_ENVIRONMENT_NAME}
+                    disabledTooltip={`You cannot delete the ${PROD_ENVIRONMENT_NAME} environment`}
+                />
             </div>
 
             <div className="flex flex-col gap-20 h-fit" key={env}>
