@@ -10146,7 +10146,7 @@ vercel:
         verification:
             method: GET
             endpoints:
-                - /v1/sessions
+                - /v2/user
     docs: https://docs.nango.dev/integrations/all/vercel
     docs_connect: https://docs.nango.dev/integrations/all/vercel
     credentials:
