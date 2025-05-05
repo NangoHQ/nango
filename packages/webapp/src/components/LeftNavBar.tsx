@@ -1,17 +1,21 @@
 import {
-    AdjustmentsHorizontalIcon,
-    ArrowRightOnRectangleIcon as LogoutIcon,
-    EllipsisHorizontalIcon,
-    LinkIcon,
-    QueueListIcon,
-    SquaresPlusIcon,
-    UserCircleIcon,
-    UserGroupIcon
-} from '@heroicons/react/24/outline';
-import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
-import { IconX } from '@tabler/icons-react';
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+    IconAdjustmentsHorizontal,
+    IconApps,
+    IconChartBar,
+    IconChevronDown,
+    IconChevronUp,
+    IconCirclesRelation,
+    IconCreditCard,
+    IconLogout,
+    IconLogs,
+    IconRocket,
+    IconUserCircle,
+    IconUsersGroup,
+    IconX
+} from '@tabler/icons-react';
+import { useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useClickAway } from 'react-use';
 
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
@@ -21,6 +25,8 @@ import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 import { globalEnv } from '../utils/env';
 import { useSignout } from '../utils/user';
+import { cn } from '../utils/utils';
+import { Button } from './ui/button/Button';
 
 import type { MaybePromise } from '@nangohq/types';
 
@@ -31,6 +37,7 @@ export enum LeftNavBarItems {
     EnvironmentSettings,
     Syncs,
     TeamSettings,
+    TeamBilling,
     UserSettings,
     GettingStarted,
     Logs
@@ -42,7 +49,7 @@ export interface LeftNavBarProps {
 interface MenuItem {
     name: string;
     value: LeftNavBarItems;
-    icon: React.FC<{ className?: string }>;
+    icon: typeof IconLogs;
     link: string;
     onClose?: () => MaybePromise<void>;
 }
@@ -53,34 +60,24 @@ const navHoverBg = 'hover:bg-hover-gray';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
-    const navigate = useNavigate();
     const signout = useSignout();
     const { meta, mutate: mutateMeta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
     const { data } = useConnectionsCount(env);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const refMenu = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
-        const closeUserSettings = (e: MouseEvent) => {
-            if (showUserSettings && !(e.target as HTMLElement).closest('.user-settings')) {
-                setShowUserSettings(false);
-            }
-        };
-
-        document.addEventListener('click', closeUserSettings);
-
-        return () => {
-            document.removeEventListener('click', closeUserSettings);
-        };
-    }, [showUserSettings]);
+    useClickAway(refMenu, () => {
+        setShowUserSettings(false);
+    });
 
     const items = useMemo(() => {
         const list: MenuItem[] = [];
         if (meta && showGettingStarted && !meta.onboardingComplete) {
             list.push({
                 name: 'Getting Started',
-                icon: RocketIcon,
+                icon: IconRocket,
                 value: LeftNavBarItems.GettingStarted,
                 link: `/${env}/getting-started`,
                 onClose: async () => {
@@ -90,16 +87,37 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             });
         }
 
-        list.push({ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` });
-        list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
-        list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
-        list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
+        list.push({ name: 'Metrics', icon: IconChartBar, value: LeftNavBarItems.Homepage, link: `/${env}` });
+        list.push({ name: 'Integrations', icon: IconApps, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
+        list.push({ name: 'Connections', icon: IconCirclesRelation, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
+        list.push({ name: 'Logs', icon: IconLogs, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
         list.push({
             name: 'Environment Settings',
-            icon: AdjustmentsHorizontalIcon,
+            icon: IconAdjustmentsHorizontal,
             value: LeftNavBarItems.EnvironmentSettings,
             link: `/${env}/environment-settings`
         });
+
+        return list;
+    }, [env, showGettingStarted, meta]);
+
+    const userMenu = useMemo<MenuItem[]>(() => {
+        if (!globalEnv.features.auth || !meta) {
+            return [];
+        }
+
+        const list: MenuItem[] = [
+            { link: `/${env}/user-settings`, name: 'Profile', icon: IconUserCircle, value: LeftNavBarItems.UserSettings },
+            { link: `/${env}/team-settings`, name: 'Team', icon: IconUsersGroup, value: LeftNavBarItems.TeamSettings }
+        ];
+
+        if (showGettingStarted && meta.onboardingComplete) {
+            list.push({ link: `/dev/getting-started`, name: 'Getting Started', icon: IconRocket, value: LeftNavBarItems.GettingStarted });
+        }
+
+        if (globalEnv.features.plan) {
+            list.push({ link: `/${env}/team/billing`, name: 'Billing', icon: IconCreditCard, value: LeftNavBarItems.TeamBilling });
+        }
 
         return list;
     }, [env, showGettingStarted, meta]);
@@ -153,59 +171,50 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     </div>
                 </div>
                 <div className="mx-4">
-                    <div
-                        className="flex mb-5 py-2 w-full user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer"
-                        onClick={() => setShowUserSettings(!showUserSettings)}
-                    >
-                        <div className="flex items-center">
-                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
-                                {me?.email.slice(0, 1).toUpperCase()}
-                            </div>
-                            <span className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</span>
+                    <Button variant={'emptyFaded'} className="mb-4 w-full border-none bg-grayscale-2" onClick={() => setShowUserSettings(!showUserSettings)}>
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
+                            {me?.email.slice(0, 1).toUpperCase()}
                         </div>
-                        {globalEnv.features.auth && <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />}
-                        {globalEnv.features.auth && showUserSettings && (
-                            <div className="absolute bottom-[45px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
-                                <ul className="text-gray-400 space-y-1 p-0.5 px-1">
-                                    <li
-                                        className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white bg-active-gray' : ''}`}
-                                        onClick={() => navigate(`/${env}/user-settings`)}
-                                    >
-                                        <UserCircleIcon className="h-5 w-5 mr-2" />
-                                        <span>Profile</span>
-                                    </li>
-                                    <li
-                                        className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.TeamSettings ? 'text-white bg-active-gray' : ''}`}
-                                        onClick={() => navigate(`/${env}/team-settings`)}
-                                    >
-                                        <UserGroupIcon className="h-5 w-5 mr-2" />
-                                        <span>Team</span>
-                                    </li>
-                                    {showGettingStarted && meta.onboardingComplete && (
+                        <div className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</div>
+                        {userMenu.length > 0 && showUserSettings ? (
+                            <IconChevronDown stroke={1} size={18} />
+                        ) : userMenu.length > 0 ? (
+                            <IconChevronUp stroke={1} size={18} />
+                        ) : null}
+                    </Button>
+                    {userMenu.length > 0 && showUserSettings && (
+                        <div
+                            className="absolute bottom-[45px] text-sm left-4 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded"
+                            ref={refMenu}
+                        >
+                            <ul className="text-gray-400 space-y-1 p-0.5 px-1">
+                                {userMenu.map((item) => {
+                                    const Icon = item.icon;
+                                    return (
                                         <Link
-                                            to="/dev/getting-started"
-                                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.GettingStarted
-                                                    ? `${navActiveBg} text-white`
-                                                    : `text-gray-400 ${navHoverBg}`
-                                            }`}
+                                            key={item.name}
+                                            className={cn(
+                                                'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-grayscale-2 rounded text-gray-400',
+                                                props.selectedItem === item.value && `bg-grayscale-2 text-white`
+                                            )}
+                                            to={item.link}
                                         >
-                                            <RocketIcon />
-                                            <p>Getting Started</p>
+                                            <Icon stroke={1} size={18} />
+                                            <span>{item.name}</span>
                                         </Link>
-                                    )}
+                                    );
+                                })}
 
-                                    <li
-                                        className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
-                                        onClick={async () => await signout()}
-                                    >
-                                        <LogoutIcon className="h-5 w-5 mr-2" />
-                                        <span>Log Out</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        )}
-                    </div>
+                                <li
+                                    className={cn('flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400')}
+                                    onClick={async () => await signout()}
+                                >
+                                    <IconLogout stroke={1} size={18} />
+                                    <span>Log Out</span>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
