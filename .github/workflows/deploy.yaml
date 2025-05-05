@@ -32,18 +32,17 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
-            - name: Push tag
-              run: |
-                  docker buildx imagetools create nangohq/nango-server:${{ github.sha }} --tag nangohq/nango-server:${{ inputs.stage }}
+
             - name: Deploy server
               run: |
-                  SERVICE_ID=${{ fromJson('{ production: "srv-cfifsvha6gdq1k7u46a0", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
-                     --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  SERVICE_ID=${{ fromJson('{ production: "srv-cvmfsb3e5dus73f54g4g", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_jobs:
         if: inputs.service == 'jobs'

@@ -1,10 +1,11 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { DeleteIntegration } from '@nangohq/types';
 import { configService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { getOrchestrator } from '../../../../utils/utils.js';
 import { validationParams } from './getIntegration.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
+
+import type { DeleteIntegration } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 

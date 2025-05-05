@@ -1,12 +1,15 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicConnection } from '@nangohq/types';
-import { connectionService, configService, refreshOrTestCredentials } from '@nangohq/shared';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
+
 import { logContextGetter } from '@nangohq/logs';
-import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+import { configService, connectionService, refreshOrTestCredentials } from '@nangohq/shared';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
+import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { GetPublicConnection } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -46,7 +49,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
     const isSync = req.headers['Nango-Is-Sync'] === 'true';
 
     if (!isSync) {
-        metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
+        metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);

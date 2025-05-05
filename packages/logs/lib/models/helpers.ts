@@ -1,9 +1,11 @@
-import { nanoid } from '@nangohq/utils';
-import type { ConcatOperationList, MessageRow, MessageRowInsert, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
-import type { estypes } from '@elastic/elasticsearch';
+
+import { nanoid } from '@nangohq/utils';
+
 import { defaultOperationExpiration } from '../env.js';
-import type { LogContext } from '../client.js';
+
+import type { estypes } from '@elastic/elasticsearch';
+import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
@@ -61,10 +63,12 @@ export function getFormattedOperation(
         expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
-export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId'>): MessageRow {
+export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId' | 'accountId'>): MessageRow {
     const now = new Date();
     return {
         id: data.id || nanoid(),
+
+        accountId: data.accountId,
 
         source: data.source || 'internal',
         level: data.level || 'info',
@@ -79,6 +83,7 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         response: data.response,
         retry: data.retry,
         meta: data.meta,
+        persistResults: data.persistResults,
 
         createdAt: data.createdAt || now.toISOString(),
         endedAt: data.endedAt,
@@ -123,15 +128,3 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions'
 };
-
-/**
- * Send buffered logs to elasticsearch
- * Ultimately it would be better to have LogContextBuffer (or an option in LogContext)
- */
-export async function flushLogsBuffer(logs: MessageRowInsert[], logCtx: LogContext) {
-    await Promise.all(
-        logs.map(async (log) => {
-            await logCtx.log(log);
-        })
-    );
-}

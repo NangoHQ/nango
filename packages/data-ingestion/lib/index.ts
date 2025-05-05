@@ -1,6 +1,8 @@
 import { BigQuery } from '@google-cloud/bigquery';
+
+import { flagHasBigQuery, getLogger } from '@nangohq/utils';
+
 import type { BigQuery as BigQueryType } from '@google-cloud/bigquery';
-import { getLogger, flagHasBigQuery } from '@nangohq/utils';
 
 const logger = getLogger('BigQueryClient');
 

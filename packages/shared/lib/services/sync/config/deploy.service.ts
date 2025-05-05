@@ -1,39 +1,42 @@
 import db, { dbNamespace } from '@nangohq/database';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { Ok, env } from '@nangohq/utils';
+
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
-import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
+import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
+import { NangoError } from '../../../utils/error.js';
 import connectionService from '../../connection.service.js';
+import { onEventScriptService } from '../../on-event-scripts.service.js';
+
+import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import type { SyncModelSchema, Sync } from '../../../models/Sync.js';
+import type { Config } from '../../../models/Provider.js';
+import type { Sync, SyncModelSchema } from '../../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
-    DBEnvironment,
-    DBTeam,
+    CLIDeployFlowConfig,
     CleanedIncomingFlowConfig,
-    PreBuiltFlowConfig,
-    NangoModel,
-    OnEventScriptsByProvider,
-    NangoSyncEndpointV2,
-    HTTP_METHOD,
-    SyncDeploymentResult,
-    DBSyncEndpointCreate,
-    DBSyncEndpoint,
-    SyncTypeLiteral,
+    DBEnvironment,
+    DBPlan,
     DBSyncConfig,
     DBSyncConfigInsert,
+    DBSyncEndpoint,
+    DBSyncEndpointCreate,
+    DBTeam,
+    HTTP_METHOD,
+    NangoModel,
     NangoSyncConfig,
-    CLIDeployFlowConfig
+    NangoSyncEndpointV2,
+    OnEventScriptsByProvider,
+    PreBuiltFlowConfig,
+    SyncDeploymentResult,
+    SyncTypeLiteral
 } from '@nangohq/types';
-import { onEventScriptService } from '../../on-event-scripts.service.js';
-import { NangoError } from '../../../utils/error.js';
-import { env, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { Orchestrator } from '../../../clients/orchestrator.js';
-import type { Merge } from 'type-fest';
 import type { JSONSchema7 } from 'json-schema';
-import type { Config } from '../../../models/Provider.js';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
+import type { Merge } from 'type-fest';
 
 const TABLE = dbNamespace + 'sync_configs';
 const SYNC_TABLE = dbNamespace + 'syncs';
@@ -72,6 +75,7 @@ export function cleanIncomingFlow(flowConfigs: CLIDeployFlowConfig[]): CleanedIn
 export async function deploy({
     environment,
     account,
+    plan,
     flows,
     jsonSchema,
     onEventScriptsByProvider,
@@ -82,6 +86,7 @@ export async function deploy({
 }: {
     environment: DBEnvironment;
     account: DBTeam;
+    plan: DBPlan | null;
     flows: CleanedIncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
     onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
@@ -114,6 +119,7 @@ export async function deploy({
             env,
             environment_id: environment.id,
             account,
+            plan,
             debug: Boolean(debug),
             logCtx,
             orchestrator
@@ -436,7 +442,7 @@ export async function deployPreBuilt({
             }
         }
 
-        const version = bumpedVersion || '0.0.1';
+        const version = config.version || bumpedVersion || '0.0.1';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
         let file_location: string | null = null;
@@ -608,6 +614,7 @@ async function compileDeployInfo({
     env,
     environment_id,
     account,
+    plan,
     debug,
     logCtx,
     orchestrator
@@ -617,6 +624,7 @@ async function compileDeployInfo({
     env: string;
     environment_id: number;
     account: DBTeam;
+    plan: DBPlan | null;
     debug: boolean;
     logCtx: LogContext;
     orchestrator: Orchestrator;
@@ -715,13 +723,15 @@ async function compileDeployInfo({
         }
     }
 
-    let shouldCap = false;
-
-    if (account.is_capped) {
-        // if there are too many connections for this sync then we need to also
-        // mark it as disabled
-        shouldCap = await connectionService.shouldCapUsage({ providerConfigKey, environmentId: environment_id, type: 'deploy' });
-    }
+    // if there are too many connections for this sync then we need to also
+    // mark it as disabled
+    const shouldCap = await connectionService.shouldCapUsage({
+        providerConfigKey,
+        environmentId: environment_id,
+        type: 'deploy',
+        team: account,
+        plan
+    });
 
     // Only store relevant JSON schema
     const flowJsonSchema: JSONSchema7 = {

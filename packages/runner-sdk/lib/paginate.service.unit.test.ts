@@ -1,9 +1,11 @@
 /**
  * Unit tests for the PaginationService class, specifically focusing on . notation in cursor pagination.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { UserProvidedProxyConfiguration, CursorPagination } from '@nangohq/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import PaginationService from './paginate.service';
+
+import type { CursorPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('PaginationService', () => {
     describe('cursor pagination', () => {
