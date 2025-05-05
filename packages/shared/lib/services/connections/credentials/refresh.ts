@@ -404,7 +404,13 @@ async function refreshCredentialsIfNeeded({
             return Err(error!);
         }
 
-        connectionToRefresh.credentials = newCredentials;
+        if ('user' in newCredentials && newCredentials.user) {
+            connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
+        }
+        if ('app' in newCredentials && newCredentials.app) {
+            connectionToRefresh.credentials = newCredentials.app;
+        }
+
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
             last_fetched_at: new Date(),
@@ -416,7 +422,11 @@ async function refreshCredentialsIfNeeded({
             updated_at: new Date()
         });
 
-        return Ok({ connection: connectionToRefresh, refreshed: true, credentials: newCredentials });
+        return Ok({
+            connection: connectionToRefresh,
+            refreshed: true,
+            credentials: newCredentials as unknown as RefreshableCredentials
+        });
     } catch (err) {
         const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
 

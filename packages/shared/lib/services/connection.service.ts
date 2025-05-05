@@ -40,7 +40,8 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse,
     OAuth2ClientCredentials,
-    OAuth2Credentials
+    OAuth2Credentials,
+    CombinedOauth2AppCredentials
 } from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
@@ -988,6 +989,50 @@ class ConnectionService {
         return Ok(undefined);
     }
 
+    public async refreshAppCredentials(
+        provider: Provider,
+        config: ProviderConfig,
+        connection: DBConnectionDecrypted,
+        logCtx: LogContextStateless
+    ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
+        const [userResult, appResult] = await Promise.all([
+            getFreshOAuth2Credentials({
+                connection,
+                config,
+                provider: provider as ProviderOAuth2,
+                logCtx
+            }),
+            githubAppClient.createCredentials({
+                integration: config,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            })
+        ]);
+
+        if (!appResult.isOk()) {
+            return Err(new NangoError('github_app_token_fetch_error'));
+        }
+
+        if (!userResult.success || !userResult.response) {
+            const credentials: CombinedOauth2AppCredentials = {
+                type: 'CUSTOM',
+                user: null,
+                app: appResult.value,
+                raw: appResult.value
+            };
+            return Ok(credentials);
+        }
+
+        const credentials: CombinedOauth2AppCredentials = {
+            type: 'CUSTOM',
+            user: userResult.response,
+            app: appResult.value,
+            raw: appResult.value
+        };
+
+        return Ok(credentials);
+    }
+
     public async getOauthClientCredentials({
         provider,
         client_id,
@@ -1284,6 +1329,7 @@ class ConnectionService {
             | BillCredentials
             | TwoStepCredentials
             | SignatureCredentials
+            | CombinedOauth2AppCredentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1338,11 +1384,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await githubAppClient.createCredentials({
-                integration: providerConfig,
-                provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
-            });
+            const create = await this.refreshAppCredentials(provider, providerConfig, connection, logCtx);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }

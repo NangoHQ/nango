@@ -100,7 +100,11 @@ export interface OAuth2Credentials extends CredentialsCommon {
         client_secret?: string;
     };
 }
-
+export interface CombinedOauth2AppCredentials extends CredentialsCommon {
+    type: 'CUSTOM';
+    app: AppCredentials;
+    user: OAuth2Credentials | null;
+}
 export interface OAuth2ClientCredentials extends CredentialsCommon {
     type: 'OAUTH2_CC';
     token: string;
