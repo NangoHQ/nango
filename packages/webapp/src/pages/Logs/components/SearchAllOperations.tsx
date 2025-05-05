@@ -23,9 +23,9 @@ import { getPresetRange, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
 
+import type { DateRange } from '../../../utils/logs';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-import type { DateRange } from 'react-day-picker';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
@@ -99,7 +99,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
             // We do it only at query time so the URL stays the same
             if (isLive) {
                 const tmp = slidePeriod({ from: period[0], to: period[1] });
-                periodCopy = { from: tmp.from!.toISOString(), to: tmp.to!.toISOString() };
+                periodCopy = { from: tmp.from.toISOString(), to: tmp.to!.toISOString() };
             } else {
                 periodCopy = { from: new Date(period[0]).toISOString(), to: new Date(period[1]).toISOString() };
             }
