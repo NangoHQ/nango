@@ -85,3 +85,10 @@ export function redactURL({ url, valuesToFilter }: { url: string; valuesToFilter
         return curr.replace(value, 'REDACTED');
     }, url);
 }
+
+export function redactObjectOrString<TData extends string | Record<string, any>>({ data, valuesToFilter }: { data: TData; valuesToFilter: string[] }): TData {
+    if (typeof data !== 'string') {
+        return JSON.parse(redactURL({ url: JSON.stringify(data), valuesToFilter })) as TData;
+    }
+    return redactURL({ url: data, valuesToFilter }) as TData;
+}

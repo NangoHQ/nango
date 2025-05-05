@@ -1,0 +1,52 @@
+---
+title: Namely (PAT)
+sidebarTitle: Namely (PAT)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/namely-pat/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/namely-pat/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Required | You must have an active Namely account with API access. Self-service signup is not available. Contact [Namely](https://namely.com/lp/request-a-call/) if you need access. |
+| Paid test account | ✅ Required | You must use a real Namely account for testing. There is no free test account option. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/namely-pat.mdx)</Note>
+
+
+## Useful links
+
+-   [API docs](https://developers.namely-pat.com/docs/namely-pat-api/72f9086e4f0e7-introduction#introduction)
+-   [PAT authentication docs](https://developers.namely-pat.com/docs/namely-pat-api/ZG9jOjE1NTkwMDU5-authentication#personal-access-tokens-pats)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/namely-pat.mdx)</Note>
+
+## API gotchas
+
+-   PATs have an expiration time of 2 years.
+-   Namely API limits GET `/profiles` to 100 requests per minute, returning HTTP 406 if exceeded.
+-   Namely (PAT) uses API_KEY auth mode with `authorization: Bearer API_KEY` in the request header to access different endpoints.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/namely-pat.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Namely (PAT)" icon="link" href="/integrations/all/namely-pat/connect" horizontal>
+  Guide to connect to Namely (PAT) using Connect UI
+</Card>

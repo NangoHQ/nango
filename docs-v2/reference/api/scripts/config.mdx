@@ -3,3 +3,126 @@ title: 'Get integration scripts config'
 openapi: 'GET /scripts/config'
 ---
 
+The `/scripts/config` endpoint returns the configuration for all integration scripts. There are two variants of this endpoint:
+
+1. `/scripts/config?format=nango` - Returns the standard configuration format
+2. `/scripts/config?format=openai` - Returns the configuration in OpenAI's function calling format
+
+## OpenAI Function Format
+
+The `/scripts/config?format=openai` endpoint transforms the script configurations into OpenAI's function calling format. This format is particularly useful when working with OpenAI's API to enable function calling capabilities.
+
+### Parameter Descriptions
+
+The endpoint automatically parses parameter descriptions from the script's description field. If a script's description contains a markdown list of parameters, these descriptions will be used for the corresponding parameters in the OpenAI function format.
+
+For example, in your `nango.yaml` file, you can define a script like this:
+
+```yaml
+integrations:
+  google-calendar:
+    actions:
+      move-event:
+        description: |
+          Move an event to a different time or calendar with the following parameters:
+          - eventId: The ID of the event to move
+          - start: New start time in ISO format (e.g., "2024-03-28T14:00:00")
+          - end: New end time in ISO format (e.g., "2024-03-28T15:00:00")
+          - calendar: Optional new calendar ID to move the event to
+        input: MoveEventInput # References the model defined below
+        scopes: https://www.googleapis.com/auth/calendar
+
+models:
+  MoveEventInput:
+    eventId: string
+    start: string
+    end: string
+    calendar?: string # Optional field
+```
+
+The endpoint will generate a function definition like this:
+
+```json
+{
+    "data": [
+        {
+            "name": "move-event",
+            "description": "Move an event to a different time or calendar with the following parameters:\n- eventId: The ID of the event to move\n- start: New start time in ISO format (e.g., \"2024-03-28T14:00:00\")\n- end: New end time in ISO format (e.g., \"2024-03-28T15:00:00\")\n- calendar: Optional new calendar ID to move the event to",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "eventId": {
+                        "type": "string",
+                        "description": "The ID of the event to move"
+                    },
+                    "start": {
+                        "type": "string",
+                        "description": "New start time in ISO format (e.g., \"2024-03-28T14:00:00\")"
+                    },
+                    "end": {
+                        "type": "string",
+                        "description": "New end time in ISO format (e.g., \"2024-03-28T15:00:00\")"
+                    },
+                    "calendar": {
+                        "type": "string",
+                        "description": "Optional new calendar ID to move the event to"
+                    }
+                },
+                "required": ["eventId", "start", "end"]
+            }
+        }
+    ]
+}
+```
+
+### Array Fields
+
+The endpoint properly handles array fields in the configuration. For example, if a field is defined as:
+
+```yaml
+integrations:
+  google-calendar:
+    actions:
+      create-event:
+        description: |
+          Create a new calendar event with the following parameters:
+          - summary: The title of the event
+          - attendees: List of email addresses of event attendees
+        input: CreateEventInput # References the model defined below
+        scopes: https://www.googleapis.com/auth/calendar
+
+models:
+  CreateEventInput:
+    summary: string
+    attendees?: string[] # Optional array field
+```
+
+It will be transformed into:
+
+```json
+{
+    "data": [
+        {
+            "name": "create-event",
+            "description": "Create a new calendar event with the following parameters:\n- summary: The title of the event\n- attendees: List of email addresses of event attendees",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "string",
+                        "description": "The title of the event"
+                    },
+                    "attendees": {
+                        "type": "array",
+                        "description": "List of email addresses of event attendees",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["summary"]
+            }
+        }
+    ]
+}
+```

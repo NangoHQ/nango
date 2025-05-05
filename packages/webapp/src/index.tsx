@@ -1,15 +1,19 @@
-import { SentryErrorBoundary } from './utils/sentry';
-
-import { globalEnv } from './utils/env';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
+import posthog from 'posthog-js';
+import { PostHogProvider } from 'posthog-js/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
-import { PostHogProvider } from 'posthog-js/react';
+
+import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import posthog from 'posthog-js';
+import reportWebVitals from './reportWebVitals';
+import { queryClient } from './store';
+import { globalEnv } from './utils/env';
+import { SentryErrorBoundary } from './utils/sentry';
+
+import './index.css';
 
 if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
@@ -27,7 +31,11 @@ root.render(
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
             <PostHogProvider client={posthog}>
                 <BrowserRouter>
-                    <App />
+                    <NuqsAdapter>
+                        <QueryClientProvider client={queryClient}>
+                            <App />
+                        </QueryClientProvider>
+                    </NuqsAdapter>
                 </BrowserRouter>
             </PostHogProvider>
         </SentryErrorBoundary>

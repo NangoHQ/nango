@@ -24,9 +24,6 @@
             "path": "../frontend"
         },
         {
-            "path": "../server"
-        },
-        {
             "path": "../types"
         }
     ],

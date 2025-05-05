@@ -6,10 +6,8 @@ import * as uuid from 'uuid';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     environmentService,
@@ -21,6 +19,7 @@ import {
     interpolateObjectValues,
     interpolateStringFromObject,
     linkConnection,
+    makeUrl,
     oauth2Client,
     providerClientManager
 } from '@nangohq/shared';
@@ -46,13 +45,12 @@ import type { ConnectSessionAndEndUser } from '../services/connectSession.servic
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
-import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderCustom, ProviderGithubApp, ProviderOAuth2 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
         const { account, environment, connectSession } = res.locals;
-        const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
@@ -71,7 +69,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                    ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -80,9 +78,6 @@ class OAuthController {
                           },
                           { account, environment }
                       );
-            if (!wsClientId) {
-                void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
-            }
 
             const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -285,7 +280,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -313,7 +308,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                    ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -322,7 +317,6 @@ class OAuthController {
                           },
                           { account, environment }
                       );
-            void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -372,16 +366,24 @@ class OAuthController {
                 return;
             }
 
-            // Reconnect mechanism
-            if (isConnectSession && connectSession.connectionId) {
-                const connection = await connectionService.getConnectionById(connectSession.connectionId);
-                if (!connection) {
-                    void logCtx.error('Invalid connection');
-                    await logCtx.failed();
-                    res.status(400).send({ error: { code: 'invalid_connection' } });
-                    return;
+            if (isConnectSession) {
+                const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
+
+                // Reconnect mechanism
+                if (connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(connectSession.connectionId);
+                    if (!connection) {
+                        void logCtx.error('Invalid connection');
+                        await logCtx.failed();
+                        res.status(400).send({ error: { code: 'invalid_connection' } });
+                        return;
+                    }
+                    connectionId = connection?.connection_id;
                 }
-                connectionId = connection?.connection_id;
+
+                if (defaults?.authorization_params) {
+                    connectionConfig['authorization_params'] = defaults.authorization_params;
+                }
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -399,7 +401,13 @@ class OAuthController {
                 success,
                 error,
                 response: credentials
-            } = await connectionService.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connectionConfig);
+            } = await connectionService.getOauthClientCredentials({
+                provider: provider as ProviderOAuth2,
+                client_id,
+                client_secret,
+                connectionConfig,
+                logCtx
+            });
 
             if (!success || !credentials) {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
@@ -413,11 +421,9 @@ class OAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: config.provider,
                 parsedRawCredentials: credentials,
                 connectionConfig,
-                environmentId: environment.id,
-                accountId: account.id
+                environmentId: environment.id
             });
             if (!updatedConnection) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
@@ -807,13 +813,23 @@ class OAuthController {
             await oAuthSessionService.delete(state as string);
         }
 
-        let logCtx = await logContextGetter.get({ id: session.activityLogId });
+        let logCtx: LogContext | undefined;
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
         try {
+            const environment = await environmentService.getById(session.environmentId);
+            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
+            if (!environment || !account) {
+                const error = WSErrBuilder.EnvironmentOrAccountNotFound();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
+            }
+
+            logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
+
             void logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
             const provider = getProvider(session.provider);
@@ -827,20 +843,6 @@ class OAuthController {
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
-
-            const environment = await environmentService.getById(session.environmentId);
-            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
-
-            if (!environment || !account) {
-                const error = WSErrBuilder.EnvironmentOrAccountNotFound();
-                void logCtx.error(error.message);
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
@@ -861,8 +863,8 @@ class OAuthController {
 
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH, environmentId: session.environmentId });
 
-            void logCtx.error('Unknown error', { error: err, url: req.originalUrl });
-            await logCtx.failed();
+            void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
+            await logCtx?.failed();
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
 
@@ -871,7 +873,7 @@ class OAuthController {
     }
 
     private async oauth2Callback(
-        provider: ProviderOAuth2,
+        provider: ProviderOAuth2 | ProviderCustom,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,
@@ -984,8 +986,16 @@ class OAuthController {
 
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
+            const interpolatedTokenUrl = makeUrl(tokenUrl, session.connectionConfig, provider.token_url_skip_encode);
+
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, tokenUrl, authorizationCode, session.callbackUrl, session.codeVerifier);
+                rawCredentials = await providerClientManager.getToken(
+                    config,
+                    interpolatedTokenUrl.href,
+                    authorizationCode,
+                    session.callbackUrl,
+                    session.codeVerifier
+                );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
@@ -1110,11 +1120,9 @@ class OAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: session.provider,
                 parsedRawCredentials,
                 connectionConfig,
-                environmentId: session.environmentId,
-                accountId: account.id
+                environmentId: session.environmentId
             });
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
@@ -1189,7 +1197,20 @@ class OAuthController {
                         { initiateSync: true, runPostConnectionScript: false }
                     );
                 };
-                await connectionService.getAppCredentialsAndFinishConnection(connectionId, config, provider, connectionConfig, logCtx, connCreatedHook);
+                const createRes = await connectionService.getAppCredentialsAndFinishConnection(
+                    connectionId,
+                    config,
+                    provider as unknown as ProviderGithubApp,
+                    connectionConfig,
+                    logCtx,
+                    connCreatedHook
+                );
+                if (createRes.isErr()) {
+                    void logCtx.error('Failed to create credentials');
+                    await logCtx.failed();
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
+                    return;
+                }
             }
 
             await logCtx.success();
@@ -1301,11 +1322,9 @@ class OAuthController {
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
-                    provider: session.provider,
                     parsedRawCredentials: parsedAccessTokenResult,
                     connectionConfig,
-                    environmentId: environment.id,
-                    accountId: account.id
+                    environmentId: environment.id
                 });
                 if (!updatedConnection) {
                     void logCtx.error('Failed to create connection');

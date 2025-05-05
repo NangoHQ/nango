@@ -1,37 +1,40 @@
+import tracer from 'dd-trace';
 import ms from 'ms';
-import type { StringValue } from 'ms';
-import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
-import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import { NangoError, deserializeNangoError } from '../utils/error.js';
 import { v4 as uuid } from 'uuid';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import type { Config as ProviderConfig } from '../models/Provider.js';
+
+import { OtlpSpan } from '@nangohq/logs';
+import { Err, Ok, errorToObject, metrics, stringifyError } from '@nangohq/utils';
+
 import { LogActionEnum } from '../models/Telemetry.js';
+import { SyncCommand, SyncStatus } from '../models/index.js';
+import environmentService from '../services/environment.service.js';
+import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
+import { clearLastSyncDate } from '../services/sync/sync.service.js';
+import { NangoError, deserializeNangoError } from '../utils/error.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+
+import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { NangoIntegrationData, Sync } from '../models/index.js';
+import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
-    ExecuteReturn,
     ExecuteActionProps,
-    ExecuteWebhookProps,
     ExecuteOnEventProps,
+    ExecuteReturn,
     ExecuteSyncProps,
-    VoidReturn,
+    ExecuteWebhookProps,
+    OrchestratorSchedule,
     OrchestratorTask,
     RecurringProps,
     SchedulesReturn,
-    OrchestratorSchedule,
-    TaskType
+    TaskType,
+    VoidReturn
 } from '@nangohq/nango-orchestrator';
-import type { NangoIntegrationData, Sync } from '../models/index.js';
-import { SyncCommand, SyncStatus } from '../models/index.js';
-import tracer from 'dd-trace';
-import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
-import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
-import environmentService from '../services/environment.service.js';
-import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
+import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { StringValue } from 'ms';
 import type { JsonValue } from 'type-fest';
-import { OtlpSpan } from '@nangohq/logs';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({
@@ -52,7 +55,7 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
-    executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn>;
+    executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
@@ -113,6 +116,7 @@ export class Orchestrator {
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'action.name': actionName,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -212,7 +216,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -300,15 +304,12 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            void logCtx.info('The webhook was successfully run', {
+            void logCtx.info('The webhook was successfully scheduled for immediate execution', {
                 action: webhookName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
 
-            await logCtx.success();
-
-            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -339,7 +340,6 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
@@ -353,6 +353,7 @@ export class Orchestrator {
         version,
         name,
         fileLocation,
+        async,
         logCtx
     }: {
         accountId: number;
@@ -360,10 +361,12 @@ export class Orchestrator {
         version: string;
         name: string;
         fileLocation: string;
+        async: boolean;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'onEventScript.name': name,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -393,7 +396,8 @@ export class Orchestrator {
             const result = await this.client.executeOnEvent({
                 name: executionId,
                 groupKey,
-                args
+                args,
+                async
             });
 
             const res = result.mapError((err) => {
@@ -451,7 +455,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -507,6 +511,7 @@ export class Orchestrator {
     async runSyncCommand({
         connectionId,
         syncId,
+        syncVariant,
         command,
         environmentId,
         logCtx,
@@ -516,12 +521,13 @@ export class Orchestrator {
     }: {
         connectionId: number;
         syncId: string;
+        syncVariant: string;
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
-        delete_records?: boolean;
+        delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
@@ -556,7 +562,10 @@ export class Orchestrator {
                     await clearLastSyncDate(syncId);
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
-                        for (const model of syncConfig?.models || []) {
+                        for (let model of syncConfig?.models || []) {
+                            if (syncVariant !== 'base') {
+                                model = `${model}::${syncVariant}`;
+                            }
                             const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
                             void logCtx.info(`Records for model ${model} were deleted successfully`, del);
                         }

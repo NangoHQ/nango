@@ -8,7 +8,8 @@ export type AuthErrorType =
     | 'request_error'
     | 'missing_ws_client_id'
     | 'connection_test_failed'
-    | 'missing_connect_session_token';
+    | 'missing_connect_session_token'
+    | 'resource_capped';
 
 export interface AuthResult {
     providerConfigKey: string;
@@ -75,14 +76,8 @@ export interface TableauCredentials {
 }
 
 export interface JwtCredentials {
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    type?: 'JWT';
+    [key: string]: any;
 }
 
 export interface OAuth2ClientCredentials {
@@ -105,13 +100,6 @@ export interface SignatureCredentials {
     type: 'SIGNATURE';
     username: string;
     password: string;
-}
-
-export enum AuthorizationStatus {
-    IDLE,
-    BUSY,
-    CANCELED,
-    DONE
 }
 
 export const enum WSMessageType {

@@ -1,17 +1,20 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PatchIntegration } from '@nangohq/types';
-import { configService, connectionService } from '@nangohq/shared';
 import { z } from 'zod';
 
-import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { configService, connectionService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationParams } from './getIntegration.js';
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { PatchIntegration } from '@nangohq/types';
 
 const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 const validationBody = z
     .object({
         integrationId: providerConfigKeySchema.optional(),
-        webhookSecret: z.string().min(0).max(255).optional()
+        webhookSecret: z.string().min(0).max(255).optional(),
+        displayName: z.string().min(1).max(255).optional()
     })
     .strict()
     .or(
@@ -83,7 +86,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
-    // Rename
+    // Integration ID
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
         if (exists && exists !== integration.id) {
@@ -98,6 +101,11 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         integration.unique_key = body.integrationId;
+    }
+
+    // Custom display name
+    if ('displayName' in body && body.displayName) {
+        integration.display_name = body.displayName;
     }
 
     // Credentials

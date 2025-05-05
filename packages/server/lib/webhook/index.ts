@@ -10,4 +10,5 @@ export { default as microsoftTeamsWebhookRouting } from './microsoft-teams-webho
 export { default as unauthenticatedWebhookRouting } from './unauthenticated-webhook-routing.js';
 export { default as airtableWebhookRouting } from './airtable-webhook-routing.js';
 export { default as calendlyWebhookRouting } from './calendly-webhook-routing.js';
+export { default as xeroWebhookRouting } from './xero-webhook-routing.js';
 export type * from './types.js';

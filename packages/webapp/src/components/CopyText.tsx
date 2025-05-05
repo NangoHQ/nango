@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import type { ClassValue } from 'clsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/Tooltip';
 import { IconCopy } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/Tooltip';
 import { cn } from '../utils/utils';
+
+import type { ClassValue } from 'clsx';
 
 export const CopyText: React.FC<{ text: string; showOnHover?: boolean; className?: ClassValue }> = ({ text, showOnHover, className }) => {
     const [tooltipText, setTooltipText] = useState('Copy');
@@ -43,7 +45,7 @@ export const CopyText: React.FC<{ text: string; showOnHover?: boolean; className
                     ref={triggerRef}
                 >
                     <div className="truncate">{text}</div>
-                    <div className={cn('text-xs text-white', showOnHover && 'transition-opacity opacity-0 group-hover:opacity-100')}>
+                    <div className={cn('text-xs text-white', showOnHover && 'transition-opacity opacity-0 group-hover:opacity-100 group-focus:opacity-100')}>
                         <IconCopy stroke={1} size={15} />
                     </div>
                 </button>

@@ -6,6 +6,7 @@ import { startSync, abortSync } from '../execution/sync.js';
 import { startAction } from '../execution/action.js';
 import { startWebhook } from '../execution/webhook.js';
 import { startOnEvent } from '../execution/onEvent.js';
+import { abortTask } from '../execution/operations/abort.js';
 
 export async function handler(task: OrchestratorTask): Promise<Result<void>> {
     if (task.isSync()) {
@@ -44,6 +45,14 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
         const span = tracer.startSpan('jobs.handler.onEvent');
         return await tracer.scope().activate(span, async () => {
             const res = startOnEvent(task);
+            span.finish();
+            return res;
+        });
+    }
+    if (task.isAbort()) {
+        const span = tracer.startSpan('jobs.handler.abort');
+        return await tracer.scope().activate(span, async () => {
+            const res = await abortTask(task);
             span.finish();
             return res;
         });

@@ -1,12 +1,14 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
-import * as nodes from './nodes.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import * as deployments from './deployments.js';
-import { nodeStates } from '../types.js';
-import type { NodeState } from '../types.js';
-import type { Deployment } from '@nangohq/types';
-import { getTestDbClient } from '../db/helpers.test.js';
 import { generateImage } from './helpers.js';
 import { createNodeWithAttributes } from './helpers.test.js';
+import * as nodes from './nodes.js';
+import { getTestDbClient } from '../db/helpers.test.js';
+import { nodeStates } from '../types.js';
+
+import type { NodeState } from '../types.js';
+import type { Deployment } from '@nangohq/types';
 
 describe('Nodes', () => {
     const dbClient = getTestDbClient('nodes');

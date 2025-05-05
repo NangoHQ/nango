@@ -1,7 +1,7 @@
 ---
 title: 'Build a custom integration'
 sidebarTitle: 'Build a custom integration'
-description: 'Guide on how build a custom integration in Nango.'
+description: 'Guide on how to build a custom integration in Nango.'
 ---
 
 # Set up the Nango CLI and integration folder
@@ -64,7 +64,10 @@ integrations:
                     Syncs contacts based on a field mapping object.
                 runs: every day # Sync frequency
                 output: Contact # Output model
-                endpoint: GET /crm/contact # Unified Nango endpoint
+                endpoint:
+                    method: GET
+                    path: /crm/contact # Unified Nango endpoint
+                    group: Contacts
                 scopes: offline_access,api # Necessary scopes
 
 models:
@@ -91,7 +94,10 @@ integrations:
             salesforce-contact-fields: # Action name (must match integration script name)
                 description: Fetch available contact fields
                 output: ContactSchema # Output model
-                endpoint: POST /crm/contact-field # Unified Nango endpoint
+                endpoint:
+                    method: POST
+                    path: /crm/contact-field # Unified Nango endpoint
+                    group: Contacts
                 scopes: offline_access,api # Necessary scopes
 
 models:
