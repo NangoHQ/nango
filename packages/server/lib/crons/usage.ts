@@ -88,7 +88,10 @@ const billing = {
                     return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
                 });
 
-                await usageBilling.sendAll(events);
+                const sendRes = await usageBilling.sendAll(events);
+                if (sendRes.isErr()) {
+                    throw sendRes.error;
+                }
             } catch (err) {
                 span.setTag('error', err);
                 report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
