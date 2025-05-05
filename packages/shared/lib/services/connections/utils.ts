@@ -13,9 +13,6 @@ export function getExpiresAtFromCredentials(credentials: AllAuthCredentials): Da
         const appExpiresAt = credentials.app?.expires_at ? new Date(credentials.app.expires_at) : null;
 
         const userExpiresAt = credentials.user?.expires_at ? new Date(credentials.user.expires_at) : null;
-        console.log('this is the app expirationa', appExpiresAt);
-        console.log('this is the user expirations', userExpiresAt);
-
         if (appExpiresAt && userExpiresAt) {
             return appExpiresAt < userExpiresAt ? appExpiresAt : userExpiresAt;
         }
