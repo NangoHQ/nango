@@ -116,7 +116,7 @@ describe('Supervisor', () => {
     });
     it('should mark nodes with resource override as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
-        await nodeConfigOverrides.create(dbClient.db, {
+        await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
             image: node.image,
             cpuMilli: 10000,
@@ -147,7 +147,7 @@ describe('Supervisor', () => {
     it('should mark nodes with image override as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
         const imageOverride = `${mockNodeProvider.defaultNodeConfig.image}:12345`;
-        await nodeConfigOverrides.create(dbClient.db, {
+        await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
             image: imageOverride,
             cpuMilli: node.cpuMilli,

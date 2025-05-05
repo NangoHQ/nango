@@ -1,11 +1,13 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
-import { Fleet } from './fleet.js';
-import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
-import { generateImage } from './models/helpers.js';
-import { noopNodeProvider } from './node-providers/noop.js';
-import * as nodeConfigOverrides from './models/node_config_overrides.js';
-import { createNodeWithAttributes } from './models/helpers.test.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { nanoid } from '@nangohq/utils';
+
+import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
+import { Fleet } from './fleet.js';
+import { generateImage } from './models/helpers.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import { noopNodeProvider } from './node-providers/noop.js';
 
 describe('fleet', () => {
     const fleetId = 'nango_runners';
@@ -42,7 +44,7 @@ describe('fleet', () => {
                 memoryMb: 100,
                 storageMb: 100
             };
-            await nodeConfigOverrides.create(dbClient.db, props);
+            await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
             await fleet.rollout(image, { verifyImage: false });
             const nodeConfigOverride = (await nodeConfigOverrides.search(dbClient.db, { routingIds: [props.routingId] })).unwrap();
@@ -88,6 +90,108 @@ describe('fleet', () => {
             });
             const res = await fleet.getRunningNode(routingId);
             expect(res.unwrap()).toStrictEqual(outdatedNode);
+        });
+    });
+
+    describe('overrideNodeConfig', () => {
+        it('should create node config override if it does not already exist', async () => {
+            const props = {
+                routingId: 'test',
+                image: 'my-image-override',
+                cpuMilli: 1000,
+                memoryMb: 100,
+                storageMb: 100
+            };
+            const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
+            expect(nodeConfigOverride).toStrictEqual({
+                id: expect.any(Number),
+                routingId: props.routingId,
+                image: props.image,
+                cpuMilli: props.cpuMilli,
+                memoryMb: props.memoryMb,
+                storageMb: props.storageMb,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            });
+        });
+        it('should update node config override if it already exists', async () => {
+            const props = {
+                routingId: 'test',
+                image: 'my-image-override',
+                cpuMilli: 1000,
+                memoryMb: 100,
+                storageMb: 100
+            };
+            await fleet.overrideNodeConfig(props);
+            const updatedProps = {
+                ...props,
+                image: 'my-new-image-override',
+                cpuMilli: 2000,
+                memoryMb: 2000,
+                storageMb: 2000
+            };
+            const nodeConfigOverride = (await fleet.overrideNodeConfig(updatedProps)).unwrap();
+            expect(nodeConfigOverride).toStrictEqual({
+                id: expect.any(Number),
+                routingId: updatedProps.routingId,
+                image: updatedProps.image,
+                cpuMilli: updatedProps.cpuMilli,
+                memoryMb: updatedProps.memoryMb,
+                storageMb: updatedProps.storageMb,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            });
+        });
+        it('should remove node config override if it is set to default', async () => {
+            const props = {
+                routingId: 'test',
+                image: null,
+                cpuMilli: 1000,
+                memoryMb: 100,
+                storageMb: 100
+            };
+            await fleet.overrideNodeConfig(props);
+
+            const defaultProps = {
+                routingId: props.routingId,
+                image: null,
+                ...noopNodeProvider.defaultNodeConfig
+            };
+            await fleet.overrideNodeConfig(defaultProps);
+
+            const after = await nodeConfigOverrides.get(dbClient.db, props.routingId);
+            expect(after.isErr() && after.error.message).toBe('node_config_override_not_found');
+        });
+        it('should not remove config override if image is being set', async () => {
+            const props = {
+                routingId: 'test',
+                image: 'my-image-override',
+                cpuMilli: 1000,
+                memoryMb: 100,
+                storageMb: 100
+            };
+            await fleet.overrideNodeConfig(props);
+
+            const defaultProps = {
+                routingId: props.routingId,
+                image: props.image,
+                cpuMilli: null,
+                memoryMb: null,
+                storageMb: null
+            };
+            await fleet.overrideNodeConfig(defaultProps);
+
+            const after = (await nodeConfigOverrides.get(dbClient.db, props.routingId)).unwrap();
+            expect(after).toStrictEqual({
+                id: expect.any(Number),
+                routingId: props.routingId,
+                image: props.image,
+                cpuMilli: null,
+                memoryMb: null,
+                storageMb: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            });
         });
     });
 });
