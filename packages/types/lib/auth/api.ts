@@ -189,7 +189,7 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 }
 
 export interface CombinedOauth2AppCredentials extends CredentialsCommon {
-    type: 'CUSTOM';
+    type: AuthModes['Custom'];
     app: AppCredentials;
     user: OAuth2Credentials | null;
 }

@@ -425,7 +425,7 @@ async function refreshCredentialsIfNeeded({
         return Ok({
             connection: connectionToRefresh,
             refreshed: true,
-            credentials: newCredentials as unknown as RefreshableCredentials
+            credentials: newCredentials as RefreshableCredentials
         });
     } catch (err) {
         const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
