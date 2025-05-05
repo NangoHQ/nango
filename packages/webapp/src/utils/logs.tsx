@@ -107,11 +107,11 @@ export function matchPresetFromRange(range: DateRange): Preset | null {
     return null;
 }
 
-export function parseDateRange(input: string, dateTimeFormat: string): { dateRange: DateRange | null; error: string | null } {
+export function parseDateRange(input: string, dateTimeFormat: string, example: string): { dateRange: DateRange | null; error: string | null } {
     // Validate input format
     const dateFormatRegex = /^[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2} - [A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2}$/;
     if (!dateFormatRegex.test(input)) {
-        return { dateRange: null, error: 'Invalid format' };
+        return { dateRange: null, error: `Invalid format. Example: ${example}` };
     }
 
     const [from, to] = input.split('-').map((d) => d.trim());
@@ -122,7 +122,7 @@ export function parseDateRange(input: string, dateTimeFormat: string): { dateRan
     };
 
     if (isNaN(range.from.getTime()) || isNaN(range.to.getTime())) {
-        return { dateRange: null, error: 'Invalid date' };
+        return { dateRange: null, error: `Invalid date. Example: ${example}` };
     }
 
     if (range.from > range.to) {

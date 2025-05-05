@@ -62,7 +62,7 @@ export const DatePicker: React.FC<{
             return;
         }
 
-        const { dateRange, error } = parseDateRange(inputValue, dateTimeFormat);
+        const { dateRange, error } = parseDateRange(inputValue, dateTimeFormat, rangeInputExample);
         if (error || !dateRange) {
             setRangeInputErrorMessage(error || 'Invalid date');
             return;
