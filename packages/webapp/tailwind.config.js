@@ -68,6 +68,22 @@ export default {
                 // -----
                 // Design system v2
                 //
+                'grayscale-1': '#0D0D0D',
+                'grayscale-2': '#161616',
+                'grayscale-3': '#1C1C1C',
+                'grayscale-4': '#2A2A2A',
+                'grayscale-5': '#333333',
+                'grayscale-6': '#444444',
+                'grayscale-7': '#555555',
+                'grayscale-8': '#666666',
+                'grayscale-9': '#888888',
+                'grayscale-10': '#9FA2A9',
+                'grayscale-11': '#B3B7BF',
+                'grayscale-12': '#C7CCD5',
+                'grayscale-13': '#E4E9F2',
+                'grayscale-14': '#F8FAFE',
+
+                // Design system v2 - Outdated colors. Created separate ones above in order to not break existing styles. Delete after migration.
                 'grayscale-100': '#fafafa',
                 'grayscale-200': '#ececec',
                 'grayscale-300': '#d0d1d0',
