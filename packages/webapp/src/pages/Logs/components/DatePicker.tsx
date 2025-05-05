@@ -1,4 +1,3 @@
-import { CalendarIcon } from '@radix-ui/react-icons';
 import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
@@ -115,7 +114,7 @@ export const DatePicker: React.FC<{
                     size={'sm'}
                     className={cn('flex-grow truncate text-text-light-gray', period && selectedPreset?.name !== 'last24h' && 'text-white')}
                 >
-                    <CalendarIcon />
+                    <IconCalendar size={18} />
                     {display} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
@@ -131,7 +130,7 @@ export const DatePicker: React.FC<{
                             )}
                         >
                             <div className="w-12 flex-shrink-0 flex justify-center items-center h-full p-1 bg-grayscale-5 rounded-md font-medium">
-                                <IconCalendar className="w-[18px] h-[18px]" />
+                                <IconCalendar size={18} />
                             </div>
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
