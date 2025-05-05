@@ -17,8 +17,8 @@ import type { PlanDefinition } from '@nangohq/types';
 interface PlanDefinitionList {
     plan: PlanDefinition;
     active: boolean;
-    below?: boolean;
-    above?: boolean;
+    isDowngrade?: boolean;
+    isUpgrade?: boolean;
 }
 
 export const TeamBilling: React.FC = () => {
@@ -38,16 +38,16 @@ export const TeamBilling: React.FC = () => {
         }
 
         const list: PlanDefinitionList[] = [];
-        let passedActive = false;
+        let isAboveActive = false;
         for (const plan of plansList.data) {
             const same = plan.code === currentPlan.name;
             if (plan.hidden && !same) {
                 continue;
             }
 
-            list.push({ plan, active: same, below: !passedActive, above: passedActive });
+            list.push({ plan, active: same, isDowngrade: !isAboveActive, isUpgrade: isAboveActive });
             if (same) {
-                passedActive = true;
+                isAboveActive = true;
             }
         }
         return list;
