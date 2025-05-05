@@ -56,11 +56,12 @@ export class SchedulingChild extends SchedulerWorkerChild {
                     } else {
                         const tasksCreationSpan = tracer.startSpan('scheduler.scheduling.tasks_creation', { childOf: span });
                         await tracer.scope().activate(tasksCreationSpan, async () => {
+                            const now = new Date();
                             const createTasks = getDueSchedules.value.map((schedule) =>
                                 tasks.create(trx, {
                                     scheduleId: schedule.id,
-                                    startsAfter: new Date(),
-                                    name: `${schedule.name}:${new Date().toISOString()}`,
+                                    startsAfter: now,
+                                    name: `${schedule.name}:${now.toISOString()}`,
                                     payload: schedule.payload,
                                     groupKey: schedule.groupKey,
                                     retryCount: 0,

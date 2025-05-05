@@ -1,6 +1,5 @@
 import type { JsonValue } from 'type-fest';
 import type { TaskProps } from './models/tasks.js';
-import type { ScheduleProps } from './models/schedules.js';
 
 export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
@@ -27,8 +26,11 @@ export interface Task {
     readonly scheduleId: string | null;
 }
 
-export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'>;
-export type { ScheduleProps };
+interface WithGroupKeyMaxConcurrency {
+    groupKeyMaxConcurrency?: number | undefined;
+}
+export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'> & WithGroupKeyMaxConcurrency;
+export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> & WithGroupKeyMaxConcurrency;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
