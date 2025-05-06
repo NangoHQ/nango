@@ -1,7 +1,6 @@
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
-    getUsage: (subscriptionId: string) => Promise<BillingUsageMetric[]>;
-    getUsagePrevious: (subscriptionId: string) => Promise<BillingUsageMetric[]>;
+    getUsage: (subscriptionId: string, period?: 'previous') => Promise<BillingUsageMetric[]>;
 }
 
 export interface BillingUsageMetric {

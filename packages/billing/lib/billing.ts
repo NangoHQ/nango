@@ -36,12 +36,8 @@ export class Billing {
         return await this.ingest(mapped);
     }
 
-    async getUsage(subscriptionId: string): Promise<BillingUsageMetric[]> {
-        return await this.client.getUsage(subscriptionId);
-    }
-
-    async getUsagePrevious(subscriptionId: string): Promise<BillingUsageMetric[]> {
-        return await this.client.getUsagePrevious(subscriptionId);
+    async getUsage(subscriptionId: string, period?: 'previous'): Promise<BillingUsageMetric[]> {
+        return await this.client.getUsage(subscriptionId, period);
     }
 
     // Note: Events are sent immediately

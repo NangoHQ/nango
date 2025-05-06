@@ -11,7 +11,9 @@ const orbSDK = new Orb({
 
 export const orb: BillingClient = {
     ingest: async (events) => {
+        // Orb limit the number of events per batch to 500
         const batchSize = 500;
+
         for (let i = 0; i < events.length; i += batchSize) {
             const batch = events.slice(i, i + batchSize);
             await orbSDK.events.ingest({
@@ -20,28 +22,19 @@ export const orb: BillingClient = {
         }
     },
 
-    getUsage: async (subscriptionId) => {
-        const res = await orbSDK.subscriptions.fetchUsage(subscriptionId, {});
-        return res.data.map((item) => {
-            return {
-                id: item.billable_metric.id,
-                name: item.billable_metric.name,
-                quantity: item.usage[0]?.quantity || 0
-            };
-        });
-    },
+    getUsage: async (subscriptionId, period) => {
+        const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
+        if (period === 'previous') {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(now.getFullYear(), now.getMonth(), 0);
+            end.setHours(23, 59, 59, 999);
+            options.timeframe_start = start.toISOString();
+            options.timeframe_end = end.toISOString();
+        }
 
-    getUsagePrevious: async (subscriptionId) => {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(now.getFullYear(), now.getMonth(), 0);
-        end.setHours(23, 59, 59, 999);
-
-        const res = await orbSDK.subscriptions.fetchUsage(subscriptionId, {
-            timeframe_start: start.toISOString(),
-            timeframe_end: end.toISOString()
-        });
+        const res = await orbSDK.subscriptions.fetchUsage(subscriptionId, options);
         return res.data.map((item) => {
             return {
                 id: item.billable_metric.id,

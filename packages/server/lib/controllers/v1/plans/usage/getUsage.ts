@@ -13,7 +13,7 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
     }
 
     const current = await billing.getUsage('KKfQPdJ8KykU6aJF');
-    const previous = await billing.getUsagePrevious('KKfQPdJ8KykU6aJF');
+    const previous = await billing.getUsage('KKfQPdJ8KykU6aJF', 'previous');
 
     res.status(200).send({
         data: {

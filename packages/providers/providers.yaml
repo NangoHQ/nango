@@ -5245,6 +5245,65 @@ intuit:
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/intuit
 
+jamf:
+    display_name: Jamf Pro (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}.jamfcloud.com/api/v1/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.instance}.jamfcloud.com
+    scope_separator: ' '
+    docs: https://docs.nango.dev/integrations/all/jamf
+    connection_config:
+        instance:
+            type: string
+            title: Jamf Pro Instance
+            description: Your Jamf Pro instance
+            example: example
+            prefix: https://
+            suffix: .jamfcloud.com
+            order: 1
+
+jamf-basic:
+    display_name: Jamf Pro (Basic Auth)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://${connectionConfig.instance}.jamfcloud.com
+        headers:
+            authorization: Bearer ${accessToken}
+    token_url: https://${connectionConfig.instance}.jamfcloud.com/api/v1/auth/token
+    token_headers:
+        authorization: Basic ${base64(${credentials.username}:${credentials.password})}
+    token_response:
+        token: token
+        token_expiration: expires
+        token_expiration_strategy: expireAt
+    docs: https://docs.nango.dev/integrations/all/jamf-basic
+    connection_config:
+        instance:
+            type: string
+            title: Jamf Pro Instance
+            description: Your Jamf Pro instance
+            example: example
+            prefix: https://
+            suffix: .jamfcloud.com
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Jamf Pro username
+        password:
+            type: string
+            title: Password
+            description: Your Jamf Pro password
+            secret: true
+
 jira:
     display_name: Jira (OAuth)
     categories:
@@ -10056,7 +10115,7 @@ vercel:
         verification:
             method: GET
             endpoints:
-                - /v1/sessions
+                - /v2/user
     docs: https://docs.nango.dev/integrations/all/vercel
     docs_connect: https://docs.nango.dev/integrations/all/vercel
     credentials:
