@@ -1,8 +1,10 @@
-import type { NangoForwardWebhookBody, DBExternalWebhook, IntegrationConfig, DBTeam, DBEnvironment } from '@nangohq/types';
-import type { LogContextGetter } from '@nangohq/logs';
-import { deliver, shouldSend } from './utils.js';
-import { metrics } from '@nangohq/utils';
 import { OtlpSpan } from '@nangohq/logs';
+import { metrics } from '@nangohq/utils';
+
+import { deliver, shouldSend } from './utils.js';
+
+import type { LogContextGetter } from '@nangohq/logs';
+import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody } from '@nangohq/types';
 
 export const forwardWebhook = async ({
     integration,

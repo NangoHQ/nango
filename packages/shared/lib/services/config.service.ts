@@ -1,14 +1,15 @@
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import db from '@nangohq/database';
 import { isCloud, nanoid } from '@nangohq/utils';
-import { NangoError } from '../utils/error.js';
+
+import { getProvider } from './providers.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
 import syncManager from './sync/manager.service.js';
-import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
+import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { AuthModeType, DBConnection, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
-import { getProvider } from './providers.js';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -81,7 +82,9 @@ class ConfigService {
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
-
+        if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
+            configToInsert.oauth_scopes = provider.default_scopes.join(',');
+        }
         const res = await db.knex.from<IntegrationConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
@@ -120,12 +123,14 @@ class ConfigService {
         providerConfigKey: string;
         orchestrator: Orchestrator;
     }): Promise<boolean> {
+        // TODO: might be useless since we are dropping the data after a while
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 
         if (isCloud) {
             await deleteSyncFilesForConfig(id, environmentId);
         }
 
+        // TODO: might be useless since we are dropping the data after a while
         await deleteSyncConfigByConfigId(id);
 
         const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
@@ -133,6 +138,7 @@ class ConfigService {
             return false;
         }
 
+        // TODO: might be useless since we are dropping the data after a while
         await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({ provider_config_key: providerConfigKey, environment_id: environmentId, deleted: false })
@@ -199,6 +205,22 @@ class ConfigService {
         }
 
         return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
+    }
+
+    async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<IntegrationConfig[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .select('*')
+            .from<IntegrationConfig>(`_nango_configs`)
+            .where('deleted', true)
+            .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+    }
+
+    async hardDelete(id: number): Promise<void> {
+        await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id }).delete();
     }
 
     VALIDATION_RULES: ValidationRule[] = [

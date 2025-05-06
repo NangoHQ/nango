@@ -1,34 +1,34 @@
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import type React from 'react';
-import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 import { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import DashboardLayout from '../../layout/DashboardLayout';
-import { Info } from '../../components/Info';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { Button } from '../../components/ui/button/Button';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { Syncs } from './Syncs';
 import { Authorization } from './Authorization';
-import { connectSlack } from '../../utils/slack-connection';
-
-import { useStore } from '../../store';
-import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
-import { useLocalStorage } from 'react-use';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { useSyncs } from '../../hooks/useSyncs';
-import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { AvatarOrganization } from '../../components/AvatarCustom';
-import { IconTrash } from '@tabler/icons-react';
-import { useToast } from '../../hooks/useToast';
-import { clearIntegrationsCache } from '../../hooks/useIntegration';
+import { Syncs } from './Syncs';
 import { EndUserProfile } from './components/EndUserProfile';
+import { AvatarOrganization } from '../../components/AvatarCustom';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { Info } from '../../components/Info';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Button } from '../../components/ui/button/Button';
+import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
+import { useEnvironment } from '../../hooks/useEnvironment';
+import { clearIntegrationsCache } from '../../hooks/useIntegration';
+import { useSyncs } from '../../hooks/useSyncs';
+import { useToast } from '../../hooks/useToast';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
 import { getConnectionDisplayName } from '../../utils/endUser';
 import { globalEnv } from '../../utils/env';
+import { connectSlack } from '../../utils/slack-connection';
+
+import type React from 'react';
 
 export enum Tabs {
     Syncs,
@@ -103,7 +103,7 @@ export const ConnectionShow: React.FC = () => {
     const createSlackConnection = async () => {
         setSlackIsConnecting(true);
         if (!environmentAndAccount) return;
-        const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
+        const { uuid: accountUUID } = environmentAndAccount;
         const onFinish = () => {
             void environmentMutate();
             toast({ title: `Slack connection created!`, variant: 'success' });
@@ -114,7 +114,7 @@ export const ConnectionShow: React.FC = () => {
             toast({ title: `Failed to create Slack connection!`, variant: 'error' });
             setSlackIsConnecting(false);
         };
-        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
+        await connectSlack({ accountUUID, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
     };
 
     if (loading) {

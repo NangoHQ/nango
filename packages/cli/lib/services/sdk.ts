@@ -1,12 +1,14 @@
-import { Nango } from '@nangohq/node';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase, BASE_VARIANT } from '@nangohq/runner-sdk';
-import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { Metadata, NangoProps, UserLogParameters, GetPublicConnection } from '@nangohq/types';
 import { isAxiosError } from 'axios';
-import type { AxiosError, AxiosResponse } from 'axios';
-import type { DryRunService } from './dryrun.service';
 import chalk from 'chalk';
+
+import { Nango } from '@nangohq/node';
+import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+
+import type { DryRunService } from './dryrun.service';
+import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
+import type { ProxyConfiguration } from '@nangohq/runner-sdk';
+import type { GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
     info: 'info',
@@ -16,6 +18,12 @@ const logLevelToLogger = {
     http: 'info',
     verbose: 'debug',
     silly: 'debug'
+} as const;
+const logLevelToColor = {
+    info: 'white',
+    debug: 'gray',
+    error: 'red',
+    warn: 'yellow'
 } as const;
 
 export class NangoActionCLI extends NangoActionBase {
@@ -31,12 +39,16 @@ export class NangoActionCLI extends NangoActionBase {
         this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
-    public override proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (!config.method) {
             config.method = 'GET';
         }
 
-        return this.nango.proxy(config);
+        const res = await this.nango.proxy(config);
+        if (isAxiosError(res)) {
+            throw res;
+        }
+        return res;
     }
 
     public override log(...args: [...any]): void {
@@ -61,7 +73,7 @@ export class NangoActionCLI extends NangoActionBase {
         if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
             console[logLevel](args[0], { status: args[1]?.response?.code || 'xxx' });
         } else {
-            console[logLevel](...args);
+            console[logLevel](chalk[logLevelToColor[logLevel]](...args));
         }
     }
 
@@ -69,7 +81,7 @@ export class NangoActionCLI extends NangoActionBase {
         _providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        _fullResync?: boolean
+        _syncMode?: unknown
     ): Promise<void | string> {
         const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
         return this.dryRunService.run({
@@ -83,6 +95,22 @@ export class NangoActionCLI extends NangoActionBase {
     public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {
         this.log(`This has no effect but on a remote Nango instance would start a schedule`);
         return Promise.resolve();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseLock(_props: { key: string }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
     }
 }
 
@@ -117,6 +145,9 @@ export class NangoSyncCLI extends NangoSyncBase {
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
     startSync = NangoActionCLI['prototype']['startSync'];
+    tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
+    releaseLock = NangoActionCLI['prototype']['releaseLock'];
+    releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
@@ -124,7 +155,21 @@ export class NangoSyncCLI extends NangoSyncBase {
             return true;
         }
 
-        const resultsWithoutMetadata = this.removeMetadata(results);
+        // Deduplicate results first before removing metadata keeping order and last occurrence
+        const seenIds = new Set<string | number>();
+        const deduplicatedResults: (T & { id: string | number })[] = [];
+
+        for (let i = results.length - 1; i >= 0; i--) {
+            const record = results[i] as T & { id: string | number };
+            if (!seenIds.has(record.id)) {
+                seenIds.add(record.id);
+                deduplicatedResults.unshift(record);
+            } else {
+                console.warn(`batchSave detected duplicate records for ID: ${record.id}. Keeping the last occurrence.`);
+            }
+        }
+
+        const resultsWithoutMetadata = this.removeMetadata(deduplicatedResults);
 
         // Validate records
         const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
@@ -143,14 +188,14 @@ export class NangoSyncCLI extends NangoSyncBase {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
-            this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
+            this.logMessages.counts.added = Number(this.logMessages.counts.added) + deduplicatedResults.length;
         }
         const modelFullName = this.modelFullName(model);
         if (this.rawSaveOutput) {
             if (!this.rawSaveOutput.has(modelFullName)) {
                 this.rawSaveOutput.set(modelFullName, []);
             }
-            this.rawSaveOutput.get(modelFullName)?.push(...results);
+            this.rawSaveOutput.get(modelFullName)?.push(...deduplicatedResults);
         }
         return true;
     }

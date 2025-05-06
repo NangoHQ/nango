@@ -1,7 +1,8 @@
-import Knex from 'knex';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
+
+import Knex from 'knex';
 
 const SOURCE_DB_URL = process.env['SOURCE_DB_URL'] || '';
 const sourceKnex = Knex({

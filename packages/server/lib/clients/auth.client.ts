@@ -1,16 +1,18 @@
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { BasicStrategy } from 'passport-http';
-import express from 'express';
-import session from 'express-session';
-import path from 'path';
-import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
-import { database } from '@nangohq/database';
-import { dirname, userService } from '@nangohq/shared';
 import crypto from 'crypto';
 import util from 'util';
-import cookieParser from 'cookie-parser';
+
 import connectSessionKnex from 'connect-session-knex';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import passport from 'passport';
+import { BasicStrategy } from 'passport-http';
+import { Strategy as LocalStrategy } from 'passport-local';
+
+import { database } from '@nangohq/database';
+import { userService } from '@nangohq/shared';
+import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
+
+import type express from 'express';
 
 const KnexSessionStore = connectSessionKnex(session);
 
@@ -22,7 +24,6 @@ const sessionStore = new KnexSessionStore({
 
 export function setupAuth(app: express.Router) {
     app.use(cookieParser());
-    app.use(express.static(path.join(dirname(), 'public')));
 
     app.use(
         session({

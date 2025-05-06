@@ -17,28 +17,28 @@ export class Processor {
         try {
             const syncWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'sync',
+                groupKey: 'sync*',
                 maxConcurrency: 200
             });
             syncWorker.start();
 
             const actionWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'action',
+                groupKey: 'action*',
                 maxConcurrency: 200
             });
             actionWorker.start();
 
             const webhookWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'webhook',
+                groupKey: 'webhook*',
                 maxConcurrency: 50
             });
             webhookWorker.start();
 
             const onEventWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'on-event',
+                groupKey: 'on-event*',
                 maxConcurrency: 50
             });
             onEventWorker.start();

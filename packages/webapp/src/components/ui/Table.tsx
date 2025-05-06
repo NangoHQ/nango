@@ -1,6 +1,8 @@
-import type React from 'react';
 import { forwardRef } from 'react';
+
 import { cn } from '../../utils/utils';
+
+import type React from 'react';
 
 const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
     <table ref={ref} className={cn('w-full caption-bottom text-s border-separate border-spacing-0', className)} {...props} />
@@ -8,7 +10,7 @@ const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement
 Table.displayName = 'Table';
 
 const Header = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('text-grayscale-100 ', className)} {...props} />
+    <thead ref={ref} className={cn('text-grayscale-100', className)} {...props} />
 ));
 Header.displayName = 'Header';
 
@@ -74,4 +76,4 @@ const Empty: React.FC<{ children: React.ReactNode; colSpan?: number }> = ({ chil
     );
 };
 
-export { Table, Header, Body, Footer, Head, Row, Cell, Caption, Empty };
+export { Body, Caption, Cell, Empty, Footer, Head, Header, Row, Table };

@@ -93,6 +93,12 @@ export type PostSignin = Endpoint<{
     };
 }>;
 
+export type PostLogout = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/logout';
+    Success: never;
+}>;
+
 export type PostForgotPassword = Endpoint<{
     Method: 'PUT';
     Path: '/api/v1/account/forgot-password';

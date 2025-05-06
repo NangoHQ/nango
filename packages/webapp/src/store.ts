@@ -1,4 +1,8 @@
+import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
+
+import { PROD_ENVIRONMENT_NAME } from './constants';
+import storage, { LocalStorageKeys } from './utils/local-storage';
 
 interface Env {
     name: string;
@@ -6,8 +10,8 @@ interface Env {
 
 interface State {
     env: string;
-    baseUrl: string;
     envs: Env[];
+    baseUrl: string;
     showGettingStarted: boolean;
     debugMode: boolean;
     setEnv: (value: string) => void;
@@ -18,8 +22,8 @@ interface State {
 }
 
 export const useStore = create<State>((set, get) => ({
-    env: 'dev',
-    envs: [{ name: 'dev' }, { name: 'prod' }],
+    env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
+    envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
     baseUrl: 'https://api.nango.dev',
     showGettingStarted: true,
     debugMode: false,
@@ -48,3 +52,18 @@ export const useStore = create<State>((set, get) => ({
         set({ debugMode: value });
     }
 }));
+
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchInterval: 0,
+            refetchOnWindowFocus: false,
+            refetchOnMount: true,
+            staleTime: 30 * 1000,
+            retry: 0,
+            retryDelay: (attemptIndex) => {
+                return Math.min(2000 * 2 ** attemptIndex, 30000);
+            }
+        }
+    }
+});

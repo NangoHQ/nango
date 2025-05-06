@@ -53,12 +53,13 @@ try {
         EXPIRED: async (scheduler: Scheduler, task: Task) => {
             logger.error(`Task expired: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
-            await scheduleAbortTask({ scheduler, task });
+            const { reason } = task.output as unknown as { reason?: string };
+            await scheduleAbortTask({ scheduler, task, reason: `Execution expired: ${reason || 'unknown reason'}` });
         },
         CANCELLED: async (scheduler: Scheduler, task: Task) => {
             logger.info(`Task cancelled: ${stringifyTask(task)}`);
             metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
-            await scheduleAbortTask({ scheduler, task });
+            await scheduleAbortTask({ scheduler, task, reason: `Execution was cancelled` });
         }
     });
 
