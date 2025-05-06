@@ -44,8 +44,8 @@ _No setup guide yet._
 -   You can find scopes required for each API call in their corresponding API calls section. For example, to retrieve a list of datasets from My workspace, you can refer to the Required scope section of the [Get Datasets](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-datasets#required-scope) documentation. You also need to prepend the hostname to the scope, which in the get datasets example would be `https://analysis.windows.net/powerbi/api/Dataset.ReadWrite.All`. For more details, check [this resource out](https://community.fabric.microsoft.com/t5/Service/Azure-AD-App-Authentication-scope-doesn-t-exist-on-app-with/m-p/3074525/highlight/true#M188140).
 -   Please be aware that the Microsoft Power Bi implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Power Bi Throttling Guidance](https://learn.microsoft.com/en-us/rest/api/power-bi/#throttling).
 -   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
-    - Set the scopes to [`.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope) to ensure the permissions remain the same as those granted at the organization level.
+    - Override `authorization_params` by setting only `scope: '.default'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
+    - Set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
 
 ```typescript
 const { data } = await nango.createConnectSession({
@@ -53,8 +53,8 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "microsoft-power-bi": {
       authorization_params: {
-        response_type: 'code',
-        scope: '.default'
+        scope: '.default',
+        "prompt": ""
       }
     }
   }
