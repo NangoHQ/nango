@@ -52,9 +52,9 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "microsoft-entra-id": {
       authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
+        response_type: 'code',
+        scope: '.default'
+      }
     }
   }
 });

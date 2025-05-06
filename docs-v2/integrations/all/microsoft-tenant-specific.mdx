@@ -61,9 +61,9 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "microsoft-tenant-specific": {
       authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
+        response_type: 'code',
+        scope: '.default'
+      }
     }
   }
 });

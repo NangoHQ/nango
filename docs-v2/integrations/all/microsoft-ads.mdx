@@ -38,7 +38,7 @@ _No setup guide yet._
 
 ## API gotchas
 
--   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.  
+-   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.
     To engage with the Microsoft Advertising API, developers must initially retrieve the access token utilizing the [backend API](https://docs.nango.dev/reference/api/connection/get). This token should then be utilized with [official client libraries](https://learn.microsoft.com/en-us/advertising/guides/client-libraries?view=bingads-13) or a [SOAP Client](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-quick-start?view=bingads-13) for further interaction.
 -   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
     - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
@@ -59,9 +59,9 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "microsoft-ads": {
       authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
+        response_type: 'code',
+        scope: '.default'
+      }
     }
   }
 });
