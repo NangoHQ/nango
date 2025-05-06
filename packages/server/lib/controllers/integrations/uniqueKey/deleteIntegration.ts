@@ -1,23 +1,15 @@
-import { z } from 'zod';
-
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { validationParams } from './getIntegration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
-import type { DeletePublicIntegrationDeprecated } from '@nangohq/types';
+import type { DeletePublicIntegration } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
-export const validationParams = z
-    .object({
-        providerConfigKey: providerConfigKeySchema
-    })
-    .strict();
-
-export const deletePublicIntegrationDeprecated = asyncWrapper<DeletePublicIntegrationDeprecated>(async (req, res) => {
+export const deletePublicIntegration = asyncWrapper<DeletePublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -33,9 +25,9 @@ export const deletePublicIntegrationDeprecated = asyncWrapper<DeletePublicIntegr
     }
 
     const { environment } = res.locals;
-    const params: DeletePublicIntegrationDeprecated['Params'] = valParams.data;
+    const params: DeletePublicIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
+    const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;

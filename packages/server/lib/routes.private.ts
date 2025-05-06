@@ -64,6 +64,7 @@ import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
+import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -142,6 +143,7 @@ web.route('/account/admin/switch').post(webAuth, accountController.switchAccount
 
 web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
+web.route('/plans/usage').get(webAuth, getUsage);
 
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
