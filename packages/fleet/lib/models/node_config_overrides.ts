@@ -47,55 +47,44 @@ const DBNodeConfigOverride = {
     }
 };
 
-export async function create(
+export async function upsert(
     db: knex.Knex,
-    props: Omit<NodeConfigOverride, 'id' | 'createdAt' | 'updatedAt'>
+    props: Partial<Omit<NodeConfigOverride, 'createdAt' | 'updatedAt'>> & Required<Pick<NodeConfigOverride, 'routingId'>>
 ): Promise<Result<NodeConfigOverride, FleetError>> {
     try {
         const now = new Date();
-        const newNodeConfigOverride: Omit<DBNodeConfigOverride, 'id'> = {
+
+        const toInsert: Omit<DBNodeConfigOverride, 'id'> = {
             routing_id: props.routingId,
-            image: props.image,
-            cpu_milli: props.cpuMilli,
-            memory_mb: props.memoryMb,
-            storage_mb: props.storageMb,
+            image: props.image ?? null,
+            cpu_milli: props.cpuMilli ?? null,
+            memory_mb: props.memoryMb ?? null,
+            storage_mb: props.storageMb ?? null,
             created_at: now,
             updated_at: now
         };
-        const [created] = await db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).insert(newNodeConfigOverride).returning('*');
-        if (!created) {
-            return Err(new FleetError(`node_config_override_creation_failed`, { context: props }));
-        }
-        return Ok(DBNodeConfigOverride.from(created));
-    } catch (err) {
-        return Err(new FleetError('node_config_override_creation_failed', { cause: err, context: props }));
-    }
-}
 
-export async function update(
-    db: knex.Knex,
-    props: Partial<NodeConfigOverride> & Required<Pick<NodeConfigOverride, 'routingId'>>
-): Promise<Result<NodeConfigOverride, FleetError>> {
-    try {
-        const now = new Date();
-        const toUpdate: Partial<DBNodeConfigOverride> = {
-            ...(props.image ? { image: props.image } : {}),
-            ...(props.cpuMilli ? { cpu_milli: props.cpuMilli } : {}),
-            ...(props.memoryMb ? { memory_mb: props.memoryMb } : {}),
-            ...(props.storageMb ? { storage_mb: props.storageMb } : {}),
+        const toUpdateOnConflict: Partial<DBNodeConfigOverride> = {
+            ...(props.image !== undefined ? { image: props.image } : {}),
+            ...(props.cpuMilli !== undefined ? { cpu_milli: props.cpuMilli } : {}),
+            ...(props.memoryMb !== undefined ? { memory_mb: props.memoryMb } : {}),
+            ...(props.storageMb !== undefined ? { storage_mb: props.storageMb } : {}),
             updated_at: now
         };
-        const [updated] = await db
+
+        const [resultRow] = await db
             .from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE)
-            .update(toUpdate)
-            .where({ routing_id: props.routingId })
+            .insert(toInsert)
+            .onConflict('routing_id')
+            .merge(toUpdateOnConflict)
             .returning('*');
-        if (!updated) {
-            return Err(new FleetError('node_config_override_update_failed', { context: props }));
+
+        if (!resultRow) {
+            return Err(new FleetError('node_config_override_upsert_failed', { context: props }));
         }
-        return Ok(DBNodeConfigOverride.from(updated));
+        return Ok(DBNodeConfigOverride.from(resultRow));
     } catch (err) {
-        return Err(new FleetError('node_config_override_update_failed', { cause: err, context: props }));
+        return Err(new FleetError('node_config_override_upsert_failed', { cause: err, context: props }));
     }
 }
 
@@ -111,16 +100,32 @@ export async function remove(db: knex.Knex, routingId: RoutingId): Promise<Resul
     }
 }
 
+export async function get(db: knex.Knex, routingId: RoutingId): Promise<Result<NodeConfigOverride, FleetError>> {
+    try {
+        const nodeConfigOverride = await db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).select('*').where({ routing_id: routingId }).first();
+        if (!nodeConfigOverride) {
+            return Err(new FleetError('node_config_override_not_found', { context: { routingId } }));
+        }
+        return Ok(DBNodeConfigOverride.from(nodeConfigOverride));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_get_failed', { cause: err, context: { routingId } }));
+    }
+}
+
 export async function search(
     db: knex.Knex,
     params: {
         routingIds?: RoutingId[];
+        forUpdate?: boolean;
     }
 ): Promise<Result<Map<RoutingId, NodeConfigOverride>, FleetError>> {
     try {
         const query = db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).select('*');
         if (params.routingIds) {
             query.whereIn('routing_id', params.routingIds);
+        }
+        if (params.forUpdate) {
+            query.forUpdate();
         }
         const nodeConfigOverrides = await query;
         const nodeConfigOverridesMap = new Map<RoutingId, NodeConfigOverride>();
