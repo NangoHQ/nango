@@ -137,6 +137,10 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
     const endpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
     const [endpoint] = endpoints;
 
+    const modelList = Array.isArray(scriptConfig.output) ? scriptConfig.output : [scriptConfig.output];
+    const models = modelList.length > 0 ? modelList.map((model) => `\`${model}\``).join(', ') : '_None_';
+    const modelLabel = modelList.length > 1 ? 'Models' : 'Model';
+
     const generalInfo = [
         `## General Information`,
         ``,
@@ -144,7 +148,8 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
         `- **Version:** ${scriptConfig.version ? scriptConfig.version : '0.0.1'}`,
         `- **Group:** ${endpoint && typeof endpoint !== 'string' && 'group' in endpoint ? endpoint?.group : 'Others'}`,
         `- **Scopes:** ${scopes ? `\`${scopes}\`` : '_None_'}`,
-        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`
+        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`,
+        `- **${modelLabel}:** ${models}`
     ];
 
     if (isForIntegrationTemplates) {
