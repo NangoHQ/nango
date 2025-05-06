@@ -35,7 +35,7 @@ For APIs with stringent limits, Nango provides a more refined and customized app
 This is set up in the same way as the first strategy:
 
 ```ts
-await nango.get({ endpoint: '/some-endpoint', retries: 10 });
+await nango.get({ endpoint: '/some-endpoint', retryHeader: { at: "x-ratelimit-reset" } });
 ```
 
 
