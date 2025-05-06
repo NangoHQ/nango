@@ -40,7 +40,7 @@ export type PostPublicIntegration = Endpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        credentials?: APIPublicIntegrationCredentials | undefined;
+        credentials?: ApiPublicIntegrationCredentials | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -62,7 +62,7 @@ export type PatchPublicIntegration = Endpoint<{
     Body: {
         unique_key?: string | undefined;
         display_name?: string | undefined;
-        credentials?: APIPublicIntegrationCredentials | undefined;
+        credentials?: ApiPublicIntegrationCredentials | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -189,7 +189,7 @@ export type GetIntegrationFlows = Endpoint<{
     };
 }>;
 
-export type APIPublicIntegrationCredentials =
+export type ApiPublicIntegrationCredentials =
     | {
           type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
           client_id: string;

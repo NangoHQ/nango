@@ -223,7 +223,7 @@ export class Nango {
 
     /**
      * Creates a new integration
-     * @params body - The integration you want to create
+     * @param body - The integration you want to create
      * @returns A promise that resolves with an object containing an integration
      */
     public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']>;

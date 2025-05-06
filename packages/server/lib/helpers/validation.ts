@@ -68,7 +68,7 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 client_secret: z.string().min(1),
                 scopes: z
                     .string()
-                    .regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/)
+                    .regex(/^[0-9a-zA-Z:/*_. -]+(,[0-9a-zA-Z:/*_. -]+)*,?$/)
                     .optional()
             })
             .strict(),
