@@ -58,7 +58,7 @@ describe(`POST ${endpoint}`, () => {
 
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['unique_key'] }] }
+            error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['provider'] }] }
         });
     });
 
