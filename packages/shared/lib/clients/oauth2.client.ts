@@ -12,7 +12,7 @@ import { makeUrl } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
 import type { LogContextStateless } from '@nangohq/logs';
-import type { DBConnectionDecrypted, Provider, ProviderOAuth2, ProviderCustom } from '@nangohq/types';
+import type { DBConnectionDecrypted, Provider, ProviderOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import type { Merge } from 'type-fest';
 
@@ -76,7 +76,7 @@ export async function getFreshOAuth2Credentials({
 }: {
     connection: DBConnectionDecrypted;
     config: ProviderConfig;
-    provider: ProviderOAuth2 | ProviderCustom;
+    provider: ProviderOAuth2;
     logCtx: LogContextStateless;
 }): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
@@ -96,11 +96,10 @@ export async function getFreshOAuth2Credentials({
         simpleOAuth2ClientConfig.http.headers = headers;
     }
     const client = new AuthorizationCode(simpleOAuth2ClientConfig);
-    const tokenSource = provider.auth_mode === 'CUSTOM' ? connection.connection_config['userCredentials'] : credentials;
     const oldAccessToken = client.createToken({
-        access_token: tokenSource.access_token,
-        expires_at: tokenSource.expires_at,
-        refresh_token: tokenSource.refresh_token
+        access_token: credentials.access_token,
+        expires_at: credentials.expires_at,
+        refresh_token: credentials.refresh_token
     });
 
     let additionalParams = {};
