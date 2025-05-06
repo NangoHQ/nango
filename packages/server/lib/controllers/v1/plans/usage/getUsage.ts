@@ -12,26 +12,40 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
+    if (!plan || plan.name !== 'growth') {
+        res.status(400).send({ error: { code: 'feature_disabled' } });
+        return;
+    }
 
-    const [customer, subscription] = await Promise.all([
+    const [customerRes, subscriptionRes] = await Promise.all([
         await billing.getCustomer(account.id),
         // TODO: listen to webhook and store that subscription.id
         await billing.getSubscription(account.id)
     ]);
-    if (!subscription) {
+    if (customerRes.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
+        return;
+    }
+    if (subscriptionRes.isErr() || !subscriptionRes.value) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get subscription' } });
         return;
     }
 
-    const current = await billing.getUsage(subscription.id);
-    const previous = await billing.getUsage(subscription.id, 'previous');
+    const sub = subscriptionRes.value;
+
+    const currentRes = await billing.getUsage(sub.id);
+    const previousRes = await billing.getUsage(sub.id, 'previous');
+    if (currentRes.isErr() || previousRes.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
+        return;
+    }
 
     res.status(200).send({
         data: {
-            customer,
-            current,
-            previous
+            customer: customerRes.value,
+            current: currentRes.value,
+            previous: previousRes.value
         }
     });
 });

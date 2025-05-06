@@ -28,7 +28,7 @@ export const TeamBilling: React.FC = () => {
 
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
-    const { data: usage, isLoading: usageIsLoading } = useApiGetUsage(env, currentPlan?.name);
+    const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
 
     const plans = useMemo<PlanDefinitionList[]>(() => {
         if (!currentPlan || !plansList) {
@@ -79,7 +79,7 @@ export const TeamBilling: React.FC = () => {
         return null;
     }
 
-    const hasUsage = currentPlan.name === 'growth';
+    const hasUsage = usageIsLoading || !usageError;
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.TeamBilling}>
@@ -112,9 +112,14 @@ export const TeamBilling: React.FC = () => {
                 {hasUsage && (
                     <div className="flex gap-4 items-center">
                         <h2 className="text-grayscale-10 uppercase text-sm">Billing and Invoicing</h2>
-                        <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
-                            <Button variant={'primary'}>Manage Billing</Button>
-                        </Link>
+
+                        {usageIsLoading ? (
+                            <Skeleton className="w-1/2" />
+                        ) : (
+                            <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                                <Button variant={'primary'}>Manage Billing</Button>
+                            </Link>
+                        )}
                     </div>
                 )}
             </div>

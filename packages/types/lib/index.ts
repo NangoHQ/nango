@@ -25,6 +25,7 @@ export type * from './billing/types.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';
+export type * from './result.js';
 
 export type * from './scripts/on-events/db.js';
 export type * from './scripts/on-events/api.js';

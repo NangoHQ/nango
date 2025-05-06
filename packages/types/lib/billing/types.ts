@@ -1,8 +1,10 @@
+import type { Result } from '../result';
+
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
-    getCustomer: (accountId: number) => Promise<BillingCustomer>;
-    getSubscription: (accountId: number) => Promise<BillingSubscription | null>;
-    getUsage: (subscriptionId: string, period?: 'previous') => Promise<BillingUsageMetric[]>;
+    getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
+    getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
 }
 
 export interface BillingCustomer {

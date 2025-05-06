@@ -36,15 +36,15 @@ export class Billing {
         return await this.ingest(mapped);
     }
 
-    async getCustomer(accountId: number): Promise<BillingCustomer> {
+    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         return await this.client.getCustomer(accountId);
     }
 
-    async getSubscription(accountId: number): Promise<BillingSubscription | null> {
+    async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
     }
 
-    async getUsage(subscriptionId: string, period?: 'previous'): Promise<BillingUsageMetric[]> {
+    async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
         return await this.client.getUsage(subscriptionId, period);
     }
 
