@@ -1,0 +1,49 @@
+---
+title: 'Xero Webhooks'
+sidebarTitle: 'Webhooks'
+description: 'Guide on how to configure Xero webhooks with Nango'
+---
+
+# Configuring Xero Webhooks
+
+To receive webhooks from Xero, follow these steps:
+
+<Steps>
+  <Step title="Get your Nango webhook URL">
+    1. Go to the Nango UI and navigate to the _Integrations_ tab
+    2. Select your Xero integration
+    3. Go to the _Settings_ sub-tab
+    4. Copy your unique webhook URL (it should look like `https://api.nango.dev/webhook/<UUID>/xero`)
+  </Step>
+  <Step title="Configure webhook in Xero">
+    1. Go to your [Xero Developer Portal](https://developer.xero.com/app/manage)
+    2. Select your app
+    3. Navigate to the **Webhooks** tab
+    4. Select the topics you would like to receive webhook notifications for
+    5. Paste your Nango webhook URL from step 1 in the Deliver URL form
+    6. Click Save to **Save** the configuration
+    7. Copy the **Webhook Key** provided by Xero - you'll need this in the next step
+  </Step>
+  <Step title="Add webhook secret to Nango">
+    1. Return to the Nango UI _Settings_ page for your Xero integration
+    2. In the **Webhook Configuration** section, paste the Xero Webhook Key into the **Webhook Secret** field
+    3. Click **Save**
+  </Step>
+  <Step title="Verify the webhook">
+    1. In the Xero Developer Portal, click the **Send intent to receive validation** button
+    2. If everything is configured correctly, you should see a successful validation response
+    3. Your webhooks are now ready to receive events from Xero
+  </Step>
+</Steps>
+
+# Webhook Events
+
+Once configured, you can receive the following webhook events from Xero such as:
+- Contact events (created, updated)
+- Invoice events (created, updated)
+
+For a complete list of webhook events, refer to the [Xero Webhook API documentation](https://developer.xero.com/documentation/guides/webhooks/overview/).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to this guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero/webhooks.mdx)</Note>
