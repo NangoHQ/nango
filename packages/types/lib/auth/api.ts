@@ -188,12 +188,6 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
     expires_in?: number;
 }
 
-export interface CombinedOauth2AppCredentials extends CredentialsCommon {
-    type: AuthModes['Custom'];
-    app: AppCredentials;
-    user: OAuth2Credentials | null;
-}
-
 export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
 export type RefreshableCredentials =
     | OAuth2Credentials
@@ -221,5 +215,4 @@ export type AllAuthCredentials =
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials
-    | CombinedOauth2AppCredentials
     | SignatureCredentials;

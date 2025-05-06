@@ -40,8 +40,10 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     OpenAIFunction,
+    PatchPublicIntegration,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
+    PostPublicIntegration,
     PostPublicTrigger,
     PostSyncVariant,
     SignatureCredentials,
@@ -220,18 +222,50 @@ export class Nango {
     }
 
     /**
+     * Creates a new integration
+     * @param body - The integration you want to create
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']>;
+
+    /**
      * Creates a new integration with the specified provider and configuration key
      * Optionally, you can provide credentials for the integration
      * @param provider - The provider of the integration
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials for the integration
      * @returns A promise that resolves with the created integration configuration
+     *
+     * @deprecated use createIntegration({ ... });
      */
-    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
-        const url = `${this.serverUrl}/config`;
-        const response = await this.http.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
+
+    public async createIntegration(
+        providerOrBody: string | PostPublicIntegration['Body'],
+        providerConfigKey?: string,
+        credentials?: Record<string, string>
+    ): Promise<{ config: Integration } | PostPublicIntegration['Success']> {
+        if (typeof providerOrBody === 'string') {
+            const url = `${this.serverUrl}/config`;
+            const response = await this.http.post(
+                url,
+                { provider: providerOrBody, provider_config_key: providerConfigKey, ...credentials },
+                { headers: this.enrichHeaders({}) }
+            );
+            return response.data;
+        }
+
+        const url = `${this.serverUrl}/integrations`;
+        const response = await this.http.post(url, providerOrBody, { headers: this.enrichHeaders({}) });
         return response.data;
     }
+
+    /**
+     * Update a specific integration
+     * @params body - The integration you want to update
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']>;
 
     /**
      * Updates an integration with the specified provider and configuration key
@@ -240,10 +274,28 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
      * @returns A promise that resolves with the updated integration configuration object
+     *
+     * @deprecated use updateIntegration({ uniqueKey }, { ... });
      */
-    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
-        const url = `${this.serverUrl}/config`;
-        const response = await this.http.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
+
+    public async updateIntegration(
+        providerOrParams: string | PatchPublicIntegration['Params'],
+        providerConfigKeyOrBody: string | PatchPublicIntegration['Body'],
+        credentials?: Record<string, string>
+    ): Promise<{ config: Integration } | PatchPublicIntegration['Success']> {
+        if (typeof providerOrParams === 'string') {
+            const url = `${this.serverUrl}/config`;
+            const response = await this.http.put(
+                url,
+                { provider: providerOrParams, provider_config_key: providerConfigKeyOrBody, ...credentials },
+                { headers: this.enrichHeaders({}) }
+            );
+            return response.data;
+        }
+
+        const url = `${this.serverUrl}/integrations/${providerOrParams.uniqueKey}`;
+        const response = await this.http.patch(url, providerConfigKeyOrBody, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -253,7 +305,7 @@ export class Nango {
      * @returns A promise that resolves with the response from the server
      */
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const url = `${this.serverUrl}/integrations/${providerConfigKey}`;
         return await this.http.delete(url, { headers: this.enrichHeaders({}) });
     }
 
@@ -835,7 +887,7 @@ export class Nango {
      * @param input - An optional input data for the action
      * @returns A promise that resolves with an object containing the response data from the triggered action
      */
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         const url = `${this.serverUrl}/action/trigger`;
 
