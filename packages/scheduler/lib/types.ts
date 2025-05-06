@@ -51,3 +51,12 @@ export interface Schedule {
     readonly deletedAt: Date | null;
     readonly lastScheduledTaskId: string | null;
 }
+
+export interface Group {
+    readonly key: string;
+    readonly maxConcurrency: number;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly lastTaskAddedAt: Date | null;
+    readonly deletedAt: Date | null;
+}

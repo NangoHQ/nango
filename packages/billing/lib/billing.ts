@@ -33,7 +33,7 @@ export class Billing {
             ];
         });
 
-        return this.ingest(mapped);
+        return await this.ingest(mapped);
     }
 
     // Note: Events are sent immediately
