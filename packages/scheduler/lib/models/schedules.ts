@@ -3,7 +3,7 @@ import { uuidv7 } from 'uuidv7';
 import type knex from 'knex';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { Schedule, ScheduleState } from '../types';
+import type { Schedule, ScheduleState } from '../types.js';
 
 export const SCHEDULES_TABLE = 'schedules';
 
