@@ -22,6 +22,16 @@ export const orb: BillingClient = {
         }
     },
 
+    getCustomer: async (accountId) => {
+        const customer = await orbSDK.customers.fetchByExternalId(String(accountId));
+        return { id: customer.id, portalUrl: customer.portal_url };
+    },
+
+    getSubscription: async (accountId) => {
+        const subs = await orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
+        return subs.data.length > 0 ? { id: subs.data[0]!.id } : null;
+    },
+
     getUsage: async (subscriptionId, period) => {
         const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
         if (period === 'previous') {

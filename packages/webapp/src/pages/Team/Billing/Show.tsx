@@ -7,13 +7,14 @@ import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
+import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetPlans, useApiGetUsage } from '../../../hooks/usePlan';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
 
-import type { PlanDefinition } from '@nangohq/types';
+import type { GetUsage, PlanDefinition } from '@nangohq/types';
 
 interface PlanDefinitionList {
     plan: PlanDefinition;
@@ -27,6 +28,7 @@ export const TeamBilling: React.FC = () => {
 
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
+    const { data: usage, isLoading: usageIsLoading } = useApiGetUsage(env);
 
     const plans = useMemo<PlanDefinitionList[]>(() => {
         if (!currentPlan || !plansList) {
@@ -85,11 +87,11 @@ export const TeamBilling: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white mb-16">Billing</h2>
             <div className="flex flex-col gap-10">
                 <div className="flex flex-col gap-2.5">
-                    <h2 className="text-grayscale-10">Usage</h2>
-                    <UsageTable />
+                    <h2 className="text-grayscale-10 uppercase text-sm">Usage</h2>
+                    <UsageTable data={usage} isLoading={usageIsLoading} />
                 </div>
                 <div className="flex flex-col gap-2.5">
-                    <h2 className="text-grayscale-10">Plan</h2>
+                    <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
                     <div className="grid grid-cols-3 gap-4">
                         {plans.map((def) => {
                             return <PlanCard key={def.plan.code} env={env} def={def} />;
@@ -103,15 +105,18 @@ export const TeamBilling: React.FC = () => {
                         </Link>
                     </div>
                 </div>
+                <div className="flex gap-4 items-center">
+                    <h2 className="text-grayscale-10 uppercase text-sm">Billing and Invoicing</h2>
+                    <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                        <Button variant={'primary'}>Manage Billing</Button>
+                    </Link>
+                </div>
             </div>
         </DashboardLayout>
     );
 };
 
-const UsageTable: React.FC = () => {
-    const env = useStore((state) => state.env);
-    const { data, isLoading } = useApiGetUsage(env);
-
+const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: boolean }> = ({ data, isLoading }) => {
     const currentMonth = useMemo(() => {
         return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
     }, []);

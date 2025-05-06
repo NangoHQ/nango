@@ -40,7 +40,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
 
     const body: PostPreBuiltDeploy['Body'] = val.data;
 
-    const { environment, account, plan } = res.locals;
+    const { environment, account, plan, user } = res.locals;
     const environmentId = environment.id;
 
     const config = await configService.getIdByProviderConfigKey(environmentId, body.providerConfigKey);
@@ -55,7 +55,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     }
     if (plan && !plan.trial_end_at && plan.name === 'free') {
         await startTrial(db.knex, plan);
-        productTracking.track({ name: 'account:trial:started', team: account });
+        productTracking.track({ name: 'account:trial:started', team: account, user });
     }
 
     const isCapped = await connectionService.shouldCapUsage({

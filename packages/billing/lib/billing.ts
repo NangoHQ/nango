@@ -2,7 +2,7 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
-import type { BillingClient, BillingIngestEvent, BillingMetric, BillingUsageMetric } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingMetric, BillingSubscription, BillingUsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class Billing {
@@ -34,6 +34,14 @@ export class Billing {
         });
 
         return await this.ingest(mapped);
+    }
+
+    async getCustomer(accountId: number): Promise<BillingCustomer> {
+        return await this.client.getCustomer(accountId);
+    }
+
+    async getSubscription(accountId: number): Promise<BillingSubscription | null> {
+        return await this.client.getSubscription(accountId);
     }
 
     async getUsage(subscriptionId: string, period?: 'previous'): Promise<BillingUsageMetric[]> {
