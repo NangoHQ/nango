@@ -40,8 +40,7 @@ import type {
     BasicApiCredentials,
     ConnectionUpsertResponse,
     OAuth2ClientCredentials,
-    OAuth2Credentials,
-    CombinedOauth2AppCredentials
+    OAuth2Credentials
 } from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
@@ -77,7 +76,8 @@ import type {
     SignatureCredentials,
     TableauCredentials,
     TbaCredentials,
-    TwoStepCredentials
+    TwoStepCredentials,
+    CombinedOauth2AppCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -1009,7 +1009,7 @@ class ConnectionService {
             })
         ]);
 
-        if (!appResult.isOk()) {
+        if (appResult.isErr()) {
             return Err(new NangoError('github_app_token_fetch_error'));
         }
 
