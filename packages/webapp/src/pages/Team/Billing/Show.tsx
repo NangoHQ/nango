@@ -28,7 +28,7 @@ export const TeamBilling: React.FC = () => {
 
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
-    const { data: usage, isLoading: usageIsLoading } = useApiGetUsage(env);
+    const { data: usage, isLoading: usageIsLoading } = useApiGetUsage(env, currentPlan?.name);
 
     const plans = useMemo<PlanDefinitionList[]>(() => {
         if (!currentPlan || !plansList) {
@@ -79,6 +79,8 @@ export const TeamBilling: React.FC = () => {
         return null;
     }
 
+    const hasUsage = currentPlan.name === 'growth';
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.TeamBilling}>
             <Helmet>
@@ -86,10 +88,12 @@ export const TeamBilling: React.FC = () => {
             </Helmet>
             <h2 className="text-3xl font-semibold text-white mb-16">Billing</h2>
             <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-2.5">
-                    <h2 className="text-grayscale-10 uppercase text-sm">Usage</h2>
-                    <UsageTable data={usage} isLoading={usageIsLoading} />
-                </div>
+                {hasUsage && (
+                    <div className="flex flex-col gap-2.5">
+                        <h2 className="text-grayscale-10 uppercase text-sm">Usage</h2>
+                        <UsageTable data={usage} isLoading={usageIsLoading} />
+                    </div>
+                )}
                 <div className="flex flex-col gap-2.5">
                     <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
                     <div className="grid grid-cols-3 gap-4">
@@ -105,12 +109,14 @@ export const TeamBilling: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                <div className="flex gap-4 items-center">
-                    <h2 className="text-grayscale-10 uppercase text-sm">Billing and Invoicing</h2>
-                    <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
-                        <Button variant={'primary'}>Manage Billing</Button>
-                    </Link>
-                </div>
+                {hasUsage && (
+                    <div className="flex gap-4 items-center">
+                        <h2 className="text-grayscale-10 uppercase text-sm">Billing and Invoicing</h2>
+                        <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                            <Button variant={'primary'}>Manage Billing</Button>
+                        </Link>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

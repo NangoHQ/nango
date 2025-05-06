@@ -44,7 +44,13 @@ export const orb: BillingClient = {
             options.timeframe_end = end.toISOString();
         }
 
-        const res = await orbSDK.subscriptions.fetchUsage(subscriptionId, options);
+        const res = await orbSDK.subscriptions.fetchUsage(subscriptionId, options, {
+            // https://docs.withorb.com/api-reference/cached-responses
+            headers: {
+                'Orb-Cache-Control': 'cache',
+                'Orb-Cache-Max-Age-Seconds': '60'
+            }
+        });
         return res.data.map((item) => {
             return {
                 id: item.billable_metric.id,
