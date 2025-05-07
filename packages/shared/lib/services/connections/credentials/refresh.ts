@@ -81,6 +81,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         // TODO: remove this when cron is using other columns
         await connectionService.updateLastFetched(props.connection.id);
+        props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
         // we can't return an error because it would a breaking change in GET /connection
