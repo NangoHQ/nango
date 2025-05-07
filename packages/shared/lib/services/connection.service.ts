@@ -471,6 +471,7 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .where({ id })
             .update({
+                updated_at: new Date(),
                 last_refresh_failure: new Date(),
                 last_refresh_success: null,
                 refresh_attempts: attempt,

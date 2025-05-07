@@ -147,7 +147,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                updated_at: new Date()
             });
         }
 
@@ -310,7 +311,7 @@ async function testCredentials(
     return Ok(oldConnection);
 }
 
-async function refreshCredentialsIfNeeded({
+export async function refreshCredentialsIfNeeded({
     connectionId,
     environmentId,
     providerConfig,
