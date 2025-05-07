@@ -10,6 +10,8 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 import { serializeError } from 'serialize-error';
 import * as unzipper from 'unzipper';
+import dinero from 'dinero.js';
+import * as currencies from '@dinero.js/currencies';
 import * as zod from 'zod';
 
 import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
@@ -572,6 +574,10 @@ export class DryRunService {
                                 return zod;
                             case 'unzipper':
                                 return unzipper;
+                            case 'dinero.js':
+                                return dinero;
+                            case '@dinero.js/currencies':
+                                return currencies;
                             case 'soap':
                             case 'botbuilder':
                                 if (!preloaded[moduleName]) {

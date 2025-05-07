@@ -8,6 +8,8 @@ import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import * as soap from 'soap';
 import * as unzipper from 'unzipper';
+import dinero from 'dinero.js';
+import * as currencies from '@dinero.js/currencies';
 import * as zod from 'zod';
 
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
@@ -85,6 +87,10 @@ export async function exec({
                             return soap;
                         case 'unzipper':
                             return unzipper;
+                        case 'dinero.js':
+                            return dinero;
+                        case '@dinero.js/currencies':
+                            return currencies;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }

@@ -14,7 +14,7 @@ import parserService from './parser.service.js';
 
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
 
-const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper', 'dinero.js', '@dinero.js/currencies'];
 
 function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean }): () => NangoYamlParsed | null {
     let lastYamlModifiedTime = 0;

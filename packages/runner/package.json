@@ -29,6 +29,7 @@
         "botbuilder": "4.23.2",
         "connect-timeout": "1.9.0",
         "dd-trace": "5.21.0",
+        "dinero.js": "^1.9.1",
         "express": "^4.20.0",
         "soap": "1.1.11",
         "superjson": "2.2.1",
@@ -38,8 +39,10 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
+        "@dinero.js/currencies": "^2.0.0-alpha.1",
         "@nangohq/database": "file:../database",
         "@types/connect-timeout": "0.0.39",
+        "@types/dinero.js": "^1.9.4",
         "@types/unzipper": "^0.10.10",
         "typescript": "5.7.3",
         "vitest": "3.1.2"
