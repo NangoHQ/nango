@@ -1,5 +1,6 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as tasks from './tasks.js';
+import * as groups from './groups.js';
 import { taskStates } from '../types.js';
 import type { TaskState, Task } from '../types.js';
 import { getTestDbClient } from '../db/helpers.test.js';
@@ -118,6 +119,62 @@ describe('Task', () => {
         const dequeued = (await tasks.dequeue(db, { groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued).toHaveLength(0);
     });
+    it('should be dequeued according to group max concurrency ', async () => {
+        const groupKey = 'A';
+        const groupMaxConcurrency = 2;
+        const t0 = await createTask(db, { groupKey, groupMaxConcurrency });
+        const t1 = await createTask(db, { groupKey, groupMaxConcurrency });
+
+        let dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(2);
+        expect(dequeued[0]).toMatchObject({ id: t0.id, state: 'STARTED' });
+        expect(dequeued[1]).toMatchObject({ id: t1.id, state: 'STARTED' });
+
+        // group has reached its max concurrency, so no more tasks should be dequeued
+        const t2 = await createTask(db, { groupKey, groupMaxConcurrency });
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(0);
+
+        // dequeuing tasks with different group key should not be affected
+        const t3 = await createTask(db, { groupKey: 'B', groupMaxConcurrency });
+        dequeued = (await tasks.dequeue(db, { groupKey: 'B', limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(1);
+        expect(dequeued[0]).toMatchObject({ id: t3.id, state: 'STARTED' });
+
+        // tasks now completes
+        await succeedTask(db, t0.id);
+        await succeedTask(db, t1.id);
+
+        // group should be able to dequeue again
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(1);
+        expect(dequeued[0]).toMatchObject({ id: t2.id, state: 'STARTED' });
+    });
+    it('should respect group max concurrency with parallel dequeue calls', async () => {
+        const groupKey = 'A';
+        const groupMaxConcurrency = 2;
+
+        // creating and dequeing tasks in parallel in a tight loop
+        // to increase the chance of race conditions
+        const createdPromises: Promise<Task>[] = [];
+        const createInterval = setInterval(() => {
+            createdPromises.push(createTask(db, { groupKey, groupMaxConcurrency }));
+        }, 1);
+        const dequeuePromises: Promise<Task[]>[] = [];
+        const dequeueInterval = setInterval(() => {
+            dequeuePromises.push(tasks.dequeue(db, { groupKey, limit: 100 }).then((d) => d.unwrap()));
+        }, 1);
+
+        await new Promise((resolve) => void setTimeout(resolve, 2000));
+        clearInterval(createInterval);
+        clearInterval(dequeueInterval);
+
+        const created = await Promise.all(createdPromises);
+        const dequeued = (await Promise.all(dequeuePromises)).flat();
+
+        expect(created.length).toBeGreaterThan(groupMaxConcurrency);
+        expect(dequeued).toHaveLength(groupMaxConcurrency);
+    });
     it('should expires tasks if createdToStartedTimeoutSecs is reached', async () => {
         const timeout = 1;
         await createTask(db, { createdToStartedTimeoutSecs: timeout });
@@ -195,7 +252,13 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
     }
 }
 
-async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
+async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps> & { groupMaxConcurrency?: number | undefined }): Promise<Task> {
+    const now = new Date();
+    await groups.upsert(db, {
+        key: props?.groupKey || nanoid(),
+        maxConcurrency: props?.groupMaxConcurrency || 0,
+        lastTaskAddedAt: now
+    });
     return tasks
         .create(db, {
             name: props?.name || nanoid(),
@@ -203,7 +266,7 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
             groupKey: props?.groupKey || nanoid(),
             retryMax: props?.retryMax || 3,
             retryCount: props?.retryCount || 1,
-            startsAfter: props?.startsAfter || new Date(),
+            startsAfter: props?.startsAfter || now,
             createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
             startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
             heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
@@ -214,4 +277,8 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
 
 async function startTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     return createTask(db, props).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'STARTED' })).unwrap());
+}
+
+async function succeedTask(db: knex.Knex, taskId: string): Promise<Task> {
+    return tasks.transitionState(db, { taskId, newState: 'SUCCEEDED', output: true }).then((t) => t.unwrap());
 }
