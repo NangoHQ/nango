@@ -174,6 +174,7 @@ export const ENVS = z.object({
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
     SMTP_SECURE: bool,
+    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),

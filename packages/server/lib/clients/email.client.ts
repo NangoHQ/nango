@@ -12,8 +12,6 @@ interface EmailProvider<T> {
     send(email: string, subject: string, html: string): Promise<T>;
 }
 
-const EMAIL_FROM = 'Nango <support@nango.dev>';
-
 export class EmailClient {
     private static instance: EmailClient | undefined;
     private provider: MailgunEmailProvider | SmtpEmailProvider | NoEmailProvider; // Mailgun specific provider is here for legacy reason
@@ -66,7 +64,7 @@ class SmtpEmailProvider implements EmailProvider<void> {
     }
     async send(email: string, subject: string, html: string): Promise<void> {
         return this.transporter.sendMail({
-            from: EMAIL_FROM,
+            from: envs.SMTP_FROM,
             to: email,
             subject,
             html
@@ -88,7 +86,7 @@ class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
 
     async send(email: string, subject: string, html: string): Promise<MessagesSendResult> {
         return this.client.messages.create('email.nango.dev', {
-            from: EMAIL_FROM,
+            from: envs.SMTP_FROM,
             to: [email],
             subject,
             html

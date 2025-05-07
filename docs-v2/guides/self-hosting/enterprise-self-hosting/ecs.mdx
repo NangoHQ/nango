@@ -220,6 +220,7 @@ Define the container configurations for each Nango service using Fargate.
             * `SMTP_SECURE`: `true` if your SMTP server supports TLS, `false` otherwise
             * `SMTP_USER`: The user to authenticate to your SMTP server
             * `SMTP_PASSWORD`: The password to authenticate to your SMTP server
+            * `SMTP_FROM`: The email address used to send emails
             * `AWS_BUCKET_NAME`: Name of the S3 bucket.
             * `AWS_ACCESS_KEY_ID`: Access key for S3 bucket user.
             * `AWS_SECRET_ACCESS_KEY`: Secret key for S3 bucket user.
@@ -310,7 +311,10 @@ Define the container configurations for each Nango service using Fargate.
                             "name": "SMTP_PASSWORD"
                             "value": "YOUR_SMTP_SERVER_PASSWORD"
                         },
-
+                        {
+                            "name": "SMTP_FROM"
+                            "value": "SENDER_EMAIL_ADDRESS"
+                        },
                         {
                             "name": "ORCHESTRATOR_SERVICE_URL",
                             "value": "http://orchestrator.enterprise-0.internal:3008"
