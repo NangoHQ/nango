@@ -25,6 +25,7 @@ describe('refreshOrTestCredentials', () => {
             throw new Error('Failed to decrypt connection');
         }
 
+        // wait just to make sure all timestamps are different
         await wait(2);
         const onFailed = vi.fn();
         const onSuccess = vi.fn();
@@ -41,14 +42,14 @@ describe('refreshOrTestCredentials', () => {
             logContextGetter: logContextGetter
         });
 
-        const value = res.unwrap();
+        const refreshed = res.unwrap();
 
         // Nothing should have changed except last_fetched
-        expect(value).toEqual({
+        expect(refreshed).toEqual({
             ...decryptedConnection,
             last_fetched_at: expect.any(Date)
         });
-        expect(value.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
+        expect(refreshed.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
         expect(onFailed).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onTest).not.toHaveBeenCalled();
@@ -79,10 +80,10 @@ describe('refreshOrTestCredentials', () => {
             logContextGetter: logContextGetter
         });
 
-        const value = res.unwrap();
+        const refreshed = res.unwrap();
 
         // Make sure all relevant fields are updated
-        expect(value).toStrictEqual({
+        expect(refreshed).toStrictEqual({
             ...decryptedConnection,
             last_fetched_at: expect.any(Date),
             last_refresh_success: expect.any(Date),
@@ -91,11 +92,11 @@ describe('refreshOrTestCredentials', () => {
             credentials_iv: expect.any(String),
             credentials_tag: expect.any(String)
         });
-        expect(value.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
-        expect(value.credentials_expires_at?.getTime()).toBeGreaterThan(decryptedConnection.credentials_expires_at!.getTime());
-        expect(value.last_refresh_success?.getTime()).toBeGreaterThan(decryptedConnection.last_refresh_success!.getTime());
-        expect(value.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
-        expect(value.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
+        expect(refreshed.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
+        expect(refreshed.credentials_expires_at?.getTime()).toBeGreaterThan(decryptedConnection.credentials_expires_at!.getTime());
+        expect(refreshed.last_refresh_success?.getTime()).toBeGreaterThan(decryptedConnection.last_refresh_success!.getTime());
+        expect(refreshed.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
+        expect(refreshed.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
         // @ts-expect-error yes it's okay
         expect(value.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
 
@@ -109,7 +110,7 @@ describe('refreshOrTestCredentials', () => {
         if (!decryptedUpdatedConnection) {
             throw new Error('Failed to decrypt updated connection');
         }
-        expect(value).toStrictEqual(decryptedUpdatedConnection);
+        expect(refreshed).toStrictEqual(decryptedUpdatedConnection);
     });
 
     it('should test if api key and fail', async () => {
@@ -197,10 +198,10 @@ describe('refreshOrTestCredentials', () => {
             logContextGetter: logContextGetter
         });
 
-        const value = res.unwrap();
+        const refreshed = res.unwrap();
 
         // Make sure all relevant fields are updated
-        expect(value).toStrictEqual<typeof value>({
+        expect(refreshed).toStrictEqual<typeof refreshed>({
             ...decryptedConnection,
             credentials: {
                 type: 'OAUTH2',
@@ -217,11 +218,11 @@ describe('refreshOrTestCredentials', () => {
             credentials_iv: expect.any(String),
             credentials_tag: expect.any(String)
         });
-        expect(value.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
-        expect(value.credentials_expires_at?.getTime()).toBeGreaterThan(decryptedConnection.credentials_expires_at!.getTime());
-        expect(value.last_refresh_success?.getTime()).toBeGreaterThan(decryptedConnection.last_refresh_success!.getTime());
-        expect(value.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
-        expect(value.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
+        expect(refreshed.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
+        expect(refreshed.credentials_expires_at?.getTime()).toBeGreaterThan(decryptedConnection.credentials_expires_at!.getTime());
+        expect(refreshed.last_refresh_success?.getTime()).toBeGreaterThan(decryptedConnection.last_refresh_success!.getTime());
+        expect(refreshed.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
+        expect(refreshed.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
         // @ts-expect-error yes it's okay
         expect(value.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
 
@@ -235,7 +236,7 @@ describe('refreshOrTestCredentials', () => {
         if (!decryptedUpdatedConnection) {
             throw new Error('Failed to decrypt updated connection');
         }
-        expect(value).toStrictEqual(decryptedUpdatedConnection);
+        expect(refreshed).toStrictEqual(decryptedUpdatedConnection);
     });
 
     it('should refresh if oauth2 and fail (wrong token)', async () => {
