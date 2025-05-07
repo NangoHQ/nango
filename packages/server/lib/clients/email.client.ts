@@ -1,23 +1,28 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
-
+import type { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer';
 import { getLogger } from '@nangohq/utils';
-
 import type { Interfaces, MessagesSendResult } from 'mailgun.js/definitions';
+import { envs } from '../env.js';
+
+const logger = getLogger('Server.EmailClient');
 
 interface EmailProvider<T> {
     send(email: string, subject: string, html: string): Promise<T>;
 }
 
-const logger = getLogger('Server.EmailClient');
+const EMAIL_FROM = 'Nango <support@nango.dev>';
 
 export class EmailClient {
     private static instance: EmailClient | undefined;
-    private provider: MailgunEmailProvider | NoEmailProvider;
+    private provider: MailgunEmailProvider | SmtpEmailProvider | NoEmailProvider; // Mailgun specific provider is here for legacy reason
 
     private constructor() {
-        if (process.env['MAILGUN_API_KEY']) {
+        if (envs.MAILGUN_API_KEY) {
             this.provider = new MailgunEmailProvider();
+        } else if (envs.SMTP_HOST) {
+            this.provider = new SmtpEmailProvider();
         } else {
             this.provider = new NoEmailProvider();
         }
@@ -45,6 +50,30 @@ class NoEmailProvider implements EmailProvider<void> {
     }
 }
 
+class SmtpEmailProvider implements EmailProvider<void> {
+    private transporter: Transporter;
+
+    constructor() {
+        this.transporter = nodemailer.createTransport({
+            host: envs.SMTP_HOST,
+            port: envs.SMTP_PORT,
+            secure: envs.SMTP_SECURE,
+            auth: {
+                user: envs.SMTP_USER,
+                pass: envs.SMTP_PASSWORD
+            }
+        });
+    }
+    async send(email: string, subject: string, html: string): Promise<void> {
+        return this.transporter.sendMail({
+            from: EMAIL_FROM,
+            to: email,
+            subject,
+            html
+        });
+    }
+}
+
 class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
     private client: Interfaces.IMailgunClient;
 
@@ -59,7 +88,7 @@ class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
 
     async send(email: string, subject: string, html: string): Promise<MessagesSendResult> {
         return this.client.messages.create('email.nango.dev', {
-            from: 'Nango <support@nango.dev>',
+            from: EMAIL_FROM,
             to: [email],
             subject,
             html
