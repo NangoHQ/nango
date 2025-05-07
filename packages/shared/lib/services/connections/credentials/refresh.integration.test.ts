@@ -98,7 +98,7 @@ describe('refreshOrTestCredentials', () => {
         expect(refreshed.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
         expect(refreshed.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
         // @ts-expect-error yes it's okay
-        expect(value.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
+        expect(refreshed.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
 
         expect(onFailed).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalled();
@@ -224,7 +224,7 @@ describe('refreshOrTestCredentials', () => {
         expect(refreshed.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
         expect(refreshed.credentials_iv).not.toBe(decryptedConnection.credentials_iv);
         // @ts-expect-error yes it's okay
-        expect(value.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
+        expect(refreshed.credentials['apiKey']).toBe(decryptedConnection.credentials['apiKey']);
 
         expect(onFailed).not.toHaveBeenCalledOnce();
         expect(onSuccess).toHaveBeenCalledOnce();
