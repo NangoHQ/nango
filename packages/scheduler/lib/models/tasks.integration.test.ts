@@ -125,19 +125,19 @@ describe('Task', () => {
         const t0 = await createTask(db, { groupKey, groupMaxConcurrency });
         const t1 = await createTask(db, { groupKey, groupMaxConcurrency });
 
-        let dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        let dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(2);
         expect(dequeued[0]).toMatchObject({ id: t0.id, state: 'STARTED' });
         expect(dequeued[1]).toMatchObject({ id: t1.id, state: 'STARTED' });
 
         // group has reached its max concurrency, so no more tasks should be dequeued
         const t2 = await createTask(db, { groupKey, groupMaxConcurrency });
-        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(0);
 
         // dequeuing tasks with different group key should not be affected
         const t3 = await createTask(db, { groupKey: 'B', groupMaxConcurrency });
-        dequeued = (await tasks.dequeue(db, { groupKey: 'B', limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey: 'B', limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(1);
         expect(dequeued[0]).toMatchObject({ id: t3.id, state: 'STARTED' });
 
@@ -146,7 +146,7 @@ describe('Task', () => {
         await succeedTask(db, t1.id);
 
         // group should be able to dequeue again
-        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(1);
         expect(dequeued[0]).toMatchObject({ id: t2.id, state: 'STARTED' });
     });
@@ -162,7 +162,7 @@ describe('Task', () => {
         }, 1);
         const dequeuePromises: Promise<Task[]>[] = [];
         const dequeueInterval = setInterval(() => {
-            dequeuePromises.push(tasks.dequeue(db, { groupKey, limit: 100, flagDequeueLegacy: false }).then((d) => d.unwrap()));
+            dequeuePromises.push(tasks.dequeue(db, { groupKey, limit: 100 }).then((d) => d.unwrap()));
         }, 1);
 
         await new Promise((resolve) => void setTimeout(resolve, 2000));
