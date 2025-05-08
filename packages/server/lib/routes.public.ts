@@ -34,6 +34,7 @@ import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
+import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -206,6 +207,10 @@ publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncContr
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
+
+publicAPI.use('/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/mcp').post(apiAuth, postMcp);
+publicAPI.route('/mcp').get(apiAuth, getMcp);
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
