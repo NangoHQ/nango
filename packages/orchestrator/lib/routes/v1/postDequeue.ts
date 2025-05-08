@@ -15,6 +15,7 @@ type PostDequeue = Endpoint<{
         groupKey: string;
         limit: number;
         longPolling: boolean;
+        flagDequeueLegacy?: boolean;
     };
     Error: ApiError<'dequeue_failed'>;
     Success: Task[];
@@ -26,7 +27,8 @@ const validate = validateRequest<PostDequeue>({
             .object({
                 groupKey: z.string().min(1),
                 limit: z.coerce.number().positive(),
-                longPolling: z.coerce.boolean()
+                longPolling: z.coerce.boolean(),
+                flagDequeueLegacy: z.coerce.boolean().default(true)
             })
             .strict()
             .parse(data)
@@ -44,7 +46,7 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, limit, longPolling: longPolling } = req.body;
+        const { groupKey, limit, longPolling, flagDequeueLegacy } = req.body;
         const longPollingTimeoutMs = 10_000;
         const eventId = `task:created:${groupKey}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
@@ -60,7 +62,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
         };
         const onTaskStarted = (_t: Task) => {
             cleanupAndRespond(async (res) => {
-                const getTasks = await scheduler.dequeue({ groupKey, limit });
+                const getTasks = await scheduler.dequeue({ groupKey, limit, flagDequeueLegacy: flagDequeueLegacy ?? true });
                 if (getTasks.isErr()) {
                     res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
                 } else {
@@ -72,7 +74,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).send([]));
         }, longPollingTimeoutMs);
 
-        const getTasks = await scheduler.dequeue({ groupKey, limit });
+        const getTasks = await scheduler.dequeue({ groupKey, limit, flagDequeueLegacy: flagDequeueLegacy ?? true });
         if (getTasks.isErr()) {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;

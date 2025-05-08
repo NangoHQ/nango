@@ -494,6 +494,7 @@
                 "integrations/all/jira-data-center",
                 "integrations/all/jira-data-center-basic",
                 "integrations/all/jotform",
+                "integrations/all/kandji",
                 "integrations/all/keap",
                 "integrations/all/keeper-scim",
                 "integrations/all/klaviyo",
