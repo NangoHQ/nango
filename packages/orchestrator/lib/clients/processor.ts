@@ -1,4 +1,5 @@
 import type { Result } from '@nangohq/utils';
+import { getFeatureFlagsClient } from '@nangohq/kvstore';
 import { stringifyError, getLogger } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
@@ -6,6 +7,7 @@ import PQueue from 'p-queue';
 import type { Tracer } from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');
+const featureFlags = await getFeatureFlagsClient();
 
 export class OrchestratorProcessor {
     private handler: (task: OrchestratorTask) => Promise<Result<void>>;
@@ -47,11 +49,12 @@ export class OrchestratorProcessor {
 
     private async processingLoop(ctx: { tracer: Tracer }) {
         while (!this.stopped) {
+            const flagDequeueV2 = await featureFlags.isSet('scheduler:dequeueV2');
             // wait for the queue to have space before dequeuing more tasks
             await this.queue.onSizeLessThan(this.queue.concurrency);
             const available = this.queue.concurrency - this.queue.size;
             const limit = available + this.queue.concurrency; // fetching more than available to keep the queue full
-            const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit, longPolling: true });
+            const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit, longPolling: true, flagDequeueLegacy: !flagDequeueV2 });
             if (tasks.isErr()) {
                 logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
                 await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors

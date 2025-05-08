@@ -339,17 +339,20 @@ export class OrchestratorClient {
     public async dequeue({
         groupKey,
         limit,
-        longPolling
+        longPolling,
+        flagDequeueLegacy = true
     }: {
         groupKey: string;
         limit: number;
         longPolling: boolean;
+        flagDequeueLegacy?: boolean;
     }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
                 groupKey,
                 limit,
-                longPolling
+                longPolling,
+                flagDequeueLegacy
             }
         });
         if ('error' in res) {

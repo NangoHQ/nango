@@ -230,9 +230,43 @@ export async function transitionState(
     return Ok(DbTask.from(updated[0]));
 }
 
-export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
+export async function dequeue(
+    db: knex.Knex,
+    { groupKey, limit, flagDequeueLegacy = true }: { groupKey: string; limit: number; flagDequeueLegacy?: boolean }
+): Promise<Result<Task[]>> {
     try {
         const groupKeyPattern = groupKey.replace(/\*/g, '%');
+
+        if (flagDequeueLegacy) {
+            const tasks = await db
+                .update({
+                    state: 'STARTED',
+                    last_state_transition_at: new Date()
+                })
+                .from<DbTask>(TASKS_TABLE)
+                .whereIn(
+                    'id',
+                    db
+                        .select('id')
+                        .from<DbTask>(TASKS_TABLE)
+                        .where('state', 'CREATED')
+                        .whereLike('group_key', groupKeyPattern)
+                        .where('starts_after', '<=', db.fn.now())
+                        .orderBy('id')
+                        .limit(limit)
+                        .forUpdate()
+                        .skipLocked()
+                )
+                .returning('*');
+            if (!tasks?.[0]) {
+                return Ok([]);
+            }
+
+            // Sort tasks by id (uuidv7) to ensure ordering by creation date
+            const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
+            return Ok(sorted);
+        }
+
         const tasks = await db
             // 1. select created tasks that are ready to be started alongside their group
             // Note: tasks and groups are locked for update, preventing concurrent queries
