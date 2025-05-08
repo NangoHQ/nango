@@ -215,7 +215,8 @@ Define the container configurations for each Nango service using Fargate.
             * `NANGO_SERVER_URL`: The public URL of the ALB (e.g., `http://ALB.DNS`).
             * `NANGO_PUBLIC_SERVER_URL`: Same as `NANGO_SERVER_URL`.
             * `NANGO_PUBLIC_CONNECT_URL`: The public URL of the ALB with port 3009 (e.g., `http://ALB.DNS:3009`).
-            * `MAILGUN_API_KEY`: Your Mailgun key (Used for signup verification email. Mailgun is the only email provider currently supported).
+            * `SMTP_URL`: The url of your SMTP server (ex: `smtps://username:password@my-stmp-server.com:465`)
+            * `SMTP_FROM`: The email address used to send emails
             * `AWS_BUCKET_NAME`: Name of the S3 bucket.
             * `AWS_ACCESS_KEY_ID`: Access key for S3 bucket user.
             * `AWS_SECRET_ACCESS_KEY`: Secret key for S3 bucket user.
@@ -287,8 +288,12 @@ Define the container configurations for each Nango service using Fargate.
                             "value": "--max-old-space-size=YOUR_VALUE"
                         },
                         {
-                            "name": "MAILGUN_API_KEY",
-                            "value": "YOUR_MAILGUN_API_KEY"
+                            "name": "SMTP_URL"
+                            "value": "YOUR_SMTP_SERVER_URL"
+                        },
+                        {
+                            "name": "SMTP_FROM"
+                            "value": "SENDER_EMAIL_ADDRESS"
                         },
                         {
                             "name": "ORCHESTRATOR_SERVICE_URL",

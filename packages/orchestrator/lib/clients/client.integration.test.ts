@@ -43,7 +43,7 @@ describe('OrchestratorClient', async () => {
                 state: 'STARTED',
                 startsAt: new Date(),
                 frequencyMs: 300_000,
-                groupKey: nanoid(),
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -69,7 +69,7 @@ describe('OrchestratorClient', async () => {
                 state: 'STARTED',
                 startsAt: new Date(),
                 frequencyMs: 300_000,
-                groupKey: nanoid(),
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -97,7 +97,7 @@ describe('OrchestratorClient', async () => {
                 state: 'STARTED',
                 startsAt: new Date(),
                 frequencyMs: 300_000,
-                groupKey: nanoid(),
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -128,7 +128,7 @@ describe('OrchestratorClient', async () => {
                 state: 'STARTED',
                 startsAt: new Date(),
                 frequencyMs: 300_000,
-                groupKey: nanoid(),
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -155,7 +155,7 @@ describe('OrchestratorClient', async () => {
         it('should be successful', async () => {
             const scheduledTask = await client.immediate({
                 name: nanoid(),
-                groupKey: nanoid(),
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -195,7 +195,7 @@ describe('OrchestratorClient', async () => {
             try {
                 const res = await client.executeAction({
                     name: nanoid(),
-                    groupKey: groupKey,
+                    group: { key: groupKey, maxConcurrency: 0 },
                     args: {
                         actionName: 'Action',
                         connection: {
@@ -226,7 +226,7 @@ describe('OrchestratorClient', async () => {
             try {
                 const res = await client.executeAction({
                     name: nanoid(),
-                    groupKey: groupKey,
+                    group: { key: groupKey, maxConcurrency: 0 },
                     args: {
                         actionName: 'Action',
                         connection: {
@@ -261,7 +261,7 @@ describe('OrchestratorClient', async () => {
             try {
                 const res = await client.executeWebhook({
                     name: nanoid(),
-                    groupKey: groupKey,
+                    group: { key: groupKey, maxConcurrency: 0 },
                     args: {
                         webhookName: 'W',
                         parentSyncName: 'parent',
@@ -286,7 +286,7 @@ describe('OrchestratorClient', async () => {
             const groupKey = nanoid();
             const actionA = await client.immediate({
                 name: nanoid(),
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -309,10 +309,9 @@ describe('OrchestratorClient', async () => {
     });
     describe('search', () => {
         it('should returns task by ids', async () => {
-            const groupKey = nanoid();
             const actionA = await client.immediate({
                 name: nanoid(),
-                groupKey,
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -330,7 +329,7 @@ describe('OrchestratorClient', async () => {
             });
             const actionB = await client.immediate({
                 name: nanoid(),
-                groupKey,
+                group: { key: nanoid(), maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -361,7 +360,7 @@ describe('OrchestratorClient', async () => {
             const groupKey = nanoid();
             const scheduledAction = await client.immediate({
                 name: nanoid(),
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {
@@ -379,7 +378,7 @@ describe('OrchestratorClient', async () => {
             });
             const scheduledWebhook = await client.immediate({
                 name: nanoid(),
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 retry: { count: 0, max: 0 },
                 timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
                 args: {

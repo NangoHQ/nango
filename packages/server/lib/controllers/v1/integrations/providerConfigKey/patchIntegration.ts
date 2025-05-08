@@ -25,10 +25,7 @@ const validationBody = z
                         authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                         clientId: z.string().min(1).max(255),
                         clientSecret: z.string().min(1),
-                        scopes: z
-                            .string()
-                            .regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/)
-                            .optional()
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
                     .strict(),
                 z

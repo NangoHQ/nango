@@ -61,7 +61,7 @@ export class OrchestratorClient {
         const res = await this.routeFetch(postImmediateRoute)({
             body: {
                 name: props.name,
-                groupKey: props.groupKey,
+                group: props.group,
                 retry: props.retry,
                 timeoutSettingsInSecs: props.timeoutSettingsInSecs,
                 args: props.args
@@ -85,7 +85,7 @@ export class OrchestratorClient {
                 state: props.state,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
-                groupKey: props.groupKey,
+                group: props.group,
                 retry: props.retry,
                 timeoutSettingsInSecs: props.timeoutSettingsInSecs,
                 args: props.args
