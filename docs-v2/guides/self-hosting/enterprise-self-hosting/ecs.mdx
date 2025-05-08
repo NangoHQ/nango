@@ -215,11 +215,7 @@ Define the container configurations for each Nango service using Fargate.
             * `NANGO_SERVER_URL`: The public URL of the ALB (e.g., `http://ALB.DNS`).
             * `NANGO_PUBLIC_SERVER_URL`: Same as `NANGO_SERVER_URL`.
             * `NANGO_PUBLIC_CONNECT_URL`: The public URL of the ALB with port 3009 (e.g., `http://ALB.DNS:3009`).
-            * `SMTP_HOST`: The url of your SMTP server (ex: `email-smtp.us-west-1.amazonaws.com`)
-            * `SMTP_PORT`: The port of your SMTP server (ex: `465`)
-            * `SMTP_SECURE`: `true` if your SMTP server supports TLS, `false` otherwise
-            * `SMTP_USER`: The user to authenticate to your SMTP server
-            * `SMTP_PASSWORD`: The password to authenticate to your SMTP server
+            * `SMTP_URL`: The url of your SMTP server (ex: `smtps://username:password@my-stmp-server.com:465`)
             * `SMTP_FROM`: The email address used to send emails
             * `AWS_BUCKET_NAME`: Name of the S3 bucket.
             * `AWS_ACCESS_KEY_ID`: Access key for S3 bucket user.
@@ -292,24 +288,8 @@ Define the container configurations for each Nango service using Fargate.
                             "value": "--max-old-space-size=YOUR_VALUE"
                         },
                         {
-                            "name": "SMTP_HOST"
-                            "value": "YOUR_SMTP_SERVER_HOST"
-                        },
-                        {
-                            "name": "SMTP_PORT"
-                            "value": "YOUR_SMTP_SERVER_PORT"
-                        },
-                        {
-                            "name": "SMTP_SECURE"
-                            "value": "true"
-                        },
-                        {
-                            "name": "SMTP_USER"
-                            "value": "YOUR_SMTP_SERVER_USER"
-                        },
-                        {
-                            "name": "SMTP_PASSWORD"
-                            "value": "YOUR_SMTP_SERVER_PASSWORD"
+                            "name": "SMTP_URL"
+                            "value": "YOUR_SMTP_SERVER_URL"
                         },
                         {
                             "name": "SMTP_FROM"

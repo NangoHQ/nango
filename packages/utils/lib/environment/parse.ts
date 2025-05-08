@@ -169,11 +169,7 @@ export const ENVS = z.object({
     MAILGUN_URL: z.string().url().optional(),
 
     // SMTP
-    SMTP_HOST: z.string().optional(),
-    SMTP_PORT: z.coerce.number().optional(),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASSWORD: z.string().optional(),
-    SMTP_SECURE: bool,
+    SMTP_URL: z.string().url().optional(),
     SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
 
     // Postgres

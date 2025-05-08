@@ -19,7 +19,7 @@ export class EmailClient {
     private constructor() {
         if (envs.MAILGUN_API_KEY) {
             this.provider = new MailgunEmailProvider();
-        } else if (envs.SMTP_HOST) {
+        } else if (envs.SMTP_URL) {
             this.provider = new SmtpEmailProvider();
         } else {
             this.provider = new NoEmailProvider();
@@ -52,16 +52,9 @@ class SmtpEmailProvider implements EmailProvider<void> {
     private transporter: Transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: envs.SMTP_HOST,
-            port: envs.SMTP_PORT,
-            secure: envs.SMTP_SECURE,
-            auth: {
-                user: envs.SMTP_USER,
-                pass: envs.SMTP_PASSWORD
-            }
-        });
+        this.transporter = nodemailer.createTransport(envs.SMTP_URL);
     }
+
     async send(email: string, subject: string, html: string): Promise<void> {
         return this.transporter.sendMail({
             from: envs.SMTP_FROM,
