@@ -8,7 +8,7 @@ import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
-import type { BillingMetric } from '@nangohq/billing';
+import type { BillingMetric } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -88,7 +88,10 @@ const billing = {
                     return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
                 });
 
-                await usageBilling.sendAll(events);
+                const sendRes = await usageBilling.sendAll(events);
+                if (sendRes.isErr()) {
+                    throw sendRes.error;
+                }
             } catch (err) {
                 span.setTag('error', err);
                 report(new Error('cron_failed_to_export_billable_connections', { cause: err }));

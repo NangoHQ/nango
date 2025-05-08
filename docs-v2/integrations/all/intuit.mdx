@@ -14,32 +14,89 @@ import PreBuiltUseCases from "/snippets/generated/intuit/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Intuit Developer account](https://developer.intuit.com/app/developer/homepage). |
+| Paid test account | ✅ Not required | Free sandbox environment is available for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to list your app on the [QuickBooks App Store](https://apps.intuit.com/). |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create your app on the Intuit Developer Portal">
+    1. Sign up for an [Intuit Developer account](https://developer.intuit.com/app/developer/homepage) if you don't already have one.
+    2. Sign in to your [developer account](https://developer.intuit.com/dashboard).
+    3. Click on **Create an app** on the dashboard.
+    4. Select **QuickBooks Online and Payments** as the API provider.
+    5. Enter your app name and select the appropriate app type:
+       - **Development**: For testing and development
+       - **Production**: For live applications
+    6. Click **Create app**.
+  </Step>
+  <Step title="Configure OAuth 2.0 settings">
+    1. In your app's dashboard, navigate to the **Development** or **Production** section (depending on your environment).
+    2. Select **Keys & OAuth** from the left navigation menu.
+    3. Under **Redirect URIs**, click **Add URI**.
+    4. Enter `https://api.nango.dev/oauth/callback` as the redirect URI.
+    5. Click **Save**.
+  </Step>
+  <Step title="Select OAuth scopes">
+    1. In the **Keys & OAuth** section, locate the **OAuth 2.0** area.
+    2. Under **Select scopes**, choose the appropriate scopes for your integration:
+       - **Accounting**: For access to QuickBooks Online accounting data
+       - **Payments**: For access to payment processing features
+       - **OpenID**: For user authentication (recommended)
+       - **Profile**: For access to user profile information
+       - **Email**: For access to user email information
+       - **Phone**: For access to user phone information
+       - **Address**: For access to user address information
+    3. Click **Save** to update your scopes.
+  </Step>
+  <Step title="Obtain your client credentials">
+    1. In the **Keys & OAuth** section, locate your **Client ID** and **Client Secret**.
+    2. Copy these values as you'll need them when configuring your integration in Nango.
+    
+    Note: There are separate credentials for Development and Production environments. Make sure you're using the correct set for your intended environment.
+  </Step>
+  <Step title="Configure your integration in Nango">
+    When setting up your Intuit integration in Nango:
+    
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://appcenter.intuit.com/connect/oauth2`
+    - For the token URL, use: `https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer`
+  </Step>
+  <Step title="Test the authorization flow">
+    1. Use the [OAuth Playground](https://developer.intuit.com/app/developer/playground) to test your OAuth implementation.
+    2. The OAuth Playground provides sample data and allows you to preview each step of the authorization flow.
+    3. This step is optional but recommended to ensure your OAuth configuration is working correctly.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intuit.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0#create-an-app)
--   [OAuth-related docs](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0)
--   [List of OAuth scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes)
+-   [Intuit Developer Portal](https://developer.intuit.com/app/developer/homepage)
+-   [Intuit Developer Dashboard](https://developer.intuit.com/dashboard)
+-   [OAuth 2.0 Documentation](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0)
+-   [OAuth Playground](https://developer.intuit.com/app/developer/playground)
+-   [OAuth Scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes)
+-   [Authorization Discovery Documents](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/discovery-document)
+-   [QuickBooks API Reference](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/most-commonly-used/account)
+-   [API Explorer](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account)
+-   [API Rate Limits](https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-handling#rate-limiting)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intuit.mdx)</Note>
 
-## API gotchas
+## Common Scopes
 
--   Refresh tokens have a rolling expiry of 100 days. If 100 days pass, or your refresh token expires, users need to go through the authorization flow again and reauthorize your app.
+For a complete list of available OAuth scopes, see the [Intuit OAuth Scopes documentation](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes).
+
+## API gotchas
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intuit.mdx)</Note>

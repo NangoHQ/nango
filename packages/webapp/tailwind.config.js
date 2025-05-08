@@ -8,6 +8,9 @@ export default {
         },
         extend: {
             colors: {
+                // -----
+                // Design system 2023
+                //
                 'bg-black': '#0E1014',
                 'pure-black': '#05050A',
                 'active-gray': '#161720',
@@ -66,8 +69,9 @@ export default {
                 ring: '#A9ACB3',
 
                 // -----
-                // Design system v2
+                // Design system 2024
                 //
+                // Delete after migration to 2025
                 'grayscale-100': '#fafafa',
                 'grayscale-200': '#ececec',
                 'grayscale-300': '#d0d1d0',
@@ -79,12 +83,12 @@ export default {
                 'grayscale-900': '#111111',
                 'grayscale-1000': '#09090b',
 
-                'code-mint': '#6ed6ac',
-                'code-blue': '#90a1f0',
-                'code-violet': '#c695c6',
-                'code-gray': '#cfd4d9',
-                'code-orange': '#f09745',
-                'code-yellow': '#f7c752',
+                // 'code-mint': '#6ed6ac',
+                // 'code-blue': '#90a1f0',
+                // 'code-violet': '#c695c6',
+                // 'code-gray': '#cfd4d9',
+                // 'code-orange': '#f09745',
+                // 'code-yellow': '#f7c752',
 
                 'success-100': '#f9fef1',
                 'success-200': '#edfbd8',
@@ -108,7 +112,98 @@ export default {
                 'info-200': '#d7f1fd',
                 'info-300': '#c2dcfd',
                 'info-400': '#509af8',
-                'info-500': '#0c2a75'
+                'info-500': '#0c2a75',
+
+                // -----
+                // Design system 2025
+                //
+                black: '#000000',
+                'primary-1': '#012a29',
+                'primary-2': '#024b49',
+                'primary-3': '#036a67',
+                'primary-4': '#05928f',
+                'primary-5': '#06b6b3',
+                'primary-6': '#2cd4d1',
+                'primary-7': '#5ce2df',
+                'primary-8': '#91f0ed',
+                'primary-9': '#b6faf8',
+                'primary-10': '#e5fefd',
+
+                'grayscale-1': '#0D0D0D',
+                'grayscale-2': '#161616',
+                'grayscale-3': '#1C1C1C',
+                'grayscale-4': '#2A2A2A',
+                'grayscale-5': '#333333',
+                'grayscale-6': '#444444',
+                'grayscale-7': '#555555',
+                'grayscale-8': '#666666',
+                'grayscale-9': '#888888',
+                'grayscale-10': '#9FA2A9',
+                'grayscale-11': '#B3B7BF',
+                'grayscale-12': '#C7CCD5',
+                'grayscale-13': '#E4E9F2',
+                'grayscale-14': '#F8FAFE',
+
+                'info-1': '#f0fafe',
+                'info-2': '#d7f1fd',
+                'info-3': '#c2dcfd',
+                'info-4': '#509af8',
+                'info-5': '#0c2a75',
+
+                'alert-1': '#fef6f1',
+                'alert-2': '#fce8db',
+                'alert-3': '#f3d1cd',
+                'alert-4': '#ef665b',
+                'alert-5': '#dc564c',
+                'alert-6': '#c8453d',
+                'alert-7': '#71192f',
+
+                'warning-1': '#fffcf0',
+                'warning-2': '#fef7d1',
+                'warning-3': '#fcebc2',
+                'warning-4': '#f7c752',
+                'warning-5': '#e6a70d',
+
+                'success-1': '#f9fef1',
+                'success-2': '#edfbd8',
+                'success-3': '#d4f1c5',
+                'success-4': '#84d65a',
+                'success-5': '#2b641e',
+
+                'border-1': '#050506',
+                'border-2': '#0b0d0e',
+                'border-3': '#151719',
+                'border-4': '#202427',
+                'border-5': '#2e3338',
+                'border-6': '#3e454c',
+                'border-7': '#505962',
+                'border-8': '#65707b',
+                'border-9': '#7e8a95',
+                'border-10': '#a0a8b1',
+                'border-11': '#c7ccd1',
+                'border-12': '#e3e5e8',
+
+                'text-1': '#050506',
+                'text-2': '#0b0d0e',
+                'text-3': '#151719',
+                'text-4': '#202427',
+                'text-5': '#2e3338',
+                'text-6': '#3e454c',
+                'text-7': '#505962',
+                'text-8': '#65707b',
+                'text-9': '#7e8a95',
+                'text-10': '#a0a8b1',
+                'text-11': '#c7ccd1',
+                'text-12': '#e3e5e8',
+
+                'data-success': '#5bb98b',
+                'data-failure': '#e5484d',
+                'code-mint': '#6ed6ac',
+                'code-blue': '#90a1f0',
+                'code-violet': '#c695c6',
+                'code-gray': '#c7ccd1',
+                'code-orange': '#f09745',
+                'code-yellow': '#f7c752'
             },
             fontSize: {
                 xs: ['11px', '16px'],

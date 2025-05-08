@@ -1,13 +1,15 @@
+import { IconCalendar, IconCheck } from '@tabler/icons-react';
+import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarIcon } from '@radix-ui/react-icons';
-import { addDays, addMonths, format } from 'date-fns';
-import type { DateRange } from 'react-day-picker';
+
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import { cn } from '../../../utils/utils';
 import { Button } from '../../../components/ui/button/Button';
-import { Calendar } from '../../../components/ui/Calendar';
-import type { Preset } from '../../../utils/logs';
-import { getPresetRange, matchPresetFromRange, presets } from '../../../utils/logs';
+import { getPresetRange, matchPresetFromRange, parseDateRange, presets } from '../../../utils/logs';
+import { cn } from '../../../utils/utils';
+
+import type { DateRange, Preset } from '../../../utils/logs';
+
+const dateTimeFormat = 'LLL dd, HH:mm';
 
 export const DatePicker: React.FC<{
     isLive: boolean;
@@ -16,21 +18,16 @@ export const DatePicker: React.FC<{
 }> = ({ isLive, period, onChange }) => {
     const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
 
+    const [open, setOpen] = useState<boolean>(false);
+
     const [synced, setSynced] = useState<boolean>(false);
-    const [date, setDate] = useState<DateRange | undefined>();
-    const [tmpDate, setTmpDate] = useState<DateRange | undefined>();
+    const [date, setDate] = useState<DateRange>(period);
 
-    const defaultMonth = useMemo(() => {
-        const today = new Date();
-        return today.getDate() > 15 ? today : addMonths(today, -1);
-    }, []);
+    const [customRangeInputValue, setCustomRangeInputValue] = useState<string>('');
+    const [rangeInputErrorMessage, setRangeInputErrorMessage] = useState<string>('');
 
-    const disabledBefore = useMemo(() => {
-        return addDays(new Date(), -14);
-    }, []);
-
-    const disabledAfter = useMemo(() => {
-        return new Date();
+    const rangeInputExample = useMemo(() => {
+        return `${format(subDays(new Date(), 1), dateTimeFormat)} - ${format(new Date(), dateTimeFormat)}`;
     }, []);
 
     const display = useMemo(() => {
@@ -41,39 +38,38 @@ export const DatePicker: React.FC<{
             return 'Last 24 hours';
         }
         if (date.from && date.to) {
-            return `${format(date.from, 'LLL dd, HH:mm')} - ${format(date.to, 'LLL dd, HH:mm')}`;
+            return `${format(date.from, dateTimeFormat)} - ${format(date.to, dateTimeFormat)}`;
         }
-        return format(date.from, 'LLL dd, HH:mm');
+        return format(date.from, dateTimeFormat);
     }, [date, selectedPreset]);
 
     const onClickPreset = (preset: Preset) => {
         const range = getPresetRange(preset.name);
         setSelectedPreset(preset);
-        setTmpDate(range);
+        setCustomRangeInputValue(`${format(range.from, dateTimeFormat)} - ${format(new Date(), dateTimeFormat)}`);
         onChange(range, true);
+        setOpen(false);
     };
 
-    const onClickCalendar = (e?: DateRange) => {
-        if (e?.from) {
-            e.from.setHours(0, 0, 0);
-        }
-        if (e?.to) {
-            e.to.setHours(23, 59, 59);
+    const onSubmitCustomRange = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setRangeInputErrorMessage('');
+
+        const inputValue = e.currentTarget.querySelector('input')?.value;
+        if (!inputValue) {
+            setRangeInputErrorMessage('Set custom range');
+            return;
         }
 
-        setTmpDate(e);
-
-        if (e?.from && e?.to) {
-            // Commit change only on full range
-            onChange(e, e.to.toISOString().split('T')[0] === new Date().toISOString().split('T')[0]);
+        const { dateRange, error } = parseDateRange(inputValue, dateTimeFormat, rangeInputExample);
+        if (error || !dateRange) {
+            setRangeInputErrorMessage(error || 'Invalid date');
+            return;
         }
 
-        if (!e?.from && !e?.to) {
-            // Unselected everything should fallback to default preset
-            onClickPreset({ label: 'Last 24 hours', name: 'last24h' });
-        } else {
-            setSelectedPreset(null);
-        }
+        setSelectedPreset(null);
+        onChange(dateRange, false);
+        setOpen(false);
     };
 
     useEffect(
@@ -84,7 +80,6 @@ export const DatePicker: React.FC<{
 
             setSynced(true);
             setDate(period);
-            setTmpDate(period);
             setSelectedPreset(matchPresetFromRange(period));
         },
         [period]
@@ -102,41 +97,72 @@ export const DatePicker: React.FC<{
     );
 
     return (
-        <Popover>
+        <Popover
+            open={open}
+            onOpenChange={(open) => {
+                setOpen(open);
+
+                if (open) {
+                    setCustomRangeInputValue(`${format(date?.from, dateTimeFormat)} - ${format(date?.to || new Date(), dateTimeFormat)}`);
+                    setRangeInputErrorMessage('');
+                }
+            }}
+        >
             <PopoverTrigger asChild>
                 <Button
                     variant="zombieGray"
                     size={'sm'}
                     className={cn('flex-grow truncate text-text-light-gray', period && selectedPreset?.name !== 'last24h' && 'text-white')}
                 >
-                    <CalendarIcon />
+                    <IconCalendar size={18} />
                     {display} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 text-white bg-active-gray" align="end">
-                <div className="flex gap-6">
-                    <Calendar
-                        mode="range"
-                        defaultMonth={defaultMonth}
-                        selected={tmpDate}
-                        onSelect={onClickCalendar}
-                        initialFocus
-                        numberOfMonths={2}
-                        disabled={{ before: disabledBefore, after: disabledAfter }}
-                        weekStartsOn={1}
-                        showOutsideDays={false}
-                    />
-                    <div className="flex flex-col mt-6">
+            <PopoverContent className="w-fit p-4 pt-0 rounded-md text-sm text-grayscale-11 bg-grayscale-1" align="end">
+                <div className="flex flex-col gap-4 w-80">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-xs text-grayscale-8 self-end">UTC{format(new Date(), 'XXX')}</span>
+                        <div
+                            className={cn(
+                                'h-10 flex items-center bg-grayscale-3 rounded-md',
+                                !selectedPreset && 'border border-grayscale-8',
+                                rangeInputErrorMessage && 'border border-alert-red'
+                            )}
+                        >
+                            <div className="w-12 flex-shrink-0 flex justify-center items-center h-full p-1 bg-grayscale-5 rounded-md font-medium">
+                                <IconCalendar size={18} />
+                            </div>
+                            <form onSubmit={onSubmitCustomRange} className="w-full">
+                                <input
+                                    type="text"
+                                    placeholder={rangeInputExample}
+                                    className="w-full bg-transparent text-sm text-grayscale-13 placeholder:text-grayscale-10 focus:outline-none focus:ring-0 border-none"
+                                    value={customRangeInputValue}
+                                    onChange={(e) => setCustomRangeInputValue(e.target.value)}
+                                />
+                            </form>
+                        </div>
+                        {rangeInputErrorMessage && <span className="text-alert-red text-sm">{rangeInputErrorMessage}</span>}
+                    </div>
+                    <div className="flex flex-col gap-2 w-80">
                         {presets.map((preset) => {
                             return (
-                                <Button
+                                <div
                                     key={preset.name}
-                                    variant={'zombieGray'}
-                                    className={cn('justify-end', selectedPreset?.name === preset.name && 'bg-pure-black')}
+                                    className={cn(
+                                        'flex items-center gap-2 cursor-pointer hover:bg-grayscale-3 rounded-md',
+                                        selectedPreset?.name === preset.name && 'bg-grayscale-3 text-grayscale-13'
+                                    )}
                                     onClick={() => onClickPreset(preset)}
                                 >
-                                    {preset.label}
-                                </Button>
+                                    <div className="flex-grow flex items-center gap-2">
+                                        <div className="w-12 flex-shrink-0 flex justify-center items-center p-1 bg-grayscale-5 rounded-md font-medium">
+                                            {preset.shortLabel}
+                                        </div>
+                                        <span>{preset.label}</span>
+                                    </div>
+                                    {selectedPreset?.name === preset.name && <IconCheck className="w-4 h-4 mr-2" />}
+                                </div>
                             );
                         })}
                     </div>
@@ -145,7 +171,3 @@ export const DatePicker: React.FC<{
         </Popover>
     );
 };
-
-{
-    /*  */
-}
