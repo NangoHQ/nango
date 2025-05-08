@@ -5527,6 +5527,34 @@ helpscout-mailbox:
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout-mailbox
 
+kandji:
+    display_name: Kandji
+    categories:
+        - support
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kandji.io
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/kandji
+    docs_connect: https://docs.nango.dev/integrations/all/kandji/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your kandji account
+            doc_section: '#step-1-finding-your-subdomain'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Kandji account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-2-generating-your-api-token'
+
 keap:
     display_name: Keap
     categories:
