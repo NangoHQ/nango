@@ -18,6 +18,7 @@ export type PostImmediate = Endpoint<{
         group: {
             key: string;
             maxConcurrency: number;
+            updateFlag?: boolean;
         };
         retry: {
             count: number;
@@ -63,7 +64,8 @@ const validate = validateRequest<PostImmediate>({
                 name: z.string().min(1),
                 group: z.object({
                     key: z.string().min(1),
-                    maxConcurrency: z.coerce.number()
+                    maxConcurrency: z.coerce.number(),
+                    updateFlag: z.boolean().default(false)
                 }),
                 retry: z.object({
                     count: z.number().int(),
@@ -97,6 +99,7 @@ const handler = (scheduler: Scheduler) => {
             payload: req.body.args,
             groupKey: req.body.group.key,
             groupKeyMaxConcurrency: req.body.group.maxConcurrency,
+            groupUpdateFlag: req.body.group.updateFlag,
             retryMax: req.body.retry.max,
             retryCount: req.body.retry.count,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,

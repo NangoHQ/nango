@@ -106,13 +106,15 @@ export class Orchestrator {
         connection,
         actionName,
         input,
-        logCtx
+        logCtx,
+        groupUpdateFlag = false
     }: {
         accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
         logCtx: LogContext;
+        groupUpdateFlag?: boolean;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
@@ -153,7 +155,7 @@ export class Orchestrator {
             };
             const actionResult = await this.client.executeAction({
                 name: executionId,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: { key: groupKey, maxConcurrency: 0, updateFlag: groupUpdateFlag },
                 args
             });
 
