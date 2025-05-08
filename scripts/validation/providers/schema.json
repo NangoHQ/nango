@@ -258,14 +258,17 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["endpoint"],
+                            "required": ["endpoints"],
                             "properties": {
                                 "method": {
                                     "type": "string",
                                     "enum": ["GET", "POST"]
                                 },
-                                "endpoint": {
-                                    "type": "string"
+                                "endpoints": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "base_url_override": {
                                     "type": "string"
@@ -278,6 +281,9 @@
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "data": {
+                                    "type": "object"
                                 }
                             }
                         }
@@ -289,7 +295,7 @@
                         "expires_in_ms": {
                             "type": "number"
                         },
-                        "headers": {
+                        "header": {
                             "type": "object",
                             "properties": {
                                 "alg": {
@@ -346,21 +352,7 @@
                             "enum": ["form"]
                         },
                         "token_params": {
-                            "type": "object",
-                            "properties": {
-                                "grant_type": {
-                                    "type": "string",
-                                    "enum": ["urn:salesforce:grant-type:external:cdp"]
-                                },
-                                "subject_token": {
-                                    "type": "string"
-                                },
-                                "subject_token_type": {
-                                    "type": "string",
-                                    "enum": ["urn:ietf:params:oauth:token-type:access_token"]
-                                }
-                            },
-                            "required": ["grant_type", "subject_token", "subject_token_type"]
+                            "type": "object"
                         },
                         "token_headers": {
                             "type": "object",
@@ -376,7 +368,7 @@
                             "type": "string"
                         }
                     },
-                    "required": ["body_format", "token_params", "token_headers", "token_url"]
+                    "required": ["body_format", "token_url"]
                 },
                 "scope_separator": {
                     "type": "string"
@@ -390,13 +382,17 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE"]
+                            "enum": ["WSSE", "RSA", "HMAC"]
                         }
                     },
                     "required": ["protocol"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"
+                },
+                "token_request_method": {
+                    "type": "string",
+                    "enum": ["GET"]
                 },
                 "token_params": {
                     "type": "object",
@@ -458,6 +454,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "credentials_verification_script": {
+                    "type": "string"
                 },
                 "token_url": {
                     "oneOf": [
@@ -560,6 +559,9 @@
                                     "pattern": "^#[a-z0-9-]+$"
                                 },
                                 "automated": {
+                                    "type": "boolean"
+                                },
+                                "hidden": {
                                     "type": "boolean"
                                 }
                             }

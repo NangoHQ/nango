@@ -38,6 +38,28 @@ _No setup guide yet._
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
+## API gotchas
+
+-   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
+    - Override `authorization_params` by setting only `scope: '.default'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
+    - Set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
+
+```typescript
+const { data } = await nango.createConnectSession({
+  [...],
+  integrations_config_defaults: {
+    "microsoft-business-central": {
+      authorization_params: {
+        scope: '.default',
+        "prompt": ""
+      }
+    }
+  }
+});
+```
+
+If this is not done, the app will [show a consent screen prompting the user to grant permissions](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#example-1-the-user-or-tenant-admin-has-granted-permissions) which the user will be unable to do without admin access.
+
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
 ## Going further

@@ -294,6 +294,10 @@ export function buildProxyHeaders({
                     break;
                 }
                 case 'TWO_STEP': {
+                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '', credentials: connection.credentials });
+                    break;
+                }
+                case 'JWT': {
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }

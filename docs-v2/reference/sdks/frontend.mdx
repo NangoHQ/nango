@@ -62,16 +62,20 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
     The unique token to identify your user. It is required but can be set asynchronously.
   </ResponseField>
 
-  <ResponseField name="baseURL" type="string">
-    The base URL to load the UI, default: `https://connect.nango.dev`
+  <ResponseField name="baseURL" type="string" default="https://connect.nango.dev">
+    The base URL to load the UI
   </ResponseField>
 
-  <ResponseField name="apiURL" type="string">
-    The base URL to reach Nango API, default: `https://api.nango.dev`
+  <ResponseField name="apiURL" type="string" default="https://api.nango.dev">
+    The base URL to reach Nango API
   </ResponseField>
 
   <ResponseField name="onEvent" type="function">
     A callback to listen to events sent by Nango Connect
+  </ResponseField>
+
+  <ResponseField name="detectClosedAuthWindow" type="boolean" default="false">
+    Control OAuth popup close detection. If set to true, a closed popup will be detected as a failed authorization.
   </ResponseField>
 </Expandable>
 
@@ -215,6 +219,38 @@ const result = nango.auth('<INTEGRATION-ID>', {
     </Expandable>
   </ResponseField>
 </Expandable>
+
+# Credentials Verification
+
+For some integrations using API Key or Basic authentication methods, Nango automatically verifies the provided credentials by making a test request to the integration's API. This verification ensures that the credentials are valid before creating the connection.
+
+If the credentials are invalid, Nango will throw an error with the following structure:
+
+```json
+{
+    "error": {
+        "code": "connection_test_failed",
+        "message": "The given credentials were found to be invalid. Please check the credentials and try again."
+    }
+}
+```
+
+You can handle this error in your code to provide appropriate feedback to your end users:
+
+```js
+import { AuthError } from '@nangohq/frontend';
+
+try {
+    const result = await nango.auth('<INTEGRATION-ID>', {
+        credentials: { apiKey: '<END-USER-API-KEY>' }
+    });
+} catch (error) {
+    if (error instanceof AuthError && error.type === 'connection_test_failed') {
+        // Handle invalid credentials
+        console.error('Invalid credentials provided');
+    }
+}
+```
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

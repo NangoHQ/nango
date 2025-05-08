@@ -1,12 +1,15 @@
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostDeploy } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { AnalyticsTypes, analytics, NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
-import { getOrchestrator } from '../../../utils/utils.js';
-import { logContextGetter } from '@nangohq/logs';
-import type { Lock } from '@nangohq/kvstore';
+import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
+import { logContextGetter } from '@nangohq/logs';
+import { NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, productTracking, startTrial } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationWithNangoYaml as validation } from './validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { Lock } from '@nangohq/kvstore';
+import type { PostDeploy } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -24,7 +27,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     }
 
     const body: PostDeploy['Body'] = val.data;
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
 
     // we don't allow concurrent deploys so we need to lock this
     // and reject this deploy if there is already a deploy in progress
@@ -53,6 +56,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     } = await deploy({
         environment,
         account,
+        plan,
         flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
@@ -61,6 +65,11 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         logContextGetter,
         orchestrator
     });
+
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        await startTrial(db.knex, plan);
+        productTracking.track({ name: 'account:trial:started', team: account });
+    }
 
     if (!success || !syncConfigDeployResult) {
         if (lock) {
@@ -93,7 +102,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         }
     }
 
-    void analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environment.id);
+    productTracking.track({ name: 'deploy:success', team: account });
 
     if (lock) {
         await locking.release(lock);

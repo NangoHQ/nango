@@ -1,14 +1,15 @@
-import type { Knex } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import type { ConnectSession, DBEndUser, EndUser } from '@nangohq/types';
-import { Err, Ok } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
 import { EndUserMapper } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
+import type { Knex } from '@nangohq/database';
+import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, DBEndUser, EndUser } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
-interface DBConnectSession {
+export interface DBConnectSession {
     readonly id: number;
     readonly end_user_id: number;
     readonly account_id: number;
@@ -18,7 +19,7 @@ interface DBConnectSession {
     readonly created_at: Date;
     readonly updated_at: Date | null;
     readonly allowed_integrations: string[] | null;
-    readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
+    readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
 }
 type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
@@ -180,7 +181,7 @@ export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }
     return await db
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
         .whereIn('id', function (sub) {
-            sub.select('id').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+            sub.select('id').from<DBConnectSession>(CONNECT_SESSIONS_TABLE).where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
         })
         .delete();
 }

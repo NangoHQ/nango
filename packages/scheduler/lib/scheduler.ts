@@ -218,7 +218,7 @@ export class Scheduler {
 
     /**
      * Dequeue tasks
-     * @param groupKey - Group key
+     * @param groupKey - Group key or group key pattern (e.g. 'myGroupKey*')
      * @param limit - Limit
      * @returns Task[]
      * @example

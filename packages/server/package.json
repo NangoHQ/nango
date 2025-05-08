@@ -34,8 +34,9 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
+        "@nangohq/billing": "file:../billing",
         "@workos-inc/node": "6.2.0",
-        "axios": "^1.8.2",
+        "axios": "1.9.0",
         "body-parser": "1.20.3",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.6",
@@ -49,7 +50,7 @@
         "helmet": "7.1.0",
         "jsonwebtoken": "9.0.2",
         "lodash-es": "4.17.21",
-        "mailgun.js": "8.2.1",
+        "mailgun.js": "12.0.1",
         "multer": "1.4.5-lts.1",
         "node-cron": "3.0.2",
         "oauth": "0.10.0",
@@ -63,7 +64,7 @@
         "ua-parser-js": "2.0.2",
         "uuid": "9.0.0",
         "ws": "8.18.0",
-        "zod": "3.24.1"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
@@ -84,8 +85,8 @@
         "@types/ws": "8.5.4",
         "get-port": "7.1.0",
         "nodemon": "3.1.9",
-        "type-fest": "4.32.0",
+        "type-fest": "4.40.0",
         "typescript": "5.7.3",
-        "vitest": "2.1.9"
+        "vitest": "3.1.2"
     }
 }

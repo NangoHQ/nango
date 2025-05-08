@@ -1,6 +1,7 @@
+import { envs } from '../env.js';
+
 import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow, OperationRow } from '@nangohq/types';
-import { envs } from '../env.js';
 
 const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
@@ -70,9 +71,32 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
 
     source: { type: 'keyword' },
 
-    message: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' },
+    message: { type: 'text', analyzer: 'standard', search_analyzer: 'standard', copy_to: 'meta_search' },
+
     meta: { type: 'object', enabled: false },
-    error: { type: 'object', enabled: false },
+    persistResults: {
+        type: 'object',
+        properties: {
+            model: { type: 'keyword' },
+            added: { type: 'integer' },
+            addedKeys: { type: 'keyword', copy_to: 'meta_search' },
+            updated: { type: 'integer' },
+            updatedKeys: { type: 'keyword', copy_to: 'meta_search' },
+            deleted: { type: 'integer' },
+            deleteKeys: { type: 'keyword', copy_to: 'meta_search' },
+            unchanged: { type: 'integer' },
+            unchangedKeys: { type: 'keyword', copy_to: 'meta_search' }
+        }
+    },
+    error: {
+        type: 'object',
+        properties: {
+            name: { type: 'keyword', copy_to: 'meta_search' },
+            message: { type: 'keyword', copy_to: 'meta_search' },
+            type: { type: 'keyword', copy_to: 'meta_search' },
+            payload: { enabled: false }
+        }
+    },
 
     request: {
         properties: {
@@ -83,7 +107,7 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     },
     response: {
         properties: {
-            code: { type: 'integer' },
+            code: { type: 'integer', copy_to: 'meta_search' },
             headers: { type: 'object', enabled: false }
         }
     },
@@ -100,7 +124,10 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     startedAt: { type: 'date' },
     expiresAt: { type: 'date' },
     endedAt: { type: 'date' },
-    durationMs: { type: 'integer' }
+    durationMs: { type: 'integer' },
+
+    // @ts-expect-error it's a dynamic field not stored
+    meta_search: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' }
 };
 
 export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRequest {

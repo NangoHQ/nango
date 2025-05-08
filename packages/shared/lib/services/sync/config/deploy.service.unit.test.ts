@@ -1,15 +1,20 @@
-import { expect, describe, it, vi } from 'vitest';
-import environmentService from '../../environment.service.js';
+import { describe, expect, it, vi } from 'vitest';
+
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+
 import * as SyncConfigService from './config.service.js';
+import { Orchestrator } from '../../../clients/orchestrator.js';
+import { getTestTeam } from '../../../seeders/account.seeder.js';
+import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
+import configService from '../../config.service.js';
+import environmentService from '../../environment.service.js';
 import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
-import configService from '../../config.service.js';
-import { logContextGetter } from '@nangohq/logs';
-import { Orchestrator } from '../../../clients/orchestrator.js';
+
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { DBTeam, DBEnvironment, CleanedIncomingFlowConfig } from '@nangohq/types';
-import db from '@nangohq/database';
+import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -27,8 +32,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
 describe('Sync config create', () => {
-    const environment = { id: 1, name: '' } as DBEnvironment;
-    const account = { id: 1, name: '' } as DBTeam;
+    const environment = getTestEnvironment();
+    const account = getTestTeam();
     const debug = true;
 
     it('Create sync configs correctly', async () => {
@@ -43,6 +48,7 @@ describe('Sync config create', () => {
         const emptyConfig = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -83,6 +89,7 @@ describe('Sync config create', () => {
         const { error } = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -123,6 +130,7 @@ describe('Sync config create', () => {
             return Promise.resolve({
                 id: 1,
                 unique_key: 'google',
+                display_name: null,
                 provider: 'google',
                 oauth_client_id: '123',
                 oauth_client_secret: '123',
@@ -237,6 +245,7 @@ describe('Sync config create', () => {
             DeployConfigService.deploy({
                 environment,
                 account,
+                plan: null,
                 flows: syncs,
                 nangoYamlBody: '',
                 logContextGetter,

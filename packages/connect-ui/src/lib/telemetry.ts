@@ -1,6 +1,6 @@
-import type { PostPublicConnectTelemetry } from '@nangohq/types';
-
 import { useGlobal } from './store';
+
+import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 export function telemetry(event: PostPublicConnectTelemetry['Body']['event'], dimensions?: PostPublicConnectTelemetry['Body']['dimensions']) {
     const state = useGlobal.getState();

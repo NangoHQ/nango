@@ -1,8 +1,10 @@
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicListIntegrations } from '@nangohq/types';
 import { configService, getProviders } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { integrationToPublicApi } from '../../formatters/integration.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { GetPublicListIntegrations } from '@nangohq/types';
 
 export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);

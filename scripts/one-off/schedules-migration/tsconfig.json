@@ -1,9 +1,0 @@
-{
-    "compilerOptions": {
-        "module": "es2022",
-        "moduleResolution": "Node",
-        "esModuleInterop": true,
-        "rootDir": ".",
-        "outDir": "dist"
-    }
-}

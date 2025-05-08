@@ -1,16 +1,25 @@
-import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, deleteJobsByDate } from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
-import { setTimeout } from 'node:timers/promises';
-import type { Lock } from '@nangohq/kvstore';
-import { getLocking } from '@nangohq/kvstore';
+import * as cron from 'node-cron';
+
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
+import { getLocking } from '@nangohq/kvstore';
+import { configService, connectionService, deleteExpiredInvitations, deleteJobsByDate, environmentService, getSoftDeletedSyncConfig } from '@nangohq/shared';
+import { getLogger, metrics, report } from '@nangohq/utils';
+
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
+import oauthSessionService from '../services/oauth-session.service.js';
+import { batchDelete } from './delete/batchDelete.js';
+import { deleteConnectionData } from './delete/deleteConnectionData.js';
+import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
 
-const logger = getLogger('Jobs.deleteOldData');
+import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
+import type { Lock } from '@nangohq/kvstore';
+
+const logger = getLogger('cron.deleteOldData');
 
 const cronMinutes = envs.CRON_DELETE_OLD_DATA_EVERY_MIN;
 
@@ -19,9 +28,15 @@ const deleteJobsOlderThan = envs.CRON_DELETE_OLD_JOBS_MAX_DAYS;
 
 const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS;
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
+const deleteOauthSessionOlderThan = envs.CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS;
+const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
+const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
+const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
+const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
+const deleteEnvironmentsOlderThan = envs.CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS;
 
 export function deleteOldData(): void {
-    if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN === 0) {
+    if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN <= 0) {
         return;
     }
 
@@ -37,8 +52,7 @@ export function deleteOldData(): void {
 
                 logger.info('✅ done');
             } catch (err) {
-                const e = new Error('failed_to_hard_delete_old_data', { cause: err instanceof Error ? err.message : err });
-                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+                report(new Error('cron_failed_to_hard_delete_old_data', { cause: err }));
             }
             metrics.duration(metrics.Types.JOBS_DELETE_OLD_DATA, Date.now() - start);
         }
@@ -50,59 +64,116 @@ export async function exec(): Promise<void> {
 
     logger.info(`Starting`);
 
-    const ttlMs = (cronMinutes - 1) * 60 * 1000;
-    const startTimestamp = Date.now();
+    const ttlMs = cronMinutes * 60 * 1000 - 1000;
     const lockKey = `lock:deleteOldData:cron`;
+    const deadline = new Date(Date.now() + ttlMs);
     let lock: Lock | undefined;
     try {
         try {
             lock = await locking.acquire(lockKey, ttlMs);
-        } catch {
-            logger.info(`Could not acquire lock, skipping`);
+        } catch (err) {
+            logger.info(`Could not acquire lock, skipping`, err);
             return;
         }
 
+        const opts: BatchDeleteSharedOptions = {
+            deadline,
+            limit,
+            logger
+        };
+
         // Delete jobs
-        while (true) {
-            const deleted = await deleteJobsByDate({ olderThan: deleteJobsOlderThan, limit });
-            logger.info(`Deleted ${deleted} jobs`);
-            if (deleted < limit) {
-                break;
-            }
-            if (Date.now() - startTimestamp > ttlMs) {
-                logger.info(`Time limit reached, stopping`);
-                return;
-            }
-            await setTimeout(1000);
-        }
+        await batchDelete({
+            ...opts,
+            name: 'jobs',
+            deleteFn: async () => await deleteJobsByDate({ olderThan: deleteJobsOlderThan, limit })
+        });
 
         // Delete connect session
-        while (true) {
-            const deleted = await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit });
-            logger.info(`Deleted ${deleted} connect session`);
-            if (deleted < limit) {
-                break;
-            }
-            if (Date.now() - startTimestamp > ttlMs) {
-                logger.info(`Time limit reached, stopping`);
-                return;
-            }
-            await setTimeout(1000);
-        }
+        await batchDelete({
+            ...opts,
+            name: 'connect session',
+            deleteFn: async () => await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit })
+        });
 
         // Delete private keys
-        while (true) {
-            const deleted = await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit });
-            logger.info(`Deleted ${deleted} private keys`);
-            if (deleted < limit) {
-                break;
+        await batchDelete({
+            ...opts,
+            name: 'private keys',
+            deleteFn: async () => await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit })
+        });
+
+        // Delete oauth sessions
+        await batchDelete({
+            ...opts,
+            name: 'oauth sessions',
+            deleteFn: async () => await oauthSessionService.deleteExpiredSessions({ limit, olderThan: deleteOauthSessionOlderThan })
+        });
+
+        // Delete invitations
+        await batchDelete({
+            ...opts,
+            name: 'invitations',
+            deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
+        });
+
+        // Delete integrations and all associated data
+        await batchDelete({
+            ...opts,
+            name: 'integration',
+            deleteFn: async () => {
+                const integrations = await configService.getSoftDeleted({ limit, olderThan: deleteConfigsOlderThan });
+                for (const integration of integrations) {
+                    await deleteProviderConfigData(integration, opts);
+                }
+
+                return integrations.length;
             }
-            if (Date.now() - startTimestamp > ttlMs) {
-                logger.info(`Time limit reached, stopping`);
-                return;
+        });
+
+        // Delete sync configs and all associated data
+        await batchDelete({
+            ...opts,
+            name: 'sync configs',
+            deleteFn: async () => {
+                const syncsConfigs = await getSoftDeletedSyncConfig({ limit, olderThan: deleteSyncConfigsOlderThan });
+
+                for (const syncConfig of syncsConfigs) {
+                    await deleteSyncConfigData(syncConfig, opts);
+                }
+
+                return syncsConfigs.length;
             }
-            await setTimeout(1000);
-        }
+        });
+
+        // Delete connections and all associated data
+        await batchDelete({
+            ...opts,
+            name: 'connections',
+            deleteFn: async () => {
+                const connections = await connectionService.getSoftDeleted({ limit, olderThan: deleteConnectionsOlderThan });
+
+                for (const connection of connections) {
+                    await deleteConnectionData(connection, opts);
+                }
+
+                return connections.length;
+            }
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'environments',
+            deleteFn: async () => {
+                const environments = await environmentService.getSoftDeleted({ limit, olderThan: deleteEnvironmentsOlderThan });
+
+                for (const environment of environments) {
+                    await deleteEnvironmentData(environment, opts);
+                }
+
+                return environments.length;
+            }
+        });
     } finally {
         if (lock) {
             locking.release(lock);

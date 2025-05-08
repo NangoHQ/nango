@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import yaml from 'js-yaml';
+
 import type { Provider } from '@nangohq/types';
 
 const prettyAuthModes: Record<string, string> = {
