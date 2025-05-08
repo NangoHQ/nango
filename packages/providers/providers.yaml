@@ -9361,6 +9361,37 @@ stripe-app-sandbox:
             title: App Domain
             description: The domain of your Stripe app
 
+supabase:
+    display_name: Supabase
+    categories:
+        - dev-tools
+        - storage
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.projectUrl}
+        headers:
+            authorization: Bearer ${credentials.apiKey}
+            apikey: ${credentials.apiKey}
+    docs: https://docs.nango.dev/integrations/all/supabase
+    docs_connect: https://docs.nango.dev/integrations/all/supabase/connect
+    connection_config:
+        projectUrl:
+            type: string
+            title: Project URL
+            description: The Supabase project url
+            example: project.supabase.co
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-project-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The anon or service_role API key for your Supabase project
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            pattern: '^[A-Za-z0-9\._-]+$'
+            doc_section: '#step-2-get-your-api-key'
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:
