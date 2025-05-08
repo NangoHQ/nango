@@ -5313,7 +5313,7 @@ jazzhr:
         base_url: https://api.resumatorapi.com/
         verification:
             method: GET
-            endpoint:
+            endpoints:
                 - /users?apikey=${connectionConfig.apiKey}
             base_url_override: https://api.resumatorapi.com/v1
         query:
