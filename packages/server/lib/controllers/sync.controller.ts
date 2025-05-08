@@ -23,7 +23,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
-import { getOrchestrator } from '../utils/utils.js';
+import { featureFlags, getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -218,12 +218,14 @@ class SyncController {
             );
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
+            const groupUpdateFlag = await featureFlags.isSet('scheduler:groupUpdate');
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,
                 connection,
                 actionName: action_name,
                 input,
-                logCtx
+                logCtx,
+                groupUpdateFlag
             });
 
             if (actionResponse.isOk()) {
