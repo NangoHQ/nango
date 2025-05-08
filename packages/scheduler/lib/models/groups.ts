@@ -33,12 +33,19 @@ export const DbGroup = {
     })
 };
 
-export async function upsert(db: knex.Knex, group: Omit<Group, 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Result<Group>> {
+export async function upsert(
+    db: knex.Knex,
+    group: {
+        key: string;
+        lastTaskAddedAt: Date | null;
+        maxConcurrency?: number | undefined;
+    }
+): Promise<Result<Group>> {
     const now = new Date();
     try {
         const toInsert: DbGroup = {
             key: group.key,
-            max_concurrency: group.maxConcurrency,
+            max_concurrency: group.maxConcurrency || 0, // 0 = no limit
             created_at: now,
             updated_at: now,
             last_task_added_at: group.lastTaskAddedAt,
@@ -49,9 +56,9 @@ export async function upsert(db: knex.Knex, group: Omit<Group, 'createdAt' | 'up
             .insert(toInsert)
             .onConflict('key')
             .merge({
-                max_concurrency: group.maxConcurrency,
                 last_task_added_at: group.lastTaskAddedAt,
-                deleted_at: null
+                deleted_at: null,
+                ...(group.maxConcurrency ? { max_concurrency: group.maxConcurrency } : {})
             })
             .returning('*');
         if (!dbGroup) {
