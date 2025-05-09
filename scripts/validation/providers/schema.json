@@ -14,6 +14,9 @@
                 "display_name": {
                     "type": "string"
                 },
+                "alternate_access_token_response_path": {
+                    "type": "string"
+                },
                 "auth": {
                     "type": "object",
                     "additionalProperties": true,
