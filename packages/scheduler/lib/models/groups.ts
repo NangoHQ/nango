@@ -4,6 +4,7 @@ import type { Result } from '@nangohq/utils';
 import type { Group } from '../types.js';
 
 export const GROUPS_TABLE = 'groups';
+export const GROUP_PREFIX_SEPARATOR = ':';
 
 export interface DbGroup {
     readonly key: string;
