@@ -183,19 +183,17 @@ export class Scheduler {
                     scheduleId: null
                 };
 
-                if (props.groupUpdateFlag) {
-                    const group = await groups.upsert(
-                        trx,
-                        {
-                            key: props.groupKey,
-                            maxConcurrency: props.groupKeyMaxConcurrency,
-                            lastTaskAddedAt: now
-                        },
-                        { skipLocked: true }
-                    );
-                    if (group.isErr()) {
-                        return Err(group.error);
-                    }
+                const group = await groups.upsert(
+                    trx,
+                    {
+                        key: props.groupKey,
+                        maxConcurrency: props.groupKeyMaxConcurrency,
+                        lastTaskAddedAt: now
+                    },
+                    { skipLocked: true }
+                );
+                if (group.isErr()) {
+                    return Err(group.error);
                 }
             }
 
@@ -253,16 +251,8 @@ export class Scheduler {
      * @example
      * const dequeued = await scheduler.dequeue({ groupKey: 'test', limit: 1 });
      */
-    public async dequeue({
-        groupKey,
-        limit,
-        flagDequeueLegacy = true
-    }: {
-        groupKey: string;
-        limit: number;
-        flagDequeueLegacy?: boolean;
-    }): Promise<Result<Task[]>> {
-        const dequeued = await tasks.dequeue(this.dbClient.db, { groupKey, limit, flagDequeueLegacy });
+    public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
+        const dequeued = await tasks.dequeue(this.dbClient.db, { groupKey, limit });
         if (dequeued.isOk()) {
             dequeued.value.forEach((task) => this.onCallbacks[task.state](this, task));
         }
