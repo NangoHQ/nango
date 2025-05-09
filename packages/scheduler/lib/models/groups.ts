@@ -39,6 +39,9 @@ export async function upsert(
         key: string;
         lastTaskAddedAt: Date | null;
         maxConcurrency?: number | undefined;
+    },
+    opts?: {
+        skipLocked?: boolean;
     }
 ): Promise<Result<Group>> {
     const now = new Date();
@@ -51,7 +54,7 @@ export async function upsert(
             last_task_added_at: group.lastTaskAddedAt,
             deleted_at: null
         };
-        const [dbGroup] = await db
+        const query = db
             .from<DbGroup>(GROUPS_TABLE)
             .insert(toInsert)
             .onConflict('key')
@@ -61,6 +64,10 @@ export async function upsert(
                 ...(group.maxConcurrency ? { max_concurrency: group.maxConcurrency } : {})
             })
             .returning('*');
+        if (opts?.skipLocked) {
+            query.whereExists(db.select('key').from(GROUPS_TABLE).where('key', toInsert.key).forUpdate().skipLocked());
+        }
+        const [dbGroup] = await query;
         if (!dbGroup) {
             return Err(new Error(`Failed to upsert group '${group.key}'`));
         }
