@@ -184,11 +184,15 @@ export class Scheduler {
                 };
 
                 if (props.groupUpdateFlag) {
-                    const group = await groups.upsert(trx, {
-                        key: props.groupKey,
-                        maxConcurrency: props.groupKeyMaxConcurrency,
-                        lastTaskAddedAt: now
-                    });
+                    const group = await groups.upsert(
+                        trx,
+                        {
+                            key: props.groupKey,
+                            maxConcurrency: props.groupKeyMaxConcurrency,
+                            lastTaskAddedAt: now
+                        },
+                        { skipLocked: true }
+                    );
                     if (group.isErr()) {
                         return Err(group.error);
                     }
