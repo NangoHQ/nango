@@ -1,0 +1,49 @@
+---
+title: Dropbox Sign OAuth - How do I link my account?
+sidebarTitle: Dropbox Sign OAuth
+---
+
+# Overview
+
+To authenticate with Dropbox Sign OAuth, you need:
+1. **Client ID** - A unique identifier for your application.
+2. **Client Secret** - A confidential key used to authenticate the identity of the application.
+
+This guide will walk you through creating an app and obtaining these credentials within Dropbox Sign.
+
+### Prerequisites:
+
+- You must have a Dropbox Sign account.
+
+### Instructions:
+
+#### Step 1: Creating an App
+1. Log in to your [Dropbox Sign Developer Portal](https://app.hellosign.com/oauth/manage).
+2. Click **Create an App**.
+3. Enable **OAuth** and fill in the required information:
+   - **App Name**: Your application's name
+   - **OAuth Callback**: Add `https://api.nango.dev/oauth/callback` or your own callback URL from your Nango dashboard
+   - **Scopes**: Select the actions your app needs to perform
+4. Click **Create App** to generate your credentials.
+
+#### Step 2: Obtaining Credentials
+1. After creating your app, you'll be provided with:
+   - **Client ID**
+   - **Client Secret**
+2. Make a copy of these credentials, as they will be needed when configuring your integration in Nango. The **Client Secret** will not be shown again, so ensure you store it securely.
+
+#### Step 3: App Approval
+1. Before your app can be used in production, it needs to be approved by Dropbox Sign.
+2. You can test your app by authorizing it from your own account while building.
+3. When ready for production, follow the [App Approval Process](https://developers.hellosign.com/docs/app-approval/overview/).
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret**:
+1. Open the form where you need to authenticate with Dropbox Sign OAuth.
+2. Enter the **Client ID** and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/dropbox-sign-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dropbox Sign OAuth. 
