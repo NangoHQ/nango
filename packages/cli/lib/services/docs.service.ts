@@ -1,8 +1,11 @@
 import { promises as fs } from 'node:fs';
-import { parse } from './config.service.js';
-import type { NangoYamlV2Endpoint, NangoYamlModel, NangoYamlV2IntegrationSync, NangoYamlV2IntegrationAction } from '@nangohq/types';
+
 import chalk from 'chalk';
+
 import { printDebug } from '../utils.js';
+import { parse } from './config.service.js';
+
+import type { NangoYamlModel, NangoYamlV2Endpoint, NangoYamlV2IntegrationAction, NangoYamlV2IntegrationSync } from '@nangohq/types';
 
 type NangoSyncOrAction = NangoYamlV2IntegrationSync | NangoYamlV2IntegrationAction;
 
@@ -137,6 +140,14 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
     const endpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
     const [endpoint] = endpoints;
 
+    const modelList = Array.isArray(scriptConfig.output) ? scriptConfig.output : [scriptConfig.output];
+    const models = modelList.length > 0 ? modelList.map((model) => `\`${model}\``).join(', ') : '_None_';
+    const modelLabel = modelList.length > 1 ? 'Models' : 'Model';
+
+    const inputModelList =
+        endpointType === 'action' && scriptConfig.input ? (Array.isArray(scriptConfig.input) ? scriptConfig.input : [scriptConfig.input]) : [];
+    const inputModels = inputModelList.length > 0 ? inputModelList.map((model) => `\`${model}\``).join(', ') : '_None_';
+
     const generalInfo = [
         `## General Information`,
         ``,
@@ -144,8 +155,13 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
         `- **Version:** ${scriptConfig.version ? scriptConfig.version : '0.0.1'}`,
         `- **Group:** ${endpoint && typeof endpoint !== 'string' && 'group' in endpoint ? endpoint?.group : 'Others'}`,
         `- **Scopes:** ${scopes ? `\`${scopes}\`` : '_None_'}`,
-        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`
+        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`,
+        `- **${modelLabel}:** ${models}`
     ];
+
+    if (endpointType === 'action') {
+        generalInfo.push(`- **Input Model${inputModelList.length > 1 ? 's' : ''}:** ${inputModels}`);
+    }
 
     if (isForIntegrationTemplates) {
         generalInfo.push(`- **Code:** [github.com](https://github.com/NangoHQ/integration-templates/tree/main/integrations/${scriptPath}.ts)`);
