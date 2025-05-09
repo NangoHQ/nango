@@ -172,7 +172,7 @@ export async function getFreshOAuth2Credentials({
 
     let newCredentials: OAuth2Credentials;
     try {
-        newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, 'OAUTH2') as OAuth2Credentials;
+        newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, 'OAUTH2', provider) as OAuth2Credentials;
 
         if (!newCredentials.refresh_token && credentials.refresh_token != null) {
             newCredentials.refresh_token = credentials.refresh_token;

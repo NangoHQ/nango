@@ -1017,7 +1017,7 @@ class OAuthController {
             let parsedRawCredentials: OAuth2Credentials;
 
             try {
-                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, 'OAUTH2') as OAuth2Credentials;
+                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
             } catch (err) {
                 void logCtx.error('The OAuth token response from the server could not be parsed - OAuth flow failed.', { error: err, rawCredentials });
                 await logCtx.failed();

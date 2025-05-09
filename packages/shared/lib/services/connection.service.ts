@@ -839,10 +839,15 @@ class ConnectionService {
 
         switch (authMode) {
             case 'OAUTH2': {
-                if (!rawCreds['access_token']) {
-                    throw new NangoError(`incomplete_raw_credentials`);
+                let accessToken: string | undefined = rawCreds['access_token'];
+
+                if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
+                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
                 }
 
+                if (!accessToken) {
+                    throw new NangoError(`incomplete_raw_credentials`);
+                }
                 let expiresAt: Date | undefined;
 
                 if (rawCreds['expires_at']) {
@@ -853,7 +858,7 @@ class ConnectionService {
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
-                    access_token: rawCreds['access_token'],
+                    access_token: accessToken,
                     refresh_token: rawCreds['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
@@ -1288,7 +1293,7 @@ class ConnectionService {
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
-            const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
+            const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
