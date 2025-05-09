@@ -7072,6 +7072,29 @@ openai-admin:
             title: Admin Key
             description: The Admin API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-admin-key'
+open-hands:
+    display_name: Open Hands
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.all-hands.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/conversations
+    docs: https://docs.nango.dev/integrations/all/open-hands
+    docs_connect: https://docs.nango.dev/integrations/all/open-hands/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Open Hands account
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
+            doc_section: '#step-1-finding-your-api-key'
 
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
