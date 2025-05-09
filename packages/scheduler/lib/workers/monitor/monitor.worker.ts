@@ -4,6 +4,7 @@ import * as tasks from '../../models/tasks.js';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { envs } from '../../env.js';
 
 export class MonitorWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -22,7 +23,7 @@ export class MonitorChild extends SchedulerWorkerChild {
             name: 'Monitor',
             parent,
             db,
-            tickIntervalMs: 100
+            tickIntervalMs: envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS
         });
     }
 
