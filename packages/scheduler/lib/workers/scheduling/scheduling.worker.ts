@@ -9,6 +9,7 @@ import * as tasks from '../../models/tasks.js';
 import * as schedules from '../../models/schedules.js';
 import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
 import tracer from 'dd-trace';
+import { envs } from '../../env.js';
 
 export class SchedulingWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -27,7 +28,7 @@ export class SchedulingChild extends SchedulerWorkerChild {
             name: 'Scheduling',
             parent,
             db,
-            tickIntervalMs: 100
+            tickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS
         });
     }
 
