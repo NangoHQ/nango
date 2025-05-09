@@ -1,19 +1,57 @@
 import type { InternalNango as Nango } from '../../post-connection.js';
-import axios from 'axios';
+import type { OAuth2Credentials } from '@nangohq/types';
+import jwt from 'jsonwebtoken';
+
+interface MicrosoftDecodedToken {
+    aud: string;
+    iss: string;
+    iat: number;
+    nbf: number;
+    exp: number;
+    acct: number;
+    acr: string;
+    aio: string;
+    amr: string[];
+    app_displayname: string;
+    appid: string;
+    appidacr: string;
+    family_name: string;
+    given_name: string;
+    idtyp: string;
+    ipaddr: string;
+    name: string;
+    oid: string;
+    platf: string;
+    puid: string;
+    rh: string;
+    scp: string;
+    signin_state: string[];
+    sub: string;
+    tenant_region_scope: string;
+    tid: string;
+    unique_name: string;
+    upn: string;
+    uti: string;
+    ver: string;
+    wids: string[];
+    xms_ftd: string;
+    xms_idrel: string;
+    xms_st: {
+        sub: string;
+    };
+    xms_tcdt: number;
+}
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
-    const response = await nango.proxy({
-        endpoint: '/v1.0/organization',
-        method: 'GET',
-        providerConfigKey: connection.provider_config_key
-    });
+    const accessToken = (connection.credentials as OAuth2Credentials).access_token;
+    const decoded = jwt.decode(accessToken) as MicrosoftDecodedToken;
 
-    if (axios.isAxiosError(response) || !response || !response.data) {
+    if (!decoded || typeof decoded !== 'object') {
         return;
     }
 
-    const [{ id }] = response.data.value;
+    const id = decoded.tid;
 
     await nango.updateConnectionConfig({ tenantId: id });
 }
