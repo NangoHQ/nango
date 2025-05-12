@@ -92,7 +92,7 @@ export const plansList: PlanDefinition[] = [
     {
         code: 'starter',
         title: 'Starter',
-        description: '',
+        description: 'Tailored to your scale.',
         canUpgrade: false,
         canDowngrade: false,
         hidden: true,
@@ -109,7 +109,7 @@ export const plansList: PlanDefinition[] = [
     {
         code: 'scale',
         title: 'Scale',
-        description: '',
+        description: 'Tailored to your scale.',
         canUpgrade: false,
         canDowngrade: false,
         hidden: true,

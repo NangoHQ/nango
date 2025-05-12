@@ -5,6 +5,7 @@ import * as schedules from '../../models/schedules.js';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { envs } from '../../env.js';
 
 export class CleanupWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -23,7 +24,7 @@ export class CleanupChild extends SchedulerWorkerChild {
             name: 'Cleanup',
             parent,
             db,
-            tickIntervalMs: 10_000
+            tickIntervalMs: envs.ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS
         });
     }
 

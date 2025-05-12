@@ -19,37 +19,40 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const task = (
-            await tasks.create(db, {
-                name: 'Test Task',
-                payload: { foo: 'bar' },
-                groupKey: 'groupA',
-                retryMax: 3,
-                retryCount: 1,
-                startsAfter: new Date(),
-                createdToStartedTimeoutSecs: 10,
-                startedToCompletedTimeoutSecs: 20,
-                heartbeatTimeoutSecs: 5,
-                scheduleId: null
-            })
-        ).unwrap();
-        expect(task).toMatchObject({
-            id: expect.any(String),
+        const props = {
             name: 'Test Task',
             payload: { foo: 'bar' },
             groupKey: 'groupA',
             retryMax: 3,
             retryCount: 1,
-            startsAfter: expect.toBeIsoDateTimezone(),
-            createdAt: expect.toBeIsoDateTimezone(),
+            startsAfter: new Date(),
             createdToStartedTimeoutSecs: 10,
             startedToCompletedTimeoutSecs: 20,
+            heartbeatTimeoutSecs: 5,
+            scheduleId: null,
+            retryKey: '00000000-0000-0000-0000-000000000000',
+            ownerKey: 'ownerA'
+        };
+        const task = (await tasks.create(db, props)).unwrap();
+        expect(task).toMatchObject({
+            id: expect.any(String),
+            name: props.name,
+            payload: props.payload,
+            groupKey: props.groupKey,
+            retryMax: props.retryMax,
+            retryCount: props.retryCount,
+            startsAfter: expect.toBeIsoDateTimezone(),
+            createdAt: expect.toBeIsoDateTimezone(),
+            createdToStartedTimeoutSecs: props.createdToStartedTimeoutSecs,
+            startedToCompletedTimeoutSecs: props.startedToCompletedTimeoutSecs,
             state: 'CREATED',
             lastStateTransitionAt: expect.toBeIsoDateTimezone(),
             lastHeartbeatAt: expect.toBeIsoDateTimezone(),
             output: null,
             terminated: false,
-            scheduleId: null
+            scheduleId: props.scheduleId,
+            retryKey: props.retryKey,
+            ownerKey: props.ownerKey
         });
     });
     it('should have their heartbeat updated', async () => {
@@ -125,19 +128,19 @@ describe('Task', () => {
         const t0 = await createTask(db, { groupKey, groupMaxConcurrency });
         const t1 = await createTask(db, { groupKey, groupMaxConcurrency });
 
-        let dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        let dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(2);
         expect(dequeued[0]).toMatchObject({ id: t0.id, state: 'STARTED' });
         expect(dequeued[1]).toMatchObject({ id: t1.id, state: 'STARTED' });
 
         // group has reached its max concurrency, so no more tasks should be dequeued
         const t2 = await createTask(db, { groupKey, groupMaxConcurrency });
-        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(0);
 
         // dequeuing tasks with different group key should not be affected
         const t3 = await createTask(db, { groupKey: 'B', groupMaxConcurrency });
-        dequeued = (await tasks.dequeue(db, { groupKey: 'B', limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey: 'B', limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(1);
         expect(dequeued[0]).toMatchObject({ id: t3.id, state: 'STARTED' });
 
@@ -146,7 +149,7 @@ describe('Task', () => {
         await succeedTask(db, t1.id);
 
         // group should be able to dequeue again
-        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10, flagDequeueLegacy: false })).unwrap();
+        dequeued = (await tasks.dequeue(db, { groupKey, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(1);
         expect(dequeued[0]).toMatchObject({ id: t2.id, state: 'STARTED' });
     });
@@ -162,7 +165,7 @@ describe('Task', () => {
         }, 1);
         const dequeuePromises: Promise<Task[]>[] = [];
         const dequeueInterval = setInterval(() => {
-            dequeuePromises.push(tasks.dequeue(db, { groupKey, limit: 100, flagDequeueLegacy: false }).then((d) => d.unwrap()));
+            dequeuePromises.push(tasks.dequeue(db, { groupKey, limit: 100 }).then((d) => d.unwrap()));
         }, 1);
 
         await new Promise((resolve) => void setTimeout(resolve, 2000));
@@ -270,7 +273,9 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps> & { gr
             createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
             startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
             heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
-            scheduleId: props?.scheduleId || null
+            scheduleId: props?.scheduleId || null,
+            retryKey: props?.retryKey || null,
+            ownerKey: props?.ownerKey || null
         })
         .then((t) => t.unwrap());
 }
