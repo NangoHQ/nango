@@ -101,6 +101,7 @@ export interface ProviderOAuth2 extends BaseProvider {
         grant_type: 'refresh_token';
     };
     authorization_method?: OAuthAuthorizationMethodType;
+    alternate_access_token_response_path?: string;
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
