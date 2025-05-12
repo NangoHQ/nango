@@ -920,7 +920,6 @@ class OAuthController {
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
 
-        // no need to do anything here until the request is approved
         if (session.authMode === 'CUSTOM' && req.query['setup_action'] === 'update' && installationId) {
             // this means the update request was performed from the provider itself
             if (!req.query['state']) {
@@ -929,11 +928,8 @@ class OAuthController {
                 return;
             }
 
-            void logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
-            await logCtx.success();
-
-            await publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
-            return;
+            // this could be a new connection that is actually using updated permissions
+            // so we continue to upsert the connection to be sure
         }
 
         // check for oauth overrides in the connection config
