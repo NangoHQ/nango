@@ -28,7 +28,6 @@ export interface Task {
 
 interface WithGroupKeyMaxConcurrency {
     groupKeyMaxConcurrency?: number | undefined;
-    groupUpdateFlag?: boolean | undefined;
 }
 export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'> & WithGroupKeyMaxConcurrency;
 export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> & WithGroupKeyMaxConcurrency;
