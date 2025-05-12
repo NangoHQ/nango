@@ -3434,6 +3434,62 @@ integrations:
                     topics_discussed: string[]
                     key_action_items: string[]
                 competitor_sentiments: string[]
+    clicksend:
+        actions:
+            send-sms:
+                description: Sends an SMS message via ClickSend's API.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms/send
+                    group: SMS
+                input: ClickSendSendSmsInput
+                output: Sms
+            fetch-account:
+                description: Fetches basic information about the ClickSend account.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /account
+                    group: Account
+                output: Account
+        syncs:
+            sms-history:
+                description: Fetches the history of SMS messages sent through ClickSend.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /sms/history
+                    group: SMS
+                sync_type: incremental
+                track_deletes: false
+                runs: every half hour
+                auto_start: true
+                output: Sms
+        models:
+            ClickSendSendSmsInput:
+                to: string
+                body: string
+            Sms:
+                id: string
+                to: string
+                from: string
+                body: string
+                status: >-
+                    QUEUED | COMPLETED | SCHEDULED | WAIT_APPROVAL | FAILED | CANCELLED |
+                    CANCELLED_AFTER_REVIEW | RECEIVED | SENT | SUCCESS
+                createdAt: string
+                updatedAt: string
+            Account:
+                id: string
+                name: string
+                email: string
+                phone: string
+                balance: string
+                country: string
+                timezone: string
+                accountName: string
+                accountBillingEmail: string
     confluence:
         syncs:
             spaces:
