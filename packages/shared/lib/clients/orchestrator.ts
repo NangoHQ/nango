@@ -106,13 +106,15 @@ export class Orchestrator {
         connection,
         actionName,
         input,
-        logCtx
+        logCtx,
+        groupUpdateFlag = false
     }: {
         accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
         logCtx: LogContext;
+        groupUpdateFlag?: boolean;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
@@ -153,7 +155,7 @@ export class Orchestrator {
             };
             const actionResult = await this.client.executeAction({
                 name: executionId,
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0, updateFlag: groupUpdateFlag },
                 args
             });
 
@@ -290,7 +292,7 @@ export class Orchestrator {
             };
             const webhookResult = await this.client.executeWebhook({
                 name: executionId,
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 args
             });
             const res = webhookResult.mapError((err) => {
@@ -395,7 +397,7 @@ export class Orchestrator {
             };
             const result = await this.client.executeOnEvent({
                 name: executionId,
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 args,
                 async
             });
@@ -698,7 +700,7 @@ export class Orchestrator {
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: frequencyMs.value,
-                groupKey,
+                group: { key: groupKey, maxConcurrency: 0 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour

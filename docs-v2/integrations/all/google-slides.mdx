@@ -1,0 +1,45 @@
+---
+title: Google Slides
+sidebarTitle: Google Slides
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/google-slides/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/google-slides/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-slides.mdx)</Note>
+
+## Useful links
+
+-   [Google Slides access token specs](https://cloud.google.com/iam/docs/reference/sts/rest/v1/TopLevel/token#response-body)
+-   [Google Slides OAuth scopes](https://developers.google.com/identity/protocols/oauth2/scopes#slides)
+-   [Google Slides API docs](https://developers.google.com/workspace/slides/api/reference/rest)
+-   [Google Slides API Libraries](https://developers.google.com/workspace/slides/api/guides/libraries)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-slides.mdx)</Note>
+
+## API gotchas
+
+-   While setting up the OAuth app, use the `https://www.googleapis.com/auth/presentations` scope for full access, or `https://www.googleapis.com/auth/presentations.readonly` for read-only access to Google Slides presentations.
+-   To enable Google Slides API in your Google Cloud project, use: https://console.cloud.google.com/flows/enableapi?apiid=slides.googleapis.com
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-slides.mdx)</Note> 
