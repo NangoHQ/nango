@@ -4099,6 +4099,29 @@ grammarly:
                 - /v2/analytics/users
     docs: https://docs.nango.dev/integrations/all/grammarly
 
+grammarly-scim:
+    display_name: Grammarly SCIM
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://sso.grammarly.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/scim/Users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grammarly-scim
+    docs_connect: https://docs.nango.dev/integrations/all/grammarly-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Grammarly account
+            doc_section: '#step-1-finding-grammarly-scim-credentials'
+            example: 'Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz'
+
 guru:
     display_name: Guru
     categories:
