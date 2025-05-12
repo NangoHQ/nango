@@ -156,6 +156,8 @@ In your frontend, run the OAuth flow with `nango.auth` and show the Google drive
   </Step>
 </Steps>
 
+You can find a complete implementation in the [Nango Sample App](https://github.com/NangoHQ/sample-app)
+
 ## File Type Support
 
 The integration supports different file types through specific actions:
@@ -182,6 +184,8 @@ Note: The same OAuth credentials work across all these providers.
    - Verify you're using the correct provider for the file type
    - Check the file permissions in Google Drive
    - Ensure the file size **does not exceed 10MB**
+
+4. **Downloading Content**: When downloading content from Google Drive, do not use the `fetch-document` action. Instead, use the [Nango proxy for downloading content](https://docs.nango.dev/guides/proxy-requests#proxy-requests).
 
 ## Useful Links
 
