@@ -38,11 +38,12 @@ _No setup guide yet._
 
 ## API gotchas
 
--   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.  
+-   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.
     To engage with the Microsoft Advertising API, developers must initially retrieve the access token utilizing the [backend API](https://docs.nango.dev/reference/api/connection/get). This token should then be utilized with [official client libraries](https://learn.microsoft.com/en-us/advertising/guides/client-libraries?view=bingads-13) or a [SOAP Client](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-quick-start?view=bingads-13) for further interaction.
 -   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
-    - Set the scopes to [`.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope) to ensure the permissions remain the same as those granted at the organization level.
+    - Override `authorization_params` by setting only `scope: '.default'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
+    - Override `authorization_params` by setting only `scope: '.default offline_access'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
+    - Set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
 
 ```typescript
 const { data } = await nango.createConnectSession({
@@ -59,9 +60,9 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "microsoft-ads": {
       authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
+        scope: '.default offline_access',
+        "prompt": ""
+      }
     }
   }
 });

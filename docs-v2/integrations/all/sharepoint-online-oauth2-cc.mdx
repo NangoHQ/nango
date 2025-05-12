@@ -42,10 +42,10 @@ _No setup guide yet._
 ## API gotchas
 
 -   Nango supports both SharePoint Online v1 and v2, providing flexibility for integrations depending on your requirements. SharePoint v1 refers to the older REST API, which uses legacy authentication methods like SharePoint Online (SPO) or older OAuth implementations. Its endpoints follow the pattern `https://<your-tenant>.sharepoint.com/_api/`, and it supports basic SharePoint operations. However, v1 lacks modern features such as delta queries for incremental sync and deep integration with Microsoft 365.
--   Sharepoint Online v2, on the other hand, is a modernized version aligned with the Microsoft Graph API. It uses OAuth 2.0 with the Microsoft Identity Platform (formerly Azure AD) for secure and scalable authentication. Endpoints for v2 are primarily accessed through `https://graph.microsoft.com/v1.0/sites/...`, and it offers advanced capabilities like delta queries for incremental sync, enhanced performance, and seamless integration with Microsoft 365 services. 
+-   Sharepoint Online v2, on the other hand, is a modernized version aligned with the Microsoft Graph API. It uses OAuth 2.0 with the Microsoft Identity Platform (formerly Azure AD) for secure and scalable authentication. Endpoints for v2 are primarily accessed through `https://graph.microsoft.com/v1.0/sites/...`, and it offers advanced capabilities like delta queries for incremental sync, enhanced performance, and seamless integration with Microsoft 365 services.
 -   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
-    - Set the scopes to [`.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope) to ensure the permissions remain the same as those granted at the organization level.
+    - Override `authorization_params` by setting only `scope: '.default offline_access'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
+    - Set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
 
 ```typescript
 const { data } = await nango.createConnectSession({
@@ -53,9 +53,9 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "sharepoint-online-oauth2-cc": {
       authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
+        scope: '.default offline_access',
+        "prompt": ""
+      }
     }
   }
 });

@@ -168,6 +168,10 @@ export const ENVS = z.object({
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.string().url().optional(),
 
+    // SMTP
+    SMTP_URL: z.string().url().optional(),
+    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
+
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
     NANGO_DB_READ_URL: z.string().url().optional(),

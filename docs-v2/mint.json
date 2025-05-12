@@ -494,6 +494,7 @@
                 "integrations/all/jira-data-center",
                 "integrations/all/jira-data-center-basic",
                 "integrations/all/jotform",
+                "integrations/all/kandji",
                 "integrations/all/keap",
                 "integrations/all/keeper-scim",
                 "integrations/all/klaviyo",
@@ -762,12 +763,20 @@
                             "group": "Integrations",
                             "pages": [
                                 "reference/api/integration/list",
-                                "reference/api/integration/listLegacy",
                                 "reference/api/integration/get",
-                                "reference/api/integration/getLegacy",
                                 "reference/api/integration/create",
                                 "reference/api/integration/update",
                                 "reference/api/integration/delete"
+                            ]
+                        },
+                        {
+                            "group": "Configs (deprecated)",
+                            "pages": [
+                                "reference/api/configs/listLegacy",
+                                "reference/api/configs/getLegacy",
+                                "reference/api/configs/createLegacy",
+                                "reference/api/configs/updateLegacy",
+                                "reference/api/configs/deleteLegacy"
                             ]
                         },
                         {
