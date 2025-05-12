@@ -22,3 +22,4 @@ export * from './auth.js';
 export * from './once.js';
 export * from './http.js';
 export * from './version.js';
+export * from './wait.js';

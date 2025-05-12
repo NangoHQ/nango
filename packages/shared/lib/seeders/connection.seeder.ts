@@ -36,7 +36,8 @@ export const createConnectionSeed = async ({
     endUser,
     connectionId,
     rawCredentials,
-    connectionConfig
+    connectionConfig,
+    ...rest
 }: {
     env: DBEnvironment;
     provider: string;
@@ -44,14 +45,17 @@ export const createConnectionSeed = async ({
     connectionId?: string;
     rawCredentials?: AuthCredentials;
     connectionConfig?: ConnectionConfig;
-}): Promise<DBConnection> => {
+} & Partial<
+    Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id'>
+>): Promise<DBConnection> => {
     const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
         parsedRawCredentials: rawCredentials || ({} as AuthCredentials),
         connectionConfig: connectionConfig || {},
-        environmentId: env.id
+        environmentId: env.id,
+        ...rest
     });
 
     if (!result || result[0] === undefined || !result[0].connection.id) {

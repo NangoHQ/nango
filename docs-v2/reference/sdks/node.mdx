@@ -173,14 +173,6 @@ await nango.getIntegration(<INTEGRATION-ID>);
     <ResponseField name="include" type="array">
         Include sensitive data. Allowed values: `webhook`
     </ResponseField>
-
-    <ResponseField name="providerConfigKey" type="string" required deprecated>
-        The integration ID.
-    </ResponseField>
-
-    <ResponseField name="includeIntegrationCredentials" type="boolean" deprecated>
-        Defaults to `false`.
-    </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -204,6 +196,9 @@ await nango.getIntegration(<INTEGRATION-ID>);
 Create a new integration.
 
 ```js
+await nango.createIntegration({ provider: <PROVIDER-ID>, unique_key: <UNIQUE_KEY>, [...] });
+
+// Deprecated
 await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 ```
 
@@ -214,29 +209,17 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
         The ID of the API provider in Nango (cf. [providers.yaml](https://nango.dev/providers.yaml) for a list of API provider IDs.)
     </ResponseField>
 
-    <ResponseField name="providerConfigKey" type="string" required>
+    <ResponseField name="unique_key" type="string" required>
         The integration ID.
+    </ResponseField>
+
+    <ResponseField name="display_name" type="string">
+        The display name of this integration
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
     </ResponseField>
-
-    <ResponseField name="credentials" type="Record<string, string>">
-    <Expandable title="credentials" defaultOpen>
-      <ResponseField name="oauth_client_id" type="string">
-        The OAuth client ID.
-      </ResponseField>
-
-      <ResponseField name="oauth_client_secret" type="string">
-        The OAuth client secret.
-      </ResponseField>
-
-      <ResponseField name="oauth_scopes" type="string">
-        The list of OAuth scopes
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -244,9 +227,12 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
+    "data": {
         "unique_key": "slack-nango-community",
-        "provider": "slack"
+        "provider": "slack",
+        "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "created_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z",
     }
 }
 ```
@@ -254,42 +240,29 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
 ### Update an integration
 
-Edits an integration (only for OAuth APIs).
+Patch an integration, all fields are optional.
 
 ```js
+await nango.updateIntegration({ uniqueKey: <UNIQUE_KEY> }, { [...body] });
+
+// Deprecated
 await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="provider" type="string" required>
-        The ID of the API provider in Nango (cf. [providers.yaml](https://nango.dev/providers.yaml) for a list of API provider IDs.)
+    <ResponseField name="unique_key" type="string">
+        The integration ID.
     </ResponseField>
 
-    <ResponseField name="providerConfigKey" type="string" required>
-        The integration ID.
+    <ResponseField name="display_name" type="string">
+        The display name of this integration
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
     </ResponseField>
-
-    <ResponseField name="credentials" type="Record<string, string>">
-    <Expandable title="credentials" defaultOpen>
-      <ResponseField name="oauth_client_id" type="string">
-        The OAuth client ID.
-      </ResponseField>
-
-      <ResponseField name="oauth_client_secret" type="string">
-        The OAuth client secret.
-      </ResponseField>
-
-      <ResponseField name="oauth_scopes" type="string">
-        The list of OAuth scopes
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -297,9 +270,12 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
+    "data": {
         "unique_key": "slack-nango-community",
-        "provider": "slack"
+        "provider": "slack",
+        "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "created_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z",
     }
 }
 ```
@@ -310,13 +286,13 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 Deletes a specific integration.
 
 ```js
-await nango.deleteIntegration(<INTEGRATION-ID>);
+await nango.deleteIntegration(<UNIQUE_KEY>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
+    <ResponseField name="uniqueKey" type="string" required>
         The integration ID.
     </ResponseField>
 </Expandable>
@@ -326,10 +302,7 @@ await nango.deleteIntegration(<INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
-        "unique_key": "slack-nango-community",
-        "provider": "slack"
-    }
+    "success": true
 }
 ```
 </Expandable>
