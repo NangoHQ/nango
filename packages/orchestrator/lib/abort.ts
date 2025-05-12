@@ -40,8 +40,7 @@ export async function scheduleAbortTask({ scheduler, task, reason }: { scheduler
         retryCount: 0,
         createdToStartedTimeoutSecs: 60,
         startedToCompletedTimeoutSecs: 60,
-        heartbeatTimeoutSecs: 60,
-        ownerKey: aborted.value.ownerKey
+        heartbeatTimeoutSecs: 60
     });
     if (abortTask.isErr()) {
         logger.error(`Failed to create abort task`, abortTask.error);

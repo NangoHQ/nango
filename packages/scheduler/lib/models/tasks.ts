@@ -1,19 +1,16 @@
-import type { JsonValue, SetOptional } from 'type-fest';
+import type { JsonValue } from 'type-fest';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
-import { uuidv7, uuidv4 } from 'uuidv7';
+import { uuidv7 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
 import { GROUPS_TABLE } from './groups.js';
 
 export const TASKS_TABLE = 'tasks';
 
-export type TaskProps = SetOptional<
-    Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>,
-    'retryKey'
->;
+export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -63,8 +60,6 @@ export interface DbTask {
     output: JsonValue | null;
     terminated: boolean;
     readonly schedule_id: string | null;
-    readonly retry_key: string | null;
-    readonly owner_key: string | null;
 }
 export const DbTask = {
     to: (task: Task): DbTask => {
@@ -85,9 +80,7 @@ export const DbTask = {
             last_heartbeat_at: task.lastHeartbeatAt,
             output: task.output,
             terminated: task.terminated,
-            schedule_id: task.scheduleId,
-            retry_key: task.retryKey,
-            owner_key: task.ownerKey
+            schedule_id: task.scheduleId
         };
     },
     from: (dbTask: DbTask): Task => {
@@ -108,9 +101,7 @@ export const DbTask = {
             lastHeartbeatAt: dbTask.last_heartbeat_at,
             output: dbTask.output,
             terminated: dbTask.terminated,
-            scheduleId: dbTask.schedule_id,
-            retryKey: dbTask.retry_key,
-            ownerKey: dbTask.owner_key
+            scheduleId: dbTask.schedule_id
         };
     }
 };
@@ -126,8 +117,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         lastHeartbeatAt: now,
         terminated: false,
         output: null,
-        scheduleId: taskProps.scheduleId,
-        retryKey: taskProps.retryKey || uuidv4()
+        scheduleId: taskProps.scheduleId
     };
     try {
         const inserted = await db.from<DbTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');

@@ -15,7 +15,6 @@ export type PostImmediate = Endpoint<{
     Path: typeof path;
     Body: {
         name: string;
-        ownerKey?: string;
         group: {
             key: string;
             maxConcurrency: number;
@@ -62,7 +61,6 @@ const validate = validateRequest<PostImmediate>({
         const schema = z
             .object({
                 name: z.string().min(1),
-                ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
                 group: z.object({
                     key: z.string().min(1),
                     maxConcurrency: z.coerce.number()
@@ -101,7 +99,6 @@ const handler = (scheduler: Scheduler) => {
             groupKeyMaxConcurrency: req.body.group.maxConcurrency,
             retryMax: req.body.retry.max,
             retryCount: req.body.retry.count,
-            ownerKey: req.body.ownerKey || null,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
             heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat

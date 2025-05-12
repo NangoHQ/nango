@@ -70,7 +70,6 @@ interface TaskCommonFields {
     groupKey: string;
     state: TaskState;
     attempt: number;
-    ownerKey: string | null;
 }
 interface TaskCommon extends TaskCommonFields {
     isSync(this: OrchestratorTask): this is TaskSync;
@@ -91,7 +90,6 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         connection: props.connection,
         groupKey: props.groupKey,
         reason: props.reason,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -114,7 +112,6 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -139,7 +136,6 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         connection: props.connection,
         groupKey: props.groupKey,
         reason: props.reason,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -161,7 +157,6 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => true,
@@ -184,7 +179,6 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => true,
         isAction: (): this is TaskAction => false,
@@ -207,7 +201,6 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
-        ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

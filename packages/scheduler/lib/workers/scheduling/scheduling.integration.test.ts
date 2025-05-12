@@ -145,9 +145,7 @@ async function addTask(
         heartbeat_timeout_secs: 1,
         last_heartbeat_at: new Date(),
         output: {},
-        terminated: params?.state !== 'CREATED' && params?.state !== 'STARTED',
-        retry_key: null,
-        owner_key: null
+        terminated: params?.state !== 'CREATED' && params?.state !== 'STARTED'
     };
     const res = await db.from<DbTask>(TASKS_TABLE).insert(task).returning('*');
     const inserted = res[0];

@@ -50,7 +50,6 @@ describe('Scheduler', () => {
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(1);
-        expect(retried[0]?.retryKey).toBe(task.retryKey);
     });
     it('should not retry failed task if reached max retries', async () => {
         const task = await immediate(scheduler, { taskProps: { retryMax: 2, retryCount: 2 } });
@@ -199,9 +198,7 @@ async function immediate(
             retryCount: props?.taskProps?.retryCount || 0,
             createdToStartedTimeoutSecs: props?.taskProps?.createdToStartedTimeoutSecs || 3600,
             startedToCompletedTimeoutSecs: props?.taskProps?.startedToCompletedTimeoutSecs || 3600,
-            heartbeatTimeoutSecs: props?.taskProps?.heartbeatTimeoutSecs || 600,
-            ownerKey: props?.taskProps?.ownerKey || null,
-            retryKey: props?.taskProps?.retryKey || null
+            heartbeatTimeoutSecs: props?.taskProps?.heartbeatTimeoutSecs || 600
         };
     }
     return (await scheduler.immediate(taskProps)).unwrap();

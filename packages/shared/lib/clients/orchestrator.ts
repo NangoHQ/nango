@@ -154,7 +154,6 @@ export class Orchestrator {
             const actionResult = await this.client.executeAction({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency: 0 },
-                ownerKey: `environment:${connection.environment_id}`,
                 args
             });
 

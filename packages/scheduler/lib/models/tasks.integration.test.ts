@@ -19,40 +19,37 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const props = {
+        const task = (
+            await tasks.create(db, {
+                name: 'Test Task',
+                payload: { foo: 'bar' },
+                groupKey: 'groupA',
+                retryMax: 3,
+                retryCount: 1,
+                startsAfter: new Date(),
+                createdToStartedTimeoutSecs: 10,
+                startedToCompletedTimeoutSecs: 20,
+                heartbeatTimeoutSecs: 5,
+                scheduleId: null
+            })
+        ).unwrap();
+        expect(task).toMatchObject({
+            id: expect.any(String),
             name: 'Test Task',
             payload: { foo: 'bar' },
             groupKey: 'groupA',
             retryMax: 3,
             retryCount: 1,
-            startsAfter: new Date(),
-            createdToStartedTimeoutSecs: 10,
-            startedToCompletedTimeoutSecs: 20,
-            heartbeatTimeoutSecs: 5,
-            scheduleId: null,
-            retryKey: '00000000-0000-0000-0000-000000000000',
-            ownerKey: 'ownerA'
-        };
-        const task = (await tasks.create(db, props)).unwrap();
-        expect(task).toMatchObject({
-            id: expect.any(String),
-            name: props.name,
-            payload: props.payload,
-            groupKey: props.groupKey,
-            retryMax: props.retryMax,
-            retryCount: props.retryCount,
             startsAfter: expect.toBeIsoDateTimezone(),
             createdAt: expect.toBeIsoDateTimezone(),
-            createdToStartedTimeoutSecs: props.createdToStartedTimeoutSecs,
-            startedToCompletedTimeoutSecs: props.startedToCompletedTimeoutSecs,
+            createdToStartedTimeoutSecs: 10,
+            startedToCompletedTimeoutSecs: 20,
             state: 'CREATED',
             lastStateTransitionAt: expect.toBeIsoDateTimezone(),
             lastHeartbeatAt: expect.toBeIsoDateTimezone(),
             output: null,
             terminated: false,
-            scheduleId: props.scheduleId,
-            retryKey: props.retryKey,
-            ownerKey: props.ownerKey
+            scheduleId: null
         });
     });
     it('should have their heartbeat updated', async () => {
@@ -273,9 +270,7 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps> & { gr
             createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
             startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
             heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
-            scheduleId: props?.scheduleId || null,
-            retryKey: props?.retryKey || null,
-            ownerKey: props?.ownerKey || null
+            scheduleId: props?.scheduleId || null
         })
         .then((t) => t.unwrap());
 }

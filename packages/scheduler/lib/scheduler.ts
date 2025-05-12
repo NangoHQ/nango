@@ -174,8 +174,7 @@ export class Scheduler {
                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
                     heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
                     startsAfter: now,
-                    scheduleId: schedule.id,
-                    ownerKey: null
+                    scheduleId: schedule.id
                 };
             } else {
                 taskProps = {
@@ -323,9 +322,7 @@ export class Scheduler {
                         retryCount: task.retryCount + 1,
                         createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
                         startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
-                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
-                        ownerKey: task.ownerKey,
-                        retryKey: task.retryKey
+                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
                     };
                     const res = await this.immediate(taskProps);
                     if (res.isErr()) {
