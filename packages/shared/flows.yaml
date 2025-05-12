@@ -6576,6 +6576,39 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    grammarly:
+        actions:
+            delete-user:
+                description: Deletes a user in Grammarly
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: EmailEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Grammarly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            EmailEntity:
+                email: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                __raw: any
     greenhouse-basic:
         syncs:
             applications:
