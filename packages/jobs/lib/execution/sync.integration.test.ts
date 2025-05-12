@@ -193,6 +193,7 @@ const runJob = async (
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
         },
+        ownerKey: null,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
