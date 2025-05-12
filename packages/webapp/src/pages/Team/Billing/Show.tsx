@@ -172,14 +172,15 @@ const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: b
 };
 
 export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ def }) => {
+    const Comp = def.active ? 'div' : Link;
     return (
-        <Link
+        <Comp
             className={cn(
                 'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
                 def.active && 'bg-grayscale-1 border-grayscale-7'
             )}
             target="_blank"
-            to={'https://nango.dev/pricing'}
+            to={def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : 'https://nango.dev/demo'}
             // to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
             // onClick={onClickPlan}
         >
@@ -190,13 +191,10 @@ export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ d
                 </header>
                 <div className="text-sm text-grayscale-10">{def.plan.description}</div>
             </div>
-            {/* <footer>
-                {!def.active && (
-                    <Button variant={'primary'} isLoading={loading}>
-                        {def.plan.cta ? def.plan.cta : def.below ? 'Downgrade Plan' : 'Upgrade plan'}
-                    </Button>
-                )}
-            </footer> */}
-        </Link>
+            <footer>
+                {!def.active && def.isUpgrade && <Button variant={'primary'}>{def.plan.cta ? def.plan.cta : 'Upgrade plan'}</Button>}
+                {!def.active && def.isDowngrade && <Button variant={'primary'}>Contact us to downgrade</Button>}
+            </footer>
+        </Comp>
     );
 };

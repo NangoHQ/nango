@@ -1,16 +1,19 @@
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, SetOptional } from 'type-fest';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
-import { uuidv7 } from 'uuidv7';
+import { uuidv7, uuidv4 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
 import { GROUPS_TABLE } from './groups.js';
 
 export const TASKS_TABLE = 'tasks';
 
-export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
+export type TaskProps = SetOptional<
+    Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>,
+    'retryKey'
+>;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -60,6 +63,8 @@ export interface DbTask {
     output: JsonValue | null;
     terminated: boolean;
     readonly schedule_id: string | null;
+    readonly retry_key: string | null;
+    readonly owner_key: string | null;
 }
 export const DbTask = {
     to: (task: Task): DbTask => {
@@ -80,7 +85,9 @@ export const DbTask = {
             last_heartbeat_at: task.lastHeartbeatAt,
             output: task.output,
             terminated: task.terminated,
-            schedule_id: task.scheduleId
+            schedule_id: task.scheduleId,
+            retry_key: task.retryKey,
+            owner_key: task.ownerKey
         };
     },
     from: (dbTask: DbTask): Task => {
@@ -101,7 +108,9 @@ export const DbTask = {
             lastHeartbeatAt: dbTask.last_heartbeat_at,
             output: dbTask.output,
             terminated: dbTask.terminated,
-            scheduleId: dbTask.schedule_id
+            scheduleId: dbTask.schedule_id,
+            retryKey: dbTask.retry_key,
+            ownerKey: dbTask.owner_key
         };
     }
 };
@@ -117,7 +126,8 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         lastHeartbeatAt: now,
         terminated: false,
         output: null,
-        scheduleId: taskProps.scheduleId
+        scheduleId: taskProps.scheduleId,
+        retryKey: taskProps.retryKey || uuidv4()
     };
     try {
         const inserted = await db.from<DbTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
@@ -230,42 +240,9 @@ export async function transitionState(
     return Ok(DbTask.from(updated[0]));
 }
 
-export async function dequeue(
-    db: knex.Knex,
-    { groupKey, limit, flagDequeueLegacy = true }: { groupKey: string; limit: number; flagDequeueLegacy?: boolean }
-): Promise<Result<Task[]>> {
+export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
         const groupKeyPattern = groupKey.replace(/\*/g, '%');
-
-        if (flagDequeueLegacy) {
-            const tasks = await db
-                .update({
-                    state: 'STARTED',
-                    last_state_transition_at: new Date()
-                })
-                .from<DbTask>(TASKS_TABLE)
-                .whereIn(
-                    'id',
-                    db
-                        .select('id')
-                        .from<DbTask>(TASKS_TABLE)
-                        .where('state', 'CREATED')
-                        .whereLike('group_key', groupKeyPattern)
-                        .where('starts_after', '<=', db.fn.now())
-                        .orderBy('id')
-                        .limit(limit)
-                        .forUpdate()
-                        .skipLocked()
-                )
-                .returning('*');
-            if (!tasks?.[0]) {
-                return Ok([]);
-            }
-
-            // Sort tasks by id (uuidv7) to ensure ordering by creation date
-            const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
-            return Ok(sorted);
-        }
 
         const tasks = await db
             // 1. select created tasks that are ready to be started alongside their group
