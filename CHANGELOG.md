@@ -2,6 +2,97 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.7] - 2025-05-12
+
+### Added
+
+- *(integrations)* Add support for workday oauth (#3938) by @hassan254-prog
+- *(logs)* Global search (#3906) by @bodinsamuel
+- Delete old environments (and refactor delete old data) (#3928) by @kaposke
+- *(integrations)* Add Confluence Basic Auth integration (#3961) by @viictoo
+- *(integrations)* Make app secret hidden (#3967) by @hassan254-prog
+- *(integrations)* Add support for adp (#3968) by @hassan254-prog
+- *(integrations)* Add support for namely (#3962) by @hassan254-prog
+- *(integrations)* Add support for ukg pro wfm (#3969) by @hassan254-prog
+- *(docs)* Added documentation for Google drive support in sample app documentation (#3973) by @lordsarcastic
+- *(integrations)* Add support for `Vercel` (#3974) by @homanp
+- *(docs)* Add documentation around microsoft approval flow (#3964) by @lordsarcastic
+- *(grammarly)* Added Grammarly to integrations (#3965) by @lordsarcastic
+- *(integrations)* Add support for auth0 client credentials (#3978) by @hassan254-prog
+- *(integrations)* Add support for ClickSend provider (#3959) by @SteliosMav
+- *(api)* POST/PATCH/DELETE /integrations/:unique_key by @bodinsamuel
+- *(jira)* Update Jira integration with multiple domain support (#3963) by @viictoo
+- *(integrations)* Add support for cyberimpact (#3954) by @matthewbelair
+- *(integrations)* Improve apollo and apollo auth (#3985) by @hassan254-prog
+- *(docs)* Monday.com documentation (#3981) by @lordsarcastic
+- *(webhooks)* Add in webhook support for Xero within Nango (#3934) by @viictoo
+- *(jamf)* Add support for Jamf in Nango (#3988) by @lordsarcastic
+- *(scheduler)* Dequeue on group key pattern (#3987) by @TBonnin
+- *(web)* Add info box for CLI environment variable names (#3952) by @kaposke
+- *(webapp)* Jump to specific time in logs (#3990) by @kaposke
+- *(ui)* Billing page (#3989) by @bodinsamuel
+- *(scheduler)* Add groups table (#3986) by @TBonnin
+- *(ui)* Billing show usage (#3992) by @bodinsamuel
+- *(api)* POST/PATCH/DELETE /integrations/:unique_key (#3982) by @bodinsamuel
+- Add ServiceNow integration setup guide (ext-364) (#3742) by @devin-ai-integration[bot]
+- Add Intuit integration setup guide (ext-379) (#3741) by @devin-ai-integration[bot]
+- Add GitHub integration setup guide (ext-387) (#3745) by @devin-ai-integration[bot]
+- Add Xero webhooks guide and update integration documentation (#3999) by @viictoo
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/dade55c80497f60d65612c9c15aec6f4ed8bb673 by Khaliq. Commit message: feat(github-app-oauth): add symlink (#320) by @github-actions[bot]
+- *(supabase)* Add Supabase support to integrations (#3991) by @lordsarcastic
+- Add comprehensive Salesforce OAuth setup guide (#3696) by @devin-ai-integration[bot]
+- Send email via any smtp server (#4009) by @TBonnin
+- *(integrations)* Add support for kandji (#4010) by @hassan254-prog
+- *(scheduler)* Max concurrency aware dequeue query (#4002) by @TBonnin
+- *(refresh-token)* Add offline_access scope (#4020) by @khaliqgant
+- Add scheduler indexes for expired tasks query (#4016) by @TBonnin
+- Add docs on figma rate limit per authenticated user (#4011) by @hassan254-prog
+- *(google-drive)* Added support for Google Slides (#3996) by @lordsarcastic
+- *(docs)* Enhance general information output with model details (#4000) by @viictoo
+- *(integrations)* Add support for open-hands coding agent (#4018) by @homanp
+- *(jazzhr)* Add support for JazzHR (#4014) by @lordsarcastic
+- *(slack)* Add an alternate path for access_token if undefined (#4025) by @hassan254-prog
+- *(microsoft-teams)* Microsoft: Obtain tenantId by decoding the access token instead of calling the /organizations endpoint (#4024) by @lordsarcastic
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/72842769cf8c5d3c0eb35a138411a924ad88f41a by Victor Lang'at. Commit message: feat(calendly): check calendly api v1 to v2 migration (#315) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/c69d76a5c47d0b6cbbbd30e73cba32d79d6ad8fb by Hassan_Wari. Commit message: feat(xero): update general ledger pagination logic (#318) by @github-actions[bot]
+- April changelog (#3977) by @bastienbeurier
+- *(eslint)* Manual pass over some folders (#3979) by @bodinsamuel
+- *(fleet)* Expose a overrideNodeConfig function (#3984) by @TBonnin
+- Update rate limit code snippet (#3966) by @kndwin
+- *(deps-dev)* Bump vite from 6.3.3 to 6.3.4 (#3983) by @dependabot[bot]
+- Document credentials validation errors (#4003) by @hassan254-prog
+- *(scheduler)* Update groups max concurrency (#3997) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7eb6ed09f2170198ebd5634ed47fe993d4fc85a9 by lordsarcastic. Commit message: feat(grammarly): Grammarly User provisioning (#319) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/2b43009ae28e2834c699a9856b0acb2b973aad78 by Guilherme Bassa. Commit message: feat(gusto): update employee actions (#322) by @github-actions[bot]
+- New integrations method (#4004) by @bodinsamuel
+- *(scheduler)* Decrease frequency of monitor worker (#4022) by @TBonnin
+
+### Fixed
+
+- *(plan)* Wrong condition on connection_with_scripts_max (#3953) by @bodinsamuel
+- *(auth)* Github app custom token, copy buttons (#3956) by @bodinsamuel
+- Wrong webhook duration in logs (#3955) by @kaposke
+- Upgrade dependencies (#3957) by @bodinsamuel
+- *(persist)* Adapt wording for batchDelete, log missing error (#3958) by @bodinsamuel
+- *(webapp)* Apply default scopes for oauth2 (#3919) by @hassan254-prog
+- *(billing)* Use orb (#3970) by @bodinsamuel
+- *(api)* Only count enabled scripts (#3976) by @bodinsamuel
+- *(billing)* Send events for all users (#3980) by @bodinsamuel
+- *(ci)* Windows (#3971) by @bodinsamuel
+- *(orb)* Batch events (#3993) by @bodinsamuel
+- *(github-app-oauth)* Refresh user credentials when refreshing github app oauth connection (#3995) by @hassan254-prog
+- *(microsoft)* Fix scope location in docs (#3998) by @khaliqgant
+- *(api)* Accept empty scopes (#4008) by @bodinsamuel
+- *(scheduler)* Allow skipping group update if locked (#4015) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/899da5a75bc1c949da81dd6e820c4b4c271c8b76 by Khaliq. Commit message: fix(linear): Linear users sync (#323) by @github-actions[bot]
+- *(ui)* Billing page feedback (#4005) by @bodinsamuel
+- Refresh connections (#4006) by @bodinsamuel
+- *(github-app-oauth)* Don't exit early on an update setup_action (#4027) by @khaliqgant
+- *(auth)* Can't detect popup with security headers (#4028) by @bodinsamuel
+
 ## [v0.58.6] - 2025-04-24
 
 ### Added
@@ -3743,6 +3834,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.7]: https://github.com/NangoHQ/nango/compare/v0.58.6..v0.58.7
 [v0.58.6]: https://github.com/NangoHQ/nango/compare/v0.58.5..v0.58.6
 [v0.58.5]: https://github.com/NangoHQ/nango/compare/v0.58.4..v0.58.5
 [v0.58.4]: https://github.com/NangoHQ/nango/compare/v0.58.3..v0.58.4

@@ -21,7 +21,8 @@ import type {
     OAuth1Credentials,
     OAuth2ClientCredentials,
     ProviderGithubApp,
-    TbaCredentials
+    TbaCredentials,
+    ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -205,7 +206,8 @@ class ConnectionController {
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
                     { access_token, refresh_token, expires_at, expires_in },
-                    provider.auth_mode
+                    provider.auth_mode,
+                    provider as ProviderOAuth2
                 ) as OAuth2Credentials;
 
                 if (!access_token) {

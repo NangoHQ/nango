@@ -4517,6 +4517,15 @@ google-sheet:
         base_url: https://sheets.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-sheet
 
+google-slides:
+    display_name: Google Slides
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://slides.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-slides
+
 google-drive:
     display_name: Google Drive
     categories:
@@ -5303,6 +5312,31 @@ jamf-basic:
             title: Password
             description: Your Jamf Pro password
             secret: true
+
+jazzhr:
+    display_name: JazzHR
+    categories:
+        - hr
+    auth_mode: CUSTOM
+    proxy:
+        base_url: https://api.resumatorapi.com/
+        verification:
+            method: GET
+            endpoints:
+                - /users?apikey=${connectionConfig.apiKey}
+            base_url_override: https://api.resumatorapi.com/v1
+        query:
+            apikey: ${connectionConfig.apiKey}
+    docs: https://docs.nango.dev/integrations/all/jazzhr
+    docs_connect: https://docs.nango.dev/integrations/all/jazzhr/connect
+    connection_config:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JazzHR API Key
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+            optional: false
 
 jira:
     display_name: Jira (OAuth)
@@ -7072,6 +7106,29 @@ openai-admin:
             title: Admin Key
             description: The Admin API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-admin-key'
+open-hands:
+    display_name: Open Hands
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.all-hands.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/conversations
+    docs: https://docs.nango.dev/integrations/all/open-hands
+    docs_connect: https://docs.nango.dev/integrations/all/open-hands/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Open Hands account
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
+            doc_section: '#step-1-finding-your-api-key'
 
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
@@ -8989,6 +9046,7 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     scope_separator: ','
+    alternate_access_token_response_path: authed_user.access_token
     token_url: https://slack.com/api/oauth.v2.access
     token_response_metadata:
         - incoming_webhook.url
