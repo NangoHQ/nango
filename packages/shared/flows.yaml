@@ -5002,6 +5002,182 @@ integrations:
                 labels: string[]
                 reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
                 latestComment: GithubComment
+    github-app-oauth:
+        actions:
+            repositories:
+                description: List all repositories accessible to this Github App
+                version: 1.0.0
+                output: RepoResponse
+                endpoint:
+                    method: GET
+                    path: /repositories
+                    group: Repositories
+        syncs:
+            pull-requests:
+                runs: every hour
+                description: |
+                    Get all pull requests from a Github repository.
+                version: 1.0.0
+                auto_start: false
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /pull-requests
+                    group: Pull Requests
+                input: GithubMetadataInput
+                output: GithubPullRequest
+            commits:
+                runs: every hour
+                description: |
+                    Get all pull commits from a Github repository.
+                version: 1.0.0
+                auto_start: false
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /commits
+                    group: Commits
+                input: GithubMetadataInput
+                output: GithubCommit
+        models:
+            RepoResponse:
+                repositories: Repository[]
+            Repository:
+                allow_forking: boolean
+                archive_url: string
+                archived: boolean
+                assignees_url: string
+                blobs_url: string
+                branches_url: string
+                clone_url: string
+                collaborators_url: string
+                comments_url: string
+                commits_url: string
+                compare_url: string
+                contents_url: string
+                contributors_url: string
+                created_at: string
+                default_branch: string
+                deployments_url: string
+                description: string
+                disabled: boolean
+                downloads_url: string
+                events_url: string
+                fork: boolean
+                forks: number
+                forks_count: number
+                forks_url: string
+                full_name: string
+                git_commits_url: string
+                git_refs_url: string
+                git_tags_url: string
+                git_url: string
+                has_discussions: boolean
+                has_downloads: boolean
+                has_issues: boolean
+                has_pages: boolean
+                has_projects: boolean
+                has_wiki: boolean
+                homepage: string | null
+                hooks_url: string
+                html_url: string
+                id: number
+                is_template: boolean
+                issue_comment_url: string
+                issue_events_url: string
+                issues_url: string
+                keys_url: string
+                labels_url: string
+                language: string
+                languages_url: string
+                license: string | null
+                merges_url: string
+                milestones_url: string
+                mirror_url: string | null
+                name: string
+                node_id: string
+                notifications_url: string
+                open_issues: number
+                open_issues_count: number
+                owner:
+                    avatar_url: string
+                    events_url: string
+                    followers_url: string
+                    following_url: string
+                    gists_url: string
+                    gravatar_id: string
+                    html_url: string
+                    id: number
+                    login: string
+                    node_id: string
+                    organizations_url: string
+                    received_events_url: string
+                    repos_url: string
+                    site_admin: boolean
+                    starred_url: string
+                    subscriptions_url: string
+                    type: string
+                    url: string
+                permissions:
+                    admin: boolean
+                    maintain: boolean
+                    pull: boolean
+                    push: boolean
+                    triage: boolean
+                private: boolean
+                pulls_url: string
+                pushed_at: string
+                releases_url: string
+                size: number
+                ssh_url: string
+                stargazers_count: number
+                stargazers_url: string
+                statuses_url: string
+                subscribers_url: string
+                subscription_url: string
+                svn_url: string
+                tags_url: string
+                teams_url: string
+                topics: string[]
+                trees_url: string
+                updated_at: string
+                url: string
+                visibility: string
+                watchers: number
+                watchers_count: number
+                web_commit_signoff_required: boolean
+            GithubMetadataInput:
+                owner: string
+                repo: string
+                syncWindowMinutes?: number
+                branch?: string
+            GithubComment:
+                id: string
+                body: string
+                user: GithubUser
+                createdAt: string
+            GithubUser:
+                id: string
+                url?: string
+            GithubCommit:
+                id: string
+                url: string
+                branch: string
+                author: GithubUser
+                message: string
+                date: string
+            GithubPullRequest:
+                id: string
+                url: string
+                state: string
+                title: string
+                user: GithubUser
+                assignees: GithubUser[]
+                reviewers: GithubUser[]
+                draft: boolean
+                labels: string[]
+                reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
+                latestComment: GithubComment
     gong:
         syncs:
             users:
@@ -6400,6 +6576,39 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    grammarly:
+        actions:
+            delete-user:
+                description: Deletes a user in Grammarly
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: EmailEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Grammarly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            EmailEntity:
+                email: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                __raw: any
     greenhouse-basic:
         syncs:
             applications:
@@ -6555,40 +6764,37 @@ integrations:
                 openings: string[]
     gusto:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6616,16 +6822,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -6634,7 +6831,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
@@ -6714,40 +6932,37 @@ integrations:
                 address: string
     gusto-demo:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6775,16 +6990,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -6793,7 +6999,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
@@ -11382,6 +11609,7 @@ integrations:
                     method: GET
                     path: /users
                     group: Users
+                version: 1.0.1
             teams:
                 runs: every 5min
                 description: |
@@ -11427,6 +11655,7 @@ integrations:
                 teamId: string
                 title: string
                 status: string
+                estimate: string | null
             CreateIssue:
                 teamId: string
                 title: string
@@ -11449,7 +11678,8 @@ integrations:
                 admin: boolean
                 email: string
                 firstName: string
-                lastName: string
+                lastName?: string
+                avatarUrl: string | null
             LinearProject:
                 id: string
                 url: string

@@ -15,7 +15,11 @@ export type PostImmediate = Endpoint<{
     Path: typeof path;
     Body: {
         name: string;
-        groupKey: string;
+        group: {
+            key: string;
+            maxConcurrency: number;
+            updateFlag?: boolean;
+        };
         retry: {
             count: number;
             max: number;
@@ -55,10 +59,14 @@ const validate = validateRequest<PostImmediate>({
             }
             return z.never();
         }
-        return z
+        const schema = z
             .object({
                 name: z.string().min(1),
-                groupKey: z.string().min(1),
+                group: z.object({
+                    key: z.string().min(1),
+                    maxConcurrency: z.coerce.number(),
+                    updateFlag: z.boolean().default(false)
+                }),
                 retry: z.object({
                     count: z.number().int(),
                     max: z.number().int()
@@ -70,7 +78,16 @@ const validate = validateRequest<PostImmediate>({
                 }),
                 args: argsSchema(data)
             })
-            .strict()
+            .strict();
+        return z
+            .preprocess((o) => {
+                // for backwards compatibility
+                if (o && typeof o === 'object' && 'groupKey' in o) {
+                    const { groupKey, ...rest } = o;
+                    return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
+                }
+                return o;
+            }, schema)
             .parse(data);
     }
 });
@@ -80,7 +97,9 @@ const handler = (scheduler: Scheduler) => {
         const task = await scheduler.immediate({
             name: req.body.name,
             payload: req.body.args,
-            groupKey: req.body.groupKey,
+            groupKey: req.body.group.key,
+            groupKeyMaxConcurrency: req.body.group.maxConcurrency,
+            groupUpdateFlag: req.body.group.updateFlag,
             retryMax: req.body.retry.max,
             retryCount: req.body.retry.count,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
