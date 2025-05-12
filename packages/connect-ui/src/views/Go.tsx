@@ -159,7 +159,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (typeof preconfigured[name] !== 'undefined' || schema.hidden) {
+            if (preconfigured[name] ?? schema.hidden) {
                 hiddenFields += 1;
             }
         }
