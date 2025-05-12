@@ -69,7 +69,8 @@ export class SchedulingChild extends SchedulerWorkerChild {
                                     retryMax: schedule.retryMax,
                                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
+                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                                    ownerKey: null
                                 })
                             );
                             const res = await Promise.allSettled(createTasks);
