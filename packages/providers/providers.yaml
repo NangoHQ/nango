@@ -4517,6 +4517,15 @@ google-sheet:
         base_url: https://sheets.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-sheet
 
+google-slides:
+    display_name: Google Slides
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://slides.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-slides
+
 google-drive:
     display_name: Google Drive
     categories:
