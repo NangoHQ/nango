@@ -212,7 +212,7 @@ export const Go: React.FC = () => {
             }
 
             telemetry('click:connect');
-            setLoading(true);
+            setLoading(detectClosedAuthWindow);
             setError(null);
             // we don't care if it was already opened
             nango.clear();

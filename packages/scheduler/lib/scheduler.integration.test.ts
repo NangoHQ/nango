@@ -5,6 +5,7 @@ import type { TaskProps } from './models/tasks.js';
 import * as tasks from './models/tasks.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import { nanoid } from '@nangohq/utils';
+import { envs } from './env.js';
 
 describe('Scheduler', () => {
     const dbClient = getTestDbClient();
@@ -90,31 +91,31 @@ describe('Scheduler', () => {
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is expired', async () => {
-        const timeout = 1;
-        await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
+        const timeoutMs = 1000;
+        await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
         expect(callbacks.EXPIRED).toHaveBeenCalledOnce();
     });
     it('should monitor and expires created tasks if timeout is reached', async () => {
-        const timeout = 1;
-        const task = await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeout } });
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
+        const timeoutMs = 1000;
+        const task = await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
         const expired = (await tasks.get(db, task.id)).unwrap();
         expect(expired.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if timeout is reached', async () => {
-        const timeout = 1;
-        const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeout } });
+        const timeoutMs = 1000;
+        const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
-        const timeout = 1;
-        const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeout } });
+        const timeoutMs = 1000;
+        const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1500));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
