@@ -6764,40 +6764,37 @@ integrations:
                 openings: string[]
     gusto:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6825,16 +6822,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -6843,7 +6831,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
@@ -6923,40 +6932,37 @@ integrations:
                 address: string
     gusto-demo:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6984,16 +6990,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -7002,7 +6999,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
