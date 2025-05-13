@@ -97,10 +97,10 @@ program
     .command('init')
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
-    .action(function (this: Command) {
+    .action(async function (this: Command) {
         const { debug } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
-        const ok = init({ absolutePath, debug });
+        const ok = await init({ absolutePath, debug });
 
         if (ok) {
             console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));

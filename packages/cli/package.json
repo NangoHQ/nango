@@ -3,7 +3,7 @@
     "version": "0.58.7",
     "description": "Nango's CLI tool.",
     "type": "module",
-    "main": "dist/index.js",
+    "main": "dist/sdk.js",
     "bin": {
         "nango": "dist/index.js"
     },
@@ -80,6 +80,7 @@
     },
     "files": [
         "dist/**/*",
+        "example/**/*",
         "docker/docker-compose.yaml",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",

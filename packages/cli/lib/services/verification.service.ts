@@ -1,12 +1,15 @@
 import fs from 'fs';
+import path from 'path';
+
 import chalk from 'chalk';
 import promptly from 'promptly';
-import path from 'path';
+
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { parse } from './config.service.js';
+
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
-import { printDebug } from '../utils.js';
+import { parse } from './config.service.js';
 import { generate } from '../cli.js';
+import { printDebug } from '../utils.js';
 import { init } from './init.service.js';
 
 class VerificationService {
@@ -119,6 +122,25 @@ class VerificationService {
         }
 
         return true;
+    }
+
+    public async preCheck({
+        fullPath
+    }: {
+        fullPath: string;
+    }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string; hasIndexTs: boolean; isZeroYaml: boolean }> {
+        const files = await fs.promises.readdir(fullPath);
+
+        const hasNangoYaml = files.includes('nango.yaml');
+        const isNango = files.includes('.nango');
+        const hasIndexTs = files.includes('index.ts');
+        return {
+            isNango,
+            folderName: path.basename(fullPath),
+            hasNangoYaml,
+            hasIndexTs,
+            isZeroYaml: !hasNangoYaml && isNango && hasIndexTs
+        };
     }
 }
 
