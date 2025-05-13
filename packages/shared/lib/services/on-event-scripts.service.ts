@@ -137,8 +137,8 @@ export const onEventScriptService = {
         });
     },
 
-    getByEnvironmentId: async (environmentId: number): Promise<OnEventScript[]> => {
-        const existingScriptsQuery = await db.knex
+    getByEnvironmentId: async (environmentId: number, providerConfigKeys?: string[]): Promise<OnEventScript[]> => {
+        let query = db.knex
             .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
@@ -146,6 +146,13 @@ export const onEventScriptService = {
                 '_nango_configs.environment_id': environmentId,
                 [`${TABLE}.active`]: true
             });
+
+        // Add provider filter if specified
+        if (providerConfigKeys && providerConfigKeys.length > 0) {
+            query = query.whereIn('_nango_configs.unique_key', providerConfigKeys);
+        }
+
+        const existingScriptsQuery = await query;
         return existingScriptsQuery.map(dbMapper.from);
     },
 
@@ -179,7 +186,7 @@ export const onEventScriptService = {
 
         const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
 
-        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
+        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId, singleDeployMode ? deployingProviders : undefined);
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map();
@@ -222,12 +229,7 @@ export const onEventScriptService = {
             }
         }
 
-        if (singleDeployMode) {
-            // Only keep scripts that belong to providers being deployed
-            res.deleted = Array.from(previousMap.values()).filter((script) => deployingProviders.includes(script.providerConfigKey));
-        } else {
-            res.deleted = Array.from(previousMap.values());
-        }
+        res.deleted = Array.from(previousMap.values());
 
         return res;
     }
