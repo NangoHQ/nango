@@ -32,7 +32,7 @@ export type PostImmediate = Endpoint<{
         args: JsonValue & { type: TaskType };
     };
     Error: ApiError<'immediate_failed'>;
-    Success: { taskId: string };
+    Success: { taskId: string; retryKey: string | null };
 }>;
 
 const validate = validateRequest<PostImmediate>({
@@ -110,7 +110,7 @@ const handler = (scheduler: Scheduler) => {
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
             return;
         }
-        res.status(200).json({ taskId: task.value.id });
+        res.status(200).json({ taskId: task.value.id, retryKey: task.value.retryKey });
         return;
     };
 };
