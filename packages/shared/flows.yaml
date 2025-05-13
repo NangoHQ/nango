@@ -11643,7 +11643,7 @@ integrations:
                     method: GET
                     path: /issues
                     group: Issues
-                version: 1.0.1
+                version: 1.0.2
             projects:
                 runs: every 5min
                 description: |
