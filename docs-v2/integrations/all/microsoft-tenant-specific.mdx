@@ -6,6 +6,7 @@ sidebarTitle: Microsoft Tenant Specific
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-tenant-specific/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-tenant-specific/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -48,24 +49,9 @@ This endpoint supports services authorized using an Azure App Registration in an
 
 <Tip>You _can_ use this provider for general Microsoft Graph access (and the major Microsoft SaaS services like Teams, OneDrive, other Office 365 services, etc.) by setting the `tenant` to `common` but we recommend using the [Microsoft Teams provider](/integrations/all/microsoft-teams) instead which includes sync capability.</Tip>
 
-
 ## API gotchas
+<APIGotchas />
 
--   You can set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
--   If you require a user to reauthenticate and force them to accept scopes that have been updated or changed you can force a prompt via the `authorization_params`:
-
-```typescript
-const { data } = await nango.createConnectSession({
-  [...],
-  integrations_config_defaults: {
-    "microsoft-tenant-specific": {
-      authorization_params: {
-        "prompt": "consent"
-      }
-    }
-  }
-});
-```
 <Note>
     Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-tenant-specific.mdx)
 </Note>
