@@ -37,12 +37,16 @@ export function parsePeriod(input: string, dateTimeFormat: string, example: stri
     return { period: period, error: null };
 }
 
-export function matchPresetFromPeriod(period: Period, presets: PeriodPreset[]): PeriodPreset | null {
+export function matchPresetFromPeriod(period: Period | null, presets: PeriodPreset[]): PeriodPreset | null {
     return (
         presets.find((preset) => {
             const presetPeriod = preset.toPeriod();
 
-            if (!presetPeriod) {
+            if (!presetPeriod && !period) {
+                return true;
+            }
+
+            if (!presetPeriod || !period) {
                 return false;
             }
 

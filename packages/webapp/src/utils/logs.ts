@@ -1,7 +1,7 @@
 import { addMilliseconds, startOfDay, subDays, subHours, subMinutes } from 'date-fns';
 
 import type { Period, PeriodPreset } from './dates';
-import type { SearchOperations, SearchOperationsPeriod } from '@nangohq/types';
+import type { SearchOperations, SearchPeriod } from '@nangohq/types';
 
 export function getLogsUrl(
     options: Omit<
@@ -33,10 +33,10 @@ export function getLogsUrl(
     return `/${options.env}/logs?${usp.toString()}`;
 }
 
-export function slidePeriod(period: Period | SearchOperationsPeriod): Period {
+export function slidePeriod(period: Period | SearchPeriod): Period {
     const now = new Date();
     let from = new Date(period.from);
-    let to = new Date(period.to!);
+    let to = new Date(period.to ?? now);
     const sliding = now.getTime() - to.getTime();
     to = addMilliseconds(to, sliding);
     from = addMilliseconds(from, sliding);

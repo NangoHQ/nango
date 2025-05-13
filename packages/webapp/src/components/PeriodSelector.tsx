@@ -12,7 +12,7 @@ import type { Period, PeriodPreset } from '../utils/dates';
 const dateTimeFormat = 'LLL dd, HH:mm';
 
 export interface PeriodSelectorProps {
-    period: Period;
+    period: Period | null;
     isLive: boolean;
     onChange: (date: Period | null, live: boolean) => void;
     presets: PeriodPreset[];
@@ -69,10 +69,10 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
         if (selectedPreset !== null) {
             return selectedPreset.label;
         }
-        if (period.from && period.to) {
-            return `${format(period.from, dateTimeFormat)} - ${format(period.to, dateTimeFormat)}`;
+        if (period) {
+            return `${format(period.from, dateTimeFormat)} - ${format(period.to ?? new Date(), dateTimeFormat)}`;
         }
-        return format(period.from, dateTimeFormat);
+        return 'No period selected';
     }, [period, selectedPreset]);
 
     return (
@@ -82,7 +82,11 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                 setOpen(open);
 
                 if (open) {
-                    setCustomRangeInputValue(`${format(period?.from, dateTimeFormat)} - ${format(period?.to ?? new Date(), dateTimeFormat)}`);
+                    if (period) {
+                        setCustomRangeInputValue(`${format(period.from, dateTimeFormat)} - ${format(period.to ?? new Date(), dateTimeFormat)}`);
+                    } else {
+                        setCustomRangeInputValue(rangeInputExample);
+                    }
                     setRangeInputErrorMessage('');
                 }
             }}

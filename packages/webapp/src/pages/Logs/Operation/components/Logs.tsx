@@ -6,6 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
+import { PeriodSelector } from '../../../../components/PeriodSelector';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import Spinner from '../../../../components/ui/Spinner';
@@ -19,10 +20,18 @@ import { formatQuantity } from '../../../../utils/utils';
 import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
 
+import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
 
 const drawerWidth = '834px';
+
+const fullPeriod: PeriodPreset = {
+    name: 'full',
+    label: 'Full duration',
+    shortLabel: 'Full',
+    toPeriod: () => null // Null means no period
+};
 
 export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ operationId, isLive }) => {
     const env = useStore((state) => state.env);
@@ -34,6 +43,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
+    const [period, setPeriod] = useState<Period | null>(null);
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
@@ -45,7 +55,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         unknown[],
         { before: string | null } | { after: string | null } | null
     >({
-        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch],
+        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, period],
         queryFn: async ({ pageParam, signal }) => {
             const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
@@ -54,7 +64,8 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     limit: defaultLimit,
                     search: debouncedSearch,
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined,
+                    period: period ? { from: period.from.toISOString(), to: period.to?.toISOString() ?? new Date().toISOString() } : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
@@ -161,7 +172,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
-            <header>
+            <header className="flex gap-2 items-center">
                 <Input
                     before={<IconZoom stroke={1} size={18} />}
                     after={
@@ -180,9 +191,12 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     }
                     value={search}
                     placeholder="Search logs..."
-                    className="border-border-gray-400"
+                    className="border-border-gray-400 flex-grow"
                     onChange={(e) => setSearch(e.target.value)}
                 />
+                <div>
+                    <PeriodSelector period={period} isLive={isLive} onChange={setPeriod} presets={[fullPeriod]} defaultPreset={fullPeriod} />
+                </div>
             </header>
             <div
                 style={{ height: '100%', overflow: 'auto', position: 'relative' }}
