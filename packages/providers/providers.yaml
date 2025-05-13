@@ -2337,7 +2337,7 @@ codegen:
     credentials:
         apiKey:
             type: string
-            title: API Key
+            title: API Token
             description: The API Key for your Codegen account
             pattern: '^sk-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
