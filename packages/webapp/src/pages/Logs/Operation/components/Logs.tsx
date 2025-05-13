@@ -2,6 +2,7 @@ import { IconArrowLeft, IconX, IconZoom } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { addMinutes } from 'date-fns';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
@@ -164,6 +165,24 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
 
+    function getCustomPeriodExample() {
+        if (period || !flatData.length) {
+            return undefined;
+        }
+
+        const earliest = flatData.reduce((acc, curr) => {
+            return new Date(acc.createdAt) < new Date(curr.createdAt) ? acc : curr;
+        }, flatData[0]);
+        const latest = flatData.reduce((acc, curr) => {
+            return new Date(acc.createdAt) > new Date(curr.createdAt) ? acc : curr;
+        }, flatData[0]);
+
+        return {
+            from: new Date(earliest.createdAt),
+            to: addMinutes(new Date(latest.createdAt), 1)
+        };
+    }
+
     return (
         <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -195,7 +214,14 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <div>
-                    <PeriodSelector period={period} isLive={isLive} onChange={setPeriod} presets={[fullPeriod]} defaultPreset={fullPeriod} />
+                    <PeriodSelector
+                        period={period}
+                        isLive={isLive}
+                        onChange={setPeriod}
+                        presets={[fullPeriod]}
+                        defaultPreset={fullPeriod}
+                        customPeriodExample={getCustomPeriodExample()}
+                    />
                 </div>
             </header>
             <div

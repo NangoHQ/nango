@@ -17,19 +17,22 @@ export interface PeriodSelectorProps {
     onChange: (date: Period | null, live: boolean) => void;
     presets: PeriodPreset[];
     defaultPreset?: PeriodPreset;
+    customPeriodExample?: Period;
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
 
-    const [customRangeInputValue, setCustomRangeInputValue] = useState<string>('');
+    const [customPeriodInputValue, setCustomPeriodInputValue] = useState<string>('');
     const [rangeInputErrorMessage, setRangeInputErrorMessage] = useState('');
 
-    const rangeInputExample = useMemo(() => {
-        return `${format(subDays(new Date(), 1), dateTimeFormat)} - ${format(new Date(), dateTimeFormat)}`;
-    }, []);
+    const customPeriodInputExample = useMemo(() => {
+        const from = customPeriodExample?.from ?? subDays(new Date(), 1);
+        const to = customPeriodExample?.to ?? new Date();
+        return `${format(from, dateTimeFormat)} - ${format(to, dateTimeFormat)}`;
+    }, [customPeriodExample]);
 
     useEffect(() => {
         const preset = matchPresetFromPeriod(period, presets);
@@ -46,7 +49,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             return;
         }
 
-        const { period: dateRange, error } = parsePeriod(inputValue, dateTimeFormat, rangeInputExample);
+        const { period: dateRange, error } = parsePeriod(inputValue, dateTimeFormat, customPeriodInputExample);
         if (error || !dateRange) {
             setRangeInputErrorMessage(error || 'Invalid date');
             return;
@@ -83,9 +86,9 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
 
                 if (open) {
                     if (period) {
-                        setCustomRangeInputValue(`${format(period.from, dateTimeFormat)} - ${format(period.to ?? new Date(), dateTimeFormat)}`);
+                        setCustomPeriodInputValue(`${format(period.from, dateTimeFormat)} - ${format(period.to ?? new Date(), dateTimeFormat)}`);
                     } else {
-                        setCustomRangeInputValue(rangeInputExample);
+                        setCustomPeriodInputValue(customPeriodInputExample);
                     }
                     setRangeInputErrorMessage('');
                 }
@@ -118,10 +121,10 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
                                     type="text"
-                                    placeholder={rangeInputExample}
+                                    placeholder={customPeriodInputExample}
                                     className="w-full bg-transparent text-sm text-grayscale-13 placeholder:text-grayscale-10 focus:outline-none focus:ring-0 border-none"
-                                    value={customRangeInputValue}
-                                    onChange={(e) => setCustomRangeInputValue(e.target.value)}
+                                    value={customPeriodInputValue}
+                                    onChange={(e) => setCustomPeriodInputValue(e.target.value)}
                                 />
                             </form>
                         </div>
