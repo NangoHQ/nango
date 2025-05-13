@@ -137,22 +137,15 @@ export const onEventScriptService = {
         });
     },
 
-    getByEnvironmentId: async (environmentId: number, providerConfigKeys?: string[]): Promise<OnEventScript[]> => {
-        let query = db.knex
-            .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
+    getByEnvironmentId: async (environmentId: number): Promise<OnEventScript[]> => {
+        const existingScriptsQuery = await db.knex
+            .select<(DBOnEventScript & { provider_config_key: string })[]>([`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key'])
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
             .where({
                 '_nango_configs.environment_id': environmentId,
                 [`${TABLE}.active`]: true
             });
-
-        // Add provider filter if specified
-        if (providerConfigKeys && providerConfigKeys.length > 0) {
-            query = query.whereIn('_nango_configs.unique_key', providerConfigKeys);
-        }
-
-        const existingScriptsQuery = await query;
         return existingScriptsQuery.map(dbMapper.from);
     },
 
@@ -179,20 +172,18 @@ export const onEventScriptService = {
             updated: []
         };
 
-        // If no scripts provided, return empty diff
-        if (!onEventScriptsByProvider || onEventScriptsByProvider.length === 0) {
-            return res;
-        }
-
         const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
 
-        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId, singleDeployMode ? deployingProviders : undefined);
+        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
-        // Create a map of existing scripts for easier lookup
+        // Filter existing scripts to only include those from providers being deployed when in single deploy mode
+        const relevantExistingScripts = singleDeployMode
+            ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
+            : existingScripts;
+
+        // Create a map of existing scripts for easier lookup by provider:name:event
         const previousMap = new Map();
-
-        // Map by provider+name+event for easier lookup
-        for (const script of existingScripts) {
+        for (const script of relevantExistingScripts) {
             const key = `${script.providerConfigKey}:${script.name}:${script.event}`;
             previousMap.set(key, script);
         }
@@ -203,7 +194,7 @@ export const onEventScriptService = {
             if (!scripts || scripts.length === 0) continue;
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
-            const configId = config?.id || -1; // -1 placeholder for a new provider
+            const configId = config?.id || -1; // Use -1 for new providers
 
             for (const script of scripts) {
                 const { name, event } = script;
@@ -229,6 +220,7 @@ export const onEventScriptService = {
             }
         }
 
+        // All remaining scripts in the map are considered deleted
         res.deleted = Array.from(previousMap.values());
 
         return res;
