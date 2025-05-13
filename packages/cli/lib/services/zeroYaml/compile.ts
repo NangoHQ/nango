@@ -1,9 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import chalk from 'chalk';
 import { build } from 'esbuild';
 import { glob } from 'glob';
 import ts from 'typescript';
 
 import { Err, Ok } from '../../utils/result.js';
+import { printDebug } from '../../utils.js';
 
 import type { Result } from '@nangohq/types';
 
@@ -64,10 +68,14 @@ export async function compileAll({ fullPath }: { fullPath: string }): Promise<Re
     try {
         const entryPoints = await glob('**/*.ts', { cwd: fullPath, ignore: ['node_modules/**', 'dist/**', 'build/**'] });
 
+        printDebug('Typechecking');
+
         const typechecked = typeCheck({ entryPoints });
         if (typechecked.isErr()) {
             return typechecked;
         }
+
+        printDebug('Building');
 
         await build({
             entryPoints: entryPoints,
@@ -78,6 +86,8 @@ export async function compileAll({ fullPath }: { fullPath: string }): Promise<Re
             target: 'esnext',
             platform: 'node',
             outbase: '.',
+            outExtension: { '.js': '.cjs' },
+            logLevel: 'error',
             tsconfigRaw: {
                 compilerOptions: {
                     module: 'commonjs',
@@ -102,12 +112,26 @@ export async function compileAll({ fullPath }: { fullPath: string }): Promise<Re
                     composite: false,
                     checkJs: false
                 }
-            },
-            logLevel: 'info'
+            }
         });
-        return Ok(true);
+
+        printDebug('Post compilation');
+
+        const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
+
+        await Promise.all(
+            files.map(async (file) => {
+                let code = await fs.promises.readFile(file, 'utf8');
+
+                // Rewrite .js to .cjs in import/require paths
+                code = code.replace(/((?:require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.cjs$3');
+
+                await fs.promises.writeFile(file, code);
+            })
+        );
     } catch (err) {
         console.error(err);
         return Err('failed_to_compile');
     }
+    return Ok(true);
 }

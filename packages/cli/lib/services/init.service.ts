@@ -32,7 +32,7 @@ export async function init({ absolutePath, debug = false }: { absolutePath: stri
         return false;
     }
 
-    const check = await verificationService.preCheck({ fullPath: absolutePath });
+    const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
     if (check.hasNangoYaml || check.isZeroYaml) {
         console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
         return false;

@@ -125,26 +125,33 @@ class VerificationService {
     }
 
     public async preCheck({
-        fullPath
+        fullPath,
+        debug
     }: {
         fullPath: string;
+        debug: boolean;
     }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string; hasIndexTs: boolean; isZeroYaml: boolean }> {
         const files = await fs.promises.readdir(fullPath);
 
         const hasNangoYaml = files.includes('nango.yaml');
         const isNango = files.includes('.nango');
         const hasIndexTs = files.includes('index.ts');
+        const isZeroYaml = !hasNangoYaml && isNango && hasIndexTs;
+
+        if (isNango) {
+            printDebug(isZeroYaml ? 'Mode: zero yaml' : 'Model: classic yaml', debug);
+        }
         return {
             isNango,
             folderName: path.basename(fullPath),
             hasNangoYaml,
             hasIndexTs,
-            isZeroYaml: !hasNangoYaml && isNango && hasIndexTs
+            isZeroYaml
         };
     }
 
-    public async ensureNangoV1({ fullPath }: { fullPath: string }) {
-        const precheck = await this.preCheck({ fullPath });
+    public async ensureNangoV1({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+        const precheck = await this.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
             console.log(chalk.red(`Not inside a Nango folder`));
             process.exitCode = 1;
