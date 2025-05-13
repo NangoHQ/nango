@@ -137,8 +137,8 @@ export const onEventScriptService = {
         });
     },
 
-    getByEnvironmentId: async (environmentId: number, options?: { providerConfigKeys?: string[] }): Promise<OnEventScript[]> => {
-        const query = db.knex
+    getByEnvironmentId: async (environmentId: number): Promise<OnEventScript[]> => {
+        const existingScriptsQuery = await db.knex
             .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
@@ -146,12 +146,6 @@ export const onEventScriptService = {
                 '_nango_configs.environment_id': environmentId,
                 [`${TABLE}.active`]: true
             });
-
-        if (options?.providerConfigKeys?.length) {
-            query.whereIn('_nango_configs.unique_key', options.providerConfigKeys);
-        }
-
-        const existingScriptsQuery = await query;
         return existingScriptsQuery.map(dbMapper.from);
     },
 
@@ -178,45 +172,62 @@ export const onEventScriptService = {
             updated: []
         };
 
-        // Get existing scripts, filtered by provider if in single deploy mode
+        // If no scripts provided, return empty diff
+        if (!onEventScriptsByProvider || onEventScriptsByProvider.length === 0) {
+            return res;
+        }
+
         const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
-        const existingScripts = await onEventScriptService.getByEnvironmentId(
-            environmentId,
-            singleDeployMode ? { providerConfigKeys: deployingProviders } : undefined
-        );
+
+        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
         // Create a map of existing scripts for easier lookup
-        const previousMap = new Map(existingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
+        const previousMap = new Map();
 
+        // Map by provider+name+event for easier lookup
+        for (const script of existingScripts) {
+            const key = `${script.providerConfigKey}:${script.name}:${script.event}`;
+            previousMap.set(key, script);
+        }
+
+        // Process incoming scripts
         for (const provider of onEventScriptsByProvider) {
-            const config = await configService.getProviderConfig(provider.providerConfigKey, environmentId);
-            if (!config || !config.id) continue;
+            const { providerConfigKey, scripts } = provider;
+            if (!scripts || scripts.length === 0) continue;
 
-            for (const script of provider.scripts) {
-                const key = `${config.id}:${script.name}:${script.event}`;
-                const maybeScript = previousMap.get(key);
-                if (maybeScript) {
-                    // Script already exists - it's an update
-                    res.updated.push(maybeScript);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            const configId = config?.id || -1; // -1 placeholder for a new provider
+
+            for (const script of scripts) {
+                const { name, event } = script;
+                const key = `${providerConfigKey}:${name}:${event}`;
+                const existingScript = previousMap.get(key);
+
+                if (existingScript) {
+                    // Script exists - it's an update
+                    res.updated.push(existingScript);
                     // Remove from map to track deletions
                     previousMap.delete(key);
                 } else {
                     // Script doesn't exist - it's new
                     res.added.push({
-                        configId: config.id,
-                        name: script.name,
+                        configId,
+                        name,
                         version: '0.0.1',
                         active: true,
-                        event: script.event,
-                        providerConfigKey: provider.providerConfigKey
+                        event,
+                        providerConfigKey
                     });
                 }
             }
         }
 
-        // Any remaining scripts in the map were not found in the deployment - they are deleted
-        // In single deploy mode, we already filtered the scripts by provider, so this is safe
-        res.deleted = Array.from(previousMap.values());
+        if (singleDeployMode) {
+            // Only keep scripts that belong to providers being deployed
+            res.deleted = Array.from(previousMap.values()).filter((script) => deployingProviders.includes(script.providerConfigKey));
+        } else {
+            res.deleted = Array.from(previousMap.values());
+        }
 
         return res;
     }
