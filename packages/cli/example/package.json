@@ -1,13 +1,13 @@
 {
-  "name": "nango-integrations",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=18.0"
-  },
-  "devDependencies": {
-    "nango": "0.58.7",
-    "zod": "3.24.4"
-  }
+    "name": "nango-integrations",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=18.0"
+    },
+    "devDependencies": {
+        "nango": "0.58.7",
+        "zod": "3.24.2"
+    }
 }

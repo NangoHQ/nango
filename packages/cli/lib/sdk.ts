@@ -29,3 +29,5 @@ export function createOnEvent<TMetadata extends Zod.ZodObject<any> | undefined =
 ): CreateOnEventResponse<TMetadata> {
     return { type: 'on-event', params };
 }
+
+export { ActionError, NangoActionBase as NangoAction, NangoSyncBase as NangoSync } from '@nangohq/runner-sdk';

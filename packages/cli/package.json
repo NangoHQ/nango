@@ -3,11 +3,11 @@
     "version": "0.58.7",
     "description": "Nango's CLI tool.",
     "type": "module",
-    "main": "dist/sdk.js",
     "bin": {
         "nango": "dist/index.js"
     },
-    "types": "dist/nango-sync.d.ts",
+    "main": "dist/sdk.js",
+    "types": "dist/sdk.d.ts",
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {

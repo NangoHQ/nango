@@ -23,6 +23,7 @@ import { DryRunService } from './services/dryrun.service.js';
 import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
+import { compileAll } from './services/zeroYaml/compile.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 
 import type { DeployOptions } from './types.js';
@@ -110,8 +111,14 @@ program
 program
     .command('generate')
     .description('Generate a new Nango integration')
-    .action(function (this: Command) {
+    .action(async function (this: Command) {
         const { debug } = this.opts();
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoV1({ fullPath });
+        if (!precheck) {
+            return;
+        }
+
         generate({ fullPath: process.cwd(), debug });
     });
 
@@ -191,8 +198,14 @@ program
 program
     .command('migrate-config')
     .description('Migrate the nango.yaml from v1 (deprecated) to v2')
-    .action(function (this: Command) {
-        v1toV2Migration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    .action(async function (this: Command) {
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoV1({ fullPath });
+        if (!precheck) {
+            return;
+        }
+
+        v1toV2Migration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
     });
 
 program
@@ -200,14 +213,26 @@ program
     .description('Migrate the script files from root level to structured directories.')
     .action(async function (this: Command) {
         const { debug } = this.opts();
-        await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION), debug);
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoV1({ fullPath });
+        if (!precheck) {
+            return;
+        }
+
+        await directoryMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION), debug);
     });
 
 program
     .command('migrate-endpoints')
     .description('Migrate the endpoint format')
-    .action(function (this: Command) {
-        endpointMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    .action(async function (this: Command) {
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoV1({ fullPath });
+        if (!precheck) {
+            return;
+        }
+
+        endpointMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
     });
 
 program
@@ -253,9 +278,22 @@ program
     .command('compile', { hidden: true })
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
+        const { debug } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
+        const precheck = await verificationService.preCheck({ fullPath });
+        if (!precheck.isNango) {
+            console.log(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (precheck.isZeroYaml) {
+            const res = await compileAll({ fullPath });
+            if (res.isErr()) {
+                process.exitCode = 1;
+            }
+            return;
+        }
 
         const match = verificationService.filesMatchConfig({ fullPath });
         if (!match) {

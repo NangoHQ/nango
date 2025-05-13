@@ -142,6 +142,22 @@ class VerificationService {
             isZeroYaml: !hasNangoYaml && isNango && hasIndexTs
         };
     }
+
+    public async ensureNangoV1({ fullPath }: { fullPath: string }) {
+        const precheck = await this.preCheck({ fullPath });
+        if (!precheck.isNango) {
+            console.log(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return false;
+        }
+        if (precheck.isZeroYaml) {
+            console.log(chalk.red(`This command only works with a nango.yaml`));
+            process.exitCode = 1;
+            return false;
+        }
+
+        return true;
+    }
 }
 
 const verificationService = new VerificationService();

@@ -1,9 +1,23 @@
 import { createSync } from 'nango';
 import { z } from 'zod';
 
-import type { GithubIssue, NangoSync } from 'nango';
+import type { NangoSync } from 'nango';
 
 const LIMIT = 100;
+const issueSchema = z.object({
+    id: z.string(),
+    owner: z.string(),
+    repo: z.string(),
+    issue_number: z.number(),
+    title: z.string(),
+    state: z.string(),
+    author: z.string(),
+    author_id: z.number(),
+    body: z.string(),
+    date_created: z.string(),
+    date_last_modified: z.string()
+});
+type GithubIssue = z.infer<typeof issueSchema>;
 
 export default createSync({
     description: `Fetches the Github issues from all a user's repositories.
@@ -19,11 +33,10 @@ export default createSync({
     models: {
         GithubIssue: issueSchema
     },
-    metadata: z.never(),
 
     // Sync execution
     exec: async (nango) => {
-        const repos: any[] = await getAllRepositories(nango);
+        const repos = await getAllRepositories(nango);
 
         for (const repo of repos) {
             const proxyConfig = {
@@ -33,9 +46,9 @@ export default createSync({
                 }
             };
             for await (const issueBatch of nango.paginate(proxyConfig)) {
-                const issues: any[] = issueBatch.filter((issue: any) => !('pull_request' in issue));
+                const issues = issueBatch.filter((issue) => !('pull_request' in issue));
 
-                const mappedIssues: GithubIssue[] = issues.map((issue: any) => ({
+                const mappedIssues: GithubIssue[] = issues.map((issue) => ({
                     id: issue.id,
                     owner: repo.owner.login,
                     repo: repo.name,
@@ -63,7 +76,7 @@ export default createSync({
     }
 });
 
-async function getAllRepositories(nango: NangoSync) {
+async function getAllRepositories(nango: NangoSync): Promise<any[]> {
     const records: any[] = [];
     const proxyConfig = {
         endpoint: '/user/repos',
