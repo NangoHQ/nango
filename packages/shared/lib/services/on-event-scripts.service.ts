@@ -137,8 +137,8 @@ export const onEventScriptService = {
         });
     },
 
-    getByEnvironmentId: async (environmentId: number): Promise<OnEventScript[]> => {
-        const existingScriptsQuery = await db.knex
+    getByEnvironmentId: async (environmentId: number, options?: { providerConfigKeys?: string[] }): Promise<OnEventScript[]> => {
+        const query = db.knex
             .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
@@ -146,6 +146,12 @@ export const onEventScriptService = {
                 '_nango_configs.environment_id': environmentId,
                 [`${TABLE}.active`]: true
             });
+
+        if (options?.providerConfigKeys?.length) {
+            query.whereIn('_nango_configs.unique_key', options.providerConfigKeys);
+        }
+
+        const existingScriptsQuery = await query;
         return existingScriptsQuery.map(dbMapper.from);
     },
 
@@ -155,10 +161,12 @@ export const onEventScriptService = {
 
     diffChanges: async ({
         environmentId,
-        onEventScriptsByProvider
+        onEventScriptsByProvider,
+        singleDeployMode = false
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
+        singleDeployMode?: boolean;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
         deleted: OnEventScript[];
@@ -170,7 +178,12 @@ export const onEventScriptService = {
             updated: []
         };
 
-        const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
+        // Get existing scripts, filtered by provider if in single deploy mode
+        const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
+        const existingScripts = await onEventScriptService.getByEnvironmentId(
+            environmentId,
+            singleDeployMode ? { providerConfigKeys: deployingProviders } : undefined
+        );
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(existingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
@@ -181,12 +194,10 @@ export const onEventScriptService = {
 
             for (const script of provider.scripts) {
                 const key = `${config.id}:${script.name}:${script.event}`;
-
                 const maybeScript = previousMap.get(key);
                 if (maybeScript) {
                     // Script already exists - it's an update
                     res.updated.push(maybeScript);
-
                     // Remove from map to track deletions
                     previousMap.delete(key);
                 } else {
@@ -203,8 +214,9 @@ export const onEventScriptService = {
             }
         }
 
-        // Any remaining scripts in the map were not found - they are deleted
-        res.deleted.push(...Array.from(previousMap.values()));
+        // Any remaining scripts in the map were not found in the deployment - they are deleted
+        // In single deploy mode, we already filtered the scripts by provider, so this is safe
+        res.deleted = Array.from(previousMap.values());
 
         return res;
     }
