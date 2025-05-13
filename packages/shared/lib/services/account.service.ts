@@ -1,7 +1,12 @@
 import db from '@nangohq/database';
-import { LogActionEnum } from '../models/Telemetry.js';
+import { flagHasPlan, report } from '@nangohq/utils';
+
 import environmentService from './environment.service.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { plansList } from './plans/definitions.js';
+import { createPlan } from './plans/plans.js';
+
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 class AccountService {
@@ -61,19 +66,11 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string): Promise<DBTeam> {
-        const account: DBTeam[] = await db.knex.select('id').from<DBTeam>(`_nango_accounts`).where({ name });
+    async getOrCreateAccount(name: string): Promise<DBTeam | null> {
+        const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            const newAccount: DBTeam[] = await db.knex.insert({ name, created_at: new Date() }).into<DBTeam>(`_nango_accounts`).returning('*');
-
-            if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
-                throw new Error('Failed to create account');
-            }
-
-            await environmentService.createDefaultEnvironments(newAccount[0]['id']);
-
-            return newAccount[0];
+            return await this.createAccount(name);
         }
 
         return account[0];
@@ -84,15 +81,23 @@ class AccountService {
      * @desc create a new account and assign to the default environments
      */
     async createAccount(name: string): Promise<DBTeam | null> {
+        // TODO: use transaction
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
 
-        if (result[0]?.id) {
-            await environmentService.createDefaultEnvironments(result[0].id);
-
-            return result[0];
+        if (!result[0]) {
+            return null;
         }
 
-        return null;
+        await environmentService.createDefaultEnvironments(result[0].id);
+        if (flagHasPlan) {
+            const freePlan = plansList.find((plan) => plan.code === 'free');
+            const res = await createPlan(db.knex, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
+            if (res.isErr()) {
+                report(res.error);
+            }
+        }
+
+        return result[0];
     }
 
     /**
@@ -102,10 +107,6 @@ class AccountService {
     async createAccountWithoutEnvironments(name: string): Promise<DBTeam | null> {
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
         return result[0] || null;
-    }
-
-    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
-        await db.knex.update({ is_capped }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
     }
 }
 

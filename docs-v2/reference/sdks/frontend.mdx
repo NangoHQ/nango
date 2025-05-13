@@ -49,7 +49,7 @@ const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKEN>' });
 
 # Connect using Nango Connect UI
 
-Nango provides a UI component that guides your app’s users through automatically and securely setting up an integration. This UI is hosted on Nango's servers and requires minimal setup on your end to get started quickly.
+Nango provides a UI component that guides your app's users through automatically and securely setting up an integration. This UI is hosted on Nango's servers and requires minimal setup on your end to get started quickly.
 This is the recommended way to use Nango in your frontend.
 
 ```js
@@ -62,16 +62,20 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
     The unique token to identify your user. It is required but can be set asynchronously.
   </ResponseField>
 
-  <ResponseField name="baseURL" type="string">
-    The base URL to load the UI, default: `https://connect.nango.dev`
+  <ResponseField name="baseURL" type="string" default="https://connect.nango.dev">
+    The base URL to load the UI
   </ResponseField>
 
-  <ResponseField name="apiURL" type="string">
-    The base URL to reach Nango API, default: `https://api.nango.dev`
+  <ResponseField name="apiURL" type="string" default="https://api.nango.dev">
+    The base URL to reach Nango API
   </ResponseField>
 
   <ResponseField name="onEvent" type="function">
     A callback to listen to events sent by Nango Connect
+  </ResponseField>
+
+  <ResponseField name="detectClosedAuthWindow" type="boolean" default="false">
+    Control OAuth popup close detection. If set to true, a closed popup will be detected as a failed authorization.
   </ResponseField>
 </Expandable>
 
@@ -216,6 +220,73 @@ const result = nango.auth('<INTEGRATION-ID>', {
   </ResponseField>
 </Expandable>
 
+# Error Handling
+
+The Nango Frontend SDK may throw different types of errors during authentication and connection setup. Below is a list of all possible error types along with their meanings:
+
+1. `missingAuthToken`
+   - Occurs when neither a public key nor a connect session token is provided.
+   - Message: "You must specify a public key OR a connect session token (cf. documentation)."
+
+2. `blocked_by_browser`
+   - Occurs when the browser blocks the popup window for authentication.
+   - Message: "Modal blocked by browser"
+
+3. `invalidHostUrl`
+   - Occurs when the provided host URL is invalid.
+   - Message: "Invalid URL provided for the Nango host."
+
+4. `missingCredentials`
+   - Occurs when required credentials are not provided.
+   - Message: "You must specify credentials."
+
+5. `windowClosed`
+   - Occurs when the authentication window is closed before completing the flow.
+   - Message: "The authorization window was closed before the authorization flow was completed"
+
+6. `connection_test_failed`
+   - Occurs when credential verification fails for certain integrations before the connection is established.
+   - Message: "The given credentials were found to be invalid. Please check the credentials and try again."
+
+7. `missing_connect_session_token`
+    - Occurs when attempting to reconnect without a session token.
+    - Message: "Reconnect requires a session token"
+
+8. `resource_capped`
+    - Occurs when the resource usage limit has been reached.
+    - Message: "Reached maximum number of allowed connections for your plan" or "Reached maximum number of connections with scripts enabled"
+
+## Error Response Structure
+
+All errors from the Nango Frontend SDK follow this structure:
+
+```json
+{
+    "error": {
+        "code": "<error_type>",
+        "message": "<detailed_error_message>"
+    }
+}
+```
+
+## Handling Errors
+
+You can handle these errors in your code using the `AuthError` class.
+
+```ts
+import { AuthError } from '@nangohq/frontend';
+
+try {
+    const result = await nango.auth('<INTEGRATION-ID>', {
+        credentials: { apiKey: '<END-USER-API-KEY>' }
+    });
+} catch (error) {
+    if (error instanceof AuthError && error.type === '<error_type>') {
+        // Handle specific error
+        console.error('Your error message');
+    }
+}
+```
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>

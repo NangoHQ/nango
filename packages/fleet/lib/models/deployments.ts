@@ -1,8 +1,10 @@
-import type knex from 'knex';
-import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import type { Deployment } from '@nangohq/types';
+
 import { FleetError } from '../utils/errors.js';
+
+import type { Deployment } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
@@ -36,7 +38,7 @@ export async function create(db: knex.Knex, image: string): Promise<Result<Deplo
     try {
         return await db.transaction(async (trx) => {
             // do nothing if already active deployment
-            const active = await getActive(db);
+            const active = await getActive(trx);
             if (active.isErr()) {
                 return Err(active.error);
             }

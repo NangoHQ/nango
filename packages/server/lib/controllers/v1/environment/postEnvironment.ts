@@ -1,9 +1,13 @@
 import { z } from 'zod';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { PostEnvironment } from '@nangohq/types';
-import { accountService, environmentService, externalWebhookService } from '@nangohq/shared';
+
+import db from '@nangohq/database';
+import { environmentService, externalWebhookService, getPlan } from '@nangohq/shared';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { envSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PostEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -26,18 +30,26 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const body: PostEnvironment['Body'] = valBody.data;
 
-    const accountId = res.locals.user.account_id;
-
-    const account = await accountService.getAccountById(accountId);
-    if (account?.is_capped) {
-        res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating environment is only available for paying customer' } });
-        return;
-    }
-
+    const accountId = res.locals.account.id;
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
-    if (environments.length >= 10) {
-        res.status(400).send({ error: { code: 'resource_capped', message: "Can't create more environments" } });
-        return;
+
+    if (flagHasPlan) {
+        const planRes = await getPlan(db.knex, { accountId });
+        if (planRes.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Unable to get plan' } });
+            return;
+        }
+
+        const plan = planRes.value;
+        if (plan && environments.length >= plan.environments_max) {
+            res.status(400).send({
+                error: {
+                    code: 'resource_capped',
+                    message: 'Maximum number of environments reached'
+                }
+            });
+            return;
+        }
     }
 
     const exists = environments.some((env) => env.name === body.name);

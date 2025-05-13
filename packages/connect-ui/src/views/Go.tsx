@@ -1,14 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthError } from '@nangohq/frontend';
 import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
 import { z } from 'zod';
 
-import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
 import { Button } from '@/components/ui/button';
@@ -19,6 +17,8 @@ import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
 import { cn, jsonSchemaToZod } from '@/lib/utils';
 
+import type { AuthResult } from '@nangohq/frontend';
+import type { AuthModeType } from '@nangohq/types';
 import type { Resolver } from 'react-hook-form';
 
 const formSchema: Record<AuthModeType, z.AnyZodObject> = {
@@ -44,15 +44,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         content_url: z.string().min(1)
     }),
     JWT: z.object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
+        // JWT is custom every time
     }),
     TWO_STEP: z.object({
         // TWO_STEP is custom every time
@@ -94,7 +86,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, isSingleIntegration, setIsDirty } = useGlobal();
+    const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
     const nango = useNango();
 
     const [loading, setLoading] = useState(false);
@@ -167,7 +159,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (preconfigured[name] || schema.hidden) {
+            if (preconfigured[name] ?? schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -220,7 +212,7 @@ export const Go: React.FC = () => {
             }
 
             telemetry('click:connect');
-            setLoading(true);
+            setLoading(detectClosedAuthWindow);
             setError(null);
             // we don't care if it was already opened
             nango.clear();
@@ -233,13 +225,13 @@ export const Go: React.FC = () => {
                 } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'CUSTOM') {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 } else {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 }
                 setResult(res);
@@ -257,6 +249,10 @@ export const Go: React.FC = () => {
                     } else if (err.type === 'connection_test_failed') {
                         setConnectionFailed(true);
                         setError(`${provider.display_name} did not validate your credentials. Please check the values and try again.`);
+                        return;
+                    } else if (err.type === 'resource_capped') {
+                        setConnectionFailed(true);
+                        setError(`You have reached the maximum number of connections allowed. Please reach out to the admin.`);
                         return;
                     }
                 }
@@ -349,14 +345,14 @@ export const Go: React.FC = () => {
                                     const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                    const isPreconfigured = preconfigured[key];
+                                    const isPreconfigured = typeof preconfigured[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
+                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {

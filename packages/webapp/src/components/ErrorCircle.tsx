@@ -1,16 +1,39 @@
-import { IconExclamationMark, IconLock, IconRefresh } from '@tabler/icons-react';
+import { IconCircleCheckFilled, IconCircleXFilled, IconClockHour4Filled, IconExclamationCircleFilled, IconInfoCircleFilled } from '@tabler/icons-react';
+
+import { cn } from '../utils/utils';
+import { IconAuth } from './icons/auth';
+import { IconSync } from './icons/sync';
+
 import type React from 'react';
 
-export type ErrorCircleIcon = '!' | 'sync' | 'auth';
-export type ErrorCircleVariant = 'error' | 'warning';
+const colorMap = {
+    success: 'success-400',
+    error: 'alert-400',
+    warning: 'warning-400',
+    info: 'info-400'
+};
+
+export type ErrorCircleIcon = '!' | 'sync' | 'auth' | 'clock' | 'x' | 'info' | 'check';
+export type ErrorCircleVariant = 'success' | 'error' | 'warning' | 'info';
 export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon; variant?: ErrorCircleVariant }> = ({ icon = '!', variant = 'error' }) => {
+    const color = colorMap[variant];
+    const bgColor = `bg-${color}`;
+    const iconColor = `text-${color}`;
+
+    // Tabler icons seem to have a small padding by default, so we add a smaller padding for them to make them consistent
+    const padding = icon === 'sync' || icon === 'auth' ? 'p-[3px]' : 'p-[2px]';
+
     return (
-        <span className="mx-1 cursor-auto flex h-4 w-4 rounded-full ring-red-base/[.35] ring-4">
-            <span className={`flex items-center rounded-full ${variant === 'warning' ? 'bg-yellow-base' : 'bg-red-base'} h-4 w-4`}>
-                {icon === '!' && <IconExclamationMark className="ml-[2px] h-3 w-3 text-pure-black" />}
-                {icon === 'sync' && <IconRefresh className="ml-[2px] h-3 w-3 text-pure-black" />}
-                {icon === 'auth' && <IconLock className="ml-[2px] h-3 w-3 text-pure-black" />}
-            </span>
-        </span>
+        <div className={cn('cursor-auto w-[20px] h-[20px] rounded-full bg-opacity-30', bgColor, padding)}>
+            <div className={cn('w-full h-full flex items-center justify-center', iconColor)}>
+                {icon === '!' && <IconExclamationCircleFilled />}
+                {icon === 'sync' && <IconSync />}
+                {icon === 'auth' && <IconAuth />}
+                {icon === 'clock' && <IconClockHour4Filled />}
+                {icon === 'x' && <IconCircleXFilled />}
+                {icon === 'info' && <IconInfoCircleFilled />}
+                {icon === 'check' && <IconCircleCheckFilled />}
+            </div>
+        </div>
     );
 };

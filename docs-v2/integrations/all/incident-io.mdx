@@ -1,0 +1,59 @@
+---
+title: Incident.io
+sidebarTitle: Incident.io
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/incident-io/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/incident-io/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Teams tier plan required |
+| Paid test account | ❌ | Not required |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+
+## Setup guide
+
+To get started with the Incident.io integration:
+
+1. Sign up for a Teams tier plan or higher at [Incident.io](https://incident.io)
+2. Generate an API key in your [Incident.io settings](https://app.incident.io/settings/api-keys)
+3. Use the API key to authenticate with Nango
+
+For detailed connection instructions, see our [connection guide](/integrations/all/incident-io/connect).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/incident-io.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate an Incident.io API Key](https://app.incident.io/settings/api-keys)
+-   [Incident.io Authentication](https://api-docs.incident.io/#section/Making-requests/Authentication)
+-   [Web API docs (their REST API)](https://api-docs.incident.io/tag/Actions-V1)
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/incident-io.mdx)</Note>
+
+## API gotchas
+
+- API keys must be passed in the Authorization header as `Bearer <api_key>`
+- API keys can have different scopes - make sure to grant the required permissions when creating the key
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/incident-io.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Incident.io with an API Key" icon="link" href="/integrations/all/incident-io/connect" horizontal>
+  Guide to connect to Incident.io using Connect UI
+</Card>

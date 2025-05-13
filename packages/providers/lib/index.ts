@@ -1,7 +1,9 @@
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import yaml from 'js-yaml';
+
 import type { Provider, ProviderAlias } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);

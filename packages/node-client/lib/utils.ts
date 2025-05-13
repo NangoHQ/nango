@@ -1,7 +1,8 @@
 import os from 'os';
 
-import type { ProxyConfiguration, ListRecordsRequestConfig } from './types.js';
 import { NANGO_VERSION } from './version.js';
+
+import type { ListRecordsRequestConfig, ProxyConfiguration } from './types.js';
 
 /**
  * Validates the configuration for a proxy call

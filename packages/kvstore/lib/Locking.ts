@@ -1,4 +1,5 @@
 import { stringifyError } from '@nangohq/utils';
+
 import type { KVStore } from './KVStore.js';
 
 export interface Lock {
