@@ -488,6 +488,7 @@
                 "integrations/all/instantly",
                 "integrations/all/intercom",
                 "integrations/all/intuit",
+                "integrations/all/jazzhr",
                 "integrations/all/jira",
                 "integrations/all/jira-basic",
                 "integrations/all/jira-data-center-api-key",
