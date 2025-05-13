@@ -58,15 +58,7 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({
-            body: {
-                name: props.name,
-                group: props.group,
-                retry: props.retry,
-                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
-                args: props.args
-            }
-        });
+        const res = await this.routeFetch(postImmediateRoute)({ body: props });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
@@ -339,20 +331,17 @@ export class OrchestratorClient {
     public async dequeue({
         groupKey,
         limit,
-        longPolling,
-        flagDequeueLegacy = true
+        longPolling
     }: {
         groupKey: string;
         limit: number;
         longPolling: boolean;
-        flagDequeueLegacy?: boolean;
     }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
                 groupKey,
                 limit,
-                longPolling,
-                flagDequeueLegacy
+                longPolling
             }
         });
         if ('error' in res) {

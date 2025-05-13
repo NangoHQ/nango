@@ -1,4 +1,4 @@
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, SetOptional } from 'type-fest';
 import type { TaskProps } from './models/tasks.js';
 
 export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
@@ -24,13 +24,14 @@ export interface Task {
     readonly output: JsonValue | null;
     readonly terminated: boolean;
     readonly scheduleId: string | null;
+    readonly retryKey: string | null;
+    readonly ownerKey: string | null;
 }
 
 interface WithGroupKeyMaxConcurrency {
     groupKeyMaxConcurrency?: number | undefined;
-    groupUpdateFlag?: boolean | undefined;
 }
-export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'> & WithGroupKeyMaxConcurrency;
+export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'> & WithGroupKeyMaxConcurrency;
 export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> & WithGroupKeyMaxConcurrency;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
