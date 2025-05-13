@@ -139,7 +139,7 @@ export const onEventScriptService = {
 
     getByEnvironmentId: async (environmentId: number): Promise<OnEventScript[]> => {
         const existingScriptsQuery = await db.knex
-            .select<(DBOnEventScript & { provider_config_key: string })[]>([`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key'])
+            .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
             .where({
