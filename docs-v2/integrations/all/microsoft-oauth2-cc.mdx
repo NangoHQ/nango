@@ -6,6 +6,7 @@ sidebarTitle: Microsoft (Client Credentials)
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-oauth2-cc/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-oauth2-cc/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -40,30 +41,7 @@ _No setup guide yet._
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-oauth2-cc.mdx)</Note>
 
 ## API gotchas
-
--   Microsoft has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Microsoft EntraID, OneNote, Onedrive, Outlook, Sharepoint Online, Microsoft Teams etc.).
--   Microsoft offers a tool that allows you to construct and perform Graph API queries and see their response for any apps on which you have an admin, developer, or tester role. For more information you can check [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
--   Please be aware that the Microsoft Graph API implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling).
--   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `scope: '.default'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
-    - Override `authorization_params` by setting only `scope: '.default offline_access'` and `"prompt": ""` to remove the consent screen. Note that if consent is required it will prompt the user for consent due to the ".default" scope.
-    - Set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
-
-```typescript
-const { data } = await nango.createConnectSession({
-  [...],
-  integrations_config_defaults: {
-    "microsoft-oauth2-cc": {
-      authorization_params: {
-        scope: '.default offline_access',
-        "prompt": ""
-      }
-    }
-  }
-});
-```
-
-If this is not done, the app will [show a consent screen prompting the user to grant permissions](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#example-1-the-user-or-tenant-admin-has-granted-permissions) which the user will be unable to do without admin access.
+<APIGotchas />
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-oauth2-cc.mdx)</Note>
 

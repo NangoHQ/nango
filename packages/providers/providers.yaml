@@ -6362,10 +6362,10 @@ microsoft:
     disable_pkce: true
     default_scopes:
         - offline_access
+        - .default
     authorization_params:
         response_type: code
         response_mode: query
-        prompt: consent
     token_params:
         grant_type: authorization_code
     refresh_params:
