@@ -1,0 +1,24 @@
+-   Make sure you request the `offline_access` scope to get a refresh token and keep access with your integration.
+-   Microsoft has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Microsoft EntraID, OneNote, Onedrive, Outlook, Sharepoint Online, Microsoft Teams etc.).
+-   Microsoft offers a tool that allows you to construct and perform Graph API queries and see their response for any apps on which you have an admin, developer, or tester role. For more information you can check [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+-   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list of notebook objects from Onenote, you can have a look at [List Notebooks permissions](https://learn.microsoft.com/en-us/graph/api/onenote-list-notebooks?view=graph-rest-1.0&tabs=http#permissions).
+-   Please be aware that the Microsoft Graph API implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling).
+-   You can set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
+-   The `.default` scope can't be combined with the scopes registered in the Azure portal. So either just use the `.default` scope or remove it to list out explicit parameters that are required. If you attempt to combine them you'll receive the following error
+```
+.default scope can't be combined with resource-specific scopes
+```
+-   If you require a user to reauthenticate and force them to accept scopes that have been updated or changed you can force a prompt via the `authorization_params`:
+
+```typescript
+const { data } = await nango.createConnectSession({
+  [...],
+  integrations_config_defaults: {
+    "<provider-name>": {
+      authorization_params: {
+        "prompt": "consent"
+      }
+    }
+  }
+});
+```

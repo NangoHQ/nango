@@ -159,7 +159,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (preconfigured[name] || schema.hidden) {
+            if (preconfigured[name] ?? schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -345,14 +345,14 @@ export const Go: React.FC = () => {
                                     const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                    const isPreconfigured = preconfigured[key];
+                                    const isPreconfigured = typeof preconfigured[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
+                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {
