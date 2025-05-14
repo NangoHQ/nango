@@ -249,8 +249,8 @@ export class OrchestratorClient {
     }
 
     public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
-        const { args, ...rest } = props;
-        const schedulingProps = {
+        const { args, async, ...rest } = props;
+        const schedulingProps: ImmediateProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
@@ -264,7 +264,7 @@ export class OrchestratorClient {
             }
         };
 
-        const res: Result<any, ClientError> = props.async ? await this.immediate(schedulingProps) : await this.immediateAndWait(schedulingProps);
+        const res: Result<any, ClientError> = async ? await this.immediate(schedulingProps) : await this.immediateAndWait(schedulingProps);
         if (res.isErr()) {
             return Err(res.error);
         }
