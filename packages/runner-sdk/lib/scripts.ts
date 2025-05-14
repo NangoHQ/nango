@@ -6,7 +6,6 @@ export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<an
     version?: string;
     description: string;
     endpoints: { method: 'GET' | 'POST'; path: string; group: string }[];
-    integrationId: string;
     runs: string;
     models: TModels;
     syncType: 'full' | 'incremental';
@@ -33,7 +32,6 @@ export interface CreateActionProps<
     version?: string;
     description: string;
     endpoint: { method: 'GET' | 'POST'; path: string; group: string };
-    integrationId: string;
     input: TInput;
     output: TOutput;
     metadata?: TMetadata;
@@ -52,7 +50,6 @@ export interface CreateActionResponse<
 export interface CreateOnEventProps<TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
     version?: string;
     description: string;
-    integrationId: string;
     event: 'post-connection-creation' | 'pre-connection-deletion';
     metadata?: TMetadata;
     exec: (nango: NangoActionBase<TMetadata>) => Promise<void> | void;

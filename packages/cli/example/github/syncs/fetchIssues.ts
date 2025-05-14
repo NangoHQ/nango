@@ -20,8 +20,7 @@ const issueSchema = z.object({
 type GithubIssue = z.infer<typeof issueSchema>;
 
 export default createSync({
-    description: `Fetches the Github issues from all a user's repositories.
-          Details: full sync, doesn't track deletes, metadata is not required.`,
+    description: `Fetches the Github issues from all a user's repositories.`,
     version: '1.0.0',
     endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
     integrationId: 'github',

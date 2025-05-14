@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
- * Copyright (c) 2024 Nango, all rights reserved.
+ * Copyright (c) 2025 Nango, all rights reserved.
  */
 
 import fs from 'fs';
@@ -23,9 +23,9 @@ import { DryRunService } from './services/dryrun.service.js';
 import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
-import { compileAll } from './services/zeroYaml/compile.js';
-import { deploy } from './services/zeroYaml/deploy.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { compileAll } from './zeroYaml/compile.js';
+import { deploy } from './zeroYaml/deploy.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 
@@ -33,14 +33,12 @@ class NangoCommand extends Command {
     override createCommand(name: string) {
         const cmd = new Command(name);
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
-        cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
+        cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.', false);
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts();
-            if (debug) {
-                printDebug('Debug mode enabled');
-                if (fs.existsSync('.env')) {
-                    printDebug('.env file detected and loaded');
-                }
+            printDebug('Debug mode enabled', debug);
+            if (debug && fs.existsSync('.env')) {
+                printDebug('.env file detected and loaded', debug);
             }
 
             if (!isCI) {
@@ -195,7 +193,7 @@ program
         const fullPath = process.cwd();
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (precheck.isZeroYaml) {
-            const resCompile = await compileAll({ fullPath });
+            const resCompile = await compileAll({ fullPath, debug });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -206,6 +204,7 @@ program
                 process.exitCode = 1;
                 return;
             }
+            return;
         }
 
         await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
@@ -306,7 +305,7 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            const res = await compileAll({ fullPath });
+            const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;
             }

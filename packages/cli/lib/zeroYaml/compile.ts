@@ -6,8 +6,8 @@ import { build } from 'esbuild';
 import { glob } from 'glob';
 import ts from 'typescript';
 
-import { Err, Ok } from '../../utils/result.js';
-import { printDebug } from '../../utils.js';
+import { Err, Ok } from '../utils/result.js';
+import { printDebug } from '../utils.js';
 
 import type { Result } from '@nangohq/types';
 
@@ -49,7 +49,7 @@ function typeCheck({ entryPoints }: { entryPoints: string[] }): Result<boolean> 
         return Ok(true);
     }
 
-    diagnostics.forEach((diagnostic) => {
+    for (const diagnostic of diagnostics) {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
         if (diagnostic.file && diagnostic.start != null) {
             const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
@@ -58,35 +58,35 @@ function typeCheck({ entryPoints }: { entryPoints: string[] }): Result<boolean> 
         } else {
             console.error(message);
         }
-    });
+    }
 
     console.error(`Found ${diagnostics.length} error${diagnostics.length > 1 ? 's' : ''}`);
     return Err('errors');
 }
 
-export async function compileAll({ fullPath }: { fullPath: string }): Promise<Result<boolean>> {
+export async function compileAll({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<boolean>> {
     try {
         const entryPoints = await glob('**/*.ts', { cwd: fullPath, ignore: ['node_modules/**', 'dist/**', 'build/**'] });
 
-        printDebug('Typechecking');
+        printDebug('Typechecking', debug);
 
         const typechecked = typeCheck({ entryPoints });
         if (typechecked.isErr()) {
             return typechecked;
         }
 
-        printDebug('Building');
+        printDebug('Building', debug);
 
         await build({
             entryPoints: entryPoints,
             outdir: 'build',
             bundle: false,
             sourcemap: true,
-            format: 'cjs',
+            format: 'esm',
             target: 'esnext',
             platform: 'node',
             outbase: '.',
-            outExtension: { '.js': '.cjs' },
+            outExtension: { '.js': '.mjs' },
             logLevel: 'error',
             tsconfigRaw: {
                 compilerOptions: {
@@ -115,16 +115,16 @@ export async function compileAll({ fullPath }: { fullPath: string }): Promise<Re
             }
         });
 
-        printDebug('Post compilation');
+        printDebug('Post compilation', debug);
 
-        const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
+        const files = await glob(path.join(fullPath, 'build', '/**/*.mjs'));
 
         await Promise.all(
             files.map(async (file) => {
                 let code = await fs.promises.readFile(file, 'utf8');
 
                 // Rewrite .js to .cjs in import/require paths
-                code = code.replace(/((?:require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.cjs$3');
+                code = code.replace(/((?:import|require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.mjs$3');
 
                 await fs.promises.writeFile(file, code);
             })
