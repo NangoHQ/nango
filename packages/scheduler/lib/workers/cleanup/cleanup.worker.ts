@@ -1,9 +1,11 @@
 import type { MessagePort } from 'node:worker_threads';
 import * as tasks from '../../models/tasks.js';
+import * as groups from '../../models/groups.js';
 import * as schedules from '../../models/schedules.js';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { envs } from '../../env.js';
 
 export class CleanupWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -22,7 +24,7 @@ export class CleanupChild extends SchedulerWorkerChild {
             name: 'Cleanup',
             parent,
             db,
-            tickIntervalMs: 10_000
+            tickIntervalMs: envs.ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS
         });
     }
 
@@ -41,6 +43,13 @@ export class CleanupChild extends SchedulerWorkerChild {
                 logger.error(deletedTasks.error);
             } else if (deletedTasks.value.length > 0) {
                 logger.info(`Hard deleted ${deletedTasks.value.length} tasks`);
+            }
+            // hard delete groups that have not been used in 10 days
+            const deletedGroups = await groups.hardDeleteUnused(trx, { ms: 10 * 24 * 60 * 60 * 1000 });
+            if (deletedGroups.isErr()) {
+                logger.error(deletedGroups.error);
+            } else if (deletedGroups.value.length > 0) {
+                logger.info(`Hard deleted ${deletedGroups.value.length} groups`);
             }
         });
     }

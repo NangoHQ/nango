@@ -193,7 +193,7 @@ export interface Integration {
 export interface SyncStatus {
     id: string;
     type: SyncType;
-    finishedAt: string;
+    finishedAt: string | undefined;
     nextScheduledSyncAt: string;
     name: string;
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';

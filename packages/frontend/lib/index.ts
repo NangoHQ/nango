@@ -224,7 +224,7 @@ export default class Nango {
                     return;
                 }
 
-                if (this.win.modal.window && !this.win.modal.window.closed) {
+                if (this.win.modal.window && !this.win.modal.closed) {
                     return;
                 }
 
@@ -234,10 +234,12 @@ export default class Nango {
                     return;
                 }
 
-                clearInterval(this.tm as unknown as number);
-                this.win.close();
-
                 if (options?.detectClosedAuthWindow) {
+                    // Unfortunately some third party are blocking us from accessing the popup
+                    // So we can't reliably close the popup and websocket connection
+                    clearInterval(this.tm as unknown as number);
+                    this.win.close();
+
                     this.win = null;
                     reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
                 }

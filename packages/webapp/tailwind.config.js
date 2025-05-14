@@ -149,8 +149,6 @@ export default {
                 'info-3': '#c2dcfd',
                 'info-4': '#509af8',
                 'info-5': '#0c2a75',
-                'info-4b': '#509af8',
-                'info-5b': '#0c2a75',
 
                 'alert-1': '#fef6f1',
                 'alert-2': '#fce8db',
@@ -159,7 +157,6 @@ export default {
                 'alert-5': '#dc564c',
                 'alert-6': '#c8453d',
                 'alert-7': '#71192f',
-                'alert-7b': '#71192f',
 
                 'warning-1': '#fffcf0',
                 'warning-2': '#fef7d1',

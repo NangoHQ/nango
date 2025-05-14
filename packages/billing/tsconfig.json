@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         }
     ],

@@ -9,6 +9,7 @@ import * as tasks from '../../models/tasks.js';
 import * as schedules from '../../models/schedules.js';
 import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
 import tracer from 'dd-trace';
+import { envs } from '../../env.js';
 
 export class SchedulingWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
@@ -27,7 +28,7 @@ export class SchedulingChild extends SchedulerWorkerChild {
             name: 'Scheduling',
             parent,
             db,
-            tickIntervalMs: 100
+            tickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS
         });
     }
 
@@ -56,18 +57,20 @@ export class SchedulingChild extends SchedulerWorkerChild {
                     } else {
                         const tasksCreationSpan = tracer.startSpan('scheduler.scheduling.tasks_creation', { childOf: span });
                         await tracer.scope().activate(tasksCreationSpan, async () => {
+                            const now = new Date();
                             const createTasks = getDueSchedules.value.map((schedule) =>
                                 tasks.create(trx, {
                                     scheduleId: schedule.id,
-                                    startsAfter: new Date(),
-                                    name: `${schedule.name}:${new Date().toISOString()}`,
+                                    startsAfter: now,
+                                    name: `${schedule.name}:${now.toISOString()}`,
                                     payload: schedule.payload,
                                     groupKey: schedule.groupKey,
                                     retryCount: 0,
                                     retryMax: schedule.retryMax,
                                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs
+                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                                    ownerKey: null
                                 })
                             );
                             const res = await Promise.allSettled(createTasks);
