@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import chalk from 'chalk';
+import figures from 'figures';
+import ora from 'ora';
 import promptly from 'promptly';
 
 import { rebuildParsed } from './rebuild.js';
@@ -18,9 +20,16 @@ import type {
     PostDeploy,
     PostDeployConfirmation,
     Result,
+    ScriptDifferences,
     ScriptFileType
 } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+interface Package {
+    flowConfigs: CLIDeployFlowConfig[];
+    onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined;
+    jsonSchema: JSONSchema7 | undefined;
+}
 
 export async function deploy({
     fullPath,
@@ -33,43 +42,81 @@ export async function deploy({
 }): Promise<Result<boolean>> {
     const { version, sync: optionalSyncName, action: optionalActionName, debug } = options;
 
-    // Prepare retro-compat json
-    const parsed = await rebuildParsed({ fullPath, debug });
-    if (parsed.isErr()) {
-        return Err(parsed.error);
-    }
-
     await parseSecretKey(environmentName, debug);
 
-    // Create deploy package
-    const postData = await createPackage({ parsed: parsed.value, fullPath, debug, version, optionalSyncName, optionalActionName });
-    if (postData.isErr()) {
-        return Err('no_data');
+    let pkg: Package;
+    const spinnerPackage = ora({ text: 'Packaging' }).start();
+    try {
+        // Prepare retro-compat json
+        const parsed = await rebuildParsed({ fullPath, debug });
+        if (parsed.isErr()) {
+            spinnerPackage.fail('Failed to package');
+            console.log(parsed.error.message);
+            return Err(parsed.error);
+        }
+
+        // Create deploy package
+        const postData = await createPackage({ parsed: parsed.value, fullPath, debug, version, optionalSyncName, optionalActionName });
+        if (postData.isErr()) {
+            spinnerPackage.fail('Failed to package');
+            console.log(postData.error.message);
+            return Err('no_data');
+        }
+
+        pkg = postData.value;
+        spinnerPackage.succeed('Packaged');
+    } catch {
+        spinnerPackage.fail('Failed to package');
+        return Err('failed');
     }
 
     const nangoYamlBody = '';
 
     // Check remote state
-    const confirmationRes = await postConfirmation({
-        body: { ...postData.value, reconcile: false, debug }
-    });
-    if (confirmationRes.isErr()) {
-        return Err(confirmationRes.error);
+    const spinnerState = ora({ text: 'Acquire remote state' }).start();
+    let confirmation: ScriptDifferences;
+    try {
+        const confirmationRes = await postConfirmation({
+            body: { ...pkg, reconcile: false, debug }
+        });
+        if (confirmationRes.isErr()) {
+            spinnerState.fail(chalk.red('Failed to acquire state'));
+            console.log(confirmationRes.error.message);
+            return Err(confirmationRes.error);
+        }
+
+        confirmation = confirmationRes.value;
+        spinnerState.succeed('State acquired');
+    } catch {
+        spinnerState.fail(chalk.red('Failed to acquire state'));
+        return Err('failed');
     }
 
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !options.autoConfirm;
-    await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation: confirmationRes.value });
-
-    // Actual deploy
-    const deployRes = await postDeploy({
-        body: { ...postData.value, reconcile: true, debug, nangoYamlBody }
-    });
-    if (deployRes.isErr()) {
-        return deployRes;
+    const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
+    if (confirmed.isErr()) {
+        return Err('not_confirmed');
     }
 
-    console.log(chalk.green('Deployed'));
-    return Ok(true);
+    // Actual deploy
+    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${pkg.flowConfigs.length} scripts` }).start();
+    try {
+        const deployRes = await postDeploy({
+            body: { ...pkg, reconcile: true, debug, nangoYamlBody }
+        });
+        if (deployRes.isErr()) {
+            spinnerDeploy.fail('Failed to deploy');
+            console.log(chalk.red(deployRes.error.message));
+            return Err('failed_to_deploy');
+        }
+
+        spinnerDeploy.succeed('Deployed');
+        console.log(chalk.green(deployRes.value));
+        return Ok(true);
+    } catch {
+        spinnerDeploy.fail('Failed to deploy');
+        return Err('failed');
+    }
 }
 
 async function createPackage({
@@ -86,13 +133,7 @@ async function createPackage({
     version?: string | undefined;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
-}): Promise<
-    Result<{
-        flowConfigs: CLIDeployFlowConfig[];
-        onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined;
-        jsonSchema: JSONSchema7 | undefined;
-    }>
-> {
+}): Promise<Result<Package>> {
     printDebug('Packaging', debug);
 
     const postData: CLIDeployFlowConfig[] = [];
@@ -107,8 +148,7 @@ async function createPackage({
                 for (const scriptName of onEventScripts[event]) {
                     const files = await loadScriptFiles({ scriptName, providerConfigKey, fullPath, type: 'on-events' });
                     if (!files) {
-                        console.log(chalk.red(`No script files found for "${scriptName}"`));
-                        return Err('no_script');
+                        return Err(new Error(`No script files found for "${scriptName}"`));
                     }
                     scripts.push({ name: scriptName, fileBody: files, event });
                 }
@@ -135,8 +175,7 @@ async function createPackage({
 
                 const files = await loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
                 if (!files) {
-                    console.log(chalk.red(`No script files found for "${sync.name}"`));
-                    return Err('no_script');
+                    return Err(new Error(`No script files found for "${sync.name}"`));
                 }
 
                 const body: CLIDeployFlowConfig = {
@@ -178,8 +217,7 @@ async function createPackage({
 
                 const files = await loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
                 if (!files) {
-                    console.log(chalk.red(`No script files found for "${action.name}"`));
-                    return Err('no_script');
+                    return Err(new Error(`No script files found for "${action.name}"`));
                 }
 
                 const body: CLIDeployFlowConfig = {
@@ -286,7 +324,6 @@ async function loadScriptTsFile({
 
 async function postConfirmation({ body }: { body: PostDeployConfirmation['Body'] }): Promise<Result<PostDeployConfirmation['Success']>> {
     const url = new URL('/sync/deploy/confirmation', hostport);
-    console.log('Checking remote state');
 
     try {
         const res = await fetch(url, {
@@ -300,21 +337,18 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 
         const json = (await res.json()) as PostDeployConfirmation['Reply'];
         if ('error' in json) {
-            console.log(chalk.red(`Error checking state with the following error:`), json.error);
-            return Err('err');
+            return Err(new Error(`Error checking state with the following error: ${JSON.stringify(json.error, null, 2)}`));
         }
 
         return Ok(json);
     } catch (err) {
-        const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
-        console.log(chalk.red(`Error checking state with the following error:`), errorMessage);
-        return Err('err');
+        const errorMessage = getFetchError(err);
+        return Err(new Error(`Error checking state with the following error: ${errorMessage}`));
     }
 }
 
-async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Result<boolean>> {
+async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Result<string>> {
     const url = new URL('/sync/deploy', hostport);
-    console.log('Deploying', body.flowConfigs.length, 'scripts, to', url.href);
 
     try {
         const res = await fetch(url, {
@@ -328,29 +362,24 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
 
         const json = (await res.json()) as PostDeploy['Reply'];
         if ('error' in json) {
-            console.log(chalk.red(`Error deploying the scripts with the following error:`), json.error);
-            return Err('err');
+            return Err(new Error(`Error deploying the scripts with the following error: ${JSON.stringify(json.error, null, 2)}`));
         }
 
         if (json.length === 0) {
-            console.log(chalk.green(`Successfully removed the syncs/actions.`));
-        } else {
-            const nameAndVersions = json.map((result) => `${result.name}@v${result.version}`);
-            console.log(
-                chalk.green(
-                    `Successfully deployed the scripts: \r\n${nameAndVersions
-                        .map((row) => {
-                            return `- ${row}`;
-                        })
-                        .join('\r\n')}`
-                )
-            );
+            return Ok(`Successfully removed the syncs/actions.`);
         }
-        return Ok(true);
+
+        const nameAndVersions = json.map((result) => `${result.name}@v${result.version}`);
+        return Ok(
+            `Successfully deployed the scripts: \r\n${nameAndVersions
+                .map((row) => {
+                    return `- ${row}`;
+                })
+                .join('\r\n')}`
+        );
     } catch (err) {
-        const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
-        console.log(chalk.red(`Error deploying the scripts with the following error:`), errorMessage);
-        return Err('err');
+        const errorMessage = getFetchError(err);
+        return Err(new Error(`Error deploying the scripts with the following error: ${errorMessage}`));
     }
 }
 
@@ -364,7 +393,30 @@ async function handleConfirmation({
     confirmation: PostDeployConfirmation['Success'];
 }): Promise<Result<boolean>> {
     // Show response in term
-    console.log(chalk.grey(JSON.stringify(confirmation, null, 2)));
+
+    const c = confirmation;
+    console.log(
+        ` ${figures.triangleRightSmall} Syncs    ${chalk.green(`new [${c.newSyncs.length}]`)}, ${chalk.blue(`update [${c.updatedSyncs.length}]`)}, ${chalk.red(`delete [${c.deletedSyncs.length}]`)}`
+    );
+    if (c.deletedSyncs.length > 0) {
+        console.log(
+            c.deletedSyncs
+                .map((row) => {
+                    return chalk.red(`  ${figures.cross} Will delete script "${row.name}.ts", in ${row.providerConfigKey}`);
+                })
+                .join('\r\n')
+        );
+    }
+    console.log(
+        ` ${figures.triangleRightSmall} Actions  ${chalk.green(`new [${c.newActions.length}]`)}, ${chalk.blue(`update [${c.updatedActions.length}]`)}, ${chalk.red(`delete [${c.deletedActions.length}]`)}`
+    );
+    console.log(
+        ` ${figures.triangleRightSmall} OnEvents ${chalk.green(`new [${c.newOnEventScripts.length}]`)}, ${chalk.blue(`update [${c.updatedOnEventScripts.length}]`)}, ${chalk.red(`delete [${c.deletedOnEventScripts.length}]`)}`
+    );
+    if (c.deletedModels.length > 0) {
+        console.log(`- Models ${chalk.red(`delete [${c.deletedModels.length}]`)}`);
+    }
+    console.log('');
 
     const { newSyncs, deletedSyncs, deletedModels } = confirmation;
 
@@ -397,7 +449,7 @@ async function handleConfirmation({
 
     const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 || deletedModels.length > 0;
     if (!shouldConfirmDestructive) {
-        console.log(chalk.blue('Not a destructive operation, proceeding without confirmation'));
+        console.log(chalk.grey('Not a destructive operation, proceeding without confirmation'));
 
         return Ok(true);
     }
@@ -422,11 +474,25 @@ async function handleConfirmation({
         return Err('is_ci');
     }
 
-    const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
-    if (!wait) {
-        console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
+    try {
+        const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
+        if (!wait) {
+            console.log(chalk.yellow('Deployed aborted. Exiting'));
+            return Err('not_confirmed');
+        }
+    } catch {
+        console.log('');
+        console.log(chalk.yellow('Deployed aborted. Exiting'));
         return Err('not_confirmed');
     }
 
     return Ok(true);
+}
+
+function getFetchError(err: unknown): string {
+    return err instanceof TypeError && err.cause && err.cause instanceof AggregateError && 'code' in err.cause
+        ? (err.cause.code as string)
+        : err instanceof Error
+          ? err.message
+          : 'Unknown error';
 }

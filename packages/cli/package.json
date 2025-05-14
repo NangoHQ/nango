@@ -40,6 +40,7 @@
         "dotenv": "^16.0.3",
         "ejs": "^3.1.10",
         "figlet": "^1.6.0",
+        "figures": "6.1.0",
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
@@ -52,6 +53,7 @@
         "tsup": "^8.1.0",
         "typescript": "5.7.3",
         "unzipper": "^0.12.3",
+        "ora": "8.2.0",
         "zod": "3.24.2"
     },
     "devDependencies": {

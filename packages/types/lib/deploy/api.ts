@@ -1,9 +1,8 @@
-import type { JSONSchema7 } from 'json-schema';
-
-import type { Endpoint, ApiError } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';
@@ -77,13 +76,16 @@ export interface SlimOnEventScript {
 
 export interface SyncAndActionDifferences {
     newSyncs: SlimSync[];
+    updatedSyncs: SlimSync[];
     deletedSyncs: SlimSync[];
     newActions: SlimAction[];
+    updatedActions: SlimAction[];
     deletedActions: SlimAction[];
     deletedModels: string[];
 }
 
 export interface ScriptDifferences extends SyncAndActionDifferences {
     newOnEventScripts: SlimOnEventScript[];
+    updatedOnEventScripts: SlimOnEventScript[];
     deletedOnEventScripts: SlimOnEventScript[];
 }
