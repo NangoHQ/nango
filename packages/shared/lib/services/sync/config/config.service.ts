@@ -1,12 +1,15 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '@nangohq/database';
+
+import db, { dbNamespace, schema } from '@nangohq/database';
+
+import { LogActionEnum } from '../../../models/Telemetry.js';
+import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
-import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
+
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
-import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -160,19 +163,17 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<DBSyncConfig[]> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
-    const result = await db.knex.from<DBSyncConfig>(TABLE).select<DBSyncConfig[]>('*').where({
-        environment_id,
-        nango_config_id: config.id!,
-        active: true,
-        deleted: false
-    });
+export async function countSyncConfigByConfigId(environmentId: number): Promise<{ nango_config_id: number; count: string }[]> {
+    const result = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .select<{ nango_config_id: number; count: string }[]>('nango_config_id', db.knex.raw('COUNT(1) as count'))
+        .where({
+            environment_id: environmentId,
+            active: true,
+            deleted: false,
+            enabled: true
+        })
+        .groupBy('nango_config_id');
 
     return result;
 }
@@ -411,6 +412,12 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
     }
 }
 
+export async function getSyncsByEnvironmentId(environment_id: number): Promise<DBSyncConfig[]> {
+    const result = await db.knex.select('*').from<DBSyncConfig>(TABLE).where({ active: true, environment_id, enabled: true, deleted: false });
+
+    return result;
+}
+
 export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(
@@ -481,43 +488,39 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
     return result;
 }
 
-export async function getSyncConfigsWithConnections(
-    providerConfigKey: string,
-    environment_id: number
-): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
-    const result = await db.readOnly
-        .select(
-            `${TABLE}.id`,
-            '_nango_configs.provider',
-            '_nango_configs.unique_key',
-            db.knex.raw(
-                `(
-                    SELECT json_agg(
-                        json_build_object(
-                            'connection_id', _nango_connections.connection_id
-                        )
-                    )
-                    FROM _nango_connections
-                    WHERE _nango_configs.environment_id = _nango_connections.environment_id
-                    AND _nango_configs.unique_key = _nango_connections.provider_config_key
-                    AND _nango_configs.deleted = false
-                    AND _nango_connections.deleted = false
-                ) as connections
-                `
-            )
+export async function getConnectionCountsByProviderConfigKey(
+    environmentId: number
+): Promise<{ data: { providerConfigKey: string; connectionsWithScripts: string }[]; total: number }> {
+    const q = db.knex
+        .select<{ providerConfigKey: string; connectionsWithScripts: string; total: string }[]>(
+            '_nango_configs.unique_key as providerConfigKey',
+            db.knex.raw(`
+                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.enabled = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as "connectionsWithScripts"
+            `),
+            db.knex.raw(`
+                COUNT(DISTINCT _nango_connections.id) as total
+            `)
         )
-        .from<DBSyncConfig>(TABLE)
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            '_nango_configs.environment_id': environment_id,
-            '_nango_configs.unique_key': providerConfigKey,
-            active: true,
-            enabled: true,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false
-        });
+        .from('_nango_connections')
+        .join('_nango_configs', function () {
+            this.on('_nango_configs.id', '_nango_connections.config_id').andOnVal('_nango_configs.deleted', false);
+        })
+        .leftJoin('_nango_sync_configs', function () {
+            this.on(`_nango_sync_configs.nango_config_id`, '=', '_nango_configs.id')
+                // While this should not be necessary; without this the query execution time is multiplied by 1000x
+                .andOnVal('_nango_sync_configs.environment_id', environmentId);
+        })
+        .where('_nango_connections.environment_id', environmentId)
+        .andWhere('_nango_connections.deleted', false)
+        .groupByRaw('ROLLUP("_nango_configs"."unique_key")');
 
-    return result;
+    const res = await q;
+    const rollup = res.pop();
+
+    return {
+        data: res,
+        total: parseInt(rollup!.total, 10)
+    };
 }
 
 /**

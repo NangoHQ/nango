@@ -1,11 +1,10 @@
 import { IconX } from '@tabler/icons-react';
 import { useMount } from 'react-use';
 
+import { Button } from './ui/button';
 import { APIError } from '@/lib/api';
 import { triggerClose } from '@/lib/events';
 import { telemetry } from '@/lib/telemetry';
-
-import { Button } from './ui/button';
 
 const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
     if (error instanceof APIError) {

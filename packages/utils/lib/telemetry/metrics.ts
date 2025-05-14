@@ -18,8 +18,10 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
+    CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+    BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
@@ -91,10 +93,16 @@ export enum Types {
 type Dimensions = Record<string, string | number> | undefined;
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
 export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
@@ -110,7 +118,7 @@ export function duration(metricName: Types, value: number, dimensions?: Dimensio
     tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
 }
 
-export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F, dimensions?: Dimensions): F {
+export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {
     const computeDuration = (start: [number, number]) => {
         const durationComponents = process.hrtime(start);
         const seconds = durationComponents[0];
@@ -127,10 +135,10 @@ export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: T
         const start = process.hrtime();
 
         try {
-            const res = func(...args);
-            if (res[Symbol.toStringTag] === 'Promise') {
+            const res = func(...args) as any;
+            if (typeof res === 'object' && res && res[Symbol.toStringTag] === 'Promise') {
                 return res.then(
-                    (v) => {
+                    (v: unknown) => {
                         computeDuration(start);
                         return v;
                     },

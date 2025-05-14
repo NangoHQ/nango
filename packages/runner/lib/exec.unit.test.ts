@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { exec } from './exec.js';
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
+import { Locks } from './sdk/locks.js';
 
 function getNangoProps(): NangoProps {
     return {
@@ -36,7 +37,7 @@ function getNangoProps(): NangoProps {
 describe('Exec', () => {
     it('execute code', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         f = async (nango) => {
             const s = nango.lastSyncDate.toISOString();
             const b = Buffer.from("hello world");
@@ -44,20 +45,20 @@ describe('Exec', () => {
         };
         exports.default = f
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
         expect(res.error).toEqual(null);
         expect(res.success).toEqual(true);
     });
 
     it('should return a formatted error when receiving an Error', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new Error('foobar')
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
         expect(res.error).toEqual({
             payload: {
                 message: 'foobar',
@@ -71,13 +72,13 @@ describe('Exec', () => {
 
     it('should return a formatted error when receiving an ActionError', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new nango.ActionError({ message: 'foobar', prop: 'foobar' })
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
         expect(res.error).toEqual({
             payload: {
                 message: 'foobar',
@@ -91,13 +92,13 @@ describe('Exec', () => {
 
     it('should return a formatted error when receiving an ActionError with an array', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new nango.ActionError([{id: "foobar"}])
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
         expect(res.error).toEqual({
             payload: {
                 message: [{ id: 'foobar' }]
@@ -110,13 +111,13 @@ describe('Exec', () => {
 
     it('should return a formatted error when receiving an invalid error', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new Object({})
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
         expect(res.error).toEqual({
             payload: {
                 name: 'Error'
@@ -129,7 +130,7 @@ describe('Exec', () => {
 
     it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             const err = new Error("Something broke");
             err.isAxiosError = true;
@@ -139,7 +140,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
 
         expect(res.error).toMatchObject({
             payload: {
@@ -153,7 +154,7 @@ describe('Exec', () => {
 
     it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             const err = new Error("Something broke");
             err.isAxiosError = true;
@@ -171,7 +172,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
 
         // NB: it will fail because Nango is not running not because the website is not reachable
         // NB2: the message is different depending on the system running Node
@@ -199,7 +200,7 @@ describe('Exec', () => {
 
     it('should truncate a large error', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new nango.ActionError({
                 message: "A manual error",
@@ -208,7 +209,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
 
         expect(res.error).toStrictEqual({
             payload: {
@@ -222,7 +223,7 @@ describe('Exec', () => {
 
     it('should redact Authorization', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             throw new nango.ActionError({
                 message: "A manual error",
@@ -231,7 +232,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
 
         expect(res.error).toStrictEqual({
             payload: {
@@ -246,7 +247,7 @@ describe('Exec', () => {
 
     it('should truncate caught AxiosError', async () => {
         const nangoProps = getNangoProps();
-        const jsCode = `
+        const code = `
         fn = async (nango) => {
             try {
                 await nango.getConnection();
@@ -259,7 +260,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec(nangoProps, jsCode);
+        const res = await exec({ nangoProps, code });
 
         expect(res.error).toStrictEqual({
             payload: {
@@ -310,5 +311,43 @@ describe('Exec', () => {
             type: 'action_script_runtime_error'
         });
         expect(res.success).toEqual(false);
+    });
+    it('should release all locks when completing successfully', async () => {
+        const nangoProps = getNangoProps();
+        const locks = new Locks();
+        const owner = nangoProps.activityLogId;
+        const code = `
+        fn = async (nango) => {
+            await nango.tryAcquireLock({ key: 'test-lock-1', ttlMs: 1000 });
+            await nango.tryAcquireLock({ key: 'test-lock-2', ttlMs: 1000 });
+            return 'done'
+        };
+        exports.default = fn
+        `;
+        await exec({ nangoProps, code, locks });
+
+        const res1 = await locks.hasLock({ owner, key: 'test-lock-1' });
+        expect(res1.unwrap()).toEqual(false);
+        const res2 = await locks.hasLock({ owner, key: 'test-lock-1' });
+        expect(res2.unwrap()).toEqual(false);
+    });
+    it('should release all locks when failing', async () => {
+        const nangoProps = getNangoProps();
+        const locks = new Locks();
+        const owner = nangoProps.activityLogId;
+        const code = `
+        fn = async (nango) => {
+            await nango.tryAcquireLock({ key: 'test-lock-1', ttlMs: 1000 });
+            await nango.tryAcquireLock({ key: 'test-lock-2', ttlMs: 1000 });
+            throw new Error('foobar')
+        };
+        exports.default = fn
+        `;
+        await exec({ nangoProps, code, locks });
+
+        const res1 = await locks.hasLock({ owner, key: 'test-lock-1' });
+        expect(res1.unwrap()).toEqual(false);
+        const res2 = await locks.hasLock({ owner, key: 'test-lock-1' });
+        expect(res2.unwrap()).toEqual(false);
     });
 });

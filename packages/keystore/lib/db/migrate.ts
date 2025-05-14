@@ -1,7 +1,9 @@
 import path from 'node:path';
-import type knex from 'knex';
 import { fileURLToPath } from 'node:url';
+
 import { logger } from '../utils/logger.js';
+
+import type knex from 'knex';
 
 export async function migrate(db: knex.Knex, migrationSchema: string = 'migrations'): Promise<void> {
     logger.info('[keystore] migration');

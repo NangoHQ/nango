@@ -6,7 +6,7 @@ import { InfoBloc } from '../../../../../components/InfoBloc';
 import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Input } from '../../../../../components/ui/input/Input';
-import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
+import { SecretTextArea } from '../../../../../components/ui/input/SecretTextArea';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
@@ -83,15 +83,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                 title="App Private Key"
                 help={<p>Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here</p>}
             >
-                <SecretTextarea
-                    copy={true}
-                    id="private_key"
-                    name="private_key"
-                    value={privateKey}
-                    onChange={(e) => setPrivateKey(e.target.value)}
-                    additionalClass={`w-full`}
-                    required
-                />
+                <SecretTextArea copy={true} id="private_key" name="private_key" value={privateKey} onUpdate={(value) => setPrivateKey(value)} required />
             </InfoBloc>
 
             <div className="flex justify-between">

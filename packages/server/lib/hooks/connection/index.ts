@@ -17,3 +17,5 @@ export { default as expensifyCredentialsVerification } from './providers/expensi
 export { default as awsIamCredentialsVerification } from './providers/aws-iam/credentials-verification.js';
 export { default as bitdefenderCredentialsVerification } from './providers/bitdefender/credentials-verification.js';
 export { default as ripplingShopAppPostConnection } from './providers/rippling-shop-app/post-connection.js';
+export { default as azureDevopsCredentialsVerification } from './providers/azure-devops/credentials-verification.js';
+export { default as apolloCredentialsVerification } from './providers/apollo/credentials-verification.js';

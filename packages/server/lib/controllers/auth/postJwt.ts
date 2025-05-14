@@ -3,10 +3,8 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -31,20 +29,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z
-    .object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
-    })
-    .strict();
-
+const bodyValidation = z.object({}).catchall(z.any()).strict();
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
@@ -85,7 +70,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
+    const bodyData = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -103,7 +88,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -112,7 +97,6 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_JWT_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -162,7 +146,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const create = jwtClient.createCredentials({ provider: provider as ProviderJwt, privateKey, privateKeyId, issuerId });
+        const create = jwtClient.createCredentials({ config: config.unique_key, provider: provider as ProviderJwt, dynamicCredentials: bodyData });
         if (create.isErr()) {
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
@@ -190,8 +174,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

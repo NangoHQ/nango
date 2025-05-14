@@ -1,6 +1,8 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer, shouldBeProtected, getConnectSessionToken } from '../../utils/tests.js';
+
+import { seeders } from '@nangohq/shared';
+
+import { getConnectSessionToken, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/providers';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -19,14 +21,14 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be authorized by private key', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, { method: 'GET', token: env.secret_key, query: {} });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should be authorized by connect session token', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const token = await getConnectSessionToken(api, env);
         const res = await api.fetch(route, { method: 'GET', token, query: {} });
         isSuccess(res.json);

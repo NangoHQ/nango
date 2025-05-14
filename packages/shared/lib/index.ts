@@ -14,11 +14,16 @@ import { errorNotificationService } from './services/notification/error.service.
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
-import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
+export { productTracking } from './utils/productTracking.js';
+export * as appleAppStoreClient from './auth/appleAppStore.js';
+export * as billClient from './auth/bill.js';
+export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
+export * as signatureClient from './auth/signature.js';
+export * as tableauClient from './auth/tableau.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
@@ -32,24 +37,25 @@ export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
+export * from './services/plans/plans.js';
+export * from './services/plans/definitions.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 
 export * from './models/index.js';
 
+export * from './constants.js';
+
 export * from './utils/utils.js';
 export * from './utils/error.js';
-export * from './constants.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 
 export {
-    AnalyticsTypes,
     ErrorSourceEnum,
     Orchestrator,
     SlackService,
     accountService,
-    analytics,
     configService,
     connectionService,
     encryptionManager,

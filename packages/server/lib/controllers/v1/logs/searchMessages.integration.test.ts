@@ -1,6 +1,8 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -103,6 +105,7 @@ describe('POST /logs/messages', () => {
                 {
                     createdAt: expect.toBeIsoDate(),
                     id: expect.any(String),
+                    accountId: account.id,
                     level: 'info',
                     message: 'test info',
                     parentId: logCtx.id,
@@ -110,7 +113,7 @@ describe('POST /logs/messages', () => {
                     type: 'log'
                 }
             ],
-            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: null }
+            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: expect.any(String) }
         });
     });
 

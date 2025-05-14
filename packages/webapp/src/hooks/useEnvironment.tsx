@@ -5,7 +5,7 @@ import { apiFetch, swrFetcher } from '../utils/api';
 import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
 
 export function useEnvironment(env: string) {
-    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(`/api/v1/environments/current?env=${env}`, swrFetcher, {});
+    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(`/api/v1/environments/current?env=${env}`, swrFetcher);
 
     const loading = !data && !error;
 
@@ -13,6 +13,7 @@ export function useEnvironment(env: string) {
         loading,
         error,
         environmentAndAccount: data?.environmentAndAccount,
+        plan: data?.plan,
         mutate
     };
 }
@@ -62,5 +63,15 @@ export async function apiPostVariables(env: string, body: PostEnvironmentVariabl
     return {
         res,
         json: (await res.json()) as PostEnvironmentVariables['Reply']
+    };
+}
+
+export async function apiDeleteEnvironment(env: string) {
+    const res = await apiFetch(`/api/v1/environments?env=${env}`, {
+        method: 'DELETE'
+    });
+
+    return {
+        res
     };
 }

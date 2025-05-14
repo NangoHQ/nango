@@ -1,7 +1,9 @@
-import { expect, describe, it, beforeAll } from 'vitest';
-import environmentService, { hashSecretKey } from './environment.service.js';
 import { v4 as uuid } from 'uuid';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import { multipleMigrations } from '@nangohq/database';
+
+import environmentService, { hashSecretKey } from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
 
 describe('Environment service', () => {
@@ -41,7 +43,9 @@ describe('Environment service', () => {
             uuid: expect.any(String),
             webhook_url: null,
             webhook_url_secondary: null,
-            otlp_settings: null
+            otlp_settings: null,
+            deleted: false,
+            deleted_at: null
         });
 
         expect(env.secret_key).not.toEqual(env.secret_key_hashed);

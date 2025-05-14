@@ -3,10 +3,8 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -92,7 +90,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -101,7 +99,6 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -172,8 +169,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

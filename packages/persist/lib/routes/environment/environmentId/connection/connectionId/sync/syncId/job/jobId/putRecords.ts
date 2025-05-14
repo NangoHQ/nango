@@ -1,9 +1,11 @@
-import type { ApiError, Endpoint, MergingStrategy, PutRecordsSuccess } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import { recordsRequestParser } from './validate.js';
+import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
+import type { ApiError, Endpoint, MergingStrategy, PutRecordsSuccess } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
 type PutRecords = Endpoint<{
     Method: typeof method;
@@ -34,8 +36,9 @@ const validate = validateRequest<PutRecords>(recordsRequestParser);
 const handler = async (req: EndpointRequest<PutRecords>, res: EndpointResponse<PutRecords, AuthLocals>) => {
     const { environmentId, nangoConnectionId, syncId, syncJobId }: PutRecords['Params'] = req.params;
     const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PutRecords['Body'] = req.body;
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     const result = await persistRecords({
+        plan,
         persistType: 'update',
         accountId: account.id,
         environmentId,

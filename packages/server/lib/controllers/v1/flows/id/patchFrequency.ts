@@ -1,20 +1,18 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { PatchFlowFrequency } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { configService, getSyncConfigById, getSyncsBySyncConfigId, updateFrequency } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationBody as validationBodyBase, validationParams } from './patchDisable.js';
+import { frequencySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
-import { z } from 'zod';
+
+import type { PatchFlowFrequency } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 export const validationBody = validationBodyBase.extend({
     // To sync with ScriptSettings
     // Test: https://regex101.com/r/gJBaKt
-    frequency: z
-        .string()
-        .regex(
-            /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/
-        )
+    frequency: frequencySchema
 });
 
 export const patchFlowFrequency = asyncWrapper<PatchFlowFrequency>(async (req, res) => {

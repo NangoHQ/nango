@@ -1,14 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import get from 'lodash-es/get.js';
-import type { Provider, DBConnection } from '@nangohq/types';
 
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
+import get from 'lodash-es/get.js';
+
+import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+
+import type { DBConnection, Provider } from '@nangohq/types';
 
 export enum NodeEnv {
     Dev = 'development',
@@ -91,18 +88,6 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
-export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
-    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
-    const [days, hours, minutes] = timeStr.split(':').map(Number);
-
-    if (days && hours && minutes) {
-        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
-        return new Date(Date.now() + milliseconds);
-    }
-
-    return undefined;
-}
-
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
@@ -162,21 +147,50 @@ export function getWebsocketsPath(): string {
  * @remarks
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
-export function interpolateString(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+export function interpolateString(str: string, replacers: Record<string, any>): string {
+    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         if (b === 'now') {
             return new Date().toISOString();
         }
-        const r = replacers[b];
+        if (b.startsWith('base64(')) {
+            return a;
+        }
+        const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
-}
 
-export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+    return interpolated;
+}
+function resolveKey(key: string, replacers: Record<string, any>): any {
+    const keys = key.split('.');
+    let value = replacers;
+
+    for (const part of keys) {
+        if (value && part in value) {
+            value = value[part];
+        } else {
+            return undefined;
+        }
+    }
+
+    return value;
+}
+export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
+    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateStringFromObject(inner, replacers);
+        return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
+    return interpolated;
 }
 
 export function interpolateObjectValues(obj: Record<string, string | undefined>, connectionConfig: Record<string, any>): Record<string, string | undefined> {
@@ -220,15 +234,13 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
-export function stripStepResponse(obj: any, step: Record<string, any>): any {
+export function stripStepResponse(obj: any): any {
     if (typeof obj === 'string') {
-        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
-            return step[key] || '';
-        });
+        return obj.replace(/step\d+\./g, '');
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
-            strippedObject[key] = stripStepResponse(value, step);
+            strippedObject[key] = stripStepResponse(value);
         }
         return strippedObject;
     }
@@ -289,10 +301,14 @@ export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined):
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
     if (str.includes('${')) {
         if (str.includes('||')) {
-            const parts = str.split('||');
-            const firstPart = parts[0] ? interpolateStringFromObject(parts[0].trim(), replacers) : undefined;
-            const secondPart = parts[1] ? interpolateStringFromObject(parts[1].trim(), replacers) : undefined;
-            return (firstPart || secondPart) as string;
+            const parts = str.split('||').map((part) => part.trim());
+            const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+
+            if (left && left !== parts[0]) {
+                return left;
+            }
+
+            return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
         }
 
         return interpolateStringFromObject(str, replacers);
@@ -348,4 +364,11 @@ export function getConnectionMetadataFromTokenResponse(params: any, provider: Pr
     const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
 
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
+}
+
+export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
+    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
+    return new URL(interpolatedUrl);
 }

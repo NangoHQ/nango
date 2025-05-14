@@ -60,7 +60,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
+        const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
         void logCtx.info(`Starting action '${task.actionName}'`, {
             input: task.input,
             action: task.actionName,
@@ -107,7 +107,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         return Ok(undefined);
     } catch (err) {
         const error = new NangoError('action_script_failure', { error: err instanceof Error ? err.message : err });
-        await onFailure({
+        onFailure({
             connection: {
                 id: task.connection.id,
                 connection_id: task.connection.connection_id,
@@ -176,7 +176,7 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
     }
 
     const { account, environment } = accountAndEnv;
-    await onFailure({
+    onFailure({
         connection: {
             id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
@@ -196,7 +196,7 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
     });
 }
 
-async function onFailure({
+function onFailure({
     team,
     environment,
     connection,
@@ -220,9 +220,9 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
-}): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
-    if (team && environment) {
+}): void {
+    const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
+    if (team && environment && logCtx) {
         try {
             void slackService.reportFailure({
                 account: team,

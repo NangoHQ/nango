@@ -10,7 +10,7 @@ import type { MaybePromise, MessageRowInsert } from '@nangohq/types';
 
 interface Props {
     operationId: string;
-    accountId?: number | undefined;
+    accountId: number;
     dryRun: boolean;
     logToConsole: boolean;
 }
@@ -38,13 +38,13 @@ export class ESTransport implements LogTransportAbstract {
 
         const start = Date.now();
         try {
-            await createMessage(getFormattedMessage({ ...data, parentId: operationId }));
+            await createMessage(getFormattedMessage({ ...data, parentId: operationId, accountId }));
             return true;
         } catch (err) {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId: accountId as number });
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId });
         }
     }
 

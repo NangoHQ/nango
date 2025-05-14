@@ -72,7 +72,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
+        const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
 
         void logCtx.info(`Starting webhook '${task.webhookName}'`, {
             input: task.input,
@@ -160,13 +160,16 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            endUser
+            endUser,
+            startedAt: new Date()
         });
         return Err(error);
     }
 }
 
 export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+
     const content = `The webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
         executionType: 'webhook',
@@ -256,6 +259,11 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
             });
         }
     }
+
+    await logCtx.success();
+
+    metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
 export async function handleWebhookError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
@@ -299,7 +307,8 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         syncConfig: nangoProps.syncConfig,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        startedAt: nangoProps.startedAt
     });
 }
 
@@ -313,11 +322,13 @@ async function onFailure({
     syncJobId,
     syncConfig,
     providerConfig,
+    activityLogId,
     providerConfigKey,
     models,
     runTime,
     error,
-    endUser
+    endUser,
+    startedAt
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -334,7 +345,10 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
+    startedAt: Date;
 }): Promise<void> {
+    const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
+
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
         if (webhookSettings) {
@@ -403,4 +417,11 @@ async function onFailure({
             endUser
         });
     }
+
+    void logCtx?.error(error.message, { error });
+    await logCtx?.enrichOperation({ error });
+    await logCtx?.failed();
+
+    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

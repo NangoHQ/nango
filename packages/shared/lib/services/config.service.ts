@@ -1,14 +1,15 @@
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import db from '@nangohq/database';
 import { isCloud, nanoid } from '@nangohq/utils';
-import { NangoError } from '../utils/error.js';
+
+import { getProvider } from './providers.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
 import syncManager from './sync/manager.service.js';
-import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
+import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type { AuthModeType, DBConnection, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
-import { getProvider } from './providers.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider } from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -81,7 +82,9 @@ class ConfigService {
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
-
+        if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
+            configToInsert.oauth_scopes = provider.default_scopes.join(',');
+        }
         const res = await db.knex.from<IntegrationConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
@@ -143,19 +146,17 @@ class ConfigService {
         return true;
     }
 
-    async editProviderConfig(config: ProviderConfig) {
-        const provider = getProvider(config.provider);
-        if (!provider) {
-            throw new NangoError('unknown_provider');
-        }
-
+    async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
         const encrypted = encryptionManager.encryptProviderConfig(config);
         encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+        encrypted.updated_at = new Date();
 
-        return db.knex
-            .from<ProviderConfig>(`_nango_configs`)
+        const res = await db.knex
+            .from<DBIntegrationCrypted>(`_nango_configs`)
             .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
-            .update(encrypted);
+            .update(encrypted)
+            .returning('*');
+        return res[0]!;
     }
 
     async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {

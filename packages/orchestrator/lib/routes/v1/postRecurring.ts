@@ -18,7 +18,10 @@ export type PostRecurring = Endpoint<{
         state: 'STARTED' | 'PAUSED';
         startsAt: Date;
         frequencyMs: number;
-        groupKey: string;
+        group: {
+            key: string;
+            maxConcurrency: number;
+        };
         retry: {
             max: number;
         };
@@ -35,13 +38,16 @@ export type PostRecurring = Endpoint<{
 
 const validate = validateRequest<PostRecurring>({
     parseBody: (data: any) => {
-        return z
+        const schema = z
             .object({
                 name: z.string().min(1),
                 state: z.enum(['STARTED', 'PAUSED']),
                 startsAt: z.coerce.date(),
                 frequencyMs: z.number().int().positive(),
-                groupKey: z.string().min(1),
+                group: z.object({
+                    key: z.string().min(1),
+                    maxConcurrency: z.coerce.number()
+                }),
                 retry: z.object({
                     max: z.number().int()
                 }),
@@ -52,7 +58,16 @@ const validate = validateRequest<PostRecurring>({
                 }),
                 args: syncArgsSchema
             })
-            .strict()
+            .strict();
+        return z
+            .preprocess((d) => {
+                // for backwards compatibility
+                if (d && typeof d === 'object' && 'groupKey' in d) {
+                    const { groupKey, ...rest } = d;
+                    return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
+                }
+                return d;
+            }, schema)
             .parse(data);
     }
 });
@@ -65,7 +80,8 @@ const handler = (scheduler: Scheduler) => {
             payload: req.body.args,
             startsAt: req.body.startsAt,
             frequencyMs: req.body.frequencyMs,
-            groupKey: req.body.groupKey,
+            groupKey: req.body.group.key,
+            groupKeyMaxConcurrency: req.body.group.maxConcurrency,
             retryMax: req.body.retry.max,
             createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,

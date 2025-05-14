@@ -33,6 +33,7 @@ import { getConnection as getConnectionWeb } from './controllers/v1/connections/
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
 import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
@@ -43,6 +44,7 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
@@ -60,6 +62,9 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { getPlans } from './controllers/v1/plans/getPlans.js';
+import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
+import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -136,8 +141,13 @@ web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
+web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
+web.route('/plans/usage').get(webAuth, getUsage);
+
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
+web.route('/environments/').delete(webAuth, deleteEnvironment);
 web.route('/environments/current').get(webAuth, getEnvironment);
 web.route('/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/environments/variables').post(webAuth, postEnvironmentVariables);
@@ -150,7 +160,7 @@ web.route('/environment/admin-auth').get(webAuth, environmentController.getAdmin
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
 
-web.route('/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+web.route('/integrations').get(webAuth, getIntegrations);
 web.route('/integrations').post(webAuth, postIntegration);
 web.route('/integrations/:providerConfigKey').get(webAuth, getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, patchIntegration);

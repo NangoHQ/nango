@@ -1,9 +1,12 @@
 import { z } from 'zod';
+
 import { userService } from '@nangohq/shared';
-import type { ResendVerificationEmailByUuid } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { ResendVerificationEmailByUuid } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -41,7 +44,7 @@ export const resendVerificationEmailByUuid = asyncWrapper<ResendVerificationEmai
         return;
     }
 
-    sendVerificationEmail(user.email, user.name, user.email_verification_token);
+    await sendVerificationEmail(user.email, user.name, user.email_verification_token);
 
     res.status(200).send({ success: true });
 });

@@ -12,29 +12,30 @@ import Nango, { AuthError } from '@nangohq/frontend';
 
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
-import SecretTextArea from '../../components/ui/input/SecretTextArea';
+import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import { useListIntegration } from '../../hooks/useIntegration';
 import useSet from '../../hooks/useSet';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { useGetHmacAPI, useGetIntegrationListAPI } from '../../utils/api';
+import { useGetHmacAPI } from '../../utils/api';
 import { globalEnv } from '../../utils/env';
 import { isCloudProd } from '../../utils/utils';
 
-import type { Integration } from '@nangohq/server';
-import type { AuthModeType } from '@nangohq/types';
+import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
 
+    const { list: integrations } = useListIntegration(env);
+
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
-    const [integration, setIntegration] = useState<Integration | null>(null);
+    const [integration, setIntegration] = useState<ApiIntegrationList | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
@@ -48,7 +49,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [websocketsPath, setWebsocketsPath] = useState<string>('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
-    const getIntegrationListAPI = useGetIntegrationListAPI(env);
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -76,38 +76,19 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
     useEffect(() => {
         const getHmac = async () => {
-            const res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+            const res = await getHmacAPI(integration!.unique_key, connectionId);
 
             if (res?.status === 200) {
                 const hmacDigest = (await res.json())['hmac_digest'];
                 setHmacDigest(hmacDigest);
             }
         };
-        if (isHmacEnabled && integration?.uniqueKey && connectionId) {
+        if (isHmacEnabled && integration?.unique_key && connectionId) {
             void getHmac();
         }
-    }, [isHmacEnabled, integration?.uniqueKey, connectionId]);
+    }, [isHmacEnabled, integration?.unique_key, connectionId]);
 
     useEffect(() => {
-        const getIntegrations = async () => {
-            const res = await getIntegrationListAPI();
-
-            if (res?.status === 200) {
-                const data = await res.json();
-                setIntegrations(data['integrations']);
-
-                if (data['integrations'] && data['integrations'].length > 0) {
-                    const defaultIntegration = providerConfigKey
-                        ? data['integrations'].find((i: Integration) => i.uniqueKey === providerConfigKey)
-                        : data['integrations'][0];
-
-                    setIntegration(defaultIntegration);
-                    setUpConnectionConfigParams(defaultIntegration);
-                    setAuthMode(defaultIntegration.authMode);
-                }
-            }
-        };
-
         if (environmentAndAccount) {
             const { environment } = environmentAndAccount;
             setPublicKey(environment.public_key);
@@ -118,9 +99,18 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         if (!loaded) {
             setLoaded(true);
-            void getIntegrations();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, environmentAndAccount, setPublicKey, providerConfigKey]);
+    }, [loaded, setLoaded, setIntegration, environmentAndAccount, setPublicKey, providerConfigKey]);
+
+    useEffect(() => {
+        if (integrations && integrations.length > 0) {
+            const defaultIntegration = providerConfigKey ? integrations.find((i) => i.unique_key === providerConfigKey) : integrations[0];
+
+            setIntegration(defaultIntegration!);
+            setUpConnectionConfigParams(defaultIntegration!);
+            setAuthMode(defaultIntegration!.meta.authMode);
+        }
+    }, [integrations]);
 
     const handleCreate = (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -224,21 +214,20 @@ export const ConnectionCreateLegacy: React.FC = () => {
         if (authMode === 'JWT') {
             if (integration?.provider.includes('ghost-admin')) {
                 const privateKeyFormat = /^([^:]+):([^:]+)$/;
-                if (!privateKeyFormat.test(privateKey)) {
+                if (!privateKeyFormat.test(credentialsState.privateKey)) {
                     toast.error('The API key should be in the format id:secret.', {
                         position: toast.POSITION.BOTTOM_CENTER
                     });
                     return;
                 }
-                const [id, secret] = privateKey.split(':');
+                const [id, secret] = credentialsState.privateKey.split(':');
                 credentials = {
                     privateKey: { id, secret }
                 };
             } else {
                 credentials = {
-                    privateKeyId,
-                    issuerId,
-                    privateKey
+                    type: 'JWT',
+                    ...credentialsState
                 };
             }
         }
@@ -281,31 +270,31 @@ export const ConnectionCreateLegacy: React.FC = () => {
             });
     };
 
-    const setUpConnectionConfigParams = (integration: Integration) => {
+    const setUpConnectionConfigParams = (integration: ApiIntegrationList) => {
         if (integration == null) {
             return;
         }
 
-        if (integration.connectionConfigParams == null || integration.connectionConfigParams.length === 0) {
+        if (integration.meta.connectionConfigParams == null || integration.meta.connectionConfigParams.length === 0) {
             setConnectionConfigParams(null);
             return;
         }
 
         const params: Record<string, string> = {};
-        for (const key of Object.keys(integration.connectionConfigParams)) {
+        for (const key of Object.keys(integration.meta.connectionConfigParams)) {
             params[key] = '';
         }
         setConnectionConfigParams(params);
     };
 
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
+        const integration = integrations?.find((i) => i.unique_key === e.target.value);
 
         if (integration != null) {
             setIntegration(integration);
             setServerErrorMessage('');
             setUpConnectionConfigParams(integration);
-            setAuthMode(integration.authMode);
+            setAuthMode(integration.meta.authMode);
         }
     };
 
@@ -338,6 +327,9 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
     const snippet = () => {
         const args = [];
+        if (!integration) {
+            return '';
+        }
 
         if (!isCloudProd()) {
             args.push(`host: '${hostUrl}'`);
@@ -412,7 +404,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         }
 
         let apiAuthString = '';
-        if (integration?.authMode === 'API_KEY') {
+        if (integration.meta.authMode === 'API_KEY') {
             apiAuthString = `
     credentials: {
       apiKey: '${apiKey}'
@@ -420,12 +412,12 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
         }
 
-        if (integration?.authMode === 'BASIC' || integration?.authMode === 'SIGNATURE') {
+        if (integration.meta.authMode === 'BASIC' || integration.meta.authMode === 'SIGNATURE') {
             apiAuthString = `
     credentials: {
       username: '${apiAuthUsername}',
       password: '${apiAuthPassword}'${
-          integration.authMode === 'SIGNATURE'
+          integration.meta.authMode === 'SIGNATURE'
               ? `,
       Type: 'SIGNATURE'`
               : ''
@@ -436,7 +428,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         let appStoreAuthString = '';
 
-        if (integration?.authMode === 'APP_STORE') {
+        if (integration.meta.authMode === 'APP_STORE') {
             appStoreAuthString = `
     credentials: {
         privateKeyId: '${privateKeyId}',
@@ -448,7 +440,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         let oauthCredentialsString = '';
 
-        if (integration?.authMode === 'OAUTH2' && oAuthClientId && oAuthClientSecret) {
+        if (integration.meta.authMode === 'OAUTH2' && oAuthClientId && oAuthClientSecret) {
             oauthCredentialsString = `
     credentials: {
         oauth_client_id_override: '${oAuthClientId}',
@@ -457,7 +449,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
         }
         let tbaCredentialsString = '';
-        if (integration?.authMode === 'TBA') {
+        if (integration.meta.authMode === 'TBA') {
             if (oAuthClientId && oAuthClientSecret) {
                 tbaCredentialsString = `
     credentials: {
@@ -478,7 +470,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         }
 
         let tableauCredentialsString = '';
-        if (integration?.authMode === 'TABLEAU') {
+        if (integration.meta.authMode === 'TABLEAU') {
             if (patName && patSecret && contentUrl) {
                 tableauCredentialsString = `
     credentials: {
@@ -492,24 +484,15 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         let jwtCredentialsString = '';
 
-        if (integration?.authMode === 'JWT') {
+        if (integration.meta.authMode === 'JWT') {
             const credentials: string[] = [];
 
             if (integration.provider.includes('ghost-admin')) {
-                const [id = '', secret = ''] = privateKey.split(':');
-                credentials.push(`privateKey: { id: '${id}', secret: '${secret}' }`);
-            } else {
-                if (privateKeyId) {
-                    credentials.push(`privateKeyId: '${privateKeyId}'`);
-                }
-                if (issuerId) {
-                    credentials.push(`issuerId: '${issuerId}'`);
-                }
-                if (privateKey) {
-                    credentials.push(`privateKey: '${privateKey}'`);
+                if (typeof credentialsState.privateKey === 'string') {
+                    const [id = '', secret = ''] = credentialsState.privateKey.split(':');
+                    credentials.push(`privateKey: { id: '${id}', secret: '${secret}' }`);
                 }
             }
-
             if (credentials.length > 0) {
                 jwtCredentialsString = `
     credentials: {
@@ -520,7 +503,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         }
 
         let billCredentialsString = '';
-        if (integration?.authMode === 'BILL') {
+        if (integration.meta.authMode === 'BILL') {
             if (apiAuthUsername && apiAuthPassword && organizationId && devKey) {
                 billCredentialsString = `
     credentials: {
@@ -535,7 +518,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         let oauth2ClientCredentialsString = '';
 
-        if (integration?.authMode === 'OAUTH2_CC') {
+        if (integration.meta.authMode === 'OAUTH2_CC') {
             if (oAuthClientId && oAuthClientSecret) {
                 oauth2ClientCredentialsString = `
     credentials: {
@@ -568,16 +551,16 @@ export const ConnectionCreateLegacy: React.FC = () => {
         }
 
         let twoStepCredentialsString = '';
-        if (authMode === 'TWO_STEP') {
+        if (authMode === 'TWO_STEP' || authMode === 'JWT') {
             const credentialEntries = Object.entries(credentialsState);
 
-            if (credentialEntries.length > 0) {
+            if (credentialEntries.length > 0 && integration && !integration.provider.includes('ghost-admin')) {
                 const credentialsString = credentialEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n      ');
 
                 twoStepCredentialsString = `
     credentials: {
       ${credentialsString},
-      type: 'TWO_STEP'
+      type: '${authMode}'
     }
   `;
             }
@@ -621,7 +604,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
+nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration.unique_key}', '${connectionId}'${connectionConfigStr})
   .then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
   }).catch((err: { message: string; type: string }) => {
@@ -652,10 +635,10 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             name="integration_unique_key"
                                             className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleIntegrationUniqueKeyChange}
-                                            defaultValue={integration?.uniqueKey}
+                                            defaultValue={integration?.unique_key}
                                         >
                                             {integrations.map((integration) => (
-                                                <option key={integration.uniqueKey}>{integration.uniqueKey}</option>
+                                                <option key={integration.unique_key}>{integration.unique_key}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -824,7 +807,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
-                            {integration?.authMode === 'TBA' && (
+                            {integration?.meta.authMode === 'TBA' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="token_id" className="text-text-light-gray block text-sm font-semibold">
@@ -857,7 +840,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
-                            {integration?.authMode === 'TABLEAU' && (
+                            {integration?.meta.authMode === 'TABLEAU' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="pat_name" className="text-text-light-gray block text-sm font-semibold">
@@ -902,7 +885,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
-                            {integration?.connectionConfigParams?.map((paramName: string) => (
+                            {integration?.meta.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
                                         <label htmlFor="extra_configuration" className="text-text-light-gray block text-sm font-semibold">
@@ -1022,7 +1005,7 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                 </div>
                             )}
 
-                            {integration?.authMode === 'BILL' && (
+                            {integration?.meta.authMode === 'BILL' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
@@ -1083,14 +1066,14 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
                                 </div>
                             )}
 
-                            {(authMode === 'APP_STORE' || authMode === 'JWT') && !integration?.provider.includes('ghost-admin') && (
+                            {authMode === 'APP_STORE' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -1173,29 +1156,8 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                             copy={true}
                                             id="private_key"
                                             name="private_key"
-                                            optionalValue={privateKey}
-                                            setOptionalValue={(value) => setPrivateKey(value)}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {authMode === 'JWT' && integration?.provider.includes('ghost-admin') && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
-                                            API Key
-                                        </label>
-                                    </div>
-
-                                    <div className="mt-1">
-                                        <SecretInput
-                                            copy={true}
-                                            id="privateKey"
-                                            name="privateKey"
-                                            optionalValue={privateKey}
-                                            setOptionalValue={setPrivateKey}
+                                            value={privateKey}
+                                            onUpdate={(value) => setPrivateKey(value)}
                                             required
                                         />
                                     </div>
@@ -1236,9 +1198,9 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
                                     </div>
                                 </div>
                             )}
-                            {authMode === 'TWO_STEP' && (
+                            {(authMode === 'TWO_STEP' || authMode === 'JWT') && (
                                 <div>
-                                    {integration?.credentialParams?.map((paramName: string) => (
+                                    {integration?.meta.credentialParams?.map((paramName: string) => (
                                         <div key={paramName}>
                                             <div className="flex mt-6">
                                                 <label htmlFor={`credential-${paramName}`} className="text-text-light-gray block text-sm font-semibold">

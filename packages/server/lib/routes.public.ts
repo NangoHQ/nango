@@ -3,9 +3,8 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
-import accountController from './controllers/account.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -18,7 +17,7 @@ import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -34,7 +33,10 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
+import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
+import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
+import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -48,16 +50,18 @@ import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
+import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import authMiddleware from './middleware/access.middleware.js';
-import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
+import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -78,6 +82,11 @@ const connectSessionOrPublicAuth: RequestHandler[] = [
 export const publicAPI = express.Router();
 
 const bodyLimit = '75mb';
+
+if (flagEnforceCLIVersion) {
+    publicAPI.use(cliMaxVersion());
+}
+
 publicAPI.use(
     express.json({
         limit: bodyLimit,
@@ -147,7 +156,6 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook
 // API Admin routes
 publicAPI.use('/admin', jsonContentTypeMiddleware);
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
-publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (Secret key auth).
 publicAPI.use('/provider', jsonContentTypeMiddleware);
@@ -160,18 +168,25 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
 
+// @deprecated
 publicAPI.use('/config', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
 // @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
+// @deprecated
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
+// @deprecated
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
+// @deprecated
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegrationDeprecated);
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
+publicAPI.route('/integrations').post(apiAuth, postPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, patchPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, deletePublicIntegration);
 
 publicAPI.use('/connection', jsonContentTypeMiddleware);
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
@@ -190,7 +205,7 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
-publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
+publicAPI.route('/sync/update-connection-frequency').put(apiAuth, putSyncConnectionFrequency);
 
 publicAPI.use('/records', jsonContentTypeMiddleware);
 publicAPI.route('/records').get(apiAuth, getPublicRecords);
@@ -205,14 +220,15 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVarian
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
+// @deprecated use /scripts/configs
 publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
-// @deprecated use /flow/configs
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);

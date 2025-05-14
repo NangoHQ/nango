@@ -199,7 +199,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 }
 
 export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
             getFormattedOperation(
@@ -439,7 +439,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             endUser: nangoProps.endUser
         });
 
-        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime(), { accountId: nangoProps.team?.id });
+        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
         metrics.increment(metrics.Types.SYNC_SUCCESS);
 
         await logCtx.success();
@@ -651,7 +651,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
-    const logCtx = activityLogId ? await logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
+    const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
     if (team && environment) {
         if (logCtx) {
@@ -770,6 +770,7 @@ async function onFailure({
         }
     }
 
+    void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     if (isCancel) {
         await logCtx?.cancel();
@@ -803,4 +804,5 @@ async function onFailure({
     }
 
     metrics.increment(metrics.Types.SYNC_FAILURE);
+    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

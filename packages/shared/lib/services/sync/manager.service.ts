@@ -1,19 +1,21 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
+import { getLogger, stringifyError } from '@nangohq/utils';
+
 import connectionService from '../connection.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import { getLatestSyncJob } from './job.service.js';
-import { createSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSync, softDeleteSync, getSyncsBySyncConfigId } from './sync.service.js';
-import { errorNotificationService } from '../notification/error.service.js';
-import configService from '../config.service.js';
-import type { SyncWithConnectionId, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
+import { createSync, getSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSyncsBySyncConfigId, softDeleteSync } from './sync.service.js';
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ServiceResponse } from '../../models/Generic.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { getLogger, stringifyError } from '@nangohq/utils';
+import configService from '../config.service.js';
 import environmentService from '../environment.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
+
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ReportedSyncJobStatus, SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { CLIDeployFlowConfig, ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, SyncDeploymentResult } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
@@ -245,7 +247,8 @@ export class SyncManagerService {
         command,
         logContextGetter,
         connectionId,
-        initiator
+        initiator,
+        deleteRecords
     }: {
         recordsService: RecordsServiceInterface;
         orchestrator: Orchestrator;
@@ -254,8 +257,9 @@ export class SyncManagerService {
         syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;
         logContextGetter: LogContextGetter;
-        connectionId?: string;
+        connectionId?: string | undefined;
         initiator: string;
+        deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
@@ -291,11 +295,13 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         } else {
@@ -316,11 +322,13 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         }

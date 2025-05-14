@@ -1,8 +1,11 @@
 import get from 'lodash-es/get.js';
-import { environmentService, connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
-import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { LogContextGetter } from '@nangohq/logs';
+
+import { connectionService, environmentService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
+
 import { getOrchestrator } from '../utils/utils.js';
+
+import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
 
 export interface InternalNango {

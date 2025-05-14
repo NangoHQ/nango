@@ -3,7 +3,6 @@ import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
 
 import type { SimplifiedJSONSchema } from '@nangohq/types';
-
 import type { ClassValue } from 'clsx';
 import type { ZodTypeAny } from 'zod';
 
