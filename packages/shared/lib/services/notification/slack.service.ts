@@ -193,7 +193,7 @@ export class SlackService {
      *      2) Add an activity log entry for the notification to the admin account
      *
      */
-    async reportResolution(
+    private async reportResolution(
         connection: ConnectionJobs,
         name: string,
         type: string,
@@ -262,7 +262,7 @@ export class SlackService {
      * and environment id and if so return the necessary information to be able
      * to update the notification.
      */
-    async hasOpenNotification(
+    private async hasOpenNotification(
         nangoConnection: Pick<DBConnection, 'environment_id'>,
         name: string,
         type: string,
@@ -288,7 +288,7 @@ export class SlackService {
      * @desc create a new notification for the given name and environment id
      * and return the id of the created notification.
      */
-    async createNotification(
+    private async createNotification(
         nangoConnection: Pick<DBConnection, 'id' | 'environment_id'>,
         name: string,
         type: string,
@@ -317,7 +317,7 @@ export class SlackService {
      * @desc check if there is an open notification for the given name and environment id
      * and if so add the connection id to the connection list.
      */
-    async addFailingConnection(nangoConnection: ConnectionJobs, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
+    private async addFailingConnection(nangoConnection: ConnectionJobs, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
         return await db.knex.transaction(async (trx) => {
             const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}-add`);
 

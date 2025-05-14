@@ -1,0 +1,81 @@
+---
+title: Snowflake (JWT) - How do I link my account?
+sidebarTitle: Snowflake (JWT)
+---
+
+
+# Overview
+
+To authenticate with Snowflake (JWT), you need:
+1. **Subdomain** - The subdomain for your Snowflake account, typically part of the account URL (e.g., `xy12345` in `xy12345.snowflakecomputing.com`).
+2. **Account Identifier** - The unique identifier for your Snowflake account.
+2. **User Name** - The Snowflake username used to authenticate with the account.
+3. **Private Key** - The private RSA key in PEM format used to sign your JWT for authentication. It corresponds to the public key registered in Snowflake.
+4. **Fingerprint** - The SHA-256 fingerprint of the public key used to authenticate with Snowflake, generated after uploading the public key to your account.
+
+This guide will walk you through obtaining and generating these credentials within Snowflake.
+
+### Prerequisites:
+
+- You must have an account with Snowflake (JWT).
+
+### Instructions:
+
+#### Step 1: Finding your Subdomain
+1. Log in to your [snowflake account](https://app.snowflake.com/).
+2. Click on your account profile in the bottom-left corner, then under **Account**, select the account you wish to connect to.
+<img src="/integrations/all/snowflake-jwt/profile.png" />
+3. Click on **View account details** for the selected account.
+4. A pop-up window will appear displaying all your **Account Details**.
+5. Your **Subdomain** is the part before `snowflakecomputing.com` in the **Account/Server URL** field. For example, in `KXOPMLU-RE00572.snowflakecomputing.com`, the subdomain is `KXOPMLU-RE00572`.
+<img src="/integrations/all/snowflake-jwt/subdomain.png" />
+
+#### Step 2: Finding your Account Identifier
+1. From the same **Account Details** table above, your **Account Identifier** will be displayed within the **Account Identifier** field.
+<img src="/integrations/all/snowflake-jwt/account-identifier.png" />
+<Note>If you are using the account locator, exclude any region information from the account locator to obtain the **Account Identifier**. This value should be provided in uppercase.</Note>
+
+#### Step 3: Finding your User Name
+1. From the same **Account Details** table above, your **User Name** will be displayed within the **User Name** field.
+<img src="/integrations/all/snowflake-jwt/account-name.png" />
+<Note>This value should be provided in uppercase.</Note>
+
+#### Step 4: Generating your Private Key
+1. Generate the RSA private key with the following command:
+
+```
+openssl genrsa -out rsa_key.p8 2048
+```
+2. Extract the corresponding public key:
+```
+openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
+```
+3. To view the **Private Key**, run the following:
+```
+cat rsa_key.p8
+```
+#### Step 5: Finding your Fingerprint
+1. From your Snowflake account, navigate to **Projects** > **Worksheets** then click on the **+** button from the top right corner. 
+<img src="/integrations/all/snowflake-jwt/projects.png" />
+2. Run the following SQL command to assign the **Public Key** to your user:
+```
+ALTER USER <your_username> SET RSA_PUBLIC_KEY = '<public_key_contents>';
+```
+<Note>`public_key_contents` refers to the public key generated in the previous step. You can use `cat rsa_key.pub` to view contents.</Note>
+3. After assigning the public key, run the **DESCRIBE USER** command to check if the public key fingerprint has been set:
+```
+DESCRIBE USER <your_username>;
+```
+4. Look for the **RSA_PUBLIC_KEY_FP** property in the output. It should show the **Fingerprint** of the **Public Key** you just assigned. The **Fingerprint** is typically in `SHA-256` format (e.g., `SHA256:<fingerprint>`).
+<img src="/integrations/all/snowflake-jwt/public_key.png" />
+
+
+Once you have your **Subdomain**, **Account Identifier**, **User Name**, **Private Key** and **Fingerprint**:
+1. Open the form where you need to authenticate with Snowflake (JWT).
+2. Enter your  **Subdomain**, **Account Identifier**, **User Name**, **Private Key** and **Fingerprint** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/snowflake-jwt/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Snowflake (JWT).
+ 

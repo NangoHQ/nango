@@ -1,24 +1,28 @@
-import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
-import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import db, { multipleMigrations } from '@nangohq/database';
+import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
+import { migrate as migrateRecords, records } from '@nangohq/records';
+import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
-    environmentService,
-    connectionService,
-    createSync,
-    createSyncJob,
     SyncJobsType,
     SyncStatus,
     accountService,
     configService,
+    connectionService,
+    createPlan,
+    createSync,
+    createSyncJob,
+    environmentService,
     getProvider
 } from '@nangohq/shared';
-import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
+
+import { server } from './server.js';
+
 import type { UnencryptedRecordData } from '@nangohq/records';
-import { migrate as migrateRecords, records } from '@nangohq/records';
+import type { AuthCredentials, Job as SyncJob, Sync } from '@nangohq/shared';
 import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
-import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 
 const mockSecretKey = 'secret-key';
 
@@ -86,7 +90,7 @@ describe('Persist API', () => {
             }
         });
         expect(response.status).toEqual(400);
-        expect(await response.json()).toStrictEqual({ error: 'Entity too large' });
+        expect(await response.json()).toStrictEqual({ error: { code: 'request_too_large', message: 'Entity too large' } });
     });
 
     describe('save records', () => {
@@ -405,6 +409,8 @@ const initDb = async () => {
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
 
+    await createPlan(db.knex, { account_id: 0, name: 'free' });
+
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
@@ -455,11 +461,9 @@ const initDb = async () => {
     const connectionRes = await connectionService.upsertConnection({
         connectionId: `conn-test`,
         providerConfigKey: `provider-test`,
-        provider: 'google',
         parsedRawCredentials: {} as AuthCredentials,
         connectionConfig: {},
-        environmentId: env.id,
-        accountId: 0
+        environmentId: env.id
     });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');

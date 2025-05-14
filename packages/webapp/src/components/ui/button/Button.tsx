@@ -1,9 +1,11 @@
 import { Loader } from '@geist-ui/icons';
-import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import { forwardRef } from 'react';
-import { cn } from '../../../utils/utils';
 import { Link } from 'react-router-dom';
+
+import { cn } from '../../../utils/utils';
+
+import type { VariantProps } from 'class-variance-authority';
 import type { LinkProps } from 'react-router-dom';
 
 export type ButtonVariants = VariantProps<typeof buttonStyles>['variant'];
@@ -63,7 +65,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     return (
         <button ref={ref} className={cn(buttonStyles({ variant, size }), 'relative flex gap-2 items-center', className, isLoading && 'opacity-0')} {...props}>
             {children}
-            {isLoading && <Loader className="animate-spin flex inset-x-0 h-full" />}
+            {isLoading && (
+                <div className={cn('h-full w-4 flex items-center justify-center', size === 'xs' && 'w-3')}>
+                    <Loader className="animate-spin h-full w-full" />
+                </div>
+            )}
         </button>
     );
 });

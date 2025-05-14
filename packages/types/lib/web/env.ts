@@ -2,6 +2,7 @@ export interface WindowEnv {
     apiUrl: string;
     publicUrl: string;
     connectUrl: string;
+    gitHash: string | undefined;
     publicSentryKey: string;
     publicPosthogKey: string;
     publicPosthogHost: string;
@@ -16,5 +17,6 @@ export interface WindowEnv {
         managedAuth: boolean;
         gettingStarted: boolean;
         slack: boolean;
+        plan: boolean;
     };
 }

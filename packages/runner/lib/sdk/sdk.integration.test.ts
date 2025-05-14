@@ -3,9 +3,11 @@ import { multipleMigrations } from '@nangohq/database';
 import { connectionService, environmentService, seeders } from '@nangohq/shared';
 import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 import { NangoActionRunner } from './sdk.js';
+import { Locks } from './locks.js';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
+    const locks = new Locks();
     beforeAll(async () => {
         await multipleMigrations();
         env = await seeders.createEnvironmentSeed();
@@ -54,7 +56,7 @@ describe('Connection service integration tests', () => {
                 endUser: null
             };
 
-            const nango = new NangoActionRunner(nangoProps);
+            const nango = new NangoActionRunner(nangoProps, { locks });
 
             nango.nango.getConnection = async (providerConfigKey: string, connectionId: string) => {
                 const { response } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);

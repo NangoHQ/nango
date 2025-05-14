@@ -1,29 +1,31 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { AxiosError } from 'axios';
 import chalk from 'chalk';
 import promptly from 'promptly';
-import type { AxiosResponse } from 'axios';
-import { AxiosError } from 'axios';
-import type {
-    NangoYamlParsed,
-    OnEventScriptsByProvider,
-    ScriptFileType,
-    NangoConfigMetadata,
-    PostDeploy,
-    PostDeployInternal,
-    PostDeployConfirmation,
-    OnEventType,
-    CLIDeployFlowConfig
-} from '@nangohq/types';
-import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
+import { compileAllFiles, compileSingleFile, getFileToCompile, resolveTsFileLocation } from './compile.service.js';
 import verificationService from './verification.service.js';
-import { printDebug, parseSecretKey, enrichHeaders, http, isCI } from '../utils.js';
-import type { DeployOptions, InternalDeployOptions } from '../types.js';
+import { enrichHeaders, http, isCI, parseSecretKey, printDebug } from '../utils.js';
 import { parse } from './config.service.js';
-import type { JSONSchema7 } from 'json-schema';
 import { loadSchemaJson } from './model.service.js';
 import { cloudHost, localhostUrl } from '../constants.js';
+
+import type { DeployOptions, InternalDeployOptions } from '../types.js';
+import type {
+    CLIDeployFlowConfig,
+    NangoConfigMetadata,
+    NangoYamlParsed,
+    OnEventScriptsByProvider,
+    OnEventType,
+    PostDeploy,
+    PostDeployConfirmation,
+    PostDeployInternal,
+    ScriptFileType
+} from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
+import type { JSONSchema7 } from 'json-schema';
 
 class DeployService {
     public async admin({ fullPath, environmentName, debug = false }: { fullPath: string; environmentName: string; debug?: boolean }): Promise<void> {
@@ -47,9 +49,9 @@ class DeployService {
             printDebug(`Environment is set to ${environmentName}`);
         }
 
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+        const { success } = await compileAllFiles({ fullPath, debug });
 
-        if (!successfulCompile) {
+        if (!success) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
@@ -197,14 +199,16 @@ class DeployService {
             }
         } else if (integrationIdMode) {
             // Only compile files for the specified integration
-            successfulCompile = await compileAllFiles({
+            const { success } = await compileAllFiles({
                 fullPath,
                 debug,
                 providerConfigKey: integrationId!
             });
+            successfulCompile = success;
         } else {
             // Compile all files
-            successfulCompile = await compileAllFiles({ fullPath, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            successfulCompile = success;
         }
 
         if (!successfulCompile) {
@@ -406,14 +410,16 @@ class DeployService {
         let successfulCompile: boolean = false;
         if (integration) {
             // Only compile files for the specified integration
-            successfulCompile = await compileAllFiles({
+            const { success } = await compileAllFiles({
                 fullPath,
                 debug,
                 providerConfigKey: integration
             });
+            successfulCompile = success;
         } else {
             // Compile all files
-            successfulCompile = await compileAllFiles({ fullPath, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            successfulCompile = success;
         }
 
         if (!successfulCompile) {
@@ -578,7 +584,7 @@ class DeployService {
                         providerConfigKey,
                         models: action.output || [],
                         version: version || action.version,
-                        runs: '',
+                        runs: null,
                         metadata: metadata,
                         input: action.input || undefined,
                         type: action.type,

@@ -1,8 +1,10 @@
-import { expect, describe, it, beforeAll } from 'vitest';
-import configService from './config.service';
-import { createConfigSeed } from '../seeders/config.seeder';
-import { createEnvironmentSeed } from '../seeders/environment.seeder';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import { multipleMigrations } from '@nangohq/database';
+
+import configService from './config.service.js';
+import { createConfigSeed } from '../seeders/config.seeder.js';
+import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 
 describe('Config service integration tests', () => {
     beforeAll(async () => {
@@ -22,6 +24,7 @@ describe('Config service integration tests', () => {
     describe('validateProviderConfig', () => {
         it('should return an error for oauth config with no client id', () => {
             const maybeError = configService.validateProviderConfig('OAUTH1', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: '',
@@ -37,6 +40,7 @@ describe('Config service integration tests', () => {
 
         it('should return an error for oauth config with no client secret', () => {
             const maybeError = configService.validateProviderConfig('OAUTH1', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: 'client',
@@ -52,6 +56,7 @@ describe('Config service integration tests', () => {
 
         it('should return an error for app config with no client id', () => {
             const maybeError = configService.validateProviderConfig('APP', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: '',
@@ -68,6 +73,7 @@ describe('Config service integration tests', () => {
 
         it('should return an error for app config with no client secret', () => {
             const maybeError = configService.validateProviderConfig('APP', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: 'id',
@@ -84,6 +90,7 @@ describe('Config service integration tests', () => {
 
         it('should return an error for app config with no app link', () => {
             const maybeError = configService.validateProviderConfig('APP', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: 'id',
@@ -100,6 +107,7 @@ describe('Config service integration tests', () => {
 
         it('should return an error for a custom config with no app_id or private key', () => {
             const maybeError = configService.validateProviderConfig('CUSTOM', {
+                display_name: null,
                 unique_key: 'abc123',
                 provider: 'provider',
                 oauth_client_id: 'id',

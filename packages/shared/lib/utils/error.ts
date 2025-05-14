@@ -1,17 +1,35 @@
 import { stringifyError } from '@nangohq/utils';
+
 import type { JsonValue } from 'type-fest';
 
-export class NangoError extends Error {
-    public readonly status: number = 500;
-    public readonly type: string;
-    public payload: Record<string, unknown>;
+export class NangoInternalError extends Error {
+    public type: string;
+
+    // -- Legacy stuff to remove
+    public status: number = 500;
+    public payload: Record<string, unknown> = {};
+
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+        this.type = type;
+    }
+
+    // For compat with NangoError
+    // If we end up needing it we could pass use options as payload
+    public setPayload(payload: any) {
+        this.payload = payload;
+    }
+}
+
+export class AuthCredentialsError extends NangoInternalError {}
+
+export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
 
     constructor(type: string, payload = {}, status?: number, additional_properties?: Record<string, JsonValue>) {
-        super();
+        super(type);
 
-        this.type = type;
         this.payload = payload;
         this.additional_properties = additional_properties;
 
@@ -105,21 +123,6 @@ export class NangoError extends Error {
                 this.message = `Missing param 'api_key'.`;
                 break;
 
-            case 'missing_private_key':
-                this.status = 400;
-                this.message = `Missing param 'missing_private_key'.`;
-                break;
-
-            case 'missing_private_key_id':
-                this.status = 400;
-                this.message = `Missing param 'private_key_id'.`;
-                break;
-
-            case 'missing_issuer_id':
-                this.status = 400;
-                this.message = `Missing param 'missing_issuer_id'.`;
-                break;
-
             case 'missing_app_id':
                 this.status = 400;
                 this.message = `Missing param 'app_id'.`;
@@ -170,19 +173,9 @@ export class NangoError extends Error {
                 this.message = `Missing param 'provider_config_key'.`;
                 break;
 
-            case 'missing_callback_url':
-                this.status = 400;
-                this.message = `Missing param 'callback_url'.`;
-                break;
-
             case 'missing_token_url':
                 this.status = 400;
                 this.message = `Token URL is missing or invalid.`;
-                break;
-
-            case 'bill_credentials_fetch_error':
-                this.status = 400;
-                this.message = `Error fetching Bill credentials`;
                 break;
 
             case 'provider_config_creation_failure':
@@ -354,11 +347,6 @@ export class NangoError extends Error {
                 this.message = 'Error creating a zip of the integration file(s). Make sure you have recently deployed the integration file(s).';
                 break;
 
-            case 'sync_interval_invalid':
-                this.status = 400;
-                this.message = 'Sync interval is invalid. The interval should be a time unit.';
-                break;
-
             case 'sync_script_failure':
                 this.message = `The sync script failed with an error: ${stringifyError(this.payload)}`;
                 break;
@@ -391,16 +379,6 @@ export class NangoError extends Error {
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
-                break;
-
-            case 'invalid_jwt_private_key':
-                this.status = 400;
-                this.message = `Invalid private key provided for JWT creation.`;
-                break;
-
-            case 'invalid_jwt_private_key_id':
-                this.status = 400;
-                this.message = `Invalid private key Id provided for JWT creation.`;
                 break;
 
             case 'action_script_failure':
@@ -511,15 +489,36 @@ export class NangoError extends Error {
                 this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
                 break;
 
+            case 'webhook_invalid_signature':
+                this.status = 401;
+                this.message = 'Invalid webhook signature';
+                break;
+
+            case 'webhook_missing_signature':
+                this.status = 401;
+                this.message = 'Missing webhook signature';
+                break;
+
+            case 'webhook_invalid_payload':
+                this.status = 400;
+                this.message = 'Invalid webhook payload';
+                break;
+
+            case 'webhook_no_connection_or_existing_installation_id':
+                this.status = 400;
+                this.message = 'No connection or existing installation_id';
+                break;
+
+            case 'webhook_unknown_provider':
+                this.status = 400;
+                this.message = 'Unknown provider';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
                 this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
-    }
-
-    public setPayload(payload: any) {
-        this.payload = payload;
     }
 }
 

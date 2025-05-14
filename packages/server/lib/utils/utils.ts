@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
-import type { DBUser, Provider, ProviderTwoStep } from '@nangohq/types';
+import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
 import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
@@ -171,7 +171,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
     return [];
 }
 
-export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep): string[] {
+export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | ProviderJwt): string[] {
     const cleanParamName = (param: string) => param.replace('${credentials.', '').replace('}', '');
 
     const extractCredentialParams = (params: Record<string, any>): string[] => {
@@ -180,7 +180,8 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep): s
         for (const value of Object.values(params)) {
             if (typeof value === 'string') {
                 const foundMatches = value.match(/\${credentials\.([^{}]*)}/g) || [];
-                matches.push(...foundMatches);
+                const uniqueMatches = foundMatches.map((match) => match.split('.')[0] + '.' + match.split('.')[1]);
+                matches.push(...uniqueMatches);
             } else if (typeof value === 'object' && value !== null) {
                 matches.push(...extractCredentialParams(value)); // Recursively search in nested objects
             }
@@ -189,12 +190,33 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep): s
         return matches;
     };
 
-    if (provider.token_params || provider.token_headers) {
-        const tokenParamsMatches = provider.token_params ? extractCredentialParams(provider.token_params) : [];
-        return [...new Set(tokenParamsMatches.map(cleanParamName))]; // Remove duplicates
+    const matches: string[] = [];
+
+    if ('token_params' in provider && provider.token_params) {
+        const tokenParamsMatches = extractCredentialParams(provider.token_params);
+        matches.push(...tokenParamsMatches);
     }
 
-    return [];
+    if ('token_headers' in provider && provider.token_headers) {
+        const tokenHeadersMatches = extractCredentialParams(provider.token_headers);
+        matches.push(...tokenHeadersMatches);
+    }
+
+    if ('token' in provider && provider.token) {
+        const tokenMatches = extractCredentialParams(provider.token);
+        matches.push(...tokenMatches);
+    }
+
+    if (
+        'additional_steps' in provider &&
+        Array.isArray(provider.additional_steps) &&
+        provider.additional_steps.every((step) => typeof step === 'object' && step !== null)
+    ) {
+        const additionalSteps = extractCredentialParams(provider.additional_steps);
+        matches.push(...additionalSteps);
+    }
+
+    return [...new Set(matches.map(cleanParamName))]; // Remove duplicates
 }
 
 /**
