@@ -174,16 +174,10 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            const content = `The action was successfully run`;
-
-            void logCtx.info(content, {
-                action: actionName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key,
-                truncated_response: JSON.stringify(res.value)?.slice(0, 100)
+            void logCtx.enrichOperation({
+                meta: { truncated_response: JSON.stringify(res.value)?.slice(0, 100) }
             });
 
-            metrics.increment(metrics.Types.ACTION_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -193,27 +187,6 @@ export class Orchestrator {
                 formattedError = new NangoError('action_failure', { error: errorToObject(err) });
             }
 
-            const content = `Action '${actionName}' failed`;
-            void logCtx.error(content, {
-                error: formattedError,
-                action: actionName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key
-            });
-            await logCtx.enrichOperation({ error: formattedError });
-
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: connection.environment_id,
-                metadata: {
-                    actionName,
-                    connectionDetails: JSON.stringify(connection),
-                    input
-                }
-            });
-
-            metrics.increment(metrics.Types.ACTION_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {

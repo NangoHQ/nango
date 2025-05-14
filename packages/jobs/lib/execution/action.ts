@@ -131,6 +131,16 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
 export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
     await setTaskSuccess({ taskId, output });
 
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+
+    void logCtx.info(`The action was successfully run`, {
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+
+    metrics.increment(metrics.Types.ACTION_SUCCESS);
+
     const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId,
         connection_id: nangoProps.connectionId,
@@ -222,6 +232,12 @@ function onFailure({
     endUser: NangoProps['endUser'];
 }): void {
     const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
+    void logCtx?.error(`Action '${syncName}' failed`, {
+        error,
+        action: syncName,
+        connection: connection.connection_id,
+        integration: connection.provider_config_key
+    });
     if (team && environment && logCtx) {
         try {
             void slackService.reportFailure({
@@ -267,4 +283,5 @@ function onFailure({
             endUser
         });
     }
+    metrics.increment(metrics.Types.ACTION_FAILURE);
 }
