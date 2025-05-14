@@ -2319,6 +2319,29 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
             doc_section: '#step-2-creating-an-api-key'
+codegen:
+    display_name: Codegen
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.codegen.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organizations
+    docs: https://docs.nango.dev/integrations/all/codegen
+    docs_connect: https://docs.nango.dev/integrations/all/codegen/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Key for your Codegen account
+            pattern: '^sk-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
+            doc_section: '#step-1-finding-your-api-key'
 
 commercetools:
     display_name: Commercetools
@@ -6362,10 +6385,10 @@ microsoft:
     disable_pkce: true
     default_scopes:
         - offline_access
+        - .default
     authorization_params:
         response_type: code
         response_mode: query
-        prompt: consent
     token_params:
         grant_type: authorization_code
     refresh_params:
