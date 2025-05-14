@@ -30,7 +30,7 @@ export function parsePeriod(input: string, dateTimeFormat: string, example: stri
         return { period: null, error: `Invalid date. Example: ${example}` };
     }
 
-    if (period.from > period.to) {
+    if (period.from.getTime() >= period.to.getTime()) {
         return { period: null, error: "'from' date must be before 'to' date" };
     }
 

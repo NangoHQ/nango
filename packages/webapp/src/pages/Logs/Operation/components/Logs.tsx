@@ -29,8 +29,8 @@ const drawerWidth = '834px';
 
 const fullPeriod: PeriodPreset = {
     name: 'full',
-    label: 'Full duration',
-    shortLabel: 'Full',
+    label: 'All logs',
+    shortLabel: 'All',
     toPeriod: () => null // Null means no period
 };
 
@@ -165,26 +165,29 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
 
-    function getCustomPeriodExample() {
+    const earliestToLatestPeriod = useMemo(() => {
         if (period || !flatData.length) {
-            return undefined;
+            return;
         }
 
-        const earliest = flatData.reduce((acc, curr) => {
-            return new Date(acc.createdAt) < new Date(curr.createdAt) ? acc : curr;
-        }, flatData[0]);
-        const latest = flatData.reduce((acc, curr) => {
-            return new Date(acc.createdAt) > new Date(curr.createdAt) ? acc : curr;
-        }, flatData[0]);
+        const { earliest, latest } = flatData.reduce(
+            (acc, curr) => {
+                return {
+                    earliest: new Date(acc.earliest.createdAt) < new Date(curr.createdAt) ? acc.earliest : curr,
+                    latest: new Date(acc.latest.createdAt) > new Date(curr.createdAt) ? acc.latest : curr
+                };
+            },
+            { earliest: flatData[0], latest: flatData[0] }
+        );
 
         return {
             from: new Date(earliest.createdAt),
             to: addMinutes(new Date(latest.createdAt), 1)
         };
-    }
+    }, [flatData, period]);
 
     return (
-        <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
                 <div className="text-white text-xs">
@@ -210,7 +213,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     }
                     value={search}
                     placeholder="Search logs..."
-                    className="border-border-gray-400 flex-grow"
+                    className="w-full border-border-gray-400"
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <div>
@@ -220,7 +223,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                         onChange={setPeriod}
                         presets={[fullPeriod]}
                         defaultPreset={fullPeriod}
-                        customPeriodExample={getCustomPeriodExample()}
+                        customPeriodExample={earliestToLatestPeriod}
                     />
                 </div>
             </header>
