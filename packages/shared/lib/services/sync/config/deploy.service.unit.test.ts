@@ -27,7 +27,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     unpauseSync: () => Promise.resolve({}) as any,
     deleteSync: () => Promise.resolve({}) as any,
     updateSyncFrequency: () => Promise.resolve({}) as any,
-    searchSchedules: () => Promise.resolve({}) as any
+    searchSchedules: () => Promise.resolve({}) as any,
+    getOutput: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
