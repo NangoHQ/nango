@@ -1,14 +1,16 @@
-import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { logContextGetter } from '@nangohq/logs';
 import tracer from 'dd-trace';
 import { z } from 'zod';
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { configService, environmentService } from '@nangohq/shared';
-import type { PostPublicWebhook } from '@nangohq/types';
 
-import { routeWebhook } from '../../../webhook/webhook.manager.js';
+import { logContextGetter } from '@nangohq/logs';
+import { configService, environmentService } from '@nangohq/shared';
+import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { featureFlags } from '../../../utils/utils.js';
+import { routeWebhook } from '../../../webhook/webhook.manager.js';
+
+import type { PostPublicWebhook } from '@nangohq/types';
 
 const paramValidation = z
     .object({
@@ -66,19 +68,14 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            const startTime = Date.now();
-            const responsePayload = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
+            const response = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
 
-            metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, totalRunTime, { accountId: account.id });
-
-            if (!responsePayload) {
+            if (!response) {
                 res.status(200).send();
                 return;
             }
 
-            res.status(200).send(responsePayload);
+            res.status(response.statusCode).send(response.content);
         } catch (err) {
             span.setTag('nango.error', err);
 

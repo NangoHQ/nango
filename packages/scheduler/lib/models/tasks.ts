@@ -1,15 +1,19 @@
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, SetOptional } from 'type-fest';
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
 import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
-import { uuidv7 } from 'uuidv7';
+import { uuidv7, uuidv4 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
+import { GROUPS_TABLE } from './groups.js';
 
 export const TASKS_TABLE = 'tasks';
 
-export type TaskProps = Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>;
+export type TaskProps = SetOptional<
+    Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>,
+    'retryKey'
+>;
 
 interface TaskStateTransition {
     from: TaskState;
@@ -59,6 +63,8 @@ export interface DbTask {
     output: JsonValue | null;
     terminated: boolean;
     readonly schedule_id: string | null;
+    readonly retry_key: string | null;
+    readonly owner_key: string | null;
 }
 export const DbTask = {
     to: (task: Task): DbTask => {
@@ -79,7 +85,9 @@ export const DbTask = {
             last_heartbeat_at: task.lastHeartbeatAt,
             output: task.output,
             terminated: task.terminated,
-            schedule_id: task.scheduleId
+            schedule_id: task.scheduleId,
+            retry_key: task.retryKey,
+            owner_key: task.ownerKey
         };
     },
     from: (dbTask: DbTask): Task => {
@@ -100,7 +108,9 @@ export const DbTask = {
             lastHeartbeatAt: dbTask.last_heartbeat_at,
             output: dbTask.output,
             terminated: dbTask.terminated,
-            scheduleId: dbTask.schedule_id
+            scheduleId: dbTask.schedule_id,
+            retryKey: dbTask.retry_key,
+            ownerKey: dbTask.owner_key
         };
     }
 };
@@ -116,7 +126,8 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         lastHeartbeatAt: now,
         terminated: false,
         output: null,
-        scheduleId: taskProps.scheduleId
+        scheduleId: taskProps.scheduleId,
+        retryKey: taskProps.retryKey || uuidv4()
     };
     try {
         const inserted = await db.from<DbTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
@@ -231,31 +242,82 @@ export async function transitionState(
 
 export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
+        const groupKeyPattern = groupKey.replace(/\*/g, '%');
+
         const tasks = await db
-            .update({
-                state: 'STARTED',
-                last_state_transition_at: new Date()
-            })
-            .from<DbTask>(TASKS_TABLE)
-            .whereIn(
-                'id',
-                db
-                    .select('id')
-                    .from<DbTask>(TASKS_TABLE)
-                    .where({ group_key: groupKey, state: 'CREATED' })
-                    .where('starts_after', '<=', db.fn.now())
-                    .orderBy('id')
-                    .limit(limit)
+            // 1. select created tasks that are ready to be started alongside their group
+            // Note: tasks and groups are locked for update, preventing concurrent queries
+            // to dequeue the same tasks and/or groups
+            .with('candidates', (qb) => {
+                qb.select('t.id', 't.group_key', 't.created_at', 'g.max_concurrency')
+                    .from(`${TASKS_TABLE} as t`)
+                    .join(`${GROUPS_TABLE} as g`, 'g.key', 't.group_key')
+                    .where('t.state', 'CREATED')
+                    .whereLike('group_key', groupKeyPattern)
+                    .where('t.starts_after', '<=', db.fn.now())
                     .forUpdate()
-                    .skipLocked()
+                    .skipLocked();
+            })
+            // 2. count the number of running tasks for each group
+            .with('running', (qb) => {
+                qb.select(db.raw('count(id) as running_count'), 'group_key')
+                    .from(TASKS_TABLE)
+                    .where('state', 'STARTED')
+                    .whereIn('group_key', function () {
+                        this.distinct('group_key').from('candidates');
+                    })
+                    .groupBy('group_key');
+            })
+            // 3. rank the candidate tasks by created_at for each group
+            .with('with_rank', (qb) => {
+                qb.select(
+                    'c.*',
+                    db.raw('ROW_NUMBER() OVER (PARTITION BY c.group_key ORDER BY c.created_at ASC) as rank'),
+                    db.raw('COALESCE(r.running_count, 0) as current_running')
+                )
+                    .from('candidates as c')
+                    .leftJoin('running as r', 'c.group_key', 'r.group_key');
+            })
+            // 4. select the tasks that can be started based on the max_concurrency
+            .with('to_start', (qb) => {
+                qb.select('id', 'group_key', 'created_at')
+                    .from('with_rank')
+                    .whereRaw('max_concurrency = 0 OR (rank + current_running <= max_concurrency)')
+
+                    .orderBy('created_at', 'asc')
+                    .limit(limit);
+            })
+            // 5. starts the tasks
+            .with(
+                'updated_tasks',
+                db
+                    .update({
+                        state: 'STARTED',
+                        last_state_transition_at: new Date()
+                    })
+                    .from(TASKS_TABLE)
+                    .whereIn('id', db.select('id').from('to_start'))
+                    .returning('*')
             )
-            .returning('*');
+            // 6. update the group last_task_added_at
+            .with(
+                'updated_groups',
+                db
+                    .update({
+                        last_task_added_at: new Date()
+                    })
+                    .from(GROUPS_TABLE)
+                    .whereIn('key', db.select('group_key').from('updated_tasks'))
+            )
+            // 7. return the updated tasks
+            .select('*')
+            .from<DbTask>('updated_tasks')
+            .orderBy('id');
+
         if (!tasks?.[0]) {
             return Ok([]);
         }
-        // Sort tasks by id (uuidv7) to ensure ordering by creation date
-        const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
-        return Ok(sorted);
+        return Ok(tasks.map(DbTask.from));
     } catch (err) {
         return Err(new Error(`Error dequeuing tasks for group key '${groupKey}': ${stringifyError(err)}`));
     }

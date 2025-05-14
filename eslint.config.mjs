@@ -202,7 +202,8 @@ export default tseslint.config(
             '@typescript-eslint/no-misused-promises': 'warn',
             '@typescript-eslint/no-unsafe-return': 'warn',
             '@typescript-eslint/no-empty-function': 'warn',
-            '@typescript-eslint/no-unsafe-enum-comparison': 'warn'
+            '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
+            '@typescript-eslint/no-unnecessary-type-parameters': 'off'
         }
     },
     {
@@ -211,6 +212,12 @@ export default tseslint.config(
             'no-constant-condition': 'off',
             '@typescript-eslint/no-dynamic-delete': 'off',
             '@typescript-eslint/no-redundant-type-constituents': 'off'
+        }
+    },
+    {
+        files: ['packages/**/*/migrations/**'],
+        rules: {
+            'import/order': 'off'
         }
     },
     {

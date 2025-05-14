@@ -9,7 +9,7 @@ import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
-interface DBConnectSession {
+export interface DBConnectSession {
     readonly id: number;
     readonly end_user_id: number;
     readonly account_id: number;
@@ -181,7 +181,7 @@ export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }
     return await db
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
         .whereIn('id', function (sub) {
-            sub.select('id').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+            sub.select('id').from<DBConnectSession>(CONNECT_SESSIONS_TABLE).where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
         })
         .delete();
 }

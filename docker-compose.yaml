@@ -15,6 +15,8 @@ services:
             - nango
 
     nango-server:
+        # It's recommended to pin the version using the commit hash tag or a version tag
+        # https://hub.docker.com/r/nangohq/nango-server/tags
         image: nangohq/nango-server:hosted
         container_name: nango-server
         platform: linux/amd64
@@ -32,11 +34,11 @@ services:
             - SERVER_PORT
             - CSP_REPORT_ONLY=true
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
+            - NANGO_PUBLIC_SERVER_URL=${NANGO_PUBLIC_SERVER_URL:-http://localhost:3000}
             - FLAG_AUTH_ENABLED
             - NANGO_DASHBOARD_USERNAME
             - NANGO_DASHBOARD_PASSWORD
             - LOG_LEVEL=${LOG_LEVEL:-info}
-            - TELEMETRY
             - NANGO_SERVER_WEBSOCKETS_PATH
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
@@ -44,7 +46,7 @@ services:
             - NANGO_LOGS_ES_PWD
             - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
         volumes:
-            - './packages/providers/providers.yaml:/usr/nango-server/src/packages/providers/providers.yaml'
+            - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
         restart: always
         ports:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'

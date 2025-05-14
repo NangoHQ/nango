@@ -1,5 +1,6 @@
-import { expect, describe, it, afterAll } from 'vitest';
-import { createPrivateKey, getPrivateKey, deletePrivateKey, decryptPrivateKey } from './privatekeys.js';
+import { afterAll, describe, expect, it } from 'vitest';
+
+import { createPrivateKey, decryptPrivateKey, deletePrivateKey, getPrivateKey } from './privatekeys.js';
 import { testDb } from '../db/helpers.test.js';
 
 describe('PrivateKey', async () => {

@@ -1,6 +1,7 @@
 import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
-import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types';
+import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types.js';
+import * as groups from './models/groups.js';
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
@@ -132,12 +133,14 @@ export class Scheduler {
      *         retryCount: 0,
      *         createdToStartedTimeoutSecs: 1,
      *         startedToCompletedTimeoutSecs: 1,
-     *         heartbeatTimeoutSecs: 1
+     *         heartbeatTimeoutSecs: 1,
+     *         groupKeyMaxConcurrency: 1
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
         return this.dbClient.db.transaction(async (trx) => {
+            const now = new Date();
             let taskProps: tasks.TaskProps;
             if ('scheduleName' in props) {
                 // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
@@ -170,16 +173,31 @@ export class Scheduler {
                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
                     startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
                     heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                    startsAfter: new Date(),
-                    scheduleId: schedule.id
+                    startsAfter: now,
+                    scheduleId: schedule.id,
+                    ownerKey: null
                 };
             } else {
                 taskProps = {
                     ...props,
-                    startsAfter: new Date(),
+                    startsAfter: now,
                     scheduleId: null
                 };
+
+                const group = await groups.upsert(
+                    trx,
+                    {
+                        key: props.groupKey,
+                        maxConcurrency: props.groupKeyMaxConcurrency,
+                        lastTaskAddedAt: now
+                    },
+                    { skipLocked: true }
+                );
+                if (group.isErr()) {
+                    return Err(group.error);
+                }
             }
+
             const created = await tasks.create(trx, taskProps);
             if (created.isOk()) {
                 const task = created.value;
@@ -207,18 +225,28 @@ export class Scheduler {
      *    retryCount: 0,
      *    createdToStartedTimeoutSecs: 1,
      *    startedToCompletedTimeoutSecs: 1,
-     *    heartbeatTimeoutSecs: 1
+     *    heartbeatTimeoutSecs: 1,
+     *    groupKeyMaxConcurrency: 1
      * };
      * const schedule = await scheduler.recurring(schedulingProps);
      */
-
     public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
-        return schedules.create(this.dbClient.db, props);
+        return this.dbClient.db.transaction(async (trx) => {
+            const group = await groups.upsert(trx, {
+                key: props.groupKey,
+                maxConcurrency: props.groupKeyMaxConcurrency,
+                lastTaskAddedAt: null
+            });
+            if (group.isErr()) {
+                return Err(group.error);
+            }
+            return schedules.create(this.dbClient.db, props);
+        });
     }
 
     /**
      * Dequeue tasks
-     * @param groupKey - Group key
+     * @param groupKey - Group key or group key pattern (e.g. 'myGroupKey*')
      * @param limit - Limit
      * @returns Task[]
      * @example
@@ -295,7 +323,9 @@ export class Scheduler {
                         retryCount: task.retryCount + 1,
                         createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
                         startedToCompletedTimeoutSecs: task.startedToCompletedTimeoutSecs,
-                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+                        heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+                        ownerKey: task.ownerKey,
+                        retryKey: task.retryKey
                     };
                     const res = await this.immediate(taskProps);
                     if (res.isErr()) {
