@@ -49,6 +49,7 @@ export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type ExecuteReturn = Result<JsonValue, ClientError>;
+export type ExecuteAsyncReturn = Result<{ taskId: string; retryKey: string }, ClientError>;
 export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs };
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecuteOnEventProps = Omit<ExecuteProps, 'args'> & { args: OnEventArgs };
@@ -70,6 +71,7 @@ interface TaskCommonFields {
     groupKey: string;
     state: TaskState;
     attempt: number;
+    attemptMax: number;
     ownerKey: string | null;
 }
 interface TaskCommon extends TaskCommonFields {
@@ -88,6 +90,7 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         connection: props.connection,
         groupKey: props.groupKey,
         reason: props.reason,
@@ -108,6 +111,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         syncId: props.syncId,
         syncName: props.syncName,
         syncVariant: props.syncVariant,
@@ -132,6 +136,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         syncId: props.syncId,
         syncName: props.syncName,
         syncVariant: props.syncVariant,
@@ -156,6 +161,7 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         actionName: props.actionName,
         connection: props.connection,
         activityLogId: props.activityLogId,
@@ -178,6 +184,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         webhookName: props.webhookName,
         parentSyncName: props.parentSyncName,
         connection: props.connection,
@@ -201,6 +208,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         state: props.state,
         name: props.name,
         attempt: props.attempt,
+        attemptMax: props.attemptMax,
         onEventName: props.onEventName,
         version: props.version,
         connection: props.connection,

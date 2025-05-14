@@ -18,7 +18,7 @@ import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
-import type { TaskAction } from '@nangohq/nango-orchestrator';
+import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -61,7 +61,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
-        void logCtx.info(`Starting action '${task.actionName}'`, {
+        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
             input: task.input,
             action: task.actionName,
             connection: task.connection.connection_id,
@@ -129,15 +129,16 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     }
 }
 export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
-    await setTaskSuccess({ taskId, output });
+    const task = await setTaskSuccess({ taskId, output });
 
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
-    void logCtx.info(`The action was successfully run`, {
+    void logCtx.info(`The action was successfully run${formatAttempts(task)}`, {
         action: nangoProps.syncConfig.sync_name,
         connection: nangoProps.connectionId,
         integration: nangoProps.providerConfigKey
     });
+    void logCtx.success();
 
     metrics.increment(metrics.Types.ACTION_SUCCESS);
 
@@ -178,14 +179,28 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
 }
 
 export async function handleActionError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
-    await setTaskFailed({ taskId, error });
+    const task = await setTaskFailed({ taskId, error });
 
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
-
     const { account, environment } = accountAndEnv;
+
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: account.id });
+
+    void logCtx?.error(`Action '${nangoProps.syncConfig.sync_name}' failed${formatAttempts(task)}`, {
+        error,
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+
+    // fail the log operation if this is the last attempt
+    if (task.isOk() && task.value.attempt === task.value.attemptMax) {
+        void logCtx.failed();
+    }
+
     onFailure({
         connection: {
             id: nangoProps.nangoConnectionId,
@@ -231,14 +246,7 @@ function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): void {
-    const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
-    void logCtx?.error(`Action '${syncName}' failed`, {
-        error,
-        action: syncName,
-        connection: connection.connection_id,
-        integration: connection.provider_config_key
-    });
-    if (team && environment && logCtx) {
+    if (team && environment) {
         try {
             void slackService.reportFailure({
                 account: team,
@@ -246,7 +254,7 @@ function onFailure({
                 connection,
                 name: syncName,
                 type: 'action',
-                originalActivityLogId: logCtx.id,
+                originalActivityLogId: activityLogId,
                 provider
             });
         } catch {
@@ -284,4 +292,12 @@ function onFailure({
         });
     }
     metrics.increment(metrics.Types.ACTION_FAILURE);
+}
+
+function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): string {
+    const t = 'id' in task ? task : task.isOk() ? task.value : null;
+    if (!t) {
+        return '';
+    }
+    return t.attemptMax > 1 ? ` (attempt ${t.attempt}/${t.attemptMax})` : '';
 }
