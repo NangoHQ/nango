@@ -63,6 +63,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                       nango_connection_id: sync.nango_connection_id,
                       sync_id: sync.id,
                       sync_name: sync.name,
+                      sync_variant: sync.variant,
                       provider
                   })
                 : await apiRunSyncCommand(env, {
@@ -71,6 +72,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                       nango_connection_id: sync.nango_connection_id,
                       sync_id: sync.id,
                       sync_name: sync.name,
+                      sync_variant: sync.variant,
                       provider,
                       delete_records: deleteRecords
                   });
@@ -103,13 +105,28 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
         setShowInterruptLoader(false);
     };
 
-    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: string, syncName: string) => {
+    const syncCommand = async (
+        command: RunSyncCommand,
+        nango_connection_id: number,
+        scheduleId: string,
+        syncId: string,
+        syncName: string,
+        syncVariant: string
+    ) => {
         if (syncCommandButtonsDisabled || !provider) {
             return;
         }
 
         setSyncCommandButtonsDisabled(true);
-        const res = await apiRunSyncCommand(env, { command, schedule_id: scheduleId, nango_connection_id, sync_id: syncId, sync_name: syncName, provider });
+        const res = await apiRunSyncCommand(env, {
+            command,
+            schedule_id: scheduleId,
+            nango_connection_id,
+            sync_id: syncId,
+            sync_name: syncName,
+            sync_variant: syncVariant,
+            provider
+        });
 
         if (res.res.status === 200) {
             await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
@@ -206,7 +223,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                             sync.nango_connection_id,
                                             sync.schedule_id,
                                             sync.id,
-                                            sync.name
+                                            sync.name,
+                                            sync.variant
                                         );
                                     }}
                                     isLoading={showPauseStartLoader}
@@ -229,7 +247,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                         disabled={syncCommandButtonsDisabled}
                                         onClick={() => {
                                             setShowInterruptLoader(true);
-                                            void syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
+                                            void syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name, sync.variant);
                                         }}
                                         isLoading={showInterruptLoader}
                                     >

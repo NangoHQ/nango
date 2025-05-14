@@ -1,37 +1,10 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
 import https from 'node:https';
 
-import type {
-    ApiKeyCredentials,
-    AppCredentials,
-    OAuth1Token,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    CredentialsCommon,
-    CustomCredentials,
-    OAuth2ClientCredentials,
-    TbaCredentials,
-    TableauCredentials,
-    UnauthCredentials,
-    BillCredentials,
-    GetPublicProviders,
-    GetPublicProvider,
-    GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
-    GetPublicIntegration,
-    PostConnectSessions,
-    JwtCredentials,
-    TwoStepCredentials,
-    GetPublicConnections,
-    SignatureCredentials,
-    PostPublicConnectSessionsReconnect,
-    GetPublicConnection,
-    NangoRecord,
-    PostSyncVariant,
-    DeleteSyncVariant
-} from '@nangohq/types';
+import axios from 'axios';
+
+import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+
 import type {
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
@@ -46,7 +19,40 @@ import type {
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    BasicApiCredentials,
+    BillCredentials,
+    CredentialsCommon,
+    CustomCredentials,
+    DeleteSyncVariant,
+    GetPublicConnection,
+    GetPublicConnections,
+    GetPublicIntegration,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicProvider,
+    GetPublicProviders,
+    JwtCredentials,
+    NangoRecord,
+    OAuth1Token,
+    OAuth2ClientCredentials,
+    OpenAIFunction,
+    PatchPublicIntegration,
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect,
+    PostPublicIntegration,
+    PostPublicTrigger,
+    PostSyncVariant,
+    SignatureCredentials,
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials,
+    UnauthCredentials
+} from '@nangohq/types';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 export const prodHost = 'https://api.nango.dev';
 
@@ -216,18 +222,50 @@ export class Nango {
     }
 
     /**
+     * Creates a new integration
+     * @param body - The integration you want to create
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']>;
+
+    /**
      * Creates a new integration with the specified provider and configuration key
      * Optionally, you can provide credentials for the integration
      * @param provider - The provider of the integration
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials for the integration
      * @returns A promise that resolves with the created integration configuration
+     *
+     * @deprecated use createIntegration({ ... });
      */
-    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
-        const url = `${this.serverUrl}/config`;
-        const response = await this.http.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
+
+    public async createIntegration(
+        providerOrBody: string | PostPublicIntegration['Body'],
+        providerConfigKey?: string,
+        credentials?: Record<string, string>
+    ): Promise<{ config: Integration } | PostPublicIntegration['Success']> {
+        if (typeof providerOrBody === 'string') {
+            const url = `${this.serverUrl}/config`;
+            const response = await this.http.post(
+                url,
+                { provider: providerOrBody, provider_config_key: providerConfigKey, ...credentials },
+                { headers: this.enrichHeaders({}) }
+            );
+            return response.data;
+        }
+
+        const url = `${this.serverUrl}/integrations`;
+        const response = await this.http.post(url, providerOrBody, { headers: this.enrichHeaders({}) });
         return response.data;
     }
+
+    /**
+     * Update a specific integration
+     * @params body - The integration you want to update
+     * @returns A promise that resolves with an object containing an integration
+     */
+    public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']>;
 
     /**
      * Updates an integration with the specified provider and configuration key
@@ -236,10 +274,28 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
      * @returns A promise that resolves with the updated integration configuration object
+     *
+     * @deprecated use updateIntegration({ uniqueKey }, { ... });
      */
-    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
-        const url = `${this.serverUrl}/config`;
-        const response = await this.http.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
+
+    public async updateIntegration(
+        providerOrParams: string | PatchPublicIntegration['Params'],
+        providerConfigKeyOrBody: string | PatchPublicIntegration['Body'],
+        credentials?: Record<string, string>
+    ): Promise<{ config: Integration } | PatchPublicIntegration['Success']> {
+        if (typeof providerOrParams === 'string') {
+            const url = `${this.serverUrl}/config`;
+            const response = await this.http.put(
+                url,
+                { provider: providerOrParams, provider_config_key: providerConfigKeyOrBody, ...credentials },
+                { headers: this.enrichHeaders({}) }
+            );
+            return response.data;
+        }
+
+        const url = `${this.serverUrl}/integrations/${providerOrParams.uniqueKey}`;
+        const response = await this.http.patch(url, providerConfigKeyOrBody, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -249,7 +305,7 @@ export class Nango {
      * @returns A promise that resolves with the response from the server
      */
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const url = `${this.serverUrl}/integrations/${providerConfigKey}`;
         return await this.http.delete(url, { headers: this.enrichHeaders({}) });
     }
 
@@ -490,16 +546,22 @@ export class Nango {
 
     /**
      * Retrieves the configuration for all integration scripts
+     * @param format The format to return the configuration in ('nango' | 'openai')
      * @returns A promise that resolves with an array of configuration objects for all integration scripts
      */
-    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+    public async getScriptsConfig(format: 'nango' | 'openai' = 'nango'): Promise<StandardNangoConfig[] | { data: OpenAIFunction[] }> {
         const url = `${this.serverUrl}/scripts/config`;
 
         const headers = {
             'Content-Type': 'application/json'
         };
 
-        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, {
+            headers: this.enrichHeaders(headers),
+            params: {
+                format
+            }
+        });
 
         return response.data;
     }
@@ -570,14 +632,14 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
+     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean // boolean kept for backwards compatibility
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
@@ -585,11 +647,17 @@ export class Nango {
             throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
+        if (typeof syncMode === 'boolean') {
+            syncMode = syncMode ? 'full_refresh' : 'incremental';
+        }
+
+        syncMode ??= 'incremental';
+
         const body = {
             syncs: syncs || [],
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
-            full_resync: fullResync
+            sync_mode: syncMode
         };
 
         return this.http.post(url, body, { headers: this.enrichHeaders() });
@@ -707,7 +775,7 @@ export class Nango {
     }
 
     /**
-     * Override a sync’s default frequency for a specific connection, or revert to the default frequency
+     * Override a sync's default frequency for a specific connection, or revert to the default frequency
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param sync - The name of the sync to update (or an object with name and variant properties)
      * @param connectionId - The ID of the connection for which to update the sync frequency
@@ -819,7 +887,7 @@ export class Nango {
      * @param input - An optional input data for the action
      * @returns A promise that resolves with an object containing the response data from the triggered action
      */
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         const url = `${this.serverUrl}/action/trigger`;
 

@@ -36,12 +36,12 @@ Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently sup
 
 ## Connection configuration in Nango
 
-Workday requires a user specific subdomain for the API base URL.
+Workday requires a user specific hostname and tenant for the API base URL.
 
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
-nango.auth('workday', '<CONNECTION-ID>', {params: {subdomain: '<workday-subdomain>'}});
+nango.auth('workday', '<CONNECTION-ID>', { params: { hostname: '<workday-hostname>', tenant: '<workday-tenant>' }});
 ```
 
 For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).

@@ -3,7 +3,7 @@ import { multipleMigrations } from '@nangohq/database';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
-import type { TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
+import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
@@ -193,11 +193,13 @@ const runJob = async (
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
         },
+        ownerKey: null,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
-        isSyncAbort: (): this is TaskSyncAbort => false
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
     const nangoProps = await startSync(task, mockStartScript);
     if (nangoProps.isErr()) {

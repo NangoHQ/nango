@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+
 import { shouldRefreshCredentials } from './refresh.js';
-import { getTestConnection } from '../utils.test';
-import type { ProviderOAuth2 } from '@nangohq/types';
-import type { Config } from '../../../models';
+import { getTestConnection } from '../../../seeders/connection.seeder.js';
 import { REFRESH_MARGIN_S } from '../utils.js';
+
+import type { Config } from '../../../models';
+import type { ProviderOAuth2 } from '@nangohq/types';
 
 describe('shouldRefreshCredentials', () => {
     describe('facebook', () => {
@@ -11,7 +13,7 @@ describe('shouldRefreshCredentials', () => {
             const connection = getTestConnection();
             const res = await shouldRefreshCredentials({
                 connection,
-                credentials: { type: 'OAUTH2', access_token: '', raw: {} },
+                credentials: { type: 'OAUTH2', access_token: '', raw: {}, expires_at: new Date(Date.now() + 10000) },
                 instantRefresh: true,
                 provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
                 providerConfig: { provider: 'facebook' } as Config
@@ -24,7 +26,7 @@ describe('shouldRefreshCredentials', () => {
             const connection = getTestConnection();
             const res = await shouldRefreshCredentials({
                 connection,
-                credentials: { type: 'OAUTH2', access_token: '', raw: {} },
+                credentials: { type: 'OAUTH2', access_token: '', raw: {}, expires_at: new Date(Date.now() + 10000) },
                 instantRefresh: false,
                 provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
                 providerConfig: { provider: 'facebook' } as Config
@@ -135,6 +137,19 @@ describe('shouldRefreshCredentials', () => {
             });
 
             expect(res).toStrictEqual({ should: false, reason: 'fresh' });
+        });
+
+        it('should return false if no credentials.expires_at', async () => {
+            const connection = getTestConnection();
+            const res = await shouldRefreshCredentials({
+                connection,
+                credentials: { type: 'OAUTH2', access_token: '', refresh_token: 'token', raw: {} },
+                instantRefresh: false,
+                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
+                providerConfig: { provider: 'brightcrowd' } as Config
+            });
+
+            expect(res).toStrictEqual({ should: false, reason: 'no_expires_at' });
         });
     });
 });

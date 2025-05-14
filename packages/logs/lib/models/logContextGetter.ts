@@ -5,6 +5,7 @@ import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { getFormattedOperation } from './helpers.js';
 import { createOperation } from './messages.js';
+import { BufferTransport } from '../transport.js';
 
 import type { AdditionalOperationData } from './helpers.js';
 import type { OperationRow, OperationRowInsert } from '@nangohq/types';
@@ -45,7 +46,7 @@ export const logContextGetter = {
     /**
      * Return a Context without creating an operation
      */
-    async get({ id, accountId }: { id: OperationRow['id']; accountId?: number | undefined }, options?: Options): Promise<LogContext> {
+    get({ id, accountId }: { id: OperationRow['id']; accountId: number }, options?: Options): LogContext {
         let createdAt: string | undefined;
         try {
             const split = id.split('_');
@@ -58,10 +59,14 @@ export const logContextGetter = {
         if (!createdAt) {
             createdAt = new Date().toISOString(); // Fallback to default date
         }
-        return Promise.resolve(new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED }));
+        return new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED });
     },
 
     getStateLess({ id, accountId }: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
         return new LogContextStateless({ id, accountId }, options);
+    },
+
+    getBuffer({ id, accountId }: { id?: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
+        return new LogContextStateless({ id: id || '-1', accountId }, { ...options, transport: new BufferTransport() });
     }
 };

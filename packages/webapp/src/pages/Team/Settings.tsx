@@ -1,3 +1,7 @@
+import { Helmet } from 'react-helmet';
+
+import { AddTeamMember } from './components/AddTeamMember';
+import { Admin } from './components/Admin';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
@@ -5,9 +9,6 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { TeamInfo } from './components/Info';
 import { TeamUsers } from './components/Users';
-import { AddTeamMember } from './components/AddTeamMember';
-import { Admin } from './components/Admin';
-import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 
 export const TeamSettings: React.FC = () => {
