@@ -96,10 +96,22 @@ export class Scheduler {
      * @param params.ids - Task IDs
      * @param params.groupKey - Group key
      * @param params.state - Task state
+     * @param params.scheduleId - Schedule ID
+     * @param params.retryKey - Retry key
+     * @param params.ownerKey - Owner key
+     * @param params.limit - Limit
      * @example
      * const tasks = await scheduler.search({ groupKey: 'test', state: 'CREATED' });
      */
-    public async searchTasks(params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }): Promise<Result<Task[]>> {
+    public async searchTasks(params?: {
+        ids?: string[];
+        groupKey?: string;
+        state?: TaskState;
+        scheduleId?: string;
+        retryKey?: string;
+        ownerKey?: string;
+        limit?: number;
+    }): Promise<Result<Task[]>> {
         return tasks.search(this.dbClient.db, params);
     }
 
