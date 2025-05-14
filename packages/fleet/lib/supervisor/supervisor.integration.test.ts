@@ -1,14 +1,17 @@
-import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { Ok } from '@nangohq/utils';
+
 import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import * as deployments from '../models/deployments.js';
-import * as nodes from '../models/nodes.js';
-import * as nodeConfigOverrides from '../models/node_config_overrides.js';
 import { generateImage } from '../models/helpers.js';
 import { createNodeWithAttributes } from '../models/helpers.test.js';
-import type { Deployment } from '@nangohq/types';
+import * as nodeConfigOverrides from '../models/node_config_overrides.js';
+import * as nodes from '../models/nodes.js';
 import { FleetError } from '../utils/errors.js';
+
+import type { Deployment } from '@nangohq/types';
 
 const mockNodeProvider = {
     defaultNodeConfig: {
@@ -113,7 +116,7 @@ describe('Supervisor', () => {
     });
     it('should mark nodes with resource override as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
-        await nodeConfigOverrides.create(dbClient.db, {
+        await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
             image: node.image,
             cpuMilli: 10000,
@@ -144,7 +147,7 @@ describe('Supervisor', () => {
     it('should mark nodes with image override as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
         const imageOverride = `${mockNodeProvider.defaultNodeConfig.image}:12345`;
-        await nodeConfigOverrides.create(dbClient.db, {
+        await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
             image: imageOverride,
             cpuMilli: node.cpuMilli,
@@ -239,7 +242,7 @@ describe('Supervisor', () => {
 
         const oldTerminatedNodeAfter = await nodes.get(dbClient.db, oldTerminatedNode.id);
         if (oldTerminatedNodeAfter.isErr()) {
-            expect(oldTerminatedNodeAfter.error).toStrictEqual(new FleetError('node_not_found'));
+            expect(oldTerminatedNodeAfter.error).toStrictEqual(new FleetError('node_not_found', { context: { nodeId: 2 } }));
         } else {
             throw new Error('expected old terminated to be removed');
         }
@@ -261,7 +264,7 @@ describe('Supervisor', () => {
 
         const oldErrorNodeAfter = await nodes.get(dbClient.db, oldErrorNode.id);
         if (oldErrorNodeAfter.isErr()) {
-            expect(oldErrorNodeAfter.error).toStrictEqual(new FleetError('node_not_found'));
+            expect(oldErrorNodeAfter.error).toStrictEqual(new FleetError('node_not_found', { context: { nodeId: 2 } }));
         } else {
             throw new Error('expected old terminated to be removed');
         }

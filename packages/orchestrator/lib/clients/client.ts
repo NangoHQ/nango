@@ -58,15 +58,7 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({
-            body: {
-                name: props.name,
-                groupKey: props.groupKey,
-                retry: props.retry,
-                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
-                args: props.args
-            }
-        });
+        const res = await this.routeFetch(postImmediateRoute)({ body: props });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
@@ -85,7 +77,7 @@ export class OrchestratorClient {
                 state: props.state,
                 startsAt: props.startsAt,
                 frequencyMs: props.frequencyMs,
-                groupKey: props.groupKey,
+                group: props.group,
                 retry: props.retry,
                 timeoutSettingsInSecs: props.timeoutSettingsInSecs,
                 args: props.args
@@ -162,7 +154,7 @@ export class OrchestratorClient {
         }
     }
 
-    private async execute(props: ExecuteProps): Promise<ExecuteReturn> {
+    private async immediateAndWait(props: ExecuteProps): Promise<ExecuteReturn> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -228,36 +220,37 @@ export class OrchestratorClient {
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
                 startedToCompleted: 15 * 60,
-                heartbeat: 999999 // actions don't need to heartbeat
+                heartbeat: 5 * 60
             },
             args: {
                 ...args,
                 type: 'action' as const
             }
         };
-        return this.execute(schedulingProps);
+        return this.immediateAndWait(schedulingProps);
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
-                startedToCompleted: 15 * 60,
-                heartbeat: 999999 // webhooks don't need to heartbeat
+                startedToCompleted: 60 * 60,
+                heartbeat: 5 * 60
             },
             args: {
                 ...args,
                 type: 'webhook' as const
             }
         };
-        return this.execute(schedulingProps);
+        return this.immediate(schedulingProps);
     }
 
-    public async executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn> {
-        const { args, ...rest } = props;
-        const schedulingProps = {
+    public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
+        const { args, async, ...rest } = props;
+        const schedulingProps: ImmediateProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
@@ -270,7 +263,8 @@ export class OrchestratorClient {
                 type: 'on-event' as const
             }
         };
-        const res = await this.immediate(schedulingProps);
+
+        const res: Result<any, ClientError> = async ? await this.immediate(schedulingProps) : await this.immediateAndWait(schedulingProps);
         if (res.isErr()) {
             return Err(res.error);
         }

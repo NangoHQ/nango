@@ -90,6 +90,7 @@ async function immediateTask({ groupKey }: { groupKey: string }) {
         name: nanoid(),
         retryMax: 0,
         retryCount: 0,
+        ownerKey: null,
         createdToStartedTimeoutSecs: 30,
         startedToCompletedTimeoutSecs: 30,
         heartbeatTimeoutSecs: 30,

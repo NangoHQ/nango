@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
-
 import { useGlobal } from './store';
+
+import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;

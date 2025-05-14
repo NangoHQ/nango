@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
+
+import { ElasticsearchContainer } from '@testcontainers/elasticsearch';
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { Wait } from 'testcontainers';
+
 import type { StartedTestContainer } from 'testcontainers';
-import { Wait, PostgreSqlContainer, ElasticsearchContainer } from 'testcontainers';
 
 const containers: StartedTestContainer[] = [];
 
@@ -48,7 +52,6 @@ async function setupPostgres() {
     process.env['NANGO_DB_USER'] = user;
     process.env['NANGO_DB_PORT'] = port.toString();
     process.env['NANGO_DB_NAME'] = dbName;
-    process.env['TELEMETRY'] = 'false';
     process.env['RECORDS_DATABASE_URL'] = `postgres://${user}:${password}@localhost:${port}/${dbName}`;
 }
 

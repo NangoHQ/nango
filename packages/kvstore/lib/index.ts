@@ -1,16 +1,18 @@
-import type { RedisClientType } from 'redis';
 import { createClient } from 'redis';
+
 import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
-import type { KVStore } from './KVStore.js';
-import { RedisKVStore } from './RedisStore.js';
 import { Locking } from './Locking.js';
+import { RedisKVStore } from './RedisStore.js';
+
+import type { KVStore } from './KVStore.js';
+import type { RedisClientType } from 'redis';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { KVStore } from './KVStore.js';
-export { Locking, type Lock } from './Locking.js';
+export { type Lock, Locking } from './Locking.js';
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code

@@ -2,7 +2,7 @@ import type { InternalNango as Nango } from '../../credentials-verification-scri
 import type { PolicyListResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
-    const { credentials, providerConfigKey } = nango.getCredentials();
+    const { credentials, provider_config_key } = nango.getConnection();
 
     const { username, password } = credentials as { username: string; password: string };
     const postData =
@@ -24,7 +24,7 @@ export default async function execute(nango: Nango) {
         method: 'POST',
         // https://integrations.expensify.com/Integration-Server/doc/#policy-list-getter
         endpoint: '/ExpensifyIntegrations',
-        providerConfigKey,
+        providerConfigKey: provider_config_key,
         data: postData,
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

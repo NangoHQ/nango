@@ -1,4 +1,5 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { multipleMigrations } from './index.js';
 
 describe('Migration test', () => {
