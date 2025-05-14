@@ -17,12 +17,12 @@ import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
-import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { CreateAnyResponse, CreateSyncResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
-    default: (nango: NangoActionBase, payload?: object) => Promise<unknown>;
+    default: (nango: NangoActionBase, payload?: object) => Promise<unknown> | CreateAnyResponse;
 }
 
 export async function exec({
@@ -56,7 +56,7 @@ export async function exec({
     })();
     `;
 
-    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.js`;
+    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.mjs`;
 
     return await tracer.trace<Promise<RunnerOutput>>('nango.runner.exec', async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
@@ -99,6 +99,13 @@ export async function exec({
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context) as ScriptExports;
 
+            const isZeroYaml = typeof scriptExports.default === 'object' && 'type' in scriptExports.default;
+            const isNangoYaml = !isZeroYaml && typeof scriptExports.default === 'function';
+
+            if (!isZeroYaml && !isNangoYaml) {
+                throw new Error(`Invalid script exports`);
+            }
+
             if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
                     const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
@@ -110,9 +117,6 @@ export async function exec({
                 return { success: true, response: output, error: null };
             }
 
-            if (!scriptExports.default || typeof scriptExports.default !== 'function') {
-                throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
-            }
             if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
@@ -162,6 +166,20 @@ export async function exec({
                 }
 
                 return { success: true, response: output, error: null };
+            }
+
+            // Sync
+            if (isZeroYaml) {
+                const payload = scriptExports.default as unknown as CreateSyncResponse<any, any>;
+                if (payload.type !== 'sync') {
+                    throw new Error('Incorrect script loaded for sync');
+                }
+                if (!payload.params.exec) {
+                    throw new Error(`Missing exec function`);
+                }
+
+                await payload.params.exec(nango as any);
+                return { success: true, response: true, error: null };
             } else {
                 await scriptExports.default(nango);
                 return { success: true, response: true, error: null };

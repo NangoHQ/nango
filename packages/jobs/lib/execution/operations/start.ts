@@ -1,11 +1,14 @@
-import type { Result } from '@nangohq/utils';
-import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 import tracer from 'dd-trace';
-import type { LogContext } from '@nangohq/logs';
+
 import { localFileService, remoteFileService } from '@nangohq/shared';
+import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
+
 import { getRunner } from '../../runner/runner.js';
-import type { JsonValue } from 'type-fest';
+
+import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 export async function startScript({
     taskId,
@@ -33,7 +36,11 @@ export async function startScript({
         const script: string | null =
             isCloud || integrationFilesAreRemote
                 ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
-                : localFileService.getIntegrationFile(nangoProps.syncConfig.sync_name, nangoProps.providerConfigKey);
+                : localFileService.getIntegrationFile({
+                      syncName: nangoProps.syncConfig.sync_name,
+                      providerConfigKey: nangoProps.providerConfigKey,
+                      scriptType: nangoProps.scriptType
+                  });
 
         if (!script) {
             const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;

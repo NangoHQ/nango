@@ -50,23 +50,23 @@ export async function deploy({
         // Prepare retro-compat json
         const parsed = await rebuildParsed({ fullPath, debug });
         if (parsed.isErr()) {
-            spinnerPackage.fail('Failed to package');
-            console.log(parsed.error.message);
+            spinnerPackage.fail();
+            console.log(chalk.red(parsed.error.message));
             return Err(parsed.error);
         }
 
         // Create deploy package
         const postData = await createPackage({ parsed: parsed.value, fullPath, debug, version, optionalSyncName, optionalActionName });
         if (postData.isErr()) {
-            spinnerPackage.fail('Failed to package');
-            console.log(postData.error.message);
+            spinnerPackage.fail();
+            console.log(chalk.red(postData.error.message));
             return Err('no_data');
         }
 
         pkg = postData.value;
-        spinnerPackage.succeed('Packaged');
+        spinnerPackage.succeed();
     } catch {
-        spinnerPackage.fail('Failed to package');
+        spinnerPackage.fail();
         return Err('failed');
     }
 
@@ -80,15 +80,15 @@ export async function deploy({
             body: { ...pkg, reconcile: false, debug }
         });
         if (confirmationRes.isErr()) {
-            spinnerState.fail(chalk.red('Failed to acquire state'));
-            console.log(confirmationRes.error.message);
+            spinnerState.fail();
+            console.log(chalk.red(confirmationRes.error.message));
             return Err(confirmationRes.error);
         }
 
         confirmation = confirmationRes.value;
-        spinnerState.succeed('State acquired');
+        spinnerState.succeed();
     } catch {
-        spinnerState.fail(chalk.red('Failed to acquire state'));
+        spinnerState.fail();
         return Err('failed');
     }
 
@@ -105,7 +105,7 @@ export async function deploy({
             body: { ...pkg, reconcile: true, debug, nangoYamlBody }
         });
         if (deployRes.isErr()) {
-            spinnerDeploy.fail('Failed to deploy');
+            spinnerDeploy.fail();
             console.log(chalk.red(deployRes.error.message));
             return Err('failed_to_deploy');
         }
@@ -114,7 +114,7 @@ export async function deploy({
         console.log(chalk.green(deployRes.value));
         return Ok(true);
     } catch {
-        spinnerDeploy.fail('Failed to deploy');
+        spinnerDeploy.fail();
         return Err('failed');
     }
 }
@@ -183,7 +183,7 @@ async function createPackage({
                     providerConfigKey,
                     models: sync.output || [],
                     version: version || sync.version,
-                    runs: null,
+                    runs: sync.runs,
                     track_deletes: sync.track_deletes,
                     auto_start: sync.auto_start,
                     attributes: {},
@@ -225,7 +225,7 @@ async function createPackage({
                     providerConfigKey,
                     models: action.output || [],
                     version: version || action.version,
-                    runs: '',
+                    runs: null,
                     metadata: metadata,
                     input: action.input || undefined,
                     type: action.type,

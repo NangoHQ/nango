@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+
 import { seeders } from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const endpoint = '/sync/deploy/confirmation';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -69,10 +71,13 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [],
-            deletedOnEventScripts: []
+            deletedOnEventScripts: [],
+            updatedOnEventScripts: []
         });
         expect(res.res.status).toBe(200);
     });
@@ -110,7 +115,9 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [
                 {
@@ -119,6 +126,7 @@ describe(`POST ${endpoint}`, () => {
                     event: 'post-connection-creation'
                 }
             ],
+            updatedOnEventScripts: [],
             deletedOnEventScripts: [
                 {
                     name: existingOnEvent.name,

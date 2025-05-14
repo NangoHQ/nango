@@ -1,8 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import chalk from 'chalk';
-
 import { zodToNangoModelField } from './zodToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
@@ -34,12 +32,10 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
         const modulePath = path.join(fullPath, 'build', filePath);
         const moduleContent = await import(modulePath);
         if (!moduleContent.default) {
-            console.error('Script should have a default export', modulePath);
-            return Err('invalid');
+            return Err(new Error(`Script should have a default export ${modulePath}`));
         }
         if (!moduleContent.default.type || !allowed.includes(moduleContent.default.type)) {
-            console.error('Script should be declared using utility function (createSync, createAction, etc.)', modulePath);
-            return Err('invalid');
+            return Err(new Error(`Script should be declared using utility function (createSync, createAction, etc.) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
@@ -129,8 +125,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
     }
 
     if (num === 0) {
-        console.error(chalk.red('No export in index.ts'));
-        return Err('no_match');
+        return Err(new Error('No export in index.ts'));
     }
 
     printDebug('Correctly parsed', debug);

@@ -103,11 +103,11 @@ async function esbuild({ entryPoints }: { entryPoints: string[] }) {
         outdir: 'build',
         bundle: false,
         sourcemap: true,
-        format: 'esm',
+        format: 'cjs',
         target: 'esnext',
         platform: 'node',
         outbase: '.',
-        outExtension: { '.js': '.mjs' },
+        outExtension: { '.js': '.cjs' },
         logLevel: 'error',
         tsconfigRaw: {
             compilerOptions: {
@@ -138,14 +138,14 @@ async function esbuild({ entryPoints }: { entryPoints: string[] }) {
 }
 
 async function postCompile({ fullPath }: { fullPath: string }) {
-    const files = await glob(path.join(fullPath, 'build', '/**/*.mjs'));
+    const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
 
     await Promise.all(
         files.map(async (file) => {
             let code = await fs.promises.readFile(file, 'utf8');
 
             // Rewrite .js to .cjs in import/require paths
-            code = code.replace(/((?:import|require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.mjs$3');
+            code = code.replace(/((?:import|require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.cjs$3');
 
             await fs.promises.writeFile(file, code);
         })
