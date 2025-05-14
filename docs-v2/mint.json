@@ -460,6 +460,7 @@
                 "integrations/all/grain",
                 "integrations/all/grain-api-key",
                 "integrations/all/grammarly",
+                "integrations/all/grammarly-scim",
                 "integrations/all/greenhouse",
                 "integrations/all/greenhouse-assessment",
                 "integrations/all/greenhouse-basic",

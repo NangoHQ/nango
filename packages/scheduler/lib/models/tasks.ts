@@ -150,7 +150,15 @@ export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> 
 
 export async function search(
     db: knex.Knex,
-    params?: { ids?: string[]; groupKey?: string; states?: TaskState[]; scheduleId?: string; limit?: number }
+    params?: {
+        ids?: string[];
+        groupKey?: string;
+        states?: TaskState[];
+        scheduleId?: string;
+        retryKey?: string;
+        ownerKey?: string;
+        limit?: number;
+    }
 ): Promise<Result<Task[]>> {
     const query = db.from<DbTask>(TASKS_TABLE);
     if (params?.ids) {
@@ -164,6 +172,12 @@ export async function search(
     }
     if (params?.scheduleId) {
         query.where('schedule_id', params.scheduleId);
+    }
+    if (params?.retryKey) {
+        query.where('retry_key', params.retryKey);
+    }
+    if (params?.ownerKey) {
+        query.where('owner_key', params.ownerKey);
     }
     const limit = params?.limit || 100;
     const tasks = await query.limit(limit).orderBy('id');
