@@ -1,0 +1,48 @@
+---
+title: Supabase - How do I link my account?
+sidebarTitle: Supabase
+---
+
+# Overview
+
+To authenticate with Supabase, you need the following:
+1. **Project URL** - The unique project reference URL for your Supabase project
+2. **API Key** - The anon or service_role API key for your Supabase project
+
+This guide will walk you through finding those credentials within Supabase.
+
+---
+
+## Prerequisites
+- You must have administrative access to your Supabase project.
+- Ensure you have permission to generate and manage API keys.
+
+---
+
+## Step 1: Find your project URL
+1. In your Supabase dashboard, go to `Project Settings` at the bottom left > `Data API`.
+<img src="/integrations/all/supabase/project-settings.png" />
+<img src="/integrations/all/supabase/data-api.png" />
+2. Under the `Project URL` section, copy the `URL` value.
+<img src="/integrations/all/supabase/credentials.png" />
+
+## Step 2: Get your API Key
+1. In your Supabase dashboard, go to `Project Settings` at the bottom left > `Data API`.
+<img src="/integrations/all/supabase/project-settings.png" />
+<img src="/integrations/all/supabase/data-api.png" />
+2. Under `Project API keys`, copy the `anon` or `service_role` key.
+<img src="/integrations/all/supabase/credentials.png" />
+3. Use the `service_role` key for admin access, or `anon` for public access. 
+The anon key is safe to use in a browser if Row Level Security is enabled for your tables 
+and configured policies, while the service_role key has the ability to bypass Row Level Security.
+
+
+## Step 3: Connect your Supabase account
+
+<img src="/integrations/all/supabase/form.png" />
+
+To authenticate using your API credentials, navigate to the Supabase authentication form. Enter your credentials as follows:
+- Project URL: Your Supabase project URL
+- API Key: Your Supabase `anon` or `service_role` key
+
+Click "Connect" to complete the authentication.

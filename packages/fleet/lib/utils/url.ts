@@ -1,6 +1,8 @@
-import type { Result } from '@nangohq/utils';
-import { Err, Ok, isCloud } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
+
+import { Err, Ok, isCloud } from '@nangohq/utils';
+
+import type { Result } from '@nangohq/utils';
 
 export async function waitUntilHealthy({ url, timeoutMs }: { url: string; timeoutMs: number }): Promise<Result<void>> {
     const startTime = Date.now();

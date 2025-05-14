@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
 
-import type { Config as ProviderConfig } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { NangoError } from '@nangohq/shared';
+import { getLogger, Ok, Err } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
 const logger = getLogger('Webhook.Checkr');
 
@@ -26,11 +28,11 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler<CheckrBody> = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['x-checkr-signature'];
     if (!signature) {
         logger.error('missing signature', { configId: integration.id });
-        return;
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
     logger.info('received', { configId: integration.id });
@@ -41,12 +43,17 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
         //return;
     }
 
-    const parsedBody = body as CheckrBody;
+    const parsedBody = body;
     logger.info(`valid ${parsedBody.type}`, { configId: integration.id });
 
     const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'account_id', logContextGetter, 'checkr_account_id');
 
-    return { parsedBody, connectionIds: response?.connectionIds || [] };
+    return Ok({
+        content: { status: 'success' },
+        statusCode: 200,
+        connectionIds: response?.connectionIds || [],
+        toForward: parsedBody
+    });
 };
 
 export default route;

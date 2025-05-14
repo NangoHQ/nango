@@ -1,28 +1,33 @@
+import querystring from 'querystring';
+import { PassThrough, Readable, Transform } from 'stream';
+import url from 'url';
+
+import { isAxiosError } from 'axios';
+
+import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import {
+    ErrorSourceEnum,
+    LogActionEnum,
+    ProxyError,
+    ProxyRequest,
+    configService,
+    connectionService,
+    errorManager,
+    getProxyConfiguration,
+    refreshOrTestCredentials
+} from '@nangohq/shared';
+import { getHeaders, getLogger, metrics, redactHeaders } from '@nangohq/utils';
+
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
-import { Readable, Transform, PassThrough } from 'stream';
 import type { UrlWithParsedQuery } from 'url';
-import url from 'url';
-import querystring from 'querystring';
-import { isAxiosError } from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import {
-    LogActionEnum,
-    errorManager,
-    ErrorSourceEnum,
-    connectionService,
-    configService,
-    getProxyConfiguration,
-    ProxyRequest,
-    ProxyError,
-    refreshOrTestCredentials
-} from '@nangohq/shared';
-import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
-import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
-import type { LogContext } from '@nangohq/logs';
+
 import type { RequestLocals } from '../utils/express.js';
 import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 import { featureFlags } from '../utils/utils.js';
@@ -62,7 +67,7 @@ class ProxyController {
             }
 
             logCtx = existingActivityLogId
-                ? await logContextGetter.get({ id: String(existingActivityLogId), accountId: account.id })
+                ? logContextGetter.get({ id: String(existingActivityLogId), accountId: account.id })
                 : await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment }, { dryRun: isDryRun });
 
             if (logCtx instanceof LogContextOrigin) {

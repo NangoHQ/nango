@@ -2,7 +2,7 @@
 import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffectOnce } from 'react-use';
 
@@ -58,6 +58,17 @@ const Integrations: React.FC = () => {
         telemetry('view:list');
     });
 
+    const integrations = useMemo<ApiPublicIntegration[]>(() => {
+        const list: ApiPublicIntegration[] = [];
+        for (const integration of data.data) {
+            list.push({
+                ...integration,
+                display_name: integration.display_name
+            });
+        }
+        return list;
+    }, [data]);
+
     if (data.data.length <= 0) {
         return (
             <main className="h-full overflow-auto m-9 p-1">
@@ -95,7 +106,7 @@ const Integrations: React.FC = () => {
             </header>
             <main className="h-full overflow-auto m-9 mt-1 p-1 ">
                 <div className="flex flex-col">
-                    {data.data.map((integration) => {
+                    {integrations.map((integration) => {
                         return <Integration key={integration.unique_key} integration={integration} />;
                     })}
                 </div>

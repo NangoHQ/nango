@@ -10,6 +10,7 @@ import { routeHandler as deleteRecordsHandler } from './routes/environment/envir
 import { routeHandler as getCursorHandler, path as cursorPath } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
 import { routeHandler as getRecordsHandler, path as getRecordsPath } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
 import { recordsPath } from './records.js';
+import type { ApiError } from '@nangohq/types';
 
 const logger = getLogger('Persist');
 const maxSizeJsonLog = '100kb';
@@ -41,15 +42,15 @@ server.use((_req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+server.use((err: unknown, _req: Request, res: Response<ApiError<'request_too_large' | 'server_error'>>, next: NextFunction) => {
     if (err instanceof Error) {
         if (err.message === 'request entity too large') {
-            res.status(400).json({ error: 'Entity too large' });
+            res.status(400).json({ error: { code: 'request_too_large', message: 'Entity too large' } });
             return;
         }
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: { code: 'server_error', message: err.message } });
     } else if (err) {
-        res.status(500).json({ error: 'uncaught error' });
+        res.status(500).json({ error: { code: 'server_error' } });
     } else {
         next();
     }

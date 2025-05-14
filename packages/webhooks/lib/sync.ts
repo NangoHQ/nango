@@ -1,21 +1,24 @@
-import type {
-    SyncResult,
-    ErrorPayload,
-    SyncOperationType,
-    DBExternalWebhook,
-    NangoSyncWebhookBody,
-    NangoSyncWebhookBodyBase,
-    DBEnvironment,
-    DBTeam,
-    DBSyncConfig,
-    IntegrationConfig,
-    ConnectionJobs
-} from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
+
+import { OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { Ok, metrics } from '@nangohq/utils';
+
 import { deliver, shouldSend } from './utils.js';
-import { metrics, Ok } from '@nangohq/utils';
+
+import type {
+    ConnectionJobs,
+    DBEnvironment,
+    DBExternalWebhook,
+    DBSyncConfig,
+    DBTeam,
+    ErrorPayload,
+    IntegrationConfig,
+    NangoSyncWebhookBody,
+    NangoSyncWebhookBodyBase,
+    SyncOperationType,
+    SyncResult
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);

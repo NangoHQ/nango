@@ -12,15 +12,15 @@ import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
 import type { Config } from '../../../models';
 import type { Config as ProviderConfig } from '../../../models/index.js';
+import type { NangoInternalError } from '../../../utils/error.js';
 import type { Lock } from '@nangohq/kvstore';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
     DBEnvironment,
     DBTeam,
     IntegrationConfig,
-    MessageRowInsert,
     Provider,
     RefreshableCredentials,
     RefreshableProvider,
@@ -54,7 +54,8 @@ interface RefreshProps {
               credentials: TestableCredentials;
               connectionId: string;
               connectionConfig: ConnectionConfig;
-          }) => Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>>)
+              logCtx: LogContextStateless;
+          }) => Promise<Result<{ tested: boolean }, NangoError>>)
         | undefined;
 }
 
@@ -77,6 +78,16 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         }
 
         span.setTag('connectionId', props.connection.connection_id).setTag('authType', props.connection.credentials.type);
+
+        // TODO: remove this when cron is using other columns
+        await connectionService.updateLastFetched(props.connection.id);
+        props.connection = { ...props.connection, last_fetched_at: new Date() };
+
+        // short-circuit if we know the refresh will fail
+        // we can't return an error because it would a breaking change in GET /connection
+        if (props.connection.refresh_exhausted && !props.instantRefresh) {
+            return Ok(props.connection);
+        }
 
         let res: Result<DBConnectionDecrypted, NangoError>;
         switch (props.connection.credentials.type) {
@@ -110,12 +121,13 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             }
         }
 
-        // TODO: remove this
-        await connectionService.updateLastFetched(props.connection.id);
-
         if (res.isErr()) {
             span.setTag('error', res.error);
-            await connectionService.setRefreshFailure({ id: props.connection.id, currentAttempt: props.connection.refresh_attempts || 0 });
+            await connectionService.setRefreshFailure({
+                id: props.connection.id,
+                lastRefreshFailure: props.connection.last_refresh_failure,
+                currentAttempt: props.connection.refresh_attempts || 0
+            });
             return res;
         }
 
@@ -123,7 +135,11 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         // Backfill
         // Connections that were created before adding the new columns do not have `credentials_expires_at` or `last_refresh_success`
         // And because some connection will never refresh we are backfilling those information based on what we have
-        if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
+        if (
+            !newConnection.credentials_expires_at ||
+            newConnection.credentials_expires_at.getTime() < Date.now() ||
+            (!newConnection.last_refresh_success && !newConnection.last_refresh_failure)
+        ) {
             newConnection = await connectionService.updateConnection({
                 ...newConnection,
                 last_fetched_at: new Date(),
@@ -131,7 +147,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                updated_at: new Date()
             });
         }
 
@@ -147,13 +164,15 @@ async function refreshCredentials(
     { environment, integration, account, connection: oldConnection, instantRefresh, logContextGetter, onRefreshFailed, onRefreshSuccess }: RefreshProps,
     provider: RefreshableProvider
 ): Promise<Result<DBConnectionDecrypted, NangoError>> {
+    const logsBuffer = logContextGetter.getBuffer({ accountId: account.id });
     const refreshRes = await refreshCredentialsIfNeeded({
         connectionId: oldConnection.connection_id,
         environmentId: environment.id,
         providerConfig: integration as ProviderConfig,
         provider: provider,
         environment_id: environment.id,
-        instantRefresh
+        instantRefresh,
+        logCtx: logsBuffer
     });
 
     if (refreshRes.isErr()) {
@@ -167,6 +186,7 @@ async function refreshCredentials(
                 connection: { id: oldConnection.id, name: oldConnection.connection_id }
             }
         );
+        logCtx.merge(logsBuffer);
 
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
         void logCtx.error('Failed to refresh credentials', err);
@@ -219,12 +239,14 @@ async function testCredentials(
         return Ok(oldConnection);
     }
 
+    const logsBuffer = logContextGetter.getBuffer({ accountId: account.id });
     const result = await connectionTestHook({
         config: integration as ProviderConfig,
         provider,
         connectionConfig: oldConnection.connection_config,
         connectionId: oldConnection.connection_id,
-        credentials: oldConnection.credentials as TestableCredentials
+        credentials: oldConnection.credentials as TestableCredentials,
+        logCtx: logsBuffer
     });
 
     if (result.isErr()) {
@@ -237,13 +259,7 @@ async function testCredentials(
                 connection: { id: oldConnection.id, name: oldConnection.connection_id }
             }
         );
-        if ('logs' in result.error.payload) {
-            await Promise.all(
-                (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
-                    await logCtx.log(log);
-                })
-            );
-        }
+        logCtx.merge(logsBuffer);
 
         void logCtx.error('Failed to verify connection', result.error);
         await logCtx.failed();
@@ -279,6 +295,7 @@ async function testCredentials(
 
         const connection = await connectionService.updateConnection({
             ...oldConnection,
+            last_fetched_at: new Date(),
             credentials_expires_at: getExpiresAtFromCredentials(oldConnection.credentials),
             last_refresh_failure: null,
             last_refresh_success: new Date(),
@@ -294,13 +311,14 @@ async function testCredentials(
     return Ok(oldConnection);
 }
 
-async function refreshCredentialsIfNeeded({
+export async function refreshCredentialsIfNeeded({
     connectionId,
     environmentId,
     providerConfig,
     provider,
     environment_id,
-    instantRefresh = false
+    instantRefresh = false,
+    logCtx
 }: {
     connectionId: string;
     environmentId: number;
@@ -308,7 +326,8 @@ async function refreshCredentialsIfNeeded({
     provider: RefreshableProvider;
     environment_id: number;
     instantRefresh?: boolean;
-}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoError>> {
+    logCtx: LogContextStateless;
+}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
     const locking = await getLocking();
 
@@ -378,7 +397,11 @@ async function refreshCredentialsIfNeeded({
             throw err;
         }
 
-        const { success, error, response: newCredentials } = await connectionService.getNewCredentials(connectionToRefresh, providerConfig, provider);
+        const {
+            success,
+            error,
+            response: newCredentials
+        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx });
         if (!success || !newCredentials) {
             return Err(error!);
         }
@@ -386,6 +409,7 @@ async function refreshCredentialsIfNeeded({
         connectionToRefresh.credentials = newCredentials;
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
+            last_fetched_at: new Date(),
             credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
             last_refresh_failure: null,
             last_refresh_success: new Date(),
@@ -430,7 +454,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }

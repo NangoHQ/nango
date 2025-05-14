@@ -1,28 +1,46 @@
-import type { ReactNode } from 'react';
-import { useState } from 'react';
-import type { InputProps } from '../../../components/ui/input/Input';
-import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
-import { Button } from '../../../components/ui/button/Button';
 import { IconEdit, IconExternalLink } from '@tabler/icons-react';
-import { useToast } from '../../../hooks/useToast';
-import type { ApiError } from '@nangohq/types';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CopyButton } from '../../../components/ui/button/CopyButton';
 
-export const EditableInput: React.FC<
-    {
-        title: string;
-        subTitle?: boolean;
-        secret?: boolean;
-        name: string;
-        originalValue: string;
-        docs?: string;
-        editInfo?: ReactNode;
-        apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
-        onSuccess: () => void;
-    } & InputProps
-> = ({ title, subTitle, secret, name, originalValue, docs, editInfo, apiCall, onSuccess, ...rest }) => {
+import { SimpleTooltip } from '../../../components/SimpleTooltip';
+import { Button } from '../../../components/ui/button/Button';
+import { CopyButton } from '../../../components/ui/button/CopyButton';
+import { Input } from '../../../components/ui/input/Input';
+import { useToast } from '../../../hooks/useToast';
+import { cn } from '../../../utils/utils';
+
+import type { InputProps } from '../../../components/ui/input/Input';
+import type { ApiError } from '@nangohq/types';
+import type { ReactNode } from 'react';
+
+interface EditableInputProps extends InputProps {
+    title: string;
+    subTitle?: boolean;
+    secret?: boolean;
+    name: string;
+    originalValue: string;
+    docs?: string;
+    editInfo?: ReactNode;
+    blocked?: boolean;
+    blockedTooltip?: string;
+    apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
+    onSuccess: (name: string) => void;
+}
+
+export const EditableInput: React.FC<EditableInputProps> = ({
+    title,
+    subTitle,
+    secret,
+    name,
+    originalValue,
+    docs,
+    editInfo,
+    apiCall,
+    onSuccess,
+    blocked,
+    blockedTooltip,
+    ...rest
+}) => {
     const { toast } = useToast();
 
     const [value, setValue] = useState<string>(() => originalValue);
@@ -36,7 +54,11 @@ export const EditableInput: React.FC<
         setLoading(false);
 
         if ('error' in res.json) {
-            toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            if (res.json.error.code === 'forbidden') {
+                toast({ title: res.json.error.message, variant: 'error' });
+            } else {
+                toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            }
             if (res.json.error.code === 'invalid_body' && res.json.error.errors && res.json.error.errors[0]) {
                 setError(res.json.error.errors[0].message);
             }
@@ -44,7 +66,7 @@ export const EditableInput: React.FC<
         }
 
         toast({ title: `${title} updated successfully!`, variant: 'success' });
-        onSuccess();
+        onSuccess(value);
 
         setEdit(false);
         setError(null);
@@ -76,9 +98,17 @@ export const EditableInput: React.FC<
                     !edit && (
                         <div className="flex">
                             {secret && <CopyButton text={value} />}
-                            <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
-                                <IconEdit stroke={1} size={18} />
-                            </Button>
+                            {blocked ? (
+                                <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
+                                    <Button variant={'icon'} size={'xs'} disabled>
+                                        <IconEdit stroke={1} size={18} />
+                                    </Button>
+                                </SimpleTooltip>
+                            ) : (
+                                <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
+                                    <IconEdit stroke={1} size={18} />
+                                </Button>
+                            )}
                         </div>
                     )
                 }

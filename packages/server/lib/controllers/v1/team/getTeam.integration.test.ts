@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/team';
@@ -46,7 +48,6 @@ describe(`GET ${route}`, () => {
                 isAdminTeam: false,
                 account: {
                     id: account.id,
-                    is_capped: true,
                     name: account.name,
                     created_at: expect.toBeIsoDate(),
                     updated_at: expect.toBeIsoDate(),

@@ -2,14 +2,14 @@ import type { InternalNango as Nango } from '../../credentials-verification-scri
 import type { UserResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
-    const { credentials, providerConfigKey } = nango.getCredentials();
+    const { credentials, provider_config_key } = nango.getConnection();
 
     const { username, password } = credentials as { username: string; password: string };
 
     const response = await nango.proxy<UserResponse | string>({
         method: 'POST',
         endpoint: '/enterpriseapi.php',
-        providerConfigKey,
+        providerConfigKey: provider_config_key,
         data: {
             cid: username,
             provhash: password,

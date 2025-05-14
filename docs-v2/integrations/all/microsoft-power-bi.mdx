@@ -6,6 +6,7 @@ sidebarTitle: Microsoft Power Bi
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-power-bi/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-power-bi/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -40,8 +41,6 @@ _No setup guide yet._
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-power-bi.mdx)</Note>
 
 ## API gotchas
-
--   You can find scopes required for each API call in their corresponding API calls section. For example, to retrieve a list of datasets from My workspace, you can refer to the Required scope section of the [Get Datasets](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-datasets#required-scope) documentation. You also need to prepend the hostname to the scope, which in the get datasets example would be `https://analysis.windows.net/powerbi/api/Dataset.ReadWrite.All`. For more details, check [this resource out](https://community.fabric.microsoft.com/t5/Service/Azure-AD-App-Authentication-scope-doesn-t-exist-on-app-with/m-p/3074525/highlight/true#M188140).
--   Please be aware that the Microsoft Power Bi implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Power Bi Throttling Guidance](https://learn.microsoft.com/en-us/rest/api/power-bi/#throttling).
+<APIGotchas />
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-power-bi.mdx)</Note>
