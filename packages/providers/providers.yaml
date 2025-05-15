@@ -5177,6 +5177,8 @@ hubspot:
     post_connection_script: hubspotPostConnection
     webhook_routing_script: hubspotWebhookRouting
     proxy:
+        retry:
+            remaining: 'x-hubspot-ratelimit-remaining'
         base_url: https://api.hubapi.com
         decompress: true
         paginate:
