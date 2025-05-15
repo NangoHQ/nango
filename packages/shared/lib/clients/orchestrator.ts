@@ -51,6 +51,7 @@ export interface RecordsServiceInterface {
     getRecordCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
+// TODO: move to @nangohq/types (with the rest of the ochestrator public types)
 export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
@@ -63,6 +64,7 @@ export interface OrchestratorClientInterface {
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
+    getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn>;
 }
 
 const ScheduleName = {
@@ -154,7 +156,7 @@ export class Orchestrator {
             const actionResult = await this.client.executeAction({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency: 0 },
-                ownerKey: `environment:${connection.environment_id}`,
+                ownerKey: getActionOwnerKey(connection.environment_id),
                 args
             });
 
@@ -459,6 +461,23 @@ export class Orchestrator {
             metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
+    }
+
+    async getActionOutput(props: { retryKey: string; environmentId: number }): Promise<Result<JsonValue, NangoError>> {
+        const res = await this.client.getOutput({
+            retryKey: props.retryKey,
+            ownerKey: getActionOwnerKey(props.environmentId)
+        });
+        if (res.isErr()) {
+            return Err(
+                deserializeNangoError(res.error.payload) ||
+                    new NangoError('action_script_failure', {
+                        error: res.error.message,
+                        ...(res.error.payload ? { payload: res.error.payload } : {})
+                    })
+            );
+        }
+        return Ok(res.value);
     }
 
     async updateSyncFrequency({
@@ -776,4 +795,8 @@ export class Orchestrator {
 
         return Ok(intervalMs);
     }
+}
+
+function getActionOwnerKey(environmentId: number): string {
+    return `environment:${environmentId}`;
 }
