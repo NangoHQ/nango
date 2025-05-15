@@ -1,3 +1,4 @@
+import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
@@ -8,6 +9,7 @@ import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSe
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
+import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
 import type { Result, RetryConfig, Route } from '@nangohq/utils';
 import { Ok, Err, routeFetch, getLogger, retry } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
@@ -57,7 +59,7 @@ export class OrchestratorClient {
         };
     }
 
-    public async immediate(props: ImmediateProps): Promise<Result<{ taskId: string }, ClientError>> {
+    public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(postImmediateRoute)({ body: props });
         if ('error' in res) {
             return Err({
@@ -269,6 +271,31 @@ export class OrchestratorClient {
             return Err(res.error);
         }
         return Ok(undefined);
+    }
+
+    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn> {
+        const res = await this.routeFetch(getRetryOutputRoute)({
+            query: { ownerKey },
+            params: { retryKey }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error fetching retry '${retryKey}' output`,
+                payload: { retryKey, ownerKey, response: res.error.payload as any }
+            });
+        }
+        if (res.state === 'no_tasks' || res.state === 'in_progress') {
+            return Ok(null);
+        }
+        if (res.state !== 'SUCCEEDED') {
+            return Err({
+                name: 'all_retries_failed',
+                message: `All retries failed: ${retryKey}`,
+                payload: res.output
+            });
+        }
+        return Ok(res.output);
     }
 
     public async searchTasks({
