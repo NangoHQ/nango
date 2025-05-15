@@ -879,6 +879,31 @@ export class Nango {
      * =======
      */
 
+    private async _triggerAction<In = unknown, Out = object>(
+        providerConfigKey: string,
+        connectionId: string,
+        actionName: string,
+        async: boolean,
+        input?: In
+    ): Promise<Out> {
+        const url = `${this.serverUrl}/action/trigger`;
+
+        const headers = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey,
+            ...(async ? { 'X-Async': 'true' } : {})
+        };
+
+        const body = {
+            action_name: actionName,
+            input
+        };
+
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
+    }
+
     /**
      * Triggers an action for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
@@ -889,20 +914,38 @@ export class Nango {
      */
 
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
-        const url = `${this.serverUrl}/action/trigger`;
+        return this._triggerAction<In, Out>(providerConfigKey, connectionId, actionName, false, input);
+    }
 
-        const headers = {
-            'Connection-Id': connectionId,
-            'Provider-Config-Key': providerConfigKey
-        };
+    /**
+     * Triggers an action asynchronously for a connection
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which the action should be triggered
+     * @param actionName - The name of the action to trigger
+     * @param input - An optional input data for the action
+     * @returns A promise that resolves with the ID of the action and the URL where the result can be retrieved
+     */
+    public async triggerActionAsync<In = unknown>(
+        providerConfigKey: string,
+        connectionId: string,
+        actionName: string,
+        input?: In
+    ): Promise<{ id: string; statusUrl: string }> {
+        return this._triggerAction<In, { id: string; statusUrl: string }>(providerConfigKey, connectionId, actionName, true, input);
+    }
 
-        const body = {
-            action_name: actionName,
-            input
-        };
-
-        const response = await this.http.post(url, body, { headers: this.enrichHeaders(headers) });
-
+    /**
+     * Retrieves the result of an asynchronous action
+     * @param props - The properties of the action to retrieve the result for (id and/or statusUrl)
+     * @returns A promise that resolves with the result of the action
+     */
+    public async getAsyncActionResult<Out = object>(props: Partial<Awaited<ReturnType<Nango['triggerActionAsync']>>>): Promise<Out> {
+        if (!props.id && !props.statusUrl) {
+            throw new Error('Either id or statusUrl must be provided');
+        }
+        const path = props.statusUrl ? props.statusUrl : `/action/${props.id}`;
+        const url = `${this.serverUrl}${path}`;
+        const response = await this.http.get(url, { headers: this.enrichHeaders() });
         return response.data;
     }
 
