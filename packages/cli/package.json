@@ -3,11 +3,11 @@
     "version": "0.58.7",
     "description": "Nango's CLI tool.",
     "type": "module",
-    "main": "dist/index.js",
     "bin": {
         "nango": "dist/index.js"
     },
-    "types": "dist/nango-sync.d.ts",
+    "main": "dist/sdk.js",
+    "types": "dist/sdk.d.ts",
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {
@@ -40,6 +40,7 @@
         "dotenv": "^16.0.3",
         "ejs": "^3.1.10",
         "figlet": "^1.6.0",
+        "figures": "6.1.0",
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
@@ -52,6 +53,7 @@
         "tsup": "^8.1.0",
         "typescript": "5.7.3",
         "unzipper": "^0.12.3",
+        "ora": "8.2.0",
         "zod": "3.24.2"
     },
     "devDependencies": {
@@ -80,6 +82,7 @@
     },
     "files": [
         "dist/**/*",
+        "example/**/*",
         "docker/docker-compose.yaml",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",

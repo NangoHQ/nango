@@ -1,12 +1,15 @@
 import fs from 'fs';
+import path from 'path';
+
 import chalk from 'chalk';
 import promptly from 'promptly';
-import path from 'path';
+
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { parse } from './config.service.js';
+
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
-import { printDebug } from '../utils.js';
+import { parse } from './config.service.js';
 import { generate } from '../cli.js';
+import { printDebug } from '../utils.js';
 import { init } from './init.service.js';
 
 class VerificationService {
@@ -116,6 +119,48 @@ class VerificationService {
         if (missingFiles.length > 0) {
             console.log(chalk.red(`The following scripts are missing a corresponding .ts file: ${missingFiles.join(', ')}`));
             throw new Error('Script missing .ts files');
+        }
+
+        return true;
+    }
+
+    public async preCheck({
+        fullPath,
+        debug
+    }: {
+        fullPath: string;
+        debug: boolean;
+    }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string; hasIndexTs: boolean; isZeroYaml: boolean }> {
+        const files = await fs.promises.readdir(fullPath);
+
+        const hasNangoYaml = files.includes('nango.yaml');
+        const isNango = files.includes('.nango');
+        const hasIndexTs = files.includes('index.ts');
+        const isZeroYaml = !hasNangoYaml && isNango && hasIndexTs;
+
+        if (isNango) {
+            printDebug(isZeroYaml ? 'Mode: zero yaml' : 'Model: classic yaml', debug);
+        }
+        return {
+            isNango,
+            folderName: path.basename(fullPath),
+            hasNangoYaml,
+            hasIndexTs,
+            isZeroYaml
+        };
+    }
+
+    public async ensureNangoV1({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+        const precheck = await this.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.log(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return false;
+        }
+        if (precheck.isZeroYaml) {
+            console.log(chalk.red(`This command only works with a nango.yaml`));
+            process.exitCode = 1;
+            return false;
         }
 
         return true;
