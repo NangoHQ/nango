@@ -35,38 +35,30 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
 
     if (error || !connection) {
         res.status(400).send({
-            error: { code: 'unknown_connection', message: 'Provided ConnectionId and ProviderConfigKey does not match a valid connection' }
+            error: { code: 'unknown_connection', message: 'Provided connection-id and provider-config-key does not match a valid connection' }
         });
         return;
     }
 
-    try {
-        const server = await createMcpServerForConnection(account, environment, connection, providerConfigKey);
-        const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
-            sessionIdGenerator: undefined
-        });
-
-        res.on('close', () => {
-            void transport.close();
-            void server.close();
-        });
-
-        // Casting because 'exactOptionalPropertyTypes: true' says `?: string` is not equal to `string | undefined`
-        await server.connect(transport as Transport);
-        await transport.handleRequest(req, res, req.body);
-    } catch (err) {
-        console.error('Error handling MCP request:', err);
-        if (!res.headersSent) {
-            res.status(500).json({
-                jsonrpc: '2.0',
-                error: {
-                    code: -32603,
-                    message: 'Internal server error'
-                },
-                id: null
-            });
-        }
+    const result = await createMcpServerForConnection(account, environment, connection, providerConfigKey);
+    if (result.isErr()) {
+        res.status(500).send({ error: { code: 'Internal server error', message: result.error.message } });
+        return;
     }
+
+    const server = result.value;
+    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined
+    });
+
+    res.on('close', () => {
+        void transport.close();
+        void server.close();
+    });
+
+    // Casting because 'exactOptionalPropertyTypes: true' says `?: string` is not equal to `string | undefined`
+    await server.connect(transport as Transport);
+    await transport.handleRequest(req, res, req.body);
 });
 
 // We have to be explicit about not supporting SSE

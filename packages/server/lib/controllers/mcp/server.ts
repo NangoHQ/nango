@@ -4,17 +4,22 @@ import tracer from 'dd-trace';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { truncateJson } from '@nangohq/utils';
+import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types';
 import type { Config } from '@nangohq/shared';
-import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 import type { JSONSchema7 } from 'json-schema';
 
-export async function createMcpServerForConnection(account: DBTeam, environment: DBEnvironment, connection: DBConnectionDecrypted, providerConfigKey: string) {
+export async function createMcpServerForConnection(
+    account: DBTeam,
+    environment: DBEnvironment,
+    connection: DBConnectionDecrypted,
+    providerConfigKey: string
+): Promise<Result<Server>> {
     const server = new Server(
         {
             name: 'Nango MCP server',
@@ -30,20 +35,23 @@ export async function createMcpServerForConnection(account: DBTeam, environment:
     const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
 
     if (!providerConfig) {
-        throw new Error(`Provider config ${providerConfigKey} not found`);
+        return Err(new Error(`Provider config ${providerConfigKey} not found`));
     }
 
     const actions = await getActionsForProvider(environment, providerConfig);
 
     server.setRequestHandler(ListToolsRequestSchema, () => {
         return {
-            tools: actions.map(actionToTool).filter((tool) => tool !== null)
+            tools: actions.flatMap((action) => {
+                const tool = actionToTool(action);
+                return tool ? [tool] : [];
+            })
         };
     });
 
     server.setRequestHandler(CallToolRequestSchema, callToolRequestHandler(actions, account, environment, connection, providerConfig));
 
-    return server;
+    return Ok(server);
 }
 
 async function getActionsForProvider(environment: DBEnvironment, providerConfig: Config): Promise<DBSyncConfig[]> {
