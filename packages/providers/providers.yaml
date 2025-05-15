@@ -3575,8 +3575,8 @@ facebook:
         - marketing
         - social
     auth_mode: OAUTH2
-    authorization_url: https://www.facebook.com/v15.0/dialog/oauth
-    token_url: https://graph.facebook.com/v15.0/oauth/access_token
+    authorization_url: https://www.facebook.com/v22.0/dialog/oauth
+    token_url: https://graph.facebook.com/v22.0/oauth/access_token
     proxy:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
