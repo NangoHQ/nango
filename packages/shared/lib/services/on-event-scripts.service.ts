@@ -1,9 +1,11 @@
 import db from '@nangohq/database';
-import remoteFileService from './file/remote.service.js';
 import { env } from '@nangohq/utils';
-import type { OnEventScriptsByProvider, DBOnEventScript, DBTeam, DBEnvironment, OnEventType, OnEventScript } from '@nangohq/types';
-import { increment } from './sync/config/config.service.js';
+
 import configService from './config.service.js';
+import remoteFileService from './file/remote.service.js';
+import { increment } from './sync/config/config.service.js';
+
+import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
 
 const TABLE = 'on_event_scripts';
 
@@ -181,12 +183,8 @@ export const onEventScriptService = {
             ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
             : existingScripts;
 
-        // Create a map of existing scripts for easier lookup by provider:name:event
-        const previousMap = new Map();
-        for (const script of relevantExistingScripts) {
-            const key = `${script.providerConfigKey}:${script.name}:${script.event}`;
-            previousMap.set(key, script);
-        }
+        // Create a map of existing scripts for easier lookup
+        const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
 
         // Process incoming scripts
         for (const provider of onEventScriptsByProvider) {
@@ -194,11 +192,11 @@ export const onEventScriptService = {
             if (!scripts || scripts.length === 0) continue;
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
-            const configId = config?.id || -1; // Use -1 for new providers
+            if (!config || !config.id) continue; // Skip if provider config doesn't exist
 
             for (const script of scripts) {
                 const { name, event } = script;
-                const key = `${providerConfigKey}:${name}:${event}`;
+                const key = `${config.id}:${name}:${event}`;
                 const existingScript = previousMap.get(key);
 
                 if (existingScript) {
@@ -209,7 +207,7 @@ export const onEventScriptService = {
                 } else {
                     // Script doesn't exist - it's new
                     res.added.push({
-                        configId,
+                        configId: config.id,
                         name,
                         version: '0.0.1',
                         active: true,
@@ -220,7 +218,7 @@ export const onEventScriptService = {
             }
         }
 
-        // All remaining scripts in the map are considered deleted
+        // Any remaining scripts in the map were not found - they are deleted
         res.deleted = Array.from(previousMap.values());
 
         return res;
