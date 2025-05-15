@@ -5904,8 +5904,7 @@ lever:
     token_url: https://auth.lever.co/oauth/token
     authorization_params:
         response_type: code
-        prompt: consent
-        audience: https://api.lever.co/v1
+        audience: https://api.lever.co/v1/
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
