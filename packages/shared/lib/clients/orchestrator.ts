@@ -163,7 +163,7 @@ export class Orchestrator {
             if (async) {
                 const res = await this.client.executeActionAsync({
                     name: executionId,
-                    group: { key: groupKey, maxConcurrency: 0 },
+                    group: { key: `action:environment:${connection.environment_id}`, maxConcurrency: 1 }, // async actions runs sequentially per environment
                     retry: { count: 0, max: retryMax },
                     ownerKey: `environment:${connection.environment_id}`,
                     args
