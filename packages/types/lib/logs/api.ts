@@ -19,7 +19,7 @@ export type SearchOperations = Endpoint<{
         integrations?: SearchOperationsIntegration[] | undefined;
         connections?: SearchOperationsConnection[] | undefined;
         syncs?: SearchOperationsSync[] | undefined;
-        period?: SearchOperationsPeriod | undefined;
+        period?: SearchPeriod | undefined;
         cursor?: string | null | undefined;
     };
     Success: {
@@ -32,7 +32,7 @@ export type SearchOperationsType = 'all' | ConcatOperationListWithGroup;
 export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;
 export type SearchOperationsSync = 'all' | string;
-export interface SearchOperationsPeriod {
+export interface SearchPeriod {
     from: string;
     to: string;
 }
@@ -59,6 +59,7 @@ export type SearchMessages = Endpoint<{
         search?: string | undefined;
         cursorBefore?: string | null | undefined;
         cursorAfter?: string | null | undefined;
+        period?: SearchPeriod | undefined;
     };
     Success: {
         data: MessageRow[];

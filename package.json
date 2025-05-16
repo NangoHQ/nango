@@ -90,5 +90,8 @@
     },
     "engines": {
         "node": ">=18.0.0 || >=20.0.0"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.11.0"
     }
 }
