@@ -1,4 +1,5 @@
 export { sendAuth } from './auth.js';
+export { sendAsyncActionWebhook } from './asyncAction.js';
 import { sendSync } from './sync.js';
 
 export { forwardWebhook } from './forward.js';

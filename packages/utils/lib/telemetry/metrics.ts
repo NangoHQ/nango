@@ -66,6 +66,8 @@ export enum Types {
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
     WEBHOOK_OUTGOING_FAILED = 'nango.webhook.outgoing.failed',
+    WEBHOOK_ASYNC_ACTION_SUCCESS = 'nango.webhook.async_action.success',
+    WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',

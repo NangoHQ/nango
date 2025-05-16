@@ -1,5 +1,10 @@
 import type { Endpoint } from '../api';
 
+export interface AsyncActionResponse {
+    id: string;
+    statusUrl: string;
+}
+
 export type GetAsyncActionResult = Endpoint<{
     Method: 'GET';
     Path: `/action/:id`;

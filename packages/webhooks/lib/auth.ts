@@ -45,7 +45,11 @@ export async function sendAuth({
         return;
     }
 
-    if (!shouldSend({ success, type: 'auth', webhookSettings, operation })) {
+    if (operation !== 'creation' && operation !== 'refresh') {
+        return;
+    }
+
+    if (!shouldSend({ success, type: operation === 'creation' ? 'auth_creation' : 'auth_refresh', webhookSettings })) {
         return;
     }
 
