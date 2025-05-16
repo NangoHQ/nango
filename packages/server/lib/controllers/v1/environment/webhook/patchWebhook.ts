@@ -11,7 +11,8 @@ const validation = z
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),
-        on_sync_error: z.boolean().optional()
+        on_sync_error: z.boolean().optional(),
+        on_async_action_completion: z.boolean().optional()
     })
     .strict();
 
@@ -50,6 +51,9 @@ export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
     }
     if (typeof body.on_sync_error !== 'undefined') {
         data.on_sync_error = body.on_sync_error;
+    }
+    if (typeof body.on_async_action_completion !== 'undefined') {
+        data.on_async_action_completion = body.on_async_action_completion;
     }
 
     if (Object.keys(data).length <= 0) {

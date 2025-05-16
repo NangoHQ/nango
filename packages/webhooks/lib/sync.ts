@@ -56,7 +56,7 @@ export const sendSync = async ({
         return Ok(undefined);
     }
 
-    if (!shouldSend({ success, type: 'sync', webhookSettings, operation })) {
+    if (!shouldSend({ success, type: 'sync', webhookSettings })) {
         return Ok(undefined);
     }
 

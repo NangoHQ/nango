@@ -190,7 +190,8 @@ describe('OrchestratorClient', async () => {
                             environment_id: 5678
                         },
                         activityLogId: '9876',
-                        input: { foo: 'bar' }
+                        input: { foo: 'bar' },
+                        async: false
                     }
                 });
                 expect(res.unwrap()).toEqual(output);
@@ -221,7 +222,8 @@ describe('OrchestratorClient', async () => {
                             environment_id: 5678
                         },
                         activityLogId: '9876',
-                        input: { foo: 'bar' }
+                        input: { foo: 'bar' },
+                        async: false
                     }
                 });
                 expect(res.isOk()).toBe(false);
