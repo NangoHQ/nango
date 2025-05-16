@@ -1,10 +1,12 @@
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
-import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
+import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validation } from './validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -42,7 +44,8 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
     if (body.onEventScriptsByProvider) {
         const diff = await onEventScriptService.diffChanges({
             environmentId,
-            onEventScriptsByProvider: body.onEventScriptsByProvider
+            onEventScriptsByProvider: body.onEventScriptsByProvider,
+            singleDeployMode: body.singleDeployMode || false
         });
         result = {
             ...syncAndActionDifferences,
