@@ -135,11 +135,18 @@ function callToolRequestHandler(
         });
 
         if (actionResponse.isOk()) {
+            if (!('data' in actionResponse.value)) {
+                // Shouldn't happen with sync actions.
+                return {
+                    content: []
+                };
+            }
+
             return {
                 content: [
                     {
                         type: 'text',
-                        text: JSON.stringify(actionResponse.value, null, 2)
+                        text: JSON.stringify(actionResponse.value.data, null, 2)
                     }
                 ]
             };
