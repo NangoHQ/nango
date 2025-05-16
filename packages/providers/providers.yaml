@@ -2319,6 +2319,29 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
             doc_section: '#step-2-creating-an-api-key'
+codegen:
+    display_name: Codegen
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.codegen.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organizations
+    docs: https://docs.nango.dev/integrations/all/codegen
+    docs_connect: https://docs.nango.dev/integrations/all/codegen/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Key for your Codegen account
+            pattern: '^sk-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
+            doc_section: '#step-1-finding-your-api-key'
 
 commercetools:
     display_name: Commercetools
@@ -4099,6 +4122,29 @@ grammarly:
                 - /v2/analytics/users
     docs: https://docs.nango.dev/integrations/all/grammarly
 
+grammarly-scim:
+    display_name: Grammarly SCIM
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://sso.grammarly.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/scim/Users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grammarly-scim
+    docs_connect: https://docs.nango.dev/integrations/all/grammarly-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Grammarly account
+            doc_section: '#step-1-finding-grammarly-scim-credentials'
+            example: 'Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz'
+
 guru:
     display_name: Guru
     categories:
@@ -4516,6 +4562,15 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-sheet
+
+google-slides:
+    display_name: Google Slides
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://slides.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-slides
 
 google-drive:
     display_name: Google Drive
@@ -5122,6 +5177,8 @@ hubspot:
     post_connection_script: hubspotPostConnection
     webhook_routing_script: hubspotWebhookRouting
     proxy:
+        retry:
+            remaining: 'x-hubspot-ratelimit-remaining'
         base_url: https://api.hubapi.com
         decompress: true
         paginate:
@@ -5303,6 +5360,31 @@ jamf-basic:
             title: Password
             description: Your Jamf Pro password
             secret: true
+
+jazzhr:
+    display_name: JazzHR
+    categories:
+        - hr
+    auth_mode: CUSTOM
+    proxy:
+        base_url: https://api.resumatorapi.com/
+        verification:
+            method: GET
+            endpoints:
+                - /users?apikey=${connectionConfig.apiKey}
+            base_url_override: https://api.resumatorapi.com/v1
+        query:
+            apikey: ${connectionConfig.apiKey}
+    docs: https://docs.nango.dev/integrations/all/jazzhr
+    docs_connect: https://docs.nango.dev/integrations/all/jazzhr/connect
+    connection_config:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JazzHR API Key
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+            optional: false
 
 jira:
     display_name: Jira (OAuth)
@@ -5526,6 +5608,34 @@ helpscout-mailbox:
             after: 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout-mailbox
+
+kandji:
+    display_name: Kandji
+    categories:
+        - support
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kandji.io
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/kandji
+    docs_connect: https://docs.nango.dev/integrations/all/kandji/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your kandji account
+            doc_section: '#step-1-finding-your-subdomain'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Kandji account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-2-generating-your-api-token'
 
 keap:
     display_name: Keap
@@ -5796,8 +5906,7 @@ lever:
     token_url: https://auth.lever.co/oauth/token
     authorization_params:
         response_type: code
-        prompt: consent
-        audience: https://api.lever.co/v1
+        audience: https://api.lever.co/v1/
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
@@ -6277,10 +6386,10 @@ microsoft:
     disable_pkce: true
     default_scopes:
         - offline_access
+        - .default
     authorization_params:
         response_type: code
         response_mode: query
-        prompt: consent
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -7044,6 +7153,29 @@ openai-admin:
             title: Admin Key
             description: The Admin API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-admin-key'
+open-hands:
+    display_name: Open Hands
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.all-hands.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/conversations
+    docs: https://docs.nango.dev/integrations/all/open-hands
+    docs_connect: https://docs.nango.dev/integrations/all/open-hands/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Open Hands account
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
+            doc_section: '#step-1-finding-your-api-key'
 
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
@@ -8961,6 +9093,7 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     scope_separator: ','
+    alternate_access_token_response_path: authed_user.access_token
     token_url: https://slack.com/api/oauth.v2.access
     token_response_metadata:
         - incoming_webhook.url
@@ -9360,6 +9493,37 @@ stripe-app-sandbox:
             type: string
             title: App Domain
             description: The domain of your Stripe app
+
+supabase:
+    display_name: Supabase
+    categories:
+        - dev-tools
+        - storage
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.projectUrl}
+        headers:
+            authorization: Bearer ${credentials.apiKey}
+            apikey: ${credentials.apiKey}
+    docs: https://docs.nango.dev/integrations/all/supabase
+    docs_connect: https://docs.nango.dev/integrations/all/supabase/connect
+    connection_config:
+        projectUrl:
+            type: string
+            title: Project URL
+            description: The Supabase project url
+            example: project.supabase.co
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-project-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The anon or service_role API key for your Supabase project
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            pattern: '^[A-Za-z0-9\._-]+$'
+            doc_section: '#step-2-get-your-api-key'
 
 survey-monkey:
     display_name: SurveyMonkey

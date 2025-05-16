@@ -53,25 +53,25 @@ export const CreateEnvironmentButton: React.FC = () => {
     let tooltipContent: React.ReactNode = null;
     if (isMaxEnvironmentsReached) {
         tooltipContent = (
-            <span>
+            <div>
                 Max number of environments reached.{' '}
                 {environment?.plan?.name === 'scale' ? (
                     <>Contact Nango to add more</>
                 ) : (
                     <>
-                        <Link to="https://app.withsurface.com/s/cm1zve3340001l503sm0xtvo1" className="underline">
+                        <Link to={`/${env}/team/billing`} className="underline">
                             Upgrade
                         </Link>{' '}
                         to add more
                     </>
                 )}
-            </span>
+            </div>
         );
     }
 
     return (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-            <SimpleTooltip tooltipContent={tooltipContent} delay={0} className="text-gray-400" side="bottom">
+            <SimpleTooltip tooltipContent={tooltipContent} delay={1} className="text-gray-400" side="bottom">
                 <DialogTrigger className="w-full" asChild>
                     <Button disabled={!!isMaxEnvironmentsReached} variant={'secondary'} className="w-full justify-center">
                         {isMaxEnvironmentsReached && <IconLock size={18} stroke={1} />}

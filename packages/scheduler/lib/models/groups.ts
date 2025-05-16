@@ -4,6 +4,7 @@ import type { Result } from '@nangohq/utils';
 import type { Group } from '../types.js';
 
 export const GROUPS_TABLE = 'groups';
+export const GROUP_PREFIX_SEPARATOR = ':';
 
 export interface DbGroup {
     readonly key: string;
@@ -33,27 +34,41 @@ export const DbGroup = {
     })
 };
 
-export async function upsert(db: knex.Knex, group: Omit<Group, 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Result<Group>> {
+export async function upsert(
+    db: knex.Knex,
+    group: {
+        key: string;
+        lastTaskAddedAt: Date | null;
+        maxConcurrency?: number | undefined;
+    },
+    opts?: {
+        skipLocked?: boolean;
+    }
+): Promise<Result<Group>> {
     const now = new Date();
     try {
         const toInsert: DbGroup = {
             key: group.key,
-            max_concurrency: group.maxConcurrency,
+            max_concurrency: group.maxConcurrency || 0, // 0 = no limit
             created_at: now,
             updated_at: now,
             last_task_added_at: group.lastTaskAddedAt,
             deleted_at: null
         };
-        const [dbGroup] = await db
+        const query = db
             .from<DbGroup>(GROUPS_TABLE)
             .insert(toInsert)
             .onConflict('key')
             .merge({
-                max_concurrency: group.maxConcurrency,
                 last_task_added_at: group.lastTaskAddedAt,
-                deleted_at: null
+                deleted_at: null,
+                ...(group.maxConcurrency ? { max_concurrency: group.maxConcurrency } : {})
             })
             .returning('*');
+        if (opts?.skipLocked) {
+            query.whereExists(db.select('key').from(GROUPS_TABLE).where('key', toInsert.key).forUpdate().skipLocked());
+        }
+        const [dbGroup] = await query;
         if (!dbGroup) {
             return Err(new Error(`Failed to upsert group '${group.key}'`));
         }

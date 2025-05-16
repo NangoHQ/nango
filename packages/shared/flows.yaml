@@ -3434,6 +3434,62 @@ integrations:
                     topics_discussed: string[]
                     key_action_items: string[]
                 competitor_sentiments: string[]
+    clicksend:
+        actions:
+            send-sms:
+                description: Sends an SMS message via ClickSend's API.
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /sms/send
+                    group: SMS
+                input: ClickSendSendSmsInput
+                output: Sms
+            fetch-account:
+                description: Fetches basic information about the ClickSend account.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /account
+                    group: Account
+                output: Account
+        syncs:
+            sms-history:
+                description: Fetches the history of SMS messages sent through ClickSend.
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /sms/history
+                    group: SMS
+                sync_type: incremental
+                track_deletes: false
+                runs: every half hour
+                auto_start: true
+                output: Sms
+        models:
+            ClickSendSendSmsInput:
+                to: string
+                body: string
+            Sms:
+                id: string
+                to: string
+                from: string
+                body: string
+                status: >-
+                    QUEUED | COMPLETED | SCHEDULED | WAIT_APPROVAL | FAILED | CANCELLED |
+                    CANCELLED_AFTER_REVIEW | RECEIVED | SENT | SUCCESS
+                createdAt: string
+                updatedAt: string
+            Account:
+                id: string
+                name: string
+                email: string
+                phone: string
+                balance: string
+                country: string
+                timezone: string
+                accountName: string
+                accountBillingEmail: string
     confluence:
         syncs:
             spaces:
@@ -4711,6 +4767,410 @@ integrations:
                 page_token?: string
                 sort_by?: string
                 sort_order?: asc | desc
+    gem:
+        syncs:
+            candidates:
+                runs: every 1h
+                description: |
+                    Get all candidates from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /candidates
+                    group: Candidates
+                output: Candidate
+            job-posts:
+                runs: every 1h
+                description: |
+                    Get a list of all job posts from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /job-posts
+                    group: Job Posts
+                output: JobPost
+            job-stages:
+                runs: every 1h
+                description: |
+                    Get a list of all job stages from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /job-stages
+                    group: Job Stages
+                output: JobStage
+            users:
+                runs: every 1h
+                description: |
+                    Get a list of all users from Gem
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                output: TeamMemberUser
+            locations:
+                runs: every 1h
+                description: |
+                    Get a list of all locations from Gem ATS
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /locations
+                    group: Locations
+                output: Location
+            applications:
+                runs: every 1h
+                description: |
+                    Get a list of all applications from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /applications
+                    group: Applications
+                output: Application
+            jobs:
+                runs: every 1h
+                description: |
+                    Get a list of all jobs from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /jobs
+                    group: Jobs
+                output: Job
+        actions:
+            create-candidate:
+                description: Create a new candidate in Gem
+                endpoint:
+                    method: POST
+                    path: /candidates
+                    group: Candidates
+                input: CreateCandidateInput
+                output: CreateCandidateOutput
+            upload-resume:
+                description: >-
+                    Upload a resume for a candidate. Allowed formats are .pdf, .doc, or
+                    .docx. The file size must not exceed 10MB.
+                endpoint:
+                    method: POST
+                    path: /candidate-upload-resume
+                    group: Candidates
+                input: UploadResumeInput
+                output: UploadResumeResponse
+            create-note:
+                description: Create a note for a candidate
+                endpoint:
+                    method: POST
+                    path: /candidate-notes
+                    group: Candidates
+                input: CreateNoteParams
+                output: Note
+            update-application:
+                description: Update an application's source
+                endpoint:
+                    method: PATCH
+                    path: /application
+                    group: Applications
+                input: UpdateApplicationInput
+                output: Application
+        models:
+            CreateCandidateInput:
+                created_by: string
+                first_name: string | null
+                last_name: string | null
+                nickname: string | null
+                emails: Email[] | null
+                linked_in_handle: string | null
+                title: string | null
+                company: string | null
+                location: string | null
+                school: string | null
+                education_info: EducationInfo[] | null
+                work_info: WorkInfo[] | null
+                profile_urls: string[] | null
+                custom_fields: CustomFieldCandidateInput[] | null
+                phone_number: string | null
+                project_ids: string[] | null
+                sourced_from: string | null
+                autofill: boolean
+            UpdateApplicationInput:
+                source_id: string
+                application_id: string
+            UploadResumeInput:
+                candidate_id: string
+                user_id: string
+                resume_file: string
+            UploadResumeResponse:
+                id: string
+                candidate_id: string
+                created_at: number
+                user_id: string
+                filename: string
+                download_url: string
+            CreateNoteParams:
+                user_id: string
+                body: string
+                visibility: private | public
+                candidate_id: string
+            Note:
+                id: string
+                created_at: string
+                body: string
+                user:
+                    id: string
+                    name: string
+                    first_name: string
+                    last_name: string
+                    employee_id: string
+                private: boolean
+                visibility: public | private
+            Email:
+                email_address: string
+                is_primary: boolean
+            EducationInfo:
+                school?: string | null
+                parsed_university: string | null
+                parsed_school: string | null
+                start_date: string | null
+                end_date: string | null
+                field_of_study: string | null
+                parsed_major_1: string | null
+                parsed_major_2: string | null
+                degree: string | null
+            WorkInfo:
+                company: string | null
+                title: string | null
+                work_start_date: string | null
+                work_end_date: string | null
+                is_current: boolean | null
+            CustomFieldCandidateInput:
+                custom_field_id: string
+                value: string
+            CustomFieldCandidateOutput:
+                id: string
+                name: string
+                scope: string
+                project_id?: string
+                value: any
+                value_type: string
+                value_option_ids?: string[]
+                custom_field_category?: string
+                custom_field_value?: any
+            Candidate:
+                id: string
+                first_name: string
+                last_name: string
+                company: string | null
+                title: string | null
+                attachments: File[]
+                phone_numbers: PhoneNumber[]
+                email_addresses: EmailAddress[]
+                social_media_addresses: SocialMediaAddress[]
+                tags: string[]
+                educations: Education[]
+                employments: GemWork[]
+                linked_user_ids: string[]
+                created_at: string
+                updated_at: string | null
+                last_activity: string | null
+                deleted_at: string | null
+                is_private: boolean
+                applications: Application[]
+                application_ids: string[]
+            CreateCandidateOutput:
+                id: string
+                created_at: number
+                created_by: string
+                last_updated_at: number | null
+                candidate_greenhouse_id: string | null
+                first_name: string | null
+                last_name: string | null
+                nickname: string | null
+                weblink: string
+                emails: Email[]
+                phone_number: string | null
+                location: string | null
+                linked_in_handle: string | null
+                profiles: Profile[]
+                company: string | null
+                title: string | null
+                school: string | null
+                education_info: EducationInfo[]
+                work_info: WorkInfo[]
+                custom_fields: CustomFieldCandidateOutput[]
+                due_date: DueDate | null
+                project_ids: string[] | null
+                sourced_from: string | null
+                gem_source: string | null
+            Profile:
+                network: string
+                url: string
+                username: string
+            DueDate:
+                date: string
+                user_id: string
+                note: string | null
+            File:
+                filename: string
+                url: string
+                type: string
+                created_at: string
+            PhoneNumber:
+                type: string
+                value: string
+            EmailAddress:
+                type: string
+                value: string
+                is_primary: boolean
+            SocialMediaAddress:
+                value: string
+            Education:
+                id: string
+                school_name: string
+                degree: string
+                discipline: string
+                start_date: string
+                end_date: string
+            GemWork:
+                id: string
+                company_name: string
+                title: string
+                start_date: string
+                end_date: string
+            JobPost:
+                id: string
+                title: string
+                active: boolean
+                live: boolean
+                first_published_at: string | null
+                job_id: string
+                content: string
+                created_at: string
+                updated_at: string
+                deleted_at: string | null
+            JobStage:
+                id: string
+                name: string
+                created_at: string
+                updated_at: string
+                deleted_at: string | null
+                active: boolean
+                job_id: string
+                priority: number
+                interviews: InterviewDefinition[]
+            InterviewDefinition:
+                id: string
+                name: string
+                schedulable: boolean
+                estimated_minutes: number
+                default_interviewer_users: UserLite[]
+                interview_kit: InterviewKit
+                deleted_at: string | null
+                job_stage_interview_item_id: string
+            InterviewKit:
+                id: string
+                content: string
+                questions: QuestionLite[]
+            QuestionLite:
+                id: string
+                name: string
+            UserLite:
+                id: string
+                name: string
+                first_name: string
+                last_name: string
+                employee_id: string
+            User:
+                id: string
+                name: string
+                first_name: string
+                last_name: string
+                employee_id: string
+                primary_email_address: string
+                updated_at: string
+                created_at: string
+                disabled: boolean
+                site_admin: boolean
+                emails: string[]
+                linked_candidate_ids: string[]
+                offices: Location[]
+                departments: Department[]
+                deleted_at: string | null
+            Location:
+                id: string
+                name: string
+                location:
+                    name: string
+                parent_id: string
+                child_ids: string[]
+                parent_office_external_id: string
+                child_office_external_ids: string[]
+                deleted_at: string
+            Department:
+                id: string
+                name: string
+                parent_id: string
+                child_ids: string[]
+                parent_department_external_id: string
+                child_department_external_ids: string[]
+                deleted_at: string
+            Application:
+                id: string
+                candidate_id: string
+                applied_at: string
+                rejected_at: string | null
+                last_activity_at: string
+                source: ApplicationSource
+                credited_to: string
+                rejection_reason: RejectionReason | null
+                jobs: JobLite[]
+                job_post_id: string
+                status: string
+                current_stage: JobStageLite
+                deleted_at: string | null
+            ApplicationSource:
+                id: string
+                public_name: string
+            RejectionReason:
+                id: string
+                name: string
+                type: RejectionReasonType
+            RejectionReasonType:
+                id: string
+                name: string
+            JobStageLite:
+                id: string
+                name: string
+            JobLite:
+                id: string
+                name: string
+            Job:
+                id: string
+                name: string
+                requisition_id: string
+                confidential: boolean
+                status: string
+                created_at: string
+                opened_at: string
+                closed_at: string | null
+                deleted_at: string | null
+                updated_at: string
+                is_template: boolean
+                departments: Department[]
+                offices: Location[]
+                hiring_team: JobHiringTeam
+            JobHiringTeam:
+                hiring_managers: UserLite[] | null
+                recruiters: UserLite[] | null
+                coordinators: UserLite[] | null
+                sourcers: UserLite[] | null
+            TeamMemberUser:
+                id: string
+                name: string
+                email: string
     github:
         syncs:
             issues:
@@ -4827,6 +5287,182 @@ integrations:
                 status: string
                 sha: string
     github-app:
+        actions:
+            repositories:
+                description: List all repositories accessible to this Github App
+                version: 1.0.0
+                output: RepoResponse
+                endpoint:
+                    method: GET
+                    path: /repositories
+                    group: Repositories
+        syncs:
+            pull-requests:
+                runs: every hour
+                description: |
+                    Get all pull requests from a Github repository.
+                version: 1.0.0
+                auto_start: false
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /pull-requests
+                    group: Pull Requests
+                input: GithubMetadataInput
+                output: GithubPullRequest
+            commits:
+                runs: every hour
+                description: |
+                    Get all pull commits from a Github repository.
+                version: 1.0.0
+                auto_start: false
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /commits
+                    group: Commits
+                input: GithubMetadataInput
+                output: GithubCommit
+        models:
+            RepoResponse:
+                repositories: Repository[]
+            Repository:
+                allow_forking: boolean
+                archive_url: string
+                archived: boolean
+                assignees_url: string
+                blobs_url: string
+                branches_url: string
+                clone_url: string
+                collaborators_url: string
+                comments_url: string
+                commits_url: string
+                compare_url: string
+                contents_url: string
+                contributors_url: string
+                created_at: string
+                default_branch: string
+                deployments_url: string
+                description: string
+                disabled: boolean
+                downloads_url: string
+                events_url: string
+                fork: boolean
+                forks: number
+                forks_count: number
+                forks_url: string
+                full_name: string
+                git_commits_url: string
+                git_refs_url: string
+                git_tags_url: string
+                git_url: string
+                has_discussions: boolean
+                has_downloads: boolean
+                has_issues: boolean
+                has_pages: boolean
+                has_projects: boolean
+                has_wiki: boolean
+                homepage: string | null
+                hooks_url: string
+                html_url: string
+                id: number
+                is_template: boolean
+                issue_comment_url: string
+                issue_events_url: string
+                issues_url: string
+                keys_url: string
+                labels_url: string
+                language: string
+                languages_url: string
+                license: string | null
+                merges_url: string
+                milestones_url: string
+                mirror_url: string | null
+                name: string
+                node_id: string
+                notifications_url: string
+                open_issues: number
+                open_issues_count: number
+                owner:
+                    avatar_url: string
+                    events_url: string
+                    followers_url: string
+                    following_url: string
+                    gists_url: string
+                    gravatar_id: string
+                    html_url: string
+                    id: number
+                    login: string
+                    node_id: string
+                    organizations_url: string
+                    received_events_url: string
+                    repos_url: string
+                    site_admin: boolean
+                    starred_url: string
+                    subscriptions_url: string
+                    type: string
+                    url: string
+                permissions:
+                    admin: boolean
+                    maintain: boolean
+                    pull: boolean
+                    push: boolean
+                    triage: boolean
+                private: boolean
+                pulls_url: string
+                pushed_at: string
+                releases_url: string
+                size: number
+                ssh_url: string
+                stargazers_count: number
+                stargazers_url: string
+                statuses_url: string
+                subscribers_url: string
+                subscription_url: string
+                svn_url: string
+                tags_url: string
+                teams_url: string
+                topics: string[]
+                trees_url: string
+                updated_at: string
+                url: string
+                visibility: string
+                watchers: number
+                watchers_count: number
+                web_commit_signoff_required: boolean
+            GithubMetadataInput:
+                owner: string
+                repo: string
+                syncWindowMinutes?: number
+                branch?: string
+            GithubComment:
+                id: string
+                body: string
+                user: GithubUser
+                createdAt: string
+            GithubUser:
+                id: string
+                url?: string
+            GithubCommit:
+                id: string
+                url: string
+                branch: string
+                author: GithubUser
+                message: string
+                date: string
+            GithubPullRequest:
+                id: string
+                url: string
+                state: string
+                title: string
+                user: GithubUser
+                assignees: GithubUser[]
+                reviewers: GithubUser[]
+                draft: boolean
+                labels: string[]
+                reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
+                latestComment: GithubComment
+    github-app-oauth:
         actions:
             repositories:
                 description: List all repositories accessible to this Github App
@@ -6400,6 +7036,39 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    grammarly:
+        actions:
+            delete-user:
+                description: Deletes a user in Grammarly
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: EmailEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Grammarly
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            EmailEntity:
+                email: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                __raw: any
     greenhouse-basic:
         syncs:
             applications:
@@ -6555,40 +7224,37 @@ integrations:
                 openings: string[]
     gusto:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6616,16 +7282,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -6634,7 +7291,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
@@ -6714,40 +7392,37 @@ integrations:
                 address: string
     gusto-demo:
         actions:
-            create-user:
-                description: Creates a user in Gusto.
-                output: User
+            create-employee:
+                description: Creates an employee in Gusto.
+                output: GustoCreateEmployeeResponse
                 endpoint:
                     method: POST
-                    path: /users
-                    group: Users
-                input: GustoCreateUser
+                    path: /employees
+                    group: Employees
+                input: GustoCreateEmployee
                 scopes:
                     - employees:manage
-            delete-user:
-                description: Deletes a user in Gusto.
+            update-employee:
+                description: Updates an employee in Gusto.
+                output: GustoUpdateEmployeeResponse
+                endpoint:
+                    method: PUT
+                    path: /employees
+                    group: Employees
+                input: GustoUpdateEmployee
+                scopes:
+                    - employees:manage
+            terminate-employee:
+                description: Terminates an employee in Gusto.
                 endpoint:
                     method: DELETE
-                    path: /users
-                    group: Users
+                    path: /employees
+                    group: Employees
                 output: SuccessResponse
-                input: GustoDeleteUser
+                input: GustoTerminateEmployee
                 scopes:
                     - employments:write
         syncs:
-            users:
-                runs: every day
-                description: |
-                    Fetches a list of users from Gusto.
-                output: User
-                track_deletes: true
-                sync_type: full
-                endpoint:
-                    method: GET
-                    path: /users
-                    group: Users
-                scopes:
-                    - employees:read
             employees:
                 runs: every 5m
                 description: Fetches all employees from Gusto
@@ -6775,16 +7450,7 @@ integrations:
                 success: boolean
             IdEntity:
                 id: string
-            User:
-                id: string
-                email: string
-                firstName: string
-                lastName: string
-            CreateUser:
-                firstName: string
-                lastName: string
-                email: string
-            GustoCreateUser:
+            GustoCreateEmployee:
                 firstName: string
                 lastName: string
                 email: string
@@ -6793,7 +7459,28 @@ integrations:
                 dateOfBirth: string
                 ssn?: string
                 selfOnboarding?: boolean
-            GustoDeleteUser:
+            GustoCreateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoUpdateEmployee:
+                id: string
+                version: string
+                firstName?: string
+                lastName?: string
+                email?: string
+                middleInitial?: string
+                preferredFirstName?: string
+                dateOfBirth?: string
+                ssn?: string
+                twoPercentShareholder?: boolean
+            GustoUpdateEmployeeResponse:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            GustoTerminateEmployee:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
@@ -11360,7 +12047,7 @@ integrations:
                     method: GET
                     path: /issues
                     group: Issues
-                version: 1.0.1
+                version: 1.0.2
             projects:
                 runs: every 5min
                 description: |
@@ -11382,6 +12069,7 @@ integrations:
                     method: GET
                     path: /users
                     group: Users
+                version: 1.0.1
             teams:
                 runs: every 5min
                 description: |
@@ -11427,6 +12115,7 @@ integrations:
                 teamId: string
                 title: string
                 status: string
+                estimate: string | null
             CreateIssue:
                 teamId: string
                 title: string
@@ -11449,7 +12138,8 @@ integrations:
                 admin: boolean
                 email: string
                 firstName: string
-                lastName: string
+                lastName?: string
+                avatarUrl: string | null
             LinearProject:
                 id: string
                 url: string

@@ -6,6 +6,7 @@ sidebarTitle: Microsoft Power Bi
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-power-bi/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-power-bi/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -40,27 +41,6 @@ _No setup guide yet._
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-power-bi.mdx)</Note>
 
 ## API gotchas
-
--   You can find scopes required for each API call in their corresponding API calls section. For example, to retrieve a list of datasets from My workspace, you can refer to the Required scope section of the [Get Datasets](https://learn.microsoft.com/en-us/rest/api/power-bi/datasets/get-datasets#required-scope) documentation. You also need to prepend the hostname to the scope, which in the get datasets example would be `https://analysis.windows.net/powerbi/api/Dataset.ReadWrite.All`. For more details, check [this resource out](https://community.fabric.microsoft.com/t5/Service/Azure-AD-App-Authentication-scope-doesn-t-exist-on-app-with/m-p/3074525/highlight/true#M188140).
--   Please be aware that the Microsoft Power Bi implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Power Bi Throttling Guidance](https://learn.microsoft.com/en-us/rest/api/power-bi/#throttling).
--   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
-    - Set the scopes to [`.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope) to ensure the permissions remain the same as those granted at the organization level.
-
-```typescript
-const { data } = await nango.createConnectSession({
-  [...],
-  integrations_config_defaults: {
-    "microsoft-power-bi": {
-      authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
-    }
-  }
-});
-```
-
-If this is not done, the app will [show a consent screen prompting the user to grant permissions](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#example-1-the-user-or-tenant-admin-has-granted-permissions) which the user will be unable to do without admin access.
+<APIGotchas />
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-power-bi.mdx)</Note>

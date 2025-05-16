@@ -73,7 +73,9 @@ const commonSchemaFields = {
     name: z.string().min(1),
     groupKey: z.string().min(1),
     state: z.enum(taskStates),
-    retryCount: z.number().int()
+    retryCount: z.number().int(),
+    retryMax: z.number().int(),
+    ownerKey: z.string().min(1).nullable()
 };
 const abortSchema = z.object({
     ...commonSchemaFields,
@@ -109,11 +111,13 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: sync.data.state,
                 name: sync.data.name,
                 attempt: sync.data.retryCount + 1,
+                attemptMax: sync.data.retryMax + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
+                ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug
             })
         );
@@ -127,11 +131,13 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: syncAbort.data.state,
                 name: syncAbort.data.name,
                 attempt: syncAbort.data.retryCount + 1,
+                attemptMax: syncAbort.data.retryMax + 1,
                 syncId: syncAbort.data.payload.syncId,
                 syncName: syncAbort.data.payload.syncName,
                 syncVariant: syncAbort.data.payload.syncVariant,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
+                ownerKey: syncAbort.data.ownerKey,
                 reason: syncAbort.data.payload.reason,
                 debug: syncAbort.data.payload.debug
             })
@@ -145,10 +151,12 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: action.data.id,
                 name: action.data.name,
                 attempt: action.data.retryCount + 1,
+                attemptMax: action.data.retryMax + 1,
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
                 groupKey: action.data.groupKey,
+                ownerKey: action.data.ownerKey,
                 input: action.data.payload.input
             })
         );
@@ -161,11 +169,13 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: webhook.data.state,
                 name: webhook.data.name,
                 attempt: webhook.data.retryCount + 1,
+                attemptMax: webhook.data.retryMax + 1,
                 webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
                 groupKey: webhook.data.groupKey,
+                ownerKey: webhook.data.ownerKey,
                 input: webhook.data.payload.input
             })
         );
@@ -178,10 +188,12 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: onEvent.data.state,
                 name: onEvent.data.name,
                 attempt: onEvent.data.retryCount + 1,
+                attemptMax: onEvent.data.retryMax + 1,
                 onEventName: onEvent.data.payload.onEventName,
                 version: onEvent.data.payload.version,
                 connection: onEvent.data.payload.connection,
                 groupKey: onEvent.data.groupKey,
+                ownerKey: onEvent.data.ownerKey,
                 fileLocation: onEvent.data.payload.fileLocation,
                 activityLogId: onEvent.data.payload.activityLogId
             })
@@ -196,8 +208,10 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: abort.data.state,
                 name: abort.data.name,
                 attempt: abort.data.retryCount + 1,
+                attemptMax: abort.data.retryMax + 1,
                 connection: abort.data.payload.connection,
                 groupKey: abort.data.groupKey,
+                ownerKey: abort.data.ownerKey,
                 reason: abort.data.payload.reason
             })
         );

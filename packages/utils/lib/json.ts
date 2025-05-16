@@ -1,5 +1,6 @@
 import safeStringify from 'fast-safe-stringify';
 import truncateJsonPkg from 'truncate-json';
+
 import { truncateBytes } from './string.js';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
