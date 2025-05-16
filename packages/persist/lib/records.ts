@@ -1,12 +1,15 @@
-import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
-import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import type { Span } from 'dd-trace';
+
+import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
-import type { Result } from '@nangohq/utils';
+import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
+import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
-import type { MergingStrategy } from '@nangohq/types';
+
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
+import type { DBPlan, MergingStrategy } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -16,6 +19,7 @@ export async function persistRecords({
     accountId,
     environmentId,
     connectionId,
+    plan,
     providerConfigKey,
     nangoConnectionId,
     syncId,
@@ -29,6 +33,7 @@ export async function persistRecords({
     accountId: number;
     environmentId: number;
     connectionId: string;
+    plan: DBPlan | null;
     providerConfigKey: string;
     nangoConnectionId: number;
     syncId: string;
@@ -39,7 +44,6 @@ export async function persistRecords({
     merging?: MergingStrategy;
 }): Promise<Result<MergingStrategy>> {
     const active = tracer.scope().active();
-    const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
     const span = tracer.startSpan('persistRecords', {
         childOf: active as Span,
         tags: {
@@ -51,9 +55,7 @@ export async function persistRecords({
             syncId,
             syncJobId,
             model,
-            activityLogId,
-            'records.count': records.length,
-            'records.sizeInBytes': recordsSizeInBytes
+            activityLogId
         }
     });
 
@@ -78,15 +80,16 @@ export async function persistRecords({
             break;
     }
 
+    const recordsData = records as UnencryptedRecordData[];
     const formatting = recordsFormatter.formatRecords({
-        data: records as UnencryptedRecordData[],
+        data: recordsData,
         connectionId: nangoConnectionId,
         model,
         syncId,
         syncJobId,
         softDelete
     });
-    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
+    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
     if (formatting.isErr()) {
         void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
@@ -119,17 +122,58 @@ export async function persistRecords({
             void logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${baseModel}. The record was ignored.`);
         }
 
-        const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
-        void logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
-            persistType,
-            updatedResults
-        });
         await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
-        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length, { accountId });
-        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
+        const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
+        const total = allModifiedKeys.size + summary.unchangedKeys.length;
 
+        void logCtx.info(
+            `Successfully batch ${persistType}d ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
+            { persistType },
+            {
+                persistResults: {
+                    model: baseModel,
+                    added: summary.addedKeys.length,
+                    updated: summary.updatedKeys.length,
+                    deleted: summary.deletedKeys?.length || 0,
+                    unchanged: summary.unchangedKeys.length,
+
+                    addedKeys: summary.addedKeys,
+                    updatedKeys: summary.updatedKeys,
+                    deleteKeys: summary.deletedKeys || [],
+                    unchangedKeys: [] // TODO: reup summary.unchangedKeys
+                }
+            }
+        );
+
+        const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
+        const modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {
+            if (allModifiedKeys.has(record.id)) {
+                return acc + Buffer.byteLength(JSON.stringify(record), 'utf8');
+            }
+            return acc;
+        }, 0);
+
+        const mar = new Set(summary.billedKeys).size;
+
+        if (plan) {
+            void billing.send('monthly_active_records', mar, { accountId });
+        }
+
+        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
+        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
+        metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES, modifiedRecordsSizeInBytes);
+
+        span.addTags({
+            'records.in.count': records.length,
+            'records.in.sizeInBytes': recordsSizeInBytes,
+            'records.modified.count': allModifiedKeys.size,
+            'records.modified.sizeInBytes': modifiedRecordsSizeInBytes
+        });
         span.finish();
+
         return Ok(persistResult.value.nextMerging);
     } else {
         const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;

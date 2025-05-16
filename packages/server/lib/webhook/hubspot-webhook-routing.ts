@@ -1,8 +1,11 @@
-import type { Config as ProviderConfig } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
+
+import { NangoError } from '@nangohq/shared';
+import { getLogger, Ok, Err } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
 const logger = getLogger('Webhook.Hubspot');
 
@@ -24,7 +27,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
     if (!valid) {
         logger.error('webhook signature invalid');
-        return;
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     if (Array.isArray(body)) {
@@ -50,9 +53,15 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
             }
         }
 
-        return { connectionIds };
+        return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds });
     } else {
-        return nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
+        const response = await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId', logContextGetter);
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: body
+        });
     }
 };
 

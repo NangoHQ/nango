@@ -1,7 +1,5 @@
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -13,14 +11,18 @@ import {
     getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
-import { startScript } from './operations/start.js';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+
 import { bigQueryClient, slackService } from '../clients.js';
+import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import db from '@nangohq/database';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+
+import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import { setTaskSuccess, setTaskFailed } from './operations/state.js';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -58,8 +60,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
-        void logCtx.info(`Starting action '${task.actionName}'`, {
+        const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
+        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
             input: task.input,
             action: task.actionName,
             connection: task.connection.connection_id,
@@ -105,7 +107,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         return Ok(undefined);
     } catch (err) {
         const error = new NangoError('action_script_failure', { error: err instanceof Error ? err.message : err });
-        await onFailure({
+        onFailure({
             connection: {
                 id: task.connection.id,
                 connection_id: task.connection.connection_id,
@@ -119,15 +121,26 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
-            ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {}),
+            team: account,
+            environment: environment,
             endUser
         });
         return Err(error);
     }
 }
 export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
-    await setTaskSuccess({ taskId, output });
+    const task = await setTaskSuccess({ taskId, output });
+
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+
+    void logCtx.info(`The action was successfully run${formatAttempts(task)}`, {
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+    void logCtx.success();
+
+    metrics.increment(metrics.Types.ACTION_SUCCESS);
 
     const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId,
@@ -166,9 +179,29 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
 }
 
 export async function handleActionError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
-    await setTaskFailed({ taskId, error });
+    const task = await setTaskFailed({ taskId, error });
 
-    await onFailure({
+    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    if (!accountAndEnv) {
+        throw new Error(`Account and environment not found`);
+    }
+    const { account, environment } = accountAndEnv;
+
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: account.id });
+
+    void logCtx?.error(`Action '${nangoProps.syncConfig.sync_name}' failed${formatAttempts(task)}`, {
+        error,
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+
+    // fail the log operation if this is the last attempt
+    if (task.isOk() && task.value.attempt === task.value.attemptMax) {
+        void logCtx.failed();
+    }
+
+    onFailure({
         connection: {
             id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
@@ -178,20 +211,20 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
         syncName: nangoProps.syncConfig.sync_name,
         provider: nangoProps.provider,
         providerConfigKey: nangoProps.providerConfigKey,
-        activityLogId: nangoProps.activityLogId!,
+        activityLogId: nangoProps.activityLogId,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
-        environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
+        team: account,
+        environment: environment,
         syncConfig: nangoProps.syncConfig,
-        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {}),
         endUser: nangoProps.endUser
     });
 }
 
-async function onFailure({
-    connection,
+function onFailure({
     team,
     environment,
+    connection,
     syncName,
     provider,
     providerConfigKey,
@@ -201,9 +234,9 @@ async function onFailure({
     error,
     endUser
 }: {
+    team?: DBTeam | undefined;
+    environment?: DBEnvironment | undefined;
     connection: ConnectionJobs;
-    team?: { id: number; name: string };
-    environment: { id: number; name: string };
     syncName: string;
     provider: string;
     providerConfigKey: string;
@@ -212,24 +245,31 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
-}): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: activityLogId });
-    try {
-        await slackService.reportFailure(connection, syncName, 'action', logCtx.id, provider);
-    } catch {
-        errorManager.report('slack notification service reported a failure', {
-            environmentId: connection.environment_id,
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.ACTION,
-            metadata: {
-                syncName: syncName,
-                connectionDetails: connection,
-                syncType: 'action',
-                debug: false
-            }
-        });
-    }
-    if (team) {
+}): void {
+    if (team && environment) {
+        try {
+            void slackService.reportFailure({
+                account: team,
+                environment,
+                connection,
+                name: syncName,
+                type: 'action',
+                originalActivityLogId: activityLogId,
+                provider
+            });
+        } catch {
+            errorManager.report('slack notification service reported a failure', {
+                environmentId: connection.environment_id,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.ACTION,
+                metadata: {
+                    syncName: syncName,
+                    connectionDetails: connection,
+                    syncType: 'action',
+                    debug: false
+                }
+            });
+        }
         void bigQueryClient.insert({
             executionType: 'action',
             connectionId: connection.connection_id,
@@ -251,4 +291,13 @@ async function onFailure({
             endUser
         });
     }
+    metrics.increment(metrics.Types.ACTION_FAILURE);
+}
+
+function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): string {
+    const t = 'id' in task ? task : task.isOk() ? task.value : null;
+    if (!t) {
+        return '';
+    }
+    return t.attemptMax > 1 ? ` (attempt ${t.attempt}/${t.attemptMax})` : '';
 }

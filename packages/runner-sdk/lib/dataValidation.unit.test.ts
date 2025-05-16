@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+
 import { clearValidationCache, validateData } from './dataValidation.js';
 
 describe('validateData', () => {

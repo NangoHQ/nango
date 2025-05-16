@@ -1,9 +1,11 @@
 import fs from 'fs';
-import chalk from 'chalk';
-import type { NodePath } from '@babel/traverse';
+
+import parser from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
-import parser from '@babel/parser';
+import chalk from 'chalk';
+
+import type { NodePath } from '@babel/traverse';
 
 class ParserService {
     public getImportedFiles(filePath: string): string[] {

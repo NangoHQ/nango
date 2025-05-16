@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
-import type { Nango } from '@nangohq/node';
+import { getProvider } from '@nangohq/providers';
+
+import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
-import type { AxiosResponse } from 'axios';
-import type { ZodSchema, SafeParseSuccess } from 'zod';
+
+import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
     ApiPublicConnectionFull,
@@ -22,6 +24,7 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     Pagination,
+    PostPublicTrigger,
     SetMetadata,
     SignatureCredentials,
     TableauCredentials,
@@ -32,8 +35,8 @@ import type {
     UserLogParameters,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
-import { getProvider } from '@nangohq/providers';
-import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
+import type { AxiosResponse } from 'axios';
+import type { SafeParseSuccess, ZodSchema } from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
@@ -46,7 +49,7 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 export abstract class NangoActionBase {
     abstract nango: Nango;
     private attributes = {};
-    activityLogId?: string | undefined;
+    activityLogId: string;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId: number;
@@ -70,10 +73,7 @@ export abstract class NangoActionBase {
         this.environmentId = config.environmentId;
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
-
-        if (config.activityLogId) {
-            this.activityLogId = config.activityLogId;
-        }
+        this.activityLogId = config.activityLogId;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -356,7 +356,7 @@ export abstract class NangoActionBase {
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void | string>;
 
     public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
@@ -381,6 +381,21 @@ export abstract class NangoActionBase {
             props.body = options.body;
         }
 
-        return await fetch(options.url);
+        return await fetch(options.url, props);
     }
+
+    /**
+     * Try to acquire a lock for a given key.
+     * The lock is acquired if the key does not exist or if it exists but is expired.
+     * The lock is valid for the entire execution of the script and will be released automatically when the script ends (or when releaseLock is called).
+     */
+    public abstract tryAcquireLock({ key, ttlMs }: { key: string; ttlMs: number }): Promise<boolean>;
+    /**
+     * Release the lock for a given key.
+     */
+    public abstract releaseLock({ key }: { key: string }): Promise<boolean>;
+    /**
+     * Release all locks acquired during the execution of a script.
+     */
+    public abstract releaseAllLocks(): Promise<void>;
 }

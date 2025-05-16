@@ -23,7 +23,33 @@ import PreBuiltUseCases from "/snippets/generated/monday/PreBuiltUseCases.mdx"
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+    <Step title="Access the Monday Developers' section">
+        Log in to your Monday account.
+        Click on the profile icon in the top right corner and select _Developers_.
+    </Step>
+    <Step title="Create an OAuth application">
+        On the _Developers_ section, click on the _Create App_ button.
+        Select the newly created app from the list.
+        Scroll down to the _App Credentials_ section.
+        Copy the _Client ID_ and _Client Secret_.
+        You will need them when configuring Nango.
+    </Step>
+    <Step title="Configure the redirect URL">
+        On the created app page, select the _Build_ dropdown at the right side of the page.
+        Select _OAuth and Permissions_
+        At the top of the page, select the _Redirect URLs_ tab.
+        Add the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+        Click on _Save Scopes_.
+    </Step>
+    <Step title="Promoting the Monday app to live">
+        At the top right of the page, click on the _Promote to Live_ button.
+        Click on the confirmation button.
+    </Step>
+    <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to set up your Monday integration in Nango.
+    </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 

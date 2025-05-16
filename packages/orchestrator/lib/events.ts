@@ -1,4 +1,5 @@
 import type { Scheduler, Task } from '@nangohq/scheduler';
+import { GROUP_PREFIX_SEPARATOR } from '@nangohq/scheduler';
 import EventEmitter from 'node:events';
 
 export class EventsHandler extends EventEmitter {
@@ -23,7 +24,8 @@ export class EventsHandler extends EventEmitter {
         this.onCallbacks = {
             CREATED: (scheduler: Scheduler, task: Task) => {
                 on.CREATED(scheduler, task);
-                this.emit(`task:created:${task.groupKey}`, task);
+                const groupKeyPrefix = task.groupKey.split(GROUP_PREFIX_SEPARATOR)[0]; // Emitting event on the group key prefix if any
+                this.emit(`task:created:${groupKeyPrefix}`, task);
             },
             STARTED: (scheduler: Scheduler, task: Task) => {
                 on.STARTED(scheduler, task);

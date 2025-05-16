@@ -1,18 +1,30 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { OAuth2Credentials, AuthCredentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
-import { configService, connectionService, errorManager, NangoError, accountService, SlackService, getProvider } from '@nangohq/shared';
-import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
+import { NangoError, accountService, configService, connectionService, errorManager, getProvider, githubAppClient } from '@nangohq/shared';
+
+import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
+import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
-import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
+import type {
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    ConnectionConfig,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    ProviderGithubApp,
+    TbaCredentials,
+    ProviderOAuth2
+} from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -63,13 +75,12 @@ class ConnectionController {
                 providerConfigKey: integration_key,
                 environmentId: info!.environmentId,
                 orchestrator,
-                logContextGetter,
+                slackService,
                 preDeletionHook
             });
 
             // Kill all notifications associated with this env
-            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
-            await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
+            await slackService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
         } catch (err) {
@@ -139,7 +150,7 @@ class ConnectionController {
 
     async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { environment, account } = res.locals;
+            const { environment, account, plan } = res.locals;
             const { provider_config_key, metadata, connection_config } = req.body;
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
@@ -158,14 +169,24 @@ class ConnectionController {
 
             const providerName = integration.provider;
 
-            if (account.is_capped && provider_config_key) {
+            if (plan) {
                 const isCapped = await connectionCreationStartCapCheckHook({
                     providerConfigKey: provider_config_key,
                     environmentId: environment.id,
-                    creationType: 'import'
+                    creationType: 'import',
+                    team: account,
+                    plan
                 });
-                if (isCapped) {
-                    errorManager.errRes(res, 'resource_capped');
+                if (isCapped.capped) {
+                    res.status(400).send({
+                        error: {
+                            code: 'resource_capped',
+                            message:
+                                isCapped.code === 'max'
+                                    ? 'Reached maximum number of allowed connections for your plan'
+                                    : 'Reached maximum number of connections with scripts enabled'
+                        }
+                    });
                     return;
                 }
             }
@@ -185,7 +206,8 @@ class ConnectionController {
 
                 const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
                     { access_token, refresh_token, expires_at, expires_in },
-                    provider.auth_mode
+                    provider.auth_mode,
+                    provider as ProviderOAuth2
                 ) as OAuth2Credentials;
 
                 if (!access_token) {
@@ -249,10 +271,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -314,10 +334,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -365,10 +383,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig: { ...connection_config },
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -412,7 +428,6 @@ class ConnectionController {
                     provider: providerName,
                     metadata,
                     environment,
-                    account,
                     credentials,
                     connectionConfig: { ...connection_config },
                     connectionCreatedHook: connCreatedHook
@@ -456,7 +471,6 @@ class ConnectionController {
                     provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig: { ...connection_config },
                     credentials,
                     connectionCreatedHook: connCreatedHook
@@ -490,21 +504,22 @@ class ConnectionController {
                     return;
                 }
 
-                const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
-
-                if (!success || !credentials) {
-                    errorManager.errResFromNangoErr(res, error);
+                const credentialsRes = await githubAppClient.createCredentials({
+                    provider: provider as ProviderGithubApp,
+                    integration: config,
+                    connectionConfig
+                });
+                if (credentialsRes.isErr()) {
+                    errorManager.errResFromNangoErr(res, credentialsRes.error);
                     return;
                 }
 
                 const [imported] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
-                    parsedRawCredentials: credentials as unknown as AuthCredentials,
+                    parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
                     environmentId: environment.id,
-                    accountId: account.id,
                     metadata
                 });
 
@@ -556,8 +571,7 @@ class ConnectionController {
                     },
                     metadata,
                     config,
-                    environment,
-                    account
+                    environment
                 });
 
                 if (imported) {
@@ -568,9 +582,7 @@ class ConnectionController {
                 const [imported] = await connectionService.upsertUnauthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     environment,
-                    account,
                     metadata,
                     connectionConfig: { ...connection_config }
                 });

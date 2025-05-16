@@ -6,6 +6,7 @@ sidebarTitle: Microsoft Ads
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-ads/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-ads/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -38,8 +39,9 @@ _No setup guide yet._
 
 ## API gotchas
 
--   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.  
+-   The Microsoft Advertising API doesn't offer a REST API, which means certain Nango functionalities won't be accessible, including syncs, workflows, and proxy requests.
     To engage with the Microsoft Advertising API, developers must initially retrieve the access token utilizing the [backend API](https://docs.nango.dev/reference/api/connection/get). This token should then be utilized with [official client libraries](https://learn.microsoft.com/en-us/advertising/guides/client-libraries?view=bingads-13) or a [SOAP Client](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-quick-start?view=bingads-13) for further interaction.
+<APIGotchas />
 
 <Note>
     Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-ads.mdx)

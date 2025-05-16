@@ -1,12 +1,16 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { NangoModel, PostPreBuiltDeploy } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, deployPreBuilt, flowService, syncManager } from '@nangohq/shared';
+import { configService, connectionService, deployPreBuilt, flowService, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
-import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+
+import type { NangoModel, PostPreBuiltDeploy } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -36,7 +40,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
 
     const body: PostPreBuiltDeploy['Body'] = val.data;
 
-    const { environment, account } = res.locals;
+    const { environment, account, plan, user } = res.locals;
     const environmentId = environment.id;
 
     const config = await configService.getIdByProviderConfigKey(environmentId, body.providerConfigKey);
@@ -45,12 +49,27 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         return;
     }
 
-    if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'deploy' });
-        if (isCapped) {
-            res.status(400).send({ error: { code: 'resource_capped' } });
-            return;
-        }
+    if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
+        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
+        return;
+    }
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        await startTrial(db.knex, plan);
+        productTracking.track({ name: 'account:trial:started', team: account, user });
+    }
+
+    const isCapped = await connectionService.shouldCapUsage({
+        providerConfigKey: body.providerConfigKey,
+        environmentId,
+        type: 'deploy',
+        team: account,
+        plan
+    });
+    if (isCapped) {
+        res.status(400).send({
+            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
+        });
+        return;
     }
 
     const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });
@@ -78,7 +97,8 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
                 models: flow.returns,
                 track_deletes: flow.track_deletes === true,
                 metadata: { description: flow.description, scopes: flow.scopes },
-                input: flow.input
+                input: flow.input,
+                version: flow.version ?? null
             }
         ],
         logContextGetter,
