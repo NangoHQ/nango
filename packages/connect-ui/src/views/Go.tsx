@@ -242,7 +242,7 @@ export const Go: React.FC = () => {
                         telemetry('popup:blocked_by_browser');
                         setError('Auth pop-up blocked by your browser, please allow pop-ups to open');
                         return;
-                    } else if (err.type === 'windowClosed') {
+                    } else if (err.type === 'window_closed') {
                         telemetry('popup:closed_early');
                         setError('The auth pop-up was closed before the end of the process, please try again');
                         return;
