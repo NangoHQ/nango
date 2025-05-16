@@ -345,7 +345,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const task = await immediateAction(client, { groupKey, ownerKey });
-                const retryKey = task.unwrap().retryKey as string;
+                const retryKey = task.unwrap().retryKey;
                 expect(retryKey).not.toBeNull();
 
                 while (!processed) {
@@ -373,7 +373,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const task = await immediateAction(client, { groupKey, ownerKey });
-                const retryKey = task.unwrap().retryKey as string;
+                const retryKey = task.unwrap().retryKey;
                 expect(retryKey).not.toBeNull();
 
                 while (!processed) {
@@ -406,7 +406,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const task = await immediateAction(client, { groupKey, ownerKey, retryMax });
-                const retryKey = task.unwrap().retryKey as string;
+                const retryKey = task.unwrap().retryKey;
                 expect(retryKey).not.toBeNull();
 
                 while (!processed) {
@@ -434,7 +434,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const task = await immediateAction(client, { groupKey, ownerKey });
-                const retryKey = task.unwrap().retryKey as string;
+                const retryKey = task.unwrap().retryKey;
                 expect(retryKey).not.toBeNull();
 
                 while (!processed) {
@@ -468,7 +468,7 @@ describe('OrchestratorClient', async () => {
             });
             try {
                 const task = await immediateAction(client, { groupKey, ownerKey, retryMax });
-                const retryKey = task.unwrap().retryKey as string;
+                const retryKey = task.unwrap().retryKey;
                 expect(retryKey).not.toBeNull();
 
                 while (!processed) {
