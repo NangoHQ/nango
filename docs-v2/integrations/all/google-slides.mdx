@@ -6,6 +6,9 @@ sidebarTitle: Google Slides
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/google-slides/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/google-slides/PreBuiltUseCases.mdx"
+import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
+import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
+
 
 <Overview />
 <PreBuiltTooling />
@@ -86,21 +89,7 @@ import PreBuiltUseCases from "/snippets/generated/google-slides/PreBuiltUseCases
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 
-## Useful links
-
-| Topic | Links | 
-| - | - | 
-| General | [Google Cloud Console](https://console.cloud.google.com/) |
-| | [Google Cloud Documentation](https://cloud.google.com/docs) |
-| Developer | [OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2) |
-| | [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server) |
-| | [OAuth 2.0 Scopes for Google APIs](https://developers.google.com/identity/protocols/oauth2/scopes) |
-| | [API Library](https://console.cloud.google.com/apis/library) |
-| | [OAuth Consent Screen Configuration](https://console.cloud.google.com/apis/credentials/consent) |
-| | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
-| | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
-| | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
-
+<UsefulLinks />
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-slides.mdx)</Note>
 
 ## Common Scopes
@@ -113,22 +102,5 @@ import PreBuiltUseCases from "/snippets/generated/google-slides/PreBuiltUseCases
 | https://www.googleapis.com/auth/presentations | See, edit, create, and delete all your Google Slides presentations |
 | https://www.googleapis.com/auth/presentations.readonly | See all your Google Slides presentations |
 
-
-## API gotchas
--   From the scopes page, make sure to select scopes based on the APIs you enabled earlier when setting up the app.
--   Under certain circumstances, Google expires a user's refresh token and the token refresh in Nango will fail. You can find a [list of reasons from Google here](https://developers.google.com/identity/protocols/oauth2#expiration), including:
-1.   The user has [revoked your app's access](https://support.google.com/accounts/answer/3466521#remove-access).
-2.  The user changed passwords and the refresh token contains Gmail scopes.
-3.  The user account has exceeded a maximum number of granted (live) refresh tokens.
-4.  The user granted [time-based access](https://developers.google.com/identity/protocols/oauth2/web-server#time-based-access) to your app and the access expired.
-5.  If an admin [set any of the services requested in your app's scopes to Restricted](https://support.google.com/a/answer/7281227#restrictaccess).
-6.  For [Google Cloud Platform APIs](https://developers.google.com/identity/protocols/oauth2#gcp) - the session length set by the admin could have been exceeded.
-7.  In "Testing" mode with an external user type, refresh tokens expire in 7 days unless only basic scopes are used — userinfo.email, userinfo.profile, openid, or their [OpenID Connect equivalents](https://developers.google.com/identity/protocols/oauth2/scopes#openid-connect). You can remove this 7-day limit by switch from Testing to Production. Follow step 6 in the [Setup Guide](#setup-guide) above.
-8.  Google allows up to 100 refresh tokens per account per OAuth client ID; new tokens overwrite the oldest without warning when the limit is reached.
--   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`https://app.nango.dev` if you're testing from the Nango UI).
--   For applications using sensitive or restricted scopes, Google requires verification and a security assessment. This process can take several weeks to complete.
--   Google's OAuth consent screen has different configurations for "External" and "Internal" user types. Internal is only available for Google Workspace users and limits access to users within your organization.
--   Google implements incremental authorization, allowing you to request additional scopes over time without requiring users to re-authorize all previously granted scopes.
--   Google enforces [rate limits](https://developers.google.com/workspace/admin/reports/v1/limits) on API requests, which vary depending on the specific API being used.
-
+<ApiGotchas />
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-slides.mdx)</Note>
