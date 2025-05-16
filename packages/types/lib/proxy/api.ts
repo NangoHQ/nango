@@ -55,6 +55,11 @@ export interface RetryHeaderConfig {
     after?: string;
     remaining?: string;
     error_code?: number;
+    in_body?: {
+        path: string;
+        value?: string;
+        strategy: 'at' | 'after';
+    };
 }
 
 export enum PaginationType {

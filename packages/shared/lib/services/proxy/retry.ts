@@ -4,6 +4,7 @@ import { networkError } from '@nangohq/utils';
 
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
+import get from 'lodash-es/get.js';
 
 /**
  * Determine if we can retry or not based on the error we are receiving
@@ -79,6 +80,18 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
+    if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && proxyConfig.provider.proxy.retry.in_body) {
+        // Body configured in the providers.yaml
+        const type = proxyConfig.provider.proxy.retry.in_body.strategy;
+        const retryBody = proxyConfig.provider.proxy.retry.in_body.value;
+        const retryPath = proxyConfig.provider.proxy.retry.in_body.path;
+
+        const res = getRetryFromBody({ err, type, retryPath, retryBody: retryBody as string });
+        if (res.found) {
+            return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+        }
+    }
+
     return { retry: true, reason: reason || `status_code_${status}` };
 }
 
@@ -94,35 +107,106 @@ export function getRetryFromHeader({
     type: 'at' | 'after';
     retryHeader: string;
 }): { found: false; reason: string } | { found: true; reason: string; wait: number } {
+    const resetTimeEpoch = err.response?.headers[retryHeader] || err.response?.headers[retryHeader.toLowerCase()];
+    return parseRetryValue({ type, rawValue: resetTimeEpoch, source: 'header' });
+}
+
+/**
+ * Get possible retry and wait time from body
+ */
+export function getRetryFromBody({
+    err,
+    type,
+    retryPath,
+    retryBody
+}: {
+    err: AxiosError;
+    type: 'at' | 'after';
+    retryPath: string;
+    retryBody: string;
+}): ReturnType<typeof parseRetryValue> {
+    const responseBody = err.response?.data;
+    if (!responseBody) {
+        return { found: false, reason: 'in_body:no_response' };
+    }
+
+    const rawMessage = get(responseBody, retryPath);
+    if (!rawMessage || typeof rawMessage !== 'string') {
+        return { found: false, reason: 'in_body:path_not_found' };
+    }
+
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    const escapedTemplate = retryBody.replace('${value}', '<<<PLACEHOLDER>>>');
+    const escapedPattern = escapeRegex(escapedTemplate).replace('<<<PLACEHOLDER>>>', '(.+)');
+    const regex = new RegExp(escapedPattern);
+    const match = rawMessage.match(regex);
+
+    if (!match || !match[1]) {
+        return { found: false, reason: 'in_body:no_match' };
+    }
+
+    const extractedValue = match[1].trim();
+    const result = parseRetryValue({ type, rawValue: extractedValue, source: 'body' });
+    return {
+        ...result,
+        reason: result.found ? `in_body:${type}` : result.reason
+    };
+}
+
+/**
+ * Parses a retry value based on the specified strategy ('at' or 'after').
+ */
+function parseRetryValue({
+    type,
+    rawValue,
+    source
+}: {
+    type: 'at' | 'after';
+    rawValue: string | undefined;
+    source: 'header' | 'body';
+}): ReturnType<typeof getRetryFromHeader> {
+    const prefix = `${type}:${source}`;
+
     if (type === 'at') {
-        const resetTimeEpoch = err.response?.headers[retryHeader] || err.response?.headers[retryHeader.toLowerCase()];
-        if (!resetTimeEpoch) {
-            return { found: false, reason: 'at:no_header' };
+        if (!rawValue) {
+            return { found: false, reason: `${type}:no_${source}` };
         }
 
         const currentEpochTime = Math.floor(Date.now() / 1000);
-        const retryAtEpoch = Number(resetTimeEpoch);
+        let retryAtEpoch: number;
+
+        const numericValue = Number(rawValue);
+        if (!isNaN(numericValue)) {
+            retryAtEpoch = numericValue;
+        } else {
+            const dateValue = new Date(rawValue).getTime();
+            if (isNaN(dateValue)) {
+                return { found: false, reason: `${prefix}_invalid_date` };
+            }
+            retryAtEpoch = Math.floor(dateValue / 1000);
+        }
 
         if (retryAtEpoch <= currentEpochTime) {
             return { found: false, reason: 'at:invalid_wait' };
         }
 
-        // TODO: handle non-seconds header
         const waitDuration = Math.ceil(retryAtEpoch - currentEpochTime);
-
-        return { found: true, reason: 'at', wait: waitDuration * 1000 };
-    } else if (type === 'after') {
-        const retryHeaderVal = err.response?.headers[retryHeader] || err.response?.headers[retryHeader.toLowerCase()];
-
-        if (!retryHeaderVal) {
-            return { found: false, reason: 'after:no_header' };
-        }
-
-        // TODO: handle non-seconds header (e.g: linear)
-        const retryAfter = Number(retryHeaderVal);
-
-        return { found: true, reason: 'after', wait: retryAfter * 1000 };
+        return { found: true, reason: type, wait: waitDuration * 1000 };
     }
 
-    return { found: false, reason: 'no_header_configured' };
+    if (type === 'after') {
+        if (!rawValue) {
+            return { found: false, reason: `${type}:no_${source}` };
+        }
+
+        const retryAfter = Number(rawValue);
+        if (isNaN(retryAfter)) {
+            return { found: false, reason: `${prefix}_invalid_number` };
+        }
+
+        return { found: true, reason: type, wait: retryAfter * 1000 };
+    }
+
+    return { found: false, reason: `unknown_type:${type}` };
 }
