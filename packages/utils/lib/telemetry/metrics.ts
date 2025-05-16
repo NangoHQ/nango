@@ -34,6 +34,8 @@ export enum Types {
 
     POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
     POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
+    PRE_CONNECTION_DELETION_SUCCESS = 'nango.preConnectionDeletion.success',
+    PRE_CONNECTION_DELETION_FAILURE = 'nango.preConnectionDeletion.failure',
 
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
