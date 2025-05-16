@@ -128,7 +128,9 @@ function callToolRequestHandler(
             accountId: account.id,
             connection,
             actionName: action.sync_name,
-            input: input,
+            input,
+            async: false,
+            retryMax: 3,
             logCtx
         });
 
