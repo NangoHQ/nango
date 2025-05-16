@@ -133,8 +133,6 @@ function callToolRequestHandler(
         });
 
         if (actionResponse.isOk()) {
-            span.finish();
-            await logCtx.success();
             return {
                 content: [
                     {
@@ -145,7 +143,6 @@ function callToolRequestHandler(
             };
         } else {
             span.setTag('nango.error', actionResponse.error);
-            await logCtx.failed();
             throw new Error(actionResponse.error.message);
         }
     };
