@@ -19,6 +19,7 @@ import type { NangoIntegrationData, Sync } from '../models/index.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
     ExecuteActionProps,
+    ExecuteAsyncReturn,
     ExecuteOnEventProps,
     ExecuteReturn,
     ExecuteSyncProps,
@@ -55,6 +56,7 @@ export interface RecordsServiceInterface {
 export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
+    executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
@@ -108,14 +110,18 @@ export class Orchestrator {
         connection,
         actionName,
         input,
+        retryMax,
+        async,
         logCtx
     }: {
         accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
+        retryMax: number;
+        async: boolean;
         logCtx: LogContext;
-    }): Promise<Result<T, NangoError>> {
+    }): Promise<Result<{ id: string; statusUrl: string } | { data: T }, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
             'account.id': accountId,
@@ -153,6 +159,27 @@ export class Orchestrator {
                 activityLogId: logCtx.id,
                 input: parsedInput
             };
+
+            if (async) {
+                const res = await this.client.executeActionAsync({
+                    name: executionId,
+                    group: { key: groupKey, maxConcurrency: 0 },
+                    retry: { count: 0, max: retryMax },
+                    ownerKey: `environment:${connection.environment_id}`,
+                    args
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                void logCtx.info('The action was successfully scheduled for asynchronous execution', {
+                    action: actionName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key
+                });
+                const { retryKey } = res.value;
+                return Ok({ id: retryKey, statusUrl: `/action/${retryKey}` });
+            }
+
             const actionResult = await this.client.executeAction({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency: 0 },
@@ -174,17 +201,11 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            const content = `The action was successfully run`;
-
-            void logCtx.info(content, {
-                action: actionName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key,
-                truncated_response: JSON.stringify(res.value)?.slice(0, 100)
+            void logCtx.enrichOperation({
+                meta: { truncated_response: JSON.stringify(res.value)?.slice(0, 100) }
             });
 
-            metrics.increment(metrics.Types.ACTION_SUCCESS);
-            return res as Result<T, NangoError>;
+            return Ok({ data: res.value as T });
         } catch (err) {
             let formattedError: NangoError;
             if (err instanceof NangoError) {
@@ -193,33 +214,15 @@ export class Orchestrator {
                 formattedError = new NangoError('action_failure', { error: errorToObject(err) });
             }
 
-            const content = `Action '${actionName}' failed`;
-            void logCtx.error(content, {
-                error: formattedError,
-                action: actionName,
-                connection: connection.connection_id,
-                integration: connection.provider_config_key
-            });
-            await logCtx.enrichOperation({ error: formattedError });
-
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.SYNC_CLIENT,
-                environmentId: connection.environment_id,
-                metadata: {
-                    actionName,
-                    connectionDetails: JSON.stringify(connection),
-                    input
-                }
-            });
-
-            metrics.increment(metrics.Types.ACTION_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            // only track duration when action is executed inline
+            if (!async) {
+                const endTime = Date.now();
+                const totalRunTime = (endTime - startTime) / 1000;
+                metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            }
             span.finish();
         }
     }

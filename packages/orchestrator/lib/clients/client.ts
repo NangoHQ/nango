@@ -25,7 +25,8 @@ import type {
     RecurringProps,
     ExecuteSyncProps,
     VoidReturn,
-    SchedulesReturn
+    SchedulesReturn,
+    ExecuteAsyncReturn
 } from './types.js';
 import { validateTask, validateSchedule } from './validate.js';
 import type { JsonValue } from 'type-fest';
@@ -230,6 +231,24 @@ export class OrchestratorClient {
             }
         };
         return this.immediateAndWait(schedulingProps);
+    }
+
+    public async executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps: ImmediateProps = {
+            ...rest,
+            retry: { count: props.retry?.count || 0, max: props.retry?.max || 0 },
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 15 * 60,
+                heartbeat: 5 * 60
+            },
+            args: {
+                ...args,
+                type: 'action' as const
+            }
+        };
+        return this.immediate(schedulingProps);
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
