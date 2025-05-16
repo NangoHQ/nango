@@ -6,10 +6,10 @@ import {
     connectionService,
     errorManager,
     flowService,
-    getActionsByProviderConfigKey,
     getGlobalWebhookReceiveUrl,
     getProvider,
     getProviders,
+    getSimplifiedActionsByProviderConfigKey,
     getSyncConfigsAsStandardConfig,
     getUniqueSyncsByProviderConfig
 } from '@nangohq/shared';
@@ -172,7 +172,7 @@ class ConfigController {
                 };
             });
 
-            const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
+            const actions = await getSimplifiedActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
