@@ -35,7 +35,7 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
 
     if (error || !connection) {
         res.status(400).send({
-            error: { code: 'unknown_connection', message: 'Provided connection-id and provider-config-key does not match a valid connection' }
+            error: { code: 'unknown_connection', message: 'Provided connection-id and provider-config-key do not match a valid connection' }
         });
         return;
     }
