@@ -19,6 +19,7 @@ import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
     executeAction: () => Promise.resolve({}) as any,
+    executeActionAsync: () => Promise.resolve({}) as any,
     executeWebhook: () => Promise.resolve({}) as any,
     executeOnEvent: () => Promise.resolve({}) as any,
     executeSync: () => Promise.resolve({}) as any,
@@ -27,7 +28,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     unpauseSync: () => Promise.resolve({}) as any,
     deleteSync: () => Promise.resolve({}) as any,
     updateSyncFrequency: () => Promise.resolve({}) as any,
-    searchSchedules: () => Promise.resolve({}) as any
+    searchSchedules: () => Promise.resolve({}) as any,
+    getOutput: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 

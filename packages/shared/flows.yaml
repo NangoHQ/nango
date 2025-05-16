@@ -4767,6 +4767,410 @@ integrations:
                 page_token?: string
                 sort_by?: string
                 sort_order?: asc | desc
+    gem:
+        syncs:
+            candidates:
+                runs: every 1h
+                description: |
+                    Get all candidates from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /candidates
+                    group: Candidates
+                output: Candidate
+            job-posts:
+                runs: every 1h
+                description: |
+                    Get a list of all job posts from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /job-posts
+                    group: Job Posts
+                output: JobPost
+            job-stages:
+                runs: every 1h
+                description: |
+                    Get a list of all job stages from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /job-stages
+                    group: Job Stages
+                output: JobStage
+            users:
+                runs: every 1h
+                description: |
+                    Get a list of all users from Gem
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                output: TeamMemberUser
+            locations:
+                runs: every 1h
+                description: |
+                    Get a list of all locations from Gem ATS
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /locations
+                    group: Locations
+                output: Location
+            applications:
+                runs: every 1h
+                description: |
+                    Get a list of all applications from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /applications
+                    group: Applications
+                output: Application
+            jobs:
+                runs: every 1h
+                description: |
+                    Get a list of all jobs from Gem ATS
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /jobs
+                    group: Jobs
+                output: Job
+        actions:
+            create-candidate:
+                description: Create a new candidate in Gem
+                endpoint:
+                    method: POST
+                    path: /candidates
+                    group: Candidates
+                input: CreateCandidateInput
+                output: CreateCandidateOutput
+            upload-resume:
+                description: >-
+                    Upload a resume for a candidate. Allowed formats are .pdf, .doc, or
+                    .docx. The file size must not exceed 10MB.
+                endpoint:
+                    method: POST
+                    path: /candidate-upload-resume
+                    group: Candidates
+                input: UploadResumeInput
+                output: UploadResumeResponse
+            create-note:
+                description: Create a note for a candidate
+                endpoint:
+                    method: POST
+                    path: /candidate-notes
+                    group: Candidates
+                input: CreateNoteParams
+                output: Note
+            update-application:
+                description: Update an application's source
+                endpoint:
+                    method: PATCH
+                    path: /application
+                    group: Applications
+                input: UpdateApplicationInput
+                output: Application
+        models:
+            CreateCandidateInput:
+                created_by: string
+                first_name: string | null
+                last_name: string | null
+                nickname: string | null
+                emails: Email[] | null
+                linked_in_handle: string | null
+                title: string | null
+                company: string | null
+                location: string | null
+                school: string | null
+                education_info: EducationInfo[] | null
+                work_info: WorkInfo[] | null
+                profile_urls: string[] | null
+                custom_fields: CustomFieldCandidateInput[] | null
+                phone_number: string | null
+                project_ids: string[] | null
+                sourced_from: string | null
+                autofill: boolean
+            UpdateApplicationInput:
+                source_id: string
+                application_id: string
+            UploadResumeInput:
+                candidate_id: string
+                user_id: string
+                resume_file: string
+            UploadResumeResponse:
+                id: string
+                candidate_id: string
+                created_at: number
+                user_id: string
+                filename: string
+                download_url: string
+            CreateNoteParams:
+                user_id: string
+                body: string
+                visibility: private | public
+                candidate_id: string
+            Note:
+                id: string
+                created_at: string
+                body: string
+                user:
+                    id: string
+                    name: string
+                    first_name: string
+                    last_name: string
+                    employee_id: string
+                private: boolean
+                visibility: public | private
+            Email:
+                email_address: string
+                is_primary: boolean
+            EducationInfo:
+                school?: string | null
+                parsed_university: string | null
+                parsed_school: string | null
+                start_date: string | null
+                end_date: string | null
+                field_of_study: string | null
+                parsed_major_1: string | null
+                parsed_major_2: string | null
+                degree: string | null
+            WorkInfo:
+                company: string | null
+                title: string | null
+                work_start_date: string | null
+                work_end_date: string | null
+                is_current: boolean | null
+            CustomFieldCandidateInput:
+                custom_field_id: string
+                value: string
+            CustomFieldCandidateOutput:
+                id: string
+                name: string
+                scope: string
+                project_id?: string
+                value: any
+                value_type: string
+                value_option_ids?: string[]
+                custom_field_category?: string
+                custom_field_value?: any
+            Candidate:
+                id: string
+                first_name: string
+                last_name: string
+                company: string | null
+                title: string | null
+                attachments: File[]
+                phone_numbers: PhoneNumber[]
+                email_addresses: EmailAddress[]
+                social_media_addresses: SocialMediaAddress[]
+                tags: string[]
+                educations: Education[]
+                employments: GemWork[]
+                linked_user_ids: string[]
+                created_at: string
+                updated_at: string | null
+                last_activity: string | null
+                deleted_at: string | null
+                is_private: boolean
+                applications: Application[]
+                application_ids: string[]
+            CreateCandidateOutput:
+                id: string
+                created_at: number
+                created_by: string
+                last_updated_at: number | null
+                candidate_greenhouse_id: string | null
+                first_name: string | null
+                last_name: string | null
+                nickname: string | null
+                weblink: string
+                emails: Email[]
+                phone_number: string | null
+                location: string | null
+                linked_in_handle: string | null
+                profiles: Profile[]
+                company: string | null
+                title: string | null
+                school: string | null
+                education_info: EducationInfo[]
+                work_info: WorkInfo[]
+                custom_fields: CustomFieldCandidateOutput[]
+                due_date: DueDate | null
+                project_ids: string[] | null
+                sourced_from: string | null
+                gem_source: string | null
+            Profile:
+                network: string
+                url: string
+                username: string
+            DueDate:
+                date: string
+                user_id: string
+                note: string | null
+            File:
+                filename: string
+                url: string
+                type: string
+                created_at: string
+            PhoneNumber:
+                type: string
+                value: string
+            EmailAddress:
+                type: string
+                value: string
+                is_primary: boolean
+            SocialMediaAddress:
+                value: string
+            Education:
+                id: string
+                school_name: string
+                degree: string
+                discipline: string
+                start_date: string
+                end_date: string
+            GemWork:
+                id: string
+                company_name: string
+                title: string
+                start_date: string
+                end_date: string
+            JobPost:
+                id: string
+                title: string
+                active: boolean
+                live: boolean
+                first_published_at: string | null
+                job_id: string
+                content: string
+                created_at: string
+                updated_at: string
+                deleted_at: string | null
+            JobStage:
+                id: string
+                name: string
+                created_at: string
+                updated_at: string
+                deleted_at: string | null
+                active: boolean
+                job_id: string
+                priority: number
+                interviews: InterviewDefinition[]
+            InterviewDefinition:
+                id: string
+                name: string
+                schedulable: boolean
+                estimated_minutes: number
+                default_interviewer_users: UserLite[]
+                interview_kit: InterviewKit
+                deleted_at: string | null
+                job_stage_interview_item_id: string
+            InterviewKit:
+                id: string
+                content: string
+                questions: QuestionLite[]
+            QuestionLite:
+                id: string
+                name: string
+            UserLite:
+                id: string
+                name: string
+                first_name: string
+                last_name: string
+                employee_id: string
+            User:
+                id: string
+                name: string
+                first_name: string
+                last_name: string
+                employee_id: string
+                primary_email_address: string
+                updated_at: string
+                created_at: string
+                disabled: boolean
+                site_admin: boolean
+                emails: string[]
+                linked_candidate_ids: string[]
+                offices: Location[]
+                departments: Department[]
+                deleted_at: string | null
+            Location:
+                id: string
+                name: string
+                location:
+                    name: string
+                parent_id: string
+                child_ids: string[]
+                parent_office_external_id: string
+                child_office_external_ids: string[]
+                deleted_at: string
+            Department:
+                id: string
+                name: string
+                parent_id: string
+                child_ids: string[]
+                parent_department_external_id: string
+                child_department_external_ids: string[]
+                deleted_at: string
+            Application:
+                id: string
+                candidate_id: string
+                applied_at: string
+                rejected_at: string | null
+                last_activity_at: string
+                source: ApplicationSource
+                credited_to: string
+                rejection_reason: RejectionReason | null
+                jobs: JobLite[]
+                job_post_id: string
+                status: string
+                current_stage: JobStageLite
+                deleted_at: string | null
+            ApplicationSource:
+                id: string
+                public_name: string
+            RejectionReason:
+                id: string
+                name: string
+                type: RejectionReasonType
+            RejectionReasonType:
+                id: string
+                name: string
+            JobStageLite:
+                id: string
+                name: string
+            JobLite:
+                id: string
+                name: string
+            Job:
+                id: string
+                name: string
+                requisition_id: string
+                confidential: boolean
+                status: string
+                created_at: string
+                opened_at: string
+                closed_at: string | null
+                deleted_at: string | null
+                updated_at: string
+                is_template: boolean
+                departments: Department[]
+                offices: Location[]
+                hiring_team: JobHiringTeam
+            JobHiringTeam:
+                hiring_managers: UserLite[] | null
+                recruiters: UserLite[] | null
+                coordinators: UserLite[] | null
+                sourcers: UserLite[] | null
+            TeamMemberUser:
+                id: string
+                name: string
+                email: string
     github:
         syncs:
             issues:

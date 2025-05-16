@@ -5182,6 +5182,8 @@ hubspot:
     post_connection_script: hubspotPostConnection
     webhook_routing_script: hubspotWebhookRouting
     proxy:
+        retry:
+            remaining: 'x-hubspot-ratelimit-remaining'
         base_url: https://api.hubapi.com
         decompress: true
         paginate:
@@ -5909,8 +5911,7 @@ lever:
     token_url: https://auth.lever.co/oauth/token
     authorization_params:
         response_type: code
-        prompt: consent
-        audience: https://api.lever.co/v1
+        audience: https://api.lever.co/v1/
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
