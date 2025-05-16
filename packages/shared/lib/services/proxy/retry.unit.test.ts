@@ -1,7 +1,7 @@
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
-import { getProxyRetryFromErr, getRetryFromHeader } from './retry.js';
+import { getProxyRetryFromErr, getRetryFromHeader, getRetryFromBody } from './retry.js';
 import { getDefaultProxy } from './utils.test.js';
 import type { Merge } from 'type-fest';
 
@@ -128,5 +128,122 @@ describe('getProxyRetryFromErr', () => {
                 expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
             });
         });
+    });
+});
+
+describe('getRetryFromBody', () => {
+    it('should retry based on body (at strategy)', () => {
+        const futureDate = new Date(Date.now() + 2000).toISOString();
+        const body = {
+            error: {
+                message: `User-rate limit exceeded.  Retry after ${futureDate}`
+            }
+        };
+
+        const mockAxiosError = getDefaultError({
+            response: {
+                status: 429,
+                data: body
+            }
+        });
+
+        const res = getRetryFromBody({
+            err: mockAxiosError,
+            retryPath: 'error.message',
+            retryBody: 'User-rate limit exceeded.  Retry after ${value}',
+            type: 'at'
+        });
+
+        expect(res.found).toBe(true);
+        expect(res.reason).toBe('in_body:at');
+        if (res.found) {
+            expect(res.wait).toBeGreaterThanOrEqual(1000);
+            expect(res.wait).toBeLessThanOrEqual(2000);
+        }
+    });
+
+    it('should retry based on body (at strategy) with epoch timestamp', () => {
+        const futureTime = Math.floor(Date.now() / 1000) + 2;
+        const body = {
+            error: {
+                message: `Rate limited. Try again at ${futureTime}`
+            }
+        };
+
+        const mockAxiosError = getDefaultError({
+            response: {
+                status: 429,
+                data: body
+            }
+        });
+
+        const res = getRetryFromBody({
+            err: mockAxiosError,
+            retryPath: 'error.message',
+            retryBody: 'Rate limited. Try again at ${value}',
+            type: 'at'
+        });
+
+        expect(res.found).toBe(true);
+        expect(res.reason).toBe('in_body:at');
+        if (res.found) {
+            const tolerance = 100;
+            expect(res.wait).toBeGreaterThanOrEqual(2000 - tolerance);
+            expect(res.wait).toBeLessThanOrEqual(2000 + tolerance);
+        }
+    });
+
+    it('should retry based on body (after strategy)', () => {
+        const seconds = 3;
+        const body = {
+            error: {
+                message: `User-rate limit exceeded.  Retry after ${seconds} seconds`
+            }
+        };
+
+        const mockAxiosError = getDefaultError({
+            response: {
+                status: 429,
+                data: body
+            }
+        });
+
+        const res = getRetryFromBody({
+            err: mockAxiosError,
+            retryPath: 'error.message',
+            retryBody: 'User-rate limit exceeded.  Retry after ${value} seconds',
+            type: 'after'
+        });
+
+        expect(res.found).toBe(true);
+        expect(res.reason).toBe('in_body:after');
+        if (res.found) {
+            expect(res.wait).toBeGreaterThanOrEqual(3000);
+            expect(res.wait).toBeLessThanOrEqual(3100);
+        }
+    });
+
+    it('should not retry if value does not match', () => {
+        const body = {
+            error: {
+                message: `Something else entirely`
+            }
+        };
+
+        const mockAxiosError = getDefaultError({
+            response: {
+                status: 429,
+                data: body
+            }
+        });
+
+        const res = getRetryFromBody({
+            err: mockAxiosError,
+            retryPath: 'error.message',
+            retryBody: 'User-rate limit exceeded.  Retry after ${value}',
+            type: 'at'
+        });
+
+        expect(res).toStrictEqual({ found: false, reason: 'in_body:no_match' });
     });
 });
