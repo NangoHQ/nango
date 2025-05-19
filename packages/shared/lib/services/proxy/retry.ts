@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 
 import { networkError } from '@nangohq/utils';
 
+import type { RetryReason } from './utils';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
 
@@ -9,11 +10,7 @@ import type { AxiosError } from 'axios';
  * Determine if we can retry or not based on the error we are receiving
  * The strategy has been laid out carefully, be careful on modifying anything here.
  */
-export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxyConfig?: ApplicationConstructedProxyConfiguration | undefined }): {
-    retry: boolean;
-    reason: string;
-    wait?: number;
-} {
+export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxyConfig?: ApplicationConstructedProxyConfiguration | undefined }): RetryReason {
     if (!isAxiosError(err)) {
         return { retry: false, reason: 'unknown_error' };
     }
@@ -30,7 +27,13 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
 
     // We don't return straight away because headers are more important than status code
     // If we find headers we will be able to adapt the wait time but we won't look for headers if it's not those status code
-    let isRetryable = status >= 500 || status === 429;
+    let isRetryable =
+        // Maybe: temporary error
+        status >= 500 ||
+        // Rate limit
+        status === 429 ||
+        // Maybe: token was refreshed
+        status === 401;
     let reason: string | undefined;
 
     if (!isRetryable && proxyConfig.retryOn) {
