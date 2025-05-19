@@ -939,7 +939,7 @@ export class Nango {
      * @param props - The properties of the action to retrieve the result for (id and/or statusUrl)
      * @returns A promise that resolves with the result of the action
      */
-    public async getAsyncActionResult<Out = object>(props: Partial<Awaited<ReturnType<Nango['triggerActionAsync']>>>): Promise<Out> {
+    public async getAsyncActionResult<Out = unknown>(props: Partial<Awaited<ReturnType<Nango['triggerActionAsync']>>>): Promise<Out> {
         if (!props.id && !props.statusUrl) {
             throw new Error('Either id or statusUrl must be provided');
         }
