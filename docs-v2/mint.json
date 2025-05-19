@@ -205,7 +205,8 @@
                     "group": "Actions",
                     "pages": [
                         "guides/actions/overview",
-                        "guides/actions/use-an-action"
+                        "guides/actions/use-an-action",
+                        "guides/actions/mcp-servers"
                     ]
                 },
                 "guides/proxy-requests",

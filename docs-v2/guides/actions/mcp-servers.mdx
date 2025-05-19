@@ -1,0 +1,81 @@
+---
+title: 'MCP Server'
+sidebarTitle: 'MCP Server'
+description: 'Your Nango actions as tools for LLMs'
+---
+
+# MCP Server
+
+The Nango MCP server allows [actions](/guides/actions/overview) to be used as tools by LLMs.
+
+## What is MCP?
+
+The [Model Context Protocol](https://modelcontextprotocol.io/introduction) is an open protocol that standardizes how applications provide context to LLMs. It follows a client-server architecture where:
+
+- **MCP Hosts/Clients**: Applications like Claude Desktop or AI tools that access data through MCP
+- **MCP Servers**: Programs that expose specific capabilities through the standardized protocol
+- **Data Sources**: External systems and services that MCP servers can connect to (in Nango's case, API integrations)
+
+Nango's MCP server implementation allows your LLMs to interact with external APIs via your existing Nango connections and actions.
+
+## How it works
+
+MCP servers expose your Nango actions as tools that can be invoked by LLM clients. When an LLM client connects to your MCP server:
+
+1. The server authenticates the request using your secret key
+2. It identifies available actions based on the provided connection ID and provider config key
+3. It exposes these actions as tools for the LLM to invoke
+4. When the LLM invokes a tool, the MCP server executes the corresponding Nango action
+
+## Connecting to the Nango MCP server
+
+To connect an LLM client to your MCP server, you'll need:
+
+- A Nango secret key for authentication
+- A valid connection ID that determines available actions
+- An MCP client that supports the Streamable HTTP transport
+
+The Nango MCP server is exposed at `https://api.nango.dev/mcp`.
+
+Here's an example using [Vercel's AI SDK](https://ai-sdk.dev/docs/introduction) with the MCP client:
+```typescript
+import { openai } from "@ai-sdk/openai";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { experimental_createMCPClient, generateText } from "ai";
+
+const mcpClient = await experimental_createMCPClient({
+  transport: new StreamableHTTPClientTransport(new URL('https://api.nango.dev/mcp'), {
+    requestInit: {
+      headers: {
+        'Authorization': 'Bearer <secret-key>',
+        'connection-id': '<connection-id>',
+        'provider-config-key': '<provider-config-key>'
+      }
+    },
+  }),
+});
+
+const { text, toolCalls } = await generateText({
+  model: openai('gpt-4o-mini'),
+  tools: await mcpClient.tools(),
+  maxSteps: 5,
+  messages: [
+    {
+      role: 'user',
+      content: 'Schedule a meeting with John Doe',
+    },
+  ],
+});
+```
+
+## Authentication
+
+Requests to the MCP server must include the following headers:
+
+- `Authorization`: Bearer token with your Nango secret key
+- `connection-id`: The connection ID that determines available actions
+- `provider-config-key`: The provider unique identifier
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip> 
