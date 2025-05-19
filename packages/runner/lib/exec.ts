@@ -11,6 +11,7 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
+import * as NangoScript from '@nangohq/runner-sdk/dist/scripts.js';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
@@ -75,6 +76,8 @@ export async function exec({
                     switch (moduleName) {
                         case 'url':
                             return url;
+                        case 'nango':
+                            return NangoScript;
                         case 'crypto':
                             return crypto;
                         case 'zod':
