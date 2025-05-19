@@ -80,15 +80,19 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
-    if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && proxyConfig.provider.proxy.retry.in_body) {
-        // Body configured in the providers.yaml
-        const type = proxyConfig.provider.proxy.retry.in_body.strategy;
-        const retryBody = proxyConfig.provider.proxy.retry.in_body.value;
-        const retryPath = proxyConfig.provider.proxy.retry.in_body.path;
+    if (proxyConfig.provider.proxy?.retry?.in_body) {
+        const { strategy: type, value: rawRegex, path: retryPath } = proxyConfig.provider.proxy.retry.in_body;
 
-        const res = getRetryFromBody({ err, type, retryPath, retryBody: retryBody as string });
+        // Convert string to RegExp if necessary
+        const retryRegex = rawRegex ? (typeof rawRegex === 'string' ? new RegExp(rawRegex) : rawRegex) : /(?:)/;
+
+        const res = getRetryFromBody({ err, type, retryPath, retryRegex });
         if (res.found) {
-            return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+            return {
+                retry: true,
+                reason: `preconfigured_${res.reason}`,
+                wait: res.wait
+            };
         }
     }
 
@@ -118,12 +122,12 @@ export function getRetryFromBody({
     err,
     type,
     retryPath,
-    retryBody
+    retryRegex
 }: {
     err: AxiosError;
     type: 'at' | 'after';
     retryPath: string;
-    retryBody: string;
+    retryRegex: RegExp;
 }): ReturnType<typeof parseRetryValue> {
     const responseBody = err.response?.data;
     if (!responseBody) {
@@ -131,16 +135,15 @@ export function getRetryFromBody({
     }
 
     const rawMessage = get(responseBody, retryPath);
-    if (!rawMessage || typeof rawMessage !== 'string') {
-        return { found: false, reason: 'in_body:path_not_found' };
+    if (!rawMessage) {
+        return { found: false, reason: 'in_body:path_missing' };
     }
 
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (typeof rawMessage !== 'string') {
+        return { found: false, reason: 'in_body:path_not_string' };
+    }
 
-    const escapedTemplate = retryBody.replace('${value}', '<<<PLACEHOLDER>>>');
-    const escapedPattern = escapeRegex(escapedTemplate).replace('<<<PLACEHOLDER>>>', '(.+)');
-    const regex = new RegExp(escapedPattern);
-    const match = rawMessage.match(regex);
+    const match = rawMessage.match(retryRegex);
 
     if (!match || !match[1]) {
         return { found: false, reason: 'in_body:no_match' };
@@ -168,11 +171,11 @@ function parseRetryValue({
 }): ReturnType<typeof getRetryFromHeader> {
     const prefix = `${type}:${source}`;
 
-    if (type === 'at') {
-        if (!rawValue) {
-            return { found: false, reason: `${type}:no_${source}` };
-        }
+    if (!rawValue) {
+        return { found: false, reason: `${type}:no_${source}` };
+    }
 
+    if (type === 'at') {
         const currentEpochTime = Math.floor(Date.now() / 1000);
         let retryAtEpoch: number;
 
@@ -188,18 +191,15 @@ function parseRetryValue({
         }
 
         if (retryAtEpoch <= currentEpochTime) {
-            return { found: false, reason: 'at:invalid_wait' };
+            return { found: false, reason: `${prefix}_invalid_wait` };
         }
-
+        // TODO: handle non-seconds header
         const waitDuration = Math.ceil(retryAtEpoch - currentEpochTime);
         return { found: true, reason: type, wait: waitDuration * 1000 };
     }
 
     if (type === 'after') {
-        if (!rawValue) {
-            return { found: false, reason: `${type}:no_${source}` };
-        }
-
+        // TODO: handle non-seconds header (e.g: linear)
         const retryAfter = Number(rawValue);
         if (isNaN(retryAfter)) {
             return { found: false, reason: `${prefix}_invalid_number` };

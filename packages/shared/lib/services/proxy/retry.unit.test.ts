@@ -39,7 +39,7 @@ describe('getProxyRetryFromErr', () => {
             });
 
             const res = getRetryFromHeader({ err: mockAxiosError, type: 'at', retryHeader: 'x-rateLimit-reset' });
-            expect(res).toStrictEqual({ found: false, reason: 'at:invalid_wait' });
+            expect(res).toStrictEqual({ found: false, reason: 'at:header_invalid_wait' });
         });
     });
 
@@ -150,7 +150,7 @@ describe('getRetryFromBody', () => {
         const res = getRetryFromBody({
             err: mockAxiosError,
             retryPath: 'error.message',
-            retryBody: 'User-rate limit exceeded.  Retry after ${value}',
+            retryRegex: /User-rate limit exceeded. {2}Retry after (.+)/,
             type: 'at'
         });
 
@@ -180,7 +180,7 @@ describe('getRetryFromBody', () => {
         const res = getRetryFromBody({
             err: mockAxiosError,
             retryPath: 'error.message',
-            retryBody: 'Rate limited. Try again at ${value}',
+            retryRegex: /Rate limited\. Try again at (.+)/,
             type: 'at'
         });
 
@@ -211,7 +211,7 @@ describe('getRetryFromBody', () => {
         const res = getRetryFromBody({
             err: mockAxiosError,
             retryPath: 'error.message',
-            retryBody: 'User-rate limit exceeded.  Retry after ${value} seconds',
+            retryRegex: /User-rate limit exceeded\. {2}Retry after (.+) seconds/,
             type: 'after'
         });
 
@@ -240,7 +240,7 @@ describe('getRetryFromBody', () => {
         const res = getRetryFromBody({
             err: mockAxiosError,
             retryPath: 'error.message',
-            retryBody: 'User-rate limit exceeded.  Retry after ${value}',
+            retryRegex: /User-rate limit exceeded\. {2}Retry after (.+)/,
             type: 'at'
         });
 
