@@ -392,10 +392,9 @@ export class DryRunService {
                     }
                 };
             }
-            console.log('---');
 
             if (options.saveResponses && stubbedMetadata) {
-                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
                 const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
                 fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
             }
