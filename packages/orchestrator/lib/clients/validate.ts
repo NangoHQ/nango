@@ -52,6 +52,7 @@ export const actionArgsSchema = z.object({
     actionName: z.string().min(1),
     activityLogId: z.string(),
     input: jsonSchema,
+    async: z.boolean().optional().default(false),
     ...commonSchemaArgsFields
 });
 export const webhookArgsSchema = z.object({
@@ -76,6 +77,7 @@ const commonSchemaFields = {
     name: z.string().min(1),
     groupKey: z.string().min(1),
     state: z.enum(taskStates),
+    retryKey: z.string().min(1).nullable(),
     retryCount: z.number().int(),
     retryMax: z.number().int(),
     ownerKey: z.string().min(1).nullable()
@@ -120,6 +122,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
+                retryKey: sync.data.retryKey,
                 ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug
             })
@@ -141,6 +144,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
                 ownerKey: syncAbort.data.ownerKey,
+                retryKey: syncAbort.data.retryKey,
                 reason: syncAbort.data.payload.reason,
                 debug: syncAbort.data.payload.debug
             })
@@ -160,7 +164,9 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 activityLogId: action.data.payload.activityLogId,
                 groupKey: action.data.groupKey,
                 ownerKey: action.data.ownerKey,
-                input: action.data.payload.input
+                retryKey: action.data.retryKey,
+                input: action.data.payload.input,
+                async: action.data.payload.async
             })
         );
     }
@@ -179,6 +185,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 activityLogId: webhook.data.payload.activityLogId,
                 groupKey: webhook.data.groupKey,
                 ownerKey: webhook.data.ownerKey,
+                retryKey: webhook.data.retryKey,
                 input: webhook.data.payload.input
             })
         );
@@ -197,6 +204,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 connection: onEvent.data.payload.connection,
                 groupKey: onEvent.data.groupKey,
                 ownerKey: onEvent.data.ownerKey,
+                retryKey: onEvent.data.retryKey,
                 fileLocation: onEvent.data.payload.fileLocation,
                 activityLogId: onEvent.data.payload.activityLogId
             })
@@ -215,6 +223,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 connection: abort.data.payload.connection,
                 groupKey: abort.data.groupKey,
                 ownerKey: abort.data.ownerKey,
+                retryKey: abort.data.retryKey,
                 reason: abort.data.payload.reason
             })
         );

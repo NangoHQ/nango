@@ -74,6 +74,7 @@ const webhookSettings: DBExternalWebhook = {
     on_auth_creation: true,
     on_auth_refresh_error: true,
     on_sync_error: true,
+    on_async_action_completion: true,
     created_at: new Date(),
     updated_at: new Date()
 };
