@@ -1,14 +1,15 @@
-import type { AxiosResponse } from 'axios';
-
 import { Nango } from '@nangohq/node';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
-import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy, PostPublicTrigger } from '@nangohq/types';
-import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+
 import { PersistClient } from './persist.js';
 import { logger } from '../logger.js';
+
 import type { Locks } from './locks.js';
+import type { ProxyConfiguration } from '@nangohq/runner-sdk';
+import type { MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -70,9 +71,12 @@ export class NangoActionRunner extends NangoActionBase {
             logger: async (log) => {
                 await this.sendLogToPersist(log);
             },
-            getConnection: async () => {
+            onError: (props) => {
+                // We just want to clear the cache and keep retrying
                 this.memoizedConnections.clear();
-
+                return props.retry;
+            },
+            getConnection: async () => {
                 // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
                 const connection = await this.getConnection(providerConfigKey, connectionId);
                 if (!connection) {
@@ -554,7 +558,6 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
  */
 export function instrumentSDK(rawNango: NangoActionBase | NangoSyncBase) {
     return new Proxy(rawNango, {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
         get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
             // Method name is not matching the allowList we don't do anything else
             if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {
