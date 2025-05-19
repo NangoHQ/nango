@@ -23,7 +23,7 @@
         "npm": ">=6.14.11"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.11.2",
+        "@modelcontextprotocol/sdk": "1.11.4",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
         "@nangohq/fleet": "file:../fleet",
