@@ -30,7 +30,13 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
 
     // We don't return straight away because headers are more important than status code
     // If we find headers we will be able to adapt the wait time but we won't look for headers if it's not those status code
-    let isRetryable = status >= 500 || status === 429;
+    let isRetryable =
+        // Maybe: temporary error
+        status >= 500 ||
+        // Rate limit
+        status === 429 ||
+        // Maybe: token was refreshed
+        status === 401;
     let reason: string | undefined;
 
     if (!isRetryable && proxyConfig.retryOn) {
