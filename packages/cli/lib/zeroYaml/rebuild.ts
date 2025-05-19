@@ -9,10 +9,10 @@ import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } 
 import type { NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'on-events'];
-const exportRegex = /^export \* from ['"](.+?)['"];$/gm;
+const exportRegex = /^.*\.\.\.require\(['"](.+)['"]\),?$/gm;
 
 export async function rebuildParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
-    const indexPath = path.join(fullPath, 'build', 'index.mjs');
+    const indexPath = path.join(fullPath, 'build', 'index.cjs');
     const indexContent = await fs.readFile(indexPath, 'utf-8');
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
@@ -31,21 +31,21 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
 
         const modulePath = path.join(fullPath, 'build', filePath);
         const moduleContent = await import(modulePath);
-        if (!moduleContent.default) {
+        if (!moduleContent.default || !moduleContent.default.default) {
             return Err(new Error(`Script should have a default export ${modulePath}`));
         }
-        if (!moduleContent.default.type || !allowed.includes(moduleContent.default.type)) {
+        if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
             return Err(new Error(`Script should be declared using utility function (createSync, createAction, etc.) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
 
-        const script = moduleContent.default as
+        const script = moduleContent.default.default as
             | CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodObject<any>>
             | CreateActionResponse<Zod.ZodAny, Zod.ZodAny>
             | CreateOnEventResponse;
 
-        const basename = path.basename(modulePath, '.mjs');
+        const basename = path.basename(modulePath, '.cjs');
         const basenameClean = basename.replaceAll(/[^a-zA-Z]/g, '');
         const split = modulePath.split('/');
         const integrationId = split[split.length - 3]!;

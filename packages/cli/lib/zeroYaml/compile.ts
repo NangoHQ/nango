@@ -12,6 +12,9 @@ import { printDebug } from '../utils.js';
 
 import type { Result } from '@nangohq/types';
 
+const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
+const exportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"];/g;
+
 const tsconfig: ts.CompilerOptions = {
     module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ESNext,
@@ -41,18 +44,52 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
     const spinner = ora({ text: 'Typechecking' }).start();
 
     try {
-        const entryPoints = await glob('**/*.ts', { cwd: fullPath, ignore: ['node_modules/**', 'dist/**', 'build/**'] });
-
-        printDebug(`Found ${entryPoints.length} files`, debug);
-
-        const typechecked = typeCheck({ entryPoints });
-        if (typechecked.isErr()) {
-            return typechecked;
+        const indexTsPath = path.join(fullPath, 'index.ts');
+        let indexContent;
+        try {
+            indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
+        } catch (err) {
+            spinner.fail();
+            console.error(`Could not read ${indexTsPath}`, err);
+            return Err('failed_to_read_index_ts');
         }
 
-        spinner.text = 'Building';
+        const entryPoints: string[] = [];
+        let match;
+        while ((match = exportRegex.exec(indexContent)) !== null) {
+            if (!match[1]) {
+                continue;
+            }
+            entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
+        }
+
+        if (entryPoints.length === 0) {
+            spinner.fail();
+            console.error("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile.");
+            return Err('no_file');
+        }
+
+        printDebug(`Found ${entryPoints.length} entry points in index.ts: ${entryPoints.join(', ')}`, debug);
+
+        // const typechecked = typeCheck({ fullPath, entryPoints });
+        // if (typechecked.isErr()) {
+        //     spinner.fail();
+        //     return typechecked;
+        // }
+
+        spinner.text = `Building ${entryPoints.length} file(s)`;
         printDebug('Building', debug);
-        await esbuild({ entryPoints });
+        for (const entryPoint of entryPoints) {
+            const entryPointFullPath = path.join(fullPath, entryPoint);
+            spinner.text = `Building ${entryPoint}`;
+            printDebug(`Building ${entryPointFullPath}`, debug);
+
+            const buildRes = await esbuild({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            if (buildRes.isErr()) {
+                spinner.fail(`Failed to build ${entryPoint}`);
+                return buildRes;
+            }
+        }
 
         spinner.text = 'Post compilation';
         printDebug('Post compilation', debug);
@@ -60,7 +97,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
     } catch (err) {
         console.error(err);
 
-        spinner.fail('Failed to compile');
+        spinner.fail();
         return Err('failed_to_compile');
     }
 
@@ -68,7 +105,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
     return Ok(true);
 }
 
-function typeCheck({ entryPoints }: { entryPoints: string[] }): Result<boolean> {
+function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
         rootNames: entryPoints,
         options: {
@@ -81,12 +118,13 @@ function typeCheck({ entryPoints }: { entryPoints: string[] }): Result<boolean> 
         return Ok(true);
     }
 
+    console.log('');
     for (const diagnostic of diagnostics) {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
         if (diagnostic.file && diagnostic.start != null) {
             const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-            const fileName = diagnostic.file.fileName;
-            console.error(chalk.red('err'), '-', `${chalk.blue(fileName)} ${chalk.yellow(`:${line + 1}:${character + 1}`)}`, `\r\n  ${message}\r\n`);
+            const fileName = diagnostic.file.fileName.replace(`${fullPath}/`, '');
+            console.error(chalk.red('err'), '-', `${chalk.blue(fileName)}${chalk.yellow(`:${line + 1}:${character + 1}`)}`, `\r\n  ${message}\r\n`);
         } else {
             console.error(message);
         }
@@ -97,18 +135,40 @@ function typeCheck({ entryPoints }: { entryPoints: string[] }): Result<boolean> 
     return Err('errors');
 }
 
-async function esbuild({ entryPoints }: { entryPoints: string[] }) {
-    await build({
-        entryPoints: entryPoints,
-        outdir: 'build',
-        bundle: false,
+async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+    // Determine the relative path from the project root to the entry point's directory
+    const relativeEntryPointDir = path.dirname(path.relative(projectRootPath, entryPoint));
+    const outfileName = path.basename(entryPoint, '.js');
+    const outfile = path.join(projectRootPath, 'build', relativeEntryPointDir, `${outfileName}.cjs`);
+
+    // Ensure the output directory exists
+    await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
+
+    const res = await build({
+        entryPoints: [entryPoint],
+        outfile: outfile,
+        bundle: true, // Bundle the file
         sourcemap: true,
         format: 'cjs',
         target: 'esnext',
         platform: 'node',
-        outbase: '.',
-        outExtension: { '.js': '.cjs' },
+        // outbase: projectRootPath, // Set outbase to project root for correct structure in build/
+        // outdir: path.join(projectRootPath, 'build'), // Output to build directory, maintaining structure
+        // outExtension: { '.js': '.cjs' }, // This is not needed when outfile is specified
         logLevel: 'error',
+        plugins: [
+            {
+                name: 'external-npm-packages',
+                setup(buildInstance) {
+                    buildInstance.onResolve({ filter: npmPackageRegex }, (args) => {
+                        if (!args.path.startsWith('.') && !path.isAbsolute(args.path)) {
+                            return { path: args.path, external: true };
+                        }
+                        return null; // let esbuild handle other paths
+                    });
+                }
+            }
+        ],
         tsconfigRaw: {
             compilerOptions: {
                 module: 'commonjs',
@@ -135,6 +195,12 @@ async function esbuild({ entryPoints }: { entryPoints: string[] }) {
             }
         }
     });
+    if (res.errors.length > 0) {
+        // esbuild already prints errors to console with logLevel: 'error'
+        return Err('failed_to_build');
+    }
+
+    return Ok(true);
 }
 
 async function postCompile({ fullPath }: { fullPath: string }) {

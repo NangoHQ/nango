@@ -65,8 +65,9 @@ export async function deploy({
 
         pkg = postData.value;
         spinnerPackage.succeed();
-    } catch {
+    } catch (err) {
         spinnerPackage.fail();
+        console.error(chalk.red('Unknown error'), err);
         return Err('failed');
     }
 
@@ -289,7 +290,7 @@ async function loadScriptJsFile({
     providerConfigKey: string;
     fullPath: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, 'build', providerConfigKey, type, `${scriptName}.mjs`);
+    const filePath = path.join(fullPath, 'build', providerConfigKey, type, `${scriptName}.cjs`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');

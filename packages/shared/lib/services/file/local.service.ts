@@ -81,8 +81,8 @@ class LocalFileService {
         };
     }
 
-    private getFullPathTsFile(integrationPath: string, scriptName: string, providerConfigKey: string, type: string): null | string {
-        const nestedFilePath = `${providerConfigKey}/${type}s/${scriptName}.ts`;
+    private getFullPathTsFile(integrationPath: string, scriptName: string, providerConfigKey: string, type: NangoProps['scriptType']): null | string {
+        const nestedFilePath = `${providerConfigKey}/${scriptTypeToPath[type]}/${scriptName}.ts`;
         const nestedPath = path.resolve(integrationPath, nestedFilePath);
 
         if (this.checkForIntegrationSourceFile(nestedFilePath, integrationPath).result) {
@@ -115,7 +115,7 @@ class LocalFileService {
         const nangoConfigFilePath = path.resolve(integrationPath, nangoConfigFile);
         const nangoConfigFileExists = this.checkForIntegrationSourceFile(nangoConfigFile, integrationPath);
 
-        const tsFilePath = this.getFullPathTsFile(integrationPath, integrationName, providerConfigKey, flowType);
+        const tsFilePath = this.getFullPathTsFile(integrationPath, integrationName, providerConfigKey, flowType as NangoProps['scriptType']);
 
         if (!tsFilePath || !nangoConfigFileExists.result) {
             errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
@@ -161,9 +161,9 @@ class LocalFileService {
         providerConfigKey: string;
     }): string {
         if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-            return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.mjs`);
+            return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.cjs`);
         } else {
-            return path.resolve(__dirname, `../nango-integrations/build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.mjs`);
+            return path.resolve(__dirname, `../nango-integrations/build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.cjs`);
         }
     }
 }

@@ -56,7 +56,7 @@ export async function exec({
     })();
     `;
 
-    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.mjs`;
+    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.cjs`;
 
     return await tracer.trace<Promise<RunnerOutput>>('nango.runner.exec', async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
