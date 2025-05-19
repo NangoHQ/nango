@@ -71,11 +71,11 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 
         printDebug(`Found ${entryPoints.length} entry points in index.ts: ${entryPoints.join(', ')}`, debug);
 
-        // const typechecked = typeCheck({ fullPath, entryPoints });
-        // if (typechecked.isErr()) {
-        //     spinner.fail();
-        //     return typechecked;
-        // }
+        const typechecked = typeCheck({ fullPath, entryPoints });
+        if (typechecked.isErr()) {
+            spinner.fail();
+            return typechecked;
+        }
 
         spinner.text = `Building ${entryPoints.length} file(s)`;
         printDebug('Building', debug);
@@ -107,7 +107,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
-        rootNames: entryPoints,
+        rootNames: entryPoints.map((file) => file.replace('.js', '.ts')),
         options: {
             ...tsconfig
         }

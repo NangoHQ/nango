@@ -14,9 +14,14 @@
     },
     "devDependencies": {
         "@nangohq/types": "0.58.7",
+        "@rollup/plugin-commonjs": "28.0.3",
+        "@rollup/plugin-node-resolve": "16.0.1",
+        "@rollup/plugin-typescript": "12.1.2",
         "@types/json-schema": "7.0.15",
         "axios": "1.9.0",
         "json-schema": "0.4.0",
+        "rollup": "^4.41.0",
+        "rollup-plugin-dts": "^6.2.1",
         "vitest": "3.1.2",
         "zod": "3.24.2"
     },

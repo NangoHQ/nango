@@ -82,3 +82,7 @@ export function createOnEvent<TMetadata extends Zod.ZodObject<any> | undefined =
 ): CreateOnEventResponse<TMetadata> {
     return { type: 'on-event', params };
 }
+
+export type { ActionError } from './errors.js';
+export type { NangoActionBase as NangoAction } from './action.js';
+export type { NangoSyncBase as NangoSync } from './sync.js';

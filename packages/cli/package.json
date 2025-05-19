@@ -4,7 +4,7 @@
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
-        "nango": "dist/index.js"
+        "nango": "./dist/index.js"
     },
     "main": "./cjs/index.cjs",
     "types": "./cjs/index.d.ts",
