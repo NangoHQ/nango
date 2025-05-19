@@ -5,6 +5,7 @@ import multer from 'multer';
 
 import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
+import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -37,6 +38,7 @@ import { postPublicIntegration } from './controllers/integrations/postIntegratio
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
+import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -217,6 +219,10 @@ publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(s
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
+publicAPI.use('/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/mcp').post(apiAuth, postMcp);
+publicAPI.route('/mcp').get(apiAuth, getMcp);
+
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 // @deprecated use /scripts/configs
@@ -227,6 +233,7 @@ publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);

@@ -11,6 +11,7 @@ import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as getOutputHandler } from './routes/v1/tasks/taskId/getOutput.js';
 import { routeHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/postHeartbeat.js';
+import { routeHandler as getRetryOutputHandler } from './routes/v1/retries/retryKey/getOutput.js';
 import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
@@ -42,6 +43,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, getOutputHandler(scheduler, eventEmmiter));
     createRoute(server, postHeartbeatHandler(scheduler));
     createRoute(server, postDequeueHandler(scheduler, eventEmmiter));
+    createRoute(server, getRetryOutputHandler(scheduler));
 
     server.use((err: any, _req: Request, res: Response<ApiError<'invalid_json' | 'internal_error' | 'payload_too_big'>>, _next: NextFunction) => {
         if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {

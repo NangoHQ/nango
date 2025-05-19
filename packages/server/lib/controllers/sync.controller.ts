@@ -157,6 +157,9 @@ class SyncController {
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
+        const async = req.get('X-Async') === 'true';
+        const retryMaxHeaderName = 'X-Max-Retries';
+        const retryMax = parseInt(req.get(retryMaxHeaderName) || '0');
         let logCtx: LogContextOrigin | undefined;
         try {
             if (!action_name || typeof action_name !== 'string') {
@@ -175,6 +178,13 @@ class SyncController {
 
             if (!providerConfigKey) {
                 res.status(400).send({ error: 'Missing provider config key' });
+
+                span.finish();
+                return;
+            }
+
+            if (async && (retryMax < 0 || retryMax > 5)) {
+                res.status(400).send({ error: `${retryMaxHeaderName} must be between 0 and 5` });
 
                 span.finish();
                 return;
@@ -223,13 +233,19 @@ class SyncController {
                 connection,
                 actionName: action_name,
                 input,
+                async,
+                retryMax,
                 logCtx
             });
 
             if (actionResponse.isOk()) {
                 span.finish();
-                await logCtx.success();
-                res.status(200).json(actionResponse.value);
+
+                if ('statusUrl' in actionResponse.value) {
+                    res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
+                } else {
+                    res.status(200).json(actionResponse.value.data);
+                }
 
                 if (plan) {
                     void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
@@ -240,19 +256,7 @@ class SyncController {
                 span.setTag('nango.error', actionResponse.error);
                 await logCtx.failed();
 
-                if (actionResponse.error.type === 'script_http_error') {
-                    res.status(424).json({
-                        error: {
-                            payload: actionResponse.error.payload,
-                            code: actionResponse.error.type,
-                            ...(actionResponse.error.additional_properties && 'upstream_response' in actionResponse.error.additional_properties
-                                ? { upstream: actionResponse.error.additional_properties['upstream_response'] }
-                                : {})
-                        }
-                    });
-                } else {
-                    errorManager.errResFromNangoErr(res, actionResponse.error);
-                }
+                errorManager.errResFromNangoErr(res, actionResponse.error);
 
                 span.finish();
                 return;

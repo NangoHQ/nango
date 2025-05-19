@@ -43,7 +43,17 @@ class ErrorManager {
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
             logger.error(`Response error`, errorToObject(err));
-            if (!err.message) {
+            if (err.type === 'script_http_error') {
+                res.status(424).json({
+                    error: {
+                        payload: err.payload,
+                        code: err.type,
+                        ...(err.additional_properties && 'upstream_response' in err.additional_properties
+                            ? { upstream: err.additional_properties['upstream_response'] }
+                            : {})
+                    }
+                });
+            } else if (!err.message) {
                 res.status(err.status || 500).send({
                     error: { code: err.type || 'unknown_error', payload: err.payload, additional_properties: err.additional_properties }
                 });
