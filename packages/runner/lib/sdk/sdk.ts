@@ -72,8 +72,10 @@ export class NangoActionRunner extends NangoActionBase {
                 await this.sendLogToPersist(log);
             },
             onError: (props) => {
-                // We just want to clear the cache and keep retrying
-                this.memoizedConnections.clear();
+                if (props.retry.reason === 'status_code_401') {
+                    // We just want to clear the cache in case credentials have changed and keep retrying
+                    this.memoizedConnections.clear();
+                }
                 return props.retry;
             },
             getConnection: async () => {
