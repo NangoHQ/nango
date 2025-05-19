@@ -27,17 +27,22 @@ MCP servers expose your Nango actions as tools that can be invoked by LLM client
 3. It exposes these actions as tools for the LLM to invoke
 4. When the LLM invokes a tool, the MCP server executes the corresponding Nango action
 
+## Authentication
+
+Requests to the MCP server must include the following headers:
+
+- `Authorization`: Bearer token with your Nango secret key
+- `connection-id`: The connection ID that determines available actions
+- `provider-config-key`: The provider unique identifier
+
 ## Connecting to the Nango MCP server
 
-To connect an LLM client to your MCP server, you'll need:
+The Nango MCP server is exposed at `https://api.nango.dev/mcp` and supports the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http). The **HTTP+SSE** transport is **NOT** supported, as it's being deprecated.
 
-- A Nango secret key for authentication
-- A valid connection ID that determines available actions
-- An MCP client that supports the Streamable HTTP transport
+### Programmatically with the Vercel AI SDK
 
-The Nango MCP server is exposed at `https://api.nango.dev/mcp`.
 
-Here's an example using [Vercel's AI SDK](https://ai-sdk.dev/docs/introduction) with the MCP client:
+Here's an example of connecting to the Nango MCP server using [Vercel's AI SDK](https://ai-sdk.dev/docs/introduction):
 ```typescript
 import { openai } from "@ai-sdk/openai";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -57,7 +62,7 @@ const mcpClient = await experimental_createMCPClient({
 
 const { text, toolCalls } = await generateText({
   model: openai('gpt-4o-mini'),
-  tools: await mcpClient.tools(),
+  tools: await mcpClient.tools(), // You can add tools from multiple connections
   maxSteps: 5,
   messages: [
     {
@@ -68,13 +73,51 @@ const { text, toolCalls } = await generateText({
 });
 ```
 
-## Authentication
+### Claude for Desktop
 
-Requests to the MCP server must include the following headers:
+A good way to manually test the MCP server is to use [Claude Desktop](https://claude.ai/download) paired with the [mcp-remote](https://www.npmjs.com/package/mcp-remote) npm package.
 
-- `Authorization`: Bearer token with your Nango secret key
-- `connection-id`: The connection ID that determines available actions
-- `provider-config-key`: The provider unique identifier
+Claude Desktop originally only supports the [sdio](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#stdio) transport, but the `mcp-remote` package allows you to proxy requests to the MCP server over the Streamable HTTP transport.
+
+1. Install [Claude Desktop](https://claude.ai/download)
+2. Open `~/Library/Application Support/Claude/claude_desktop_config.json` (MacOS) or `%APPDATA%/Claude/claude_desktop_config.json` (Windows) in a code editor and add your desired MCP server connections using [mcp-remote](https://www.npmjs.com/package/mcp-remote). Eg:
+    ```json
+    {
+      "mcpServers": {
+        "nango-google-drive": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote",
+            "https://api.nango.dev/mcp",
+            "--header",
+            "Authorization:Bearer <secret-key>",
+            "--header",
+            "provider-config-key:google-drive",
+            "--header",
+            "connection-id:<connection-id>"
+          ]
+        },
+        "nango-slack": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote",
+            "https://api.nango.dev/mcp",
+            "--header",
+            "Authorization:Bearer <secret-key>",
+            "--header",
+            "provider-config-key:slack",
+            "--header",
+            "connection-id:<connection-id>"
+          ]
+        }
+      }
+    }
+    ```
+    > Avoid modifying the spacing on the headers as `mcp-remote` is sensitive to it.
+3. Restart Claude Desktop to apply the changes.
+4. Claude should now be able to list and execute actions from the connections you added to the config file.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
