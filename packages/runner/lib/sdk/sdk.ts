@@ -71,6 +71,13 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             logger: async (log) => {
                 await this.sendLogToPersist(log);
             },
+            onError: (props) => {
+                if (props.retry.reason === 'status_code_401') {
+                    // We just want to clear the cache in case credentials have changed and keep retrying
+                    this.memoizedConnections.clear();
+                }
+                return props.retry;
+            },
             getConnection: async () => {
                 // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
                 const connection = await this.getConnection(providerConfigKey, connectionId);
