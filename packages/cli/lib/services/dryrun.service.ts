@@ -379,7 +379,8 @@ export class DryRunService {
                                 providerConfigKey,
                                 connectionId: nangoConnection.connection_id,
                                 syncName,
-                                syncVariant
+                                syncVariant,
+                                hasStubbedMetadata: Boolean(stubbedMetadata)
                             }),
                         onRejected: (error: unknown) =>
                             responseSaver.onAxiosRequestRejected({
@@ -406,7 +407,6 @@ export class DryRunService {
                 input: normalizedInput,
                 stubbedMetadata: stubbedMetadata
             });
-            console.log('---');
 
             if (results.error) {
                 const err = results.error;
