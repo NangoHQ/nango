@@ -1535,8 +1535,81 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
     <ResponseField name="actionName" type="string" required>
         The name of the action to trigger.
     </ResponseField>
-    <ResponseField name="input" type="unknown" required>
+    <ResponseField name="input" type="unknown">
         The necessary input for your action's `runAction` function.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "your-properties": "The data returned by the action"
+}
+```
+</Expandable>
+
+### Trigger an action asynchronously
+
+Triggers an action asynchronously for a connection. This allows you to start an action and retrieve the results later.
+
+```js
+const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="connectionId" type="string" required>
+        The connection ID.
+    </ResponseField>
+    <ResponseField name="actionName" type="string" required>
+        The name of the action to trigger.
+    </ResponseField>
+    <ResponseField name="input" type="unknown">
+        The necessary input for your action's `runAction` function.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "id": "action_123456",
+    "statusUrl": "/action/action_123456"
+}
+```
+</Expandable>
+
+### Get async action result
+
+Retrieves the result of an asynchronous action.
+
+```js
+// Using the id
+const result = await nango.getAsyncActionResult({ id: 'action_123456' });
+
+// OR using the statusUrl
+const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123456' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="id" type="string">
+                The ID of the action to retrieve the result for.
+            </ResponseField>
+            <ResponseField name="statusUrl" type="string">
+                The URL where the result can be retrieved.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 

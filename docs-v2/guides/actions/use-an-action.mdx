@@ -18,7 +18,7 @@ Select your integration in the _Integrations_ tab, and navigate to the _Endpoint
 Your use case is not covered by the available pre-built integrations? Use [custom integrations](/guides/custom-integrations/overview).
 </Tip>
 
-# Trigger an action
+# Synchronous action
 
 Actions can take inputs, and they return a result synchronously. Trigger actions using the backend SDK ([reference](/reference/sdks/node#trigger-an-action)) or API ([reference](/reference/api/action/trigger)):
 
@@ -53,11 +53,141 @@ const result = await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', 
  If you consume the API (vs. the SDK), you can use the standard endpoint (above) or a unique generated endpoint described in the _Endpoints_ tab of your integration in the Nango UI. The generated endpoint documents the specific parameters & responses of each action.
 </Tip>
 
+# Asynchronous action
+
+Some operations are better handled asynchronously. Nango supports triggering actions asynchronously, where the request returns immediately with a status URL that you can poll for completion.
+
+<Note>
+Execution timing for asynchronous actions is not guaranteed. Actions may be queued based on system load and internal constraints. Design your implementation to handle variable execution delays.
+</Note>
+
+Trigger asynchronous actions using the backend SDK ([reference](/reference/sdks/node#trigger-an-action-asynchronously)) or API ([reference](/reference/api/action/trigger)):
+
+## Triggering an asynchronous action
+
+Use the same endpoints as synchronous actions, but add the `X-Async: true` header to your request:
+
+<Tabs>
+
+<Tab title="cURL (standard endpoint)">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/action/trigger \
+  --header 'Authorization: Bearer <PROJECT-SECRET-KEY>' \
+  --header 'Connection-Id: <string>' \
+  --header 'Provider-Config-Key: <string>' \
+  --header 'X-Async: true' \
+  --data '{ "action_name": "<string>", "input": <json> }'
+```
+</Tab>
+
+<Tab title="Node SDK">
+
+```ts
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
+
+// Trigger an asynchronous action
+const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION-ID>', '<ACTION-NAME>', jsonInput);
+
+// Later, retrieve the result
+try {
+  const result = await nango.getAsyncActionResult({ id });
+  ...
+} catch (error) {
+  // handle error
+}
+```
+</Tab>
+
+</Tabs>
+
+You can also specify the maximum number of retries in case of failure using the `X-Max-Retries` header (the value must be between 0 and 5):
+
+```bash
+--header 'X-Max-Retries: 3'
+```
+
+<Warning>
+When using retries with asynchronous actions, make sure your action logic is idempotent. This means that running the action multiple times with the same input should produce the same result without unwanted side effects.
+</Warning>
+
+## Response format
+
+When triggering an action asynchronously, the response will include a status URL and ID that you can use to poll to obtain the action result:
+
+```json
+{
+  "statusUrl": "/action/<ACTION-ID>",
+  "id": "<ACTION-ID>"
+}
+```
+
+## Checking the action result
+
+Poll the action result endpoint to check if the action has completed:
+
+<Tabs>
+
+<Tab title="cURL">
+
+```bash
+curl --request GET \
+  --url https://api.nango.dev/action/<ACTION-ID> \
+  --header 'Authorization: Bearer <PROJECT-SECRET-KEY>'
+```
+</Tab>
+
+<Tab title="Node SDK">
+
+```ts
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
+const result = await nango.getAsyncActionResult({ id: '<ACTION-ID>' });
+...
+```
+</Tab>
+
+</Tabs>
+
+The behavior of the action result endpoint:
+
+- Returns a `404` error if the action has not completed yet.
+- Returns a `200` with the actual result data once the action completes successfully
+- Returns a `500` with an error once the action completes with a failure.
+
+## Webhook notifications
+
+Instead of polling for action completion, you can configure Nango to send a webhook when an asynchronous action completes. This provides a more efficient way to be notified of asynchronous action completion.
+
+To receive webhook notifications:
+
+1. Configure webhook endpoints in your [environment settings](/guides/webhooks/webhooks-from-nango)
+2. Make sure webhooks are properly set up for your environment
+
+When an asynchronous action completes, Nango will send a webhook to your configured endpoint with the following payload structure:
+
+```json
+{
+  "type": "async_action",
+  "from": "nango",
+  "connectionId": "<CONNECTION-ID>",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "payload": {
+    "id": "<ACTION-ID>",
+    "statusUrl": "/action/<ACTION-ID>"
+  }
+}
+```
+
+The webhook's payload contains the same information as the initial response when triggering the action - an ID and status URL that you can use to retrieve the completed action result. After receiving this webhook, you can make a single API call to get the action result rather than repeatedly polling.
 
 # Troubleshoot errors & monitor
 
 Navigate to the _Logs_ tab to inspect potential errors & monitor action executions.
-
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
