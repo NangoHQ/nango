@@ -14,6 +14,7 @@ export type PostDeployConfirmation = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Success: ScriptDifferences;
 }>;
@@ -29,6 +30,7 @@ export type PostDeploy = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Success: SyncDeploymentResult[];
 }>;
@@ -47,6 +49,7 @@ export type PostDeployInternal = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Error: ApiError<'forbidden'> | ApiError<'environment_creation_error'>;
     Success: SyncDeploymentResult[];

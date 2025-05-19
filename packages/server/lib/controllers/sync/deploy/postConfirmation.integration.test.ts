@@ -85,7 +85,7 @@ describe(`POST ${endpoint}`, () => {
     it('should show correct on-events scripts diff', async () => {
         const { account, env: environment } = await seeders.seedAccountEnvAndUser();
         const { unique_key: providerConfigKey } = await seeders.createConfigSeed(environment, 'notion-123', 'notion');
-        const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey });
+        const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey, sdkVersion: '0.0.0-yaml' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',

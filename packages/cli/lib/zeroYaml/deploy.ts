@@ -9,6 +9,7 @@ import promptly from 'promptly';
 import { rebuildParsed } from './rebuild.js';
 import { Err, Ok } from '../utils/result.js';
 import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
+import { NANGO_VERSION } from '../version.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -72,13 +73,14 @@ export async function deploy({
     }
 
     const nangoYamlBody = '';
+    const sdkVersion = `${NANGO_VERSION}-zero`;
 
     // Check remote state
     const spinnerState = ora({ text: 'Acquire remote state' }).start();
     let confirmation: ScriptDifferences;
     try {
         const confirmationRes = await postConfirmation({
-            body: { ...pkg, reconcile: false, debug }
+            body: { ...pkg, reconcile: false, debug, sdkVersion }
         });
         if (confirmationRes.isErr()) {
             spinnerState.fail();
@@ -103,7 +105,7 @@ export async function deploy({
     const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${pkg.flowConfigs.length} scripts` }).start();
     try {
         const deployRes = await postDeploy({
-            body: { ...pkg, reconcile: true, debug, nangoYamlBody }
+            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
         });
         if (deployRes.isErr()) {
             spinnerDeploy.fail();

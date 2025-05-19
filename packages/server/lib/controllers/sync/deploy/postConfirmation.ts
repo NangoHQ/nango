@@ -45,7 +45,8 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         const diff = await onEventScriptService.diffChanges({
             environmentId,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
-            singleDeployMode: body.singleDeployMode || false
+            singleDeployMode: body.singleDeployMode || false,
+            sdkVersion: body.sdkVersion
         });
         result = {
             ...syncAndActionDifferences,

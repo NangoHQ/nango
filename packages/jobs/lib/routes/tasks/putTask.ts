@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import type { PutTask } from '@nangohq/types';
-import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleSuccess } from '../../execution/operations/handler.js';
-import type { JsonValue } from 'type-fest';
+
 import { operationIdRegex } from '@nangohq/logs';
+import { validateRequest } from '@nangohq/utils';
+
+import { handleError, handleSuccess } from '../../execution/operations/handler.js';
+
+import type { PutTask } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
@@ -46,7 +49,8 @@ const nangoPropsSchema = z
                 is_public: z.boolean(),
                 input: z.string().nullable(),
                 sync_type: z.enum(['full', 'incremental']).nullable(),
-                metadata: z.record(z.string(), z.any())
+                metadata: z.record(z.string(), z.any()),
+                sdk_version: z.string().nullable()
                 // TODO: fix this missing fields
                 // deleted: z.boolean().optional(),
                 // deleted_at: z.coerce.date().optional().nullable(),
