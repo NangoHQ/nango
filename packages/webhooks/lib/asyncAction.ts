@@ -24,9 +24,12 @@ export const sendAsyncActionWebhook = async ({
         return;
     }
 
+    console.log(shouldSend({ success: true, type: 'async_action', webhookSettings }));
     if (!shouldSend({ success: true, type: 'async_action', webhookSettings })) {
         return;
     }
+
+    console.log(`Sending async action webhook to ${webhookSettings.primary_url}`);
 
     const body: NangoAsyncActionWebhookBody = {
         type: 'async_action',

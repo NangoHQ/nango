@@ -378,13 +378,21 @@ async function sendWebhookIfNeeded({
     logCtx: LogContext;
 }) {
     if (!task.isAction()) {
+        console.log(`Task ${task.id} is not an action. Skipping webhook.`);
         return;
     }
     if (!environment || !task.retryKey || !task.async) {
+        console.log(`Environment or retryKey is not set. Skipping webhook.`, {
+            environment,
+            retryKey: task.retryKey,
+            async: task.async,
+            taskId: task.id
+        });
         return;
     }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
+        console.log(`webhookSettings`, { webhookSettings });
         await sendAsyncActionWebhook({
             environment: environment,
             connectionId: connectionId,
@@ -396,5 +404,7 @@ async function sendWebhookIfNeeded({
             webhookSettings,
             logCtx
         });
+    } else {
+        console.log(`No webhook settings found for environment ${environment.id}. Skipping webhook.`);
     }
 }
