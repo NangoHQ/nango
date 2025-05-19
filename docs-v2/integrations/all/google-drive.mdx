@@ -73,12 +73,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   </Step>
 
   <Step title="Verify your app (if required)">
-    If your app uses sensitive or restricted scopes, you’ll need to verify it with Google:
+    If your app uses sensitive or restricted scopes, you'll need to verify it with Google:
     1. Once published to production, click **Prepare for Verification** to start the verification process.
     2. Review and confirm all app details, then click **Save and Continue**.
     3. Justify your use of any sensitive or restricted scopes.
     4. Upload a demo video showing your app's OAuth flow and scope usage.
-    5. Click **Submit for Verification** to begin Google’s review.
+    5. Click **Submit for Verification** to begin Google's review.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
@@ -96,161 +96,229 @@ Nango's pre-built Google Drive integration allows you to sync specific files and
 3. **Document Sync**: Sync metadata for selected files and folders
 4. **Document Fetching**: Download individual file contents as needed
 
-## Complete Implementation Guide
+### Complete Implementation Guide
 
-<Steps>
-  <Step title="1. Initial Setup">
-    Prerequisites
-    Before getting started, ensure you have:
-    - A Google Cloud project with Drive API enabled
-    - Google Drive Picker API enabled
-    - Required credentials:
-        - Google App ID
-        - OAuth Client ID
-        - Picker API Key
-  </Step>
+The easiest way to implement Google Drive integration is to use the [Nango Sample App](https://github.com/NangoHQ/sample-app) as your starting point. The sample app provides a complete, production-ready implementation that you can customize for your needs.
 
-  <Step title="2. Configure OAuth & Drive Picker">
-    Set the following scope in your Nango configuration:
-    ```
-        https://www.googleapis.com/auth/drive.file
-    ```
+### Requirements
 
-In your frontend, run the OAuth flow with `nango.auth` and show the Google drive picker to your user.
+- Docker (desktop) installed & running
+- NodeJS & NPM installed
+- A Nango account (sign up at [nango.dev](https://nango.dev))
 
-    ```js
-        const ingest = async () => {
-            let filesIds: string[] = [];
+### Install & Run Instructions (~10 min)
 
-            const cid = generateCid(); // generate a unique id for the connection
-
-            try {
-            const nangoAuth = await nango.auth('google-drive', cid);
-            if (nangoAuth.connectionId) {
-                filesIds = await openGooglePicker();
-                if(filesIds.length === 0) {
-                    return;
-                }
-            }
-            } catch (error) {
-                // deal with error
-            }
-        }
-
-        const openGooglePicker = async (): Promise<string[]> => {
-            return new Promise<string[]>((resolve, reject) => {
-                openPicker({
-                    appId: <GOOGLE_APP_ID>, // essential for keeping same file id between nango and your app
-                    clientId: <GOOGLE_CLIENT_ID>,
-                    developerKey: <GOOGLE_PICKER_API_KEY>,
-                    viewId: 'DOCS',
-                    showUploadView: true,
-                    showUploadFolders: true,
-                    supportDrives: true,
-                    multiselect: true,
-                    setIncludeFolders: true,
-                    setSelectFolderEnabled: true,
-                    callbackFunction: (data) => {
-                        if (data.action === 'cancel') {
-                            handleCancel();
-                            resolve([]);
-                            return;
-                        }
-                        else if (data.action == 'picked') {
-                            const fileIds = data.docs.map((doc) => doc.id);
-                            resolve(fileIds);
-                        }
-                    }
-                });
-            });
-        };
+1. Clone the sample app repository:
+    ```bash
+    git clone https://github.com/NangoHQ/sample-app.git
+    cd sample-app
+    npm install
     ```
 
-    Note: Replace the placeholders with your actual credentials:
-    - `<GOOGLE_APP_ID>`: Your Google Cloud project number
-    - `<GOOGLE_CLIENT_ID>` is the client id of your Google OAuth app
-    - `<GOOGLE_PICKER_API_KEY>`: Your Drive Picker API key
-  </Step>
-
-  <Step title="3. Update Connection Metadata">
-    After users select files/folders, update the connection metadata using the Nango SDK:
-
-    ```javascript
-        // Using Nango SDK
-        await nango.updateMetadata(
-            'google-drive',
-            connectionId,
-            {
-                'folders': ['folder-id-1', 'folder-id-2'],
-                'files': ['file-id-1', 'file-id-2']
-            }
-        );
+2. Start the app:
+    ```bash
+    npm run start
     ```
-  </Step>
 
-  <Step title="4. Trigger Document Sync">
-    Re-trigger the sync in the dashboard, or with the API to fetch metadata for selected files:
+    <Note>
+    You should see `[back] Listening on http://0.0.0.0:3010` in the end.
+    If this doesn't show, kill the process with Ctrl + C and run `npm run start` again. Sometimes the docker database takes a bit longer to start up.
+    </Note>
 
-    ```js
-    // Using Nango SDK
-    await nango.triggerSync('google-drive', connectionId, 'documents');
+3. Expose the app to the internet:
+    ```bash
+    npm run webhooks-proxy
     ```
-  </Step>
+    This should print an output similar to: `your url is: https://cute-zebras-hug.loca.lt`
 
-  <Step title="5. Fetch Individual Files">
-    To download specific files, use the appropriate action based on file type:
-
-    ```js
-    // Using Nango SDK
-    // For regular files (PDFs, images, etc.)
-    await nango.triggerAction('google-drive', connectionId, 'fetch-document', {
-        id: fileId
-    });
-
-    // For Google Docs
-    await nango.triggerAction('google-docs', connectionId, 'fetch-document', {
-        id: fileId
-    });
-
-    // For Google Sheets
-    await nango.triggerAction('google-sheets', connectionId, 'fetch-document', {
-        id: fileId
-    });
-
+    <Note>
+    If you experience any troubles with this we recommend using ngrok and you need to expose the URL http://localhost:3010:
+    ```bash
+    ngrok http 3010
     ```
-  </Step>
-</Steps>
+    </Note>
 
-You can find a complete implementation in the [Nango Sample App](https://github.com/NangoHQ/sample-app)
+4. Configure Nango webhooks:
+    - Copy the URL from the previous step
+    - Go to [Environment Settings](https://app.nango.dev/dev/environment-settings) in Nango
+    - Set the **primary Webhook URL** to `${URL}/webhooks-from-nango`
+    - Example: `https://tame-socks-warn.loca.lt/webhooks-from-nango`
 
-## File Type Support
+    <img src="google-drive/webhook-url.png" alt="Nango Environment Settings page showing webhook URL configuration" />
 
-The integration supports different file types through specific actions:
+5. Access the sample app:
+    - Open [http://localhost:3011](http://localhost:3011/)
+    - Click on "Files" to start the Google Drive integration
 
-- **Regular files** (PDFs, images, etc.): Use `google-drive` provider with `fetch-document` action
-- **Google Docs**: Use `google-docs` provider with `fetch-document` action
-- **Google Sheets**: Use `google-sheets` provider with `fetch-document` action
+    <img src="google-drive/sample-app-home.png" alt="Sample app home page with Files section highlighted" />
 
-Note: The same OAuth credentials work across all these providers.
+6. Connect your Google Drive account:
+    - Click on the "Import from Google Drive" button
+    - In the connect popup, click on the "Connect" button
+    - Select your Google Drive account and authorize the app
+    - Click on the "Finish" button to close the modal.
 
-## Common Issues and Solutions
+    <img src="google-drive/connect-popup.png" alt="Connect popup with Google Drive account options" />
 
-1. **Empty Records**: If `/documents` returns empty records, ensure you've:
-   - Successfully completed the OAuth flow
-   - Updated the connection metadata with file/folder IDs
-   - Triggered the sync after updating metadata
+    <img src="google-drive/success-popup.png" alt="Successfully connected to Google Drive" />
 
-2. **Access Token**:
-   - Always get the access token from Nango's connection endpoint
-   - Use the token to initialize the Google Picker
-   - Handle token refresh automatically through Nango
+7. Select the files and folders you want to sync:
+    - Click on the "Select Files from Google Drive" button
+    - A modal will appear with the files and folders you can choose from.
+    - Select the files and folders you want to sync.
+    - Click on the "Select" button to close the modal.
 
-3. **Action Timeouts**: If `fetch-document` actions timeout:
-   - Verify you're using the correct provider for the file type
-   - Check the file permissions in Google Drive
-   - Ensure the file size **does not exceed 10MB**
+    <img src="google-drive/select-files.png" alt="Select files and folders from Google Drive" />
 
-4. **Downloading Content**: When downloading content from Google Drive, we recommend using the [Nango proxy for downloading content](https://docs.nango.dev/guides/proxy-requests#proxy-requests) especially for large files. 
+8. The files and folders will be synced to your Nango account and displayed in the UI.
+
+    <img src="google-drive/synced-files.png" alt="Synced files and folders in the UI" />
+
+9. Download a file:
+    - Click on the "Download" button to download the file.
+    - The file will be downloaded to your computer.
+
+10. Disconnect your Google Drive account:
+    - Click on the "Disconnect" button to disconnect your Google Drive account.
+    - The files and folders will be deleted from your Nango account.
+
+    <img src="google-drive/disconnect-button.png" alt="Disconnect popup with Google Drive account options" />
+
+### What Happens Under the Hood
+
+The sample app uses Nango to:
+
+1. **Authentication**
+   - Authenticate users with Google Drive
+   - Show the Google Drive picker
+   - Handle OAuth flow automatically
+
+
+2. **File Syncing**
+   - Sync selected files & folders
+   - Initial sync on selection
+   - Periodic updates
+
+   <img src="google-drive/sync-status.png" alt="Nango dashboard showing sync status and file list" />
+
+3. **File Download**
+   - Download raw file content
+   - Handle different file types
+   - Use Nango's proxy for reliable downloads
+
+### Key Components
+
+#### Frontend Implementation
+
+1. **Authorization Flow**
+   The authorization process is implemented in [`front-end/src/api.ts`](https://github.com/NangoHQ/sample-app/blob/main/front-end/src/api.ts):
+   - `postConnectSession`: Initiates the OAuth connection
+   - `getNangoCredentials`: Retrieves credentials after successful authorization
+
+   The flow works as follows:
+   1. Frontend initiates connection via `postConnectSession`
+   2. Backend creates a Nango connection session
+   3. User is redirected to Google OAuth consent screen
+   4. After authorization, user is redirected back to the app
+   5. Frontend can fetch credentials using `getNangoCredentials`
+
+#### Backend Implementation
+
+1. **Webhook Handler & Data Sync**
+   The webhook handling and data sync logic is implemented in [`back-end/src/routes/postWebhooks.ts`](https://github.com/NangoHQ/sample-app/blob/main/back-end/src/routes/postWebhooks.ts):
+
+   Key components:
+   - Main webhook handler that verifies signatures and routes requests
+   - `handleNewConnectionWebhook`: Processes new Google Drive connections
+   - `handleSyncWebhook`: Handles sync completion and data processing
+
+   The sync process:
+   1. Nango syncs files from Google Drive
+   2. Webhook notifies backend of sync completion
+   3. Backend fetches records using `nango.listRecords`
+   4. File metadata is stored in the database
+   5. Deletions are tracked and handled appropriately
+
+2. **File Download with Proxy**
+   File download functionality is implemented in [`back-end/src/routes/downloadFile.ts`](https://github.com/NangoHQ/sample-app/blob/main/back-end/src/routes/downloadFile.ts):
+
+   The download process:
+   1. Frontend requests file download with file ID and connection ID
+   2. Backend uses Nango proxy to fetch file from Google Drive
+   3. File is streamed to client with proper headers
+   4. Error handling ensures graceful failure
+
+   Key features:
+   - Uses Nango proxy for secure file access
+   - Proper content type and disposition headers
+   - Streaming response for efficient file transfer
+   - Comprehensive error handling
+
+#### Integration Flow
+
+1. **Authorization Flow**:
+   - Frontend initiates OAuth via `postConnectSession` ([`front-end/src/api.ts`](https://github.com/NangoHQ/sample-app/blob/main/front-end/src/api.ts))
+   - User authorizes access to Google Drive
+   - Backend receives webhook for new connection ([`back-end/src/routes/postWebhooks.ts`](https://github.com/NangoHQ/sample-app/blob/main/back-end/src/routes/postWebhooks.ts))
+   - Initial sync is triggered automatically
+
+2. **Data Sync Flow**:
+   - Nango syncs files from Google Drive
+   - Webhook notifies backend of sync completion
+   - Backend processes records and updates database
+   - File metadata is stored for later access
+
+3. **File Download Flow**:
+   - Frontend requests file download
+   - Backend uses Nango proxy to fetch file ([`back-end/src/routes/downloadFile.ts`](https://github.com/NangoHQ/sample-app/blob/main/back-end/src/routes/downloadFile.ts))
+   - File is streamed to client
+   - Proper error handling ensures reliability
+
+### Nango Dashboard
+
+Explore these sections in your Nango account:
+
+1. **Google Drive Integration**
+   - [Integration Settings](https://app.nango.dev/dev/integrations/google-drive/)
+   - Configure sync settings
+   - View integration status
+
+2. **Connections**
+   - [View Connections](https://app.nango.dev/dev/connections)
+   - Monitor sync status
+   - Check connection health
+
+3. **Logs**
+   - [View Logs](https://app.nango.dev/dev/logs)
+   - Track sync operations
+   - Debug issues
+
+
+### Common Issues and Solutions
+
+1. **Connection Issues**
+   - Check Docker is running
+   - Verify webhook URL is correct
+   - Ensure Google Cloud credentials are valid
+
+
+2. **Sync Problems**
+   - Check Nango logs
+   - Verify file permissions
+   - Monitor sync status
+
+
+### File Type Support
+
+The sample app supports all Google Drive file types through Nango's proxy:
+
+- **Regular files** (PDFs, images, etc.)
+- **Google Docs**
+- **Google Sheets**
+- **Google Slides**
+- **Other Google Workspace files**
+
+The implementation handles file type conversion and downloading automatically.
 
 <UsefulLinks />
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
