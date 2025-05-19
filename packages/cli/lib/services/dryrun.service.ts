@@ -254,7 +254,7 @@ export class DryRunService {
             return;
         }
 
-        let stubbedMetadata;
+        let stubbedMetadata: Metadata | undefined = undefined;
         let normalizedInput;
 
         const saveResponsesDir = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
@@ -520,7 +520,7 @@ export class DryRunService {
         nangoProps: NangoProps;
         loadLocation: string;
         input: object;
-        stubbedMetadata?: Metadata;
+        stubbedMetadata: Metadata | undefined;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {
