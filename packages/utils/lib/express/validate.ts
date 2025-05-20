@@ -31,12 +31,13 @@ export const validateRequest =
             } else {
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }
-            return next();
+            next();
         } catch (err) {
             if (err instanceof z.ZodError) {
                 res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
+                return;
             }
-            throw err;
+            res.status(400).send({ error: { code: 'invalid_request', message: 'unknown error' } });
         }
     };
 
