@@ -26,7 +26,6 @@ export default createSync({
     runs: 'every hour',
     autoStart: true,
     syncType: 'full',
-
     trackDeletes: true,
     models: {
         GithubIssue: issueSchema

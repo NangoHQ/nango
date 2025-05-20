@@ -21,6 +21,7 @@ import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { init } from './services/init.service.js';
+import { migrateToZeroYaml } from './services/migration/zeroYaml.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
@@ -154,9 +155,9 @@ program
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango || precheck.hasNangoYaml) {
             await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-            const { success } = await compileAllFiles({ fullPath: process.cwd(), debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
             if (!success) {
-                console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
+                console.log(chalk.red('Failed to compile. Exiting'));
                 process.exitCode = 1;
                 return;
             }
@@ -267,6 +268,20 @@ program
         }
 
         endpointMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('migrate-to-zero-yaml')
+    .description('Migrate from nango.yaml to pure typescript')
+    .action(async function (this: Command) {
+        const { debug } = this.opts<DeployOptions>();
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
+        await migrateToZeroYaml({ fullPath, debug });
     });
 
 program
