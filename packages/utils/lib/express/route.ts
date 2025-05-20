@@ -1,10 +1,15 @@
 import tracer from 'dd-trace';
-import type { Request, Response, NextFunction, Express } from 'express';
-import type { Endpoint } from '@nangohq/types';
+
 import * as metrics from '../telemetry/metrics.js';
 
-export type EndpointRequest<E extends Endpoint<any>> = Request<E['Params'], E['Reply'], E['Body'], E['Querystring']>;
-export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<E['Reply'], Locals>;
+import type { Endpoint } from '@nangohq/types';
+import type { Express, NextFunction, Request, Response } from 'express';
+
+export type EndpointRequest = Request<never, never, never, never>;
+export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<
+    E['Reply'],
+    Locals & { body: E['Body']; params: E['Params']; query: E['Querystring'] }
+>;
 
 export interface Route<E extends Endpoint<any>> {
     path: E['Path'];
@@ -12,12 +17,12 @@ export interface Route<E extends Endpoint<any>> {
 }
 
 export interface RouteHandler<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> extends Route<E> {
-    validate: (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction) => void;
-    handler: (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
+    validate: (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction) => void;
+    handler: (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
 }
 
 export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(server: Express, rh: RouteHandler<E, Locals>): void => {
-    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
+    const safeHandler = (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
         const active = tracer.scope().active();
         if (active) {
             active?.setTag('http.route', req.route?.path || req.originalUrl);

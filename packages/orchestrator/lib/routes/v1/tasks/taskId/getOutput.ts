@@ -1,10 +1,12 @@
 import { z } from 'zod';
-import type { JsonValue } from 'type-fest';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler, Task, TaskState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type { EventEmitter } from 'node:events';
+import type { JsonValue } from 'type-fest';
 
 type GetOutput = Endpoint<{
     Method: typeof method;
@@ -33,9 +35,9 @@ const validate = validateRequest<GetOutput>({
 });
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
-    return async (req: EndpointRequest<GetOutput>, res: EndpointResponse<GetOutput>) => {
-        const longPollingTimeoutMs = req.query.longPolling || 120_000;
-        const eventId = `task:completed:${req.params.taskId}`;
+    return async (_req: EndpointRequest, res: EndpointResponse<GetOutput>) => {
+        const longPollingTimeoutMs = res.locals.query.longPolling || 120_000;
+        const eventId = `task:completed:${res.locals.params.taskId}`;
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -56,12 +58,12 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
 
         eventEmitter.once(eventId, onCompletion);
 
-        const task = await scheduler.get({ taskId: req.params.taskId });
+        const task = await scheduler.get({ taskId: res.locals.params.taskId });
         if (task.isErr()) {
             cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: task.error.message } }));
             return;
         }
-        if (req.query.longPolling && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
+        if (res.locals.query.longPolling && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json({ state: task.value.state, output: task.value.output }));

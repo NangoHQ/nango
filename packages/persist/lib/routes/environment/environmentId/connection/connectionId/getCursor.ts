@@ -1,9 +1,11 @@
-import type { ApiError, Endpoint, CursorOffset, GetCursorSuccess } from '@nangohq/types';
-import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { records } from '@nangohq/records';
+import { validateRequest } from '@nangohq/utils';
+
 import { getCursorRequestParser } from './validate.js';
+
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
+import type { ApiError, CursorOffset, Endpoint, GetCursorSuccess } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 type GetCursor = Endpoint<{
     Method: typeof method;
@@ -25,11 +27,11 @@ const method = 'GET';
 
 const validate = validateRequest<GetCursor>(getCursorRequestParser);
 
-const handler = async (req: EndpointRequest<GetCursor>, res: EndpointResponse<GetCursor, AuthLocals>) => {
+const handler = async (_req: EndpointRequest, res: EndpointResponse<GetCursor, AuthLocals>) => {
     const {
         params: { nangoConnectionId },
         query: { model, offset }
-    } = req;
+    } = res.locals;
     const result = await records.getCursor({
         connectionId: nangoConnectionId,
         model,

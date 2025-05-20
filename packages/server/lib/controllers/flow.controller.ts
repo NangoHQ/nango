@@ -1,19 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { FlowDownloadBody } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
 import {
-    flowService,
-    errorManager,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
-    syncManager,
-    remoteFileService,
     environmentService,
+    errorManager,
+    flowService,
+    getSyncConfigById,
     getSyncConfigsAsStandardConfig,
-    getSyncConfigById
+    remoteFileService,
+    syncManager
 } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
+
 import { getOrchestrator } from '../utils/utils.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { FlowDownloadBody } from '@nangohq/shared';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -29,7 +31,7 @@ class FlowController {
         }
     }
 
-    public async adminDeployPrivateFlow(req: Request, res: Response<any, never>, next: NextFunction) {
+    public async adminDeployPrivateFlow(req: Request, res: Response<any, any>, next: NextFunction) {
         try {
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 

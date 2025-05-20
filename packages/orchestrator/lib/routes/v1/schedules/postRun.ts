@@ -1,8 +1,10 @@
 import { z } from 'zod';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const path = '/v1/schedules/run';
 const method = 'POST';
@@ -27,9 +29,9 @@ const validate = validateRequest<PostScheduleRun>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostScheduleRun>, res: EndpointResponse<PostScheduleRun>) => {
+    return async (_req: EndpointRequest, res: EndpointResponse<PostScheduleRun>) => {
         const schedule = await scheduler.immediate({
-            scheduleName: req.body.scheduleName
+            scheduleName: res.locals.body.scheduleName
         });
         if (schedule.isErr()) {
             res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });

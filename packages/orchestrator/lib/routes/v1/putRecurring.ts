@@ -1,8 +1,10 @@
 import { z } from 'zod';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const path = '/v1/recurring';
 const method = 'PUT';
@@ -38,8 +40,8 @@ const validate = validateRequest<PutRecurring>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PutRecurring>, res: EndpointResponse<PutRecurring>) => {
-        const { schedule } = req.body;
+    return async (_req: EndpointRequest, res: EndpointResponse<PutRecurring>) => {
+        const { schedule } = res.locals.body;
         let updatedSchedule;
         if ('state' in schedule) {
             updatedSchedule = await scheduler.setScheduleState({ scheduleName: schedule.name, state: schedule.state });

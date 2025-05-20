@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import type { PutTask } from '@nangohq/types';
-import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleSuccess } from '../../execution/operations/handler.js';
-import type { JsonValue } from 'type-fest';
+
 import { operationIdRegex } from '@nangohq/logs';
+import { validateRequest } from '@nangohq/utils';
+
+import { handleError, handleSuccess } from '../../execution/operations/handler.js';
+
+import type { PutTask } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
@@ -91,9 +94,9 @@ const validate = validateRequest<PutTask>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
 });
 
-const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutTask>) => {
-    const { taskId } = req.params;
-    const { nangoProps, error, output } = req.body;
+const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
+    const { taskId } = res.locals.params;
+    const { nangoProps, error, output } = res.locals.body;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;

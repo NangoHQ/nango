@@ -59,9 +59,8 @@ const validate = validateRequest<PostLog>({
             .parse(data)
 });
 
-const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, AuthLocals>) => {
-    const { body } = req;
-    const { account } = res.locals;
+const handler = (_req: EndpointRequest, res: EndpointResponse<PostLog, AuthLocals>) => {
+    const { account, body } = res.locals;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
 
