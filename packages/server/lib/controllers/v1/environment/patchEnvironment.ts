@@ -1,13 +1,17 @@
 import { z } from 'zod';
-import { isEnterprise, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { DBEnvironment, DBTeam, PatchEnvironment } from '@nangohq/types';
+
 import { environmentService } from '@nangohq/shared';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { environmentToApi } from '../../../formatters/environment.js';
-import { featureFlags } from '../../../utils/utils.js';
+import { envSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { DBEnvironment, PatchEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
+        name: envSchema.optional(),
         callback_url: z.string().url().optional(),
         hmac_key: z.string().min(0).max(1000).optional(),
         hmac_enabled: z.boolean().optional(),
@@ -34,9 +38,18 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
     }
 
     const body: PatchEnvironment['Body'] = valBody.data;
-    const { environment, account } = res.locals;
+    const { account, environment, plan } = res.locals;
 
     const data: Partial<DBEnvironment> = {};
+    if (body.name) {
+        const existingEnvironment = await environmentService.getByEnvironmentName(account.id, body.name);
+        if (existingEnvironment && existingEnvironment.id !== environment.id) {
+            res.status(409).send({ error: { code: 'conflict', message: 'An environment with this name already exists' } });
+            return;
+        }
+
+        data.name = body.name;
+    }
     if (typeof body.callback_url !== 'undefined') {
         data.callback_url = body.callback_url;
     }
@@ -60,9 +73,8 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
         data.otlp_settings = { endpoint: '', ...environment.otlp_settings, headers };
     }
 
-    if (data.otlp_settings) {
-        const isEnabled = await isOtlpEnabled({ account });
-        if (!isEnabled) {
+    if (data.otlp_settings && flagHasPlan) {
+        if (!plan!.has_otel) {
             res.status(403).send({ error: { code: 'forbidden', message: 'OpenTelemetry export is not enabled for this account' } });
             return;
         }
@@ -81,10 +93,3 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
 
     res.status(200).send({ data: environmentToApi(updated) });
 });
-
-async function isOtlpEnabled({ account }: { account: DBTeam }): Promise<boolean> {
-    if (isEnterprise) {
-        return true;
-    }
-    return await featureFlags.isSet('feature:otlp:account', { distinctId: account.uuid });
-}

@@ -1,21 +1,34 @@
 import fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
+
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import { compileAllFiles } from './compile.service';
 import { parse } from './config.service.js';
 import deployService from './deploy.service';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory, removeVersion } from '../tests/helpers.js';
-import { compileAllFiles } from './compile.service';
 
 describe('package', () => {
-    it('should package correctly', async () => {
-        const dir = await getTestDirectory('deploy-nested');
+    let dir: string;
+
+    beforeAll(async () => {
+        dir = await getTestDirectory('deploy-nested');
+
+        await fs.promises.rm(dir, { recursive: true, force: true });
+        await fs.promises.mkdir(dir, { recursive: true });
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/hubspot`, `${dir}/hubspot`);
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/github`, `${dir}/github`);
         await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `${dir}/nango.yaml`);
 
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
-        expect(success).toBe(true);
+        // Compile only once
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(result).toEqual({
+            success: true,
+            failedFiles: []
+        });
+    });
 
+    it('should package correctly', () => {
         const parsing = parse(dir);
         if (parsing.isErr()) {
             throw parsing.error;
@@ -37,16 +50,7 @@ describe('package', () => {
         ).toMatchSnapshot();
     });
 
-    it('should filter by integrationId when specified', async () => {
-        const dir = await getTestDirectory('deploy-nested-filtered');
-
-        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/hubspot`, `${dir}/hubspot`);
-        await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/github`, `${dir}/github`);
-        await fs.promises.copyFile(`${fixturesPath}/nango-yaml/v2/nested-integrations/nango.yaml`, `${dir}/nango.yaml`);
-
-        const success = await compileAllFiles({ fullPath: dir, debug: false });
-        expect(success).toBe(true);
-
+    it('should filter by integrationId when specified', () => {
         const parsing = parse(dir);
         if (parsing.isErr()) {
             throw parsing.error;

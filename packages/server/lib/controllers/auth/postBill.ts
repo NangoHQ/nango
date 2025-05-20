@@ -1,27 +1,29 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    analytics,
-    configService,
-    AnalyticsTypes,
-    getConnectionConfig,
-    connectionService,
-    errorManager,
     ErrorSourceEnum,
     LogActionEnum,
+    billClient,
+    configService,
+    connectionService,
+    errorManager,
+    getConnectionConfig,
     getProvider,
     linkConnection
 } from '@nangohq/shared';
-import type { PostPublicBillAuthorization } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import db from '@nangohq/database';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicBillAuthorization, ProviderBill } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
 const bodyValidation = z
     .object({
@@ -72,7 +74,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { username: userName, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
+    const { username, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -90,7 +92,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -99,7 +101,6 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_BILL_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -149,26 +150,22 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const { success, error, response: credentials } = await connectionService.getBillCredentials(provider, userName, password, organizationId, devkey);
-
-        if (!success || !credentials) {
-            void logCtx.error('Error during Bill credentials creation', { error, provider: config.provider });
+        const credentialsRes = await billClient.createCredentials({ provider: provider as ProviderBill, username, password, organizationId, devKey: devkey });
+        if (credentialsRes.isErr()) {
+            report(credentialsRes.error);
+            void logCtx.error('Error during Bill credentials creation', { error: credentialsRes.error });
             await logCtx.failed();
-
-            errorManager.errRes(res, 'bill_error');
-
             return;
         }
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
-            credentials,
+            credentials: credentialsRes.value,
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

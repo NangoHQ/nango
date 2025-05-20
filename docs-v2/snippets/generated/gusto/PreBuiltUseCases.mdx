@@ -4,12 +4,20 @@
 <AccordionGroup>
 
 
-<Accordion title="Users">
+<Accordion title="Employees">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `POST /users` | Creates a user in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/create-user.md) |
-| `DELETE /users` | Deletes a user in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/delete-user.md) |
-| `GET /users` | Fetches a list of users from Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/users.md) |
+| `POST /employees` | Creates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/create-employee.md) |
+| `PUT /employees` | Updates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/update-employee.md) |
+| `DELETE /employees` | Terminates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/terminate-employee.md) |
+| `GET /employees` | Fetches all employees from Gusto | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/employees.md) |
+</Accordion>
+
+
+<Accordion title="Unified HRIS API">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /employees/unified` | Fetches all employees from Gusto and maps them to the standard HRIS model | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/unified-employees.md) |
 </Accordion>
 
 </AccordionGroup>

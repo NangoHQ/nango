@@ -1,8 +1,10 @@
-import { $ } from 'zx';
 import yaml from 'js-yaml';
-import type { FlowsYaml, Provider } from '@nangohq/types';
+import { $ } from 'zx';
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseEndpoint } from '@nangohq/nango-yaml';
+
+import type { FlowsYaml, Provider } from '@nangohq/types';
 
 interface FormattedFlow {
     integration: string;

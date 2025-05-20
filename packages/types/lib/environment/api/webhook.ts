@@ -13,6 +13,7 @@ export type PatchWebhook = Endpoint<{
         on_auth_creation?: boolean | undefined;
         on_auth_refresh_error?: boolean | undefined;
         on_sync_error?: boolean | undefined;
+        on_async_action_completion?: boolean | undefined;
     };
     Success: {
         success: boolean;

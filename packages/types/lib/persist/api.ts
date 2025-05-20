@@ -4,7 +4,7 @@ import type { MergingStrategy, NangoRecord } from '../record/api.js';
 
 interface LogBody {
     activityLogId: string;
-    log: MessageRowInsert;
+    log: Omit<MessageRowInsert, 'accountId'>;
 }
 
 export type PostLog = Endpoint<{

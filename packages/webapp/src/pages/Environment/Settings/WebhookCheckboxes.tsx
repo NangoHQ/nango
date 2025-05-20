@@ -31,6 +31,11 @@ const checkboxesConfig: CheckboxConfig[] = [
         label: 'Syncs: no update webhooks',
         tooltip: 'If checked, a webhook will be sent on every sync run completion, even if no data has changed.',
         stateKey: 'on_sync_completion_always'
+    },
+    {
+        label: 'Async Actions: completion',
+        tooltip: 'If checked, a webhook will be sent when an async action completes.',
+        stateKey: 'on_async_action_completion'
     }
 ];
 
@@ -56,6 +61,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
             on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
             on_sync_completion_always: checkboxState['on_sync_completion_always'],
             on_sync_error: checkboxState['on_sync_error'],
+            on_async_action_completion: checkboxState['on_async_action_completion'],
             [name]: checked
         });
         setLoading(false);

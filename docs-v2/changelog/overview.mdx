@@ -8,6 +8,329 @@ description: "New updates and improvements."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
+<Update label="April 2025">
+
+    ## April catalog update
+
+    <AccordionGroup>
+        <Accordion title="22 new APIs" icon="webhook">
+            - [ADP](/integrations/all/adp)
+            - [Azure DevOps](/integrations/all/azure-devops)
+            - [CompanyCam](/integrations/all/companycam)
+            - [Confluence (Basic Auth)](/integrations/all/confluence-basic)
+            - [Devin](/integrations/all/devin)
+            - [DocuWare](/integrations/all/docuware)
+            - [Employment Hero](/integrations/all/employment-hero)
+            - [Gem](/integrations/all/gem)
+            - [Github (Personal Access Token)](/integrations/all/github-pat)
+            - [Incident.io](/integrations/all/incident-io)
+            - [Jira Data Center (Basic Auth)](/integrations/all/jira-data-center-basic)
+            - [Namely](/integrations/all/namely)
+            - [Namely (PAT)](/integrations/all/namely-pat)
+            - [Redtail CRM (Sandbox)](/integrations/all/redtail-crm-sandbox)
+            - [Rock Gym Pro](/integrations/all/rock-gym-pro)
+            - [Rootly](/integrations/all/rootly)
+            - [Sentry](/integrations/all/sentry)
+            - [Shopify Partner](/integrations/all/shopify-partner)
+            - [Smartlead.ai](/integrations/all/smartlead-ai)
+            - [Snowflake (JWT)](/integrations/all/snowflake-jwt)
+            - [UKG Pro (Workforce Management)](/integrations/all/ukg-pro-wfm)
+            - [Workday (OAuth)](/integrations/all/workday-oauth)
+        </Accordion>
+
+        <Accordion title="16 new pre-built integrations" icon="plug">
+            - [BambooHR (Basic Auth)](/integrations/all/bamboohr-basic)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/unified-employees.md)
+
+            - [Gong (Basic Auth)](/integrations/all/gong)
+                - [GET /fetch-call-transcripts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.md)
+                - [GET /calls](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/calls.md)
+
+            - [Gong (Oauth)](/integrations/all/gong-oauth)
+                - [GET /fetch-call-transcripts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong-oauth/actions/fetch-call-transcripts.md)
+                - [GET /calls](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong-oauth/syncs/calls.md)
+
+            - [Gusto](/integrations/all/gusto)
+                - [GET /employees](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/employees.md)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/unified-employees.md)
+
+            - [Gusto (Demo)](/integrations/all/gusto-demo)
+                - [GET /employees](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto-demo/syncs/employees.md)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto-demo/syncs/unified-employees.md)
+
+            - [Hibob Service User](/integrations/all/hibob-service-user)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hibob-service-user/syncs/unified-employees.md)
+
+            - [Microsoft Teams](/integrations/all/microsoft-teams)
+                - [GET /org-units](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/org-units.md)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/users.md)
+                - [GET /messages](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/messages.md)
+
+            - [Workday](/integrations/all/workday)
+                - [GET /employees/unified](https://github.com/NangoHQ/integration-templates/blob/main/integrations/workday/syncs/unified-employees.md)
+
+            - [Xero](/integrations/all/xero)
+                - [GET /BankTransactions](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/bank-transactions.md)
+                - [GET /credit-notes](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/credit-notes.md)
+        </Accordion>
+    </AccordionGroup>
+
+    ## Usage-based pricing
+
+    <Frame>
+        <img src="/images/changelog/usage-based-pricing.png" alt="Usage-based pricing illustration" />
+    </Frame>
+
+    Nango now offers transparent, usage-based pricing starting at $50/month.
+
+    - Pricing scales with usage: connections, action executions & record syncs
+    - Volume discounts up to 100x included
+    - 1,000 free connections still available on the Free plan (unlimited on Free Self-Hosted)
+    - Add-ons are priced individually on a monthly basis—no large annual commitments
+
+    ## Logs search 
+
+    <Frame>
+        <img src="/images/changelog/search-logs.png" alt="Logs search  illustration" />
+    </Frame>
+
+    The *Logs* tab is now much more powerful with full-text search and performance improvements.
+
+    - Search across log and sub-log contents via the top-level search bar
+    - Filter logs using record IDs to investigate when records were synced
+    - Improved navigation and load times across the tab
+
+    ## Enterprise self-hosting with ECS + Terraform
+
+    <Frame>
+        <img src="/images/changelog/ecs-terraform.png" alt="Enterprise self-hosting with ECS + Terraform illustration" />
+    </Frame>
+
+    We’ve published a new [guide](https://docs.nango.dev/guides/self-hosting/enterprise-self-hosting/ecs) for self-hosting Nango on AWS ECS, including a ready-to-use Terraform configuration.
+
+    - Automates installation for Enterprise customers
+    - Complements our existing Helm chart for Kubernetes
+    - Ongoing work to further simplify self-hosting
+
+    The Terraform configuration is available upon request.
+
+    ## Create, edit & delete environments
+
+    <Frame>
+        <img src="/images/changelog/manage-environments.png" alt="Create, edit & delete environments illustration" />
+    </Frame>
+
+    You can now manage multiple environments directly from the Nango dashboard. This makes it easier to isolate development stages or segment customer-specific setups.
+
+    - Growth plan includes 3 environments by default
+    - Additional environments available via paid add-on
+
+</Update>
+
+<Update label="March 2025">
+
+    ## March catalog update
+
+    <AccordionGroup>
+        <Accordion title="17 new APIs" icon="webhook">
+            - [ActiveCampaign](/integrations/all/active-campaign)
+            - [Anthropic Administrator](/integrations/all/anthropic-admin)
+            - [Blackbaud (Basic Auth)](/integrations/all/blackbaud-basic)
+            - [Callrail](/integrations/all/callrail)
+            - [Figma (SCIM)](/integrations/all/figma-scim)
+            - [Microsoft (Client Credentials)](/integrations/all/microsoft-oauth2-cc)
+            - [Missive](/integrations/all/missive)
+            - [Oracle Fusion Cloud (HCM)](/integrations/all/oracle-hcm)
+            - [Pandadoc (API Key)](/integrations/all/pandadoc-api-key)
+            - [Razorpay](/integrations/all/razorpay)
+            - [Readwise](/integrations/all/readwise)
+            - [Readwise Reader](/integrations/all/readwise-reader)
+            - [Rippling Shop App](/integrations/all/rippling-shop-app)
+            - [SharePoint Online (Client Credentials V2)](/integrations/all/sharepoint-online-oauth2-cc)
+            - [Trakstar Hire](/integrations/all/trakstar-hire)
+            - [tl;dv](/integrations/all/tldv)
+            - [Xero (Client Credentials)](/integrations/all/xero-oauth2-cc)
+        </Accordion>
+
+        <Accordion title="50 new pre-built integrations" icon="plug">
+            - [Airtable (Personal Access Token)](/integrations/all/airtable-pat)
+                - [GET /whoami](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/actions/whoami.md)
+                - [POST /webhooks](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/actions/create-webhook.md)
+                - [GET /webhooks](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/actions/list-webhooks.md)
+                - [DELETE /webhooks](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/actions/delete-webhook.md)
+                - [GET /tables](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/syncs/tables.md)
+                - [GET /bases](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable-pat/syncs/bases.md)
+
+            - [Bitdefender](/integrations/all/bitdefender)
+                - [GET /company-details](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bitdefender/actions/get-company-details.md)
+
+            - [Box](/integrations/all/box)
+                - [GET /file](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/fetch-file.md)
+                - [GET /folder-content](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/folder-content.md)
+                - [GET /root-folders](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/folders.md)
+                - [GET /files](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/files.md)
+
+            - [Databricks (Workspace Level)](/integrations/all/databricks-workspace)
+                - [GET /warehouses](https://github.com/NangoHQ/integration-templates/blob/main/integrations/databricks-workspace/actions/list-warehouses.md)
+
+            - [Dropbox](/integrations/all/dropbox)
+                - [POST /folder-content](https://github.com/NangoHQ/integration-templates/blob/main/integrations/dropbox/actions/folder-content.md)
+
+            - [EvaluAgent](/integrations/all/evaluagent)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/evaluagent/syncs/users.md)
+                - [GET /groups](https://github.com/NangoHQ/integration-templates/blob/main/integrations/evaluagent/syncs/groups.md)
+                - [GET /roles](https://github.com/NangoHQ/integration-templates/blob/main/integrations/evaluagent/syncs/roles.md)
+
+            - [GitHub (App)](/integrations/all/github-app)
+                - [GET /pull-requests](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github-app/syncs/pull-requests.md)
+                - [GET /commits](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github-app/syncs/commits.md)
+
+            - [Google Calendar](/integrations/all/google-calendar)
+                - [GET /whoami](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/whoami.md)
+                - [GET /google-calendar/settings](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/settings.md)
+
+            - [Google Drive](/integrations/all/google-drive)
+                - [GET /folder-content](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/folder-content.md)
+                - [POST /upload-document](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/upload-document.md)
+                - [GET /drives](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-drives.md)
+
+            - [Gorgias (Basic Auth)](/integrations/all/gorgias-basic)
+                - [POST /ticket](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gorgias-basic/actions/create-ticket.md)
+                - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gorgias-basic/actions/create-user.md)
+                - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gorgias-basic/actions/delete-user.md)
+                - [GET /tickets](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gorgias-basic/syncs/tickets.md)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gorgias-basic/syncs/users.md)
+
+            - [Hibob Service User](/integrations/all/hibob-service-user)
+                - [GET /employees](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hibob-service-user/syncs/employees.md)
+
+            - [Linear](/integrations/all/linear)
+                - [GET /fields](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/fetch-fields.md)
+                - [GET /models](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/fetch-models.md)
+
+            - [LinkedIn](/integrations/all/linkedin)
+                - [GET /messages](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linkedin/syncs/messages.md)
+
+            - [NetSuite (TBA)](/integrations/all/netsuite-tba)
+                - [GET /fetch-fields](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/fetch-fields.md)
+
+            - [One Drive](/integrations/all/one-drive)
+                - [GET /fetch-file](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/fetch-file.md)
+                - [GET /list-drives](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/list-drives.md)
+                - [GET /user-files](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files.md)
+                - [GET /user-files/selected](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files-selection.md)
+
+            - [Outlook](/integrations/all/outlook)
+                - [GET /events](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/events.md)
+                - [GET /calendars](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/calendars.md)
+
+            - [Paylocity](/integrations/all/paylocity)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/paylocity/syncs/users.md)
+
+            - [Quickbooks](/integrations/all/quickbooks)
+                - [POST /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-journal-entry.md)
+                - [PUT /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-journal-entry.md)
+
+            - [Quickbooks (Sandbox)](/integrations/all/quickbooks-sandbox)
+                - [POST /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks-sandbox/actions/create-journal-entry.md)
+                - [PUT /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks-sandbox/actions/update-journal-entry.md)
+
+            - [RingCentral](/integrations/all/ring-central)
+                - [GET /account/current](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central/actions/get-company-info.md)
+                - [POST /contacts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central/actions/create-contact.md)
+                - [GET /contacts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central/syncs/contacts.md)
+
+            - [RingCentral (Sandbox)](/integrations/all/ring-central-sandbox)
+                - [GET /account/current](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central-sandbox/actions/get-company-info.md)
+                - [POST /contacts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central-sandbox/actions/create-contact.md)
+                - [GET /contacts](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ring-central-sandbox/syncs/contacts.md)
+        </Accordion>
+    </AccordionGroup>
+
+    ## Authorization logs
+
+    <Frame>
+        <img src="/images/changelog/authorization-logs.png" alt="Authorization logs illustration" />
+    </Frame>
+
+    Gain visibility into how your users interact with the Connect UI during the authorization process.
+
+    Nango now tracks and logs key authorization events:
+
+    - User opened or closed the Connect UI
+    - User opened or closed the OAuth modal
+    - User viewed a new screen (integration list, input form, success/failure)
+
+    You can explore these events in the _Logs_ tab of the Nango UI.
+
+    We also added a chart summarizing all authorization attempts by outcome:
+
+    - Success
+    - Cancelled
+    - Technical failure
+
+    This chart is available on the _Home_ tab.
+
+    Watch the demo: 
+    <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+        <iframe
+            src="https://www.loom.com/embed/ba30523220f94bf3a8def8bf5f2b92c2"
+            frameBorder="0"
+            allowFullScreen
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            title="Loom video"
+        ></iframe>
+    </div>
+
+    ## AI agent support
+
+    <Frame>
+        <img src="/images/changelog/ai-agent-support.png" alt="AI agent support illustration" />
+    </Frame>
+
+    We’ve added support for AI agents to consume Nango as part of automated workflows involving external APIs.
+
+    Nango simplifies API orchestration, making it easier for AI agents to execute unitary, high-level actions without managing individual API calls or credentials.
+
+    What’s new:
+
+    - [**Introspection endpoint**](https://docs.nango.dev/reference/api/scripts/config): List available actions programmatically, exportable as OpenAI tools
+    - [**Action trigger endpoint**](https://docs.nango.dev/reference/api/action/trigger): Run actions reliably via the API
+    - [**Integrated authorization**](/guides/api-authorization/overview): Use Nango’s pre-built UI to securely prompt users for access
+
+    This makes it easier to build AI agents that can reliably interact with 400+ APIs.
+
+    Get inspired by [AI companies using Nango](https://www.nango.dev/blog/nango-for-ai).
+
+    ## AI agent demo video
+
+    <Frame>
+        <img src="/images/changelog/ai-agent-demo-video.png" alt="AI agent demo video illustration" />
+    </Frame>
+
+    We published a demo showing how AI agents can use Nango to trigger actions across 400+ APIs and 600+ integrations.
+
+    See how AI agents benefit from:
+
+    - Reliable abstractions for complex API workflows
+    - Built-in authorization flows
+    - Reduced surface for API errors
+
+    Watch the demo: 
+    <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+        <iframe
+            src="https://www.loom.com/embed/bdf871464fd148048ffe00eba3a1b982"
+            frameBorder="0"
+            allowFullScreen
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            title="Loom video"
+        ></iframe>
+    </div>
+
+    If you want to run the demo yourself or check the code, here is the demo's [GitHub repo](https://github.com/NangoHQ/ai-agent-demo). 
+
+</Update>
+
 <Update label="February 2025">
 
     ## February catalog update
@@ -92,7 +415,7 @@ description: "New updates and improvements."
     ## Sync partitioning
 
     <Frame>
-        <img src="/images/changelog/sync-partitioning.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/sync-partitioning.png" alt="Sync partitioning illustration" />
     </Frame>
 
     Syncing is now **faster and more efficient** with **Sync partinioning**. Instead of processing large syncs at once, you can now break them down into smaller, parallel syncs, improving performance and responsiveness.
@@ -106,21 +429,21 @@ description: "New updates and improvements."
     ## Revamped environment settings
 
     <Frame>
-        <img src="/images/changelog/revamped-environment-settings.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/revamped-environment-settings.png" alt="Revamped environment settings illustration" />
     </Frame>
 
     We overhauled the *Environment Settings* UI. This was one of the oldest sections of the app but is critical for setting up and configuring Nango.
 
-    The new design organizes settings into clear sections: backend, notifications, scripts & export. 
+    The new design organizes settings into clear sections: backend, notifications, scripts & export.
 
-    Each setting now includes links to relevant documentation for easier navigation. 
+    Each setting now includes links to relevant documentation for easier navigation.
 
     Check it out in the *Environment Settings* tab in the [Nango UI](https://app.nango.dev/).
 
     ## Detailed webhook logs
 
     <Frame>
-        <img src="/images/changelog/detailed-webhook-logs.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/detailed-webhook-logs.png" alt="Detailed webhook logs illustration" />
     </Frame>
 
     Webhooks are a key part of Nango, notifying you of critical events such as authorization completion, sync completion, and error cases.
@@ -132,7 +455,7 @@ description: "New updates and improvements."
     ## Real-time syncing strategies
 
     <Frame>
-        <img src="/images/changelog/real-time-syncing-strategies.png" alt="Trigger syncs illustration" />
+        <img src="/images/changelog/real-time-syncing-strategies.png" alt="Real-time syncing strategies illustration" />
     </Frame>
 
     Syncing real-time webhooks alongside periodic polling can cause conflicts, especially when APIs send partial updates. To solve this, we have introduced **new merging strategies** for better data accuracy.
@@ -317,7 +640,7 @@ description: "New updates and improvements."
             - [Lattice](/integrations/all/lattice)
                 - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lattice/syncs/users.md)
 
-            - [lattice-scim](/integrations/all/lattice-scim)
+            - [lattice-scim](/integrations/all/lattice)
                 - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lattice-scim/actions/create-user.md)
                 - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lattice-scim/actions/disable-user.md)
 
@@ -1295,7 +1618,7 @@ description: "New updates and improvements."
         <img src="/images/changelog/higher-sync-frequency.png" alt="Higher sync frequency screenshot" />
     </Frame>
 
-    Nango now offers support for more frequent syncs, down to 30-second intervals, a paid add-on to Scale plan customers.
+    Nango now offers support for more frequent syncs, down to 30-second intervals. It's available on Growth plans as a paid add-on, and on Enterprise plans.
 
     ## SOC 2 Type 2
 

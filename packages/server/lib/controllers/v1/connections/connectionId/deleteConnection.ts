@@ -7,6 +7,7 @@ import { getOrchestrator } from '../../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../../hooks/connection/on/connection-deleted.js';
+import { slackService } from '../../../../services/slack.js';
 
 const validationQuery = z
     .object({
@@ -57,7 +58,7 @@ export const deleteConnection = asyncWrapper<DeleteConnection>(async (req, res) 
         connection,
         providerConfigKey: query.provider_config_key,
         environmentId: environment.id,
-        logContextGetter,
+        slackService,
         orchestrator,
         preDeletionHook
     });

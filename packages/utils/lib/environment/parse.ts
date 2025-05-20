@@ -36,13 +36,21 @@ export const ENVS = z.object({
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
-    CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(5),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
@@ -54,6 +62,9 @@ export const ENVS = z.object({
     ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
+    ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
+    ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
+    ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
@@ -121,6 +132,11 @@ export const ENVS = z.object({
         .default(2 * 60 * 1000), // 2 minutes
     FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
+    // Billing
+    FLAG_PLAN_ENABLED: bool,
+    FLAG_USAGE_ENABLED: bool,
+    ORB_API_KEY: z.string().optional(),
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),
@@ -144,9 +160,20 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_INDEX: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
 
+    // Koala
+    PUBLIC_KOALA_API_URL: z.string().url().optional(),
+    PUBLIC_KOALA_CDN_URL: z.string().url().optional(),
+
+    // Logodev
+    PUBLIC_LOGODEV_KEY: z.string().optional(),
+
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.string().url().optional(),
+
+    // SMTP
+    SMTP_URL: z.string().url().optional(),
+    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
@@ -208,7 +235,6 @@ export const ENVS = z.object({
     NANGO_TELEMETRY_SDK: bool,
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
-    TELEMETRY: bool,
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
