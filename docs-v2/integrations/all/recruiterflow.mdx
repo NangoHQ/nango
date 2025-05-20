@@ -1,0 +1,59 @@
+---
+title: Recruiterflow
+sidebarTitle: Recruiterflow
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/recruiterflow/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/recruiterflow/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free trial, self-signup [here](https://recruiterflow.com/sign-up). |
+| Paid test account | ✅ Not required | Free trial available for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+## Setup guide
+
+<Steps>
+  <Step title="Create a Recruiterflow account">
+    Go to [Recruiterflow's signup page](https://recruiterflow.com/sign-up) and create an account. You can use the free trial for testing.
+  </Step>
+  <Step title="Create & configure an API key">
+    1. Log in to your Recruiterflow account
+    2. Navigate to Settings > API Keys
+    3. Click "Create New API Key"
+    4. Give your API key a name and copy the generated key
+    5. You will need this API key when configuring your integration in Nango
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## Useful links
+
+- [Website](https://recruiterflow.com/)
+- [Sign up for free trial](https://recruiterflow.com/sign-up)
+- [API documentation](https://recruiterflow.com/api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/recruiterflow.mdx)</Note>
+
+## API gotchas
+
+- Recruiterflow uses API key authentication rather than OAuth
+- API keys have a 30-day expiration by default
+- Rate limits are applied per API key
+- All API requests must include the API key in the Authorization header
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/recruiterflow.mdx)</Note> 

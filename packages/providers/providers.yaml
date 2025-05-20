@@ -8089,6 +8089,23 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recruiterflow:
+    display_name: Recruiterflow
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruiterflow.com
+        headers:
+            RF-Api-Key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/recruiterflow
+    docs_connect: https://docs.nango.dev/integrations/all/recruiterflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Recruiterflow account
+
 reddit:
     display_name: Reddit
     categories:
@@ -9305,6 +9322,7 @@ spotify:
     proxy:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
+
 spotify-oauth2-cc:
     display_name: Spotify (Client Credentials)
     categories:
