@@ -33,7 +33,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
     2. Click on the project dropdown at the top left of the page.
     3. Click **New Project**.
-    4. Enter a **Project Name** for your project 
+    4. Enter a **Project Name** for your project
     5. Under **Location**, select the appropriate organization or folder where this project should belong.
     <Note>If you're not part of an organization, it will default to No organization</Note>
     6. Click **Create** and wait for the project to be created.
@@ -146,13 +146,13 @@ You can watch a [Loom video walkthrough of the sample app](https://www.loom.com/
     - Set the **primary Webhook URL** to `${URL}/webhooks-from-nango`
     - Example: `https://tame-socks-warn.loca.lt/webhooks-from-nango`
 
-    <img src="google-drive/webhook-url.png" alt="Nango Environment Settings page showing webhook URL configuration" />
+    <img src="/images/google-drive/webhook-url.png" alt="Nango Environment Settings page showing webhook URL configuration" />
 
 5. Access the sample app:
     - Open [http://localhost:3011](http://localhost:3011/)
     - Click on "Files" to start the Google Drive integration
 
-    <img src="google-drive/sample-app-home.png" alt="Sample app home page with Files section highlighted" />
+    <img src="/images/google-drive/sample-app-home.png" alt="Sample app home page with Files section highlighted" />
 
 6. Connect your Google Drive account:
     - Click on the "Import from Google Drive" button
@@ -160,9 +160,9 @@ You can watch a [Loom video walkthrough of the sample app](https://www.loom.com/
     - Select your Google Drive account and authorize the app
     - Click on the "Finish" button to close the modal.
 
-    <img src="google-drive/connect-popup.png" alt="Connect popup with Google Drive account options" />
+    <img src="/images/google-drive/connect-popup.png" alt="Connect popup with Google Drive account options" />
 
-    <img src="google-drive/success-popup.png" alt="Successfully connected to Google Drive" />
+    <img src="/images/google-drive/success-popup.png" alt="Successfully connected to Google Drive" />
 
 7. Select the files and folders you want to sync:
     - Click on the "Select Files from Google Drive" button
@@ -170,11 +170,11 @@ You can watch a [Loom video walkthrough of the sample app](https://www.loom.com/
     - Select the files and folders you want to sync.
     - Click on the "Select" button to close the modal.
 
-    <img src="google-drive/select-files.png" alt="Select files and folders from Google Drive" />
+    <img src="/images/google-drive/select-files.png" alt="Select files and folders from Google Drive" />
 
 8. The files and folders will be synced to your Nango account and displayed in the UI.
 
-    <img src="google-drive/synced-files.png" alt="Synced files and folders in the UI" />
+    <img src="/images/google-drive/synced-files.png" alt="Synced files and folders in the UI" />
 
 9. Download a file:
     - Click on the "Download" button to download the file.
@@ -184,7 +184,7 @@ You can watch a [Loom video walkthrough of the sample app](https://www.loom.com/
     - Click on the "Disconnect" button to disconnect your Google Drive account.
     - The files and folders will be deleted from your Nango account.
 
-    <img src="google-drive/disconnect-button.png" alt="Disconnect popup with Google Drive account options" />
+    <img src="/images/google-drive/disconnect-button.png" alt="Disconnect popup with Google Drive account options" />
 
 ### What Happens Under the Hood
 
@@ -201,7 +201,7 @@ The sample app uses Nango to:
    - Initial sync on selection
    - Periodic updates
 
-   <img src="google-drive/sync-status.png" alt="Nango dashboard showing sync status and file list" />
+   <img src="/images/google-drive/sync-status.png" alt="Nango dashboard showing sync status and file list" />
 
 3. **File Download**
    - Download raw file content
