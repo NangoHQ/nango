@@ -36,7 +36,7 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
   </Step>
   <Step title="Configure your OAuth integration">
     After creating your integration, you'll be taken to the management page where you can configure the following properties:
-    
+
     1. **Name**: You can update the name of your integration if needed.
     2. **OAuth redirect URI**: Verify that `https://api.nango.dev/oauth/callback` is set correctly.
     3. **Permission scopes**: Select the scopes your application requires. Common scopes include:
@@ -51,7 +51,7 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
     7. **Support email** (optional): Add an email address where users can reach you for support.
     8. **Privacy policy URL** (required to share integration): Add your privacy policy URL.
     9. **Terms of service URL** (required to share integration): Add your terms of service URL.
-    
+
     Click **Save changes** when you're done.
   </Step>
   <Step title="Generate a client secret">
@@ -71,7 +71,7 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
     - A support email
     - A privacy policy URL
     - A terms of service URL
-    
+
     Once these are added and saved, other users will be able to authorize your integration.
   </Step>
   <Step title="Next">
@@ -83,20 +83,17 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
 
 
 ## Useful links
-
-| Topic | Links | 
-| - | - | 
-| General | [Airtable Website](https://airtable.com/) |
-| | [Create an Airtable account](https://airtable.com/signup) |
-| | [OAuth Integrations Panel](https://airtable.com/create/oauth) |
-| Developer | [Web API Documentation](https://airtable.com/developers/web/api/introduction) |
-| | [OAuth Reference](https://airtable.com/developers/web/api/oauth-reference) |
-| | [OAuth Integrations Guide](https://airtable.com/developers/web/guides/oauth-integrations) |
-| | [OAuth Scopes](https://airtable.com/developers/web/api/scopes) |
-| | [Authentication Reference](https://airtable.com/developers/web/api/authentication) |
-| | [Rate Limits](https://airtable.com/developers/web/api/rate-limits) |
-| | [SCIM API Documentation](https://airtable.com/developers/web/api/scim-overview) |
-| | [Example OAuth Setup Repository](https://github.com/Airtable/oauth-example) |
+- [Airtable Website](https://airtable.com/)
+- [Create an Airtable account](https://airtable.com/signup)
+- [OAuth Integrations Panel](https://airtable.com/create/oauth)
+- [Web API Documentation](https://airtable.com/developers/web/api/introduction)
+- [OAuth Reference](https://airtable.com/developers/web/api/oauth-reference)
+- [OAuth Integrations Guide](https://airtable.com/developers/web/guides/oauth-integrations)
+- [OAuth Scopes](https://airtable.com/developers/web/api/scopes)
+- [Authentication Reference](https://airtable.com/developers/web/api/authentication)
+- [Rate Limits](https://airtable.com/developers/web/api/rate-limits)
+- [SCIM API Documentation](https://airtable.com/developers/web/api/scim-overview)
+- [Example OAuth Setup Repository](https://github.com/Airtable/oauth-example)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
 
@@ -113,12 +110,5 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
 
 -   During the OAuth flow, the user can decide to which resources (Bases) the app should have access to. [Read more here](https://airtable.com/developers/web/api/oauth-reference#resources)
 -   Refresh tokens expire after 60 days of non-use. Make sure you call `nango.getConnection()` at least every 60 days to trigger a refresh.
--   OAuth access and refresh tokens should be treated as opaque, variable-length strings. Do not rely on tokens having a particular length or format.
--   To make your OAuth integration available to other users, you must provide a support email, privacy policy URL, and terms of service URL.
--   Airtable has [rate limits](https://airtable.com/developers/web/api/rate-limits) that vary by endpoint and plan.
--   When making API requests, OAuth access tokens should be passed as an `Authorization: Bearer` header.
--   The token will only be able to access endpoints corresponding to the scopes granted to it and the bases that the user has granted access to.
--   Use the [list bases](https://airtable.com/developers/web/api/user-listBases) endpoint to list the bases that the token has access to.
--   By default, OAuth integrations are not able to request scopes corresponding to Enterprise API endpoints. This is limited to invited partners and existing enterprise customers.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
