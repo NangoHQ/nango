@@ -18,7 +18,7 @@ import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
-import type { CreateAnyResponse, CreateSyncResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { CreateActionResponse, CreateAnyResponse, CreateSyncResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
@@ -110,16 +110,30 @@ export async function exec({
             }
 
             if (nangoProps.scriptType === 'webhook') {
-                if (!scriptExports.onWebhookPayloadReceived) {
-                    const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
+                if (isZeroYaml) {
+                    const payload = scriptExports.default as unknown as CreateSyncResponse<any, any>;
+                    if (payload.type !== 'sync') {
+                        throw new Error('Incorrect script loaded for webhook');
+                    }
+                    if (!payload.params.onWebhook) {
+                        throw new Error(`Missing onWebhook function`);
+                    }
 
-                    throw new Error(content);
+                    const output = await payload.params.onWebhook(nango as any, codeParams);
+                    return { success: true, response: output, error: null };
+                } else {
+                    if (!scriptExports.onWebhookPayloadReceived) {
+                        const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
+
+                        throw new Error(content);
+                    }
+
+                    const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
+                    return { success: true, response: output, error: null };
                 }
-
-                const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                return { success: true, response: output, error: null };
             }
 
+            // Action
             if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
@@ -144,7 +158,20 @@ export async function exec({
                     }
                 }
 
-                const output = await scriptExports.default(nango, inputParams);
+                let output: unknown;
+                if (isZeroYaml) {
+                    const payload = scriptExports.default as unknown as CreateActionResponse<any, any>;
+                    if (payload.type !== 'action') {
+                        throw new Error('Incorrect script loaded for action');
+                    }
+                    if (!payload.params.exec) {
+                        throw new Error(`Missing exec function`);
+                    }
+
+                    output = await payload.params.exec(nango as any, codeParams);
+                } else {
+                    output = await scriptExports.default(nango, inputParams);
+                }
 
                 // Validate action output against json schema
                 const valOutput = validateData({

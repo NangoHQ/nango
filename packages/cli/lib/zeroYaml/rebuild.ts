@@ -46,9 +46,10 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
             | CreateOnEventResponse;
 
         const basename = path.basename(modulePath, '.cjs');
-        const basenameClean = basename.replaceAll(/[^a-zA-Z]/g, '');
+        const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const split = modulePath.split('/');
         const integrationId = split[split.length - 3]!;
+        const integrationIdClean = integrationId.replaceAll(/[^a-zA-Z0-9]/g, '_');
 
         let integration: NangoYamlParsedIntegration | undefined = parsed.integrations.find((v) => v.providerConfigKey === integrationId);
         if (!integration) {
@@ -65,7 +66,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
             case 'sync': {
                 const params = script.params;
                 const usedModels: string[] = [...Object.keys(params.models)];
-                const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationId}_${basenameClean}`, params.metadata) : null;
+                const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
                 if (metadata) {
                     usedModels.push(metadata.name);
                     parsed.models.set(metadata.name, { name: metadata.name, fields: metadata.value as NangoModelField[] });
@@ -96,10 +97,10 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
             }
             case 'action': {
                 const params = script.params;
-                const input = zodToNangoModelField(`ActionInput_${integrationId}_${basenameClean}`, params.input);
+                const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
                 parsed.models.set(input.name, { name: input.name, fields: input.value as NangoModelField[] });
 
-                const output = zodToNangoModelField(`ActionOutput_${integrationId}_${basenameClean}`, params.output);
+                const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
                 parsed.models.set(output.name, { name: output.name, fields: input.value as NangoModelField[] });
                 integration.actions.push({
                     type: 'action',

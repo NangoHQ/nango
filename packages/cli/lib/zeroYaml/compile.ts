@@ -7,8 +7,10 @@ import { glob } from 'glob';
 import ora from 'ora';
 import ts from 'typescript';
 
+import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
+import { rebuildParsed } from './rebuild.js';
 
 import type { Result } from '@nangohq/types';
 
@@ -94,6 +96,14 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         spinner.text = 'Post compilation';
         printDebug('Post compilation', debug);
         await postCompile({ fullPath });
+
+        const rebuild = await rebuildParsed({ fullPath, debug });
+        if (rebuild.isErr()) {
+            spinner.fail(`Failed to compile metadata`);
+            return Err(rebuild.error);
+        }
+
+        generateAdditionalExports({ parsed: rebuild.value, fullPath, debug });
     } catch (err) {
         console.error(err);
 
@@ -206,6 +216,7 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
 async function postCompile({ fullPath }: { fullPath: string }) {
     const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
 
+    // Replace import with correct extension
     await Promise.all(
         files.map(async (file) => {
             let code = await fs.promises.readFile(file, 'utf8');

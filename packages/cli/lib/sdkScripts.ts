@@ -32,7 +32,7 @@
 
 export type { ActionError, NangoActionBase as NangoAction, NangoSyncBase as NangoSync } from '@nangohq/runner-sdk';
 
-export { createAction, createOnEvent, createSync } from '@nangohq/runner-sdk/lib/scripts';
+export { createAction, createOnEvent, createSync } from '@nangohq/runner-sdk';
 export type {
     CreateActionProps,
     CreateActionResponse,

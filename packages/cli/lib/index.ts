@@ -150,8 +150,25 @@ program
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const dryRun = new DryRunService({ fullPath, validation });
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango || precheck.hasNangoYaml) {
+            await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
+            const { success } = await compileAllFiles({ fullPath: process.cwd(), debug });
+            if (!success) {
+                console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+        } else {
+            const res = await compileAll({ fullPath, debug });
+            if (res.isErr()) {
+                process.exitCode = 1;
+                return;
+            }
+        }
+
+        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: precheck.isZeroYaml });
         await dryRun.run(
             {
                 ...this.opts(),
