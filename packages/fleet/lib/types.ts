@@ -1,4 +1,4 @@
-import type { RoutingId, NodeConfig } from '@nangohq/types';
+import type { NodeConfig, RoutingId } from '@nangohq/types';
 
 export const nodeStates = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'] as const;
 export type NodeState = (typeof nodeStates)[number];

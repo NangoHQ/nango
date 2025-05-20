@@ -1,9 +1,9 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
-import { TaskAction, TaskWebhook, TaskOnEvent, TaskSync, TaskSyncAbort } from './types.js';
+import { TaskAction, TaskWebhook, TaskOnEvent, TaskSync, TaskSyncAbort, TaskAbort } from './types.js';
 import { z } from 'zod';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { jsonSchema } from '../utils/validation.js';
 
@@ -16,6 +16,16 @@ export const commonSchemaArgsFields = {
     })
 };
 
+export const abortArgsSchema = z.object({
+    type: z.literal('abort'),
+    abortedTask: z.object({
+        id: z.string().uuid(),
+        state: z.enum(taskStates)
+    }),
+    reason: z.string().min(1),
+    ...commonSchemaArgsFields
+});
+
 export const syncArgsSchema = z.object({
     type: z.literal('sync'),
     syncId: z.string().min(1),
@@ -25,25 +35,21 @@ export const syncArgsSchema = z.object({
     ...commonSchemaArgsFields
 });
 
-export const syncAbortArgsSchema = z.object({
-    type: z.literal('abort'),
-    abortedTask: z.object({
-        id: z.string().uuid(),
-        state: z.enum(taskStates)
-    }),
-    reason: z.string().min(1),
-    syncId: z.string().min(1),
-    syncName: z.string().min(1),
-    syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
-    debug: z.boolean(),
-    ...commonSchemaArgsFields
-});
+export const syncAbortArgsSchema = z
+    .object({
+        syncId: z.string().min(1),
+        syncName: z.string().min(1),
+        syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
+        debug: z.boolean()
+    })
+    .merge(abortArgsSchema);
 
 export const actionArgsSchema = z.object({
     type: z.literal('action'),
     actionName: z.string().min(1),
     activityLogId: z.string(),
     input: jsonSchema,
+    async: z.boolean().optional().default(false),
     ...commonSchemaArgsFields
 });
 export const webhookArgsSchema = z.object({
@@ -68,8 +74,15 @@ const commonSchemaFields = {
     name: z.string().min(1),
     groupKey: z.string().min(1),
     state: z.enum(taskStates),
-    retryCount: z.number().int()
+    retryKey: z.string().min(1).nullable(),
+    retryCount: z.number().int(),
+    retryMax: z.number().int(),
+    ownerKey: z.string().min(1).nullable()
 };
+const abortSchema = z.object({
+    ...commonSchemaFields,
+    payload: abortArgsSchema
+});
 const syncSchema = z.object({
     ...commonSchemaFields,
     payload: syncArgsSchema
@@ -100,11 +113,14 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: sync.data.state,
                 name: sync.data.name,
                 attempt: sync.data.retryCount + 1,
+                attemptMax: sync.data.retryMax + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
+                retryKey: sync.data.retryKey,
+                ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug
             })
         );
@@ -118,11 +134,14 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: syncAbort.data.state,
                 name: syncAbort.data.name,
                 attempt: syncAbort.data.retryCount + 1,
+                attemptMax: syncAbort.data.retryMax + 1,
                 syncId: syncAbort.data.payload.syncId,
                 syncName: syncAbort.data.payload.syncName,
                 syncVariant: syncAbort.data.payload.syncVariant,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
+                ownerKey: syncAbort.data.ownerKey,
+                retryKey: syncAbort.data.retryKey,
                 reason: syncAbort.data.payload.reason,
                 debug: syncAbort.data.payload.debug
             })
@@ -136,11 +155,15 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 id: action.data.id,
                 name: action.data.name,
                 attempt: action.data.retryCount + 1,
+                attemptMax: action.data.retryMax + 1,
                 actionName: action.data.payload.actionName,
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
                 groupKey: action.data.groupKey,
-                input: action.data.payload.input
+                ownerKey: action.data.ownerKey,
+                retryKey: action.data.retryKey,
+                input: action.data.payload.input,
+                async: action.data.payload.async
             })
         );
     }
@@ -152,11 +175,14 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: webhook.data.state,
                 name: webhook.data.name,
                 attempt: webhook.data.retryCount + 1,
+                attemptMax: webhook.data.retryMax + 1,
                 webhookName: webhook.data.payload.webhookName,
                 parentSyncName: webhook.data.payload.parentSyncName,
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
                 groupKey: webhook.data.groupKey,
+                ownerKey: webhook.data.ownerKey,
+                retryKey: webhook.data.retryKey,
                 input: webhook.data.payload.input
             })
         );
@@ -169,18 +195,37 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 state: onEvent.data.state,
                 name: onEvent.data.name,
                 attempt: onEvent.data.retryCount + 1,
+                attemptMax: onEvent.data.retryMax + 1,
                 onEventName: onEvent.data.payload.onEventName,
                 version: onEvent.data.payload.version,
                 connection: onEvent.data.payload.connection,
                 groupKey: onEvent.data.groupKey,
+                ownerKey: onEvent.data.ownerKey,
+                retryKey: onEvent.data.retryKey,
                 fileLocation: onEvent.data.payload.fileLocation,
                 activityLogId: onEvent.data.payload.activityLogId
             })
         );
     }
-    return Err(
-        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || onEvent.error || syncAbort.error)}`
-    );
+    const abort = abortSchema.safeParse(task);
+    if (abort.success) {
+        return Ok(
+            TaskAbort({
+                id: abort.data.id,
+                abortedTask: abort.data.payload.abortedTask,
+                state: abort.data.state,
+                name: abort.data.name,
+                attempt: abort.data.retryCount + 1,
+                attemptMax: abort.data.retryMax + 1,
+                connection: abort.data.payload.connection,
+                groupKey: abort.data.groupKey,
+                ownerKey: abort.data.ownerKey,
+                retryKey: abort.data.retryKey,
+                reason: abort.data.payload.reason
+            })
+        );
+    }
+    return Err(`Cannot validate task ${JSON.stringify(task)}`);
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
@@ -225,5 +270,5 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
         };
         return Ok(schedule);
     }
-    return Err(new Error('Cannot validate task', { cause: { err: validation.error, context: schedule } }));
+    return Err(new Error('Cannot validate schedule', { cause: { err: validation.error, context: schedule } }));
 }

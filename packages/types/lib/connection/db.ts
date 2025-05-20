@@ -1,13 +1,18 @@
+import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { TimestampsAndDeletedCorrect } from '../db.js';
-import type { AuthModeType, AuthOperationType, AllAuthCredentials } from '../auth/api.js';
+import type { EndUser } from '../endUser/index.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
-import type { Merge } from 'type-fest';
-import type { EndUser } from '../endUser/index.js';
+import type { ReplaceInObject } from '../utils.js';
+import type { Merge, Simplify } from 'type-fest';
 
 export type Metadata = Record<string, unknown>;
 
-export type ConnectionConfig = Record<string, any>;
+export interface ConnectionConfig {
+    [key: string]: any;
+    oauth_scopes?: string;
+    authorization_params?: Record<string, string>;
+}
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {
     id: number;
@@ -25,7 +30,13 @@ export interface DBConnection extends TimestampsAndDeletedCorrect {
     credentials_iv: string | null;
     credentials_tag: string | null;
     last_fetched_at: Date | null;
+    credentials_expires_at: Date | null;
+    last_refresh_failure: Date | null;
+    last_refresh_success: Date | null;
+    refresh_attempts: number | null;
+    refresh_exhausted: boolean;
 }
+export type DBConnectionAsJSONRow = Simplify<ReplaceInObject<DBConnection, Date, string>>;
 export type DBConnectionDecrypted = Merge<DBConnection, { credentials: AllAuthCredentials }>;
 
 export interface RecentlyCreatedConnection {

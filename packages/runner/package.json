@@ -25,16 +25,16 @@
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "^10.45.1",
         "@trpc/server": "^10.45.1",
-        "axios": "^1.8.2",
-        "botbuilder": "4.23.1",
+        "axios": "1.9.0",
+        "botbuilder": "4.23.2",
         "connect-timeout": "1.9.0",
         "dd-trace": "5.21.0",
         "express": "^4.20.0",
-        "soap": "1.1.8",
+        "soap": "1.1.11",
         "superjson": "2.2.1",
-        "undici": "6.21.1",
+        "undici": "6.21.2",
         "unzipper": "^0.12.3",
-        "zod": "3.24.1"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
@@ -42,6 +42,6 @@
         "@types/connect-timeout": "0.0.39",
         "@types/unzipper": "^0.10.10",
         "typescript": "5.7.3",
-        "vitest": "2.1.9"
+        "vitest": "3.1.2"
     }
 }

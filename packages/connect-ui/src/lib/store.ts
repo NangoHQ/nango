@@ -12,7 +12,9 @@ interface State {
     session: ConnectSessionOutput | null;
     nango: Nango | null;
     apiURL: string;
+    detectClosedAuthWindow: boolean;
     setApiURL: (value: string) => void;
+    setDetectClosedAuthWindow: (value: boolean) => void;
     setSessionToken: (value: string) => void;
     setSession: (value: ConnectSessionOutput) => void;
     setNango: (value: Nango) => void;
@@ -31,7 +33,9 @@ export const useGlobal = create<State>((set) => ({
     session: null,
     nango: null,
     apiURL: 'https://api.nango.dev',
+    detectClosedAuthWindow: false,
     setApiURL: (value) => set({ apiURL: value }),
+    setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
     setNango: (value) => set({ nango: value }),

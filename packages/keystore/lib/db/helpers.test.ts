@@ -1,6 +1,8 @@
-import { migrate } from './migrate.js';
 import { knex } from 'knex';
+
 import { isTest } from '@nangohq/utils';
+
+import { migrate } from './migrate.js';
 
 export const testDb = {
     schema: 'keystore_test',

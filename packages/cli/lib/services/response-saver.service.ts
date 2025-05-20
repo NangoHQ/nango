@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { GetPublicConnection, Metadata } from '@nangohq/types';
+import { BASE_VARIANT } from '@nangohq/runner-sdk';
 
 const FILTER_HEADERS = [
     'authorization',
@@ -19,7 +20,8 @@ const FILTER_HEADERS = [
     'content-type',
     'content-length',
     'accept',
-    'base-url-override'
+    'base-url-override',
+    'retry-on'
 ];
 
 interface ConfigIdentity {
@@ -65,13 +67,15 @@ export function onAxiosRequestFulfilled({
     providerConfigKey,
     connectionId,
     syncName,
-    syncVariant
+    syncVariant,
+    hasStubbedMetadata
 }: {
     response: AxiosResponse;
     providerConfigKey: string | undefined;
     connectionId: string;
     syncName: string;
     syncVariant: string;
+    hasStubbedMetadata: boolean;
 }): AxiosResponse {
     if (!providerConfigKey) {
         return response;
@@ -88,18 +92,20 @@ export function onAxiosRequestFulfilled({
             customFilePath: 'mocks/nango/getConnection.json'
         });
 
-        saveResponse<Metadata>({
-            directoryName,
-            data: connection.metadata as Metadata,
-            customFilePath: 'mocks/nango/getMetadata.json'
-        });
+        if (!hasStubbedMetadata) {
+            saveResponse<Metadata>({
+                directoryName,
+                data: connection.metadata as Metadata,
+                customFilePath: 'mocks/nango/getMetadata.json'
+            });
+        }
 
         return response;
     }
 
     const requestIdentity = computeConfigIdentity(response.config);
 
-    const syncSubDir = syncVariant ? `${syncName}/${syncVariant}` : syncName;
+    const syncSubDir = syncVariant && syncVariant !== BASE_VARIANT ? `${syncName}/${syncVariant}` : syncName;
     saveResponse<CachedRequest>({
         directoryName,
         data: {
@@ -131,7 +137,7 @@ export function onAxiosRequestRejected({
     const response: AxiosResponse | undefined = (error as AxiosError).response;
     if (response) {
         const requestIdentity = computeConfigIdentity(response.config);
-        const syncSubDir = syncVariant ? `${syncName}/${syncVariant}` : syncName;
+        const syncSubDir = syncVariant && syncVariant !== BASE_VARIANT ? `${syncName}/${syncVariant}` : syncName;
         saveResponse<CachedRequest>({
             directoryName,
             data: {

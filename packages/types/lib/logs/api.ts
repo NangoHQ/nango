@@ -5,20 +5,21 @@ import type { MessageRow, OperationList, OperationRow, OperationState } from './
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
 export type ConcatOperationList = Concat<OperationList>;
-export type ConcatOperationListWithGroup = OperationList[keyof OperationList] | ConcatOperationList;
+export type ConcatOperationListWithGroup = OperationList['type'] | ConcatOperationList;
 
 export type SearchOperations = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
     Body: {
+        search?: string | undefined;
         limit?: number;
         states?: SearchOperationsState[];
         types?: SearchOperationsType[];
         integrations?: SearchOperationsIntegration[] | undefined;
         connections?: SearchOperationsConnection[] | undefined;
         syncs?: SearchOperationsSync[] | undefined;
-        period?: SearchOperationsPeriod | undefined;
+        period?: SearchPeriod | undefined;
         cursor?: string | null | undefined;
     };
     Success: {
@@ -31,7 +32,7 @@ export type SearchOperationsType = 'all' | ConcatOperationListWithGroup;
 export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;
 export type SearchOperationsSync = 'all' | string;
-export interface SearchOperationsPeriod {
+export interface SearchPeriod {
     from: string;
     to: string;
 }
@@ -58,6 +59,7 @@ export type SearchMessages = Endpoint<{
         search?: string | undefined;
         cursorBefore?: string | null | undefined;
         cursorAfter?: string | null | undefined;
+        period?: SearchPeriod | undefined;
     };
     Success: {
         data: MessageRow[];

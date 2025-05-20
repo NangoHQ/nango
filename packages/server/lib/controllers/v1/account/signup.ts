@@ -1,10 +1,14 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import crypto from 'crypto';
 import util from 'util';
+
+import { z } from 'zod';
+
+import { acceptInvitation, accountService, getInvitation, userService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { sendVerificationEmail } from '../../../helpers/email.js';
-import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { userService, accountService, getInvitation, analytics, AnalyticsTypes, acceptInvitation } from '@nangohq/shared';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { DBTeam, PostSignup } from '@nangohq/types';
 
 export const passwordSchema = z
@@ -75,7 +79,6 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
         }
-        void analytics.track(AnalyticsTypes.ACCOUNT_JOINED, account.id, {}, isCloud ? { email } : {});
 
         await acceptInvitation(token);
     } else {
@@ -112,7 +115,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        sendVerificationEmail(email, name, user.email_verification_token);
+        await sendVerificationEmail(email, name, user.email_verification_token);
 
         // We don't login because we want to enforce email validation
         res.status(200).send({ data: { uuid: user.uuid, verified: false } });

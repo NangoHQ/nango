@@ -1,13 +1,15 @@
-import type { AxiosResponse } from 'axios';
-
 import { Nango } from '@nangohq/node';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
-import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
-import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+
 import { PersistClient } from './persist.js';
 import { logger } from '../logger.js';
+
+import type { Locks } from './locks.js';
+import type { ProxyConfiguration } from '@nangohq/runner-sdk';
+import type { MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -27,10 +29,12 @@ const RECORDS_VALIDATION_SAMPLE = 1;
 export class NangoActionRunner extends NangoActionBase {
     nango: Nango;
     protected persistClient: PersistClient;
+    protected locking: Locking;
 
-    constructor(props: NangoProps, runnerProps?: { persistClient: PersistClient }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
             { isSync: false, dryRun: isTest, ...props },
@@ -66,6 +70,13 @@ export class NangoActionRunner extends NangoActionBase {
             }).unwrap(),
             logger: async (log) => {
                 await this.sendLogToPersist(log);
+            },
+            onError: (props) => {
+                if (props.retry.reason === 'status_code_401') {
+                    // We just want to clear the cache in case credentials have changed and keep retrying
+                    this.memoizedConnections.clear();
+                }
+                return props.retry;
             },
             getConnection: async () => {
                 // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
@@ -118,10 +129,10 @@ export class NangoActionRunner extends NangoActionBase {
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void | string> {
         this.throwIfAborted();
-        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, fullResync);
+        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, syncMode);
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
@@ -200,6 +211,18 @@ export class NangoActionRunner extends NangoActionBase {
         });
         return res;
     }
+
+    public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        return this.locking.tryAcquireLock(props);
+    }
+
+    public override async releaseLock(props: { key: string }): Promise<boolean> {
+        return this.locking.releaseLock(props);
+    }
+
+    public override async releaseAllLocks(): Promise<void> {
+        return this.locking.releaseAllLocks();
+    }
 }
 
 /**
@@ -209,14 +232,17 @@ export class NangoSyncRunner extends NangoSyncBase {
     nango: Nango;
 
     protected persistClient: PersistClient;
+    protected locking: Locking;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
 
-    constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+
         this.nango = new Nango(
             { isSync: true, dryRun: isTest, ...props },
             {
@@ -347,7 +373,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -378,7 +404,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -410,7 +436,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -460,6 +486,54 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         return objects;
     }
+
+    public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        return this.locking.tryAcquireLock(props);
+    }
+
+    public override async releaseLock(props: { key: string }): Promise<boolean> {
+        return this.locking.releaseLock(props);
+    }
+
+    public override async releaseAllLocks(): Promise<void> {
+        return this.locking.releaseAllLocks();
+    }
+}
+
+class Locking {
+    private locks: Locks;
+    private owner: string;
+
+    constructor({ locks, owner }: { locks: Locks; owner: string }) {
+        this.locks = locks;
+        this.owner = owner;
+    }
+
+    public async tryAcquireLock({ key, ttlMs }: { key: string; ttlMs: number }): Promise<boolean> {
+        const lock = await this.locks.tryAcquireLock({
+            owner: this.owner,
+            key,
+            ttlMs
+        });
+        if (lock.isErr()) {
+            throw lock.error;
+        }
+        return lock.value;
+    }
+    public async releaseLock({ key }: { key: string }): Promise<boolean> {
+        const lock = await this.locks.releaseLock({
+            owner: this.owner,
+            key
+        });
+        if (lock.isErr()) {
+            throw lock.error;
+        }
+        return lock.value;
+    }
+
+    public async releaseAllLocks(): Promise<void> {
+        await this.locks.releaseAllLocks({ owner: this.owner });
+    }
 }
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
@@ -486,7 +560,6 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
  */
 export function instrumentSDK(rawNango: NangoActionBase | NangoSyncBase) {
     return new Proxy(rawNango, {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
         get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
             // Method name is not matching the allowList we don't do anything else
             if (!TELEMETRY_ALLOWED_METHODS.includes(propKey)) {

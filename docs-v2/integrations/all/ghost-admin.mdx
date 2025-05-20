@@ -43,26 +43,5 @@ _No setup guide yet._
 
 - Both Admin and Content API keys can be be obtained by creating a new Custom Integration under the Integrations screen in Ghost Admin.
 - For Ghost Admin, the API Key should be in the format `id:secret`.
-- After creating a connection on Nango, you can use the token generated as follows;
-```js
-const connection = await nango.getConnection();
-
-const token = connection.credentials.token;
-
-if (!token) {
-    throw new nango.ActionError({
-        message: `Access token is missing`,
-    });
-}
-
-// Define the configuration for the API call
-const config: ProxyConfiguration = {
-    endpoint: '/users',
-    retries: 10,
-    headers: {
-        Authorization: `Ghost ${token}`,
-    },
-};
-```
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ghost-admin.mdx)</Note>
