@@ -150,21 +150,28 @@ While each Zoho service has its own specific API endpoints and scopes, the OAuth
 
 Each Zoho service has its own set of scopes. Here are some common scopes for popular Zoho services:
 
-| Service | Scope | Description |
-| ------- | ----- | ----------- |
-| Zoho CRM | ZohoCRM.modules.ALL | Access to all CRM modules |
-| Zoho CRM | ZohoCRM.settings.ALL | Access to all CRM settings |
-| Zoho CRM | ZohoCRM.users.ALL | Access to all CRM users |
-| Zoho Books | ZohoBooks.fullaccess.all | Full access to Books data |
-| Zoho Books | ZohoBooks.contacts.READ | Read access to contacts |
-| Zoho Books | ZohoBooks.invoices.READ | Read access to invoices |
-| Zoho Desk | Desk.tickets.ALL | Access to all Desk tickets |
-| Zoho Desk | Desk.contacts.READ | Read access to Desk contacts |
-| Zoho Desk | Desk.search.READ | Search functionality in Desk |
-| Zoho Mail | ZohoMail.accounts.READ | Read access to mail accounts |
-| Zoho Mail | ZohoMail.messages.ALL | Access to all mail messages |
-| AaaServer | AaaServer.profile.READ | Read access to user profile |
-| AaaServer | AaaServer.profile.UPDATE | Update access to user profile |
+- **Zoho CRM**
+  - `ZohoCRM.modules.ALL` - Access to all CRM modules
+  - `ZohoCRM.settings.ALL` - Access to all CRM settings
+  - `ZohoCRM.users.ALL` - Access to all CRM users
+
+- **Zoho Books**
+  - `ZohoBooks.fullaccess.all` - Full access to Books data
+  - `ZohoBooks.contacts.READ` - Read access to contacts
+  - `ZohoBooks.invoices.READ` - Read access to invoices
+
+- **Zoho Desk**
+  - `Desk.tickets.ALL` - Access to all Desk tickets
+  - `Desk.contacts.READ` - Read access to Desk contacts
+  - `Desk.search.READ` - Search functionality in Desk
+
+- **Zoho Mail**
+  - `ZohoMail.accounts.READ` - Read access to mail accounts
+  - `ZohoMail.messages.ALL` - Access to all mail messages
+
+- **AaaServer**
+  - `AaaServer.profile.READ` - Read access to user profile
+  - `AaaServer.profile.UPDATE` - Update access to user profile
 
 
 ## API gotchas
@@ -178,4 +185,3 @@ Each Zoho service has its own set of scopes. Here are some common scopes for pop
 - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>
-
