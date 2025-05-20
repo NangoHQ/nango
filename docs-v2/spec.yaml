@@ -1822,7 +1822,8 @@ paths:
                       type: integer
                       minimum: 0
                       maximum: 5
-                  description: The maximum number of retries in case of failure (between 0 and 5). Only applicable when X-Async is true.
+                      default: 0
+                  description: The maximum number of retries in case of failure (between 0 and 5). Only applicable when X-Async is true. Default to 0 if not specified.
             requestBody:
                 required: true
                 content:
