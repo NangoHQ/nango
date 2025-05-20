@@ -10,7 +10,7 @@ import { LogActionEnum } from '../../models/Telemetry.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
-import type { NangoProps } from '@nangohq/types';
+import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import type { Response } from 'express';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,15 +26,15 @@ const scriptTypeToPath: Record<NangoProps['scriptType'], string> = {
 class LocalFileService {
     public getIntegrationFile({
         scriptType,
-        syncName,
+        syncConfig,
         providerConfigKey
     }: {
         scriptType: NangoProps['scriptType'];
-        syncName: string;
+        syncConfig: DBSyncConfig;
         providerConfigKey: string;
     }) {
         try {
-            const filePath = this.resolveIntegrationFile({ scriptType, syncName, providerConfigKey });
+            const filePath = this.resolveIntegrationFile({ scriptType, syncConfig, providerConfigKey });
             const integrationFileContents = fs.readFileSync(filePath, 'utf8');
             return integrationFileContents;
         } catch (err) {
@@ -153,17 +153,31 @@ class LocalFileService {
 
     private resolveIntegrationFile({
         scriptType,
-        syncName,
+        syncConfig,
         providerConfigKey
     }: {
         scriptType: NangoProps['scriptType'];
-        syncName: string;
+        syncConfig: DBSyncConfig;
         providerConfigKey: string;
     }): string {
-        if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-            return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.cjs`);
+        if (syncConfig.sdk_version && syncConfig.sdk_version.includes('zero')) {
+            if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+                return path.resolve(
+                    process.env['NANGO_INTEGRATIONS_FULL_PATH'],
+                    `build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncConfig.sync_name}.cjs`
+                );
+            } else {
+                return path.resolve(__dirname, `../nango-integrations/build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncConfig.sync_name}.cjs`);
+            }
         } else {
-            return path.resolve(__dirname, `../nango-integrations/build/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncName}.cjs`);
+            if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+                return path.resolve(
+                    process.env['NANGO_INTEGRATIONS_FULL_PATH'],
+                    `dist/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncConfig.sync_name}.js`
+                );
+            } else {
+                return path.resolve(__dirname, `../nango-integrations/dist/${providerConfigKey}/${scriptTypeToPath[scriptType]}/${syncConfig.sync_name}.js`);
+            }
         }
     }
 }

@@ -37,7 +37,7 @@ export async function startScript({
             isCloud || integrationFilesAreRemote
                 ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
                 : localFileService.getIntegrationFile({
-                      syncName: nangoProps.syncConfig.sync_name,
+                      syncConfig: nangoProps.syncConfig,
                       providerConfigKey: nangoProps.providerConfigKey,
                       scriptType: nangoProps.scriptType
                   });
