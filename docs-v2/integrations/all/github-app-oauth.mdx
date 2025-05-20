@@ -14,16 +14,44 @@ import PreBuiltUseCases from "/snippets/generated/github-app-oauth/PreBuiltUseCa
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [GitHub account](https://github.com/signup). |
+| Paid test account | ✅ Not required | Free GitHub account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to publish your app to the GitHub Marketplace. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a GitHub account">
+    If you don't already have one, sign up for a [GitHub account](https://github.com/signup).
+  </Step>
+  <Step title="Create a new OAuth App">
+    1. In the upper-right corner of any GitHub page, click your profile photo, then click **Settings**.
+    2. Scroll down and click **Developer settings**.
+    3. In the left sidebar, click **OAuth Apps**.
+    4. Click **New OAuth App**.
+  </Step>
+  <Step title="Register your app">
+    1. Under **Application name**, enter a name for your app. Choose a clear and short name (maximum 34 characters).
+    2. Under **Homepage URL**, type the full URL to your app's website. If you don't have a dedicated URL, you can use your GitHub repository URL or organization URL.
+    3. Optionally, under **Description**, type a description of your app. Users will see this when installing your app.
+    3. **Authorization callback URL**: Enter `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Save your Client ID and Client Secret">
+    After registration:
+    1. Note your **Client ID** (visible).
+    2. Click **Generate a new client secret** to reveal your **Client Secret**.
+    3. Store both securely; you'll need them in Nango.
+  </Step>
+    <Step title="Creating a GitHub App">
+        If you don’t already have a GitHub App, please follow the [steps](github-app#setup-guide) to create one.
+    </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -32,30 +60,38 @@ _No setup guide yet._
 
 ## Useful links
 
--   [Difference between OAuth Apps and GitHub Apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps)
--   [How to register a GitHub App](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app)
--   [How to register an OAuth App](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)
--   [List of GitHub App permissions](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps)
--   [List of OAuth scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes)
--   [OAuth-related docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
+| Topic | Links | 
+| - | - | 
+| General | [GitHub Developer Documentation](https://docs.github.com/en) |
+| | [GitHub Apps Documentation](https://docs.github.com/en/apps) |
+| | [GitHub Marketplace](https://github.com/marketplace) |
+| Developer | [How to register a GitHub App](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app) |
+| | [How to register a GitHub OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app) |
+| | [GitHub App Permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps) |
+| | [GitHub App Authentication](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app) |
+| | [GitHub OAuth app Authentication](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authenticating-to-the-rest-api-with-an-oauth-app) |
+| | [Using Webhooks with GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/using-webhooks-with-github-apps) |
+| | [Webhook Events and Payloads](https://docs.github.com/en/webhooks/webhook-events-and-payloads) |
+| | [GitHub REST API Documentation](https://docs.github.com/en/rest) |
+| | [GitHub GraphQL API Documentation](https://docs.github.com/en/graphql) |
+| | [Differences between GitHub Apps and OAuth Apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps) |
+| | [Best Practices for GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/best-practices-for-creating-a-github-app) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/github-app-oauth.mdx)</Note>
 
 ## API gotchas
 
--   When setting up a GitHub App:
-    - The App ID is made of numbers (e.g. 401953)
-    - The App Public Link is the URL to your Github App public page (e.g. https://github.com/apps/nango-github-app)
-    - The App Private Key needs to be generated in your GitHub App settings and starts with `-----BEGIN RSA PRIVATE KEY-----` (not to be confused with the Client Secrets)
-    - The Setup URL (displayed on your Nango integration page) needs to be added to your GitHub App configuration (not to be confused with the Callback URL that can stay empty)
 -   When setting up a GitHub App OAuth:
     - The App ID is made of numbers (e.g. 401953)
     - The App Public Link is the URL to your Github App public page (e.g. https://github.com/apps/nango-github-app)
     - The App Private Key needs to be generated in your GitHub App settings and starts with `-----BEGIN RSA PRIVATE KEY-----` (not to be confused with the Client Secrets)
     - The "Callback URL" needs to be filled in with the callback URL which unless customized will be https://api.nango.dev/oauth/callback and the checkbox "Request user authorization (OAuth) during installation" should be checked
     - The checkbox "Redirect on update" under "Post installation" should NOT be checked and the "Setup URL (optional)" should not be accessible
+-   The **GitHub App OAuth** flow is a hybrid between a **GitHub App** and an **OAuth App**. It is recommended when your **GitHub App** needs approval before being installed into an organization.
 -   There are certain API methods that only work with an OAuth App that will not work with an App. Please check the Github documentation and look for a "Works with Github Apps" header under the endpoint.
--   The `github-app-oauth` is a combination of a Github App and OAuth and should be used when a Github App would need approval to be installed into an organization.
 -   Nango supports initiating a connection with a GitHub App using the frontend SDK, but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
+-   Just like GitHub Apps, OAuth Apps can access GitHub's REST and GraphQL APIs, though the endpoints they can use are limited by the OAuth scopes granted by the user during authorization.
+-   **GitHub App OAuth** authentication uses a user access token, rather than an installation token.
+-   Webhook payloads are signed with the webhook secret you configured. Always verify the signature to ensure the webhook is legitimate.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/github-app-oauth.mdx)</Note>
