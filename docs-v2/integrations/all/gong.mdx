@@ -113,6 +113,7 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
 - End users can generate API keys [on the Gong API page](https://app.gong.io/company/api). They must have the "technical administrator" user role to do this.
 - Gong uses BASIC auth for their API, but doesn't call them username and password: `Access Key` is the username in Nango and `Access Key Secret` is the password in Nango.
 - [Gong rate-limits](https://app.gong.io/settings/api/documentation#overview) are per second and a total of 10k requests a day.
+- By default Gong limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day. You may however change these rates by contacting [help](https://help.gong.io/).
 - For OAuth integration, Gong uses `api_base_url_for_customer`, which varies for each customer, as its `base_url` for proxy requests. This parameter is returned in the response of `generate-customer-token`.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong.mdx)</Note>
