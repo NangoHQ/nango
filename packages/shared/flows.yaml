@@ -5800,6 +5800,20 @@ integrations:
                     - api:calls:read:basic
                     - api:calls:read:media-url
                     - api:calls:read:extensive
+            call-transcripts:
+                runs: every 1h
+                sync_type: incremental
+                description: |
+                    Fetches a list of call transcripts from Gong
+                version: 1.0.0
+                input: GongCallTranscriptMetadata
+                output: GongCallTranscriptSyncOutput
+                endpoint:
+                    method: GET
+                    path: /call-transcripts
+                    group: Calls
+                scopes:
+                    - api:calls:read:transcript
         actions:
             fetch-call-transcripts:
                 description: |
@@ -5900,6 +5914,19 @@ integrations:
                 backfillPeriodMs: number
             ActionResponseError:
                 message: string
+            GongCallTranscriptMetadata:
+                backfillPeriodMs: number
+                callIds?: string[]
+                workspaceId?: string
+            GongCallTranscriptSyncOutput:
+                id: string
+                transcript:
+                    - speaker_id: string
+                      topic: string
+                      sentences:
+                          - start: number
+                            end: number
+                            text: string
     gong-oauth:
         syncs:
             users:
@@ -5931,6 +5958,20 @@ integrations:
                     - api:calls:read:basic
                     - api:calls:read:media-url
                     - api:calls:read:extensive
+            call-transcripts:
+                runs: every 1h
+                sync_type: incremental
+                description: |
+                    Fetches a list of call transcripts from Gong
+                version: 1.0.0
+                input: GongCallTranscriptMetadata
+                output: GongCallTranscriptSyncOutput
+                endpoint:
+                    method: GET
+                    path: /call-transcripts
+                    group: Calls
+                scopes:
+                    - api:calls:read:transcript
         actions:
             fetch-call-transcripts:
                 description: |
@@ -6031,6 +6072,19 @@ integrations:
                 backfillPeriodMs: number
             ActionResponseError:
                 message: string
+            GongCallTranscriptMetadata:
+                backfillPeriodMs: number
+                callIds?: string[]
+                workspaceId?: string
+            GongCallTranscriptSyncOutput:
+                id: string
+                transcript:
+                    - speaker_id: string
+                      topic: string
+                      sentences:
+                          - start: number
+                            end: number
+                            text: string
     google:
         syncs:
             workspace-org-units:
@@ -13776,6 +13830,121 @@ integrations:
                 name: string
                 createdDateTime: string
                 webUrl: string
+    oracle-hcm:
+        syncs:
+            unified-employees:
+                runs: every hour
+                sync_type: incremental
+                description: Fetch all employees from Oracle HCM
+                output: StandardEmployee
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
+            employees:
+                runs: every hour
+                sync_type: incremental
+                description: Fetch all employees from Oracle HCM in the native Oracle data model
+                output: Employee
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Oracle HCM API
+        models:
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?: UnifiedAddress | undefined
+                addresses?: UnifiedAddress[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Employee:
+                id: string
+                personNumber: string | undefined
+                displayName?: string
+                firstName?: string | undefined
+                lastName?: string | undefined
+                workEmail?: string | undefined
+                title?: string | undefined
+                departmentId?: string | undefined
+                departmentName?: string | undefined
+                assignmentStatusType?: string | undefined
+                startDate?: string | undefined
+                terminationDate?: string | undefined
+                managerId?: string | undefined
+                managerName?: string | undefined
+                workLocationName?: string | undefined
+                workLocationType?: string | undefined
+                correspondenceLanguage?: string | undefined | null
+                bloodType?: string | undefined | null
+                dateOfBirth?: string | undefined | null
+                dateOfDeath?: string | undefined | null
+                countryOfBirth?: string | undefined | null
+                regionOfBirth?: string | undefined | null
+                townOfBirth?: string | undefined | null
+                applicantNumber?: string | undefined | null
+                createdBy?: string | undefined
+                lastUpdatedBy?: string | undefined
+                creationDate?: string | undefined
+                lastUpdateDate?: string | undefined
+                workLocationAddress?: OracleHcmAddress | undefined
+                addresses?: OracleHcmAddress[] | undefined
+                phones?: OracleHcmPhone[] | undefined
+                emails?: OracleHcmEmail[] | undefined
+            OracleHcmAddress:
+                addressLine1?: string | undefined | null
+                addressLine2?: string | undefined | null
+                townOrCity?: string | undefined | null
+                region2?: string | undefined | null
+                country?: string | undefined
+                postalCode?: string | undefined | null
+                addressType?: string | undefined
+                primaryFlag?: boolean | undefined
+            OracleHcmPhone:
+                phoneType?: string | undefined
+                phoneNumber?: string | undefined
+                primaryFlag?: boolean | undefined
+            OracleHcmEmail:
+                emailType?: string | undefined
+                emailAddress?: string | undefined
+                primaryFlag?: boolean | undefined
+            UnifiedAddress:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     outlook:
         syncs:
             emails:
