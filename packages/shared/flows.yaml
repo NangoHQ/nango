@@ -13830,6 +13830,63 @@ integrations:
                 name: string
                 createdDateTime: string
                 webUrl: string
+    oracle-hcm:
+        syncs:
+            unified-employees:
+                runs: every hour
+                sync_type: full
+                track_deletes: true
+                description: Fetch all employees from Oracle HCM
+                output: StandardEmployee
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
+        models:
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?: UnifiedAddress | undefined
+                addresses?: UnifiedAddress[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            UnifiedAddress:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     outlook:
         syncs:
             emails:
