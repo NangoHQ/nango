@@ -58,7 +58,7 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
     1. Log in to your Gong developer account.
     2. Navigate to **Company Settings** > **Ecosystem** > **API**.
     3. Click on the **OAuth** tab.
-    4. Click **Create App** to start the app creation process.
+    4. In the **INTEGRATIONS** tab, click **Create Integration**.
   </Step>
   <Step title="Configure OAuth settings">
     1. Fill in the required app information:
@@ -66,7 +66,7 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
        - **Description**: Brief description of your app
        - **Company Website**: Your company's website URL
        - **Redirect URIs**: Add `https://api.nango.dev/oauth/callback`
-    2. Select the OAuth scopes your app requires.
+    2. In the **Required authorization scopes** area, select the scopes that your app needs.
     3. Click **Save** to create your app.
   </Step>
   <Step title="Obtain OAuth credentials">
@@ -94,17 +94,15 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
-| General | [Website](https://www.gong.io/) |
-| | [Create a Gong account](https://www.gong.io/free-trial/) |
-| Developer | [API documentation](https://app.gong.io/settings/api/documentation#overview) |
-| | [Developer signup](https://app.gong.io/welcome/developer/sign-up) |
-| | [Receive access to the API](https://help.gong.io/docs/receive-access-to-the-api) |
-| | [Create an app for Gong](https://help.gong.io/docs/create-an-app-for-gong) |
-| | [OAuth documentation](https://help.gong.io/docs/create-an-app-for-gong#set-up-oauth) |
-| | [API rate limits](https://app.gong.io/settings/api/documentation#overview) |
-| | [SCIM API documentation](https://help.gong.io/docs/provision-team-members-from-a-custom-source-scim) |
+-   [Website](https://www.gong.io/)
+-   [Create a Gong account](https://www.gong.io/free-trial/)
+-   [API documentation](https://app.gong.io/settings/api/documentation#overview)
+-   [Developer signup](https://app.gong.io/welcome/developer/sign-up)
+-   [Receive access to the API](https://help.gong.io/docs/receive-access-to-the-api)
+-   [Create an app for Gong](https://help.gong.io/docs/create-an-app-for-gong)
+-   [OAuth documentation](https://help.gong.io/docs/create-an-app-for-gong#set-up-oauth)
+-   [API rate limits](https://app.gong.io/settings/api/documentation#overview)
+-   [SCIM API documentation](https://help.gong.io/docs/provision-team-members-from-a-custom-source-scim)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong.mdx)</Note>
 
@@ -115,10 +113,7 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
 - End users can generate API keys [on the Gong API page](https://app.gong.io/company/api). They must have the "technical administrator" user role to do this.
 - Gong uses BASIC auth for their API, but doesn't call them username and password: `Access Key` is the username in Nango and `Access Key Secret` is the password in Nango.
 - [Gong rate-limits](https://app.gong.io/settings/api/documentation#overview) are per second and a total of 10k requests a day.
-- By default Gong limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day. You may however change these rates by contacting [Gong help](https://help.gong.io/).
 - For OAuth integration, Gong uses `api_base_url_for_customer`, which varies for each customer, as its `base_url` for proxy requests. This parameter is returned in the response of `generate-customer-token`.
-- OAuth apps are initially set to "Private" mode and can only be used within your organization. To make them available to other Gong customers, you need to publish to the Gong Collective and get approval.
-- OAuth tokens expire after a certain period, but Nango automatically handles token refresh for you.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong.mdx)</Note>
 
