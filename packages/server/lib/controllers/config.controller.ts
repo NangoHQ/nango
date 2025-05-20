@@ -1,42 +1,24 @@
-import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
-import type { Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration } from '@nangohq/shared';
-import { isHosted } from '@nangohq/utils';
-import type { AuthModeType, NangoSyncConfig, ProviderTwoStep, StandardNangoConfig } from '@nangohq/types';
+
 import {
-    flowService,
-    errorManager,
     NangoError,
-    analytics,
-    AnalyticsTypes,
     configService,
     connectionService,
-    getUniqueSyncsByProviderConfig,
-    getActionsByProviderConfigKey,
-    getFlowConfigsByParams,
+    errorManager,
+    flowService,
     getGlobalWebhookReceiveUrl,
-    getSyncConfigsAsStandardConfig,
     getProvider,
-    getProviders
+    getProviders,
+    getSimplifiedActionsByProviderConfigKey,
+    getSyncConfigsAsStandardConfig,
+    getUniqueSyncsByProviderConfig
 } from '@nangohq/shared';
-import { parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../utils/utils.js';
+import { isHosted } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express.js';
-
-export interface Integration {
-    authMode: AuthModeType;
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    scripts: number;
-    creationDate: Date | undefined;
-    connectionConfigParams?: string[];
-    credentialParams?: string[];
-    missing_fields_count: number;
-}
-
-export interface ListIntegration {
-    integrations: Integration[];
-}
+import type { Config as ProviderConfig, Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
+import type { IntegrationConfig, NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 interface FlowConfigs {
     enabledFlows: NangoSyncConfig[];
@@ -111,56 +93,6 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
 };
 
 class ConfigController {
-    /**
-     * Webapp
-     */
-
-    async listProviderConfigsWeb(_: Request, res: Response<ListIntegration, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const configs = await configService.listIntegrationForApi(environment.id);
-
-            const integrations = await Promise.all(
-                configs.map(async (config) => {
-                    const provider = getProvider(config.provider);
-                    const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
-
-                    const integration: Integration = {
-                        authMode: provider?.auth_mode || 'APP',
-                        uniqueKey: config.unique_key,
-                        provider: config.provider,
-                        scripts: activeFlows.length,
-                        connection_count: Number(config.connection_count),
-                        creationDate: config.created_at,
-                        missing_fields_count: config.missing_fields.length
-                    };
-
-                    // Used by legacy connection create
-                    // TODO: remove this
-                    if (provider) {
-                        if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
-                            integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
-                        }
-
-                        // Check if provider is of type ProviderTwoStep
-                        if (provider.auth_mode === 'TWO_STEP') {
-                            integration['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
-                        }
-                    }
-
-                    return integration;
-                })
-            );
-
-            res.status(200).send({
-                integrations: integrations
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
         const providers = getProviders();
         if (!providers) {
@@ -240,7 +172,7 @@ class ConfigController {
                 };
             });
 
-            const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
+            const actions = await getSimplifiedActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
@@ -303,7 +235,6 @@ class ConfigController {
     async createProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -393,7 +324,8 @@ class ConfigController {
                 return;
             }
 
-            const config: ProviderConfig = {
+            const config: IntegrationConfig = {
+                display_name: null,
                 unique_key: uniqueConfigKey,
                 provider: providerName,
                 oauth_client_id,
@@ -418,7 +350,6 @@ class ConfigController {
             const result = await configService.createProviderConfig(config, provider);
 
             if (result) {
-                void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: result.provider });
                 res.status(200).send({
                     config: {
                         unique_key: result.unique_key,
@@ -509,17 +440,20 @@ class ConfigController {
                 return;
             }
 
-            await configService.editProviderConfig({
-                ...oldConfig,
-                unique_key: uniqueKey,
-                provider: providerName,
-                oauth_client_id: req.body['oauth_client_id'],
-                oauth_client_secret,
-                oauth_scopes: req.body['oauth_scopes'],
-                app_link: req.body['app_link'],
-                environment_id: environmentId,
-                custom
-            });
+            await configService.editProviderConfig(
+                {
+                    ...oldConfig,
+                    unique_key: uniqueKey,
+                    provider: providerName,
+                    oauth_client_id: req.body['oauth_client_id'],
+                    oauth_client_secret,
+                    oauth_scopes: req.body['oauth_scopes'],
+                    app_link: req.body['app_link'],
+                    environment_id: environmentId,
+                    custom
+                },
+                provider
+            );
             res.status(200).send({
                 config: {
                     unique_key: uniqueKey,

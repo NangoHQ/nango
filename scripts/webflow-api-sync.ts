@@ -1,11 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { WebflowClient } from 'webflow-api';
-import yaml from 'js-yaml';
 import { setTimeout } from 'node:timers/promises';
 import util from 'node:util';
+
+import yaml from 'js-yaml';
+import { WebflowClient } from 'webflow-api';
+
+import type { FlowsYaml, Provider } from '@nangohq/types';
 import type { CollectionItem, CollectionItemList } from 'webflow-api/api';
-import type { Provider, FlowsYaml } from '@nangohq/types';
 
 const rateLimitSleep = 1000;
 

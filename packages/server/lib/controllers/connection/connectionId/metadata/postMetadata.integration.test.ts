@@ -1,5 +1,7 @@
-import { connectionService, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { connectionService, seeders } from '@nangohq/shared';
+
 import { runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -28,7 +30,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate body with an empty connection_id', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -56,7 +58,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate body with an empty provider config key', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -84,7 +86,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should provide an unknown connection response if a bad connection is provided', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const connection_id = 'abc';
         const provider_config_key = 'test';
@@ -109,7 +111,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should provide an unknown connection response if bad connections are provided', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const connection_id = ['abc', 'def'];
         const provider_config_key = 'test';
@@ -134,7 +136,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('Should replace existing metadata, overwriting anything existing', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'test-replace', 'google');
         const connections = await seeders.createConnectionSeed({ env, provider: 'test-replace' });
 

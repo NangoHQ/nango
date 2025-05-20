@@ -1,8 +1,11 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
-import { bodySchema as originalBodySchema, postConnectSessions } from '../../../connect/postSessions.js';
 import { z } from 'zod';
+
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { bodySchema as originalBodySchema, postConnectSessions } from '../../../connect/postSessions.js';
+
+import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
 
 const bodySchema = z
     .object({

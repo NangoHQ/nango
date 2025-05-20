@@ -1,5 +1,5 @@
-import type { MaybePromise } from '@nangohq/types';
 import type { ConnectUIEvent, ConnectUIEventToken } from './types';
+import type { MaybePromise } from '@nangohq/types';
 
 export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
@@ -21,6 +21,12 @@ export interface ConnectUIProps {
      * A callback to listen to events sent by Nango Connect
      */
     onEvent?: OnConnectEvent;
+    /**
+     * Control OAuth popup close detection.
+     * If set to false a closed popup will not be detected as a failed authorization
+     * @default true
+     */
+    detectClosedAuthWindow?: boolean;
 }
 
 export class ConnectUI {
@@ -32,12 +38,14 @@ export class ConnectUI {
     private baseURL;
     private apiURL;
     private onEvent;
+    private detectClosedAuthWindow?: boolean | undefined;
 
-    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', apiURL = 'https://api.nango.dev', onEvent }: ConnectUIProps) {
+    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', apiURL = 'https://api.nango.dev', detectClosedAuthWindow, onEvent }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
         this.apiURL = apiURL;
         this.onEvent = onEvent;
+        this.detectClosedAuthWindow = detectClosedAuthWindow;
     }
 
     /**
@@ -48,6 +56,9 @@ export class ConnectUI {
         const baseURL = new URL(this.baseURL);
         if (this.apiURL) {
             baseURL.searchParams.append('apiURL', this.apiURL);
+        }
+        if (this.detectClosedAuthWindow) {
+            baseURL.searchParams.append('detectClosedAuthWindow', String(this.detectClosedAuthWindow));
         }
 
         // Create an iframe that will contain the ConnectUI on top of existing UI

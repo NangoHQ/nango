@@ -1,3 +1,5 @@
+import { Ok } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 
@@ -18,9 +20,26 @@ const route: WebhookHandler = async (nango, integration, _headers, body, _rawBod
             }
         }
 
-        return { connectionIds };
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds
+        });
     } else {
-        return nango.executeScriptForWebhooks(integration, body, 'payload.webhookEvent', 'payload.user.accountId', logContextGetter, 'accountId');
+        const response = await nango.executeScriptForWebhooks(
+            integration,
+            body,
+            'payload.webhookEvent',
+            'payload.user.accountId',
+            logContextGetter,
+            'accountId'
+        );
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: body
+        });
     }
 };
 

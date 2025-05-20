@@ -1,10 +1,11 @@
 import { isTest } from '@nangohq/utils';
+
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { client } from './client.js';
 import { getDailyIndexPipeline, indexMessages, policyRetention } from './schema.js';
-import { createMessage } from '../models/messages.js';
 import { getFormattedMessage } from '../models/helpers.js';
+import { createMessage } from '../models/messages.js';
 
 export async function start() {
     if (!envs.NANGO_LOGS_ENABLED) {
@@ -53,7 +54,7 @@ export async function migrateMapping() {
         if (!existsAlias) {
             // insert a dummy record to create first index
             logger.info(`  Inserting dummy record`);
-            await createMessage(getFormattedMessage({ parentId: '-1' }));
+            await createMessage(getFormattedMessage({ parentId: '-1', accountId: 0 }));
         }
     } catch (err) {
         logger.error(err);

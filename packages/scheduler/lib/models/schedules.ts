@@ -3,7 +3,7 @@ import { uuidv7 } from 'uuidv7';
 import type knex from 'knex';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { Schedule, ScheduleState } from '../types';
+import type { Schedule, ScheduleProps, ScheduleState } from '../types.js';
 
 export const SCHEDULES_TABLE = 'schedules';
 
@@ -107,7 +107,6 @@ export const DbSchedule = {
     })
 };
 
-export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 export async function create(db: knex.Knex, props: ScheduleProps): Promise<Result<Schedule>> {
     const now = new Date();
     const newSchedule: Schedule = {

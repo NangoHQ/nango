@@ -1,34 +1,34 @@
-import type React from 'react';
-import { useState, useMemo, useEffect } from 'react';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import * as Table from '../../components/ui/Table';
+import { useDebounce } from 'react-use';
 
-import { Input } from '../../components/ui/input/Input';
-import { useConnections, useConnectionsCount } from '../../hooks/useConnections';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import DashboardLayout from '../../layout/DashboardLayout';
+import { EndUserProfile } from './components/EndUserProfile';
+import { AvatarOrganization } from '../../components/AvatarCustom';
+import { CopyText } from '../../components/CopyText';
+import { ErrorCircle } from '../../components/ErrorCircle';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { MultiSelect } from '../../components/MultiSelect';
-
-import { useStore } from '../../store';
-import { Button, ButtonLink } from '../../components/ui/button/Button';
-import { formatDateToInternationalFormat } from '../../utils/utils';
-import { useDebounce } from 'react-use';
-import { useListIntegration } from '../../hooks/useIntegration';
-import { Skeleton } from '../../components/ui/Skeleton';
-import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { ErrorCircle } from '../../components/ErrorCircle';
-import Spinner from '../../components/ui/Spinner';
-import { AvatarOrganization } from '../../components/AvatarCustom';
-import type { ApiConnectionSimple } from '@nangohq/types';
-import { CopyText } from '../../components/CopyText';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
-import { Helmet } from 'react-helmet';
-import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { EndUserProfile } from './components/EndUserProfile';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { Skeleton } from '../../components/ui/Skeleton';
+import Spinner from '../../components/ui/Spinner';
+import * as Table from '../../components/ui/Table';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
+import { Input } from '../../components/ui/input/Input';
+import { useConnections, useConnectionsCount } from '../../hooks/useConnections';
+import { useListIntegration } from '../../hooks/useIntegration';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
 import { getConnectionDisplayName } from '../../utils/endUser';
+import { formatDateToInternationalFormat } from '../../utils/utils';
+
+import type { ApiConnectionSimple } from '@nangohq/types';
+import type { ColumnDef } from '@tanstack/react-table';
+import type React from 'react';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -160,10 +160,10 @@ export const ConnectionList: React.FC = () => {
         if (!listIntegration) {
             return [];
         }
-        return listIntegration.integrations.map((integration) => {
-            return { name: integration.uniqueKey, value: integration.uniqueKey };
+        return listIntegration.map((integration) => {
+            return { name: integration.unique_key, value: integration.unique_key };
         });
-    }, [listIntegration?.integrations]);
+    }, [listIntegration]);
 
     // --- Table Display
     useEffect(() => {

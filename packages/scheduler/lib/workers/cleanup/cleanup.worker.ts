@@ -1,97 +1,34 @@
-import * as fs from 'fs';
 import type { MessagePort } from 'node:worker_threads';
-import { Worker, isMainThread } from 'node:worker_threads';
-import { stringifyError } from '@nangohq/utils';
 import * as tasks from '../../models/tasks.js';
+import * as groups from '../../models/groups.js';
 import * as schedules from '../../models/schedules.js';
-import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
+import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { envs } from '../../env.js';
 
-interface ExpiredTasksMessage {
-    ids: string[];
-}
-
-export class CleanupWorker {
-    private worker: Worker | null;
+export class CleanupWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
-        if (isMainThread) {
-            const url = new URL('../../../dist/workers/cleanup/cleanup.worker.boot.js', import.meta.url);
-            if (!fs.existsSync(url)) {
-                throw new Error(`Cleanup script not found at ${url.href}`);
-            }
-
-            this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });
-            // Throw error if cleanup exits with error
-            this.worker.on('error', (err) => {
-                throw new Error(`Cleanup exited with error: ${stringifyError(err)}`);
-            });
-            // Throw error if cleanup exits with non-zero exit code
-            this.worker.on('exit', (code) => {
-                if (code !== 0) {
-                    throw new Error(`Cleanup exited with exit code: ${code}`);
-                }
-            });
-        } else {
-            throw new Error('CleanupWorker should be instantiated in the main thread');
-        }
-    }
-
-    start(): void {
-        this.worker?.postMessage('start');
-    }
-
-    stop(): void {
-        if (this.worker) {
-            this.worker.postMessage('stop');
-            this.worker = null;
-        }
-    }
-
-    on(callback: (message: ExpiredTasksMessage) => void): void {
-        this.worker?.on('message', callback);
+        super({
+            workerUrl: new URL('../../../dist/workers/cleanup/cleanup.worker.boot.js', import.meta.url),
+            name: 'Cleanup',
+            databaseUrl: databaseUrl,
+            databaseSchema
+        });
     }
 }
 
-export class CleanupChild {
-    private db: knex.Knex;
-    private parent: MessagePort;
-    private cancelled: boolean = false;
-    private tickIntervalMs = 10_000;
-
+export class CleanupChild extends SchedulerWorkerChild {
     constructor(parent: MessagePort, db: knex.Knex) {
-        if (isMainThread) {
-            throw new Error('Cleanup should not be instantiated in the main thread');
-        }
-        this.db = db;
-        this.parent = parent;
-        this.parent.on('message', async (msg: 'start' | 'stop') => {
-            switch (msg) {
-                case 'start':
-                    await this.start();
-                    break;
-                case 'stop':
-                    this.stop();
-                    break;
-            }
+        super({
+            name: 'Cleanup',
+            parent,
+            db,
+            tickIntervalMs: envs.ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS
         });
     }
 
-    async start(): Promise<void> {
-        logger.info('Starting cleanup...');
-
-        while (!this.cancelled) {
-            await this.clean();
-            await setTimeout(this.tickIntervalMs);
-        }
-    }
-
-    stop(): void {
-        logger.info('Stopping cleanup...');
-        this.cancelled = true;
-    }
-
-    async clean(): Promise<void> {
+    async run(): Promise<void> {
         await this.db.transaction(async (trx) => {
             // hard delete schedules where deletedAt is older than 10 days
             const deletedSchedules = await schedules.hardDeleteOlderThanNDays(trx, 10);
@@ -106,6 +43,13 @@ export class CleanupChild {
                 logger.error(deletedTasks.error);
             } else if (deletedTasks.value.length > 0) {
                 logger.info(`Hard deleted ${deletedTasks.value.length} tasks`);
+            }
+            // hard delete groups that have not been used in 10 days
+            const deletedGroups = await groups.hardDeleteUnused(trx, { ms: 10 * 24 * 60 * 60 * 1000 });
+            if (deletedGroups.isErr()) {
+                logger.error(deletedGroups.error);
+            } else if (deletedGroups.value.length > 0) {
+                logger.info(`Hard deleted ${deletedGroups.value.length} groups`);
             }
         });
     }

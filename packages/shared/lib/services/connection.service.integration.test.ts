@@ -1,12 +1,15 @@
-import { expect, describe, it, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import db, { multipleMigrations } from '@nangohq/database';
+
 import connectionService from './connection.service.js';
-import type { DBConnection, Metadata } from '@nangohq/types';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
-import { createConnectionSeeds, createConnectionSeed } from '../seeders/connection.seeder.js';
+import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+
+import type { Metadata } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     beforeAll(async () => {
@@ -30,7 +33,7 @@ describe('Connection service integration tests', () => {
             };
 
             const [connectionId] = connections;
-            const connection = { id: connectionId } as DBConnection;
+            const connection = getTestConnection({ id: connectionId! });
             await db.knex.transaction(async (trx) => {
                 await connectionService.replaceMetadata([connection.id], initialMetadata, trx);
                 await connectionService.replaceMetadata([connection.id], newMetadata, trx);

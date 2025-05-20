@@ -1,4 +1,5 @@
 import { Ok } from '@nangohq/utils';
+
 import type { NodeProvider } from './node_provider';
 
 export const noopNodeProvider: NodeProvider = {
