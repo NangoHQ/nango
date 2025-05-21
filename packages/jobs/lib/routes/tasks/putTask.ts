@@ -95,9 +95,9 @@ const validate = validateRequest<PutTask>({
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
 });
 
-const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutTask>) => {
-    const { taskId } = req.params;
-    const { nangoProps, error, output } = req.body;
+const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
+    const { taskId } = res.locals.parsedParams;
+    const { nangoProps, error, output } = res.locals.parsedBody;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
