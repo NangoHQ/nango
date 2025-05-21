@@ -3,7 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { formatTemplateString, getNestedValue } from './utils';
 
 // Define supported languages
-export type Language = 'en' | 'fr'; // Add more as needed
+export const SUPPORTED_LANGUAGES = ['en', 'fr'] as const; // Add more as needed
+export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 // Translation object type
 type TranslationsType = Record<string, Record<string, unknown>>;
@@ -24,8 +25,12 @@ const I18nContext = createContext<I18nContextType | null>(null);
 export const I18nProvider: React.FC<{
     children: React.ReactNode;
     defaultLanguage?: Language;
-}> = ({ children, defaultLanguage = 'en' }) => {
-    const [language, setLanguage] = useState<Language>(defaultLanguage);
+    language?: string;
+}> = ({ children, defaultLanguage = 'en', language }) => {
+    // Check if provided language is supported, otherwise use defaultLanguage
+    const initialLanguage = language && (language === 'en' || language === 'fr') ? language : defaultLanguage;
+
+    const [currentLanguage, setCurrentLanguage] = useState<Language>(initialLanguage);
     const [translations, setTranslations] = useState<TranslationsType>({});
     const [fallbackTranslations, setFallbackTranslations] = useState<TranslationsType>({});
     const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +45,7 @@ export const I18nProvider: React.FC<{
                 setInitialEnglishLoaded(true);
 
                 // If the default language is English, also set as main translations
-                if (language === 'en') {
+                if (currentLanguage === 'en') {
                     setTranslations(module.default);
                     setIsLoading(false);
                 }
@@ -51,12 +56,12 @@ export const I18nProvider: React.FC<{
         };
 
         void loadInitialEnglish();
-    }, [language]); // Include language in the dependency array
+    }, [currentLanguage]); // Include language in the dependency array
 
     // Load translations for the selected language when language changes
     useEffect(() => {
         // Skip the initial load for English since we already loaded it
-        if (language === 'en' && initialEnglishLoaded) {
+        if (currentLanguage === 'en' && initialEnglishLoaded) {
             setTranslations(fallbackTranslations);
             setIsLoading(false);
             return;
@@ -65,10 +70,10 @@ export const I18nProvider: React.FC<{
         const loadTranslations = async () => {
             setIsLoading(true);
             try {
-                const module = await import(`../i18n/translations/${language}.ts`);
+                const module = await import(`../i18n/translations/${currentLanguage}.ts`);
                 setTranslations(module.default);
             } catch (err) {
-                console.error(`Failed to load translations for ${language}`, err);
+                console.error(`Failed to load translations for ${currentLanguage}`, err);
                 setTranslations({});
             } finally {
                 setIsLoading(false);
@@ -76,7 +81,7 @@ export const I18nProvider: React.FC<{
         };
 
         void loadTranslations();
-    }, [language, initialEnglishLoaded, fallbackTranslations]);
+    }, [currentLanguage, initialEnglishLoaded, fallbackTranslations]);
 
     /**
      * Translates a key into the current language
@@ -94,7 +99,7 @@ export const I18nProvider: React.FC<{
         if (typeof value === 'string') {
             // Use the value from current language if available
             translatedString = value;
-        } else if ((isLoading && language !== 'en') || value === null) {
+        } else if ((isLoading && currentLanguage !== 'en') || value === null) {
             // In loading state or key not found, try English fallback
             const fallbackValue = getNestedValue(fallbackTranslations, key);
             if (typeof fallbackValue === 'string') {
@@ -110,7 +115,7 @@ export const I18nProvider: React.FC<{
         return translatedString;
     };
 
-    return <I18nContext.Provider value={{ t, language, setLanguage, isLoading }}>{children}</I18nContext.Provider>;
+    return <I18nContext.Provider value={{ t, language: currentLanguage, setLanguage: setCurrentLanguage, isLoading }}>{children}</I18nContext.Provider>;
 };
 
 export const useI18n = (): I18nContextType => {

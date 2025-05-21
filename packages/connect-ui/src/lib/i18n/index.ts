@@ -1,3 +1,3 @@
-export { I18nProvider, useI18n } from './context';
+export { I18nProvider, SUPPORTED_LANGUAGES, useI18n } from './context';
 export type { Language } from './context';
-export { detectLanguage, formatTemplateString } from './utils';
+export { formatTemplateString, getLanguage } from './utils';

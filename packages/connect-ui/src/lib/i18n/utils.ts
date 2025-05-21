@@ -1,10 +1,19 @@
+import { SUPPORTED_LANGUAGES } from './context';
+
 import type { Language } from './context';
 
-export const detectLanguage = (): Language => {
-    const browserLang = navigator.language.split('-')[0];
-    const supportedLanguages: Language[] = ['en', 'fr']; // Add all supported languages
+export const getLanguage = (languageParam?: string | null): Language => {
+    const languageOrLocale = languageParam || getBrowserLanguage();
+    const language = languageOrLocale.split('-')[0];
+    // Check if provided language is supported
+    if (language && SUPPORTED_LANGUAGES.includes(language as Language)) {
+        return language as Language;
+    }
+    return 'en';
+};
 
-    return supportedLanguages.includes(browserLang as Language) ? (browserLang as Language) : 'en'; // Default fallback
+const getBrowserLanguage = (): string => {
+    return navigator.language;
 };
 
 /**

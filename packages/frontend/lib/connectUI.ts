@@ -27,6 +27,11 @@ export interface ConnectUIProps {
      * @default true
      */
     detectClosedAuthWindow?: boolean;
+
+    /**
+     * The language to use for the UI. Defaults to browser language or english if not supported.
+     */
+    language?: string;
 }
 
 export class ConnectUI {
@@ -39,13 +44,22 @@ export class ConnectUI {
     private apiURL;
     private onEvent;
     private detectClosedAuthWindow?: boolean | undefined;
+    private language?: string | undefined;
 
-    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', apiURL = 'https://api.nango.dev', detectClosedAuthWindow, onEvent }: ConnectUIProps) {
+    constructor({
+        sessionToken,
+        baseURL = 'https://connect.nango.dev',
+        apiURL = 'https://api.nango.dev',
+        detectClosedAuthWindow,
+        onEvent,
+        language
+    }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
         this.apiURL = apiURL;
         this.onEvent = onEvent;
         this.detectClosedAuthWindow = detectClosedAuthWindow;
+        this.language = language;
     }
 
     /**
@@ -59,6 +73,9 @@ export class ConnectUI {
         }
         if (this.detectClosedAuthWindow) {
             baseURL.searchParams.append('detectClosedAuthWindow', String(this.detectClosedAuthWindow));
+        }
+        if (this.language) {
+            baseURL.searchParams.append('language', this.language);
         }
 
         // Create an iframe that will contain the ConnectUI on top of existing UI

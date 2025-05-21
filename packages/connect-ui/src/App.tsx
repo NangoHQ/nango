@@ -1,18 +1,20 @@
 import { QueryClientProvider, QueryErrorResetBoundary } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
+import { useSearchParam } from 'react-use';
 
 import { I18nProvider } from './lib/i18n';
-import { detectLanguage } from './lib/i18n/utils';
+import { getLanguage } from './lib/i18n/utils.js';
 import { queryClient } from './lib/query.js';
 import { router } from './lib/routes.js';
 
 export const App: React.FC = () => {
-    const detectedLanguage = detectLanguage();
+    const languageParam = useSearchParam('language');
+    const language = getLanguage(languageParam);
 
     return (
         <QueryErrorResetBoundary>
             <QueryClientProvider client={queryClient}>
-                <I18nProvider defaultLanguage={detectedLanguage}>
+                <I18nProvider defaultLanguage={language}>
                     <RouterProvider router={router} />
                 </I18nProvider>
             </QueryClientProvider>
