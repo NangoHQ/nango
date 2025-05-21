@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as zeroYaml from './zeroYaml.js';
+import * as zeroYaml from './toZeroYaml.js';
 
 import type { NangoModel } from '@nangohq/types';
 
@@ -12,6 +12,13 @@ export default async function fetchData(nango: NangoSync) {
     await nango.batchSave<Model>([{
         'id': 'foobar',
     }], 'Model');
+
+}
+export async function onWebhookPayloadReceived(
+  nango: NangoSync,
+  payload: any,
+): Promise<void> {
+  await nango.log('Received webhook', payload);
 }`;
         const result = zeroYaml.transformSync({
             content: ts,

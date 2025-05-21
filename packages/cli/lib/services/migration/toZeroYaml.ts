@@ -4,49 +4,86 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 import jscodeshift from 'jscodeshift';
+import ora from 'ora';
 
+import { Err, Ok } from '../../utils/result.js';
 import { printDebug } from '../../utils.js';
 import { NANGO_VERSION } from '../../version.js';
 import { compileAllFiles } from '../compile.service.js';
 import { loadYamlAndGenerate } from '../model.service.js';
-import verificationService from '../verification.service.js';
 
-import type { NangoModel, NangoModelField, ParsedNangoSync } from '@nangohq/types';
+import type { NangoModel, NangoModelField, ParsedNangoSync, Result } from '@nangohq/types';
 import type { Collection } from 'jscodeshift';
 
-export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }) {
-    await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, debug });
+export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
+    const spinner = ora({ text: 'Precompiling' }).start();
     const { success } = await compileAllFiles({ fullPath, debug });
     if (!success) {
+        spinner.fail();
         console.log(chalk.red('Failed to compile. Exiting'));
-        process.exitCode = 1;
-        return;
+        return Err('failed_to_precompile');
     }
 
     const parsed = loadYamlAndGenerate({ fullPath, debug });
     if (!parsed) {
-        process.exitCode = 1;
-        return;
+        return Err('failed_to_parse');
     }
 
-    await addPackageJson({ fullPath, debug });
+    spinner.succeed();
+
+    {
+        const spinner = ora({ text: 'Add package.json' }).start();
+        await addPackageJson({ fullPath, debug });
+        spinner.succeed();
+    }
 
     for (const integration of parsed.integrations) {
         for (const sync of integration.syncs) {
-            const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
+            const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/syncs/${sync.name}.ts` }).start();
+            try {
+                const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
 
-            const transformed = transformSync({ sync, content, models: parsed.models });
+                const transformed = transformSync({ sync, content, models: parsed.models });
 
-            // Append transformed code after line 55
-            const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
-            await fs.promises.writeFile(targetFile, transformed);
+                // Append transformed code after line 55
+                const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
+                await fs.promises.writeFile(targetFile, transformed);
+                spinner.succeed();
+            } catch (err) {
+                spinner.fail();
+                console.error(chalk.red(err));
+                return Err('failed_to_compile_one_file');
+            }
         }
+        // for (const action of integration.actions) {
+        //     const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/syncs/${sync.name}.ts` }).start();
+        //     try {
+        //         const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
+
+        //         const transformed = transformSync({ sync, content, models: parsed.models });
+
+        //         // Append transformed code after line 55
+        //         const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
+        //         await fs.promises.writeFile(targetFile, transformed);
+        //         spinner.succeed();
+        //     } catch (err) {
+        //         spinner.fail();
+        //         console.error(chalk.red(err));
+        //         return Err('failed_to_compile_one_file');
+        //     }
+        // }
     }
 
     // await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
     // await fs.promises.rm(path.join(fullPath, 'models.ts'));
 
-    await runNpmInstall(fullPath);
+    {
+        const spinner = ora({ text: 'Running npm install' }).start();
+        await runNpmInstall(fullPath);
+        spinner.succeed();
+    }
+
+    return Ok(undefined);
 }
 
 async function getContent({
@@ -126,27 +163,22 @@ async function runNpmInstall(fullPath: string): Promise<void> {
     });
 }
 
+const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError'];
 export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
 
-    // Add import { createSync } from 'nango'; if not present
-    const hasCreateSyncImport =
-        root
-            .find(j.ImportDeclaration)
-            .filter((path) => {
-                return (
-                    path.node.source.value === 'nango' &&
-                    Array.isArray(path.node.specifiers) &&
-                    path.node.specifiers.some((spec) => spec.type === 'ImportSpecifier' && spec.imported && spec.imported.name === 'createSync')
-                );
-            })
-            .size() > 0;
+    // Remove legacy models import
+    root.find(j.ImportDeclaration)
+        .filter((path) => {
+            const source = path.node.source.value;
+            return typeof source === 'string' && (/models(\.js)?$/.test(source) || /models(\.js)?$/.test(source.replace(/^.*\//, '')));
+        })
+        .remove();
 
-    if (!hasCreateSyncImport) {
-        const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createSync'))], j.literal('nango'));
-        root.get().node.program.body.unshift(importDecl);
-    }
+    // Add import { createSync } from 'nango'
+    const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createSync'))], j.literal('nango'));
+    root.get().node.program.body.unshift(importDecl);
 
     addZodImport(root, j);
 
@@ -259,11 +291,63 @@ export function transformSync({ content, sync, models }: { content: string; sync
             props.push(metadataProp);
         }
 
+        // Add exec prop
         props.push(execProp);
+
+        // Find and move onWebhookPayloadReceived if present
+        let onWebhookArrow = null;
+        root.find(j.ExportNamedDeclaration).forEach((p) => {
+            const decl = p.node.declaration;
+            if (decl && decl.type === 'FunctionDeclaration' && decl.id && decl.id.name === 'onWebhookPayloadReceived') {
+                // Remove type annotations from parameters
+                const webhookParams = decl.params.map((param) => {
+                    if (param.type === 'Identifier') {
+                        return j.identifier(param.name);
+                    }
+                    return param;
+                });
+                onWebhookArrow = j.arrowFunctionExpression(webhookParams, decl.body);
+                onWebhookArrow.async = !!decl.async;
+                // Remove the original function declaration
+                j(p).remove();
+            }
+        });
+        if (onWebhookArrow) {
+            props.push(j.objectProperty(j.identifier('onWebhook'), onWebhookArrow));
+        }
 
         const obj = j.objectExpression(props);
         path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createSync'), [obj])));
     });
+
+    // Find all used Types in the file that might be available in "nango"
+    const usedAllowedTypes = new Set<string>();
+    root.find(j.TSTypeReference).forEach((path) => {
+        if (path.node.typeName.type === 'Identifier') {
+            const name = path.node.typeName.name;
+            if (allowedTypesImports.includes(name)) {
+                usedAllowedTypes.add(name);
+            }
+        }
+    });
+
+    // Add them to the list of imports
+    if (usedAllowedTypes.size > 0) {
+        const importTypeDecl = j.importDeclaration(
+            Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
+            j.literal('nango')
+        );
+        importTypeDecl.importKind = 'type';
+        // Insert after all other imports
+        const body = root.get().node.program.body;
+        let lastImportIdx = -1;
+        for (let i = 0; i < body.length; i++) {
+            if (body[i].type === 'ImportDeclaration') {
+                lastImportIdx = i;
+            }
+        }
+        body.splice(lastImportIdx + 1, 0, importTypeDecl);
+    }
 
     const transformed = root.toSource();
 

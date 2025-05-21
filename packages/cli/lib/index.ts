@@ -21,7 +21,7 @@ import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { init } from './services/init.service.js';
-import { migrateToZeroYaml } from './services/migration/zeroYaml.js';
+import { migrateToZeroYaml } from './services/migration/toZeroYaml.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
