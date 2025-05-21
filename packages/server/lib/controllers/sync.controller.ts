@@ -109,7 +109,7 @@ class SyncController {
             const environmentId = res.locals['environment'].id;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
-            const path = '/' + req.params['0'];
+            const path = req.originalUrl.replace(/^\/v1\//, '/');
             if (!connectionId) {
                 res.status(400).send({ error: 'Missing connection id' });
 

@@ -17,10 +17,10 @@ import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddle
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
-import { exportUsageCron } from './crons/usage.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
+import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
 import { router } from './routes.js';
