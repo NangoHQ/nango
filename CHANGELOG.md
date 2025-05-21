@@ -2,6 +2,80 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.59.0] - 2025-05-21
+
+### Added
+
+- *(scheduler)* Add retry_key and owner_key to the tasks table (#4030) by @TBonnin
+- Set task ownerKey and retryKey (#4033) by @TBonnin
+- *(docs)* Add link to jazzhr (#4039) by @khaliqgant
+- *(integrations)* Add support for `Codegen` integration. (#4035) by @homanp
+- Add comprehensive Linear OAuth setup guide (#3700) by @devin-ai-integration[bot]
+- *(grammarly-scim)* Add support for Grammarly SCIM (#4038) by @lordsarcastic
+- Adding GET /action/:id endpoint (#4044) by @TBonnin
+- Add AWS integration setup guide (ext-398) (#3740) by @devin-ai-integration[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/6cec21b3abf07fd735a112400f333bc82fa1cade by Hassan_Wari. Commit message: feat(integrations): add gem syncs and actions (#326) by @github-actions[bot]
+- *(integrations)* Handle hubspot rate limiting (#4046) by @hassan254-prog
+- *(docs)* Add mention of smtp for self-hosted and remove Mailgun (#4047) by @TBonnin
+- Trigger async actions (#4048) by @TBonnin
+- Add FreshBooks integration setup guide (ext-388) (#3747) by @devin-ai-integration[bot]
+- Add Attio integration setup guide (ext-399) (#3743) by @devin-ai-integration[bot]
+- *(webapp/server)* Add time period filtering to sublogs (#4042) by @kaposke
+- Add comprehensive Notion OAuth setup guide (#3698) by @devin-ai-integration[bot]
+- *(server)* MCP server with actions as tools (#4012) by @kaposke
+- Add on_async_action_completion column to webhook table (#4062) by @TBonnin
+- Run async action sequentially per environment (#4054) by @TBonnin
+- Send webhook when async actions complete (#4063) by @TBonnin
+- Add async actions function to node-client (#4052) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a6f435c297e9b05cfd56ccbf789937998e252587 by Hassan_Wari. Commit message: feat(gong): add call transcript sync (#331) by @github-actions[bot]
+- Add comprehensive Airtable OAuth setup guide (#3703) by @devin-ai-integration[bot]
+- Add comprehensive Gong setup guide (#3699) by @devin-ai-integration[bot]
+- Add comprehensive GitHub App setup guide (#3707) by @devin-ai-integration[bot]
+- Upgrade express, dd-trace, body-parser (#4078) by @bodinsamuel
+
+### Changed
+
+- Removing scheduler flags (#4017) by @TBonnin
+- *(google-drive)* Update Google Drive integration documentation on downloading content (#4032) by @lordsarcastic
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d260a955d0b011b3ae48ce1fb694803b5263c350 by Stylianos Mavrokoukoulakis. Commit message: feat(integrations): Add ClickSend integration provider (#316) by @github-actions[bot]
+- Remove instance id in logger (#4031) by @bodinsamuel
+- Document frontend sdk errors (#4034) by @hassan254-prog
+- *(docs)* Missing mint.json entries (#4045) by @lordsarcastic
+- Update netsuite tba docs for Non-admin role setup (#4055) by @viictoo
+- Improve google docs with the rest of google aliases docs as well (#4058) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0dd127a5ca14d79cf45de50510ad92f1fbcae47b by lordsarcastic. Commit message: feat(attio): Add in Attio templates (#327) by @github-actions[bot]
+- *(deps)* Bump undici from 6.21.1 to 6.21.2 (#4050) by @dependabot[bot]
+- Remove json pretty print pipe from header (#4077) by @viictoo
+- *(deps)* Bump multer from 1.4.5-lts.1 to 2.0.0 in /packages/server (#4076) by @dependabot[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5d88a77c2c4235155d396a038008a5a16dfb02db by Victor Lang'at. Commit message: feat(oracle-hcm): Implement unified employees sync and data mapping (#329) by @github-actions[bot]
+- Nango MCP server (#4074) by @kaposke
+
+### Fixed
+
+- *(scheduler)* Decrease tasks table autovacuum factor settings (#4021) by @TBonnin
+- *(cli)* FinishedAt type in SyncStatus (#4013) by @kaposke
+- *(connect)* Support empty string in default (#4029) by @bodinsamuel
+- *(orchestrator)* Fix dequeue long polling (#4023) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/b6912d841b36a04d0c43236bd80eb167e8b003e7 by Khaliq. Commit message: fix(docs & linear): Bump linear and update docs (#325) by @github-actions[bot]
+- *(microsoft)* Remove prompt=consent (#4040) by @khaliqgant
+- *(connect)* Wrong condition on preconfigured field (#4041) by @bodinsamuel
+- Unrecognized key 'async' when triggering on-events script (#4043) by @TBonnin
+- *(providers)* Fix lever authorization params (#4051) by @hassan254-prog
+- Processor flacky test (#4049) by @TBonnin
+- *(dryrun save-responses)* Fix check (#4064) by @khaliqgant
+- *(github-app)* Trigger connect ui oauth flow (#4061) by @hassan254-prog
+- Wrong diff for oneventscripts when deploying single integration (#4037) by @viictoo
+- Mcp sdk installation (#4068) by @kaposke
+- *(save-responses)* Fix metadata and header parsing (#4067) by @khaliqgant
+- Mcp imports (#4069) by @kaposke
+- *(webapp)* Delete button not working (#4060) by @kaposke
+- *(email)* Sanitize html (#4066) by @bodinsamuel
+- *(proxy)* Retry on token error, correctly clear cache (#4065) by @bodinsamuel
+- *(webapp)* Sublogs scrolling (#4070) by @kaposke
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bc9a471c483243fb43ad769d9d157ed9c6f88f62 by Khaliq. Commit message: fix(oracle-hcm-incremental): Oracle hcm incremental (#332) by @github-actions[bot]
+- *(persist)* Format of errors in auth middleware (#4073) by @TBonnin
+- *(deps)* Upgrade ws, jsdom (#4079) by @bodinsamuel
+
 ## [v0.58.7] - 2025-05-12
 
 ### Added
@@ -3834,6 +3908,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.59.0]: https://github.com/NangoHQ/nango/compare/v0.58.7..v0.59.0
 [v0.58.7]: https://github.com/NangoHQ/nango/compare/v0.58.6..v0.58.7
 [v0.58.6]: https://github.com/NangoHQ/nango/compare/v0.58.5..v0.58.6
 [v0.58.5]: https://github.com/NangoHQ/nango/compare/v0.58.4..v0.58.5

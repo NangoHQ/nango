@@ -1,8 +1,10 @@
 import { z } from 'zod';
-import type { Scheduler, Schedule } from '@nangohq/scheduler';
-import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
+
 import { validateRequest } from '@nangohq/utils';
+
+import type { Schedule, Scheduler } from '@nangohq/scheduler';
+import type { ApiError, Endpoint } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const path = '/v1/schedules/search';
 const method = 'POST';
@@ -30,8 +32,8 @@ const validate = validateRequest<PostSearch>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostSearch>, res: EndpointResponse<PostSearch>) => {
-        const { names, limit } = req.body;
+    return async (_req: EndpointRequest, res: EndpointResponse<PostSearch>) => {
+        const { names, limit } = res.locals.parsedBody;
         const getSchedules = await scheduler.searchSchedules({
             limit,
             ...(names ? { names } : {})

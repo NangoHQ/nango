@@ -15,7 +15,7 @@ import type { ProviderGithubApp } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
-    async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
+    async connect(req: Request, res: Response<any, any>, _next: NextFunction) {
         const installation_id = req.query['installation_id'] as string | undefined;
         const state = req.query['state'] as string;
         const action = req.query['setup_action'] as string;

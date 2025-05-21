@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { bodySchema as originalBodySchema, postConnectSessions } from '../../../connect/postSessions.js';
+import { bodySchema as originalBodySchema, generateSession } from '../../../connect/postSessions.js';
 
 import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
 
@@ -15,7 +15,7 @@ const bodySchema = z
     })
     .strict();
 
-export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessions>((req, res, next) => {
+export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessions>(async (req, res) => {
     const valQuery = requireEmptyQuery(req, { withEnv: true });
     if (valQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
@@ -32,14 +32,11 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
 
     // req.body is never but we want to fake it on purpose
 
-    req.body = {
+    const emulatedBody = {
         allowed_integrations: body.allowed_integrations,
         end_user: body.end_user,
         organization: body.organization
     } satisfies PostConnectSessions['Body'];
 
-    // @ts-expect-error on internal api we pass ?env= but it's not allowed in public api
-    req.query = {};
-
-    postConnectSessions(req as any, res, next);
+    await generateSession(res, emulatedBody);
 });
