@@ -42,7 +42,6 @@ const MyComponent: React.FC = () => {
 1. Create a new file in `src/lib/i18n/translations/` named after the language code (e.g., `de.ts` for German)
 2. Export a default object with the same structure as other translation files
 3. Add the language to the supported languages list in `src/lib/i18n/context.tsx` and `src/lib/i18n/utils.ts`
-4. Add the language to the language switcher in `src/components/LanguageSwitcher.tsx`
 
 ### 3. String replacement
 
