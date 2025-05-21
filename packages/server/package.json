@@ -60,7 +60,6 @@
         "passport": "0.6.0",
         "passport-http": "0.3.0",
         "passport-local": "1.0.0",
-        "qs": "^6.14.0",
         "rate-limiter-flexible": "5.0.3",
         "redis": "4.6.13",
         "semver": "7.6.3",

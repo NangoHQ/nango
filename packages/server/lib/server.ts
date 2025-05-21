@@ -6,7 +6,6 @@ import http from 'node:http';
 import express from 'express';
 import * as cron from 'node-cron';
 import { WebSocketServer } from 'ws';
-import qs from 'qs';
 
 import db, { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
@@ -47,12 +46,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
-app.set('query parser', (str: string) =>
-    qs.parse(str, {
-        allowDots: true,
-        depth: 10
-    })
-);
+app.set('query parser', 'extended');
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
