@@ -9,13 +9,15 @@ import ora from 'ora';
 import { Err, Ok } from '../../utils/result.js';
 import { printDebug } from '../../utils.js';
 import { NANGO_VERSION } from '../../version.js';
+import { compileAll } from '../../zeroYaml/compile.js';
 import { compileAllFiles } from '../compile.service.js';
 import { loadYamlAndGenerate } from '../model.service.js';
 
-import type { NangoModel, NangoModelField, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type { Collection } from 'jscodeshift';
 
-const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError'];
+const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError', 'ProxyConfiguration'];
+const batchMethods = ['batchSave', 'batchUpdate', 'batchDelete'];
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
     const spinner = ora({ text: 'Precompiling' }).start();
@@ -81,15 +83,15 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
         for (const onEventScript of Object.entries(integration.onEventScripts)) {
             for (const eventName of onEventScript[1]) {
                 const fp = path.join(integration.providerConfigKey, 'on-events', `${eventName}.ts`);
-                // const targetFile = path.join(fullPath, fp);
+                const targetFile = path.join(fullPath, fp);
 
                 const spinner = ora({ text: `Migrating: ${fp}` }).start();
                 try {
-                    // const content = await getContent({ targetFile });
+                    const content = await getContent({ targetFile });
 
-                    // const transformed = transformOnEvents({ eventName, content, models: parsed.models });
+                    const transformed = transformOnEvents({ eventType: onEventScript[0], content });
 
-                    // await fs.promises.writeFile(targetFile, transformed);
+                    await fs.promises.writeFile(targetFile, transformed);
                     spinner.succeed();
                 } catch (err) {
                     spinner.fail();
@@ -100,13 +102,27 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
         }
     }
 
-    // await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
-    // await fs.promises.rm(path.join(fullPath, 'models.ts'));
-
     {
         const spinner = ora({ text: 'Running npm install' }).start();
         await runNpmInstall(fullPath);
         spinner.succeed();
+    }
+
+    {
+        const spinner = ora({ text: 'Generating index.ts' }).start();
+        await generateIndexTs({ fullPath, parsed });
+        spinner.succeed();
+    }
+
+    {
+        const spinner = ora({ text: 'Deleting nango.yaml and models.ts' }).start();
+        await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
+        await fs.promises.rm(path.join(fullPath, 'models.ts'));
+        spinner.succeed();
+    }
+
+    {
+        await compileAll({ fullPath, debug });
     }
 
     return Ok(undefined);
@@ -141,6 +157,32 @@ async function runNpmInstall(fullPath: string): Promise<void> {
 }
 
 /**
+ * Helper to remove type annotations from parameters and build an exec property for jscodeshift AST nodes
+ */
+function buildExecProp(j: typeof jscodeshift, func: any) {
+    let params;
+    let bodyNode;
+    let isAsync = false;
+    if (func.type === 'FunctionDeclaration') {
+        params = func.params.map((param: any) => {
+            if (param.type === 'Identifier') {
+                return j.identifier(param.name);
+            }
+            return param;
+        });
+        bodyNode = func.body;
+        isAsync = !!func.async;
+    } else {
+        params = func.params;
+        bodyNode = func.body;
+        isAsync = !!func.async;
+    }
+    const execArrow = j.arrowFunctionExpression(params, bodyNode);
+    execArrow.async = isAsync;
+    return j.objectProperty(j.identifier('exec'), execArrow);
+}
+
+/**
  * Transforms a sync to zero-yaml
  */
 export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
@@ -164,17 +206,9 @@ export function transformSync({ content, sync, models }: { content: string; sync
             return;
         }
 
-        // Remove type annotations from parameters
-        const params = func.params.map((param) => {
-            if (param.type === 'Identifier') {
-                return j.identifier(param.name);
-            }
-            return param;
-        });
-        // Create an object with exec property as the function expression
-        const execArrow = j.arrowFunctionExpression(params, func.body);
-        execArrow.async = true;
-        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
+        removeBatchTypeArguments({ j, func });
+
+        const execProp = buildExecProp(j, func);
 
         // Creats default props
         const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(sync.description));
@@ -185,22 +219,20 @@ export function transformSync({ content, sync, models }: { content: string; sync
         const trackDeletesProp = j.objectProperty(j.identifier('trackDeletes'), j.booleanLiteral(sync.track_deletes));
         const endpointsProp = j.objectProperty(
             j.identifier('endpoints'),
-            Array.isArray(sync.endpoints)
-                ? j.arrayExpression(
-                      sync.endpoints.map((ep) =>
-                          j.objectExpression(
-                              Object.entries(ep)
-                                  .map(([k, v]) => {
-                                      if (typeof v === 'string') {
-                                          return j.objectProperty(j.identifier(k), j.stringLiteral(v));
-                                      }
-                                      return null;
-                                  })
-                                  .filter((prop): prop is jscodeshift.ObjectProperty => !!prop)
-                          )
-                      )
-                  )
-                : j.arrayExpression([])
+            j.arrayExpression(
+                sync.endpoints.map((ep) =>
+                    j.objectExpression(
+                        Object.entries(ep)
+                            .map(([k, v]) => {
+                                if (typeof v === 'string') {
+                                    return j.objectProperty(j.identifier(k), j.stringLiteral(v));
+                                }
+                                return null;
+                            })
+                            .filter((prop): prop is jscodeshift.ObjectProperty => !!prop)
+                    )
+                )
+            )
         );
         const props = [descriptionProp, versionProp, runsProp, autoStartProp, syncTypeProp, trackDeletesProp, endpointsProp];
 
@@ -242,15 +274,9 @@ export function transformSync({ content, sync, models }: { content: string; sync
         root.find(j.ExportNamedDeclaration).forEach((p) => {
             const decl = p.node.declaration;
             if (decl && decl.type === 'FunctionDeclaration' && decl.id && decl.id.name === 'onWebhookPayloadReceived') {
-                // Remove type annotations from parameters
-                const webhookParams = decl.params.map((param) => {
-                    if (param.type === 'Identifier') {
-                        return j.identifier(param.name);
-                    }
-                    return param;
-                });
-                onWebhookArrow = j.arrowFunctionExpression(webhookParams, decl.body);
-                onWebhookArrow.async = !!decl.async;
+                const webhookExecProp = buildExecProp(j, decl);
+                // Extract the arrow function from the exec property
+                onWebhookArrow = webhookExecProp.value;
                 // Remove the original function declaration
                 j(p).remove();
             }
@@ -291,31 +317,13 @@ export function transformAction({ content, action, models }: { content: string; 
     // Find the default export async function (runAction or similar)
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
         const func = path.node.declaration;
-        if (func.type !== 'FunctionDeclaration' && func.type !== 'ArrowFunctionExpression') {
+        if (func.type !== 'FunctionDeclaration') {
             return;
         }
 
-        // Remove type annotations from parameters
-        let params;
-        let bodyNode;
-        let isAsync = false;
-        if (func.type === 'FunctionDeclaration') {
-            params = func.params.map((param) => {
-                if (param.type === 'Identifier') {
-                    return j.identifier(param.name);
-                }
-                return param;
-            });
-            bodyNode = func.body;
-            isAsync = !!func.async;
-        } else {
-            params = func.params;
-            bodyNode = func.body;
-            isAsync = !!func.async;
-        }
-        const execArrow = j.arrowFunctionExpression(params, bodyNode);
-        execArrow.async = isAsync;
-        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
+        removeBatchTypeArguments({ j, func });
+
+        const execProp = buildExecProp(j, func);
 
         // Build createAction object
         const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(action.description));
@@ -364,6 +372,46 @@ export function transformAction({ content, action, models }: { content: string; 
         const obj = j.objectExpression(props);
         path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createAction'), [obj])));
     });
+
+    const transformed = root.toSource();
+    return transformed;
+}
+
+/**
+ * Transforms an on-event script to zero-yaml
+ */
+export function transformOnEvents({ content, eventType }: { content: string; eventType: string }): string {
+    const j = jscodeshift.withParser('ts');
+    const root = j(content);
+
+    removeLegacyImports({ root, j });
+
+    // Add import { createOnEvent } from 'nango'
+    const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createOnEvent'))], j.literal('nango'));
+    root.get().node.program.body.unshift(importDecl);
+
+    // Find the default export async function (onEvent or similar)
+    root.find(j.ExportDefaultDeclaration).forEach((path) => {
+        const func = path.node.declaration;
+        if (func.type !== 'FunctionDeclaration') {
+            return;
+        }
+
+        removeBatchTypeArguments({ j, func });
+
+        const execProp = buildExecProp(j, func);
+
+        // Build createOnEvent object
+        const eventProp = j.objectProperty(j.identifier('event'), j.stringLiteral(eventType));
+        const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(`${eventType} event handler`));
+
+        const props = [eventProp, descriptionProp, execProp];
+        const obj = j.objectExpression(props);
+        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createOnEvent'), [obj])));
+    });
+
+    // Find all used Types in the file that might be available in "nango"
+    reImportTypes({ root, j });
 
     const transformed = root.toSource();
     return transformed;
@@ -644,4 +692,54 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
         delete pkg.dependencies['zod'];
     }
     await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
+}
+
+/**
+ * Generates an index.ts file exporting all syncs, actions, and on-event scripts for the given integrations.
+ */
+async function generateIndexTs({ fullPath, parsed }: { fullPath: string; parsed: NangoYamlParsed }): Promise<void> {
+    const indexLines: string[] = [];
+    for (const integration of parsed.integrations) {
+        const base = integration.providerConfigKey;
+        indexLines.push(`// -- Integration: ${base}`);
+        for (const sync of integration.syncs) {
+            indexLines.push(`export * from './${base}/syncs/${sync.name}.js';`);
+        }
+        for (const action of integration.actions) {
+            indexLines.push(`export * from './${base}/actions/${action.name}.js';`);
+        }
+        for (const [_eventType, eventNames] of Object.entries(integration.onEventScripts)) {
+            for (const eventName of eventNames) {
+                indexLines.push(`export * from './${base}/on-events/${eventName}.js';`);
+            }
+        }
+        indexLines.push('');
+    }
+    const indexPath = path.join(fullPath, 'index.ts');
+    await fs.promises.writeFile(indexPath, indexLines.join('\n'));
+}
+
+/**
+ * Removes type arguments from nango.batchSave, batchUpdate, batchDelete calls in a function body
+ */
+function removeBatchTypeArguments({ j, func }: { j: typeof jscodeshift; func: jscodeshift.FunctionDeclaration }) {
+    j(func.body)
+        .find(j.CallExpression)
+        .forEach((callPath) => {
+            const callee = callPath.node.callee;
+            if (
+                callee.type === 'MemberExpression' &&
+                callee.object.type === 'Identifier' &&
+                callee.object.name === 'nango' &&
+                callee.property.type === 'Identifier' &&
+                batchMethods.includes(callee.property.name)
+            ) {
+                if ('typeArguments' in callPath.node && callPath.node.typeArguments) {
+                    callPath.node.typeArguments = null;
+                }
+                if ('typeParameters' in callPath.node && callPath.node.typeParameters) {
+                    callPath.node.typeParameters = null;
+                }
+            }
+        });
 }

@@ -17,6 +17,7 @@ export default tseslint.config(
             '**/build/',
             '**/coverage/',
             '**/bin/',
+            'tmp/',
             'packages/server/nango-integrations/',
             'packages/node-client/tests',
             'packages/cli/fixtures/',

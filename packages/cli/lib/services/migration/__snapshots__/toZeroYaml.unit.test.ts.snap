@@ -41,6 +41,19 @@ export default createAction({
 });"
 `;
 
+exports[`transformOnEvents > should transform an on-event script 1`] = `
+"import { createOnEvent } from "nango";
+
+export default createOnEvent({
+  event: "pre-connection-deletion",
+  description: "pre-connection-deletion event handler",
+
+  exec: async nango => {
+    await nango.log("test pre script");
+  }
+});"
+`;
+
 exports[`transformSync > should transform a sync 1`] = `
 "import { z } from "zod";
 import { createSync } from "nango";
@@ -108,7 +121,7 @@ export default createSync({
 
   exec: async nango => {
       await nango.log('hello');
-      await nango.batchSave<Model>([{
+      await nango.batchSave([{
           'id': 'foobar',
       }], 'Model');
 

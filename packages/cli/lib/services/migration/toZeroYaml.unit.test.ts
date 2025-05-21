@@ -155,3 +155,18 @@ export default async function runAction(nango: NangoSync, input: IssueInput): Pr
         expect(result).toMatchSnapshot();
     });
 });
+
+describe('transformOnEvents', () => {
+    it('should transform an on-event script', () => {
+        const ts = `import type { NangoSync } from "../../models";
+
+export default async function onEvent(nango: NangoSync): Promise<void> {
+  await nango.log("test pre script");
+}`;
+        const result = zeroYaml.transformOnEvents({
+            content: ts,
+            eventType: 'pre-connection-deletion'
+        });
+        expect(result).toMatchSnapshot();
+    });
+});
