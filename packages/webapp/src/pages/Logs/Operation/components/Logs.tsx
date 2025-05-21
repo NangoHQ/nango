@@ -187,7 +187,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
     }, [flatData, period]);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
                 <div className="text-white text-xs">
@@ -213,10 +213,10 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     }
                     value={search}
                     placeholder="Search logs..."
-                    className="w-full border-border-gray-400"
+                    className="flex-grow border-border-gray-400"
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <div>
+                <div className="border border-transparent">
                     <PeriodSelector
                         period={period}
                         isLive={isLive}

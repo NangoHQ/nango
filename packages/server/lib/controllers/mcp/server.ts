@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import tracer from 'dd-trace';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
@@ -8,7 +8,7 @@ import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types';
+import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { Config } from '@nangohq/shared';
 import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
@@ -152,6 +152,7 @@ function callToolRequestHandler(
             };
         } else {
             span.setTag('nango.error', actionResponse.error);
+            await logCtx.failed();
             throw new Error(actionResponse.error.message);
         }
     };

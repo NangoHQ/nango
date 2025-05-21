@@ -243,6 +243,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
-publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
