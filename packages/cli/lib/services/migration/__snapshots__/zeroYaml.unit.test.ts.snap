@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`transformSync > should create a .v2.ts file with createSync and correct properties 1`] = `
+"import { z } from "zod";
+import { createSync } from "nango";
+
+export default createSync({
+  description: "Test sync",
+  version: "1.2.3",
+  runs: "every hour",
+  autoStart: true,
+  syncType: "full",
+  trackDeletes: false,
+
+  endpoints: [{
+    method: "GET",
+    path: "top",
+    group: "foobar"
+  }],
+
+  webhookSubscriptions: ["*"],
+  scopes: ["repo", "user"],
+
+  models: {
+    Model: z.object({
+      id: z.string(),
+      arrTsType: z.string().array(),
+      null: z.nullable(),
+      bool: z.boolean(),
+      any: z.any(),
+      opt: z.number().optional(),
+      ref: z.literal("Foo").optional(),
+      union: z.union([z.literal("literal1"), z.literal("literal2")]),
+
+      array: z.object({
+        0: z.literal("arr1"),
+        1: z.literal("arr2")
+      }).array(),
+
+      obj: z.object({
+        nes: z.literal("ted")
+      }),
+
+      dynamicObj: z.record(z.date()).and(z.object({}))
+    }),
+
+    ModelDynamic: z.record(z.string()).and(z.object({
+      id: z.string()
+    }))
+  },
+
+  metadata: {
+    Metadata: z.object({
+      foo: z.literal("bar")
+    })
+  },
+
+  exec: async nango => {
+    await nango.log('hello');
+  }
+});"
+`;

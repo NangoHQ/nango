@@ -11,6 +11,7 @@ import { compileAllFiles } from '../compile.service.js';
 import { loadYamlAndGenerate } from '../model.service.js';
 import verificationService from '../verification.service.js';
 
+import type { NangoModel, NangoModelField, ParsedNangoSync } from '@nangohq/types';
 import type { Collection } from 'jscodeshift';
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }) {
@@ -33,82 +34,8 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     for (const integration of parsed.integrations) {
         for (const sync of integration.syncs) {
             const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
-            //             content = content.replace(
-            //                 /import type.*models";/,
-            //                 `import { createSync } from 'nango';
-            // import { z } from 'zod';
-            // import type { NangoSync } from 'nango';`
-            //             );
 
-            //             content.replace(
-            //                 /export default async function fetchData.*/,
-            //                 `export default createSync({
-            //     description: '${sync.description.replaceAll("'", "\'")}',
-            //     version: '${sync.version}',
-            //     endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
-            //     runs: '${sync.runs}',
-            //     autoStart: ${sync.auto_start},
-            //     syncType: '${sync.sync_type}',
-            //     trackDeletes: ${sync.track_deletes},
-            //     models: {
-            //         GithubIssue: issueSchema
-            //     },
-
-            //     // Sync execution
-            //     exec: async (nango) => {
-            //       Function content
-            // });`
-            //             );
-
-            const j = jscodeshift.withParser('ts');
-            const root = j(content);
-
-            // Add import { createSync } from 'nango'; if not present
-            const hasCreateSyncImport =
-                root
-                    .find(j.ImportDeclaration)
-                    .filter((path) => {
-                        return (
-                            path.node.source.value === 'nango' &&
-                            Array.isArray(path.node.specifiers) &&
-                            path.node.specifiers.some((spec) => spec.type === 'ImportSpecifier' && spec.imported && spec.imported.name === 'createSync')
-                        );
-                    })
-                    .size() > 0;
-
-            if (!hasCreateSyncImport) {
-                const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createSync'))], j.literal('nango'));
-                root.get().node.program.body.unshift(importDecl);
-            }
-
-            addZodImport(root, j);
-
-            // Wrap default function
-            root.find(j.ExportDefaultDeclaration).forEach((path) => {
-                const func = path.node.declaration;
-                if (func.type === 'FunctionDeclaration') {
-                    // Create an object with exec property as the function expression
-                    const execArrow = j.arrowFunctionExpression(func.params, func.body);
-                    execArrow.async = true;
-                    const execProp = j.objectProperty(j.identifier('exec'), execArrow);
-                    const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(sync.description));
-                    const versionProp = j.objectProperty(j.identifier('version'), j.stringLiteral(sync.version || '0.0.1'));
-                    const runsProp = j.objectProperty(j.identifier('runs'), j.stringLiteral(sync.runs));
-                    const autoStartProp = j.objectProperty(j.identifier('autoStart'), j.booleanLiteral(sync.auto_start));
-                    const syncTypeProp = j.objectProperty(j.identifier('syncType'), j.stringLiteral(sync.sync_type));
-                    const trackDeletesProp = j.objectProperty(j.identifier('trackDeletes'), j.booleanLiteral(sync.track_deletes));
-                    const props = [descriptionProp, versionProp, runsProp, autoStartProp, syncTypeProp, trackDeletesProp];
-                    if (Array.isArray(sync.scopes) && sync.scopes.length > 0) {
-                        const scopesProp = j.objectProperty(j.identifier('scopes'), j.arrayExpression(sync.scopes.map((s) => j.stringLiteral(s))));
-                        props.push(scopesProp);
-                    }
-                    props.push(execProp);
-                    const obj = j.objectExpression(props);
-                    path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createSync'), [obj])));
-                }
-            });
-
-            const transformed = root.toSource();
+            const transformed = transformSync({ sync, content, models: parsed.models });
 
             // Append transformed code after line 55
             const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
@@ -199,6 +126,109 @@ async function runNpmInstall(fullPath: string): Promise<void> {
     });
 }
 
+export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
+    const j = jscodeshift.withParser('ts');
+    const root = j(content);
+
+    // Add import { createSync } from 'nango'; if not present
+    const hasCreateSyncImport =
+        root
+            .find(j.ImportDeclaration)
+            .filter((path) => {
+                return (
+                    path.node.source.value === 'nango' &&
+                    Array.isArray(path.node.specifiers) &&
+                    path.node.specifiers.some((spec) => spec.type === 'ImportSpecifier' && spec.imported && spec.imported.name === 'createSync')
+                );
+            })
+            .size() > 0;
+
+    if (!hasCreateSyncImport) {
+        const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createSync'))], j.literal('nango'));
+        root.get().node.program.body.unshift(importDecl);
+    }
+
+    addZodImport(root, j);
+
+    // Wrap default function
+    root.find(j.ExportDefaultDeclaration).forEach((path) => {
+        const func = path.node.declaration;
+        if (func.type !== 'FunctionDeclaration') {
+            return;
+        }
+
+        // Create an object with exec property as the function expression
+        const execArrow = j.arrowFunctionExpression(func.params, func.body);
+        execArrow.async = true;
+
+        // Creats default props
+        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
+        const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(sync.description));
+        const versionProp = j.objectProperty(j.identifier('version'), j.stringLiteral(sync.version || '0.0.1'));
+        const runsProp = j.objectProperty(j.identifier('runs'), j.stringLiteral(sync.runs));
+        const autoStartProp = j.objectProperty(j.identifier('autoStart'), j.booleanLiteral(sync.auto_start));
+        const syncTypeProp = j.objectProperty(j.identifier('syncType'), j.stringLiteral(sync.sync_type));
+        const trackDeletesProp = j.objectProperty(j.identifier('trackDeletes'), j.booleanLiteral(sync.track_deletes));
+        const endpointsProp = j.objectProperty(
+            j.identifier('endpoints'),
+            j.arrayExpression(
+                sync.endpoints.map((ep) =>
+                    j.objectExpression(
+                        Object.entries(ep).map(([k, v]) => {
+                            return j.objectProperty(j.identifier(k), j.stringLiteral(v as string));
+                        })
+                    )
+                )
+            )
+        );
+        const props = [descriptionProp, versionProp, runsProp, autoStartProp, syncTypeProp, trackDeletesProp, endpointsProp];
+
+        if (sync.webhookSubscriptions.length > 0) {
+            const webhookSubscriptionsProp = j.objectProperty(
+                j.identifier('webhookSubscriptions'),
+                j.arrayExpression(sync.webhookSubscriptions.map((w: any) => j.stringLiteral(w)))
+            );
+            props.push(webhookSubscriptionsProp);
+        }
+        if (Array.isArray(sync.scopes) && sync.scopes.length > 0) {
+            const scopesProp = j.objectProperty(j.identifier('scopes'), j.arrayExpression(sync.scopes.map((s: string) => j.stringLiteral(s))));
+            props.push(scopesProp);
+        }
+        if (sync.output) {
+            const modelProps = sync.output
+                .map((modelName: string) => {
+                    const model = models.get(modelName);
+                    if (!model) return undefined;
+                    return j.objectProperty(j.identifier(modelName), nangoModelToZod(j, model));
+                })
+                .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
+            if (modelProps.length > 0) {
+                const modelsProp = j.objectProperty(j.identifier('models'), j.objectExpression(modelProps));
+                props.push(modelsProp);
+            }
+        }
+        if (sync.input) {
+            const model = models.get(sync.input);
+            if (model) {
+                const metadataProp = j.objectProperty(
+                    j.identifier('metadata'),
+                    j.objectExpression([j.objectProperty(j.identifier(sync.input), nangoModelToZod(j, model))])
+                );
+                props.push(metadataProp);
+            }
+        }
+
+        props.push(execProp);
+
+        const obj = j.objectExpression(props);
+        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createSync'), [obj])));
+    });
+
+    const transformed = root.toSource();
+
+    return transformed;
+}
+
 /**
  * Adds an import for zod if it's not present
  */
@@ -219,4 +249,88 @@ function addZodImport(root: Collection, j: jscodeshift.JSCodeshift) {
         const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod'));
         root.get().node.program.body.unshift(importDecl);
     }
+}
+
+/**
+ * Converts a NangoModel type to Zod AST
+ */
+export function nangoModelToZod(j: typeof jscodeshift, model: NangoModel) {
+    // Check for dynamic field
+    const isDynamic = model.fields.find((field) => {
+        if (field.dynamic) {
+            return field;
+        }
+        return false;
+    });
+    if (isDynamic) {
+        // z.record(<valueType>).and(z.object({ ... }))
+        const valueType = nangoTypeToZodAst(j, isDynamic);
+        const recordExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [valueType]);
+        // All other fields
+        const otherFields = model.fields.filter((f) => f !== isDynamic);
+        const otherProps = otherFields.map((field) => j.objectProperty(j.identifier(field.name), nangoTypeToZodAst(j, field)));
+        const objectExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(otherProps)]);
+        return j.callExpression(j.memberExpression(recordExpr, j.identifier('and')), [objectExpr]);
+    }
+
+    // regular object
+    const properties = model.fields.map((field) => j.objectProperty(j.identifier(field.name), nangoTypeToZodAst(j, field)));
+    return j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(properties)]);
+}
+
+/**
+ * Converts a NangoModelField type to Zod AST
+ */
+function nangoTypeToZodAst(j: typeof jscodeshift, field: NangoModelField): jscodeshift.CallExpression {
+    // Handle union
+    if (field.union && Array.isArray(field.value)) {
+        const unionArgs = field.value.map((v: any) => nangoTypeToZodAst(j, v));
+        let unionExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(unionArgs)]);
+        if (field.optional) {
+            unionExpr = j.callExpression(j.memberExpression(unionExpr, j.identifier('optional')), []);
+        }
+        return unionExpr;
+    }
+
+    // Handle array
+    if (field.array) {
+        let arrExpr = j.callExpression(
+            j.memberExpression(nangoTypeToZodAst(j, { ...field, array: false, optional: false, union: false }), j.identifier('array')),
+            []
+        );
+        if (field.optional) {
+            arrExpr = j.callExpression(j.memberExpression(arrExpr, j.identifier('optional')), []);
+        }
+        return arrExpr;
+    }
+
+    // Handle base types and nested objects
+    let baseExpr: jscodeshift.CallExpression;
+    if (typeof field.value === 'string') {
+        switch (field.value) {
+            case 'string':
+            case 'number':
+            case 'boolean':
+            case 'date':
+            case 'any':
+                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier(field.value)), []);
+                break;
+            case 'null':
+                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('nullable')), []);
+                break;
+            default:
+                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('literal')), [j.stringLiteral(field.value)]);
+        }
+    } else if (Array.isArray(field.value)) {
+        // If not union/array, treat as nested object
+        baseExpr = nangoModelToZod(j, { name: '', fields: field.value });
+    } else {
+        baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
+    }
+
+    if (field.optional) {
+        baseExpr = j.callExpression(j.memberExpression(baseExpr, j.identifier('optional')), []);
+    }
+
+    return baseExpr;
 }
