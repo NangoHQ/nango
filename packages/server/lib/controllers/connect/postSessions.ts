@@ -10,8 +10,10 @@ import { providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
+import type { RequestLocals } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
 import type { PostConnectSessions } from '@nangohq/types';
+import type { Response } from 'express';
 import type { ZodIssue } from 'zod';
 
 export const bodySchema = z
@@ -69,9 +71,30 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
-    const { account, environment } = res.locals;
     const body: PostConnectSessions['Body'] = val.data;
+    await generateSession(res, body);
+});
 
+/**
+ * Enforce that integrations exists in `integrations_config_defaults`
+ */
+export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
+    if (!body.integrations_config_defaults) {
+        return false;
+    }
+
+    const errors: ZodIssue[] = [];
+    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+        }
+    }
+
+    return errors.length > 0 ? errors : false;
+}
+
+export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body']) {
+    const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
         if (endUserRes.isErr()) {
@@ -148,22 +171,4 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     });
 
     res.status(status).send(response);
-});
-
-/**
- * Enforce that integrations exists in `integrations_config_defaults`
- */
-export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
-    if (!body.integrations_config_defaults) {
-        return false;
-    }
-
-    const errors: ZodIssue[] = [];
-    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
-        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
-        }
-    }
-
-    return errors.length > 0 ? errors : false;
 }
