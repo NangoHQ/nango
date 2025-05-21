@@ -6,7 +6,6 @@ sidebarTitle: Jira Data Center
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/jira-data-center/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/jira-data-center/PreBuiltUseCases.mdx"
-import { Steps, Step } from 'nextra/components'
 
 <Overview />
 <PreBuiltTooling />
@@ -40,32 +39,32 @@ import { Steps, Step } from 'nextra/components'
   </Step>
   <Step title="Provide application details">
     In the application details section:
-    
+
     1. Enter a descriptive name for your application.
     2. For the **Redirect URL**, enter `https://api.nango.dev/oauth/callback`.
-    
+
     Note: This is the URL where users will be redirected after authorizing your application.
   </Step>
   <Step title="Configure application permissions">
     Select the appropriate permission scopes for your integration:
-    
+
     - **READ**: View projects and issues the user can view, including related items like dashboards, filters, attachments, or comments.
     - **WRITE**: Create, update, and delete projects and issues the user can change, including related items.
     - **ADMIN**: Perform most administrative functions on the entire Jira instance.
     - **SYSTEM_ADMIN**: Perform all administrative functions on the entire Jira instance.
-    
+
     Note: Choose only the scopes your application needs. Higher-level scopes automatically include lower-level ones (e.g., WRITE includes READ).
   </Step>
   <Step title="Obtain OAuth credentials">
     1. After creating the incoming link, you'll receive your OAuth credentials:
        - **Client ID**: The identifier for your application
        - **Client Secret**: The secret key for your application
-    
+
     2. Store these credentials securely as you'll need them to configure your integration in Nango.
   </Step>
   <Step title="Configure your integration in Nango">
     When setting up your Jira Data Center integration in Nango:
-    
+
     - Use your **Client ID** and **Client Secret** from the previous step
     - For the authorization URL, use: `https://[your-jira-instance]/rest/oauth2/latest/authorize`
     - For the token URL, use: `https://[your-jira-instance]/rest/oauth2/latest/token`
