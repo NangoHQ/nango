@@ -6,6 +6,8 @@ sidebarTitle: Zoho Bigin
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/zoho-bigin/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/zoho-bigin/PreBuiltUseCases.mdx"
+import ZohoSharedUsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
+import ZohoSharedGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -14,44 +16,45 @@ import PreBuiltUseCases from "/snippets/generated/zoho-bigin/PreBuiltUseCases.md
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
+| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+Follow the general [Zoho OAuth setup guide](/integrations/all/zoho) to create your OAuth application. When selecting scopes, make sure to include the Bigin-specific scopes listed in the Common Scopes section below.
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-bigin.mdx)</Note>
 
 
 ## Useful links
 
--   [Register an Application](https://accounts.zoho.com/developerconsole)
--   [OAuth-related docs](https://www.bigin.com/developer/docs/apis/v2/oauth-overview.html)
--   [List of OAuth scopes](https://www.bigin.com/developer/docs/apis/v2/scopes.html)
--   [Web API docs (their REST API)](https://www.bigin.com/developer/docs/apis/v2/)
+<ZohoSharedUsefulLinks />
+
+### Bigin-specific links
+- [Zoho Bigin API Documentation](https://www.bigin.com/developer/docs/apis/v2/)
+- [Zoho Bigin OAuth Overview](https://www.bigin.com/developer/docs/apis/v2/oauth-overview.html)
+- [Zoho Bigin Scopes](https://www.bigin.com/developer/docs/apis/v2/scopes.html)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-bigin.mdx)</Note>
 
-## Connection configuration in Nango
+## Common Scopes
 
-Zoho uses [different domain extensions](https://www.bigin.com/developer/docs/apis/multi-dc.html) for different regions.
-
-You need to pass the domain extension to use to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('zoho-bigin', '<CONNECTION-ID>', {params: {extension: 'com'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- **ZohoBigin.modules.ALL** - Access to all Bigin modules
+- **ZohoBigin.settings.ALL** - Access to all Bigin settings
+- **ZohoBigin.users.ALL** - Access to all Bigin users
+- **ZohoBigin.org.ALL** - Access to organization-level data
+- **ZohoBigin.notifications.READ** - Read access to notifications
 
 ## API gotchas
+
+<ZohoSharedGotchas />
+
+### Bigin-specific gotchas
 - You can make your OAuth app cross-data-centers with [these instructions](https://www.bigin.com/developer/docs/apis/multi-dc.html). This means that a single OAuth app will be able to query the Zoho API for Zoho accounts from the US, EU, etc.
+- Bigin API has a rate limit of 10,000 API requests per day per organization.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-bigin.mdx)</Note>
