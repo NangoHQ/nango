@@ -88,7 +88,7 @@ const billing = {
                     return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
                 });
 
-                const sendRes = await usageBilling.sendAll(events);
+                const sendRes = usageBilling.addAll(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }

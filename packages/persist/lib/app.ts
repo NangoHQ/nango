@@ -7,6 +7,7 @@ import type { Server } from 'node:http';
 import db from '@nangohq/database';
 import { destroy as destroyRecords } from '@nangohq/records';
 import { destroy as destroyLogs } from '@nangohq/logs';
+import { billing } from '@nangohq/billing';
 
 const logger = getLogger('Persist');
 
@@ -45,6 +46,7 @@ const close = once(() => {
         await db.knex.destroy();
         await db.readOnly.destroy();
         await destroyRecords();
+        await billing.shutdown();
 
         logger.close();
 
