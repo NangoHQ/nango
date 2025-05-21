@@ -150,6 +150,38 @@ export function transformSync({ content, sync, models }: { content: string; sync
 
     addZodImport(root, j);
 
+    // Generate Zod model declarations for all referenced models
+    const referencedModels = sync.usedModels;
+    const modelDecls: jscodeshift.VariableDeclaration[] = [];
+    const typeAliases: jscodeshift.TSTypeAliasDeclaration[] = [];
+    for (const modelName of referencedModels) {
+        const model = models.get(modelName);
+        if (!model) {
+            continue;
+        }
+        // Zod model declaration
+        modelDecls.push(j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod(j, model, referencedModels))]));
+        typeAliases.push(
+            j.tsTypeAliasDeclaration(
+                j.identifier(modelName),
+                j.tsTypeReference(
+                    j.tsQualifiedName(j.identifier('z'), j.identifier('infer')),
+                    j.tsTypeParameterInstantiation([j.tsTypeQuery(j.identifier(modelName))])
+                )
+            )
+        );
+    }
+
+    // Insert model declarations at the top of the file (after imports)
+    const body = root.get().node.program.body;
+    let lastImportIdx = -1;
+    for (let i = 0; i < body.length; i++) {
+        if (body[i].type === 'ImportDeclaration') {
+            lastImportIdx = i;
+        }
+    }
+    body.splice(lastImportIdx + 1, 0, ...modelDecls, ...typeAliases);
+
     // Wrap default function
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
         const func = path.node.declaration;
@@ -157,12 +189,19 @@ export function transformSync({ content, sync, models }: { content: string; sync
             return;
         }
 
+        // Remove type annotations from parameters
+        const params = func.params.map((param) => {
+            if (param.type === 'Identifier') {
+                return j.identifier(param.name);
+            }
+            return param;
+        });
         // Create an object with exec property as the function expression
-        const execArrow = j.arrowFunctionExpression(func.params, func.body);
+        const execArrow = j.arrowFunctionExpression(params, func.body);
         execArrow.async = true;
+        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
 
         // Creats default props
-        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
         const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(sync.description));
         const versionProp = j.objectProperty(j.identifier('version'), j.stringLiteral(sync.version || '0.0.1'));
         const runsProp = j.objectProperty(j.identifier('runs'), j.stringLiteral(sync.runs));
@@ -171,35 +210,40 @@ export function transformSync({ content, sync, models }: { content: string; sync
         const trackDeletesProp = j.objectProperty(j.identifier('trackDeletes'), j.booleanLiteral(sync.track_deletes));
         const endpointsProp = j.objectProperty(
             j.identifier('endpoints'),
-            j.arrayExpression(
-                sync.endpoints.map((ep) =>
-                    j.objectExpression(
-                        Object.entries(ep).map(([k, v]) => {
-                            return j.objectProperty(j.identifier(k), j.stringLiteral(v as string));
-                        })
-                    )
-                )
-            )
+            Array.isArray(sync.endpoints)
+                ? j.arrayExpression(
+                      sync.endpoints.map((ep) =>
+                          j.objectExpression(
+                              Object.entries(ep)
+                                  .map(([k, v]) => {
+                                      if (typeof v === 'string') {
+                                          return j.objectProperty(j.identifier(k), j.stringLiteral(v));
+                                      }
+                                      return null;
+                                  })
+                                  .filter((prop): prop is jscodeshift.ObjectProperty => !!prop)
+                          )
+                      )
+                  )
+                : j.arrayExpression([])
         );
         const props = [descriptionProp, versionProp, runsProp, autoStartProp, syncTypeProp, trackDeletesProp, endpointsProp];
 
         if (sync.webhookSubscriptions.length > 0) {
             const webhookSubscriptionsProp = j.objectProperty(
                 j.identifier('webhookSubscriptions'),
-                j.arrayExpression(sync.webhookSubscriptions.map((w: any) => j.stringLiteral(w)))
+                Array.isArray(sync.webhookSubscriptions) ? j.arrayExpression(sync.webhookSubscriptions.map((w) => j.stringLiteral(w))) : j.arrayExpression([])
             );
             props.push(webhookSubscriptionsProp);
         }
         if (Array.isArray(sync.scopes) && sync.scopes.length > 0) {
-            const scopesProp = j.objectProperty(j.identifier('scopes'), j.arrayExpression(sync.scopes.map((s: string) => j.stringLiteral(s))));
+            const scopesProp = j.objectProperty(j.identifier('scopes'), j.arrayExpression(sync.scopes.map((s) => j.stringLiteral(s))));
             props.push(scopesProp);
         }
         if (sync.output) {
             const modelProps = sync.output
-                .map((modelName: string) => {
-                    const model = models.get(modelName);
-                    if (!model) return undefined;
-                    return j.objectProperty(j.identifier(modelName), nangoModelToZod(j, model));
+                .map((modelName) => {
+                    return j.objectProperty(j.identifier(modelName), j.identifier(modelName));
                 })
                 .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
             if (modelProps.length > 0) {
@@ -208,14 +252,11 @@ export function transformSync({ content, sync, models }: { content: string; sync
             }
         }
         if (sync.input) {
-            const model = models.get(sync.input);
-            if (model) {
-                const metadataProp = j.objectProperty(
-                    j.identifier('metadata'),
-                    j.objectExpression([j.objectProperty(j.identifier(sync.input), nangoModelToZod(j, model))])
-                );
-                props.push(metadataProp);
-            }
+            const metadataProp = j.objectProperty(
+                j.identifier('metadata'),
+                j.objectExpression([j.objectProperty(j.identifier(sync.input), j.identifier(sync.input))])
+            );
+            props.push(metadataProp);
         }
 
         props.push(execProp);
@@ -254,7 +295,11 @@ function addZodImport(root: Collection, j: jscodeshift.JSCodeshift) {
 /**
  * Converts a NangoModel type to Zod AST
  */
-export function nangoModelToZod(j: typeof jscodeshift, model: NangoModel) {
+export function nangoModelToZod(
+    j: typeof jscodeshift,
+    model: NangoModel,
+    referencedModels: string[]
+): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
     // Check for dynamic field
     const isDynamic = model.fields.find((field) => {
         if (field.dynamic) {
@@ -264,27 +309,49 @@ export function nangoModelToZod(j: typeof jscodeshift, model: NangoModel) {
     });
     if (isDynamic) {
         // z.record(<valueType>).and(z.object({ ... }))
-        const valueType = nangoTypeToZodAst(j, isDynamic);
-        const recordExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [valueType]);
+        const valueType = nangoTypeToZodAst(j, isDynamic, referencedModels || []);
+        const safeValueType = valueType ?? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
+        // If valueType is an Identifier, wrap in z.lazy(() => Identifier)
+        const recordArg =
+            valueType && valueType.type === 'Identifier'
+                ? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('lazy')), [j.arrowFunctionExpression([], valueType)])
+                : safeValueType;
+        const recordExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [recordArg]);
         // All other fields
         const otherFields = model.fields.filter((f) => f !== isDynamic);
-        const otherProps = otherFields.map((field) => j.objectProperty(j.identifier(field.name), nangoTypeToZodAst(j, field)));
+        const otherProps = otherFields
+            .map((field) => {
+                const zodAst = nangoTypeToZodAst(j, field, referencedModels || []);
+                if (!zodAst) return undefined;
+                return j.objectProperty(j.identifier(field.name), zodAst);
+            })
+            .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
         const objectExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(otherProps)]);
         return j.callExpression(j.memberExpression(recordExpr, j.identifier('and')), [objectExpr]);
     }
 
     // regular object
-    const properties = model.fields.map((field) => j.objectProperty(j.identifier(field.name), nangoTypeToZodAst(j, field)));
+    const properties = model.fields
+        .map((field) => {
+            const zodAst = nangoTypeToZodAst(j, field, referencedModels || []);
+            if (!zodAst) return undefined;
+            return j.objectProperty(j.identifier(field.name), zodAst);
+        })
+        .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
     return j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(properties)]);
 }
 
 /**
  * Converts a NangoModelField type to Zod AST
  */
-function nangoTypeToZodAst(j: typeof jscodeshift, field: NangoModelField): jscodeshift.CallExpression {
+function nangoTypeToZodAst(
+    j: typeof jscodeshift,
+    field: NangoModelField,
+    referencedModels?: string[]
+): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
     // Handle union
     if (field.union && Array.isArray(field.value)) {
-        const unionArgs = field.value.map((v: any) => nangoTypeToZodAst(j, v));
+        const unionArgs = field.value.map((v) => nangoTypeToZodAst(j, v, referencedModels)).filter((arg): arg is jscodeshift.CallExpression => !!arg);
         let unionExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(unionArgs)]);
         if (field.optional) {
             unionExpr = j.callExpression(j.memberExpression(unionExpr, j.identifier('optional')), []);
@@ -294,10 +361,10 @@ function nangoTypeToZodAst(j: typeof jscodeshift, field: NangoModelField): jscod
 
     // Handle array
     if (field.array) {
-        let arrExpr = j.callExpression(
-            j.memberExpression(nangoTypeToZodAst(j, { ...field, array: false, optional: false, union: false }), j.identifier('array')),
-            []
-        );
+        const elementType =
+            nangoTypeToZodAst(j, { ...field, array: false, optional: false, union: false }, referencedModels) ??
+            j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
+        let arrExpr = j.callExpression(j.memberExpression(elementType, j.identifier('array')), []);
         if (field.optional) {
             arrExpr = j.callExpression(j.memberExpression(arrExpr, j.identifier('optional')), []);
         }
@@ -318,18 +385,30 @@ function nangoTypeToZodAst(j: typeof jscodeshift, field: NangoModelField): jscod
             case 'null':
                 baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('nullable')), []);
                 break;
+            case 'undefined':
+                return;
             default:
                 baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('literal')), [j.stringLiteral(field.value)]);
         }
     } else if (Array.isArray(field.value)) {
         // If not union/array, treat as nested object
-        baseExpr = nangoModelToZod(j, { name: '', fields: field.value });
+        const nested = nangoModelToZod(j, { name: '', fields: field.value }, referencedModels || []);
+        baseExpr = nested
+            ? nested.type === 'Identifier'
+                ? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('lazy')), [j.arrowFunctionExpression([], nested)])
+                : nested
+            : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
     } else {
         baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
     }
 
     if (field.optional) {
         baseExpr = j.callExpression(j.memberExpression(baseExpr, j.identifier('optional')), []);
+    }
+
+    // Handle model reference
+    if (field.model && typeof field.value === 'string' && referencedModels && referencedModels.includes(field.value)) {
+        return j.identifier(field.value);
     }
 
     return baseExpr;

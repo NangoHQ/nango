@@ -6,7 +6,13 @@ import type { NangoModel } from '@nangohq/types';
 
 describe('transformSync', () => {
     it('should create a .v2.ts file with createSync and correct properties', () => {
-        const ts = `export default async function fetchData(nango) {\n  await nango.log('hello');\n}`;
+        const ts = `import type { Model, NangoSync } from "../../models";
+export default async function fetchData(nango: NangoSync) {
+    await nango.log('hello');
+    await nango.batchSave<Model>([{
+        'id': 'foobar',
+    }], 'Model');
+}`;
         const result = zeroYaml.transformSync({
             content: ts,
             sync: {
@@ -32,6 +38,7 @@ describe('transformSync', () => {
                         name: 'Model',
                         fields: [
                             { name: 'id', value: 'string', tsType: true },
+                            { name: 'undefined', value: 'undefined', tsType: true },
                             { name: 'arrTsType', value: 'string', tsType: true, array: true },
                             { name: 'null', value: 'null', tsType: true },
                             { name: 'bool', optional: false, tsType: true, value: 'boolean' },
@@ -79,7 +86,10 @@ describe('transformSync', () => {
                     'Metadata',
                     {
                         name: 'Metadata',
-                        fields: [{ name: 'foo', value: 'bar' }]
+                        fields: [
+                            { name: 'foo', value: 'bar' },
+                            { name: 'model', model: true, value: 'Model' }
+                        ]
                     }
                 ]
             ])
