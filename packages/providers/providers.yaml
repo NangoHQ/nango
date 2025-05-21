@@ -8097,7 +8097,7 @@ recruiterflow:
     proxy:
         base_url: https://api.recruiterflow.com
         headers:
-            RF-Api-Key: ${apiKey}
+            rf-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/recruiterflow
     docs_connect: https://docs.nango.dev/integrations/all/recruiterflow/connect
     credentials:
@@ -8105,6 +8105,7 @@ recruiterflow:
             type: string
             title: API Key
             description: The API Key for your Recruiterflow account
+            doc_section: '#step-1-generating-your-api-key'
 
 reddit:
     display_name: Reddit
