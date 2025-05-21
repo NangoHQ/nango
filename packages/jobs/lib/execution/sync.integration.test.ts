@@ -184,7 +184,9 @@ const runJob = async (
         syncName: sync.name,
         syncVariant: 'base',
         groupKey: 'group-key',
-        attempt: 0,
+        retryKey: 'retry-key',
+        attempt: 1,
+        attemptMax: 1,
         state: 'CREATED',
         debug: false,
         connection: {
