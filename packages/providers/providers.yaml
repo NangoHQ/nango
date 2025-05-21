@@ -4501,6 +4501,11 @@ google:
         access_type: offline
         prompt: consent
     proxy:
+        retry:
+            in_body:
+                path: error.message
+                value: /User-rate limit exceeded\. +Retry after (.+)/
+                strategy: at
         base_url: https://www.googleapis.com
         paginate:
             type: cursor
