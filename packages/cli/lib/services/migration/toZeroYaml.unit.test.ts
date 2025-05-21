@@ -19,6 +19,7 @@ export async function onWebhookPayloadReceived(
   payload: any,
 ): Promise<void> {
   await nango.log('Received webhook', payload);
+  await nango.batchSave<Model>([{}], 'Model');
 }`;
         const result = zeroYaml.transformSync({
             content: ts,

@@ -72,22 +72,18 @@ const Model = z.object({
   opt: z.number().optional(),
   ref: z.literal("Foo").optional(),
   union: z.union([z.literal("literal1"), z.literal("literal2")]),
-
-  array: z.object({
-    0: z.literal("arr1"),
-    1: z.literal("arr2")
-  }).array(),
+  array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
 
   obj: z.object({
     nes: z.literal("ted")
   }),
 
-  dynamicObj: z.record(z.date()).and(z.object({}))
+  dynamicObj: z.object({}).catchall(z.literal("date"))
 });
 
-const ModelDynamic = z.record(z.string()).and(z.object({
+const ModelDynamic = z.object({
   id: z.string()
-}));
+}).catchall(z.string());
 
 type Metadata = z.infer<typeof Metadata>;
 type Model = z.infer<typeof Model>;
@@ -115,9 +111,7 @@ export default createSync({
     ModelDynamic: ModelDynamic
   },
 
-  metadata: {
-    Metadata: Metadata
-  },
+  metadata: Metadata,
 
   exec: async nango => {
       await nango.log('hello');
@@ -129,6 +123,7 @@ export default createSync({
 
   onWebhook: async (nango, payload) => {
     await nango.log('Received webhook', payload);
+    await nango.batchSave([{}], 'Model');
   }
 });"
 `;

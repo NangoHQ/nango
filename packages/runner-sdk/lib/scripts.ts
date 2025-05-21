@@ -1,11 +1,12 @@
 import type { NangoActionBase } from './action.js';
 import type { NangoSyncBase } from './sync.js';
+import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { z } from 'zod';
 
 export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
     version?: string;
     description: string;
-    endpoints: { method: 'GET' | 'POST'; path: string; group: string }[];
+    endpoints: NangoSyncEndpointV2[];
     runs: string;
     models: TModels;
     syncType: 'full' | 'incremental';
@@ -31,7 +32,7 @@ export interface CreateActionProps<
 > {
     version?: string;
     description: string;
-    endpoint: { method: 'GET' | 'POST'; path: string; group: string };
+    endpoint: NangoSyncEndpointV2;
     input: TInput;
     output: TOutput;
     metadata?: TMetadata;

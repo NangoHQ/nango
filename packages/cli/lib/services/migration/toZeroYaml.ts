@@ -259,10 +259,7 @@ export function transformSync({ content, sync, models }: { content: string; sync
             }
         }
         if (sync.input) {
-            const metadataProp = j.objectProperty(
-                j.identifier('metadata'),
-                j.objectExpression([j.objectProperty(j.identifier(sync.input), j.identifier(sync.input))])
-            );
+            const metadataProp = j.objectProperty(j.identifier('metadata'), j.identifier(sync.input));
             props.push(metadataProp);
         }
 
@@ -277,6 +274,8 @@ export function transformSync({ content, sync, models }: { content: string; sync
                 const webhookExecProp = buildExecProp(j, decl);
                 // Extract the arrow function from the exec property
                 onWebhookArrow = webhookExecProp.value;
+
+                removeBatchTypeArguments({ j, func: onWebhookArrow as any });
                 // Remove the original function declaration
                 j(p).remove();
             }
@@ -505,15 +504,9 @@ function nangoModelToZod(
         return false;
     });
     if (isDynamic) {
-        // z.record(<valueType>).and(z.object({ ... }))
+        // z.object({ ... }).catchall(valueType)
         const valueType = nangoTypeToZodAst({ j, field: isDynamic, referencedModels: referencedModels || [] });
         const safeValueType = valueType ?? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
-        // If valueType is an Identifier, wrap in z.lazy(() => Identifier)
-        const recordArg =
-            valueType && valueType.type === 'Identifier'
-                ? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('lazy')), [j.arrowFunctionExpression([], valueType)])
-                : safeValueType;
-        const recordExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [recordArg]);
         // All other fields
         const otherFields = model.fields.filter((f) => f !== isDynamic);
         const otherProps = otherFields
@@ -524,7 +517,7 @@ function nangoModelToZod(
             })
             .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
         const objectExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(otherProps)]);
-        return j.callExpression(j.memberExpression(recordExpr, j.identifier('and')), [objectExpr]);
+        return j.callExpression(j.memberExpression(objectExpr, j.identifier('catchall')), [safeValueType]);
     }
 
     // regular object
@@ -564,10 +557,36 @@ function nangoTypeToZodAst({
 
     // Handle array
     if (field.array) {
-        const elementType =
-            nangoTypeToZodAst({ j, field: { ...field, array: false, optional: false, union: false }, referencedModels }) ??
-            j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
-        let arrExpr = j.callExpression(j.memberExpression(elementType, j.identifier('array')), []);
+        let arrExpr;
+        // Array of ts types (no value)
+        if (!Array.isArray(field.value)) {
+            return j.callExpression(
+                j.memberExpression(nangoTypeToZodAst({ j, field: { ...field, array: false }, referencedModels })!, j.identifier('array')),
+                []
+            );
+        }
+
+        // Array of one or multiple values
+        const elementTypes: (jscodeshift.CallExpression | jscodeshift.Identifier)[] = [];
+        for (const value of field.value) {
+            const ast = nangoTypeToZodAst({ j, field: { ...value }, referencedModels });
+            if (ast !== undefined) {
+                elementTypes.push(ast);
+            }
+        }
+
+        if (elementTypes.length === 0) {
+            return;
+        }
+
+        let elementType: jscodeshift.CallExpression | jscodeshift.Identifier;
+        if (elementTypes.length === 1) {
+            elementType = elementTypes[0]!;
+        } else {
+            elementType = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(elementTypes)]);
+        }
+        arrExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('array')), [elementType]);
+
         if (field.optional) {
             arrExpr = j.callExpression(j.memberExpression(arrExpr, j.identifier('optional')), []);
         }
@@ -581,15 +600,25 @@ function nangoTypeToZodAst({
             case 'string':
             case 'number':
             case 'boolean':
-            case 'date':
+            case 'Date':
             case 'any':
-                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier(field.value)), []);
+                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier(field.value.toLocaleLowerCase())), []);
                 break;
             case 'null':
                 baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('nullable')), []);
                 break;
             case 'undefined':
+                // return on purpose to skip
                 return;
+            case 'Record<string, any>':
+                baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression([])]);
+                break;
+            case 'any[]':
+                baseExpr = j.callExpression(
+                    j.memberExpression(j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []), j.identifier('array')),
+                    []
+                );
+                break;
             default:
                 baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('literal')), [j.stringLiteral(field.value)]);
         }
@@ -677,12 +706,14 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
     const pkg = JSON.parse(pkgRaw) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
 
-    const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
-    const examplePkg = JSON.parse(examplePkgRaw);
-    const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
     pkg.devDependencies = pkg.devDependencies || {};
     pkg.devDependencies['nango'] = NANGO_VERSION;
-    pkg.devDependencies['zod'] = zodVersion;
+
+    // TODO: check after we publish nango, there was an error when using multiple version of zod
+    // const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
+    // const examplePkg = JSON.parse(examplePkgRaw);
+    // const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
+    // pkg.devDependencies['zod'] = zodVersion;
 
     // Remove nango and zod from dependencies just in case they were added as prod
     if (pkg.dependencies?.['nango']) {
