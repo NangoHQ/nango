@@ -1,6 +1,47 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`transformSync > should create a .v2.ts file with createSync and correct properties 1`] = `
+exports[`transformAction > should transform an action 1`] = `
+"import { z } from "zod";
+import { createAction } from "nango";
+
+const IssueInput = z.object({
+  title: z.string(),
+  body: z.string()
+});
+
+const IssueOutput = z.object({
+  id: z.string(),
+  status: z.string()
+});
+
+type IssueInput = z.infer<typeof IssueInput>;
+type IssueOutput = z.infer<typeof IssueOutput>;
+
+export default createAction({
+  description: "Test action",
+  version: "1.0.0",
+
+  endpoint: {
+    method: "POST",
+    path: "/example/github/issues",
+    group: "Issues"
+  },
+
+  input: IssueInput,
+  output: IssueOutput,
+  scopes: ["repo"],
+
+  exec: async (nango, input) => {
+    await nango.log("✅ hello from action");
+    return {
+      id: '123',
+      status: 'open'
+    }
+  }
+});"
+`;
+
+exports[`transformSync > should transform a sync 1`] = `
 "import { z } from "zod";
 import { createSync } from "nango";
 

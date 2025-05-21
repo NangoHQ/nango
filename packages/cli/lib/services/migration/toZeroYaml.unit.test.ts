@@ -5,7 +5,7 @@ import * as zeroYaml from './toZeroYaml.js';
 import type { NangoModel } from '@nangohq/types';
 
 describe('transformSync', () => {
-    it('should create a .v2.ts file with createSync and correct properties', () => {
+    it('should transform a sync', () => {
         const ts = `import type { Model, NangoSync } from "../../models";
 export default async function fetchData(nango: NangoSync) {
     await nango.log('hello');
@@ -96,6 +96,57 @@ export async function onWebhookPayloadReceived(
                         fields: [
                             { name: 'foo', value: 'bar' },
                             { name: 'model', model: true, value: 'Model' }
+                        ]
+                    }
+                ]
+            ])
+        });
+        expect(result).toMatchSnapshot();
+    });
+});
+
+describe('transformAction', () => {
+    it('should transform an action', () => {
+        const ts = `import type { NangoSync, IssueOutput, IssueInput } from "../../models";
+
+export default async function runAction(nango: NangoSync, input: IssueInput): Promise<IssueOutput> {
+  await nango.log("✅ hello from action");
+  return {
+    id: '123',
+    status: 'open'
+  }
+}`;
+        const result = zeroYaml.transformAction({
+            content: ts,
+            action: {
+                name: 'testAction',
+                type: 'action',
+                description: 'Test action',
+                version: '1.0.0',
+                endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
+                input: 'IssueInput',
+                output: ['IssueOutput'],
+                scopes: ['repo'],
+                usedModels: ['IssueInput', 'IssueOutput']
+            },
+            models: new Map<string, NangoModel>([
+                [
+                    'IssueInput',
+                    {
+                        name: 'IssueInput',
+                        fields: [
+                            { name: 'title', value: 'string' },
+                            { name: 'body', value: 'string' }
+                        ]
+                    }
+                ],
+                [
+                    'IssueOutput',
+                    {
+                        name: 'IssueOutput',
+                        fields: [
+                            { name: 'id', value: 'string' },
+                            { name: 'status', value: 'string' }
                         ]
                     }
                 ]

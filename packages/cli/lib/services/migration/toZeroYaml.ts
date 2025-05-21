@@ -12,8 +12,10 @@ import { NANGO_VERSION } from '../../version.js';
 import { compileAllFiles } from '../compile.service.js';
 import { loadYamlAndGenerate } from '../model.service.js';
 
-import type { NangoModel, NangoModelField, ParsedNangoSync, Result } from '@nangohq/types';
+import type { NangoModel, NangoModelField, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type { Collection } from 'jscodeshift';
+
+const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError'];
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
     const spinner = ora({ text: 'Precompiling' }).start();
@@ -45,7 +47,6 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
 
                 const transformed = transformSync({ sync, content, models: parsed.models });
 
-                // Append transformed code after line 55
                 const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
@@ -55,23 +56,22 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
                 return Err('failed_to_compile_one_file');
             }
         }
-        // for (const action of integration.actions) {
-        //     const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/syncs/${sync.name}.ts` }).start();
-        //     try {
-        //         const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
+        for (const action of integration.actions) {
+            const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/actions/${action.name}.ts` }).start();
+            try {
+                const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'actions', scriptName: action.name });
 
-        //         const transformed = transformSync({ sync, content, models: parsed.models });
+                const transformed = transformAction({ action, content, models: parsed.models });
 
-        //         // Append transformed code after line 55
-        //         const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
-        //         await fs.promises.writeFile(targetFile, transformed);
-        //         spinner.succeed();
-        //     } catch (err) {
-        //         spinner.fail();
-        //         console.error(chalk.red(err));
-        //         return Err('failed_to_compile_one_file');
-        //     }
-        // }
+                const targetFile = path.join(fullPath, integration.providerConfigKey, 'actions', `${action.name}.v2.ts`);
+                await fs.promises.writeFile(targetFile, transformed);
+                spinner.succeed();
+            } catch (err) {
+                spinner.fail();
+                console.error(chalk.red(err));
+                return Err('failed_to_compile_one_file');
+            }
+        }
     }
 
     // await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
@@ -102,48 +102,6 @@ async function getContent({
 }
 
 /**
- * Adds a package.json file to the given directory if it doesn't exist
- * Otherwise, it updates the existing package.json file
- */
-async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: boolean }) {
-    // Ensure package.json exists and has nango in devDependencies
-    const packageJsonPath = path.join(fullPath, 'package.json');
-    const examplePackageJsonPath = path.join(import.meta.dirname, '../../../example/package.json');
-    let packageJsonExists = false;
-    try {
-        await fs.promises.access(packageJsonPath, fs.constants.F_OK);
-        packageJsonExists = true;
-    } catch (_err) {
-        packageJsonExists = false;
-    }
-
-    if (!packageJsonExists) {
-        printDebug('package.json does not exist', debug);
-        await fs.promises.copyFile(examplePackageJsonPath, packageJsonPath);
-    } else {
-        printDebug('package.json exists, updating', debug);
-        const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        const pkg = JSON.parse(pkgRaw) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
-
-        const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
-        const examplePkg = JSON.parse(examplePkgRaw);
-        const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
-        pkg.devDependencies = pkg.devDependencies || {};
-        pkg.devDependencies['nango'] = NANGO_VERSION;
-        pkg.devDependencies['zod'] = zodVersion;
-
-        // Remove nango and zod from dependencies just in case they were added as prod
-        if (pkg.dependencies?.['nango']) {
-            delete pkg.dependencies['nango'];
-        }
-        if (pkg.dependencies?.['zod']) {
-            delete pkg.dependencies['zod'];
-        }
-        await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
-    }
-}
-
-/**
  * Runs npm install in the given directory
  */
 async function runNpmInstall(fullPath: string): Promise<void> {
@@ -163,56 +121,19 @@ async function runNpmInstall(fullPath: string): Promise<void> {
     });
 }
 
-const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError'];
 export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
 
-    // Remove legacy models import
-    root.find(j.ImportDeclaration)
-        .filter((path) => {
-            const source = path.node.source.value;
-            return typeof source === 'string' && (/models(\.js)?$/.test(source) || /models(\.js)?$/.test(source.replace(/^.*\//, '')));
-        })
-        .remove();
+    removeLegacyImports({ root, j });
 
     // Add import { createSync } from 'nango'
     const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createSync'))], j.literal('nango'));
     root.get().node.program.body.unshift(importDecl);
 
-    addZodImport(root, j);
+    addZodImport({ root, j });
 
-    // Generate Zod model declarations for all referenced models
-    const referencedModels = sync.usedModels;
-    const modelDecls: jscodeshift.VariableDeclaration[] = [];
-    const typeAliases: jscodeshift.TSTypeAliasDeclaration[] = [];
-    for (const modelName of referencedModels) {
-        const model = models.get(modelName);
-        if (!model) {
-            continue;
-        }
-        // Zod model declaration
-        modelDecls.push(j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod(j, model, referencedModels))]));
-        typeAliases.push(
-            j.tsTypeAliasDeclaration(
-                j.identifier(modelName),
-                j.tsTypeReference(
-                    j.tsQualifiedName(j.identifier('z'), j.identifier('infer')),
-                    j.tsTypeParameterInstantiation([j.tsTypeQuery(j.identifier(modelName))])
-                )
-            )
-        );
-    }
-
-    // Insert model declarations at the top of the file (after imports)
-    const body = root.get().node.program.body;
-    let lastImportIdx = -1;
-    for (let i = 0; i < body.length; i++) {
-        if (body[i].type === 'ImportDeclaration') {
-            lastImportIdx = i;
-        }
-    }
-    body.splice(lastImportIdx + 1, 0, ...modelDecls, ...typeAliases);
+    modelToZod({ j, root, usedModels: sync.usedModels, models });
 
     // Wrap default function
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
@@ -321,43 +242,121 @@ export function transformSync({ content, sync, models }: { content: string; sync
     });
 
     // Find all used Types in the file that might be available in "nango"
-    const usedAllowedTypes = new Set<string>();
-    root.find(j.TSTypeReference).forEach((path) => {
-        if (path.node.typeName.type === 'Identifier') {
-            const name = path.node.typeName.name;
-            if (allowedTypesImports.includes(name)) {
-                usedAllowedTypes.add(name);
-            }
-        }
-    });
-
-    // Add them to the list of imports
-    if (usedAllowedTypes.size > 0) {
-        const importTypeDecl = j.importDeclaration(
-            Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
-            j.literal('nango')
-        );
-        importTypeDecl.importKind = 'type';
-        // Insert after all other imports
-        const body = root.get().node.program.body;
-        let lastImportIdx = -1;
-        for (let i = 0; i < body.length; i++) {
-            if (body[i].type === 'ImportDeclaration') {
-                lastImportIdx = i;
-            }
-        }
-        body.splice(lastImportIdx + 1, 0, importTypeDecl);
-    }
+    reImportTypes({ root, j });
 
     const transformed = root.toSource();
 
     return transformed;
 }
 
+export function transformAction({ content, action, models }: { content: string; action: ParsedNangoAction; models: Map<string, NangoModel> }): string {
+    const j = jscodeshift.withParser('ts');
+    const root = j(content);
+
+    removeLegacyImports({ root, j });
+
+    // Add import { createAction } from 'nango'
+    const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createAction'))], j.literal('nango'));
+    root.get().node.program.body.unshift(importDecl);
+
+    addZodImport({ root, j });
+
+    modelToZod({ j, root, usedModels: action.usedModels, models });
+
+    // Find the default export async function (runAction or similar)
+    root.find(j.ExportDefaultDeclaration).forEach((path) => {
+        const func = path.node.declaration;
+        if (func.type !== 'FunctionDeclaration' && func.type !== 'ArrowFunctionExpression') {
+            return;
+        }
+
+        // Remove type annotations from parameters
+        let params;
+        let bodyNode;
+        let isAsync = false;
+        if (func.type === 'FunctionDeclaration') {
+            params = func.params.map((param) => {
+                if (param.type === 'Identifier') {
+                    return j.identifier(param.name);
+                }
+                return param;
+            });
+            bodyNode = func.body;
+            isAsync = !!func.async;
+        } else {
+            params = func.params;
+            bodyNode = func.body;
+            isAsync = !!func.async;
+        }
+        const execArrow = j.arrowFunctionExpression(params, bodyNode);
+        execArrow.async = isAsync;
+        const execProp = j.objectProperty(j.identifier('exec'), execArrow);
+
+        // Build createAction object
+        const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(action.description));
+        const versionProp = j.objectProperty(j.identifier('version'), j.stringLiteral(action.version || '0.0.1'));
+        const props = [descriptionProp, versionProp];
+
+        if (action.endpoint) {
+            const endpointProp = j.objectProperty(
+                j.identifier('endpoint'),
+                j.objectExpression(
+                    Object.entries(action.endpoint)
+                        .map(([k, v]) => {
+                            if (typeof v === 'string') {
+                                return j.objectProperty(j.identifier(k), j.stringLiteral(v));
+                            }
+                            return null;
+                        })
+                        .filter((prop): prop is jscodeshift.ObjectProperty => !!prop)
+                )
+            );
+            props.push(endpointProp);
+        }
+
+        const inputProp = j.objectProperty(
+            j.identifier('input'),
+            typeof action.input === 'string' ? j.identifier(action.input) : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('never')), [])
+        );
+        props.push(inputProp);
+
+        let outputProp = null;
+        if (Array.isArray(action.output) && action.output.length > 0 && typeof action.output[0] === 'string') {
+            outputProp = j.objectProperty(j.identifier('output'), j.identifier(action.output[0]));
+        } else if (typeof action.output === 'string') {
+            outputProp = j.objectProperty(j.identifier('output'), j.identifier(action.output));
+        } else {
+            outputProp = j.objectProperty(j.identifier('output'), j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('never')), []));
+        }
+        props.push(outputProp);
+
+        if (Array.isArray(action.scopes) && action.scopes.length > 0) {
+            const scopesProp = j.objectProperty(j.identifier('scopes'), j.arrayExpression(action.scopes.map((s) => j.stringLiteral(s))));
+            props.push(scopesProp);
+        }
+
+        props.push(execProp);
+        const obj = j.objectExpression(props);
+        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createAction'), [obj])));
+    });
+
+    const transformed = root.toSource();
+    return transformed;
+}
+
+function removeLegacyImports({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
+    root.find(j.ImportDeclaration)
+        .filter((path) => {
+            const source = path.node.source.value;
+            return typeof source === 'string' && (/models(\.js)?$/.test(source) || /models(\.js)?$/.test(source.replace(/^.*\//, '')));
+        })
+        .remove();
+}
+
 /**
  * Adds an import for zod if it's not present
  */
-function addZodImport(root: Collection, j: jscodeshift.JSCodeshift) {
+function addZodImport({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
     const hasZodImport =
         root
             .find(j.ImportDeclaration)
@@ -376,10 +375,43 @@ function addZodImport(root: Collection, j: jscodeshift.JSCodeshift) {
     }
 }
 
+function modelToZod({ j, root, usedModels, models }: { j: typeof jscodeshift; root: Collection; usedModels: string[]; models: Map<string, NangoModel> }) {
+    const referencedModels = usedModels;
+    const modelDecls: jscodeshift.VariableDeclaration[] = [];
+    const typeAliases: jscodeshift.TSTypeAliasDeclaration[] = [];
+    for (const modelName of referencedModels) {
+        const model = models.get(modelName);
+        if (!model) {
+            continue;
+        }
+        // Zod model declaration
+        modelDecls.push(j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod(j, model, referencedModels))]));
+        typeAliases.push(
+            j.tsTypeAliasDeclaration(
+                j.identifier(modelName),
+                j.tsTypeReference(
+                    j.tsQualifiedName(j.identifier('z'), j.identifier('infer')),
+                    j.tsTypeParameterInstantiation([j.tsTypeQuery(j.identifier(modelName))])
+                )
+            )
+        );
+    }
+
+    // Insert model declarations at the top of the file (after imports)
+    const body = root.get().node.program.body;
+    let lastImportIdx = -1;
+    for (let i = 0; i < body.length; i++) {
+        if (body[i].type === 'ImportDeclaration') {
+            lastImportIdx = i;
+        }
+    }
+    body.splice(lastImportIdx + 1, 0, ...modelDecls, ...typeAliases);
+}
+
 /**
  * Converts a NangoModel type to Zod AST
  */
-export function nangoModelToZod(
+function nangoModelToZod(
     j: typeof jscodeshift,
     model: NangoModel,
     referencedModels: string[]
@@ -393,7 +425,7 @@ export function nangoModelToZod(
     });
     if (isDynamic) {
         // z.record(<valueType>).and(z.object({ ... }))
-        const valueType = nangoTypeToZodAst(j, isDynamic, referencedModels || []);
+        const valueType = nangoTypeToZodAst({ j, field: isDynamic, referencedModels: referencedModels || [] });
         const safeValueType = valueType ?? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
         // If valueType is an Identifier, wrap in z.lazy(() => Identifier)
         const recordArg =
@@ -405,7 +437,7 @@ export function nangoModelToZod(
         const otherFields = model.fields.filter((f) => f !== isDynamic);
         const otherProps = otherFields
             .map((field) => {
-                const zodAst = nangoTypeToZodAst(j, field, referencedModels || []);
+                const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });
                 if (!zodAst) return undefined;
                 return j.objectProperty(j.identifier(field.name), zodAst);
             })
@@ -417,7 +449,7 @@ export function nangoModelToZod(
     // regular object
     const properties = model.fields
         .map((field) => {
-            const zodAst = nangoTypeToZodAst(j, field, referencedModels || []);
+            const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });
             if (!zodAst) return undefined;
             return j.objectProperty(j.identifier(field.name), zodAst);
         })
@@ -428,14 +460,20 @@ export function nangoModelToZod(
 /**
  * Converts a NangoModelField type to Zod AST
  */
-function nangoTypeToZodAst(
-    j: typeof jscodeshift,
-    field: NangoModelField,
-    referencedModels?: string[]
-): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
+function nangoTypeToZodAst({
+    j,
+    field,
+    referencedModels
+}: {
+    j: typeof jscodeshift;
+    field: NangoModelField;
+    referencedModels?: string[] | undefined;
+}): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
     // Handle union
     if (field.union && Array.isArray(field.value)) {
-        const unionArgs = field.value.map((v) => nangoTypeToZodAst(j, v, referencedModels)).filter((arg): arg is jscodeshift.CallExpression => !!arg);
+        const unionArgs = field.value
+            .map((v) => nangoTypeToZodAst({ j, field: v, referencedModels }))
+            .filter((arg): arg is jscodeshift.CallExpression => !!arg);
         let unionExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(unionArgs)]);
         if (field.optional) {
             unionExpr = j.callExpression(j.memberExpression(unionExpr, j.identifier('optional')), []);
@@ -446,7 +484,7 @@ function nangoTypeToZodAst(
     // Handle array
     if (field.array) {
         const elementType =
-            nangoTypeToZodAst(j, { ...field, array: false, optional: false, union: false }, referencedModels) ??
+            nangoTypeToZodAst({ j, field: { ...field, array: false, optional: false, union: false }, referencedModels }) ??
             j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
         let arrExpr = j.callExpression(j.memberExpression(elementType, j.identifier('array')), []);
         if (field.optional) {
@@ -496,4 +534,75 @@ function nangoTypeToZodAst(
     }
 
     return baseExpr;
+}
+
+function reImportTypes({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
+    // Find all used allowedTypesImports in the file
+    const usedAllowedTypes = new Set<string>();
+    root.find(j.TSTypeReference).forEach((path) => {
+        if (path.node.typeName.type === 'Identifier') {
+            const name = path.node.typeName.name;
+            if (allowedTypesImports.includes(name)) {
+                usedAllowedTypes.add(name);
+            }
+        }
+    });
+    if (usedAllowedTypes.size > 0) {
+        const importTypeDecl = j.importDeclaration(
+            Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
+            j.literal('nango')
+        );
+        importTypeDecl.importKind = 'type';
+        // Insert after all other imports
+        const body = root.get().node.program.body;
+        let lastImportIdx = -1;
+        for (let i = 0; i < body.length; i++) {
+            if (body[i].type === 'ImportDeclaration') {
+                lastImportIdx = i;
+            }
+        }
+        body.splice(lastImportIdx + 1, 0, importTypeDecl);
+    }
+}
+
+/**
+ * Adds a package.json file to the given directory if it doesn't exist
+ * Otherwise, it updates the existing package.json file
+ */
+async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+    // Ensure package.json exists and has nango in devDependencies
+    const packageJsonPath = path.join(fullPath, 'package.json');
+    const examplePackageJsonPath = path.join(import.meta.dirname, '../../../example/package.json');
+    let packageJsonExists = false;
+    try {
+        await fs.promises.access(packageJsonPath, fs.constants.F_OK);
+        packageJsonExists = true;
+    } catch (_err) {
+        packageJsonExists = false;
+    }
+
+    if (!packageJsonExists) {
+        printDebug('package.json does not exist', debug);
+        await fs.promises.copyFile(examplePackageJsonPath, packageJsonPath);
+    } else {
+        printDebug('package.json exists, updating', debug);
+        const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
+        const pkg = JSON.parse(pkgRaw) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
+
+        const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
+        const examplePkg = JSON.parse(examplePkgRaw);
+        const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
+        pkg.devDependencies = pkg.devDependencies || {};
+        pkg.devDependencies['nango'] = NANGO_VERSION;
+        pkg.devDependencies['zod'] = zodVersion;
+
+        // Remove nango and zod from dependencies just in case they were added as prod
+        if (pkg.dependencies?.['nango']) {
+            delete pkg.dependencies['nango'];
+        }
+        if (pkg.dependencies?.['zod']) {
+            delete pkg.dependencies['zod'];
+        }
+        await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
+    }
 }
