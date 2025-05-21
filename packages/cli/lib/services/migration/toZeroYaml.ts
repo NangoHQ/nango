@@ -41,13 +41,15 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
 
     for (const integration of parsed.integrations) {
         for (const sync of integration.syncs) {
-            const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/syncs/${sync.name}.ts` }).start();
+            const fp = path.join(integration.providerConfigKey, 'syncs', `${sync.name}.ts`);
+            const targetFile = path.join(fullPath, fp);
+
+            const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
-                const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'syncs', scriptName: sync.name });
+                const content = await getContent({ targetFile });
 
                 const transformed = transformSync({ sync, content, models: parsed.models });
 
-                const targetFile = path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.v2.ts`);
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
             } catch (err) {
@@ -56,20 +58,44 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
                 return Err('failed_to_compile_one_file');
             }
         }
+
         for (const action of integration.actions) {
-            const spinner = ora({ text: `Migrating: ${integration.providerConfigKey}/actions/${action.name}.ts` }).start();
+            const fp = path.join(integration.providerConfigKey, 'actions', `${action.name}.ts`);
+            const targetFile = path.join(fullPath, fp);
+
+            const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
-                const content = await getContent({ fullPath, integrationId: integration.providerConfigKey, scriptType: 'actions', scriptName: action.name });
+                const content = await getContent({ targetFile });
 
                 const transformed = transformAction({ action, content, models: parsed.models });
 
-                const targetFile = path.join(fullPath, integration.providerConfigKey, 'actions', `${action.name}.v2.ts`);
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
             } catch (err) {
                 spinner.fail();
                 console.error(chalk.red(err));
                 return Err('failed_to_compile_one_file');
+            }
+        }
+
+        for (const onEventScript of Object.entries(integration.onEventScripts)) {
+            for (const eventName of onEventScript[1]) {
+                const fp = path.join(integration.providerConfigKey, 'on-events', `${eventName}.ts`);
+                // const targetFile = path.join(fullPath, fp);
+
+                const spinner = ora({ text: `Migrating: ${fp}` }).start();
+                try {
+                    // const content = await getContent({ targetFile });
+
+                    // const transformed = transformOnEvents({ eventName, content, models: parsed.models });
+
+                    // await fs.promises.writeFile(targetFile, transformed);
+                    spinner.succeed();
+                } catch (err) {
+                    spinner.fail();
+                    console.error(chalk.red(err));
+                    return Err('failed_to_compile_one_file');
+                }
             }
         }
     }
@@ -86,18 +112,11 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     return Ok(undefined);
 }
 
-async function getContent({
-    fullPath,
-    integrationId,
-    scriptType,
-    scriptName
-}: {
-    fullPath: string;
-    integrationId: string;
-    scriptType: 'syncs' | 'actions' | 'on-events';
-    scriptName: string;
-}): Promise<string> {
-    const res = await fs.promises.readFile(path.join(fullPath, integrationId, scriptType, `${scriptName}.ts`));
+/**
+ * Get script content
+ */
+async function getContent({ targetFile }: { targetFile: string }): Promise<string> {
+    const res = await fs.promises.readFile(targetFile);
     return res.toString();
 }
 
@@ -121,6 +140,9 @@ async function runNpmInstall(fullPath: string): Promise<void> {
     });
 }
 
+/**
+ * Transforms a sync to zero-yaml
+ */
 export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
@@ -249,6 +271,9 @@ export function transformSync({ content, sync, models }: { content: string; sync
     return transformed;
 }
 
+/**
+ * Transforms an action to zero-yaml
+ */
 export function transformAction({ content, action, models }: { content: string; action: ParsedNangoAction; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
@@ -344,6 +369,9 @@ export function transformAction({ content, action, models }: { content: string; 
     return transformed;
 }
 
+/**
+ * Removes legacy imports
+ */
 function removeLegacyImports({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
     root.find(j.ImportDeclaration)
         .filter((path) => {
@@ -375,15 +403,20 @@ function addZodImport({ root, j }: { root: Collection; j: jscodeshift.JSCodeshif
     }
 }
 
+/**
+ * Converts Nango models to Zod AST and appends them to the file
+ */
 function modelToZod({ j, root, usedModels, models }: { j: typeof jscodeshift; root: Collection; usedModels: string[]; models: Map<string, NangoModel> }) {
     const referencedModels = usedModels;
     const modelDecls: jscodeshift.VariableDeclaration[] = [];
     const typeAliases: jscodeshift.TSTypeAliasDeclaration[] = [];
+
     for (const modelName of referencedModels) {
         const model = models.get(modelName);
         if (!model) {
             continue;
         }
+
         // Zod model declaration
         modelDecls.push(j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod(j, model, referencedModels))]));
         typeAliases.push(
@@ -536,6 +569,9 @@ function nangoTypeToZodAst({
     return baseExpr;
 }
 
+/**
+ * Re-imports allowed types if they are used
+ */
 function reImportTypes({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
     // Find all used allowedTypesImports in the file
     const usedAllowedTypes = new Set<string>();
@@ -547,22 +583,24 @@ function reImportTypes({ root, j }: { root: Collection; j: jscodeshift.JSCodeshi
             }
         }
     });
-    if (usedAllowedTypes.size > 0) {
-        const importTypeDecl = j.importDeclaration(
-            Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
-            j.literal('nango')
-        );
-        importTypeDecl.importKind = 'type';
-        // Insert after all other imports
-        const body = root.get().node.program.body;
-        let lastImportIdx = -1;
-        for (let i = 0; i < body.length; i++) {
-            if (body[i].type === 'ImportDeclaration') {
-                lastImportIdx = i;
-            }
-        }
-        body.splice(lastImportIdx + 1, 0, importTypeDecl);
+    if (usedAllowedTypes.size <= 0) {
+        return;
     }
+
+    const importTypeDecl = j.importDeclaration(
+        Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
+        j.literal('nango')
+    );
+    importTypeDecl.importKind = 'type';
+    // Insert after all other imports
+    const body = root.get().node.program.body;
+    let lastImportIdx = -1;
+    for (let i = 0; i < body.length; i++) {
+        if (body[i].type === 'ImportDeclaration') {
+            lastImportIdx = i;
+        }
+    }
+    body.splice(lastImportIdx + 1, 0, importTypeDecl);
 }
 
 /**
@@ -584,25 +622,26 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     if (!packageJsonExists) {
         printDebug('package.json does not exist', debug);
         await fs.promises.copyFile(examplePackageJsonPath, packageJsonPath);
-    } else {
-        printDebug('package.json exists, updating', debug);
-        const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        const pkg = JSON.parse(pkgRaw) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
-
-        const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
-        const examplePkg = JSON.parse(examplePkgRaw);
-        const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
-        pkg.devDependencies = pkg.devDependencies || {};
-        pkg.devDependencies['nango'] = NANGO_VERSION;
-        pkg.devDependencies['zod'] = zodVersion;
-
-        // Remove nango and zod from dependencies just in case they were added as prod
-        if (pkg.dependencies?.['nango']) {
-            delete pkg.dependencies['nango'];
-        }
-        if (pkg.dependencies?.['zod']) {
-            delete pkg.dependencies['zod'];
-        }
-        await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
+        return;
     }
+
+    printDebug('package.json exists, updating', debug);
+    const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
+    const pkg = JSON.parse(pkgRaw) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
+
+    const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
+    const examplePkg = JSON.parse(examplePkgRaw);
+    const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
+    pkg.devDependencies = pkg.devDependencies || {};
+    pkg.devDependencies['nango'] = NANGO_VERSION;
+    pkg.devDependencies['zod'] = zodVersion;
+
+    // Remove nango and zod from dependencies just in case they were added as prod
+    if (pkg.dependencies?.['nango']) {
+        delete pkg.dependencies['nango'];
+    }
+    if (pkg.dependencies?.['zod']) {
+        delete pkg.dependencies['zod'];
+    }
+    await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
 }
