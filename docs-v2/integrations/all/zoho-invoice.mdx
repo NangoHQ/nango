@@ -6,6 +6,8 @@ sidebarTitle: Zoho Invoice
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/zoho-invoice/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/zoho-invoice/PreBuiltUseCases.mdx"
+import ZohoSharedUsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
+import ZohoSharedGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -14,46 +16,47 @@ import PreBuiltUseCases from "/snippets/generated/zoho-invoice/PreBuiltUseCases.
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
+| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+Follow the general [Zoho OAuth setup guide](/integrations/all/zoho) to create your OAuth application. When selecting scopes, make sure to include the Invoice-specific scopes listed in the Common Scopes section below.
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-invoice.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://accounts.zoho.com/developerconsole)
--   [OAuth-related docs](https://www.zoho.com/invoice/api/v3/oauth/#overview)
--   [List of OAuth scopes](https://www.zoho.com/invoice/api/v3/oauth/#overview:~:text=List%20of%20scopes%20available%20in%20Zoho%20Invoice%20%3A)
--   [Web API docs (their REST API)](https://www.zoho.com/invoice/api/v3/apicollection/#overview)
+<ZohoSharedUsefulLinks />
+
+### Invoice-specific links
+- [Zoho Invoice API Documentation](https://www.zoho.com/invoice/api/v3/)
+- [Zoho Invoice OAuth Overview](https://www.zoho.com/invoice/api/v3/oauth/)
+- [Zoho Invoice API Collection](https://www.zoho.com/invoice/api/v3/apicollection/)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-invoice.mdx)</Note>
 
-## Connection configuration in Nango
+## Common Scopes
 
-Zoho uses [different domain extensions](https://www.zoho.com/crm/developer/docs/api/v3/multi-dc.html) for different regions. 
-
-You need to pass the domain extension to use to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('zoho-invoice', '<CONNECTION-ID>', {params: {extension: 'com'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- **ZohoInvoice.fullaccess.all** - Full access to Invoice data
+- **ZohoInvoice.invoices.READ** - Read access to invoices
+- **ZohoInvoice.invoices.CREATE** - Create invoices
+- **ZohoInvoice.invoices.UPDATE** - Update invoices
+- **ZohoInvoice.invoices.DELETE** - Delete invoices
+- **ZohoInvoice.contacts.READ** - Read access to contacts
+- **ZohoInvoice.settings.READ** - Read access to settings
 
 ## API gotchas
-- You can make your OAuth app cross-data-centers with [these instructions](https://www.zoho.com/crm/developer/docs/api/v3/multi-dc.html). This means that a single OAuth app will be able to query the Zoho API for Zoho accounts from the US, EU, etc.
 
-<Note>
-    Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-invoice.mdx)
-</Note>
+<ZohoSharedGotchas />
+
+### Invoice-specific gotchas
+- Zoho Invoice API has region-specific endpoints. You need to use the correct endpoint based on the user's region.
+- The Invoice API has rate limits that vary based on your Zoho Invoice plan.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-invoice.mdx)</Note>
