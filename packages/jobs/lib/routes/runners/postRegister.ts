@@ -18,7 +18,7 @@ const validate = validateRequest<PostRegister>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRegister>) => {
     try {
-        const register = await runnersFleet.registerNode({ nodeId: res.locals.params.nodeId, url: res.locals.body.url });
+        const register = await runnersFleet.registerNode({ nodeId: res.locals.parsedParams.nodeId, url: res.locals.parsedBody.url });
         if (register.isErr()) {
             throw register.error;
         }

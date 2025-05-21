@@ -35,8 +35,8 @@ const validate = validateRequest<GetRecords>(getRecordsRequestParser);
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, AuthLocals>) => {
     const {
-        params: { nangoConnectionId },
-        query: { model, externalIds, cursor, limit, activityLogId }
+        parsedParams: { nangoConnectionId },
+        parsedQuery: { model, externalIds, cursor, limit, activityLogId }
     } = res.locals;
 
     let logCtx: LogContextStateless | undefined = undefined;

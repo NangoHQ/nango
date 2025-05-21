@@ -37,8 +37,8 @@ const validate = validateRequest<PutTask>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
-        const { taskId } = res.locals.params;
-        const { state, output } = res.locals.body;
+        const { taskId } = res.locals.parsedParams;
+        const { state, output } = res.locals.parsedBody;
         let updated: Result<Task>;
         switch (state) {
             case 'SUCCEEDED':

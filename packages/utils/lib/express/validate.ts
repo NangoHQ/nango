@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { EndpointRequest, EndpointResponse } from './route.js';
+import type { EndpointLocals, EndpointRequest, EndpointResponse } from './route.js';
 import type { Endpoint, ValidationError } from '@nangohq/types';
 import type { NextFunction, Request } from 'express';
 
@@ -12,22 +12,22 @@ interface RequestParser<E extends Endpoint<any>> {
 
 export const validateRequest =
     <E extends Endpoint<any>>(parser: RequestParser<E>) =>
-    (req: EndpointRequest, res: EndpointResponse<E, any>, next: NextFunction) => {
+    (req: EndpointRequest, res: EndpointResponse<E, EndpointLocals<E>>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
-                res.locals.body = parser.parseBody(req.body || {});
+                res.locals.parsedBody = parser.parseBody(req.body || {});
             } else {
                 z.object({})
                     .strict('Body is not allowed')
                     .parse(req.body || {});
             }
             if (parser.parseQuery) {
-                res.locals.query = parser.parseQuery(req.query);
+                res.locals.parsedQuery = parser.parseQuery(req.query);
             } else {
                 z.object({}).strict('Query string parameters are not allowed').parse(req.query);
             }
             if (parser.parseParams) {
-                res.locals.params = parser.parseParams(req.params);
+                res.locals.parsedParams = parser.parseParams(req.params);
             } else {
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }

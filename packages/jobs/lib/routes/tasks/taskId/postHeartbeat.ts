@@ -12,7 +12,7 @@ const validate = validateRequest<PostHeartbeat>({
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostHeartbeat>) => {
-    const { taskId } = res.locals.params;
+    const { taskId } = res.locals.parsedParams;
     const heartbeat = await orchestratorClient.heartbeat({ taskId });
     if (heartbeat.isErr()) {
         res.status(400).json({ error: { code: 'heartbeat_failed', message: `heartbeat failed`, payload: { taskId, error: heartbeat.error } } });

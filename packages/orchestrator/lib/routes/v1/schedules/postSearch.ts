@@ -33,7 +33,7 @@ const validate = validateRequest<PostSearch>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostSearch>) => {
-        const { names, limit } = res.locals.body;
+        const { names, limit } = res.locals.parsedBody;
         const getSchedules = await scheduler.searchSchedules({
             limit,
             ...(names ? { names } : {})

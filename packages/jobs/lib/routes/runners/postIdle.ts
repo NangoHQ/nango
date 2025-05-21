@@ -13,7 +13,7 @@ const validate = validateRequest<PostIdle>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostIdle>) => {
     try {
-        const idle = await runnersFleet.idleNode({ nodeId: res.locals.params.nodeId });
+        const idle = await runnersFleet.idleNode({ nodeId: res.locals.parsedParams.nodeId });
         if (idle.isErr()) {
             throw idle.error;
         }

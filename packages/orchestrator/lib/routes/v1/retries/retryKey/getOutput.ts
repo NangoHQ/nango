@@ -33,7 +33,7 @@ const validate = validateRequest<GetRetryOutput>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<GetRetryOutput>) => {
-        const tasks = await scheduler.searchTasks({ retryKey: res.locals.params.retryKey, ownerKey: res.locals.query.ownerKey });
+        const tasks = await scheduler.searchTasks({ retryKey: res.locals.parsedParams.retryKey, ownerKey: res.locals.parsedQuery.ownerKey });
         if (tasks.isErr()) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tasks' } });
             return;

@@ -35,7 +35,7 @@ const validate = validateRequest<PostSearch>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostSearch>) => {
-        const { ids, groupKey, limit } = res.locals.body;
+        const { ids, groupKey, limit } = res.locals.parsedBody;
         const getTasks = await scheduler.searchTasks({
             ...(ids ? { ids } : {}),
             ...(groupKey ? { groupKey } : {}),

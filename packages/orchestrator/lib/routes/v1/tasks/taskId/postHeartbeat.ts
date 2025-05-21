@@ -25,7 +25,7 @@ const validate = validateRequest<PostHeartbeat>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostHeartbeat>) => {
-        const { taskId } = res.locals.params;
+        const { taskId } = res.locals.parsedParams;
         const heartbeat = await scheduler.heartbeat({ taskId: taskId });
         if (heartbeat.isErr()) {
             res.status(500).json({ error: { code: 'post_heartbeat_failed', message: heartbeat.error.message } });

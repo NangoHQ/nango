@@ -95,8 +95,8 @@ const validate = validateRequest<PutTask>({
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
-    const { taskId } = res.locals.params;
-    const { nangoProps, error, output } = res.locals.body;
+    const { taskId } = res.locals.parsedParams;
+    const { nangoProps, error, output } = res.locals.parsedBody;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;

@@ -78,17 +78,17 @@ const validate = validateRequest<PostRecurring>({
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostRecurring>) => {
         const schedule = await scheduler.recurring({
-            name: res.locals.body.name,
-            state: res.locals.body.state,
-            payload: res.locals.body.args,
-            startsAt: res.locals.body.startsAt,
-            frequencyMs: res.locals.body.frequencyMs,
-            groupKey: res.locals.body.group.key,
-            groupKeyMaxConcurrency: res.locals.body.group.maxConcurrency,
-            retryMax: res.locals.body.retry.max,
-            createdToStartedTimeoutSecs: res.locals.body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: res.locals.body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: res.locals.body.timeoutSettingsInSecs.heartbeat,
+            name: res.locals.parsedBody.name,
+            state: res.locals.parsedBody.state,
+            payload: res.locals.parsedBody.args,
+            startsAt: res.locals.parsedBody.startsAt,
+            frequencyMs: res.locals.parsedBody.frequencyMs,
+            groupKey: res.locals.parsedBody.group.key,
+            groupKeyMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
+            retryMax: res.locals.parsedBody.retry.max,
+            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat,
             lastScheduledTaskId: null
         });
         if (schedule.isErr()) {

@@ -34,8 +34,8 @@ const method = 'POST';
 const validate = validateRequest<PostRecords>(recordsRequestParser);
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRecords, AuthLocals>) => {
-    const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = res.locals.params;
-    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PostRecords['Body'] = res.locals.body;
+    const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = res.locals.parsedParams;
+    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PostRecords['Body'] = res.locals.parsedBody;
     const { account, plan } = res.locals;
     const result = await persistRecords({
         plan,

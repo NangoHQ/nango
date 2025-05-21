@@ -98,16 +98,16 @@ const validate = validateRequest<PostImmediate>({
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
         const task = await scheduler.immediate({
-            name: res.locals.body.name,
-            payload: res.locals.body.args,
-            groupKey: res.locals.body.group.key,
-            groupKeyMaxConcurrency: res.locals.body.group.maxConcurrency,
-            retryMax: res.locals.body.retry.max,
-            retryCount: res.locals.body.retry.count,
-            ownerKey: res.locals.body.ownerKey || null,
-            createdToStartedTimeoutSecs: res.locals.body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: res.locals.body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: res.locals.body.timeoutSettingsInSecs.heartbeat
+            name: res.locals.parsedBody.name,
+            payload: res.locals.parsedBody.args,
+            groupKey: res.locals.parsedBody.group.key,
+            groupKeyMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
+            retryMax: res.locals.parsedBody.retry.max,
+            retryCount: res.locals.parsedBody.retry.count,
+            ownerKey: res.locals.parsedBody.ownerKey || null,
+            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });

@@ -31,7 +31,7 @@ const validate = validateRequest<PostScheduleRun>({
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostScheduleRun>) => {
         const schedule = await scheduler.immediate({
-            scheduleName: res.locals.body.scheduleName
+            scheduleName: res.locals.parsedBody.scheduleName
         });
         if (schedule.isErr()) {
             res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });

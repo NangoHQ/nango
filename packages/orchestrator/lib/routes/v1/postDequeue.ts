@@ -46,7 +46,7 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, limit, longPolling } = res.locals.body;
+        const { groupKey, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
         const eventId = `task:created:${groupKey}`;
         const groupKeyPrefix = `${groupKey}*`; // Dequeuing all tasks with the same group key prefix

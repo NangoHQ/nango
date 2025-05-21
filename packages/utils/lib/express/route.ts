@@ -8,8 +8,13 @@ import type { Express, NextFunction, Request, Response } from 'express';
 export type EndpointRequest = Request<never, never, never, never>;
 export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<
     E['Reply'],
-    Locals & { body: E['Body']; params: E['Params']; query: E['Querystring'] }
+    Locals & EndpointLocals<E>
 >;
+export interface EndpointLocals<E extends Endpoint<any>> {
+    parsedBody: E['Body'];
+    parsedParams: E['Params'];
+    parsedQuery: E['Querystring'];
+}
 
 export interface Route<E extends Endpoint<any>> {
     path: E['Path'];

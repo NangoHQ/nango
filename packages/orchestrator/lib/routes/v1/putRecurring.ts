@@ -41,7 +41,7 @@ const validate = validateRequest<PutRecurring>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PutRecurring>) => {
-        const { schedule } = res.locals.body;
+        const { schedule } = res.locals.parsedBody;
         let updatedSchedule;
         if ('state' in schedule) {
             updatedSchedule = await scheduler.setScheduleState({ scheduleName: schedule.name, state: schedule.state });
