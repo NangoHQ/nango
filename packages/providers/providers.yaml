@@ -8103,6 +8103,10 @@ recruiterflow:
         base_url: https://api.recruiterflow.com
         headers:
             rf-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/external/user/list
     docs: https://docs.nango.dev/integrations/all/recruiterflow
     docs_connect: https://docs.nango.dev/integrations/all/recruiterflow/connect
     credentials:
@@ -8111,6 +8115,8 @@ recruiterflow:
             title: API Key
             description: The API Key for your Recruiterflow account
             doc_section: '#step-1-generating-your-api-key'
+            example: 7b0c0d****************************
+            pattern: '^[a-zA-Z0-9_]+$'
 
 reddit:
     display_name: Reddit
