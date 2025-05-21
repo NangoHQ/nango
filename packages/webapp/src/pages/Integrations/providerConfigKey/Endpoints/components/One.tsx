@@ -1,18 +1,24 @@
 import { Prism } from '@mantine/prism';
+import { IconDownload } from '@tabler/icons-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocalStorage } from 'react-use';
+
+import { ScriptSettings } from './ScriptSettings';
 import { HttpLabel } from '../../../../../components/HttpLabel';
+import { Info } from '../../../../../components/Info';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
+import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Tag } from '../../../../../components/ui/label/Tag';
-import type { NangoSyncConfigWithEndpoint } from './List';
-import { useEffect, useMemo, useState } from 'react';
-import type { GetIntegration, NangoModel } from '@nangohq/types';
-import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
-import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
-import { useStore } from '../../../../../store';
 import { useEnvironment } from '../../../../../hooks/useEnvironment';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
-import { ScriptSettings } from './ScriptSettings';
-import { Info } from '../../../../../components/Info';
-import { useLocalStorage } from 'react-use';
+import { useToast } from '../../../../../hooks/useToast';
+import { useStore } from '../../../../../store';
+import { apiFetch } from '../../../../../utils/api';
+import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
+import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
+
+import type { NangoSyncConfigWithEndpoint } from './List';
+import type { GetIntegration, NangoModel } from '@nangohq/types';
 
 const syncDefaultQueryParams = [
     {
@@ -40,6 +46,8 @@ const connectionId = '<CONNECTION_ID>';
 export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['data']; flow: NangoSyncConfigWithEndpoint }> = ({ integration, flow }) => {
     const env = useStore((state) => state.env);
     const baseUrl = useStore((state) => state.baseUrl);
+
+    const { toast } = useToast();
 
     const { environmentAndAccount } = useEnvironment(env);
     const [language, setLanguage] = useLocalStorage<'node' | 'curl' | 'go' | 'javascript' | 'java' | 'php' | 'python'>('nango:snippet:language', 'node');
@@ -122,13 +130,54 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
         return flow.type === 'sync' && flow.input ? flow.input : null;
     }, [flow.input, flow.type]);
 
+    async function onDownloadScript() {
+        try {
+            const response = await apiFetch(`${baseUrl}/api/v1/flow/download?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    id: flow.id,
+                    name: flow.name,
+                    provider: integration.integration.provider,
+                    is_public: flow.is_public,
+                    providerConfigKey: integration.integration.unique_key,
+                    flowType: flow.type
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${flow.name}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch {
+            toast({
+                title: 'Error downloading script',
+                variant: 'error'
+            });
+        }
+    }
+
     return (
         <div className="flex flex-col gap-10 text-white text-sm">
             <header className="bg-active-gray flex gap-10 justify-between p-5">
                 <div className="flex flex-col gap-5">
-                    <h2>
-                        <HttpLabel {...flow.endpoint} size="xl" />{' '}
-                    </h2>
+                    <div className="flex items-center justify-between">
+                        <h2>
+                            <HttpLabel {...flow.endpoint} size="xl" />{' '}
+                        </h2>
+                        <Button variant="zombieGray" onClick={() => onDownloadScript()}>
+                            <IconDownload size={16} />
+                            Download Script
+                        </Button>
+                    </div>
                     <div>{flow.description}</div>
                 </div>
             </header>
@@ -186,7 +235,6 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                                     <div className="flex gap-2">
                                                         <code className="font-code text-text-light-gray text-s">{field.name}</code>
                                                         <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
-                                                            {/* {'value' in field ? (Array.isArray(field.value) ? 'Arr' : field.value) : field.type} */}
                                                             {'value' in field ? fieldToTypescript({ field }) : field.type}
                                                         </code>
                                                     </div>
