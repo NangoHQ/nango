@@ -7190,7 +7190,7 @@ oracle-hcm:
     proxy:
         base_url: https://${connectionConfig.restServerUrl}
         headers:
-            content-type: application/vnd.oracle.adf.resourceitem+json | json_pp
+            content-type: application/vnd.oracle.adf.resourceitem+json
     docs: https://docs.nango.dev/integrations/all/oracle-hcm
     docs_connect: https://docs.nango.dev/integrations/all/oracle-hcm/connect
     credentials:

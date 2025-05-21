@@ -83,6 +83,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
                     on_auth_creation: false,
                     on_auth_refresh_error: false,
                     on_sync_completion_always: false,
+                    on_async_action_completion: false,
                     on_sync_error: false,
                     primary_url: null,
                     secondary_url: null

@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
+
 import { validateRequest } from '@nangohq/utils';
+
 import { runnersFleet } from '../../runner/fleet.js';
+
 import type { PostRegister } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
 const validate = validateRequest<PostRegister>({
     parseParams: (data) => z.object({ nodeId: z.coerce.number().positive() }).strict().parse(data),
@@ -13,9 +16,9 @@ const validate = validateRequest<PostRegister>({
             .parse(data)
 });
 
-const handler = async (req: EndpointRequest<PostRegister>, res: EndpointResponse<PostRegister>) => {
+const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRegister>) => {
     try {
-        const register = await runnersFleet.registerNode({ nodeId: req.params.nodeId, url: req.body.url });
+        const register = await runnersFleet.registerNode({ nodeId: res.locals.parsedParams.nodeId, url: res.locals.parsedBody.url });
         if (register.isErr()) {
             throw register.error;
         }

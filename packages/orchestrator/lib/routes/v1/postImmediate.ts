@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import type { JsonValue } from 'type-fest';
+
+import { validateRequest } from '@nangohq/utils';
+
+import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+
+import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
-import type { TaskType } from '../../types.js';
-import { syncArgsSchema, actionArgsSchema, onEventArgsSchema, webhookArgsSchema, syncAbortArgsSchema } from '../../clients/validate.js';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 const path = '/v1/immediate';
 const method = 'POST';
@@ -93,18 +96,18 @@ const validate = validateRequest<PostImmediate>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostImmediate>, res: EndpointResponse<PostImmediate>) => {
+    return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
         const task = await scheduler.immediate({
-            name: req.body.name,
-            payload: req.body.args,
-            groupKey: req.body.group.key,
-            groupKeyMaxConcurrency: req.body.group.maxConcurrency,
-            retryMax: req.body.retry.max,
-            retryCount: req.body.retry.count,
-            ownerKey: req.body.ownerKey || null,
-            createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
+            name: res.locals.parsedBody.name,
+            payload: res.locals.parsedBody.args,
+            groupKey: res.locals.parsedBody.group.key,
+            groupKeyMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
+            retryMax: res.locals.parsedBody.retry.max,
+            retryCount: res.locals.parsedBody.retry.count,
+            ownerKey: res.locals.parsedBody.ownerKey || null,
+            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
