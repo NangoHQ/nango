@@ -17,7 +17,6 @@ const FILTER_HEADERS = [
     'nango-is-sync',
     'nango-is-dry-run',
     'nango-activity-log-id',
-    'content-type',
     'content-length',
     'accept',
     'base-url-override',
@@ -166,9 +165,20 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
 
     let headers: [string, string][] = [];
     if (config.headers !== undefined) {
-        const filteredHeaders = Object.entries(config.headers)
+        const headerEntries = Object.entries(config.headers);
+        const seen = new Set<string>();
+
+        const filteredHeaders = headerEntries
             .map<[string, string]>(([key, value]) => (key.toLowerCase().startsWith('nango-proxy-') ? [key.slice(12), String(value)] : [key, String(value)]))
-            .filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
+            .filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()))
+            // Filter out content-type if value is exactly application/json (case-insensitive)
+            .filter(([key, value]) => key.toLowerCase() !== 'content-type' || String(value).toLowerCase() !== 'application/json')
+            .filter(([key]) => {
+                const lowerKey = key.toLowerCase();
+                if (seen.has(lowerKey)) return false;
+                seen.add(lowerKey);
+                return true;
+            });
 
         sortEntries(filteredHeaders);
         headers = filteredHeaders;
