@@ -14,32 +14,95 @@ import PreBuiltUseCases from "/snippets/generated/clickup/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free ClickUp account is sufficient for development. |
+| Paid test account | ✅ Not required | Free ClickUp account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a ClickUp account">
+    1. If you don't already have a ClickUp account, go to [ClickUp's signup page](https://app.clickup.com/signup) and create one.
+    2. Sign in to your ClickUp account.
+  </Step>
+  
+  <Step title="Create a new OAuth app">
+    1. In the upper-right corner, click on your avatar.
+    2. Select **Settings** from the dropdown menu.
+    3. In the sidebar, click on **Apps**.
+    4. Click the **Create new app** button.
+    
+    Note: Only Workspace owners or admins can create OAuth apps.
+  </Step>
+  
+  <Step title="Configure your OAuth application">
+    Fill in the required fields:
+    
+    1. **App name**: Enter a name for your application.
+    2. **Redirect URL**: Enter `https://api.nango.dev/oauth/callback`
+    
+    This is the URL where ClickUp will redirect users after they authorize your application.
+  </Step>
+  
+  <Step title="Obtain your OAuth credentials">
+    After creating your app, you'll receive:
+    
+    - **Client ID**: A unique identifier for your application
+    - **Client Secret**: A secret key for your application
+    
+    Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango.
+  </Step>
+  
+  <Step title="Configure your integration in Nango">
+    When setting up your ClickUp integration in Nango:
+    
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://app.clickup.com/api`
+    - For the token URL, use: `https://api.clickup.com/api/v2/oauth/token`
+    
+    Note: ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty.
+  </Step>
+  
+  <Step title="Understand the OAuth flow">
+    The ClickUp OAuth flow follows these steps:
+    
+    1. Users are redirected to ClickUp's authorization page: `https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}`
+    2. Users log in to ClickUp and select which Workspaces to authorize for your app
+    3. After authorization, users are redirected back to your redirect URL with an authorization code
+    4. Your application exchanges this code for an access token using the token endpoint
+  </Step>
+  
+  <Step title="Test the OAuth flow">
+    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
+    2. The authorization flow will redirect users to ClickUp where they can approve access to their Workspaces.
+    3. After approval, users will be redirected back to your application with an authorization code.
+    4. This code will be exchanged for an access token that can be used to make API requests.
+  </Step>
+  
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://clickup.com/api/developer-portal/authentication#step-1-create-an-oauth-app)
--   [OAuth-related docs](https://clickup.com/api/developer-portal/authentication#oauth-flow)
--   [Web API docs (their REST API)](https://clickup.com/api/clickupreference/operation/CreateTaskAttachment/)
-
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
+-   [ClickUp API Documentation](https://developer.clickup.com/docs)
+-   [ClickUp API Reference](https://developer.clickup.com/reference)
+-   [OAuth Flow](https://developer.clickup.com/docs/authentication#build-apps-for-others---oauth-flow)
+-   [OAuth Endpoints](https://developer.clickup.com/reference/getaccesstoken)
+-   [API v2 and v3 Terminology](https://developer.clickup.com/docs/general-v2-v3-api)
 
 ## API gotchas
 
--   You can leave the scopes empty as scopes are not required during authorization.
+- ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty when configuring your integration.
+
+- Users can authorize one or more Workspaces for your application. Use the [Get Authorized Teams (Workspaces)](https://developer.clickup.com/reference/getauthorizedteams) endpoint to see which Workspaces are authorized.
+
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
