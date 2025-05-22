@@ -1701,7 +1701,7 @@ paths:
                   description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
             responses:
                 '200':
-                    description: The action has completed successfully
+                    description: The action has completed successfully (output cannot exceed 10MB)
                     content:
                         application/json:
                             schema:
@@ -1842,20 +1842,20 @@ paths:
 
             responses:
                 '200':
-                    description: Returns the result of the action. When triggered synchronously, returns the action result directly. When triggered asynchronously (X-Async header is true), returns a status URL and ID for polling the result.
+                    description: The result of the action.
                     content:
                         application/json:
                             schema:
                                 oneOf:
                                     - type: object
-                                      description: Synchronous action response
+                                      description: The result of the action when triggered synchronously. (cannot exceed 10MB)
                                       properties:
                                           your-properties:
                                               type: object
                                               description: The data returned by the action
                                               example: 'The data returned by the action'
                                     - type: object
-                                      description: Asynchronous action response
+                                      description: The ID and the status URL of the action to poll for the result when triggered asynchronously.
                                       required:
                                           - statusUrl
                                           - id

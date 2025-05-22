@@ -249,7 +249,14 @@ class SyncController {
                 }
 
                 if (plan) {
-                    billing.add('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                    billing.add('billable_actions', 1, {
+                        accountId: account.id,
+                        idempotencyKey: logCtx.id,
+                        environmentId: connection.environment_id,
+                        providerConfigKey,
+                        connectionId,
+                        actionName: action_name
+                    });
                 }
 
                 return;
