@@ -776,7 +776,7 @@ class OAuthController {
         return res.redirect(redirectUrl);
     }
 
-    public async oauthCallback(req: Request, res: Response<any, never>, _: NextFunction) {
+    public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
         const { state } = req.query;
 
         const installation_id = req.query['installation_id'] as string | undefined;

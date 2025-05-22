@@ -109,7 +109,7 @@ class SyncController {
             const environmentId = res.locals['environment'].id;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
-            const path = '/' + req.params['0'];
+            const path = req.originalUrl.replace(/^\/v1\//, '/');
             if (!connectionId) {
                 res.status(400).send({ error: 'Missing connection id' });
 
@@ -136,6 +136,7 @@ class SyncController {
                 req.body['input'] = input;
                 await this.triggerAction(req, res, next);
             } else if (model) {
+                Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true });
                 req.query['model'] = model;
                 getPublicRecords(req, res, next);
             } else {
@@ -248,7 +249,14 @@ class SyncController {
                 }
 
                 if (plan) {
-                    void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                    billing.add('billable_actions', 1, {
+                        accountId: account.id,
+                        idempotencyKey: logCtx.id,
+                        environmentId: connection.environment_id,
+                        providerConfigKey,
+                        connectionId,
+                        actionName: action_name
+                    });
                 }
 
                 return;

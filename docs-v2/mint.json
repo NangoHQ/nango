@@ -208,6 +208,7 @@
                         "guides/actions/use-an-action"
                     ]
                 },
+                "guides/mcp",
                 "guides/proxy-requests",
                 {
                     "group": "Webhooks",
@@ -607,6 +608,7 @@
                 "integrations/all/readwise",
                 "integrations/all/readwise-reader",
                 "integrations/all/recharge",
+                "integrations/all/recruiterflow",
                 "integrations/all/reddit",
                 "integrations/all/refiner",
                 "integrations/all/redtail-crm-sandbox",

@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
-import { GROUPS_TABLE } from '../../models/groups.js';
+
+const GROUPS_TABLE = 'groups';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.transaction(async (trx) => {

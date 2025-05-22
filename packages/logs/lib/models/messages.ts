@@ -12,10 +12,10 @@ import type {
     OperationRow,
     SearchOperationsConnection,
     SearchOperationsIntegration,
-    SearchOperationsPeriod,
     SearchOperationsState,
     SearchOperationsSync,
-    SearchOperationsType
+    SearchOperationsType,
+    SearchPeriod
 } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
@@ -77,7 +77,7 @@ export async function listOperations(opts: {
     integrations?: SearchOperationsIntegration[] | undefined;
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
-    period?: SearchOperationsPeriod | undefined;
+    period?: SearchPeriod | undefined;
     cursor?: string | null | undefined;
 }): Promise<ListOperations> {
     const query: estypes.QueryDslQueryContainer = {
@@ -276,6 +276,7 @@ export async function listMessages(opts: {
     search?: string | undefined;
     cursorBefore?: string | null | undefined;
     cursorAfter?: string | null | undefined;
+    period?: SearchPeriod | undefined;
 }): Promise<ListMessages> {
     const query: estypes.QueryDslQueryContainer = {
         bool: { must: [{ term: { parentId: opts.parentId } }], should: [] }
@@ -294,6 +295,14 @@ export async function listMessages(opts: {
     if (opts.search) {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             match_phrase_prefix: { meta_search: { query: opts.search } }
+        });
+    }
+
+    if (opts.period) {
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            range: {
+                createdAt: { gte: opts.period.from, lte: opts.period.to }
+            }
         });
     }
 

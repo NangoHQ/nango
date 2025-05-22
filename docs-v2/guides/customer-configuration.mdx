@@ -96,6 +96,12 @@ curl --request GET \
 
 </Tabs>
 
+<Warning>
+When accessing metadata from within a sync using `nango.getMetadata()`, the metadata is cached for up to 60 seconds. Changes made to metadata while a sync is running may not be visible until the cache expires.
+
+The next execution of the sync will always have access to the latest metadata.
+</Warning>
+
 # Use custom field mappings
 
 Field mappings are necessary when a [sync](/guides/syncs/overview) needs to access information stored in external custom fields. Nango provides dedicated tools to support complex field mappings.

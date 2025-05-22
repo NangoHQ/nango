@@ -4501,6 +4501,11 @@ google:
         access_type: offline
         prompt: consent
     proxy:
+        retry:
+            in_body:
+                path: error.message
+                value: /User-rate limit exceeded\. +Retry after (.+)/
+                strategy: at
         base_url: https://www.googleapis.com
         paginate:
             type: cursor
@@ -7185,7 +7190,7 @@ oracle-hcm:
     proxy:
         base_url: https://${connectionConfig.restServerUrl}
         headers:
-            content-type: application/vnd.oracle.adf.resourceitem+json | json_pp
+            content-type: application/vnd.oracle.adf.resourceitem+json
     docs: https://docs.nango.dev/integrations/all/oracle-hcm
     docs_connect: https://docs.nango.dev/integrations/all/oracle-hcm/connect
     credentials:
@@ -8088,6 +8093,30 @@ recharge:
             example: sk_test_1p1_**************************************************
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
+
+recruiterflow:
+    display_name: Recruiterflow
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruiterflow.com
+        headers:
+            rf-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/external/user/list
+    docs: https://docs.nango.dev/integrations/all/recruiterflow
+    docs_connect: https://docs.nango.dev/integrations/all/recruiterflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Recruiterflow account
+            doc_section: '#step-1-generating-your-api-key'
+            example: 7b0c0d****************************
+            pattern: '^[a-zA-Z0-9_]+$'
 
 reddit:
     display_name: Reddit
@@ -9305,6 +9334,7 @@ spotify:
     proxy:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
+
 spotify-oauth2-cc:
     display_name: Spotify (Client Credentials)
     categories:

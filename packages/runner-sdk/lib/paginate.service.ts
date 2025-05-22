@@ -169,7 +169,7 @@ class PaginationService {
 
             yield responseData;
 
-            if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
+            if (paginationConfig['limit'] && responseData.length < Number(paginationConfig['limit'])) {
                 return;
             }
 

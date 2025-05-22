@@ -1,9 +1,12 @@
-import { getUserFromSession } from '../utils/utils.js';
-import type { Request, Response, NextFunction } from 'express';
 import { errorManager, userService } from '@nangohq/shared';
 
+import { getUserFromSession } from '../utils/utils.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { NextFunction, Request, Response } from 'express';
+
 class UserController {
-    async editPassword(req: Request, res: Response<any, never>, next: NextFunction) {
+    async editPassword(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
             const getUser = await getUserFromSession(req);
             if (getUser.isErr()) {

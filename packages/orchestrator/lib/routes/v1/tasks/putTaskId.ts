@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import type { JsonValue } from 'type-fest';
+
+import { validateRequest } from '@nangohq/utils';
+
+import { jsonSchema } from '../../../utils/validation.js';
+
 import type { Scheduler, Task } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route, Result } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
-import { jsonSchema } from '../../../utils/validation.js';
+import type { EndpointRequest, EndpointResponse, Result, Route, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 type PutTask = Endpoint<{
     Method: typeof method;
@@ -33,9 +36,9 @@ const validate = validateRequest<PutTask>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutTask>) => {
-        const { taskId } = req.params;
-        const { state, output } = req.body;
+    return async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
+        const { taskId } = res.locals.parsedParams;
+        const { state, output } = res.locals.parsedBody;
         let updated: Result<Task>;
         switch (state) {
             case 'SUCCEEDED':

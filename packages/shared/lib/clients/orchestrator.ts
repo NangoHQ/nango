@@ -32,7 +32,16 @@ import type {
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
-import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type {
+    AsyncActionResponse,
+    ConnectionInternal,
+    ConnectionJobs,
+    DBConnection,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { StringValue } from 'ms';
 import type { JsonValue } from 'type-fest';
@@ -121,7 +130,7 @@ export class Orchestrator {
         retryMax: number;
         async: boolean;
         logCtx: LogContext;
-    }): Promise<Result<{ id: string; statusUrl: string } | { data: T }, NangoError>> {
+    }): Promise<Result<AsyncActionResponse | { data: T }, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
             'account.id': accountId,
@@ -157,13 +166,14 @@ export class Orchestrator {
                     environment_id: connection.environment_id
                 },
                 activityLogId: logCtx.id,
-                input: parsedInput
+                input: parsedInput,
+                async
             };
 
             if (async) {
                 const res = await this.client.executeActionAsync({
                     name: executionId,
-                    group: { key: groupKey, maxConcurrency: 0 },
+                    group: { key: `action:environment:${connection.environment_id}`, maxConcurrency: 1 }, // async actions runs sequentially per environment
                     retry: { count: 0, max: retryMax },
                     ownerKey: `environment:${connection.environment_id}`,
                     args
