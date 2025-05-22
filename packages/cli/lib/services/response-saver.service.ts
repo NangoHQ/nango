@@ -165,18 +165,23 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
 
     let headers: [string, string][] = [];
     if (config.headers !== undefined) {
-        const headerEntries = Object.entries(config.headers);
         const seen = new Set<string>();
 
-        const filteredHeaders = headerEntries
-            .map<[string, string]>(([key, value]) => (key.toLowerCase().startsWith('nango-proxy-') ? [key.slice(12), String(value)] : [key, String(value)]))
-            .filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()))
-            // Filter out content-type if value is exactly application/json (case-insensitive)
-            .filter(([key, value]) => key.toLowerCase() !== 'content-type' || String(value).toLowerCase() !== 'application/json')
-            .filter(([key]) => {
+        const filteredHeaders = Object.entries(config.headers)
+            .map<[string, string]>(([key, value]) => [key.toLowerCase().startsWith('nango-proxy-') ? key.slice(12) : key, String(value)])
+            .filter(([key, value]) => {
                 const lowerKey = key.toLowerCase();
+
+                // Skip if already seen
                 if (seen.has(lowerKey)) return false;
                 seen.add(lowerKey);
+
+                // Skip filtered
+                if (FILTER_HEADERS.includes(lowerKey)) return false;
+
+                // Skip application/json
+                if (lowerKey === 'content-type' && value.toLowerCase() === 'application/json') return false;
+
                 return true;
             });
 
