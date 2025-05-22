@@ -101,7 +101,7 @@ const handler = (scheduler: Scheduler) => {
             name: res.locals.parsedBody.name,
             payload: res.locals.parsedBody.args,
             groupKey: res.locals.parsedBody.group.key,
-            groupKeyMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
+            groupMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
             retryMax: res.locals.parsedBody.retry.max,
             retryCount: res.locals.parsedBody.retry.count,
             ownerKey: res.locals.parsedBody.ownerKey || null,

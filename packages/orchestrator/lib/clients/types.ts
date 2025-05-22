@@ -70,6 +70,7 @@ interface TaskCommonFields {
     id: string;
     name: string;
     groupKey: string;
+    groupMaxConcurrency: number;
     state: TaskState;
     attempt: number;
     attemptMax: number;
@@ -96,6 +97,7 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         attemptMax: props.attemptMax,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
@@ -122,6 +124,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
@@ -148,6 +151,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
@@ -173,6 +177,7 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         async: props.async,
         isSync: (): this is TaskSync => false,
@@ -199,6 +204,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => true,
@@ -224,6 +230,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,

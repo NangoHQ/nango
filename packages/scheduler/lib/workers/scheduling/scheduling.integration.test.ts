@@ -132,6 +132,7 @@ async function addTask(
         id: uuidv7(),
         schedule_id: params?.scheduleId || uuidv7(),
         group_key: Math.random().toString(36).substring(7),
+        group_max_concurrency: 0,
         name: Math.random().toString(36).substring(7),
         state: params?.state || 'CREATED',
         payload: {},
