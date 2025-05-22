@@ -8,7 +8,7 @@ import { queryClient } from './lib/query.js';
 import { router } from './lib/routes.js';
 
 export const App: React.FC = () => {
-    const languageParam = useSearchParam('language');
+    const languageParam = useSearchParam('lang');
     const language = getLanguage(languageParam);
 
     return (
