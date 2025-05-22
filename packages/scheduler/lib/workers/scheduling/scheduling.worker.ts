@@ -65,6 +65,7 @@ export class SchedulingChild extends SchedulerWorkerChild {
                                     name: `${schedule.name}:${now.toISOString()}`,
                                     payload: schedule.payload,
                                     groupKey: schedule.groupKey,
+                                    groupMaxConcurrency: 0,
                                     retryCount: 0,
                                     retryMax: schedule.retryMax,
                                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,

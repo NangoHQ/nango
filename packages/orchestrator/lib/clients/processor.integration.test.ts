@@ -90,6 +90,7 @@ async function processN(handler: (task: OrchestratorTask) => Promise<Result<void
 async function immediateTask({ groupKey }: { groupKey: string }) {
     return scheduler.immediate({
         groupKey,
+        groupMaxConcurrency: 0,
         name: nanoid(),
         retryMax: 0,
         retryCount: 0,
