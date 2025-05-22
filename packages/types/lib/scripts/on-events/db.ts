@@ -8,4 +8,5 @@ export interface DBOnEventScript extends Timestamps {
     version: string;
     active: boolean;
     event: 'POST_CONNECTION_CREATION' | 'PRE_CONNECTION_DELETION';
+    sdk_version: string | undefined;
 }

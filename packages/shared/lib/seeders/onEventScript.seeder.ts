@@ -1,14 +1,17 @@
-import type { DBEnvironment, DBTeam, OnEventScript, OnEventScriptsByProvider } from '@nangohq/types';
 import { onEventScriptService } from '../services/on-event-scripts.service.js';
+
+import type { DBEnvironment, DBTeam, OnEventScript, OnEventScriptsByProvider } from '@nangohq/types';
 
 export async function createOnEventScript({
     account,
     environment,
-    providerConfigKey
+    providerConfigKey,
+    sdkVersion
 }: {
     account: DBTeam;
     environment: DBEnvironment;
     providerConfigKey: string;
+    sdkVersion: string | undefined;
 }): Promise<OnEventScript> {
     const scripts: OnEventScriptsByProvider[] = [
         {
@@ -25,7 +28,8 @@ export async function createOnEventScript({
     const [added] = await onEventScriptService.update({
         environment,
         account,
-        onEventScriptsByProvider: scripts
+        onEventScriptsByProvider: scripts,
+        sdkVersion
     });
     if (!added) {
         throw new Error('failed_to_create_on_event_script');

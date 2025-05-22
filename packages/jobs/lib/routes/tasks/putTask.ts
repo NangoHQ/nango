@@ -49,7 +49,8 @@ const nangoPropsSchema = z
                 is_public: z.boolean(),
                 input: z.string().nullable(),
                 sync_type: z.enum(['full', 'incremental']).nullable(),
-                metadata: z.record(z.string(), z.any())
+                metadata: z.record(z.string(), z.any()),
+                sdk_version: z.string().nullable()
                 // TODO: fix this missing fields
                 // deleted: z.boolean().optional(),
                 // deleted_at: z.coerce.date().optional().nullable(),

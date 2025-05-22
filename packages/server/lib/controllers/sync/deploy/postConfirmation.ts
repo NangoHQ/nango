@@ -45,11 +45,19 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         const diff = await onEventScriptService.diffChanges({
             environmentId,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
-            singleDeployMode: body.singleDeployMode || false
+            singleDeployMode: body.singleDeployMode || false,
+            sdkVersion: body.sdkVersion
         });
         result = {
             ...syncAndActionDifferences,
             newOnEventScripts: diff.added.map((script) => {
+                return {
+                    providerConfigKey: script.providerConfigKey,
+                    name: script.name,
+                    event: script.event
+                };
+            }),
+            updatedOnEventScripts: diff.added.map((script) => {
                 return {
                     providerConfigKey: script.providerConfigKey,
                     name: script.name,
@@ -68,6 +76,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         result = {
             ...syncAndActionDifferences,
             newOnEventScripts: [],
+            updatedOnEventScripts: [],
             deletedOnEventScripts: []
         };
     }

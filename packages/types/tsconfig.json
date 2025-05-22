@@ -6,5 +6,7 @@
         "declarationMap": false,
         "emitDeclarationOnly": true
     },
-    "include": ["lib/**/*"]
+    "include": [
+        "lib/**/*"
+    ]
 }

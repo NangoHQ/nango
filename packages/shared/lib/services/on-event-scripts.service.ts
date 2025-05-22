@@ -38,6 +38,7 @@ const dbMapper = {
             version: script.version,
             active: script.active,
             event: eventTypeMapper.toDb(script.event),
+            sdk_version: script.sdkVersion,
             created_at: script.createdAt,
             updated_at: script.updatedAt
         };
@@ -52,6 +53,7 @@ const dbMapper = {
             version: dbScript.version,
             active: dbScript.active,
             event: eventTypeMapper.fromDb(dbScript.event),
+            sdkVersion: dbScript.sdk_version,
             createdAt: dbScript.created_at,
             updatedAt: dbScript.updated_at
         };
@@ -62,11 +64,13 @@ export const onEventScriptService = {
     async update({
         environment,
         account,
-        onEventScriptsByProvider
+        onEventScriptsByProvider,
+        sdkVersion
     }: {
         environment: DBEnvironment;
         account: DBTeam;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
+        sdkVersion: string | undefined;
     }): Promise<OnEventScript[]> {
         return db.knex.transaction(async (trx) => {
             const onEventInserts: Omit<DBOnEventScript, 'id' | 'created_at' | 'updated_at'>[] = [];
@@ -121,7 +125,8 @@ export const onEventScriptService = {
                         file_location,
                         version: version.toString(),
                         active: true,
-                        event
+                        event,
+                        sdk_version: sdkVersion
                     });
                 }
             }
@@ -158,11 +163,13 @@ export const onEventScriptService = {
     diffChanges: async ({
         environmentId,
         onEventScriptsByProvider,
-        singleDeployMode = false
+        singleDeployMode = false,
+        sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
         singleDeployMode?: boolean;
+        sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
         deleted: OnEventScript[];
@@ -212,7 +219,8 @@ export const onEventScriptService = {
                         version: '0.0.1',
                         active: true,
                         event,
-                        providerConfigKey
+                        providerConfigKey,
+                        sdkVersion
                     });
                 }
             }

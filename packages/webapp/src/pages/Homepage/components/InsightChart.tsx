@@ -1,15 +1,17 @@
-import type { ChartConfig } from '../../../components/ui/Chart';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../../components/ui/Chart';
+import { addDays, addMinutes, format } from 'date-fns';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, Rectangle, XAxis, YAxis } from 'recharts';
+
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../../components/ui/Chart';
+import { Skeleton } from '../../../components/ui/Skeleton';
 import { usePostInsights } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
-import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
-import { Skeleton } from '../../../components/ui/Skeleton';
-import { useMemo } from 'react';
-import { formatQuantity } from '../../../utils/utils';
-import { addDays, addMinutes, format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
 import { getLogsUrl } from '../../../utils/logs';
+import { formatQuantity } from '../../../utils/utils';
+
+import type { ChartConfig } from '../../../components/ui/Chart';
+import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
 
 interface Entry {
     date: Date;

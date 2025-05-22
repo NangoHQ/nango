@@ -26,7 +26,7 @@ const RECORDS_VALIDATION_SAMPLE = 1;
 /**
  * Action SDK
  */
-export class NangoActionRunner extends NangoActionBase {
+export class NangoActionRunner extends NangoActionBase<never, Record<string, string>> {
     nango: Nango;
     protected persistClient: PersistClient;
     protected locking: Locking;

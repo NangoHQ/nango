@@ -3,11 +3,18 @@
     "version": "0.59.0",
     "description": "Nango's CLI tool.",
     "type": "module",
-    "main": "dist/index.js",
     "bin": {
-        "nango": "dist/index.js"
+        "nango": "./dist/index.js"
     },
-    "types": "dist/nango-sync.d.ts",
+    "main": "./cjs/index.cjs",
+    "types": "./cjs/index.d.ts",
+    "typings": "./cjs/index.d.ts",
+    "exports": {
+        ".": {
+            "require": "./cjs/index.cjs",
+            "types": "./cjs/index.d.ts"
+        }
+    },
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {
@@ -17,6 +24,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
+        "build": "tsup",
         "copy:files": "copyfiles -u 1 lib/templates/* dist",
         "prepublishOnly": "npm run copy:files"
     },
@@ -40,8 +48,10 @@
         "dotenv": "^16.0.3",
         "ejs": "^3.1.10",
         "figlet": "^1.6.0",
+        "figures": "6.1.0",
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
+        "jscodeshift": "17.3.0",
         "js-yaml": "^4.1.0",
         "npm-package-arg": "^10.1.0",
         "promptly": "^3.2.0",
@@ -49,9 +59,11 @@
         "serialize-error": "11.0.3",
         "ts-json-schema-generator": "^2.3.0",
         "ts-node": "^10.9.1",
+        "esbuild": "^0.25.0",
         "tsup": "^8.1.0",
         "typescript": "5.7.3",
         "unzipper": "^0.12.3",
+        "ora": "8.2.0",
         "zod": "3.24.2"
     },
     "devDependencies": {
@@ -65,12 +77,12 @@
         "@types/ejs": "^3.1.2",
         "@types/figlet": "^1.5.6",
         "@types/glob": "^8.1.0",
+        "@types/jscodeshift": "17.3.0",
         "@types/json-schema": "7.0.15",
         "@types/node": "^20.1.4",
         "@types/npm-package-arg": "^6.1.1",
         "@types/promptly": "^3.0.2",
         "babel-loader": "^9.1.2",
-        "esbuild": "^0.25.0",
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
         "vitest": "3.1.2"
@@ -80,6 +92,8 @@
     },
     "files": [
         "dist/**/*",
+        "cjs/**/*",
+        "example/**/*",
         "docker/docker-compose.yaml",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",

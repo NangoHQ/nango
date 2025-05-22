@@ -1,6 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
-import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, SyncWithConnectionId, SyncStatus } from '../../models/Sync.js';
+
+import db, { dbNamespace, schema } from '@nangohq/database';
+import { stringifyError } from '@nangohq/utils';
+
+import {
+    getActionConfigByNameAndProviderConfigKey,
+    getActiveCustomSyncConfigsByEnvironmentId,
+    getSyncConfigsByProviderConfigKey
+} from './config/config.service.js';
+import syncManager from './manager.service.js';
+import connectionService from '../connection.service.js';
+
+import type { CreateSyncArgs } from './manager.service.js';
+import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { Sync, SyncStatus, SyncWithConnectionId } from '../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     ActiveLog,
     CLIDeployFlowConfig,
@@ -13,17 +27,6 @@ import type {
     SyncAndActionDifferences,
     SyncTypeLiteral
 } from '@nangohq/types';
-import {
-    getActiveCustomSyncConfigsByEnvironmentId,
-    getSyncConfigsByProviderConfigKey,
-    getActionConfigByNameAndProviderConfigKey
-} from './config/config.service.js';
-import type { CreateSyncArgs } from './manager.service.js';
-import syncManager from './manager.service.js';
-import connectionService from '../connection.service.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { Orchestrator } from '../../clients/orchestrator.js';
-import { stringifyError } from '@nangohq/utils';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -359,7 +362,9 @@ export const getAndReconcileDifferences = async ({
     orchestrator: Orchestrator;
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
+    const updatedSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
+    const updatedActions: SlimAction[] = [];
     const syncsToCreate: CreateSyncArgs[] = [];
 
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
@@ -371,6 +376,11 @@ export const getAndReconcileDifferences = async ({
             const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, flowName, providerConfigKey);
             if (!actionExists) {
                 newActions.push({
+                    name: flowName,
+                    providerConfigKey
+                });
+            } else {
+                updatedActions.push({
                     name: flowName,
                     providerConfigKey
                 });
@@ -422,6 +432,13 @@ export const getAndReconcileDifferences = async ({
                 }
                 syncsToCreate.push({ connections, syncName: flowName, syncVariant: 'base', sync: flow, providerConfigKey, environmentId });
             }
+        } else {
+            updatedSyncs.push({
+                name: flowName,
+                providerConfigKey,
+                connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number,
+                auto_start: flow.auto_start === false ? false : true
+            });
         }
 
         // in some cases syncs are missing so let's also create them if missing
@@ -522,7 +539,9 @@ export const getAndReconcileDifferences = async ({
 
     return {
         newSyncs,
+        updatedSyncs,
         newActions,
+        updatedActions,
         deletedSyncs,
         deletedActions,
         deletedModels

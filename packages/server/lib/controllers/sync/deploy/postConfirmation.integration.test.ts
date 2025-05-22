@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+
 import { seeders } from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const endpoint = '/sync/deploy/confirmation';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -69,10 +71,13 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [],
-            deletedOnEventScripts: []
+            deletedOnEventScripts: [],
+            updatedOnEventScripts: []
         });
         expect(res.res.status).toBe(200);
     });
@@ -80,7 +85,7 @@ describe(`POST ${endpoint}`, () => {
     it('should show correct on-events scripts diff', async () => {
         const { account, env: environment } = await seeders.seedAccountEnvAndUser();
         const { unique_key: providerConfigKey } = await seeders.createConfigSeed(environment, 'notion-123', 'notion');
-        const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey });
+        const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey, sdkVersion: '0.0.0-yaml' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -110,7 +115,9 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [
                 {
@@ -119,6 +126,7 @@ describe(`POST ${endpoint}`, () => {
                     event: 'post-connection-creation'
                 }
             ],
+            updatedOnEventScripts: [],
             deletedOnEventScripts: [
                 {
                     name: existingOnEvent.name,

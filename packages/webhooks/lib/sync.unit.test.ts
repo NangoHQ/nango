@@ -53,6 +53,7 @@ const syncConfig: DBSyncConfig = {
     webhook_subscriptions: null,
     enabled: true,
     models_json_schema: null,
+    sdk_version: null,
     created_at: new Date(),
     updated_at: new Date()
 };
