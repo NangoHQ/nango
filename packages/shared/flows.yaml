@@ -16853,6 +16853,7 @@ integrations:
                     group: Users
                 output: RecruiterFlowUser
                 runs: every hour
+                version: 1.0.1
             candidates:
                 description: Syncs all candidates from RecruiterFlow
                 sync_type: full
@@ -16863,6 +16864,7 @@ integrations:
                     group: Candidates
                 output: RecruiterFlowCandidate
                 runs: every hour
+                version: 1.0.1
             candidate-activity-types:
                 description: Syncs all candidate activity types from RecruiterFlow
                 sync_type: full
@@ -16873,6 +16875,7 @@ integrations:
                     group: Candidates
                 output: RecruiterFlowCandidateActivityType
                 runs: every hour
+                version: 1.0.0
             jobs:
                 description: Syncs all jobs from RecruiterFlow
                 sync_type: full
@@ -16883,6 +16886,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowJob
                 runs: every hour
+                version: 1.0.1
             job-stage-names:
                 description: Syncs all job stage names from RecruiterFlow
                 sync_type: full
@@ -16893,6 +16897,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowLeanJobStageName
                 runs: every hour
+                version: 1.0.0
             job-departments:
                 description: Syncs all job departments from RecruiterFlow
                 sync_type: full
@@ -16903,6 +16908,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowJobDepartment
                 runs: every hour
+                version: 1.0.0
             job-statuses:
                 description: Syncs all job statuses from RecruiterFlow
                 sync_type: full
@@ -16913,6 +16919,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowJobStatus
                 runs: every hour
+                version: 1.0.0
             job-remote-statuses:
                 description: Syncs all job remote statuses from RecruiterFlow
                 sync_type: full
@@ -16923,6 +16930,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowJobRemoteStatus
                 runs: every hour
+                version: 1.0.0
             locations:
                 description: Syncs all locations from RecruiterFlow
                 sync_type: full
@@ -16933,6 +16941,7 @@ integrations:
                     group: Locations
                 output: RecruiterFlowLocation
                 runs: every hour
+                version: 1.0.0
             employment-types:
                 description: Syncs all employment types from RecruiterFlow
                 sync_type: full
@@ -16943,6 +16952,7 @@ integrations:
                     group: Employments
                 output: RecruiterFlowEmploymentType
                 runs: every hour
+                version: 1.0.0
             organization-locations:
                 description: Syncs all organization locations from RecruiterFlow
                 sync_type: full
@@ -16953,6 +16963,7 @@ integrations:
                     group: Organizations
                 output: RecruiterFlowOrganizationLocation
                 runs: every hour
+                version: 1.0.0
         actions:
             candidate-scorecards:
                 description: Syncs all candidate scorecards from RecruiterFlow
@@ -16962,6 +16973,7 @@ integrations:
                     group: Candidates
                 input: RecruiterFlowCandidateScorecardInput
                 output: RecruiterFlowCandidateScorecard
+                version: 1.0.1
             job-pipelines:
                 description: Syncs all job pipelines from RecruiterFlow
                 endpoint:
@@ -16970,6 +16982,7 @@ integrations:
                     group: Jobs
                 input: RecruiterFlowPipelineInput
                 output: RecruiterFlowJobPipeline
+                version: 1.0.1
             candidate-activities-list:
                 description: Syncs all candidate activities list from RecruiterFlow
                 endpoint:
@@ -16978,6 +16991,7 @@ integrations:
                     group: Candidates
                 output: RecruiterFlowCandidateActivityListOutput
                 input: RecruiterFlowCandidateActivityListInput
+                version: 1.0.1
             candidate-activities-stage-movements:
                 description: Syncs all candidate activities stage movements from RecruiterFlow
                 endpoint:
@@ -16986,14 +17000,15 @@ integrations:
                     group: Candidates
                 output: RecruiterFlowCandidateActivityStageMovementOutput
                 input: RecruiterFlowCandidateActivityStageMovementInput
+                version: 1.0.1
         models:
             RecruiterFlowUser:
                 id: number
                 email: string
                 first_name: string
                 last_name: string
-                role: string[]
-                img_link: string | undefined
+                role?: string[] | undefined
+                img_link: string | null
             RecruiterFlowCandidate:
                 id: number
                 full_name: string
@@ -17039,7 +17054,7 @@ integrations:
                 after?: string | undefined
                 before?: string | undefined
             RecruiterFlowCandidateActivityStageMovementOutput:
-                data: RecruiterFlowCandidateActivityStageMovement[]
+                data: RecruiterFlowJobWithTransitions[]
             RecruiterFlowCandidateActivityStageMovement:
                 id: number
                 jobs: RecruiterFlowJobWithTransitions[]
@@ -17074,12 +17089,12 @@ integrations:
                 data: RecruiterFlowCandidateFullActivity[]
             RecruiterFlowCandidateFullActivity:
                 id: number
-                associated_entities: RecruiterFlowCandidateActivityListAssociatedEntities
+                associated_entities?: RecruiterFlowCandidateActivityListAssociatedEntities | undefined
                 candidate_id: number
                 contact_id: number | null
                 interview_plan_id: number | null
                 is_custom: boolean
-                job_id: number
+                job_id: number | null
                 subject: string
                 text: string
                 time: string
@@ -17100,12 +17115,14 @@ integrations:
                 contacts: any[]
                 deals: any[]
                 jobs: RecruiterFlowLeanJob[]
+                placements: any[]
             RecruiterFlowCandidateScorecard:
                 candidate: RecruiterFlowLeanCandidate
-                job: RecruiterFlowScorecardJob
+                job: RecruiterFlowScorecardJob[]
             RecruiterFlowLeanCandidate:
                 id: number
                 name: string
+                first_name?: string | undefined
             RecruiterFlowScorecardJob:
                 id: number
                 name: string
