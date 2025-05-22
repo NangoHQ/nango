@@ -20,6 +20,10 @@ export async function onWebhookPayloadReceived(
 ): Promise<void> {
   await nango.log('Received webhook', payload);
   await nango.batchSave<Model>([{}], 'Model');
+}
+
+function foobar(nango: NangoSync) {
+   nango.batchSave<Model>([{}], 'Model');
 }`;
         const result = zeroYaml.transformSync({
             content: ts,
@@ -76,6 +80,25 @@ export async function onWebhookPayloadReceived(
                                 name: 'dynamicObj',
                                 optional: false,
                                 value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'date' }]
+                            },
+                            {
+                                name: 'union2',
+                                union: true,
+                                value: [
+                                    { name: '0', value: 'Model', model: true },
+                                    { name: '1', value: 'Model', array: true, model: true }
+                                ],
+                                tsType: false
+                            },
+                            {
+                                name: 'dateOrNull',
+                                union: true,
+                                value: [
+                                    { name: '0', value: 'Date', tsType: true },
+                                    { name: '1', value: 'undefined', tsType: true }
+                                ],
+                                tsType: false,
+                                optional: true
                             }
                         ]
                     }
@@ -108,14 +131,18 @@ export async function onWebhookPayloadReceived(
 
 describe('transformAction', () => {
     it('should transform an action', () => {
-        const ts = `import type { NangoSync, IssueOutput, IssueInput } from "../../models";
+        const ts = `import type { NangoAction, IssueOutput, IssueInput } from "../../models";
 
-export default async function runAction(nango: NangoSync, input: IssueInput): Promise<IssueOutput> {
+export default async function runAction(nango: NangoAction, input: IssueInput): Promise<IssueOutput> {
   await nango.log("✅ hello from action");
   return {
     id: '123',
     status: 'open'
   }
+}
+
+function foobar(nango: NangoAction) {
+   nango.batchSave<Model>([{}], 'Model');
 }`;
         const result = zeroYaml.transformAction({
             content: ts,

@@ -3,6 +3,7 @@
 exports[`transformAction > should transform an action 1`] = `
 "import { z } from "zod";
 import { createAction } from "nango";
+import type { NangoAction } from "nango";
 
 const IssueInput = z.object({
   title: z.string(),
@@ -38,7 +39,11 @@ export default createAction({
       status: 'open'
     }
   }
-});"
+});
+
+function foobar(nango: NangoAction) {
+   nango.batchSave([{}], 'Model');
+}"
 `;
 
 exports[`transformOnEvents > should transform an on-event script 1`] = `
@@ -57,11 +62,7 @@ export default createOnEvent({
 exports[`transformSync > should transform a sync 1`] = `
 "import { z } from "zod";
 import { createSync } from "nango";
-
-const Metadata = z.object({
-  foo: z.literal("bar"),
-  model: Model
-});
+import type { NangoSync } from "nango";
 
 const Model = z.object({
   id: z.string(),
@@ -78,15 +79,22 @@ const Model = z.object({
     nes: z.literal("ted")
   }),
 
-  dynamicObj: z.object({}).catchall(z.literal("date"))
+  dynamicObj: z.object({}).catchall(z.literal("date")),
+  union2: z.union([Model, Model.array()]),
+  dateOrNull: z.date().optional()
+});
+
+const Metadata = z.object({
+  foo: z.literal("bar"),
+  model: Model
 });
 
 const ModelDynamic = z.object({
   id: z.string()
 }).catchall(z.string());
 
-type Metadata = z.infer<typeof Metadata>;
 type Model = z.infer<typeof Model>;
+type Metadata = z.infer<typeof Metadata>;
 type ModelDynamic = z.infer<typeof ModelDynamic>;
 
 export default createSync({
@@ -125,5 +133,9 @@ export default createSync({
     await nango.log('Received webhook', payload);
     await nango.batchSave([{}], 'Model');
   }
-});"
+});
+
+function foobar(nango: NangoSync) {
+   nango.batchSave([{}], 'Model');
+}"
 `;

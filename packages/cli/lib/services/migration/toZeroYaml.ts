@@ -177,6 +177,7 @@ function buildExecProp(j: typeof jscodeshift, func: any) {
         bodyNode = func.body;
         isAsync = !!func.async;
     }
+    params[0].extra = { ...(params[0].extra || {}), parenthesized: true };
     const execArrow = j.arrowFunctionExpression(params, bodyNode);
     execArrow.async = isAsync;
     return j.objectProperty(j.identifier('exec'), execArrow);
@@ -199,14 +200,15 @@ export function transformSync({ content, sync, models }: { content: string; sync
 
     modelToZod({ j, root, usedModels: sync.usedModels, models });
 
+    // Remove batch type arguments from all functions
+    removeBatchTypeArguments({ root, j });
+
     // Wrap default function
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
         const func = path.node.declaration;
         if (func.type !== 'FunctionDeclaration') {
             return;
         }
-
-        removeBatchTypeArguments({ j, func });
 
         const execProp = buildExecProp(j, func);
 
@@ -275,7 +277,6 @@ export function transformSync({ content, sync, models }: { content: string; sync
                 // Extract the arrow function from the exec property
                 onWebhookArrow = webhookExecProp.value;
 
-                removeBatchTypeArguments({ j, func: onWebhookArrow as any });
                 // Remove the original function declaration
                 j(p).remove();
             }
@@ -313,14 +314,15 @@ export function transformAction({ content, action, models }: { content: string; 
 
     modelToZod({ j, root, usedModels: action.usedModels, models });
 
+    // Remove batch type arguments from all functions
+    removeBatchTypeArguments({ root, j });
+
     // Find the default export async function (runAction or similar)
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
         const func = path.node.declaration;
         if (func.type !== 'FunctionDeclaration') {
             return;
         }
-
-        removeBatchTypeArguments({ j, func });
 
         const execProp = buildExecProp(j, func);
 
@@ -372,6 +374,9 @@ export function transformAction({ content, action, models }: { content: string; 
         path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createAction'), [obj])));
     });
 
+    // Find all used Types in the file that might be available in "nango"
+    reImportTypes({ root, j });
+
     const transformed = root.toSource();
     return transformed;
 }
@@ -389,14 +394,15 @@ export function transformOnEvents({ content, eventType }: { content: string; eve
     const importDecl = j.importDeclaration([j.importSpecifier(j.identifier('createOnEvent'))], j.literal('nango'));
     root.get().node.program.body.unshift(importDecl);
 
+    // Remove batch type arguments from all functions
+    removeBatchTypeArguments({ root, j });
+
     // Find the default export async function (onEvent or similar)
     root.find(j.ExportDefaultDeclaration).forEach((path) => {
         const func = path.node.declaration;
         if (func.type !== 'FunctionDeclaration') {
             return;
         }
-
-        removeBatchTypeArguments({ j, func });
 
         const execProp = buildExecProp(j, func);
 
@@ -455,10 +461,12 @@ function addZodImport({ root, j }: { root: Collection; j: jscodeshift.JSCodeshif
  */
 function modelToZod({ j, root, usedModels, models }: { j: typeof jscodeshift; root: Collection; usedModels: string[]; models: Map<string, NangoModel> }) {
     const referencedModels = usedModels;
+    // We sort to ensure that if model A references model B, model B is declared before model A
+    const sortedModels = topoSortModels(referencedModels, models);
     const modelDecls: jscodeshift.VariableDeclaration[] = [];
     const typeAliases: jscodeshift.TSTypeAliasDeclaration[] = [];
 
-    for (const modelName of referencedModels) {
+    for (const modelName of sortedModels) {
         const model = models.get(modelName);
         if (!model) {
             continue;
@@ -486,6 +494,60 @@ function modelToZod({ j, root, usedModels, models }: { j: typeof jscodeshift; ro
         }
     }
     body.splice(lastImportIdx + 1, 0, ...modelDecls, ...typeAliases);
+}
+
+// Helper to extract dependencies for a model
+function getModelDependencies(model: NangoModel): Set<string> {
+    const deps = new Set<string>();
+    function walkField(field: NangoModelField) {
+        if (field.model && typeof field.value === 'string') {
+            deps.add(field.value);
+        }
+        if (Array.isArray(field.value)) {
+            for (const v of field.value) {
+                walkField(v);
+            }
+        }
+        if (field.union && Array.isArray(field.value)) {
+            for (const v of field.value) {
+                walkField(v);
+            }
+        }
+    }
+    for (const field of model.fields) {
+        walkField(field);
+    }
+    return deps;
+}
+
+// Topological sort
+function topoSortModels(modelNames: string[], models: Map<string, NangoModel>): string[] {
+    const visited = new Set<string>();
+    const temp = new Set<string>();
+    const result: string[] = [];
+
+    function visit(name: string) {
+        if (visited.has(name)) return;
+        if (temp.has(name)) return; // Prevent cycles
+        temp.add(name);
+        const model = models.get(name);
+        if (model) {
+            for (const dep of getModelDependencies(model)) {
+                if (modelNames.includes(dep)) {
+                    visit(dep);
+                }
+            }
+        }
+        temp.delete(name);
+        visited.add(name);
+        result.push(name);
+    }
+
+    for (const name of modelNames) {
+        visit(name);
+    }
+
+    return result;
 }
 
 /**
@@ -548,7 +610,10 @@ function nangoTypeToZodAst({
         const unionArgs = field.value
             .map((v) => nangoTypeToZodAst({ j, field: v, referencedModels }))
             .filter((arg): arg is jscodeshift.CallExpression => !!arg);
-        let unionExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(unionArgs)]);
+        let unionExpr =
+            unionArgs.length <= 1
+                ? unionArgs[0]!
+                : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('union')), [j.arrayExpression(unionArgs)]);
         if (field.optional) {
             unionExpr = j.callExpression(j.memberExpression(unionExpr, j.identifier('optional')), []);
         }
@@ -630,6 +695,8 @@ function nangoTypeToZodAst({
                 ? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('lazy')), [j.arrowFunctionExpression([], nested)])
                 : nested
             : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
+    } else if (field.value === null) {
+        baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('null')), []);
     } else {
         baseExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
     }
@@ -751,26 +818,28 @@ async function generateIndexTs({ fullPath, parsed }: { fullPath: string; parsed:
 }
 
 /**
- * Removes type arguments from nango.batchSave, batchUpdate, batchDelete calls in a function body
+ * Removes type arguments from nango.batchSave, batchUpdate, batchDelete calls in all function bodies in the file
  */
-function removeBatchTypeArguments({ j, func }: { j: typeof jscodeshift; func: jscodeshift.FunctionDeclaration }) {
-    j(func.body)
-        .find(j.CallExpression)
-        .forEach((callPath) => {
-            const callee = callPath.node.callee;
-            if (
-                callee.type === 'MemberExpression' &&
-                callee.object.type === 'Identifier' &&
-                callee.object.name === 'nango' &&
-                callee.property.type === 'Identifier' &&
-                batchMethods.includes(callee.property.name)
-            ) {
-                if ('typeArguments' in callPath.node && callPath.node.typeArguments) {
-                    callPath.node.typeArguments = null;
+function removeBatchTypeArguments({ root, j }: { root: Collection; j: jscodeshift.JSCodeshift }) {
+    root.find(j.FunctionDeclaration).forEach((funcPath) => {
+        j(funcPath.node.body)
+            .find(j.CallExpression)
+            .forEach((callPath) => {
+                const callee = callPath.node.callee;
+                if (
+                    callee.type === 'MemberExpression' &&
+                    callee.object.type === 'Identifier' &&
+                    callee.object.name === 'nango' &&
+                    callee.property.type === 'Identifier' &&
+                    batchMethods.includes(callee.property.name)
+                ) {
+                    if ('typeArguments' in callPath.node && callPath.node.typeArguments) {
+                        callPath.node.typeArguments = null;
+                    }
+                    if ('typeParameters' in callPath.node && callPath.node.typeParameters) {
+                        callPath.node.typeParameters = null;
+                    }
                 }
-                if ('typeParameters' in callPath.node && callPath.node.typeParameters) {
-                    callPath.node.typeParameters = null;
-                }
-            }
-        });
+            });
+    });
 }
