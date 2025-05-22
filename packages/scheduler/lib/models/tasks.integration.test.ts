@@ -1,6 +1,5 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as tasks from './tasks.js';
-import * as groups from './groups.js';
 import { taskStates } from '../types.js';
 import type { TaskState, Task } from '../types.js';
 import { getTestDbClient } from '../db/helpers.test.js';
@@ -259,14 +258,6 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
 
 async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     const now = new Date();
-    const group = await groups.upsert(db, {
-        key: props?.groupKey || nanoid(),
-        maxConcurrency: props?.groupMaxConcurrency || 0,
-        lastTaskAddedAt: now
-    });
-    if (group.isErr()) {
-        throw new Error(`Failed to create group: ${group.error.message}`);
-    }
     const task = await tasks.create(db, {
         name: props?.name || nanoid(),
         payload: props?.payload || {},

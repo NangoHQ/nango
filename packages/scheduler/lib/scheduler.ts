@@ -1,7 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
 import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types.js';
-import * as groups from './models/groups.js';
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
@@ -196,19 +195,6 @@ export class Scheduler {
                     startsAfter: now,
                     scheduleId: null
                 };
-
-                const group = await groups.upsert(
-                    trx,
-                    {
-                        key: props.groupKey,
-                        ...(props.groupMaxConcurrency ? { maxConcurrency: props.groupMaxConcurrency } : {}),
-                        lastTaskAddedAt: now
-                    },
-                    { skipLocked: true }
-                );
-                if (group.isErr()) {
-                    return Err(group.error);
-                }
             }
 
             const created = await tasks.create(trx, taskProps);
