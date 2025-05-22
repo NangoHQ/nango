@@ -1,16 +1,19 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { formatTemplateString, getNestedValue } from './utils';
+import englishTranslation from './translations/en.js';
+import { formatTemplateString, getNestedValue } from './utils.js';
+
+import type { Translation } from './translations/en.js';
+import type { Paths } from 'type-fest';
+
+export type TranslationKey = Paths<typeof englishTranslation>;
 
 // Define supported languages
 export const SUPPORTED_LANGUAGES = ['en', 'fr'] as const; // Add more as needed
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
-// Translation object type
-type TranslationsType = Record<string, Record<string, unknown>>;
-
 interface I18nContextType {
-    t: (key: string, replacements?: Record<string, string | number>) => string;
+    t: (key: TranslationKey, replacements?: Record<string, string | number>) => string;
     language: Language;
     setLanguage: (lang: Language) => void;
     isLoading: boolean;
@@ -31,38 +34,14 @@ export const I18nProvider: React.FC<{
     const initialLanguage = language && (language === 'en' || language === 'fr') ? language : defaultLanguage;
 
     const [currentLanguage, setCurrentLanguage] = useState<Language>(initialLanguage);
-    const [translations, setTranslations] = useState<TranslationsType>({});
-    const [fallbackTranslations, setFallbackTranslations] = useState<TranslationsType>({});
+    const [translations, setTranslations] = useState<Translation>(englishTranslation);
     const [isLoading, setIsLoading] = useState(true);
-    const [initialEnglishLoaded, setInitialEnglishLoaded] = useState(false);
-
-    // Immediately load English translations at startup
-    useEffect(() => {
-        const loadInitialEnglish = async () => {
-            try {
-                const module = await import(`../i18n/translations/en.ts`);
-                setFallbackTranslations(module.default);
-                setInitialEnglishLoaded(true);
-
-                // If the default language is English, also set as main translations
-                if (currentLanguage === 'en') {
-                    setTranslations(module.default);
-                    setIsLoading(false);
-                }
-            } catch (err) {
-                console.error('Failed to load initial English translations', err);
-                setFallbackTranslations({});
-            }
-        };
-
-        void loadInitialEnglish();
-    }, [currentLanguage]); // Include language in the dependency array
 
     // Load translations for the selected language when language changes
     useEffect(() => {
         // Skip the initial load for English since we already loaded it
-        if (currentLanguage === 'en' && initialEnglishLoaded) {
-            setTranslations(fallbackTranslations);
+        if (currentLanguage === 'en') {
+            setTranslations(englishTranslation);
             setIsLoading(false);
             return;
         }
@@ -74,14 +53,14 @@ export const I18nProvider: React.FC<{
                 setTranslations(module.default);
             } catch (err) {
                 console.error(`Failed to load translations for ${currentLanguage}`, err);
-                setTranslations({});
+                setTranslations(englishTranslation);
             } finally {
                 setIsLoading(false);
             }
         };
 
         void loadTranslations();
-    }, [currentLanguage, initialEnglishLoaded, fallbackTranslations]);
+    }, [currentLanguage]);
 
     /**
      * Translates a key into the current language
@@ -101,7 +80,7 @@ export const I18nProvider: React.FC<{
             translatedString = value;
         } else if ((isLoading && currentLanguage !== 'en') || value === null) {
             // In loading state or key not found, try English fallback
-            const fallbackValue = getNestedValue(fallbackTranslations, key);
+            const fallbackValue = getNestedValue(englishTranslation, key);
             if (typeof fallbackValue === 'string') {
                 translatedString = fallbackValue;
             }

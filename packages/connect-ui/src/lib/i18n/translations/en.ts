@@ -1,4 +1,4 @@
-export default {
+const en = {
     common: {
         close: 'Close',
         loading: 'Loading',
@@ -19,6 +19,7 @@ export default {
     },
     go: {
         linkAccount: 'Link {provider} Account',
+        connect: 'Connect',
         success: 'Success!',
         successMessage: "You've successfully set up your {provider} integration",
         connectionFailed: 'Connection failed',
@@ -33,3 +34,6 @@ export default {
         invalidPreconfigured: 'A pre-configured field set by the administrator is invalid, please reach out to the support'
     }
 };
+
+export default en;
+export type Translation = typeof en;

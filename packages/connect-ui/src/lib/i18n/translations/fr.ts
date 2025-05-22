@@ -1,4 +1,6 @@
-export default {
+import type { Translation } from './en';
+
+const fr: Translation = {
     common: {
         close: 'Fermer',
         loading: 'Chargement',
@@ -19,6 +21,7 @@ export default {
     },
     go: {
         linkAccount: 'Lier le compte {provider}',
+        connect: 'Connecter',
         success: 'Succès !',
         successMessage: 'Vous avez configuré avec succès votre intégration {provider}',
         connectionFailed: 'Échec de la connexion',
@@ -33,3 +36,5 @@ export default {
         invalidPreconfigured: "Un champ préconfiguré par l'administrateur n'est pas valide, veuillez contacter le support"
     }
 };
+
+export default fr;
