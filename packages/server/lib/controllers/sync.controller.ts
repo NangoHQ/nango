@@ -136,6 +136,7 @@ class SyncController {
                 req.body['input'] = input;
                 await this.triggerAction(req, res, next);
             } else if (model) {
+                Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true });
                 req.query['model'] = model;
                 getPublicRecords(req, res, next);
             } else {
