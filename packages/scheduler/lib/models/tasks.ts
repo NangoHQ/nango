@@ -6,7 +6,6 @@ import { taskStates } from '../types.js';
 import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
 import { uuidv7, uuidv4 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
-import { GROUPS_TABLE } from './groups.js';
 
 export const TASKS_TABLE = 'tasks';
 
@@ -271,12 +270,11 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     // Note: tasks and groups are locked for update, preventing concurrent queries
                     // to dequeue the same tasks and/or groups
                     .with('candidates', (qb) => {
-                        qb.select('t.id', 't.group_key', 't.created_at', 'g.max_concurrency')
-                            .from(`${TASKS_TABLE} as t`)
-                            .join(`${GROUPS_TABLE} as g`, 'g.key', 't.group_key')
-                            .where('t.state', 'CREATED')
+                        qb.select('id', 'group_key', 'created_at', 'group_max_concurrency')
+                            .from(TASKS_TABLE)
+                            .where('state', 'CREATED')
                             .whereLike('group_key', groupKeyPattern)
-                            .where('t.starts_after', '<=', db.fn.now())
+                            .where('starts_after', '<=', db.fn.now())
                             .forUpdate()
                             .skipLocked();
                     })
@@ -304,7 +302,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     .with('to_start', (qb) => {
                         qb.select('id', 'group_key', 'created_at')
                             .from('with_rank')
-                            .whereRaw('max_concurrency = 0 OR (rank + current_running <= max_concurrency)')
+                            .whereRaw('group_max_concurrency = 0 OR (rank + current_running <= group_max_concurrency)')
 
                             .orderBy('created_at', 'asc')
                             .limit(limit);
