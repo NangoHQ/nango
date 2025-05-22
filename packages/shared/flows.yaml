@@ -16822,6 +16822,391 @@ integrations:
                     subscription_related_charge_streak?: number | undefined
             ExternalCustomerId:
                 ecommerce: string
+    recruiterflow:
+        syncs:
+            users:
+                description: Syncs all users from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                output: RecruiterFlowUser
+                runs: every hour
+            candidates:
+                description: Syncs all candidates from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /candidates
+                output: RecruiterFlowCandidate
+                runs: every hour
+            candidate-activity-types:
+                description: Syncs all candidate activity types from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /candidate-activity-types
+                output: RecruiterFlowCandidateActivityType
+                runs: every hour
+            jobs:
+                description: Syncs all jobs from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /jobs
+                output: RecruiterFlowJob
+                runs: every hour
+            job-stage-names:
+                description: Syncs all job stage names from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /job-stage-names
+                output: RecruiterFlowLeanJobStageName
+                runs: every hour
+            job-departments:
+                description: Syncs all job departments from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /job-departments
+                output: RecruiterFlowJobDepartment
+                runs: every hour
+            job-statuses:
+                description: Syncs all job statuses from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /job-statuses
+                output: RecruiterFlowJobStatus
+                runs: every hour
+            job-remote-statuses:
+                description: Syncs all job remote statuses from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /job-remote-statuses
+                output: RecruiterFlowJobRemoteStatus
+                runs: every hour
+            locations:
+                description: Syncs all locations from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /locations
+                output: RecruiterFlowLocation
+                runs: every hour
+            employment-types:
+                description: Syncs all employment types from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /employment-types
+                output: RecruiterFlowEmploymentType
+                runs: every hour
+            organization-locations:
+                description: Syncs all organization locations from RecruiterFlow
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /organization-locations
+                output: RecruiterFlowOrganizationLocation
+                runs: every hour
+        actions:
+            candidate-scorecards:
+                description: Syncs all candidate scorecards from RecruiterFlow
+                endpoint:
+                    method: GET
+                    path: /candidate-scorecards
+                input: RecruiterFlowCandidateScorecardInput
+                output: RecruiterFlowCandidateScorecard
+            job-pipelines:
+                description: Syncs all job pipelines from RecruiterFlow
+                endpoint:
+                    method: GET
+                    path: /job-pipelines
+                input: RecruiterFlowPipelineInput
+                output: RecruiterFlowJobPipeline
+            candidate-activities-list:
+                description: Syncs all candidate activities list from RecruiterFlow
+                endpoint:
+                    method: GET
+                    path: /candidate-activities-list
+                output: RecruiterFlowCandidateActivityListOutput
+                input: RecruiterFlowCandidateActivityListInput
+            candidate-activities-stage-movements:
+                description: Syncs all candidate activities stage movements from RecruiterFlow
+                endpoint:
+                    method: GET
+                    path: /candidate-activities-stage-movements
+                output: RecruiterFlowCandidateActivityStageMovementOutput
+                input: RecruiterFlowCandidateActivityStageMovementInput
+        models:
+            RecruiterFlowUser:
+                id: number
+                email: string
+                first_name: string
+                last_name: string
+                role: string[]
+                img_link: string | undefined
+            RecruiterFlowCandidate:
+                id: number
+                full_name: string
+                first_name: string
+                last_name: string
+                profile_picture_link?: string | undefined
+                added_by_name: string
+                added_by_id: number
+                added_time: string
+                latest_activity_time?: string | undefined
+                last_contacted_time?: string | undefined
+                email_addresses: string[]
+                phone_numbers: string[]
+                current_designation?: string | undefined
+                current_organization?: string | undefined
+                location_city?: string | undefined
+                location_country?: string | undefined
+                location_full_string?: string | undefined
+                source: string
+                status_name?: string | undefined
+                linkedin_profile_url?: string | undefined
+                github_profile_url?: string | undefined
+                twitter_profile_url?: string | undefined
+                angellist_profile_url?: string | undefined
+                behance_profile_url?: string | undefined
+                dribbble_profile_url?: string | undefined
+                facebook_profile_url?: string | undefined
+                xing_profile_url?: string | undefined
+                resume_links?: RecruiterFlowResumeLink[] | undefined
+                associated_jobs?: RecruiterFlowAssociatedJob[] | undefined
+                custom_fields?: RecruiterFlowCustomFields[] | undefined
+            RecruiterFlowAssociatedJob:
+                job_id: number
+                job_name: string
+                client_company_name: string
+                current_stage_name: string
+                is_open: boolean
+            RecruiterFlowResumeLink:
+                filename: string
+                link: string
+            RecruiterFlowCandidateActivityStageMovementInput:
+                id: string
+                after?: string | undefined
+                before?: string | undefined
+            RecruiterFlowCandidateActivityStageMovementOutput:
+                data: RecruiterFlowCandidateActivityStageMovement[]
+            RecruiterFlowCandidateActivityStageMovement:
+                id: number
+                jobs: RecruiterFlowJobWithTransitions[]
+                name: string
+            RecruiterFlowJobWithTransitions:
+                id: number
+                name: string
+                added_by: RecruiterFlowTransitionUser
+                transitions: RecruiterFlowTransition[]
+            RecruiterFlowTransition:
+                entered: string
+                from: string | null
+                left: string | null
+                stage_moved_by: RecruiterFlowTransitionUser
+                to: string
+            RecruiterFlowTransitionUser:
+                email: string
+                id: number
+                name: string
+            RecruiterFlowCandidateActivityType:
+                category: string
+                id: number
+                is_archived: boolean
+                is_custom: boolean
+                name: string
+                rank: number
+                track_last_contacted: boolean
+                track_last_engaged: boolean
+            RecruiterFlowCandidateActivityListInput:
+                id: string
+            RecruiterFlowCandidateActivityListOutput:
+                data: RecruiterFlowCandidateFullActivity[]
+            RecruiterFlowCandidateFullActivity:
+                id: number
+                associated_entities: RecruiterFlowCandidateActivityListAssociatedEntities
+                candidate_id: number
+                contact_id: number | null
+                interview_plan_id: number | null
+                is_custom: boolean
+                job_id: number
+                subject: string
+                text: string
+                time: string
+                type: RecruiterFlowCandidateActivityListType
+                user: RecruiterFlowCandidateActivityListCandidate
+            RecruiterFlowCandidateActivityListType:
+                id: number
+                name: string
+            RecruiterFlowCandidateActivityListCandidate:
+                email: string
+                first_name: string
+                id: number
+                last_name: string
+                name: string
+            RecruiterFlowCandidateActivityListAssociatedEntities:
+                candidates: RecruiterFlowLeanCandidate[]
+                clients: any[]
+                contacts: any[]
+                deals: any[]
+                jobs: RecruiterFlowLeanJob[]
+            RecruiterFlowCandidateScorecard:
+                candidate: RecruiterFlowLeanCandidate
+                job: RecruiterFlowScorecardJob
+            RecruiterFlowLeanCandidate:
+                id: number
+                name: string
+            RecruiterFlowScorecardJob:
+                id: number
+                name: string
+                stages: RecruiterFlowScorecardStage[]
+            RecruiterFlowScorecardStage:
+                id: number
+                name: string
+                scorecard: RecruiterFlowScorecard[]
+            RecruiterFlowScorecard:
+                attributes: RecruiterFlowScorecardAttribute[]
+                bottomline: string
+                first_name: string
+                id: number
+                last_name: string
+                middle_name: string
+                name: string
+                notes: string | undefined
+                questions: RecruiterFlowScorecardQuestion[]
+                result_id: number
+                submission_time: string
+                user_id: number
+            RecruiterFlowScorecardQuestion:
+                category_name: string
+                id: number
+                response: string
+                text: string
+            RecruiterFlowScorecardAttribute:
+                category: RecruiterFlowScorecardAttributeCategory
+                name: string
+                notes: string | undefined
+                rank: number
+                rating: number
+            RecruiterFlowScorecardAttributeCategory:
+                name: string
+            RecruiterFlowCandidateScorecardInput:
+                id: string
+                job_id: string
+            RecruiterFlowJob:
+                id: number
+                title: string
+                apply_link: string
+                company_name: string
+                company_logo_link?: string | undefined
+                locations: RecruiterFlowJobLocation[]
+                department: string
+                employment_type: string
+                job_type_name: string
+                experience_range_start: number
+                experience_range_end: number
+                is_open: boolean
+                job_status_name: string
+                number_of_openings: number
+                salary_range_end?: number | undefined
+                salary_range_start?: number | undefined
+                salary_range_currency?: string | undefined
+                salary_frequency?: string | undefined
+                pay_rate_number?: string | undefined
+                pay_rate_currency?: string | undefined
+                pay_rate_frequency_display_name?: string | undefined
+                bill_rate_number?: string | undefined
+                bill_rate_currency?: string | undefined
+                bill_rate_frequency_display_name?: string | undefined
+                contract_start_date?: string | undefined
+                contract_end_date?: string | undefined
+                work_quantum_number?: string | undefined
+                work_quantum_unit_display_name?: string | undefined
+                work_quantum_frequency_display_name?: string | undefined
+                work_quantum_is_full_time?: boolean | undefined
+                expected_salary_number?: number | undefined
+                expected_salary_currency?: string | undefined
+                expected_fee_number?: number | undefined
+                expected_fee_currency?: string | undefined
+                commission_rate?: number | undefined
+                expected_start_date?: string | undefined
+                expected_end_date?: string | undefined
+                custom_fields?: RecruiterFlowCustomFields[] | undefined
+                files_links?: string[] | undefined
+            RecruiterFlowJobLocation:
+                id: number
+                name: string
+                city: string | undefined
+                country: string | undefined
+            RecruiterFlowJobPipeline:
+                detail: any[]
+                summary: RecruiterFlowJobPipelineSummary[]
+            RecruiterFlowJobPipelineSummary:
+                id: number
+                name: string
+                count: number
+            RecruiterFlowLeanJob:
+                id: number
+                name: string
+            RecruiterFlowLeanJobStageName:
+                id: string
+                name: string
+            RecruiterFlowJobDepartment:
+                id: number
+                name: string
+                count: number
+            RecruiterFlowJobStatus:
+                id: number
+                name: string
+                color: string
+            RecruiterFlowJobRemoteStatus:
+                id: number
+                name: string
+            RecruiterFlowLocation:
+                id: number
+                name: string
+                city: string | undefined
+                country: string | undefined
+                details: string | undefined
+                iso_3166_1_alpha_2_code: string | undefined
+                location_type: string
+                location_type_id: number
+                postal_code: string | undefined
+                state: string | undefined
+                zipcode: string | undefined
+            RecruiterFlowEmploymentType:
+                id: number
+                name: string
+            RecruiterFlowOrganizationLocation:
+                id: number
+                name: string
+                address: string | undefined
+                city: string | undefined
+                state: string | undefined
+                country: string | undefined
+                postal_code: string | undefined
+            RecruiterFlowCustomFields:
+                __string: string | number
+            RecruiterFlowScores:
+                __string: number
+            RecruiterFlowPipelineInput:
+                job_id: string
     ring-central:
         actions:
             create-user:
