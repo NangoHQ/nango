@@ -249,7 +249,7 @@ class SyncController {
                 }
 
                 if (plan) {
-                    void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                    billing.add('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
                 }
 
                 return;
