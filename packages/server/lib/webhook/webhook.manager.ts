@@ -91,8 +91,10 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        await tracer.trace('webhook.forward', async () => {
-            await forwardWebhook({
+        tracer.trace('webhook.forward', () => {
+            // Forward the webhook to the customer asynchronously to avoid provider timeouts.
+            // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
+            void forwardWebhook({
                 integration,
                 account,
                 environment,
