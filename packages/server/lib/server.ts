@@ -46,6 +46,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
+app.set('query parser', 'extended');
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
