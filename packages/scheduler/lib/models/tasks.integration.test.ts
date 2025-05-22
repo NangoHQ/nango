@@ -23,6 +23,7 @@ describe('Task', () => {
             name: 'Test Task',
             payload: { foo: 'bar' },
             groupKey: nanoid(),
+            groupMaxConcurrency: 0,
             retryMax: 3,
             retryCount: 1,
             startsAfter: new Date(),
@@ -39,6 +40,7 @@ describe('Task', () => {
             name: props.name,
             payload: props.payload,
             groupKey: props.groupKey,
+            groupMaxConcurrency: props.groupMaxConcurrency,
             retryMax: props.retryMax,
             retryCount: props.retryCount,
             startsAfter: expect.toBeIsoDateTimezone(),
@@ -255,7 +257,7 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
     }
 }
 
-async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps> & { groupMaxConcurrency?: number | undefined }): Promise<Task> {
+async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     const now = new Date();
     const group = await groups.upsert(db, {
         key: props?.groupKey || nanoid(),
@@ -269,6 +271,7 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps> & { gr
         name: props?.name || nanoid(),
         payload: props?.payload || {},
         groupKey: props?.groupKey || nanoid(),
+        groupMaxConcurrency: props?.groupMaxConcurrency || 0,
         retryMax: props?.retryMax || 3,
         retryCount: props?.retryCount || 1,
         startsAfter: props?.startsAfter || now,

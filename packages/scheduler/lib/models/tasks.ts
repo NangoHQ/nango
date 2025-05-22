@@ -50,6 +50,7 @@ export interface DbTask {
     readonly name: string;
     readonly payload: JsonValue;
     readonly group_key: string;
+    readonly group_max_concurrency: number;
     readonly retry_max: number;
     readonly retry_count: number;
     readonly starts_after: Date;
@@ -73,6 +74,7 @@ export const DbTask = {
             name: task.name,
             payload: task.payload,
             group_key: task.groupKey,
+            group_max_concurrency: task.groupMaxConcurrency,
             retry_max: task.retryMax,
             retry_count: task.retryCount,
             starts_after: task.startsAfter,
@@ -96,6 +98,7 @@ export const DbTask = {
             name: dbTask.name,
             payload: dbTask.payload,
             groupKey: dbTask.group_key,
+            groupMaxConcurrency: dbTask.group_max_concurrency,
             retryMax: dbTask.retry_max,
             retryCount: dbTask.retry_count,
             startsAfter: dbTask.starts_after,
