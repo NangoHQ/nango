@@ -12221,6 +12221,14 @@ integrations:
                 scopes:
                     - issues:create
                 version: 1.0.1
+            fetch-teams:
+                description: Fetch the teams from Linear
+                input: FetchTeamsInput
+                output: TeamsPaginatedResponse
+                endpoint:
+                    method: GET
+                    path: /teams/list
+                    group: Teams
         syncs:
             issues:
                 runs: every 5min
@@ -12352,6 +12360,17 @@ integrations:
                 project:
                     id: string
                     name: string
+            TeamsPaginatedResponse:
+                teams: LinearTeamBase[]
+                pageInfo:
+                    hasNextPage: boolean
+                    endCursor: string | null
+            LinearTeamBase:
+                id: string
+                name: string
+            FetchTeamsInput:
+                after?: string
+                pageSize?: number
             Entity:
                 name: string
             FieldResponse:
