@@ -21,7 +21,7 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
@@ -109,7 +109,8 @@ class SyncController {
             const environmentId = res.locals['environment'].id;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
-            const path = req.originalUrl.replace(/^\/v1\//, '/');
+            const url = new URL(req.originalUrl, baseUrl);
+            const path = url.pathname.replace(/^\/v1\//, '/');
             if (!connectionId) {
                 res.status(400).send({ error: 'Missing connection id' });
 
