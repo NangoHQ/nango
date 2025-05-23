@@ -49,6 +49,13 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
             if (typeof value === 'string') {
                 headers.append(key, value);
             }
+            if (Array.isArray(value)) {
+                for (const val of value) {
+                    if (typeof val === 'string') {
+                        headers.append(key, val);
+                    }
+                }
+            }
         }
     }
 
