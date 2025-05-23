@@ -27,6 +27,7 @@ import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
+import { billing } from '@nangohq/billing';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -46,6 +47,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
+app.set('query parser', 'extended');
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
@@ -116,6 +118,7 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await billing.shutdown();
 
         logger.close();
 

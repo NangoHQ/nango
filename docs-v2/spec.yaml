@@ -1689,6 +1689,59 @@ paths:
                                             message:
                                                 type: string
 
+    /action/{actionId}:
+        get:
+            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/actions/use-an-action#checking-the-action-result) for more details.
+            parameters:
+                - name: actionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
+            responses:
+                '200':
+                    description: The action has completed successfully (output cannot exceed 10MB)
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                description: The data returned by the action
+                                properties:
+                                    your-properties:
+                                        type: string
+                                        description: The data returned by the action
+                                        example: 'The data returned by the action'
+                '404':
+                    description: No results. The action has not completed yet
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                                example: 'Action not completed yet'
+                '500':
+                    description: The action has completed with an error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
+
     /sync/update-connection-frequency:
         put:
             description: Override a sync's default frequency for a specific connection, or revert to the default frequency.
@@ -1756,6 +1809,21 @@ paths:
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
+                - name: X-Async
+                  in: header
+                  required: false
+                  schema:
+                      type: boolean
+                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/actions/use-an-action#asynchronous-action) for more details.
+                - name: X-Max-Retries
+                  in: header
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 5
+                      default: 0
+                  description: The maximum number of retries in case of failure (between 0 and 5). Only applicable when X-Async is true. Default to 0 if not specified.
             requestBody:
                 required: true
                 content:
@@ -1774,16 +1842,32 @@ paths:
 
             responses:
                 '200':
-                    description: Returns the result of the action
+                    description: The result of the action.
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    your-properties:
-                                        type: string
-                                        description: The data returned by the action
-                                        example: 'The data returned by the action'
+                                oneOf:
+                                    - type: object
+                                      description: The result of the action when triggered synchronously. (cannot exceed 10MB)
+                                      properties:
+                                          your-properties:
+                                              type: object
+                                              description: The data returned by the action
+                                              example: 'The data returned by the action'
+                                    - type: object
+                                      description: The ID and the status URL of the action to poll for the result when triggered asynchronously.
+                                      required:
+                                          - statusUrl
+                                          - id
+                                      properties:
+                                          statusUrl:
+                                              type: string
+                                              description: URL to poll for the action result
+                                              example: '/action/35f461d4-e681-4957-ab14-c0ae1609431d'
+                                          id:
+                                              type: string
+                                              description: Unique identifier for the asynchronous action
+                                              example: '35f461d4-e681-4957-ab14-c0ae1609431d'
 
                 '400':
                     description: Invalid request
@@ -1827,6 +1911,28 @@ paths:
                                                     body:
                                                         type: object
                                                         additionalProperties: true
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
+                                    required:
+                                        - error
+                '500':
+                    description: Action error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
                                         required:
                                             - message
                                             - code

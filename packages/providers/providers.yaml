@@ -3575,8 +3575,8 @@ facebook:
         - marketing
         - social
     auth_mode: OAUTH2
-    authorization_url: https://www.facebook.com/v15.0/dialog/oauth
-    token_url: https://graph.facebook.com/v15.0/oauth/access_token
+    authorization_url: https://www.facebook.com/v22.0/dialog/oauth
+    token_url: https://graph.facebook.com/v22.0/oauth/access_token
     proxy:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
@@ -8094,6 +8094,30 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recruiterflow:
+    display_name: Recruiterflow
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruiterflow.com
+        headers:
+            rf-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/external/user/list
+    docs: https://docs.nango.dev/integrations/all/recruiterflow
+    docs_connect: https://docs.nango.dev/integrations/all/recruiterflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Recruiterflow account
+            doc_section: '#step-1-generating-your-api-key'
+            example: 7b0c0d****************************
+            pattern: '^[a-zA-Z0-9_]+$'
+
 reddit:
     display_name: Reddit
     categories:
@@ -9310,6 +9334,7 @@ spotify:
     proxy:
         base_url: https://api.spotify.com
     docs: https://docs.nango.dev/integrations/all/spotify
+
 spotify-oauth2-cc:
     display_name: Spotify (Client Credentials)
     categories:

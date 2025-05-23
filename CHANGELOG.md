@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.59.1] - 2025-05-22
+
+### Added
+
+- *(proxy)* Dynamically parse retry response from body (#4056) by @hassan254-prog
+- Add Zoho integration setup guide (ext-357) (#3748) by @devin-ai-integration[bot]
+- *(recruiterflow)* Add support Recruiterflow (#4080) by @lordsarcastic
+- Add ClickUp integration setup guide (ext-393) (#3746) by @devin-ai-integration[bot]
+- Add Jira Data Center integration setup guide (ext-377) (#3744) by @devin-ai-integration[bot]
+
+### Changed
+
+- *(google-drive)* Further edits to the google drive file syncing (#4075) by @lordsarcastic
+- Async actions (#4071) by @TBonnin
+- Clean package-lock.json (#4082) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/43e42f3cff89fbdd40df7959403fcf010dd2b973 by lordsarcastic. Commit message: feat(recruiterflow): Add syncs for Recruiterflow (#333) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/2d7bf112d08ad9ed20b315e1822ca5fe7499ecaf by Victor Lang'at. Commit message: feat(linear): Add fetch teams action and related models (#334) by @github-actions[bot]
+- Batch billing events (#4086) by @TBonnin
+
+### Fixed
+
+- *(proxy)* Do not append querystring on top of url (#4084) by @bodinsamuel
+- *(server)* Fix nested query params parsing (#4088) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/67f3427392250f9aaa64544e33262ac5931a7b62 by Khaliq. Commit message: fix(groups): Fix recruiter groups (#335) by @github-actions[bot]
+- *(api)* Tmp fix for rewriting express query (#4091) by @bodinsamuel
+
 ## [v0.59.0] - 2025-05-21
 
 ### Added
@@ -3908,6 +3934,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.59.1]: https://github.com/NangoHQ/nango/compare/v0.59.0..v0.59.1
 [v0.59.0]: https://github.com/NangoHQ/nango/compare/v0.58.7..v0.59.0
 [v0.58.7]: https://github.com/NangoHQ/nango/compare/v0.58.6..v0.58.7
 [v0.58.6]: https://github.com/NangoHQ/nango/compare/v0.58.5..v0.58.6
