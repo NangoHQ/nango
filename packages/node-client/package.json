@@ -25,7 +25,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/types": "0.59.3",
+        "@nangohq/types": "0.59.4",
         "axios": "1.9.0"
     },
     "engines": {
