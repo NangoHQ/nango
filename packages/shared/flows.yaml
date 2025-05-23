@@ -16866,7 +16866,7 @@ integrations:
                     group: Candidates
                 output: RecruiterFlowCandidate
                 runs: every hour
-                version: 1.0.1
+                version: 1.0.2
             candidate-activity-types:
                 description: Syncs all candidate activity types from RecruiterFlow
                 sync_type: full
@@ -16888,7 +16888,7 @@ integrations:
                     group: Jobs
                 output: RecruiterFlowJob
                 runs: every hour
-                version: 1.0.1
+                version: 1.0.2
             job-stage-names:
                 description: Syncs all job stage names from RecruiterFlow
                 sync_type: full
@@ -16968,7 +16968,7 @@ integrations:
                 version: 1.0.0
         actions:
             candidate-scorecards:
-                description: Syncs all candidate scorecards from RecruiterFlow
+                description: Fetches all candidate scorecards from RecruiterFlow
                 endpoint:
                     method: GET
                     path: /candidate-scorecards
@@ -16977,7 +16977,7 @@ integrations:
                 output: RecruiterFlowCandidateScorecard
                 version: 1.0.1
             job-pipelines:
-                description: Syncs all job pipelines from RecruiterFlow
+                description: Fetches all job pipelines from RecruiterFlow
                 endpoint:
                     method: GET
                     path: /job-pipelines
@@ -16986,16 +16986,16 @@ integrations:
                 output: RecruiterFlowJobPipeline
                 version: 1.0.1
             candidate-activities-list:
-                description: Syncs all candidate activities list from RecruiterFlow
+                description: Fetches all candidate activities list from RecruiterFlow
                 endpoint:
                     method: GET
                     path: /candidate-activities-list
                     group: Candidates
                 output: RecruiterFlowCandidateActivityListOutput
                 input: RecruiterFlowCandidateActivityListInput
-                version: 1.0.1
+                version: 2.0.0
             candidate-activities-stage-movements:
-                description: Syncs all candidate activities stage movements from RecruiterFlow
+                description: Fetches all candidate activities stage movements from RecruiterFlow
                 endpoint:
                     method: GET
                     path: /candidate-activities-stage-movements
@@ -17029,7 +17029,7 @@ integrations:
                 location_city?: string | undefined
                 location_country?: string | undefined
                 location_full_string?: string | undefined
-                source: string
+                source: string | null
                 status_name?: string | undefined
                 linkedin_profile_url?: string | undefined
                 github_profile_url?: string | undefined
@@ -17045,7 +17045,7 @@ integrations:
             RecruiterFlowAssociatedJob:
                 job_id: number
                 job_name: string
-                client_company_name: string
+                client_company_name: string | null
                 current_stage_name: string
                 is_open: boolean
             RecruiterFlowResumeLink:
@@ -17090,9 +17090,11 @@ integrations:
             RecruiterFlowCandidateActivityListOutput:
                 data: RecruiterFlowCandidateFullActivity[]
             RecruiterFlowCandidateFullActivity:
-                id: number
-                associated_entities?: RecruiterFlowCandidateActivityListAssociatedEntities | undefined
-                candidate_id: number
+                activity_id: number | null
+                associated_entities?: >-
+                    RecruiterFlowCandidateActivityListAssociatedEntities | undefined |
+                    null
+                candidate_id: number | null
                 contact_id: number | null
                 interview_plan_id: number | null
                 is_custom: boolean
@@ -17104,12 +17106,12 @@ integrations:
                 user: RecruiterFlowCandidateActivityListCandidate
             RecruiterFlowCandidateActivityListType:
                 id: number
-                name: string
+                name: string | null
             RecruiterFlowCandidateActivityListCandidate:
-                email: string
-                first_name: string
-                id: number
-                last_name: string
+                email: string | null
+                first_name: string | null
+                id: number | null
+                last_name: string | null
                 name: string
             RecruiterFlowCandidateActivityListAssociatedEntities:
                 candidates: RecruiterFlowLeanCandidate[]
@@ -17165,30 +17167,30 @@ integrations:
             RecruiterFlowJob:
                 id: number
                 title: string
-                apply_link: string
-                company_name: string
-                company_logo_link?: string | undefined
+                apply_link?: string | undefined
+                company_name?: string | undefined
+                company_logo_link?: string | undefined | null
                 locations: RecruiterFlowJobLocation[]
                 department: string
                 employment_type: string
-                job_type_name: string
-                experience_range_start: number
-                experience_range_end: number
+                job_type_name: string | null
+                experience_range_start: number | null
+                experience_range_end: number | null
                 is_open: boolean
-                job_status_name: string
+                job_status_name: string | null
                 number_of_openings: number
-                salary_range_end?: number | undefined
-                salary_range_start?: number | undefined
+                salary_range_end?: number | undefined | null
+                salary_range_start?: number | undefined | null
                 salary_range_currency?: string | undefined
-                salary_frequency?: string | undefined
+                salary_frequency?: string | undefined | null
                 pay_rate_number?: string | undefined
                 pay_rate_currency?: string | undefined
                 pay_rate_frequency_display_name?: string | undefined
                 bill_rate_number?: string | undefined
                 bill_rate_currency?: string | undefined
                 bill_rate_frequency_display_name?: string | undefined
-                contract_start_date?: string | undefined
-                contract_end_date?: string | undefined
+                contract_start_date?: string | undefined | null
+                contract_end_date?: string | undefined | null
                 work_quantum_number?: string | undefined
                 work_quantum_unit_display_name?: string | undefined
                 work_quantum_frequency_display_name?: string | undefined
@@ -17197,16 +17199,16 @@ integrations:
                 expected_salary_currency?: string | undefined
                 expected_fee_number?: number | undefined
                 expected_fee_currency?: string | undefined
-                commission_rate?: number | undefined
+                commission_rate?: number | undefined | null
                 expected_start_date?: string | undefined
                 expected_end_date?: string | undefined
                 custom_fields?: RecruiterFlowCustomFields[] | undefined
                 files_links?: string[] | undefined
             RecruiterFlowJobLocation:
-                id: number
-                name: string
-                city: string | undefined
-                country: string | undefined
+                id?: number | undefined
+                name?: string | undefined
+                city?: string | undefined
+                country?: string | undefined
             RecruiterFlowJobPipeline:
                 detail: any[]
                 summary: RecruiterFlowJobPipelineSummary[]
