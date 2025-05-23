@@ -1,7 +1,10 @@
-import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { sendAuth } from './auth.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, DBExternalWebhook, DBEnvironment, DBConnection, IntegrationConfig, DBTeam } from '@nangohq/types';
+
+import { sendAuth } from './auth.js';
+
+import type { DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoAuthWebhookBodySuccess } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -9,7 +12,6 @@ const account: DBTeam = {
     id: 1,
     name: 'account',
     uuid: 'uuid',
-    is_capped: true,
     created_at: new Date(),
     updated_at: new Date()
 };
@@ -29,6 +31,7 @@ const webhookSettings: DBExternalWebhook = {
     on_auth_creation: true,
     on_auth_refresh_error: true,
     on_sync_error: true,
+    on_async_action_completion: true,
     created_at: new Date(),
     updated_at: new Date()
 };

@@ -49,7 +49,7 @@ curl --request POST \
 <Tab title="Node">
 
 ```typescript
-await nango.setMetadata(
+await nango.updateMetadata(
     '<INTEGRATION-ID>', 
     '<CONNECTION-ID>', 
     { any_key: 'Any Value' }
@@ -95,6 +95,12 @@ curl --request GET \
 </Tab>
 
 </Tabs>
+
+<Warning>
+When accessing metadata from within a sync using `nango.getMetadata()`, the metadata is cached for up to 60 seconds. Changes made to metadata while a sync is running may not be visible until the cache expires.
+
+The next execution of the sync will always have access to the latest metadata.
+</Warning>
 
 # Use custom field mappings
 

@@ -1,0 +1,53 @@
+---
+title: Figma (SCIM)
+sidebarTitle: Figma (SCIM)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/figma-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/figma-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/figma-scim.mdx)</Note>
+
+
+## Useful links
+
+-   [API docs](https://www.figma.com/developers/api#scim-api-guide)
+-   [How to generate an API Token](https://www.figma.com/developers/api#scim-api-generate-api-token)
+-   [How to build your Base URL](https://www.figma.com/developers/api#scim-api-base-url)
+-   [How to find your Tenant ID](https://www.figma.com/developers/api#scim-api-find-tenant-id)
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/figma-scim.mdx)</Note>
+
+## API gotchas
+
+- Figma (SCIM) uses `API_KEY` auth mode with `Authorization: Bearer ${apiKey}` in the request header to access different endpoints.
+- To establish a new connection in Nango, specify `www.figma.com` as the `host` `connectionConfig` for Figma organizations, and `figma-gov.com` for Figma for Government organizations.
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/figma-scim.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Figma (SCIM)" icon="link" href="/integrations/all/figma-scim/connect" horizontal>
+  Guide to connect to Figma (SCIM) using Connect UI
+</Card>

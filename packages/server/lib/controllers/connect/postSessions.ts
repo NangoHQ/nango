@@ -1,15 +1,20 @@
-import type { PostConnectSessions } from '@nangohq/types';
-import type { ZodIssue } from 'zod';
 import { z } from 'zod';
+
 import db from '@nangohq/database';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as connectSessionService from '../../services/connectSession.service.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { Config } from '@nangohq/shared';
-import { configService, upsertEndUser } from '@nangohq/shared';
-import { providerConfigKeySchema } from '../../helpers/validation.js';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { configService, upsertEndUser } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema } from '../../helpers/validation.js';
+import * as connectSessionService from '../../services/connectSession.service.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { RequestLocals } from '../../utils/express.js';
+import type { Config } from '@nangohq/shared';
+import type { PostConnectSessions } from '@nangohq/types';
+import type { Response } from 'express';
+import type { ZodIssue } from 'zod';
 
 export const bodySchema = z
     .object({
@@ -34,11 +39,13 @@ export const bodySchema = z
                 z
                     .object({
                         user_scopes: z.string().optional(),
+                        authorization_params: z.record(z.string(), z.string()).optional(),
                         connection_config: z
                             .object({
                                 oauth_scopes_override: z.string().optional()
                             })
                             .passthrough()
+                            .optional()
                     })
                     .strict()
             )
@@ -64,9 +71,30 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
-    const { account, environment } = res.locals;
     const body: PostConnectSessions['Body'] = val.data;
+    await generateSession(res, body);
+});
 
+/**
+ * Enforce that integrations exists in `integrations_config_defaults`
+ */
+export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
+    if (!body.integrations_config_defaults) {
+        return false;
+    }
+
+    const errors: ZodIssue[] = [];
+    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+        }
+    }
+
+    return errors.length > 0 ? errors : false;
+}
+
+export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body']) {
+    const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
         if (endUserRes.isErr()) {
@@ -74,7 +102,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         }
 
         if (body.allowed_integrations || body.integrations_config_defaults) {
-            const integrations = await configService.listProviderConfigs(environment.id);
+            const integrations = await configService.listProviderConfigs(environment.id, trx);
 
             // Enforce that integrations exists in `allowed_integrations`
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {
@@ -115,7 +143,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 ? Object.fromEntries(
                       Object.entries(body.integrations_config_defaults).map(([key, value]) => [
                           key,
-                          { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
+                          { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
                       ])
                   )
                 : null,
@@ -143,22 +171,4 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     });
 
     res.status(status).send(response);
-});
-
-/**
- * Enforce that integrations exists in `integrations_config_defaults`
- */
-export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
-    if (!body.integrations_config_defaults) {
-        return false;
-    }
-
-    const errors: ZodIssue[] = [];
-    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
-        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
-        }
-    }
-
-    return errors.length > 0 ? errors : false;
 }

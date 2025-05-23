@@ -67,29 +67,34 @@ describe('OrchestratorProcessor', () => {
 });
 
 async function processN(handler: (task: OrchestratorTask) => Promise<Result<void>>, groupKey: string, n: number) {
+    let processCount = 0;
     const processor = new OrchestratorProcessor({
-        handler,
+        handler: (task: OrchestratorTask) => {
+            processCount++;
+            return handler(task);
+        },
         opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
     });
     processor.start({ tracer });
     for (let i = 0; i < n; i++) {
         await immediateTask({ groupKey });
     }
-    // Wait so the processor can process all tasks
-    while (processor.queueSize() > 0) {
+    // wait for all tasks to be processed
+    while (processCount < n) {
         await setTimeout(100);
     }
-    await setTimeout(500);
-
+    processor.stop();
     return processor;
 }
 
 async function immediateTask({ groupKey }: { groupKey: string }) {
     return scheduler.immediate({
         groupKey,
+        groupMaxConcurrency: 0,
         name: nanoid(),
         retryMax: 0,
         retryCount: 0,
+        ownerKey: null,
         createdToStartedTimeoutSecs: 30,
         startedToCompletedTimeoutSecs: 30,
         heartbeatTimeoutSecs: 30,

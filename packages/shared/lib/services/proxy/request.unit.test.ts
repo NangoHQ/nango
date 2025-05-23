@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
+
 import { ProxyRequest } from './request.js';
-import { getDefaultConnection, getDefaultProxy } from './utils.test';
+import { getDefaultProxy } from './utils.test';
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 describe('call', () => {
     it('should make a single successful http call', async () => {
@@ -8,7 +10,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
-            getConnection: () => getDefaultConnection()
+            getConnection: () => getTestConnection()
         });
         const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
@@ -30,7 +32,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
-            getConnection: () => getDefaultConnection()
+            getConnection: () => getTestConnection()
         });
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
@@ -57,7 +59,7 @@ describe('call', () => {
     it('should retries failed http call', { timeout: 10000 }, async () => {
         const fn = vi.fn();
         const getConnection = vi.fn(() => {
-            return getDefaultConnection();
+            return getTestConnection();
         });
         const proxy = new ProxyRequest({
             logger: fn,

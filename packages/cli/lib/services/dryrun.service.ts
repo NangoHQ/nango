@@ -1,27 +1,30 @@
-import promptly from 'promptly';
+import { Buffer } from 'buffer';
+import * as crypto from 'crypto';
+import { createRequire } from 'module';
 import fs from 'node:fs';
-import { AxiosError } from 'axios';
-import type { AxiosResponse } from 'axios';
-import chalk from 'chalk';
+import * as vm from 'node:vm';
+import * as url from 'url';
 
-import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
-import type { GlobalOptions } from '../types.js';
-import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
+import { AxiosError } from 'axios';
+import chalk from 'chalk';
+import promptly from 'promptly';
+import { serializeError } from 'serialize-error';
+import * as unzipper from 'unzipper';
+import * as zod from 'zod';
+
+import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
+
 import { compileAllFiles } from './compile.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
-import { displayValidationError } from '../utils/errors.js';
 import * as responseSaver from './response-saver.service.js';
-import * as vm from 'node:vm';
-import * as url from 'url';
-import * as crypto from 'crypto';
-import * as zod from 'zod';
-import * as unzipper from 'unzipper';
-import { Buffer } from 'buffer';
-import { serializeError } from 'serialize-error';
-import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData, BASE_VARIANT } from '@nangohq/runner-sdk';
+import { displayValidationError } from '../utils/errors.js';
+import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
-import { createRequire } from 'module';
+
+import type { GlobalOptions } from '../types.js';
+import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -244,14 +247,14 @@ export class DryRunService {
             type = 'on-events';
         }
 
-        const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
+        const { success } = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
 
-        if (!result) {
+        if (!success) {
             console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
             return;
         }
 
-        let stubbedMetadata;
+        let stubbedMetadata: Metadata | undefined = undefined;
         let normalizedInput;
 
         const saveResponsesDir = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
@@ -348,6 +351,7 @@ export class DryRunService {
                 environmentId: -1,
                 environmentName: environment,
                 providerConfigKey: nangoConnection.provider_config_key,
+                activityLogId: '',
                 provider,
                 secretKey: process.env['NANGO_SECRET_KEY'] || '',
                 nangoConnectionId: nangoConnection.id,
@@ -375,7 +379,8 @@ export class DryRunService {
                                 providerConfigKey,
                                 connectionId: nangoConnection.connection_id,
                                 syncName,
-                                syncVariant
+                                syncVariant,
+                                hasStubbedMetadata: Boolean(stubbedMetadata)
                             }),
                         onRejected: (error: unknown) =>
                             responseSaver.onAxiosRequestRejected({
@@ -388,10 +393,9 @@ export class DryRunService {
                     }
                 };
             }
-            console.log('---');
 
             if (options.saveResponses && stubbedMetadata) {
-                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
                 const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
                 fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
             }
@@ -403,15 +407,14 @@ export class DryRunService {
                 input: normalizedInput,
                 stubbedMetadata: stubbedMetadata
             });
-            console.log('---');
 
             if (results.error) {
                 const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                if (err instanceof SDKError) {
+                if (err instanceof SDKError || err.type === 'invalid_sync_record') {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
-                    if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.code === 'invalid_sync_record') {
-                        displayValidationError(err.payload as any);
+                    if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                        displayValidationError(err.payload);
                         return;
                     }
 
@@ -517,7 +520,7 @@ export class DryRunService {
         nangoProps: NangoProps;
         loadLocation: string;
         input: object;
-        stubbedMetadata?: Metadata;
+        stubbedMetadata: Metadata | undefined;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {
@@ -648,6 +651,16 @@ export class DryRunService {
                         error: {
                             type: err.type,
                             payload: err.payload || {},
+                            status: 500
+                        },
+                        response: null
+                    };
+                } else if (err instanceof SDKError) {
+                    return {
+                        success: false,
+                        error: {
+                            type: err.code,
+                            payload: err.payload,
                             status: 500
                         },
                         response: null

@@ -1,9 +1,11 @@
 import { z } from 'zod';
-import type { MessageRowInsert, PostLog } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
+import { validateRequest } from '@nangohq/utils';
+
 import type { AuthLocals } from '../../../middleware/auth.middleware';
+import type { MessageRowInsert, PostLog } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const MAX_LOG_CHAR = 10000;
 
@@ -57,16 +59,17 @@ const validate = validateRequest<PostLog>({
             .parse(data)
 });
 
-const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, AuthLocals>) => {
-    const { body } = req;
+const handler = (_req: EndpointRequest, res: EndpointResponse<PostLog, AuthLocals>) => {
+    const { account, parsedBody: body } = res.locals;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
 
     const log: MessageRowInsert = {
         ...body.log,
-        message: truncate(body.log.message)
+        message: truncate(body.log.message),
+        accountId: account.id
     };
-    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId) }, { logToConsole: false });
+    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId), accountId: account.id }, { logToConsole: false });
     void logCtx.log(log);
     res.status(204).send();
 

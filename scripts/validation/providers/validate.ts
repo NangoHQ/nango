@@ -1,10 +1,13 @@
 /* eslint-disable no-console */
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import jsYaml from 'js-yaml';
-import Ajv from 'ajv';
+
 import chalk from 'chalk';
+
+import Ajv from 'ajv';
+import jsYaml from 'js-yaml';
+
 import type { Provider } from '@nangohq/types';
 
 // Function to recursively search for connectionConfig in the provider value
@@ -20,6 +23,8 @@ const __dirname = path.dirname(__filename);
 
 const pathSchema = path.join(__dirname, 'schema.json');
 const pathProviders = path.join(__dirname, '../../../packages/providers/providers.yaml');
+const pathConnectionScripts = path.join(__dirname, '../../../packages/server/lib/hooks/connection/index.ts');
+const pathWebhooks = path.join(__dirname, '../../../packages/server/lib/webhook/index.ts');
 
 // Schema
 const ajv = new Ajv({ allErrors: true, discriminator: true });
@@ -32,6 +37,8 @@ const providersYaml = fs.readFileSync(pathProviders);
 console.log('loaded providers.yaml', pathProviders, providersYaml.toString().length);
 const providersJson = jsYaml.load(providersYaml.toString()) as Record<string, Provider>;
 console.log('parsed providers', Object.keys(providersJson));
+const webhookContent = fs.readFileSync(pathWebhooks, 'utf-8');
+const scriptsContent = fs.readFileSync(pathConnectionScripts, 'utf-8');
 
 // Validation
 console.log('validating...');
@@ -82,12 +89,28 @@ console.log('✅ All providers are valid');
  * Validate one provider
  */
 function validateProvider(providerKey: string, provider: Provider) {
-    const filename = provider.docs.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
+    const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
     const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
     let hasValidConnect = false;
     const headers = new Set<string>();
+
+    // Check if provider exists in docs-v2/integrations/all folder
+    const providerFolder = path.join(docsPath, providerKey);
+    const providerExistsInDocs = fs.existsSync(providerFolder);
+
+    // Only validate docs and docs_connect if provider exists in docs folder
+    if (providerExistsInDocs && !['OAUTH1', 'OAUTH2', 'OAUTH2CC'].includes(provider.auth_mode)) {
+        if (!provider.docs_connect) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
+            error = true;
+        }
+        if (!provider.docs) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs" property defined`);
+            error = true;
+        }
+    }
 
     if (!fs.existsSync(mdx)) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `Documentation file not found`);
@@ -212,9 +235,54 @@ function validateProvider(providerKey: string, provider: Provider) {
         if (!provider.credentials) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for TWO_STEP auth mode`);
         }
+    } else if (provider.auth_mode === 'JWT') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for JWT auth mode`);
+        }
     } else {
         if (provider.credentials) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" is defined but not required`);
+            error = true;
+        }
+    }
+    if (provider.proxy?.verification && provider?.credentials_verification_script) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `"cannot contain both "proxy.verification" and "credentials_verification_script". Only one should be defined.`
+        );
+        error = true;
+    }
+
+    if (provider.webhook_routing_script) {
+        if (!webhookContent.includes(provider.webhook_routing_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `webhook_routing_script "${provider.webhook_routing_script}" not found in webhook routing index.ts`
+            );
+            error = true;
+        }
+    }
+
+    if (provider.post_connection_script) {
+        if (!scriptsContent.includes(provider.post_connection_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `post_connection_script "${provider.post_connection_script}" not found in connection scripts index.ts`
+            );
+            error = true;
+        }
+    }
+
+    if (provider.credentials_verification_script) {
+        if (!scriptsContent.includes(provider.credentials_verification_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `credentials_verification_script "${provider.credentials_verification_script}" not found in connection scripts index.ts`
+            );
             error = true;
         }
     }

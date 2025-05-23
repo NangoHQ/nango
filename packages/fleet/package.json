@@ -18,11 +18,11 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.21.0",
+        "dd-trace": "5.52.0",
         "knex": "3.1.0"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "2.1.9"
+        "vitest": "3.1.2"
     }
 }

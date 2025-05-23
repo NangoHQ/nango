@@ -1,5 +1,5 @@
-import type { MaybePromise } from '@nangohq/types';
 import type { KVStore } from './KVStore.js';
+import type { MaybePromise } from '@nangohq/types';
 
 interface Value {
     value: string;

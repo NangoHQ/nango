@@ -4,25 +4,28 @@
  * Copyright (c) 2024 Nango, all rights reserved.
  */
 
-import { Command } from 'commander';
 import fs from 'fs';
-import chalk from 'chalk';
-import figlet from 'figlet';
 import path from 'path';
-import * as dotenv from 'dotenv';
 
-import { generate, tscWatch, configWatch, version } from './cli.js';
-import deployService from './services/deploy.service.js';
-import { compileAllFiles } from './services/compile.service.js';
-import verificationService from './services/verification.service.js';
-import { DryRunService } from './services/dryrun.service.js';
-import { v1toV2Migration, directoryMigration, endpointMigration } from './services/migration.service.js';
-import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug, isCI } from './utils.js';
-import type { DeployOptions } from './types.js';
-import { parse } from './services/config.service.js';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import * as dotenv from 'dotenv';
+import figlet from 'figlet';
+
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { init } from './services/init.service.js';
+
+import { generate, getVersionOutput, tscWatch } from './cli.js';
+import { compileAllFiles } from './services/compile.service.js';
+import { parse } from './services/config.service.js';
+import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
+import { DryRunService } from './services/dryrun.service.js';
+import { init } from './services/init.service.js';
+import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
+import verificationService from './services/verification.service.js';
+import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+
+import type { DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -51,8 +54,10 @@ const program = new NangoCommand();
 
 dotenv.config();
 
-program.name('nango').description(
-    `The CLI requires that you set the NANGO_SECRET_KEY_DEV and NANGO_SECRET_KEY_PROD env variables.
+program
+    .name('nango')
+    .description(
+        `The CLI requires that you set the NANGO_SECRET_KEY_DEV and NANGO_SECRET_KEY_PROD env variables.
 
 In addition for self-Hosting: set the NANGO_HOSTPORT env variable.
 
@@ -75,7 +80,8 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 # Whether to prompt before deployments.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 `
-);
+    )
+    .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
@@ -83,8 +89,8 @@ program
     .command('version')
     .description('Print the version of the Nango CLI and Nango Server.')
     .action(function (this: Command) {
-        const { debug } = this.opts();
-        version(debug);
+        const versionOutput = getVersionOutput();
+        console.log(versionOutput);
     });
 
 program
@@ -162,11 +168,7 @@ program
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
-        if (compileInterfaces) {
-            configWatch({ fullPath, debug });
-        }
-
-        tscWatch({ fullPath, debug });
+        tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
     });
 
 program
@@ -261,7 +263,7 @@ program
             return;
         }
 
-        const success = await compileAllFiles({ fullPath, debug });
+        const { success } = await compileAllFiles({ fullPath, debug });
         if (!success) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exitCode = 1;

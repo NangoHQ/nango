@@ -14,31 +14,78 @@ import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Linear account](https://linear.app/signup). |
+| Paid test account | ✅ Not required | Free Linear account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No app review process for OAuth applications. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Linear account">
+    If you don't already have one, sign up for a [Linear account](https://linear.app/signup).
+  </Step>
+  <Step title="Create an OAuth2 application">
+    1. Log in to your Linear account.
+    2. Under your specific workspace, navigate to **Settings** > **API** > **OAuth applications**.
+    3. Click + sign.
+    4. It is highly recommended to create a dedicated workspace for managing your OAuth application, as each admin user will have access.
+  </Step>
+  <Step title="Configure your OAuth application">
+    1. Fill in the required information:
+       - **Name**: Your application's name
+       - **Developer name**: Your name or company name
+       - **Developer URL**: Your website URL
+       - **Description** (optional): Your application's description
+       - **Callback URLs**: Add `https://api.nango.dev/oauth/callback`
+       - **Icon** (optional): Upload an icon for your application
+       - If you want your application to be installed by other workspace, you can toggle the **Public** toggle button.
+    2. Click **Create** to save your application.
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating your application, you'll be provided with:
+       - **Client ID**
+       - **Client Secret**
+    2. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://developers.linear.app/docs/oauth/authentication#1.-create-an-oauth2-application-in-linear)
--   [OAuth-related docs](https://developers.linear.app/docs/oauth/authentication)
--   [List of OAuth scopes](<https://developers.linear.app/docs/oauth/authentication#:~:text=Expected%20response%20type-,scope,-(required)%20Comma%20separated>)
--   [API](https://developers.linear.app/docs/graphql/working-with-the-graphql-api)
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://linear.app/) |
+| | [Create a Linear account](https://linear.app/signup) |
+| | [Linear Contact Help](https://linear.app/contact/support) |
+| Developer | [API documentation](https://linear.app/developers) |
+| | [GraphQL API reference](https://linear.app/developers/graphql) |
+| | [Authentication documentation](https://linear.app/developers/oauth-2-0-authentication) |
+| | [OAuth application setup](https://linear.app/developers/oauth-2-0-authentication#create-an-oauth2-application) |
+| | [OAuth scopes](https://linear.app/developers/oauth-2-0-authentication#redirect-user-access-requests-to-linear) |
+| | [API rate limits](https://linear.app/developers/rate-limiting) |
+| | [Webhooks](https://linear.app/developers/webhooks) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
 
+
+
 ## API gotchas
+
+- Linear uses a GraphQL API rather than a REST API. This means all API requests are made to a single endpoint (`https://api.linear.app/graphql`).
+- Linear has different rate limits depending on the authentication method used. For full details, refer to the [Linear rate limit documentation](https://linear.app/developers/rate-limiting#api-request-limits).
+- OAuth tokens do not expire in the short term, but they are valid for up to 10 years. After that, users will need to reauthenticate.
+- When creating an OAuth application, it's recommended to create a dedicated workspace for managing the application.
+- Linear's GraphQL API requires that you specify exactly which fields you want to retrieve in your queries.
+- Linear supports webhooks for real-time updates, which can be more [efficient](https://linear.app/developers/rate-limiting#avoid-polling) than polling for changes.
+- The `admin` scope should only be requested if absolutely necessary, as it provides full access to admin-level endpoints.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>

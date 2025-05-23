@@ -1,7 +1,8 @@
-import type { MaybePromise, NangoProps } from '@nangohq/types';
-import { validateData } from './dataValidation.js';
-import type { ValidateDataError } from './dataValidation.js';
 import { NangoActionBase } from './action.js';
+import { validateData } from './dataValidation.js';
+
+import type { ValidateDataError } from './dataValidation.js';
+import type { MaybePromise, NangoProps } from '@nangohq/types';
 
 export const BASE_VARIANT = 'base';
 
@@ -76,8 +77,11 @@ export abstract class NangoSyncBase extends NangoActionBase {
     }
 
     protected removeMetadata<T extends object>(results: T[]) {
+        if (!Array.isArray(results)) {
+            return results;
+        }
         return results.map((result) => {
-            if ('_nango_metadata' in result) {
+            if (result && typeof result === 'object' && '_nango_metadata' in result) {
                 delete result._nango_metadata;
             }
 

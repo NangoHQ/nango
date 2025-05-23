@@ -19,7 +19,7 @@ When processed in a sync:
 - The script extracts data from the webhook and optionally fetches additional data from the external API
 - The modified data is stored in the Nango cache
 
-henever the cache is updated, Nango sends a [sync completion webhook](/guides/webhooks/webhooks-from-nango#sync-webhooks) to notify your application of new data. This entire process happens in real-time.
+Whenever the cache is updated, Nango sends a [sync completion webhook](/guides/webhooks/webhooks-from-nango#sync-webhooks) to notify your application of new data. This entire process happens in real-time.
 
 <Tip>
 **Webhooks and periodic polling:**
@@ -42,7 +42,7 @@ hubspot:
   syncs:
     hubspot-contacts-sync:
 	    webhook-subscriptions:
-			  - contact.propertyChange
+		    - contact.propertyChange
 ```
 
 Handle payloads in your sync script, e.g.

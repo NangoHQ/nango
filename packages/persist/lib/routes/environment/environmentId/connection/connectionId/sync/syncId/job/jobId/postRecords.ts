@@ -1,9 +1,11 @@
-import type { ApiError, Endpoint, MergingStrategy, PostRecordsSuccess } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import { recordsRequestParser } from './validate.js';
+import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
+import type { ApiError, Endpoint, MergingStrategy, PostRecordsSuccess } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
 type PostRecords = Endpoint<{
     Method: typeof method;
@@ -31,11 +33,12 @@ const method = 'POST';
 
 const validate = validateRequest<PostRecords>(recordsRequestParser);
 
-const handler = async (req: EndpointRequest<PostRecords>, res: EndpointResponse<PostRecords, AuthLocals>) => {
-    const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = req.params;
-    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PostRecords['Body'] = req.body;
-    const { account } = res.locals;
+const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRecords, AuthLocals>) => {
+    const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = res.locals.parsedParams;
+    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PostRecords['Body'] = res.locals.parsedBody;
+    const { account, plan } = res.locals;
     const result = await persistRecords({
+        plan,
         persistType: 'save',
         accountId: account.id,
         environmentId,

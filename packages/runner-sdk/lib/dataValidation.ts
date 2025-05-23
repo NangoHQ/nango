@@ -1,6 +1,7 @@
-import type { ErrorObject, ValidateFunction } from 'ajv';
 import { Ajv } from 'ajv';
 import addFormats from 'ajv-formats';
+
+import type { ErrorObject, ValidateFunction } from 'ajv';
 import type { JSONSchema7 } from 'json-schema';
 
 export interface ValidateProps {

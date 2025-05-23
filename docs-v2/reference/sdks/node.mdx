@@ -173,14 +173,6 @@ await nango.getIntegration(<INTEGRATION-ID>);
     <ResponseField name="include" type="array">
         Include sensitive data. Allowed values: `webhook`
     </ResponseField>
-
-    <ResponseField name="providerConfigKey" type="string" required deprecated>
-        The integration ID.
-    </ResponseField>
-
-    <ResponseField name="includeIntegrationCredentials" type="boolean" deprecated>
-        Defaults to `false`.
-    </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -204,6 +196,9 @@ await nango.getIntegration(<INTEGRATION-ID>);
 Create a new integration.
 
 ```js
+await nango.createIntegration({ provider: <PROVIDER-ID>, unique_key: <UNIQUE_KEY>, [...] });
+
+// Deprecated
 await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 ```
 
@@ -214,29 +209,17 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
         The ID of the API provider in Nango (cf. [providers.yaml](https://nango.dev/providers.yaml) for a list of API provider IDs.)
     </ResponseField>
 
-    <ResponseField name="providerConfigKey" type="string" required>
+    <ResponseField name="unique_key" type="string" required>
         The integration ID.
+    </ResponseField>
+
+    <ResponseField name="display_name" type="string">
+        The display name of this integration
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
     </ResponseField>
-
-    <ResponseField name="credentials" type="Record<string, string>">
-    <Expandable title="credentials" defaultOpen>
-      <ResponseField name="oauth_client_id" type="string">
-        The OAuth client ID.
-      </ResponseField>
-
-      <ResponseField name="oauth_client_secret" type="string">
-        The OAuth client secret.
-      </ResponseField>
-
-      <ResponseField name="oauth_scopes" type="string">
-        The list of OAuth scopes
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -244,9 +227,12 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
+    "data": {
         "unique_key": "slack-nango-community",
-        "provider": "slack"
+        "provider": "slack",
+        "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "created_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z",
     }
 }
 ```
@@ -254,42 +240,29 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
 ### Update an integration
 
-Edits an integration (only for OAuth APIs).
+Patch an integration, all fields are optional.
 
 ```js
+await nango.updateIntegration({ uniqueKey: <UNIQUE_KEY> }, { [...body] });
+
+// Deprecated
 await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="provider" type="string" required>
-        The ID of the API provider in Nango (cf. [providers.yaml](https://nango.dev/providers.yaml) for a list of API provider IDs.)
+    <ResponseField name="unique_key" type="string">
+        The integration ID.
     </ResponseField>
 
-    <ResponseField name="providerConfigKey" type="string" required>
-        The integration ID.
+    <ResponseField name="display_name" type="string">
+        The display name of this integration
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
     </ResponseField>
-
-    <ResponseField name="credentials" type="Record<string, string>">
-    <Expandable title="credentials" defaultOpen>
-      <ResponseField name="oauth_client_id" type="string">
-        The OAuth client ID.
-      </ResponseField>
-
-      <ResponseField name="oauth_client_secret" type="string">
-        The OAuth client secret.
-      </ResponseField>
-
-      <ResponseField name="oauth_scopes" type="string">
-        The list of OAuth scopes
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -297,9 +270,12 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
+    "data": {
         "unique_key": "slack-nango-community",
-        "provider": "slack"
+        "provider": "slack",
+        "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "created_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z",
     }
 }
 ```
@@ -310,13 +286,13 @@ await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 Deletes a specific integration.
 
 ```js
-await nango.deleteIntegration(<INTEGRATION-ID>);
+await nango.deleteIntegration(<UNIQUE_KEY>);
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="providerConfigKey" type="string" required>
+    <ResponseField name="uniqueKey" type="string" required>
         The integration ID.
     </ResponseField>
 </Expandable>
@@ -326,10 +302,7 @@ await nango.deleteIntegration(<INTEGRATION-ID>);
 <Expandable>
 ```json
 {
-    "config": {
-        "unique_key": "slack-nango-community",
-        "provider": "slack"
-    }
+    "success": true
 }
 ```
 </Expandable>
@@ -414,7 +387,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/individual-requests)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests)).
 </Info>
 
 <Tip>
@@ -801,6 +774,306 @@ const scriptsConfig = await nango.getScriptsConfig();
 ```
 </Expandable>
 
+You can also pass in an optional argument with the value of `nango` or `openai`. The default is `nango`
+
+```ts
+const scriptsConfig = await nango.getScriptsConfig('openai');
+```
+<Expandable>
+```json
+{
+  "data": [
+    {
+      "name": "calendars",
+      "description": "Sync the user's calendar list.\nIncludes all calendars the user has access to.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "events",
+      "description": "Sync calendar events from the primary calendar.\nIncludes events from the past month.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "cancel-event",
+      "description": "Cancel/delete an event by searching for it.\n\nInput parameters:\n- title: The title of the event to cancel\n- date: The date of the event in ISO format\n- time: The time of the event in 24-hour format (HH:mm)\n- calendar: Calendar ID where to search for the event\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to cancel"
+          },
+          "date": {
+            "type": "string",
+            "description": "The date of the event in ISO format"
+          },
+          "time": {
+            "type": "string",
+            "description": "The time of the event in 24-hour format (HH:mm)"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID where to search for the event"
+          }
+        },
+        "required": [
+          "id",
+          "summary"
+        ]
+      }
+    },
+    {
+      "name": "create-event",
+      "description": "Create a new calendar event.\n\nInput parameters:\n- summary: The title/summary of the event\n- description: A detailed description of the event\n- location: The location of the event\n- start: The start time of the event in ISO format\n- end: The end time of the event in ISO format\n- attendees: List of email addresses to invite\n- recurrence: List of recurrence rules in RRULE format\n- calendar: Calendar ID to create the event in\n- id: Calendar identifier\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "The title/summary of the event"
+          },
+          "description": {
+            "type": "string",
+            "description": "A detailed description of the event"
+          },
+          "location": {
+            "type": "string",
+            "description": "The location of the event"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "start": {
+            "type": "string",
+            "description": "The start time of the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The end time of the event in ISO format"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of email addresses to invite"
+          },
+          "recurrence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of recurrence rules in RRULE format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to create the event in"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "move-event",
+      "description": "Move an event to a different time or calendar.\n\nInput parameters:\n- eventId: The ID of the event to move\n- title: The title of the event to move\n- sourceStart: The current start time of the event\n- start: The new start time for the event in ISO format\n- end: The new end time for the event in ISO format\n- calendar: Calendar ID to move the event to\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "eventId": {
+            "type": "string",
+            "description": "The ID of the event to move"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to move"
+          },
+          "sourceStart": {
+            "type": "string",
+            "description": "The current start time of the event"
+          },
+          "start": {
+            "type": "string",
+            "description": "The new start time for the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The new end time for the event in ISO format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to move the event to"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "whoami",
+      "description": "Get information about the authenticated user.\n\nNo input parameters.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "invite-user-to-repository",
+      "description": "Invite a user to a GitHub repository.\n\nInput parameters:\n- owner: The owner (user or organization) of the repository\n- repo: The name of the repository to invite the user to\n- username: The GitHub username of the user to invite\n- permission: The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The owner (user or organization) of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository to invite the user to"
+          },
+          "username": {
+            "type": "string",
+            "description": "The GitHub username of the user to invite"
+          },
+          "permission": {
+            "type": "string",
+            "description": "The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "username"
+        ]
+      }
+    }
+  ]
+}
+```
+</Expandable>
+
 # Syncs
 
 ### Get records
@@ -908,13 +1181,13 @@ Triggers an additional, one-off execution of specified sync(s) for a given conne
 
 ```ts
 // Simple usage with sync names
-const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>', 'incremental');
 
 // Using variants
 const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
   { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
   'SYNC_NAME2' // Uses default base variant
-], '<CONNECTION_ID>');
+], '<CONNECTION_ID>', 'incremental');
 ```
 
 **Parameters**
@@ -931,6 +1204,12 @@ const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
+    </ResponseField>
+    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
+        The mode in which to trigger the syncs.
+        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
     </ResponseField>
 </Expandable>
 
@@ -1256,8 +1535,85 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
     <ResponseField name="actionName" type="string" required>
         The name of the action to trigger.
     </ResponseField>
-    <ResponseField name="input" type="unknown" required>
+    <ResponseField name="input" type="unknown">
         The necessary input for your action's `runAction` function.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "your-properties": "The data returned by the action"
+}
+```
+</Expandable>
+
+<Warning>
+The output of an action cannot exceed 10MB.
+</Warning>
+
+### Trigger an action asynchronously
+
+Triggers an action asynchronously for a connection. This allows you to start an action and retrieve the results later.
+
+```js
+const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="connectionId" type="string" required>
+        The connection ID.
+    </ResponseField>
+    <ResponseField name="actionName" type="string" required>
+        The name of the action to trigger.
+    </ResponseField>
+    <ResponseField name="input" type="unknown">
+        The necessary input for your action's `runAction` function.
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "id": "action_123456",
+    "statusUrl": "/action/action_123456"
+}
+```
+</Expandable>
+
+### Get async action result
+
+Retrieves the result of an asynchronous action.
+
+```js
+// Using the id
+const result = await nango.getAsyncActionResult({ id: 'action_123456' });
+
+// OR using the statusUrl
+const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123456' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="id" type="string">
+                The ID of the action to retrieve the result for.
+            </ResponseField>
+            <ResponseField name="statusUrl" type="string">
+                The URL where the result can be retrieved.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -1273,7 +1629,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 
 # Proxy
 
-Makes an HTTP request using the [proxy](/guides/individual-requests):
+Makes an HTTP request using the [proxy](/guides/proxy-requests):
 
 ```js
 const config = {

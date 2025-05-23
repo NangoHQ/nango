@@ -62,10 +62,10 @@ export const postConnectTelemetry = asyncWrapper<PostPublicConnectTelemetry>(asy
         return;
     }
 
-    const { connectSession } = res.locals;
+    const { connectSession, account } = res.locals;
     const body: PostPublicConnectTelemetry['Body'] = val.data;
 
-    const logCtx = logContextGetter.getStateLess({ id: connectSession.operationId! });
+    const logCtx = logContextGetter.getStateLess({ id: connectSession.operationId!, accountId: account.id });
     switch (body.event) {
         case 'open': {
             const ua = UAParser(req.headers['user-agent']);

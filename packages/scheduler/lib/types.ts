@@ -1,6 +1,5 @@
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, SetOptional } from 'type-fest';
 import type { TaskProps } from './models/tasks.js';
-import type { ScheduleProps } from './models/schedules.js';
 
 export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
@@ -12,6 +11,7 @@ export interface Task {
     readonly name: string;
     readonly payload: JsonValue;
     readonly groupKey: string;
+    readonly groupMaxConcurrency: number;
     readonly retryMax: number;
     readonly retryCount: number;
     readonly startsAfter: Date;
@@ -25,10 +25,12 @@ export interface Task {
     readonly output: JsonValue | null;
     readonly terminated: boolean;
     readonly scheduleId: string | null;
+    readonly retryKey: string | null;
+    readonly ownerKey: string | null;
 }
 
-export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'>;
-export type { ScheduleProps };
+export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
+export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
@@ -50,4 +52,13 @@ export interface Schedule {
     readonly updatedAt: Date;
     readonly deletedAt: Date | null;
     readonly lastScheduledTaskId: string | null;
+}
+
+export interface Group {
+    readonly key: string;
+    readonly maxConcurrency: number;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    readonly lastTaskAddedAt: Date | null;
+    readonly deletedAt: Date | null;
 }

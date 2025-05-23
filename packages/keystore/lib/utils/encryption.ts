@@ -1,6 +1,8 @@
-import utils from 'node:util';
 import crypto from 'crypto';
+import utils from 'node:util';
+
 import { Encryption } from '@nangohq/utils';
+
 import { envs } from './env.js';
 
 const pbkdf2 = utils.promisify(crypto.pbkdf2);

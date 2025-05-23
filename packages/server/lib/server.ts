@@ -1,28 +1,33 @@
 import './tracer.js';
 import './utils/loadEnv.js';
 
+import http from 'node:http';
+
 import express from 'express';
 import * as cron from 'node-cron';
-import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
-import http from 'node:http';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { getLogger, once, requestLoggerMiddleware, initSentry, NANGO_VERSION, report } from '@nangohq/utils';
-import oAuthSessionService from './services/oauth-session.service.js';
+
 import db, { KnexDatabase } from '@nangohq/database';
-import migrate from './utils/migrate.js';
-import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
-import { start as migrateLogs, otlp, destroy as destroyLogs } from '@nangohq/logs';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
-import { runnersFleet } from './fleet.js';
-import publisher from './clients/publisher.client.js';
-import { router } from './routes.js';
-import { refreshConnectionsCron } from './crons/refreshConnections.js';
-import { exportUsageMetricsCron } from './crons/exportMetrics.js';
-import { envs } from './env.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
-import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
+import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
+import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
+import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddleware } from '@nangohq/utils';
+
+import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
+import { refreshConnectionsCron } from './crons/refreshConnections.js';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
+import { trialCron } from './crons/trial.js';
+import { exportUsageCron } from './crons/usage.js';
+import { envs } from './env.js';
+import { runnersFleet } from './fleet.js';
+import { router } from './routes.js';
+import migrate from './utils/migrate.js';
+
+import type { WebSocket } from 'ws';
+import { billing } from '@nangohq/billing';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -42,6 +47,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
+app.set('query parser', 'extended');
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
@@ -82,12 +88,12 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 // Preload providers
 getProviders();
 
-await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
-exportUsageMetricsCron();
+exportUsageCron();
 timeoutLogsOperations();
 deleteOldData();
-otlp.register(getOtlpRoutes);
+trialCron();
+void otlp.register(getOtlpRoutes);
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -112,12 +118,12 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await billing.shutdown();
 
         logger.close();
 
         console.info('Closed');
 
-        // TODO: close redis
         process.exit();
     });
 });

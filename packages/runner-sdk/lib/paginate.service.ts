@@ -1,8 +1,9 @@
-import type { AxiosResponse } from 'axios';
-import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
 import set from 'lodash-es/set.js';
+import parseLinksHeader from 'parse-link-header';
+
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 function isValidURL(str: string): boolean {
     try {
@@ -85,6 +86,13 @@ class PaginationService {
             } else if (typeof nextCursor !== 'number') {
                 nextCursor = undefined;
             }
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({
+                    nextPageParam: nextCursor,
+                    response
+                });
+            }
         } while (typeof nextCursor !== 'undefined');
     }
 
@@ -110,6 +118,10 @@ class PaginationService {
             yield responseData;
 
             const nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({ nextPageParam: nextPageLink, response });
+            }
 
             if (!nextPageLink) {
                 return;
@@ -157,8 +169,15 @@ class PaginationService {
 
             yield responseData;
 
-            if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
+            if (paginationConfig['limit'] && responseData.length < Number(paginationConfig['limit'])) {
                 return;
+            }
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({
+                    nextPageParam: offset,
+                    response
+                });
             }
 
             if (responseData.length < 1) {

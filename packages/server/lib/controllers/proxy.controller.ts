@@ -1,30 +1,32 @@
-import type { Request, Response, NextFunction } from 'express';
+import { PassThrough, Readable, Transform } from 'stream';
+
+import { isAxiosError } from 'axios';
+
+import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import {
+    ErrorSourceEnum,
+    LogActionEnum,
+    ProxyError,
+    ProxyRequest,
+    configService,
+    connectionService,
+    errorManager,
+    getProxyConfiguration,
+    refreshOrTestCredentials
+} from '@nangohq/shared';
+import { getHeaders, getLogger, metrics, redactHeaders } from '@nangohq/utils';
+
+import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
+import { featureFlags } from '../utils/utils.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { LogContext } from '@nangohq/logs';
+import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { NextFunction, Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
-import { Readable, Transform, PassThrough } from 'stream';
-import type { UrlWithParsedQuery } from 'url';
-import url from 'url';
-import querystring from 'querystring';
-import { isAxiosError } from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import {
-    LogActionEnum,
-    errorManager,
-    ErrorSourceEnum,
-    connectionService,
-    configService,
-    getProxyConfiguration,
-    ProxyRequest,
-    ProxyError
-} from '@nangohq/shared';
-import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
-import type { LogContext } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
-import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
-import { featureFlags } from '../utils/utils.js';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -61,19 +63,17 @@ class ProxyController {
             }
 
             logCtx = existingActivityLogId
-                ? await logContextGetter.get({ id: String(existingActivityLogId) })
+                ? logContextGetter.get({ id: String(existingActivityLogId), accountId: account.id })
                 : await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment }, { dryRun: isDryRun });
 
-            if (!existingActivityLogId) {
+            if (logCtx instanceof LogContextOrigin) {
                 logCtx.attachSpan(new OtlpSpan(logCtx.operation));
             }
 
             const { method } = req;
 
-            const path = req.params[0] as string;
-            const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
-            const queryString = querystring.stringify(query);
-            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
+            // contains the path and querystring
+            const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
 
             const headers = parseHeaders(req);
 
@@ -109,7 +109,7 @@ class ProxyController {
                 return;
             }
 
-            const credentialResponse = await connectionService.refreshOrTestCredentials({
+            const credentialResponse = await refreshOrTestCredentials({
                 account,
                 environment,
                 connection: connectionRes.response,
@@ -171,7 +171,7 @@ class ProxyController {
                     }
 
                     lastConnectionRefresh = Date.now();
-                    const credentialResponse = await connectionService.refreshOrTestCredentials({
+                    const credentialResponse = await refreshOrTestCredentials({
                         account,
                         environment,
                         connection,
