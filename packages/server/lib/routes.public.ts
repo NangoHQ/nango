@@ -55,6 +55,7 @@ import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -167,7 +168,7 @@ publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvid
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
-publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
+publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
 // @deprecated
 publicAPI.use('/config', jsonContentTypeMiddleware);
