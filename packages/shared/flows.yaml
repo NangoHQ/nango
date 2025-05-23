@@ -9262,6 +9262,7 @@ integrations:
                 description: |
                     Fetches a list of issues from Jira
                 output: Issue
+                version: 1.0.1
                 sync_type: incremental
                 input: JiraIssueMetadata
                 auto_start: false
@@ -9287,6 +9288,7 @@ integrations:
                 runs: every day
                 description: Fetches a list of issue types for a project
                 output: IssueType
+                version: 1.0.1
                 scopes:
                     - read:jira-work
                 sync_type: full
