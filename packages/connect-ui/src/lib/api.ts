@@ -18,7 +18,7 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
         (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
         (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
         (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
-        (TEndpoint['Headers'] extends never ? { headers?: undefined } : { headers: TEndpoint['Headers'] }),
+        (TEndpoint['Headers'] extends never ? { headers?: Record<string, any> } : { headers: TEndpoint['Headers'] }),
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(useGlobal.getState().apiURL);
