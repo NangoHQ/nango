@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.59.5] - 2025-05-23
+
+### Added
+
+- Do not await webhook forwarding (#4098) by @TBonnin
+
+### Changed
+
+- Use github app to push release commit by @TBonnin
+
+### Fixed
+
+- *(sdk)* Better handle 401 false positive (#4081) by @bodinsamuel
+- *(response-saver)* Filter out undefined as well (#4102) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/01b3b69a7006a15ffbf8f6428d14c8830d3b9570 by Khaliq. Commit message: fix(tests): Add back in recruiterflow tests (#338) by @github-actions[bot]
+- *(express)* Correct querystring parsing in persist, support querystring in v1 (#4101) by @bodinsamuel
+- Actually send billing events additional properties (#4099) by @TBonnin
+- Race condition in processor tests (#4103) by @TBonnin
+
 ## [v0.59.3] - 2025-05-23
 
 ### Added
@@ -3957,6 +3976,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.59.5]: https://github.com/NangoHQ/nango/compare/v0.59.3..v0.59.5
 [v0.59.3]: https://github.com/NangoHQ/nango/compare/v0.59.1..v0.59.3
 [v0.59.1]: https://github.com/NangoHQ/nango/compare/v0.59.0..v0.59.1
 [v0.59.0]: https://github.com/NangoHQ/nango/compare/v0.58.7..v0.59.0
