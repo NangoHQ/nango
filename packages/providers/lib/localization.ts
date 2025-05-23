@@ -42,7 +42,8 @@ function loadLanguageOverrides(language: string): Record<string, any> {
         const overrides = load(fileContent) as Record<string, any>;
 
         return overrides || {};
-    } catch {
+    } catch (err) {
+        console.error(`Failed to load language overrides for ${language}`, err);
         return {};
     }
 }
