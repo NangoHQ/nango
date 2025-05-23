@@ -36,8 +36,13 @@ jobs:
               run: |
                   npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
 
+            - uses: actions/create-github-app-token@v2
+              id: create_github_app_token
+              with:
+                  app-id: ${{ secrets.GH_APP_PUSHER_ID }}
+                  private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
             - name: Publish release
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
                   npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
