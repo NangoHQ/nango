@@ -14,17 +14,109 @@ import PreBuiltUseCases from "/snippets/generated/zoho/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
+| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
+## Zoho Providers
 
+Zoho offers multiple services, each with its own API. In Nango, these are represented as separate providers:
+
+- [Zoho Bigin](./zoho-bigin.mdx) - CRM for small businesses
+- [Zoho Books](./zoho-books.mdx) - Accounting software
+- [Zoho CRM](./zoho-crm.mdx) - Customer relationship management
+- [Zoho Desk](./zoho-desk.mdx) - Customer support software
+- [Zoho Inventory](./zoho-inventory.mdx) - Inventory management
+- [Zoho Invoice](./zoho-invoice.mdx) - Invoicing software
+- [Zoho Mail](./zoho-mail.mdx) - Email service
+- [Zoho People](./zoho-people.mdx) - HR management
+
+While each Zoho service has its own specific API endpoints and scopes, the OAuth setup process is similar across all Zoho services. This guide covers the general setup process for Zoho OAuth applications.
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Zoho account">
+    1. If you don't already have a Zoho account, go to [Zoho's signup page](https://www.zoho.com/signup.html) and create one.
+    2. Sign in to your Zoho account.
+  </Step>
+  
+  <Step title="Access the Zoho API Console">
+    1. Go to the [Zoho API Console](https://api-console.zoho.com/).
+    2. Sign in with your Zoho account if prompted.
+  </Step>
+  
+  <Step title="Create a new client">
+    1. In the API Console, click on the **Server-based Applications** card.
+    2. Click the **Create** button to create a new client.
+    3. Fill in the required information:
+       - **Client Name**: Enter a name for your application.
+       - **Client Domain**: Enter the domain name of your application (e.g., example.com).
+       - **Authorized Redirect URIs**: Enter `https://api.nango.dev/oauth/callback`
+       - **Description**: Provide a brief description of your application.
+    4. Click **Create** to register your client.
+  </Step>
+  
+  <Step title="Select the appropriate scopes">
+    1. After creating your client, you'll need to add the appropriate scopes based on which Zoho service(s) you want to access.
+    2. Click on the **Add Scope** button.
+    3. Select the Zoho service you want to access (e.g., CRM, Books, Desk, etc.).
+    4. Choose the specific scopes you need for that service.
+    5. Click **Save** to add the selected scopes.
+    
+    Note: Each Zoho service has its own set of scopes. Refer to the specific service documentation for details on available scopes.
+  </Step>
+  
+  <Step title="Obtain your OAuth credentials">
+    After creating your client, you'll receive:
+    
+    - **Client ID**: A unique identifier for your application
+    - **Client Secret**: A secret key for your application
+    
+    Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango.
+  </Step>
+  
+  <Step title="Configure your integration in Nango">
+    When setting up your Zoho integration in Nango:
+    
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://accounts.zoho.{datacenter}/oauth/v2/auth`
+    - For the token URL, use: `https://accounts.zoho.{datacenter}/oauth/v2/token`
+    
+    Note: Replace `{datacenter}` with the appropriate domain extension based on your account's location:
+    - `com` for US and global accounts
+    - `eu` for European accounts
+    - `in` for Indian accounts
+    - `com.cn` for Chinese accounts
+    - `com.au` for Australian accounts
+    
+    You can determine your datacenter by checking the URL you use to access Zoho services.
+  </Step>
+  
+  <Step title="Understand the OAuth flow">
+    The Zoho OAuth flow follows these steps:
+    
+    1. Users are redirected to Zoho's authorization page
+    2. Users log in to Zoho and approve access for your application
+    3. After authorization, users are redirected back to your redirect URL with an authorization code
+    4. Your application exchanges this code for an access token using the token endpoint
+    5. The access token is used in the `Authorization: Bearer {access_token}` header for all API requests
+    6. Zoho also provides a refresh token that can be used to obtain a new access token when the current one expires
+  </Step>
+  
+  <Step title="Test the OAuth flow">
+    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
+    2. The authorization flow will redirect users to Zoho where they can approve access to their account.
+    3. After approval, users will be redirected back to your application with an authorization code.
+    4. This code will be exchanged for an access token that can be used to make API requests.
+  </Step>
+  
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -33,8 +125,15 @@ _No setup guide yet._
 
 ## Useful links
 
-Zoho provider is split in multiple providers, see below for more details:
-
+- [Zoho API Console](https://api-console.zoho.com/)
+- [Zoho Developer Hub](https://www.zoho.com/developer/hub/)
+- [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)
+- [Server-based Applications](https://www.zoho.com/accounts/protocol/oauth/web-server-applications.html)
+- [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)
+- [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)
+- [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-refresh.html)
+- [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)
+- [OAuth Scopes](https://www.zoho.com/accounts/protocol/oauth/scope.html)
 - [Zoho Bigin](./zoho-bigin.mdx)
 - [Zoho Books](./zoho-books.mdx)
 - [Zoho CRM](./zoho-crm.mdx)
@@ -43,3 +142,46 @@ Zoho provider is split in multiple providers, see below for more details:
 - [Zoho Invoice](./zoho-invoice.mdx)
 - [Zoho Mail](./zoho-mail.mdx)
 - [Zoho People](./zoho-people.mdx)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>
+
+
+## Common Scopes
+
+Each Zoho service has its own set of scopes. Here are some common scopes for popular Zoho services:
+
+- **Zoho CRM**
+  - `ZohoCRM.modules.ALL` - Access to all CRM modules
+  - `ZohoCRM.settings.ALL` - Access to all CRM settings
+  - `ZohoCRM.users.ALL` - Access to all CRM users
+
+- **Zoho Books**
+  - `ZohoBooks.fullaccess.all` - Full access to Books data
+  - `ZohoBooks.contacts.READ` - Read access to contacts
+  - `ZohoBooks.invoices.READ` - Read access to invoices
+
+- **Zoho Desk**
+  - `Desk.tickets.ALL` - Access to all Desk tickets
+  - `Desk.contacts.READ` - Read access to Desk contacts
+  - `Desk.search.READ` - Search functionality in Desk
+
+- **Zoho Mail**
+  - `ZohoMail.accounts.READ` - Read access to mail accounts
+  - `ZohoMail.messages.ALL` - Access to all mail messages
+
+- **AaaServer**
+  - `AaaServer.profile.READ` - Read access to user profile
+  - `AaaServer.profile.UPDATE` - Update access to user profile
+
+
+## API gotchas
+
+- Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
+
+- Zoho has rate limits that vary by service. Check the specific service documentation for details.
+
+- If your application needs to access multiple Zoho services, you need to request scopes for each service during the authorization process.
+
+- For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>

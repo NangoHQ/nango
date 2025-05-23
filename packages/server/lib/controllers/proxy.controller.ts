@@ -1,6 +1,4 @@
-import querystring from 'querystring';
 import { PassThrough, Readable, Transform } from 'stream';
-import url from 'url';
 
 import { isAxiosError } from 'axios';
 
@@ -29,7 +27,6 @@ import type { NextFunction, Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
-import type { UrlWithParsedQuery } from 'url';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -75,10 +72,8 @@ class ProxyController {
 
             const { method } = req;
 
-            const path = req.originalUrl.replace(/^\/proxy\//, '/');
-            const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
-            const queryString = querystring.stringify(query);
-            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
+            // contains the path and querystring
+            const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
 
             const headers = parseHeaders(req);
 

@@ -4,17 +4,55 @@ import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
 import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingMetric, BillingSubscription, BillingUsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import { Batcher } from './batcher.js';
+import { logger } from './logger.js';
+import { envs } from './envs.js';
 
 export class Billing {
+    private batcher: Batcher<BillingIngestEvent> | null;
     constructor(private client: BillingClient) {
         this.client = client;
+        this.batcher = flagHasUsage
+            ? new Batcher(
+                  async (events) => {
+                      logger.info(`Sending ${events.length} billing events`);
+                      const res = await this.ingest(events);
+                      if (res.isErr()) {
+                          logger.error(`failed to send billing events: ${res.error}`);
+                          throw res.error;
+                      }
+                  },
+                  {
+                      maxBatchSize: envs.BILLING_INGEST_BATCH_SIZE,
+                      flushIntervalMs: envs.BILLING_INGEST_BATCH_INTERVAL_MS,
+                      maxQueueSize: envs.BILLING_INGEST_MAX_QUEUE_SIZE,
+                      maxProcessingRetry: envs.BILLING_INGEST_MAX_RETRY
+                  }
+              )
+            : null;
     }
 
-    async send(type: BillingMetric['type'], value: number, props: BillingMetric['properties']): Promise<Result<void>> {
-        return this.sendAll([{ type, value, properties: props }]);
+    async shutdown(): Promise<Result<void>> {
+        if (!this.batcher) {
+            return Ok(undefined);
+        }
+        const res = await this.batcher.shutdown();
+        if (res.isErr()) {
+            logger.error(`Shutdown failure: ${res.error}`);
+        }
+        logger.info(`Successful shutdown`);
+        return res;
     }
 
-    async sendAll(events: BillingMetric[]): Promise<Result<void>> {
+    add(type: BillingMetric['type'], value: number, props: BillingMetric['properties']): Result<void> {
+        return this.addAll([{ type, value, properties: props }]);
+    }
+
+    addAll(events: BillingMetric[]): Result<void> {
+        if (!this.batcher) {
+            return Ok(undefined);
+        }
+
         const mapped = events.flatMap((event) => {
             if (event.value === 0) {
                 return [];
@@ -32,8 +70,13 @@ export class Billing {
                 }
             ];
         });
-
-        return await this.ingest(mapped);
+        if (mapped.length > 0) {
+            const result = this.batcher.add(...mapped);
+            if (result.isErr()) {
+                return Err(result.error);
+            }
+        }
+        return Ok(undefined);
     }
 
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
@@ -50,10 +93,6 @@ export class Billing {
 
     // Note: Events are sent immediately
     private async ingest(events: BillingIngestEvent[]): Promise<Result<void>> {
-        if (!flagHasUsage) {
-            return Ok(undefined);
-        }
-
         try {
             await this.client.ingest(events);
             return Ok(undefined);
