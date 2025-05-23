@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.59.3] - 2025-05-23
+
+### Added
+
+- *(billing)* Add dimensions to billing events  (#4087) by @TBonnin
+- Add group max concurrency to tasks table (#4093) by @TBonnin
+- *(connect-ui)* Localize frontend (#4089) by @kaposke
+- Add warning about getMetadata caching in sync (#4097) by @TBonnin
+
+### Changed
+
+- *(docs)* Mention the action output 10mb limit (#4096) by @TBonnin
+- *(scheduler)* Remove groups (#4094) by @TBonnin
+- *(scheduler)* Remove unused groups table (#4095) by @TBonnin
+- Update Facebook API endpoint from v15 (deprecated) to v22 (latest) (#4053) by @wub
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d8cbb291e1fbf8dd19b76726e5cb9e29cd842743 by lordsarcastic. Commit message: fix(recruiterflow): Add syncs for Recruiterflow (#336) by @github-actions[bot]
+- *(save-responses)* Don't remove content type if not the default application/json & remove dupes (#4085) by @khaliqgant
+- *(scheduler)* Max concurrency race condition (#4092) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bc352a87848ac99c75164f24120275f40004aa77 by Hassan_Wari. Commit message: fix(jira): throw error instead of logging when metadata is not found (#337) by @github-actions[bot]
+
 ## [v0.59.1] - 2025-05-22
 
 ### Added
@@ -3934,6 +3957,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.59.3]: https://github.com/NangoHQ/nango/compare/v0.59.1..v0.59.3
 [v0.59.1]: https://github.com/NangoHQ/nango/compare/v0.59.0..v0.59.1
 [v0.59.0]: https://github.com/NangoHQ/nango/compare/v0.58.7..v0.59.0
 [v0.58.7]: https://github.com/NangoHQ/nango/compare/v0.58.6..v0.58.7

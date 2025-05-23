@@ -180,7 +180,7 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
                 if (FILTER_HEADERS.includes(lowerKey)) return false;
 
                 // Skip application/json
-                if (lowerKey === 'content-type' && value.toLowerCase() === 'application/json') return false;
+                if (lowerKey === 'content-type' && (value.toLowerCase() === 'application/json' || value === 'undefined')) return false;
 
                 return true;
             });

@@ -8,7 +8,7 @@ import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import type { MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { ApiPublicConnectionFull, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 export const oldLevelToNewLevel = {
@@ -61,6 +61,8 @@ export class NangoActionRunner extends NangoActionBase {
 
         const { connectionId, providerConfigKey } = config;
 
+        let canRetryOn401 = true;
+        let prevConnection: ApiPublicConnectionFull | undefined;
         const proxy = new ProxyRequest({
             proxyConfig: getProxyConfiguration({
                 externalConfig: this.getProxyConfig(config),
@@ -75,6 +77,9 @@ export class NangoActionRunner extends NangoActionBase {
                 if (props.retry.reason === 'status_code_401') {
                     // We just want to clear the cache in case credentials have changed and keep retrying
                     this.memoizedConnections.clear();
+                    if (!canRetryOn401) {
+                        return { retry: false, reason: 'invalid_credentials' };
+                    }
                 }
                 return props.retry;
             },
@@ -85,6 +90,12 @@ export class NangoActionRunner extends NangoActionBase {
                     throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
                 }
 
+                if (!prevConnection) {
+                    prevConnection = connection;
+                } else {
+                    canRetryOn401 = JSON.stringify(prevConnection.credentials) !== JSON.stringify(connection.credentials);
+                    prevConnection = connection;
+                }
                 return connection;
             }
         });
