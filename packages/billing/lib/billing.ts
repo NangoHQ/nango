@@ -58,14 +58,16 @@ export class Billing {
                 return [];
             }
 
+            const { accountId, idempotencyKey, timestamp, ...rest } = event.properties;
             return [
                 {
                     type: event.type,
-                    accountId: event.properties.accountId,
-                    idempotencyKey: event.properties.idempotencyKey || uuidv7(),
-                    timestamp: event.properties.timestamp || new Date(),
+                    accountId,
+                    idempotencyKey: idempotencyKey || uuidv7(),
+                    timestamp: timestamp || new Date(),
                     properties: {
-                        count: event.value
+                        count: event.value,
+                        ...rest
                     }
                 }
             ];
