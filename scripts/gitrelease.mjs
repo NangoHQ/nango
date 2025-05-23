@@ -7,6 +7,10 @@ const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
 
 echo`Publishing ${nextVersion} on branch ${branch}`;
+
+// Configure git to use the GitHub token for authentication
+await $`git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/NangoHQ/nango.git`;
+
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
     echo`Tag ${nextTag} already exists`;
