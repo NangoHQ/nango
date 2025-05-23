@@ -3,17 +3,31 @@ import { describe, expect, it } from 'vitest';
 import { parseAcceptLanguage } from './accept-language.middleware.js';
 
 describe('parseAcceptLanguage', () => {
-    describe('supported languages in order', () => {
-        it('should return first supported language from comma-separated list', () => {
-            expect(parseAcceptLanguage('es-ES,es;q=0.9,en;q=0.8')).toBe('es');
+    describe('quality value priority', () => {
+        it('should return language with highest quality value', () => {
+            expect(parseAcceptLanguage('en;q=0.1,es;q=0.9')).toBe('es');
         });
 
-        it('should return first supported language ignoring quality values', () => {
-            expect(parseAcceptLanguage('fr;q=0.9,en;q=0.8,es;q=0.7')).toBe('fr');
+        it('should handle complex quality values', () => {
+            expect(parseAcceptLanguage('fr;q=0.8,de;q=0.9,en;q=0.7')).toBe('de');
         });
 
-        it('should return second language if first is not supported', () => {
-            expect(parseAcceptLanguage('zh-CN,es,en')).toBe('es');
+        it('should default to 1.0 for languages without quality values', () => {
+            expect(parseAcceptLanguage('es,en;q=0.9')).toBe('es');
+        });
+
+        it('should handle mixed languages with and without quality values', () => {
+            expect(parseAcceptLanguage('en;q=0.8,fr,de;q=0.9')).toBe('fr');
+        });
+    });
+
+    describe('supported languages filtering', () => {
+        it('should return first supported language from comma-separated list when equal priority', () => {
+            expect(parseAcceptLanguage('es-ES,en,fr')).toBe('es');
+        });
+
+        it('should skip unsupported and return highest priority supported', () => {
+            expect(parseAcceptLanguage('zh-CN;q=1.0,es;q=0.9,en;q=0.8')).toBe('es');
         });
 
         it('should handle single language', () => {
@@ -27,21 +41,11 @@ describe('parseAcceptLanguage', () => {
 
     describe('case sensitivity', () => {
         it('should handle uppercase language codes', () => {
-            expect(parseAcceptLanguage('ES-ES,EN')).toBe('es');
+            expect(parseAcceptLanguage('ES-ES;q=0.9,EN;q=0.8')).toBe('es');
         });
 
         it('should handle mixed case language codes', () => {
-            expect(parseAcceptLanguage('Fr-CA,De-DE')).toBe('fr');
-        });
-    });
-
-    describe('quality values', () => {
-        it('should ignore quality values and prioritize by order', () => {
-            expect(parseAcceptLanguage('en;q=0.1,es;q=0.9')).toBe('en');
-        });
-
-        it('should handle complex quality values', () => {
-            expect(parseAcceptLanguage('fr;q=0.8,de;q=0.9,en;q=0.7')).toBe('fr');
+            expect(parseAcceptLanguage('Fr-CA;q=0.8,De-DE;q=0.9')).toBe('de');
         });
     });
 
@@ -50,8 +54,8 @@ describe('parseAcceptLanguage', () => {
             expect(parseAcceptLanguage('zh-CN,ja,ko')).toBe('en');
         });
 
-        it('should skip unsupported and return first supported', () => {
-            expect(parseAcceptLanguage('zh-CN,ja,fr,ko')).toBe('fr');
+        it('should skip unsupported and return highest priority supported', () => {
+            expect(parseAcceptLanguage('zh-CN;q=1.0,ja;q=0.9,fr;q=0.8,ko;q=0.7')).toBe('fr');
         });
     });
 
@@ -65,15 +69,41 @@ describe('parseAcceptLanguage', () => {
         });
 
         it('should handle extra whitespace', () => {
-            expect(parseAcceptLanguage(' es-ES , fr ; q=0.9 , en ')).toBe('es');
+            expect(parseAcceptLanguage(' es-ES;q=0.8 , fr ; q=0.9 , en;q=0.7 ')).toBe('fr');
         });
 
         it('should handle empty tags', () => {
-            expect(parseAcceptLanguage(',,es,,')).toBe('es');
+            expect(parseAcceptLanguage(',,es;q=0.9,,')).toBe('es');
         });
 
-        it('should handle malformed tags', () => {
-            expect(parseAcceptLanguage('invalid;;tag,fr')).toBe('fr');
+        it('should handle malformed quality values', () => {
+            expect(parseAcceptLanguage('es;q=invalid,fr;q=0.9')).toBe('es');
+        });
+
+        it('should handle missing quality value after q=', () => {
+            expect(parseAcceptLanguage('es;q=,fr;q=0.9')).toBe('es');
+        });
+    });
+
+    describe('real-world examples', () => {
+        it('should handle Chrome default (en has highest implicit priority)', () => {
+            expect(parseAcceptLanguage('en-US,en;q=0.9')).toBe('en');
+        });
+
+        it('should handle Firefox Spanish (es has highest priority)', () => {
+            expect(parseAcceptLanguage('es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3')).toBe('es');
+        });
+
+        it('should handle Safari French (fr has highest explicit priority)', () => {
+            expect(parseAcceptLanguage('fr-FR,fr;q=0.9,en;q=0.8,de;q=0.7,*;q=0.5')).toBe('fr');
+        });
+
+        it('should handle mobile browser (de has highest implicit priority)', () => {
+            expect(parseAcceptLanguage('de-DE,de;q=0.9,en;q=0.8')).toBe('de');
+        });
+
+        it('should prioritize by quality when order differs', () => {
+            expect(parseAcceptLanguage('en;q=0.7,es;q=0.9,fr;q=0.8')).toBe('es');
         });
     });
 });

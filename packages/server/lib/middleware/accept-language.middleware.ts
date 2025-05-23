@@ -15,20 +15,38 @@ export function parseAcceptLanguage(acceptLanguage?: string): string {
     }
 
     // Split by comma and process each language tag
-    const languageTags = acceptLanguage.split(',').map((tag) => tag.trim());
+    const languageTags = acceptLanguage.replaceAll(' ', '').split(',');
+    const supportedLanguagesWithPriority: { language: string; priority: number }[] = [];
 
     for (const tag of languageTags) {
         if (!tag) continue;
 
-        // Extract language code (ignore quality values and country codes)
-        // e.g., "es-ES;q=0.9" -> "es", "fr" -> "fr"
-        const languageCode = tag.split(';')[0]?.split('-')[0]?.toLowerCase();
+        // Parse language and quality value
+        const [languagePart, qualityPart] = tag.split(';q=');
+        const languageCode = languagePart?.split('-')[0]?.toLowerCase();
 
-        if (languageCode && supportedLanguages.includes(languageCode)) {
-            return languageCode;
+        if (!languageCode || !supportedLanguages.includes(languageCode)) {
+            continue;
         }
+
+        // Parse quality value (default to 1.0 if not specified)
+        let priority = 1.0;
+        if (qualityPart) {
+            const qualityValue = parseFloat(qualityPart);
+            if (!isNaN(qualityValue)) {
+                priority = qualityValue;
+            }
+        }
+
+        supportedLanguagesWithPriority.push({ language: languageCode, priority });
     }
 
-    // Default to English if no supported language found
-    return 'en';
+    if (supportedLanguagesWithPriority.length === 0) {
+        return 'en';
+    }
+
+    // Sort by priority (highest first), then by order of appearance (stable sort)
+    supportedLanguagesWithPriority.sort((a, b) => b.priority - a.priority);
+
+    return supportedLanguagesWithPriority[0]?.language || 'en';
 }
