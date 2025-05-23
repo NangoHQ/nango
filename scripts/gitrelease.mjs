@@ -9,7 +9,7 @@ const nextTag = `v${nextVersion}`;
 echo`Publishing ${nextVersion} on branch ${branch}`;
 
 // Configure git to use the GitHub token for authentication
-await $`git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/NangoHQ/nango.git`;
+await $`git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"`;
 
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
