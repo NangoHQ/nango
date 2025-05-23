@@ -4,112 +4,118 @@ import * as zeroYaml from './toZeroYaml.js';
 
 import type { NangoModel } from '@nangohq/types';
 
+const models = new Map<string, NangoModel>([
+    [
+        'Model',
+        {
+            name: 'Model',
+            fields: [
+                { name: 'id', value: 'string', tsType: true },
+                { name: 'undefined', value: 'undefined', tsType: true },
+                { name: 'arrTsType', value: 'string', tsType: true, array: true },
+                { name: 'null', value: 'null', tsType: true },
+                { name: 'bool', optional: false, tsType: true, value: 'boolean' },
+                { name: 'any', tsType: true, value: 'any' },
+                { name: 'opt', value: 'number', tsType: true, optional: true },
+                { name: 'ref', value: 'Foo', tsType: false, model: true, optional: true },
+                {
+                    name: 'union',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'literal1' },
+                        { name: '1', value: 'literal2' }
+                    ],
+                    tsType: false
+                },
+                {
+                    name: 'array',
+                    array: true,
+                    value: [
+                        { name: '0', value: 'arr1' },
+                        { name: '1', value: 'arr2' }
+                    ],
+                    tsType: false
+                },
+                { name: 'obj', value: [{ name: 'nes', value: 'ted' }] },
+                {
+                    name: 'dynamicObj',
+                    optional: false,
+                    value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'date' }]
+                },
+                {
+                    name: 'union2',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'Model', model: true },
+                        { name: '1', value: 'Model', array: true, model: true }
+                    ],
+                    tsType: false
+                },
+                {
+                    name: 'dateOrNull',
+                    union: true,
+                    value: [
+                        { name: '0', value: 'Date', tsType: true },
+                        { name: '1', value: 'undefined', tsType: true }
+                    ],
+                    tsType: false,
+                    optional: true
+                }
+            ]
+        }
+    ],
+    [
+        'ModelDynamic',
+        {
+            name: 'ModelDynamic',
+            fields: [
+                { dynamic: true, name: '__string', optional: false, tsType: true, value: 'string' },
+                { name: 'id', optional: false, tsType: true, value: 'string' }
+            ]
+        }
+    ],
+    [
+        'Metadata',
+        {
+            name: 'Metadata',
+            fields: [
+                { name: 'foo', value: 'bar' },
+                { name: 'model', model: true, value: 'Model' }
+            ]
+        }
+    ],
+    [
+        'IssueInput',
+        {
+            name: 'IssueInput',
+            fields: [
+                { name: 'title', value: 'string' },
+                { name: 'body', value: 'string' }
+            ]
+        }
+    ],
+    [
+        'IssueOutput',
+        {
+            name: 'IssueOutput',
+            fields: [
+                { name: 'id', value: 'string' },
+                { name: 'status', value: 'string' }
+            ]
+        }
+    ],
+    [
+        'ActionErrorResponse',
+        {
+            name: 'ActionErrorResponse',
+            fields: [{ name: 'msg', value: 'string' }]
+        }
+    ]
+]);
 describe('generateModelsTs', () => {
     it('should generate models.ts', () => {
         const content = zeroYaml.generateModelsTs({
-            parsed: {
-                models: new Map<string, NangoModel>([
-                    [
-                        'Model',
-                        {
-                            name: 'Model',
-                            fields: [
-                                { name: 'id', value: 'string', tsType: true },
-                                { name: 'undefined', value: 'undefined', tsType: true },
-                                { name: 'arrTsType', value: 'string', tsType: true, array: true },
-                                { name: 'null', value: 'null', tsType: true },
-                                { name: 'bool', optional: false, tsType: true, value: 'boolean' },
-                                { name: 'any', tsType: true, value: 'any' },
-                                { name: 'opt', value: 'number', tsType: true, optional: true },
-                                { name: 'ref', value: 'Foo', tsType: false, model: true, optional: true },
-                                {
-                                    name: 'union',
-                                    union: true,
-                                    value: [
-                                        { name: '0', value: 'literal1' },
-                                        { name: '1', value: 'literal2' }
-                                    ],
-                                    tsType: false
-                                },
-                                {
-                                    name: 'array',
-                                    array: true,
-                                    value: [
-                                        { name: '0', value: 'arr1' },
-                                        { name: '1', value: 'arr2' }
-                                    ],
-                                    tsType: false
-                                },
-                                { name: 'obj', value: [{ name: 'nes', value: 'ted' }] },
-                                {
-                                    name: 'dynamicObj',
-                                    optional: false,
-                                    value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'date' }]
-                                },
-                                {
-                                    name: 'union2',
-                                    union: true,
-                                    value: [
-                                        { name: '0', value: 'Model', model: true },
-                                        { name: '1', value: 'Model', array: true, model: true }
-                                    ],
-                                    tsType: false
-                                },
-                                {
-                                    name: 'dateOrNull',
-                                    union: true,
-                                    value: [
-                                        { name: '0', value: 'Date', tsType: true },
-                                        { name: '1', value: 'undefined', tsType: true }
-                                    ],
-                                    tsType: false,
-                                    optional: true
-                                }
-                            ]
-                        }
-                    ],
-                    [
-                        'ModelDynamic',
-                        {
-                            name: 'ModelDynamic',
-                            fields: [
-                                { dynamic: true, name: '__string', optional: false, tsType: true, value: 'string' },
-                                { name: 'id', optional: false, tsType: true, value: 'string' }
-                            ]
-                        }
-                    ],
-                    [
-                        'Metadata',
-                        {
-                            name: 'Metadata',
-                            fields: [
-                                { name: 'foo', value: 'bar' },
-                                { name: 'model', model: true, value: 'Model' }
-                            ]
-                        }
-                    ],
-                    [
-                        'IssueInput',
-                        {
-                            name: 'IssueInput',
-                            fields: [
-                                { name: 'title', value: 'string' },
-                                { name: 'body', value: 'string' }
-                            ]
-                        }
-                    ],
-                    [
-                        'IssueOutput',
-                        {
-                            name: 'IssueOutput',
-                            fields: [
-                                { name: 'id', value: 'string' },
-                                { name: 'status', value: 'string' }
-                            ]
-                        }
-                    ]
-                ])
-            }
+            parsed: { models }
         });
         expect(content).toMatchSnapshot();
     });
@@ -139,6 +145,10 @@ export async function onWebhookPayloadReceived(
 
 function foobar(nango: NangoSync) {
    nango.batchSave<Model>([{}], 'Model');
+
+   throw new nango.ActionError<ActionErrorResponse>({
+     msg: 'Failed',
+   });
 }`;
         const result = zeroYaml.transformSync({
             content: ts,
@@ -157,7 +167,39 @@ function foobar(nango: NangoSync) {
                 webhookSubscriptions: ['*'],
                 input: 'Metadata',
                 output: ['Model', 'ModelDynamic']
-            }
+            },
+            models
+        });
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should transform a sync (different values', () => {
+        const ts = `import type { Model, NangoSync } from "../../models";
+export default async function fetchData(nango: NangoSync) {
+    await nango.log('hello');
+    await nango.batchSave<Model>([{
+        'id': 'foobar',
+    }], 'Model');
+}`;
+        const result = zeroYaml.transformSync({
+            content: ts,
+            sync: {
+                type: 'sync',
+                name: 'test',
+                description: 'Test sync',
+                version: '1.2.3',
+                runs: 'every 32 days',
+                auto_start: false,
+                sync_type: 'incremental',
+                track_deletes: true,
+                scopes: [],
+                endpoints: [{ method: 'GET', path: 'top', group: 'foobar' }],
+                usedModels: ['Model'],
+                webhookSubscriptions: [],
+                input: null,
+                output: ['Model']
+            },
+            models
         });
         expect(result).toMatchSnapshot();
     });
@@ -169,10 +211,11 @@ describe('transformAction', () => {
 
 export default async function runAction(nango: NangoAction, input: IssueInput): Promise<IssueOutput> {
   await nango.log("✅ hello from action");
-  return {
+  const output: IssueOutput = {
     id: '123',
     status: 'open'
-  }
+  };
+  return output;
 }
 
 function foobar(nango: NangoAction) {
@@ -190,7 +233,8 @@ function foobar(nango: NangoAction) {
                 output: ['IssueOutput'],
                 scopes: ['repo'],
                 usedModels: ['IssueInput', 'IssueOutput']
-            }
+            },
+            models
         });
         expect(result).toMatchSnapshot();
     });
@@ -205,8 +249,23 @@ export default async function onEvent(nango: NangoSync): Promise<void> {
 }`;
         const result = zeroYaml.transformOnEvents({
             content: ts,
-            eventType: 'pre-connection-deletion'
+            eventType: 'pre-connection-deletion',
+            models
         });
         expect(result).toMatchSnapshot();
+    });
+});
+
+describe('processHelperFiles', () => {
+    it('should process helper files', () => {
+        const result = zeroYaml.processHelperFile({
+            content: `import type { NangoAction, NangoSync, Model } from "../models";
+
+function foobar(nango: NangoSync) {
+    nango.batchSave<Model>([{}], 'Model');
+}
+`
+        });
+        expect(result.root.toSource()).toMatchSnapshot();
     });
 });

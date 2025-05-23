@@ -14,10 +14,13 @@ import { compileAllFiles } from '../compile.service.js';
 import { loadYamlAndGenerate } from '../model.service.js';
 
 import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
-import type { Collection } from 'jscodeshift';
+import type { Collection, ImportSpecifier } from 'jscodeshift';
 
-const allowedTypesImports = ['NangoSync', 'NangoAction', 'ActionError', 'ProxyConfiguration'];
+const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];
 const batchMethods = ['batchSave', 'batchUpdate', 'batchDelete'];
+
+// Global set to aggregate non-package import sources
+export const globalNonPackageImports = new Set<string>();
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
     const spinner = ora({ text: 'Precompiling' }).start();
@@ -58,8 +61,10 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
                 const content = await getContent({ targetFile });
+                // Aggregate non-package imports
+                extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
 
-                const transformed = transformSync({ content, sync });
+                const transformed = transformSync({ content, sync, models: parsed.models });
 
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
@@ -77,8 +82,10 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
                 const content = await getContent({ targetFile });
+                // Aggregate non-package imports
+                extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
 
-                const transformed = transformAction({ content, action });
+                const transformed = transformAction({ content, action, models: parsed.models });
 
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
@@ -97,8 +104,10 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
                 const spinner = ora({ text: `Migrating: ${fp}` }).start();
                 try {
                     const content = await getContent({ targetFile });
+                    // Aggregate non-package imports
+                    extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
 
-                    const transformed = transformOnEvents({ eventType: onEventScript[0], content });
+                    const transformed = transformOnEvents({ eventType: onEventScript[0], content, models: parsed.models });
 
                     await fs.promises.writeFile(targetFile, transformed);
                     spinner.succeed();
@@ -109,6 +118,13 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
                 }
             }
         }
+    }
+
+    // After migration, process all files with non-package imports
+    {
+        const spinner = ora({ text: 'Process helper files' }).start();
+        await processHelperFiles(fullPath);
+        spinner.succeed();
     }
 
     {
@@ -124,9 +140,9 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     }
 
     {
-        const spinner = ora({ text: 'Deleting nango.yaml and models.ts' }).start();
+        const spinner = ora({ text: 'Deleting nango.yaml' }).start();
         await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
-        await fs.promises.rm(path.join(fullPath, 'models.ts'));
+        // await fs.promises.rm(path.join(fullPath, 'models.ts'));
         spinner.succeed();
     }
 
@@ -195,7 +211,7 @@ function buildExecProp(j: typeof jscodeshift, func: any) {
 /**
  * Transforms a sync to zero-yaml
  */
-export function transformSync({ content, sync }: { content: string; sync: ParsedNangoSync }): string {
+export function transformSync({ content, sync, models }: { content: string; sync: ParsedNangoSync; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
 
@@ -268,6 +284,13 @@ export function transformSync({ content, sync }: { content: string; sync: Parsed
         if (sync.input) {
             const metadataProp = j.objectProperty(j.identifier('metadata'), j.identifier(sync.input));
             props.push(metadataProp);
+        } else {
+            // Default to z.object({}) if no input to avoid more errors on migration
+            const metadataProp = j.objectProperty(
+                j.identifier('metadata'),
+                j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression([])])
+            );
+            props.push(metadataProp);
         }
 
         // Add exec prop
@@ -291,11 +314,22 @@ export function transformSync({ content, sync }: { content: string; sync: Parsed
         }
 
         const obj = j.objectExpression(props);
-        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createSync'), [obj])));
+        const syncVar = j.variableDeclaration('const', [j.variableDeclarator(j.identifier('sync'), j.callExpression(j.identifier('createSync'), [obj]))]);
+        const nangoType = createNangoLocalType({ j, name: 'NangoSyncLocal', variable: 'sync' });
+        const exportDefault = j.exportDefaultDeclaration(j.identifier('sync'));
+        path.replace(syncVar, nangoType, exportDefault);
+    });
+
+    // Replace all type references to NangoAction with new type Nango
+    root.find(j.TSTypeReference).forEach((path) => {
+        if (path.node.typeName.type === 'Identifier' && path.node.typeName.name === 'NangoSync') {
+            path.node.typeName.name = 'NangoSyncLocal';
+        }
     });
 
     // Find all used Types in the file that might be available in "nango"
-    reImportTypes({ root, j, usedModels: sync.usedModels });
+    const allModelNames = Array.from(models.keys());
+    reImportTypes({ root, j, usedModels: allModelNames });
 
     const transformed = root.toSource();
 
@@ -305,7 +339,7 @@ export function transformSync({ content, sync }: { content: string; sync: Parsed
 /**
  * Transforms an action to zero-yaml
  */
-export function transformAction({ content, action }: { content: string; action: ParsedNangoAction }): string {
+export function transformAction({ content, action, models }: { content: string; action: ParsedNangoAction; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
 
@@ -372,11 +406,22 @@ export function transformAction({ content, action }: { content: string; action: 
 
         props.push(execProp);
         const obj = j.objectExpression(props);
-        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createAction'), [obj])));
+        const actionVar = j.variableDeclaration('const', [j.variableDeclarator(j.identifier('action'), j.callExpression(j.identifier('createAction'), [obj]))]);
+        const nangoType = createNangoLocalType({ j, name: 'NangoActionLocal', variable: 'action' });
+        const exportDefault = j.exportDefaultDeclaration(j.identifier('action'));
+        path.replace(actionVar, nangoType, exportDefault);
+    });
+
+    // Replace all type references to NangoAction with new type Nango
+    root.find(j.TSTypeReference).forEach((path) => {
+        if (path.node.typeName.type === 'Identifier' && path.node.typeName.name === 'NangoAction') {
+            path.node.typeName.name = 'NangoActionLocal';
+        }
     });
 
     // Find all used Types in the file that might be available in "nango"
-    reImportTypes({ root, j, usedModels: action.usedModels });
+    const allModelNames = Array.from(models.keys());
+    reImportTypes({ root, j, usedModels: allModelNames });
 
     const transformed = root.toSource();
     return transformed;
@@ -385,7 +430,7 @@ export function transformAction({ content, action }: { content: string; action: 
 /**
  * Transforms an on-event script to zero-yaml
  */
-export function transformOnEvents({ content, eventType }: { content: string; eventType: string }): string {
+export function transformOnEvents({ content, eventType, models }: { content: string; eventType: string; models: Map<string, NangoModel> }): string {
     const j = jscodeshift.withParser('ts');
     const root = j(content);
 
@@ -417,7 +462,8 @@ export function transformOnEvents({ content, eventType }: { content: string; eve
     });
 
     // Find all used Types in the file that might be available in "nango"
-    reImportTypes({ root, j, usedModels: [] });
+    const allModelNames = Array.from(models.keys());
+    reImportTypes({ root, j, usedModels: allModelNames });
 
     const transformed = root.toSource();
     return transformed;
@@ -441,36 +487,89 @@ function removeLegacyImports({ root, j }: { root: Collection; j: jscodeshift.JSC
 function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshift.JSCodeshift; usedModels: string[] }) {
     // Find all used allowedTypesImports in the file
     const usedAllowedTypes = new Set<string>();
+    const usedModelTypes = new Set<string>();
     root.find(j.TSTypeReference).forEach((path) => {
         if (path.node.typeName.type === 'Identifier') {
             const name = path.node.typeName.name;
             if (allowedTypesImports.includes(name)) {
                 usedAllowedTypes.add(name);
+            } else if (usedModels.includes(name)) {
+                usedModelTypes.add(name);
             }
         }
     });
+
+    // Also find implicit model usages in object properties (e.g., { models: { Input: InputSchema } })
+    root.find(j.ObjectProperty).forEach((path) => {
+        if (path.node.value.type === 'Identifier' && usedModels.includes(path.node.value.name)) {
+            usedModelTypes.add(path.node.value.name);
+        }
+    });
+
+    // Also find generic type arguments in CallExpression and NewExpression (e.g., nango.ActionError<ActionErrorResponse>)
+    function scanTypeArguments(node: any) {
+        const typeArgs = node.typeArguments || node.typeParameters;
+        if (typeArgs && typeArgs.params) {
+            typeArgs.params.forEach((param: any) => {
+                if (param.type === 'TSTypeReference' && param.typeName.type === 'Identifier') {
+                    const name = param.typeName.name;
+                    if (allowedTypesImports.includes(name)) {
+                        usedAllowedTypes.add(name);
+                    } else if (usedModels.includes(name)) {
+                        usedModelTypes.add(name);
+                    }
+                }
+            });
+        }
+    }
+    root.find(j.CallExpression).forEach((path) => scanTypeArguments(path.node));
+    root.find(j.NewExpression).forEach((path) => scanTypeArguments(path.node));
+
+    // Fallback: scan for all Identifier nodes that match a model name
+    root.find(j.Identifier).forEach((path) => {
+        const name = path.node.name;
+        if (usedModels.includes(name)) {
+            usedModelTypes.add(name);
+        }
+    });
+
+    // Prepare imports
+    const importDecls = [];
     if (usedAllowedTypes.size > 0) {
         const importTypeDecl = j.importDeclaration(
             Array.from(usedAllowedTypes).map((type) => j.importSpecifier(j.identifier(type))),
             j.literal('nango')
         );
         importTypeDecl.importKind = 'type';
-        // Insert after all other imports
-        const body = root.get().node.program.body;
-        let lastImportIdx = -1;
-        for (let i = 0; i < body.length; i++) {
-            if (body[i].type === 'ImportDeclaration') {
-                lastImportIdx = i;
-            }
-        }
-        body.splice(lastImportIdx + 1, 0, importTypeDecl);
+        importDecls.push(importTypeDecl);
+    }
+    if (usedModelTypes.size > 0) {
+        importDecls.push(
+            j.importDeclaration([...Array.from(usedModelTypes.values()).map((name) => j.importSpecifier(j.identifier(name)))], j.literal('../../models.js'))
+        );
     }
 
-    // Import models
-    if (usedModels.length > 0) {
-        root.get().node.program.body.unshift(
-            j.importDeclaration([...usedModels.map((name) => j.importSpecifier(j.identifier(name)))], j.literal('../../models'))
-        );
+    // Import z if any z.* is used (e.g., z.never())
+    const usesZ = root.find(j.Identifier, { name: 'z' }).size() > 0;
+    const hasZodImport =
+        root
+            .find(j.ImportDeclaration)
+            .filter((path) => path.node.source.value === 'zod')
+            .size() > 0;
+    if (usesZ && !hasZodImport) {
+        importDecls.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+    }
+
+    // Insert all at once, in order, after the last import
+    if (importDecls.length > 0) {
+        const body = root.get().node.program.body;
+        let insertIdx = 0;
+        for (let i = 0; i < body.length; i++) {
+            if (body[i].type === 'ImportDeclaration') {
+                insertIdx = i + 1;
+            }
+        }
+        body.splice(insertIdx, 0, ...importDecls);
     }
 }
 
@@ -841,4 +940,152 @@ function topoSortModels(modelNames: string[], models: Map<string, NangoModel>): 
     }
 
     return result;
+}
+
+// export type NangoSyncLocal = Parameters<(typeof sync)['params']['exec']>[0]
+function createNangoLocalType({ j, name, variable }: { j: jscodeshift.JSCodeshift; name: string; variable: string }): jscodeshift.ExportNamedDeclaration {
+    return j.exportNamedDeclaration(
+        j.tsTypeAliasDeclaration(
+            j.identifier(name),
+            j.tsIndexedAccessType(
+                j.tsTypeReference(
+                    j.identifier('Parameters'),
+                    j.tsTypeParameterInstantiation([
+                        j.tsIndexedAccessType(
+                            j.tsIndexedAccessType(j.tsTypeQuery(j.identifier(variable)), j.tsLiteralType(j.stringLiteral('params'))),
+                            j.tsLiteralType(j.stringLiteral('exec'))
+                        )
+                    ])
+                ),
+                j.tsLiteralType(j.numericLiteral(0))
+            )
+        )
+    );
+}
+
+// Helper to extract non-package import sources from file content
+function extractNonPackageImports(content: string): string[] {
+    // Use a simple regex to match import ... from '...';
+    // This will not match dynamic imports or uncommon patterns, but is sufficient for most TS/JS files
+    const importRegex = /import\s+(?:[^'";]+\s+from\s+)?["']([^"']+)["']/g;
+    const result: string[] = [];
+    let match;
+    while ((match = importRegex.exec(content)) !== null) {
+        const source = match[1];
+        // Ensure source is a string before calling startsWith
+        if (typeof source === 'string' && source.startsWith('.')) {
+            result.push(source);
+        }
+    }
+    return result;
+}
+
+// Helper: For each file in globalNonPackageImports, update model imports for NangoSync/NangoAction
+async function processHelperFiles(fullPath: string) {
+    const fsPromises = fs.promises;
+    console.log({ globalNonPackageImports });
+    const files = Array.from(globalNonPackageImports);
+    for (const relImport of files) {
+        if (relImport.endsWith('/models') && relImport.endsWith('/models.js') && relImport.endsWith('/models.ts')) {
+            continue;
+        }
+
+        // Try both .ts and .js extensions
+        let filePath = relImport;
+        if (filePath.endsWith('.js')) {
+            filePath = filePath.replace('.js', '.ts');
+        } else if (!filePath.endsWith('.ts')) {
+            filePath += '.ts';
+        }
+
+        // Resolve relative to fullPath
+        const absPath = path.resolve(fullPath, filePath);
+        try {
+            await fsPromises.access(absPath, fs.constants.F_OK);
+        } catch {
+            console.error('File does not exist', absPath);
+            continue; // File does not exist
+        }
+
+        console.log('Processing', absPath);
+
+        const content = await fsPromises.readFile(absPath, 'utf-8');
+        const { root, changed } = processHelperFile({ content });
+
+        if (changed) {
+            await fsPromises.writeFile(absPath, root.toSource());
+        }
+    }
+}
+
+export function processHelperFile({ content }: { content: string }) {
+    const j = jscodeshift.withParser('ts');
+    const root = j(content);
+    let changed = false;
+    // Find import from models
+    root.find(j.ImportDeclaration).forEach((pathNode) => {
+        const source = pathNode.node.source.value;
+        if (typeof source !== 'string') {
+            return;
+        }
+
+        // Find NangoSync/NangoAction specifiers (only ImportSpecifier)
+        const specifiers = pathNode.node.specifiers || [];
+        const nangoSpecifiers = specifiers.filter((s) => isImportSpecifier(s) && (s.imported.name === 'NangoSync' || s.imported.name === 'NangoAction'));
+        if (nangoSpecifiers.length === 0) {
+            return;
+        }
+
+        // Remove NangoSync/NangoAction from models import
+        pathNode.node.specifiers = specifiers.filter((s) => !(isImportSpecifier(s) && (s.imported.name === 'NangoSync' || s.imported.name === 'NangoAction')));
+        changed = true;
+        // Add or update import from 'nango'
+        const nangoImport = root.find(j.ImportDeclaration, { source: { value: 'nango' } });
+        if (nangoImport.size() > 0) {
+            // Add to existing import
+            nangoImport.get(0).node.specifiers = [
+                ...nangoImport.get(0).node.specifiers,
+                ...nangoSpecifiers
+                    .filter(isImportSpecifier)
+                    .filter((s) => typeof s.imported.name === 'string')
+                    .map((s) => {
+                        const name = s.imported.name as string;
+                        return j.importSpecifier(j.identifier(name));
+                    })
+            ];
+        } else {
+            // Add new import
+            root.get().node.program.body.unshift(
+                j.importDeclaration(
+                    nangoSpecifiers
+                        .filter(isImportSpecifier)
+                        .filter((s) => typeof s.imported.name === 'string')
+                        .map((s) => {
+                            const name = s.imported.name as string;
+                            return j.importSpecifier(j.identifier(name));
+                        }),
+                    j.literal('nango')
+                )
+            );
+        }
+        // If models import is now empty, remove it
+        if (!pathNode.node.specifiers || pathNode.node.specifiers.length === 0) {
+            j(pathNode).remove();
+        }
+    });
+
+    return { root, changed };
+}
+
+// Helper type guard for ImportSpecifier
+function isImportSpecifier(s: unknown): s is ImportSpecifier {
+    return (
+        typeof s === 'object' &&
+        s !== null &&
+        'type' in s &&
+        (s as any).type === 'ImportSpecifier' &&
+        'imported' in s &&
+        (s as any).imported &&
+        (s as any).imported.type === 'Identifier'
+    );
 }
