@@ -19,4 +19,5 @@ export type GetPublicProvider = Endpoint<{
     Success: {
         data: ApiProvider;
     };
+    Headers: { 'accept-language'?: string | undefined };
 }>;

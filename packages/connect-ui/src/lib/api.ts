@@ -17,7 +17,8 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
         (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
         (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
-        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
+        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
+        (TEndpoint['Headers'] extends never ? { headers?: undefined } : { headers: TEndpoint['Headers'] }),
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(useGlobal.getState().apiURL);
@@ -41,6 +42,14 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     const headers = new Headers();
     if (opts?.body) {
         headers.append('content-type', 'application/json');
+    }
+
+    if (opts?.headers) {
+        for (const [key, value] of Object.entries(opts.headers)) {
+            if (typeof value === 'string') {
+                headers.append(key, value);
+            }
+        }
     }
 
     const sessionToken = useGlobal.getState().sessionToken;
@@ -89,6 +98,6 @@ export async function getIntegrations() {
     return await fetchApi<GetPublicListIntegrations>('/integrations', {});
 }
 
-export async function getProvider(params: GetPublicProvider['Params']) {
-    return await fetchApi<GetPublicProvider>(`/providers/:provider`, { params });
+export async function getProvider(params: GetPublicProvider['Params'], lang?: string) {
+    return await fetchApi<GetPublicProvider>(`/providers/:provider`, { params, headers: { 'accept-language': lang } });
 }
