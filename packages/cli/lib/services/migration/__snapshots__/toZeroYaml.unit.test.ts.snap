@@ -1,22 +1,70 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`transformAction > should transform an action 1`] = `
+exports[`generateModelsTs > should generate models.ts 1`] = `
 "import { z } from "zod";
-import { createAction } from "nango";
-import type { NangoAction } from "nango";
 
-const IssueInput = z.object({
+export const Model = z.object({
+  id: z.string(),
+  arrTsType: z.string().array(),
+  null: z.nullable(),
+  bool: z.boolean(),
+  any: z.any(),
+  opt: z.number().optional(),
+  ref: z.literal("Foo").optional(),
+  union: z.union([z.literal("literal1"), z.literal("literal2")]),
+  array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
+
+  obj: z.object({
+    nes: z.literal("ted")
+  }),
+
+  dynamicObj: z.object({}).catchall(z.literal("date")),
+  union2: z.union([Model, Model.array()]),
+  dateOrNull: z.date().optional()
+});
+
+export type Model = z.infer<typeof Model>;
+
+export const ModelDynamic = z.object({
+  id: z.string()
+}).catchall(z.string());
+
+export type ModelDynamic = z.infer<typeof ModelDynamic>;
+
+export const Metadata = z.object({
+  foo: z.literal("bar"),
+  model: Model
+});
+
+export type Metadata = z.infer<typeof Metadata>;
+
+export const IssueInput = z.object({
   title: z.string(),
   body: z.string()
 });
 
-const IssueOutput = z.object({
+export type IssueInput = z.infer<typeof IssueInput>;
+
+export const IssueOutput = z.object({
   id: z.string(),
   status: z.string()
 });
 
-type IssueInput = z.infer<typeof IssueInput>;
-type IssueOutput = z.infer<typeof IssueOutput>;
+export type IssueOutput = z.infer<typeof IssueOutput>;
+
+export const models = {
+  Model: Model,
+  ModelDynamic: ModelDynamic,
+  Metadata: Metadata,
+  IssueInput: IssueInput,
+  IssueOutput: IssueOutput
+};"
+`;
+
+exports[`transformAction > should transform an action 1`] = `
+"import { IssueInput, IssueOutput } from "../../models";
+import { createAction } from "nango";
+import type { NangoAction } from "nango";
 
 export default createAction({
   description: "Test action",
@@ -60,42 +108,9 @@ export default createOnEvent({
 `;
 
 exports[`transformSync > should transform a sync 1`] = `
-"import { z } from "zod";
+"import { Metadata, Model, ModelDynamic } from "../../models";
 import { createSync } from "nango";
-import type { NangoSync } from "nango";
-
-const Model = z.object({
-  id: z.string(),
-  arrTsType: z.string().array(),
-  null: z.nullable(),
-  bool: z.boolean(),
-  any: z.any(),
-  opt: z.number().optional(),
-  ref: z.literal("Foo").optional(),
-  union: z.union([z.literal("literal1"), z.literal("literal2")]),
-  array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
-
-  obj: z.object({
-    nes: z.literal("ted")
-  }),
-
-  dynamicObj: z.object({}).catchall(z.literal("date")),
-  union2: z.union([Model, Model.array()]),
-  dateOrNull: z.date().optional()
-});
-
-const Metadata = z.object({
-  foo: z.literal("bar"),
-  model: Model
-});
-
-const ModelDynamic = z.object({
-  id: z.string()
-}).catchall(z.string());
-
-type Model = z.infer<typeof Model>;
-type Metadata = z.infer<typeof Metadata>;
-type ModelDynamic = z.infer<typeof ModelDynamic>;
+import type { ProxyConfiguration, NangoSync } from "nango";
 
 export default createSync({
   description: "Test sync",
@@ -132,6 +147,10 @@ export default createSync({
   onWebhook: async (nango, payload) => {
     await nango.log('Received webhook', payload);
     await nango.batchSave([{}], 'Model');
+    const proxyConfig: ProxyConfiguration = {
+      endpoint: '/issues',
+      retries: 15,
+    };
   }
 });
 
