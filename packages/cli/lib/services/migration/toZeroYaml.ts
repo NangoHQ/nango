@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import chalk from 'chalk';
+import { glob } from 'glob';
 import jscodeshift from 'jscodeshift';
 import ora from 'ora';
 
@@ -18,9 +19,6 @@ import type { Collection, ImportSpecifier } from 'jscodeshift';
 
 const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];
 const batchMethods = ['batchSave', 'batchUpdate', 'batchDelete'];
-
-// Global set to aggregate non-package import sources
-export const globalNonPackageImports = new Set<string>();
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
     const spinner = ora({ text: 'Precompiling' }).start();
@@ -53,6 +51,7 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
         spinner.succeed();
     }
 
+    console.log('Processing scripts');
     for (const integration of parsed.integrations) {
         for (const sync of integration.syncs) {
             const fp = path.join(integration.providerConfigKey, 'syncs', `${sync.name}.ts`);
@@ -61,11 +60,7 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
                 const content = await getContent({ targetFile });
-                // Aggregate non-package imports
-                extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
-
                 const transformed = transformSync({ content, sync, models: parsed.models });
-
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
             } catch (err) {
@@ -82,11 +77,7 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
                 const content = await getContent({ targetFile });
-                // Aggregate non-package imports
-                extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
-
                 const transformed = transformAction({ content, action, models: parsed.models });
-
                 await fs.promises.writeFile(targetFile, transformed);
                 spinner.succeed();
             } catch (err) {
@@ -104,11 +95,7 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
                 const spinner = ora({ text: `Migrating: ${fp}` }).start();
                 try {
                     const content = await getContent({ targetFile });
-                    // Aggregate non-package imports
-                    extractNonPackageImports(content).forEach((src) => globalNonPackageImports.add(src));
-
                     const transformed = transformOnEvents({ eventType: onEventScript[0], content, models: parsed.models });
-
                     await fs.promises.writeFile(targetFile, transformed);
                     spinner.succeed();
                 } catch (err) {
@@ -120,11 +107,10 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
         }
     }
 
-    // After migration, process all files with non-package imports
+    // After migration, process all remaining .ts files in fullPath
     {
-        const spinner = ora({ text: 'Process helper files' }).start();
-        await processHelperFiles(fullPath);
-        spinner.succeed();
+        console.log('Processing helper files');
+        await processHelperFiles({ fullPath, parsed });
     }
 
     {
@@ -184,7 +170,7 @@ async function runNpmInstall(fullPath: string): Promise<void> {
 /**
  * Helper to remove type annotations from parameters and build an exec property for jscodeshift AST nodes
  */
-function buildExecProp(j: typeof jscodeshift, func: any) {
+function buildExecProp(j: typeof jscodeshift, func: any, execReturnType?: string) {
     let params;
     let bodyNode;
     let isAsync = false;
@@ -205,6 +191,12 @@ function buildExecProp(j: typeof jscodeshift, func: any) {
     params[0].extra = { ...(params[0].extra || {}), parenthesized: true };
     const execArrow = j.arrowFunctionExpression(params, bodyNode);
     execArrow.async = isAsync;
+    // Add return type if provided
+    if (execReturnType) {
+        execArrow.returnType = j.tsTypeAnnotation(
+            j.tsTypeReference(j.identifier('Promise'), j.tsTypeParameterInstantiation([j.tsTypeReference(j.identifier(execReturnType))]))
+        );
+    }
     return j.objectProperty(j.identifier('exec'), execArrow);
 }
 
@@ -359,7 +351,15 @@ export function transformAction({ content, action, models }: { content: string; 
             return;
         }
 
-        const execProp = buildExecProp(j, func);
+        // Determine output type for exec return type
+        let outputType: string | undefined = undefined;
+        if (Array.isArray(action.output) && action.output.length > 0 && typeof action.output[0] === 'string') {
+            outputType = action.output[0];
+        } else if (typeof action.output === 'string') {
+            outputType = action.output;
+        }
+
+        const execProp = buildExecProp(j, func, outputType);
 
         // Build createAction object
         const descriptionProp = j.objectProperty(j.identifier('description'), j.stringLiteral(action.description));
@@ -489,14 +489,30 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
     const usedAllowedTypes = new Set<string>();
     const usedModelTypes = new Set<string>();
     root.find(j.TSTypeReference).forEach((path) => {
-        if (path.node.typeName.type === 'Identifier') {
-            const name = path.node.typeName.name;
+        if (path.node.typeName.type !== 'Identifier') {
+            return;
+        }
+        const name = path.node.typeName.name;
+        if (allowedTypesImports.includes(name)) {
+            usedAllowedTypes.add(name);
+        } else if (usedModels.includes(name)) {
+            usedModelTypes.add(name);
+        }
+    });
+    // Also find types used in interface extends (e.g., interface X extends ProxyConfiguration)
+    root.find(j.TSInterfaceDeclaration).forEach((path) => {
+        if (!path.node.extends) {
+            return;
+        }
+        path.node.extends.forEach((ext) => {
+            if (ext.expression.type !== 'Identifier') {
+                return;
+            }
+            const name = ext.expression.name;
             if (allowedTypesImports.includes(name)) {
                 usedAllowedTypes.add(name);
-            } else if (usedModels.includes(name)) {
-                usedModelTypes.add(name);
             }
-        }
+        });
     });
 
     // Also find implicit model usages in object properties (e.g., { models: { Input: InputSchema } })
@@ -509,18 +525,19 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
     // Also find generic type arguments in CallExpression and NewExpression (e.g., nango.ActionError<ActionErrorResponse>)
     function scanTypeArguments(node: any) {
         const typeArgs = node.typeArguments || node.typeParameters;
-        if (typeArgs && typeArgs.params) {
-            typeArgs.params.forEach((param: any) => {
-                if (param.type === 'TSTypeReference' && param.typeName.type === 'Identifier') {
-                    const name = param.typeName.name;
-                    if (allowedTypesImports.includes(name)) {
-                        usedAllowedTypes.add(name);
-                    } else if (usedModels.includes(name)) {
-                        usedModelTypes.add(name);
-                    }
-                }
-            });
+        if (!typeArgs || !typeArgs.params) {
+            return;
         }
+        typeArgs.params.forEach((param: any) => {
+            if (param.type === 'TSTypeReference' && param.typeName.type === 'Identifier') {
+                const name = param.typeName.name;
+                if (allowedTypesImports.includes(name)) {
+                    usedAllowedTypes.add(name);
+                } else if (usedModels.includes(name)) {
+                    usedModelTypes.add(name);
+                }
+            }
+        });
     }
     root.find(j.CallExpression).forEach((path) => scanTypeArguments(path.node));
     root.find(j.NewExpression).forEach((path) => scanTypeArguments(path.node));
@@ -963,62 +980,57 @@ function createNangoLocalType({ j, name, variable }: { j: jscodeshift.JSCodeshif
     );
 }
 
-// Helper to extract non-package import sources from file content
-function extractNonPackageImports(content: string): string[] {
-    // Use a simple regex to match import ... from '...';
-    // This will not match dynamic imports or uncommon patterns, but is sufficient for most TS/JS files
-    const importRegex = /import\s+(?:[^'";]+\s+from\s+)?["']([^"']+)["']/g;
-    const result: string[] = [];
-    let match;
-    while ((match = importRegex.exec(content)) !== null) {
-        const source = match[1];
-        // Ensure source is a string before calling startsWith
-        if (typeof source === 'string' && source.startsWith('.')) {
-            result.push(source);
+// Helper: For each file in the list, update model imports for NangoSync/NangoAction
+async function processHelperFiles({ fullPath, parsed }: { fullPath: string; parsed: NangoYamlParsed }) {
+    const files = await glob('**/*.ts', {
+        cwd: fullPath,
+        ignore: ['**/.nango/**', '**/node_modules/**', '**/dist/**', '**/build/**'],
+        absolute: true
+    });
+
+    // Build list of integration files to process
+    const integrationFiles = new Set<string>();
+    for (const integration of parsed.integrations) {
+        for (const sync of integration.syncs) {
+            integrationFiles.add(path.join(fullPath, integration.providerConfigKey, 'syncs', `${sync.name}.ts`));
+        }
+        for (const action of integration.actions) {
+            integrationFiles.add(path.join(fullPath, integration.providerConfigKey, 'actions', `${action.name}.ts`));
+        }
+        for (const [_, eventNames] of Object.entries(integration.onEventScripts)) {
+            for (const name of eventNames) {
+                integrationFiles.add(path.join(fullPath, integration.providerConfigKey, 'on-events', `${name}.ts`));
+            }
         }
     }
-    return result;
-}
 
-// Helper: For each file in globalNonPackageImports, update model imports for NangoSync/NangoAction
-async function processHelperFiles(fullPath: string) {
-    const fsPromises = fs.promises;
-    console.log({ globalNonPackageImports });
-    const files = Array.from(globalNonPackageImports);
-    for (const relImport of files) {
-        if (relImport.endsWith('/models') && relImport.endsWith('/models.js') && relImport.endsWith('/models.ts')) {
+    // Filter out integration files from the glob list since they were already processed
+    for (const absPath of files) {
+        if (integrationFiles.has(absPath)) {
             continue;
         }
 
-        // Try both .ts and .js extensions
-        let filePath = relImport;
-        if (filePath.endsWith('.js')) {
-            filePath = filePath.replace('.js', '.ts');
-        } else if (!filePath.endsWith('.ts')) {
-            filePath += '.ts';
-        }
-
-        // Resolve relative to fullPath
-        const absPath = path.resolve(fullPath, filePath);
         try {
-            await fsPromises.access(absPath, fs.constants.F_OK);
+            await fs.promises.access(absPath, fs.constants.F_OK);
         } catch {
             console.error('File does not exist', absPath);
             continue; // File does not exist
         }
 
-        console.log('Processing', absPath);
+        const spinner = ora({ text: `Migrating ${absPath.replace(fullPath, '')}` }).start();
 
-        const content = await fsPromises.readFile(absPath, 'utf-8');
+        const content = await fs.promises.readFile(absPath, 'utf-8');
         const { root, changed } = processHelperFile({ content });
 
         if (changed) {
-            await fsPromises.writeFile(absPath, root.toSource());
+            await fs.promises.writeFile(absPath, root.toSource());
         }
+        spinner.succeed();
     }
 }
 
 export function processHelperFile({ content }: { content: string }) {
+    const allowedTypesImportsHelper = [...allowedTypesImports, 'NangoAction', 'NangoSync'];
     const j = jscodeshift.withParser('ts');
     const root = j(content);
     let changed = false;
@@ -1031,13 +1043,13 @@ export function processHelperFile({ content }: { content: string }) {
 
         // Find NangoSync/NangoAction specifiers (only ImportSpecifier)
         const specifiers = pathNode.node.specifiers || [];
-        const nangoSpecifiers = specifiers.filter((s) => isImportSpecifier(s) && (s.imported.name === 'NangoSync' || s.imported.name === 'NangoAction'));
+        const nangoSpecifiers = specifiers.filter((s) => isImportSpecifier(s) && allowedTypesImportsHelper.includes(s.imported.name as string));
         if (nangoSpecifiers.length === 0) {
             return;
         }
 
         // Remove NangoSync/NangoAction from models import
-        pathNode.node.specifiers = specifiers.filter((s) => !(isImportSpecifier(s) && (s.imported.name === 'NangoSync' || s.imported.name === 'NangoAction')));
+        pathNode.node.specifiers = specifiers.filter((s) => !(isImportSpecifier(s) && allowedTypesImportsHelper.includes(s.imported.name as string)));
         changed = true;
         // Add or update import from 'nango'
         const nangoImport = root.find(j.ImportDeclaration, { source: { value: 'nango' } });

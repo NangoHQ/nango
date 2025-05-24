@@ -69,7 +69,7 @@ export const models = {
 `;
 
 exports[`processHelperFiles > should process helper files 1`] = `
-"import { NangoAction, NangoSync } from "nango";
+"import { NangoAction, NangoSync, ProxyConfiguration } from "nango";
 import type { Model } from "../models";
 
 function foobar(nango: NangoSync) {
@@ -96,7 +96,7 @@ const action = createAction({
   output: IssueOutput,
   scopes: ["repo"],
 
-  exec: async (nango, input) => {
+  exec: async (nango, input): Promise<IssueOutput> => {
     await nango.log("✅ hello from action");
     const output: IssueOutput = {
       id: '123',
@@ -127,10 +127,15 @@ export default createOnEvent({
 });"
 `;
 
-exports[`transformSync > should transform a sync (different values 1`] = `
+exports[`transformSync > should transform a sync (different values) 1`] = `
 "import { createSync } from "nango";
+import type { ProxyConfiguration } from "nango";
 import { Model } from "../../models.js";
 import { z } from "zod";
+
+interface Config extends ProxyConfiguration {
+  params: Record<string, string | number>;
+}
 
 const sync = createSync({
     description: "Test sync",

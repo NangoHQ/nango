@@ -44,6 +44,8 @@ export function zodToNangoModelField(name: string, schema: z.ZodType): NangoMode
         return { name, value: values, tsType: true, union: true, optional };
     } else if (isZodNever(schema)) {
         return { name, value: 'never', tsType: true };
+    } else if (isZodOptional(schema)) {
+        return zodToNangoModelField(name, schema._def.innerType);
     } else {
         throw new Error(`not handled, ${JSON.stringify(schema)}`);
     }
@@ -103,4 +105,8 @@ function isZodDate(schema: z.ZodTypeAny): schema is z.ZodDate {
 
 function isZodNever(schema: z.ZodTypeAny): schema is z.ZodNever {
     return schema.constructor.name === 'ZodNever';
+}
+
+function isZodOptional(schema: z.ZodTypeAny): schema is z.ZodOptional<any> {
+    return schema.constructor.name === 'ZodOptional';
 }

@@ -4,19 +4,20 @@ import path from 'node:path';
 import { zodToNangoModelField } from './zodToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
+import { tsToJsPath } from './compile.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'on-events'];
-const exportRegex = /^.*\.\.\.require\(['"](.+)['"]\),?$/gm;
+const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
 
 export async function rebuildParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
-    const indexPath = path.join(fullPath, 'build', 'index.cjs');
+    const indexPath = path.join(fullPath, 'index.ts');
     const indexContent = await fs.readFile(indexPath, 'utf-8');
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
-    printDebug('Rebuilding parsed from ts files', debug);
+    printDebug('Rebuilding parsed from js files', debug);
 
     const matched = indexContent.matchAll(exportRegex);
     let num = 0;
@@ -29,7 +30,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
 
         num += 1;
 
-        const modulePath = path.join(fullPath, 'build', filePath);
+        const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
         const moduleContent = await import(modulePath);
         if (!moduleContent.default || !moduleContent.default.default) {
             return Err(new Error(`Script should have a default export ${modulePath}`));

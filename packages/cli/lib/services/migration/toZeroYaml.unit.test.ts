@@ -173,8 +173,12 @@ function foobar(nango: NangoSync) {
         expect(result).toMatchSnapshot();
     });
 
-    it('should transform a sync (different values', () => {
+    it('should transform a sync (different values)', () => {
         const ts = `import type { Model, NangoSync } from "../../models";
+
+interface Config extends ProxyConfiguration {
+  params: Record<string, string | number>;
+}
 export default async function fetchData(nango: NangoSync) {
     await nango.log('hello');
     await nango.batchSave<Model>([{
@@ -259,7 +263,7 @@ export default async function onEvent(nango: NangoSync): Promise<void> {
 describe('processHelperFiles', () => {
     it('should process helper files', () => {
         const result = zeroYaml.processHelperFile({
-            content: `import type { NangoAction, NangoSync, Model } from "../models";
+            content: `import type { NangoAction, NangoSync, Model, ProxyConfiguration } from "../models";
 
 function foobar(nango: NangoSync) {
     nango.batchSave<Model>([{}], 'Model');

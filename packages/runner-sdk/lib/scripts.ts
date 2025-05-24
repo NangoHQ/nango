@@ -1,6 +1,7 @@
 import type { NangoActionBase } from './action.js';
 import type { NangoSyncBase } from './sync.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
+import type { MaybePromise } from 'rollup';
 import type { z } from 'zod';
 
 export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
@@ -15,8 +16,8 @@ export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<an
     scopes?: string[];
     metadata?: TMetadata;
     webhookSubscriptions?: string[];
-    exec: (nango: NangoSyncBase<TModels, TMetadata>) => Promise<void> | void;
-    onWebhook?: (nango: NangoSyncBase<TModels, TMetadata>, payload: any) => Promise<void> | void;
+    exec: (nango: NangoSyncBase<TModels, TMetadata>) => MaybePromise<void>;
+    onWebhook?: (nango: NangoSyncBase<TModels, TMetadata>, payload: any) => MaybePromise<void>;
 }
 export interface CreateSyncResponse<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
     type: 'sync';
@@ -26,9 +27,7 @@ export interface CreateSyncResponse<TModels extends Record<string, Zod.ZodObject
 export interface CreateActionProps<
     TInput extends Zod.ZodTypeAny,
     TOutput extends Zod.ZodTypeAny,
-    TMetadata extends Zod.ZodObject<any> | undefined = undefined,
-    TOutputInferred = z.infer<TOutput>,
-    TInputInferred = z.infer<TInput>
+    TMetadata extends Zod.ZodObject<any> | undefined = undefined
 > {
     version?: string;
     description: string;
@@ -37,7 +36,7 @@ export interface CreateActionProps<
     output: TOutput;
     metadata?: TMetadata;
     scopes?: string[];
-    exec: (nango: NangoActionBase<TMetadata>, input: TInputInferred) => Promise<TOutputInferred> | TOutputInferred;
+    exec: (nango: NangoActionBase<TMetadata>, input: z.infer<TInput>) => MaybePromise<z.infer<TOutput>>;
 }
 export interface CreateActionResponse<
     TInput extends Zod.ZodTypeAny,
@@ -53,7 +52,7 @@ export interface CreateOnEventProps<TMetadata extends Zod.ZodObject<any> | undef
     description: string;
     event: 'post-connection-creation' | 'pre-connection-deletion';
     metadata?: TMetadata;
-    exec: (nango: NangoActionBase<TMetadata>) => Promise<void> | void;
+    exec: (nango: NangoActionBase<TMetadata>) => MaybePromise<void>;
 }
 export interface CreateOnEventResponse<TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
     type: 'on-event';
@@ -68,13 +67,9 @@ export function createSync<TModels extends Record<string, Zod.ZodObject<any>>, T
     return { type: 'sync', params };
 }
 
-export function createAction<
-    TInput extends Zod.ZodTypeAny,
-    TOutput extends Zod.ZodTypeAny,
-    TMetadata extends Zod.ZodObject<any> | undefined = undefined,
-    TOutputInferred = z.infer<TOutput>,
-    TInputInferred = z.infer<TInput>
->(params: CreateActionProps<TInput, TOutput, TMetadata, TOutputInferred, TInputInferred>): CreateActionResponse<TInput, TOutput, TMetadata> {
+export function createAction<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends Zod.ZodObject<any> | undefined = undefined>(
+    params: CreateActionProps<TInput, TOutput, TMetadata>
+): CreateActionResponse<TInput, TOutput, TMetadata> {
     return { type: 'action', params };
 }
 

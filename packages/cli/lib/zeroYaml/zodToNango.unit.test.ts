@@ -5,6 +5,7 @@ import { zodToNangoModelField } from './zodToNango.js';
 
 describe('zodToNango', () => {
     it('should transform stuff', () => {
+        const ref = z.object({ id: z.string() });
         expect(
             zodToNangoModelField(
                 'test',
@@ -18,7 +19,11 @@ describe('zodToNango', () => {
                     obj: z.object({ bar: z.string() }),
                     union: z.union([z.string(), z.boolean()]),
                     any: z.any(),
-                    reco: z.record(z.string(), z.date())
+                    reco: z.record(z.string(), z.date()),
+                    opt: z.any().optional(),
+                    ref: ref
+                    // Not supported
+                    // lazy: z.lazy(() => ref)
                 })
             )
         ).toStrictEqual({
@@ -59,6 +64,12 @@ describe('zodToNango', () => {
                     name: 'reco',
                     optional: false,
                     value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'date' }]
+                },
+                { name: 'opt', optional: true, tsType: true, value: 'any' },
+                {
+                    name: 'ref',
+                    optional: false,
+                    value: [{ name: 'id', optional: false, tsType: true, value: 'string' }]
                 }
             ]
         });

@@ -43,7 +43,7 @@ const tsconfig: ts.CompilerOptions = {
 };
 
 export async function compileAll({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<boolean>> {
-    const spinner = ora({ text: 'Typechecking' }).start();
+    let spinner = ora({ text: 'Typechecking' }).start();
 
     try {
         const indexTsPath = path.join(fullPath, 'index.ts');
@@ -79,11 +79,13 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return typechecked;
         }
 
-        spinner.text = `Building ${entryPoints.length} file(s)`;
+        spinner.succeed();
+        const text = `Building ${entryPoints.length} file(s)`;
+        spinner = ora({ text }).start();
         printDebug('Building', debug);
         for (const entryPoint of entryPoints) {
             const entryPointFullPath = path.join(fullPath, entryPoint);
-            spinner.text = `Building ${entryPoint}`;
+            spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
             const buildRes = await esbuild({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
@@ -93,10 +95,13 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             }
         }
 
-        spinner.text = 'Post compilation';
+        spinner.text = `${text} - Post compilation`;
         printDebug('Post compilation', debug);
         await postCompile({ fullPath });
+        spinner.text = text;
+        spinner.succeed();
 
+        spinner = ora({ text: `Exporting metadata` }).start();
         const rebuild = await rebuildParsed({ fullPath, debug });
         if (rebuild.isErr()) {
             spinner.fail(`Failed to compile metadata`);
@@ -104,6 +109,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         }
 
         generateAdditionalExports({ parsed: rebuild.value, fullPath, debug });
+        spinner.succeed();
     } catch (err) {
         console.error(err);
 
@@ -146,10 +152,10 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 }
 
 async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
-    // Determine the relative path from the project root to the entry point's directory
-    const relativeEntryPointDir = path.dirname(path.relative(projectRootPath, entryPoint));
-    const outfileName = path.basename(entryPoint, '.js');
-    const outfile = path.join(projectRootPath, 'build', relativeEntryPointDir, `${outfileName}.cjs`);
+    const rel = path.relative(projectRootPath, entryPoint);
+    // File are compiled to build/integration-type-script-name.cjs
+    // Because it's easier to manipulate the files and it's easier in S3
+    const outfile = path.join(projectRootPath, 'build', tsToJsPath(rel));
 
     // Ensure the output directory exists
     await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
@@ -157,15 +163,13 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
     const res = await build({
         entryPoints: [entryPoint],
         outfile: outfile,
-        bundle: true, // Bundle the file
-        sourcemap: true,
+        bundle: true,
+        sourcemap: 'inline',
         format: 'cjs',
         target: 'esnext',
         platform: 'node',
-        // outbase: projectRootPath, // Set outbase to project root for correct structure in build/
-        // outdir: path.join(projectRootPath, 'build'), // Output to build directory, maintaining structure
-        // outExtension: { '.js': '.cjs' }, // This is not needed when outfile is specified
         logLevel: 'error',
+        treeShaking: true,
         plugins: [
             {
                 name: 'external-npm-packages',
@@ -181,27 +185,10 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
         ],
         tsconfigRaw: {
             compilerOptions: {
-                module: 'commonjs',
-                target: 'esnext',
-                strict: true,
-                esModuleInterop: true,
-                skipLibCheck: true,
-                forceConsistentCasingInFileNames: true,
-                moduleResolution: 'node',
-                allowUnusedLabels: false,
-                allowUnreachableCode: false,
-                exactOptionalPropertyTypes: true,
-                noFallthroughCasesInSwitch: true,
-                noImplicitOverride: true,
-                noImplicitReturns: true,
-                noPropertyAccessFromIndexSignature: true,
-                noUncheckedIndexedAccess: true,
-                noUnusedLocals: true,
-                noUnusedParameters: true,
-                declaration: false,
-                sourceMap: true,
-                composite: false,
-                checkJs: false
+                ...tsconfig,
+                importsNotUsedAsValues: 'remove',
+                jsx: 'react',
+                target: 'esnext'
             }
         }
     });
@@ -227,4 +214,8 @@ async function postCompile({ fullPath }: { fullPath: string }) {
             await fs.promises.writeFile(file, code);
         })
     );
+}
+
+export function tsToJsPath(filePath: string) {
+    return filePath.replace(/^\.\//, '').replaceAll('/', '-').replaceAll('.js', '.cjs');
 }
