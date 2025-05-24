@@ -22,7 +22,7 @@ export default createAction({
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
     input: issueSchema,
-    output: z.never(),
+    output: z.void(),
 
     // Action execution
     exec: async (nango, input) => {

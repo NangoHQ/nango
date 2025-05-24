@@ -385,7 +385,7 @@ export function transformAction({ content, action, models }: { content: string; 
 
         const inputProp = j.objectProperty(
             j.identifier('input'),
-            typeof action.input === 'string' ? j.identifier(action.input) : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('never')), [])
+            typeof action.input === 'string' ? j.identifier(action.input) : j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('void')), [])
         );
         props.push(inputProp);
 
@@ -395,7 +395,7 @@ export function transformAction({ content, action, models }: { content: string; 
         } else if (typeof action.output === 'string') {
             outputProp = j.objectProperty(j.identifier('output'), j.identifier(action.output));
         } else {
-            outputProp = j.objectProperty(j.identifier('output'), j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('never')), []));
+            outputProp = j.objectProperty(j.identifier('output'), j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('void')), []));
         }
         props.push(outputProp);
 
@@ -705,10 +705,11 @@ export function generateModelsTs({ parsed }: { parsed: Pick<NangoYamlParsed, 'mo
         if (!model) {
             continue;
         }
+
         // Exported Zod model declaration
         root.get().node.program.body.push(
             j.exportNamedDeclaration(
-                j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod(j, model, allModelNames))]),
+                j.variableDeclaration('const', [j.variableDeclarator(j.identifier(modelName), nangoModelToZod({ j, model, referencedModels: allModelNames }))]),
                 []
             )
         );
@@ -745,11 +746,15 @@ export function generateModelsTs({ parsed }: { parsed: Pick<NangoYamlParsed, 'mo
 /**
  * Converts a NangoModel type to Zod AST
  */
-function nangoModelToZod(
-    j: typeof jscodeshift,
-    model: NangoModel,
-    referencedModels: string[]
-): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
+export function nangoModelToZod({
+    j,
+    model,
+    referencedModels
+}: {
+    j: typeof jscodeshift;
+    model: NangoModel;
+    referencedModels?: string[] | undefined;
+}): jscodeshift.CallExpression | jscodeshift.Identifier | undefined {
     // Check for dynamic field
     const isDynamic = model.fields.find((field) => {
         if (field.dynamic) {
@@ -774,6 +779,10 @@ function nangoModelToZod(
         return j.callExpression(j.memberExpression(objectExpr, j.identifier('catchall')), [safeValueType]);
     }
 
+    if (model.isAnon) {
+        return nangoTypeToZodAst({ j, field: model.fields[0]!, referencedModels: referencedModels || [] });
+    }
+
     // regular object
     const properties = model.fields
         .map((field) => {
@@ -782,6 +791,7 @@ function nangoModelToZod(
             return j.objectProperty(j.identifier(field.name), zodAst);
         })
         .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
+
     return j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(properties)]);
 }
 
@@ -881,7 +891,7 @@ function nangoTypeToZodAst({
         }
     } else if (Array.isArray(field.value)) {
         // If not union/array, treat as nested object
-        const nested = nangoModelToZod(j, { name: '', fields: field.value }, referencedModels || []);
+        const nested = nangoModelToZod({ j, model: { name: '', fields: field.value }, referencedModels: referencedModels || [] });
         baseExpr = nested
             ? nested.type === 'Identifier'
                 ? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('lazy')), [j.arrowFunctionExpression([], nested)])

@@ -1,3 +1,4 @@
+import jscodeshift from 'jscodeshift';
 import { describe, expect, it } from 'vitest';
 
 import * as zeroYaml from './toZeroYaml.js';
@@ -271,5 +272,19 @@ function foobar(nango: NangoSync) {
 `
         });
         expect(result.root.toSource()).toMatchSnapshot();
+    });
+});
+
+describe('nangoModelToZod', () => {
+    it('should convert an anon model to zod', () => {
+        const j = jscodeshift.withParser('ts');
+        const root = j('');
+        const result = zeroYaml.nangoModelToZod({
+            j: jscodeshift,
+            model: { isAnon: true, fields: [{ name: 'foo', value: 'string' }], name: 'Test' },
+            referencedModels: []
+        });
+        root.get().node.program.body.push(j.exportNamedDeclaration(j.variableDeclaration('const', [j.variableDeclarator(j.identifier('Test'), result)]), []));
+        expect(root.toSource()).toStrictEqual('export const Test = z.string();');
     });
 });
