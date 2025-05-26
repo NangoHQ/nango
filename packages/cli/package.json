@@ -93,7 +93,6 @@
     },
     "files": [
         "dist/**/*",
-        "cjs/**/*",
         "example/**/*",
         "docker/docker-compose.yaml",
         "lib/nango.yaml.schema.v1.json",
