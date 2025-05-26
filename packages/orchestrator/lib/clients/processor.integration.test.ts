@@ -1,4 +1,5 @@
-import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, beforeAll, afterAll, vi } from 'vitest';
+import type { Task } from '@nangohq/scheduler';
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
@@ -37,52 +38,61 @@ describe('OrchestratorProcessor', () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await setTimeout(100); // wait for the scheduler to stop
         await dbClient.clearDatabase();
     });
 
     it('should process tasks', async () => {
-        const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<void>> => Promise.resolve(Ok(undefined)));
-        const n = 10;
-        await processN(mockProcess, groupKey, n);
-
-        expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.searchTasks({ groupKey });
-        for (const task of tasks.unwrap()) {
-            expect(task.state).toBe('STARTED');
-        }
+        await processN({
+            handler: vi.fn(() => Promise.resolve(Ok(undefined))),
+            groupKey: nanoid(),
+            n: 10,
+            waitUntil: (task) => task.state === 'STARTED'
+        });
     });
     it('should process tasks and mark them as failed if processing failed', async () => {
-        const groupKey = nanoid();
-        const mockProcess = vi.fn(async (): Promise<Result<void>> => Promise.resolve(Err('Failed')));
-        const n = 10;
-        await processN(mockProcess, groupKey, n);
-
-        expect(mockProcess).toHaveBeenCalledTimes(n);
-        const tasks = await scheduler.searchTasks({ groupKey });
-        for (const task of tasks.unwrap()) {
-            expect(task.state).toBe('FAILED');
-        }
+        await processN({
+            handler: vi.fn((): Promise<Result<void>> => Promise.resolve(Err('Failed'))),
+            groupKey: nanoid(),
+            n: 10,
+            waitUntil: (task) => task.state === 'FAILED'
+        });
     });
 });
 
-async function processN(handler: (task: OrchestratorTask) => Promise<Result<void>>, groupKey: string, n: number) {
-    let processCount = 0;
+async function processN({
+    handler,
+    groupKey,
+    n,
+    waitUntil
+}: {
+    handler: (task: OrchestratorTask) => Promise<Result<void>>;
+    groupKey: string;
+    n: number;
+    waitUntil: (task: Task) => boolean;
+}) {
     const processor = new OrchestratorProcessor({
-        handler: (task: OrchestratorTask) => {
-            processCount++;
-            return handler(task);
-        },
-        opts: { orchestratorClient, groupKey, maxConcurrency: n, checkForTerminatedInterval: 100 }
+        handler,
+        opts: { orchestratorClient, groupKey, maxConcurrency: n }
     });
     processor.start({ tracer });
+
     for (let i = 0; i < n; i++) {
         await immediateTask({ groupKey });
     }
-    // wait for all tasks to be processed
-    while (processCount < n) {
+
+    let processed = false;
+    const start = Date.now();
+    const timeout = 3_000;
+    while (!processed) {
         await setTimeout(100);
+        const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
+        processed = tasks.every(waitUntil);
+        if (!processed && Date.now() - start > timeout) {
+            throw new Error(`Timeout: expected ${n} tasks to be processed, but tasks are still in states: ${tasks.map((task) => task.state).join(', ')}`);
+        }
     }
+
     processor.stop();
     return processor;
 }

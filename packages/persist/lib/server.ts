@@ -21,6 +21,8 @@ const maxSizeJsonRecords = '100mb';
 
 export const server = express();
 
+server.set('query parser', 'extended');
+
 // Log all requests
 if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
     server.use(requestLoggerMiddleware({ logger }));
