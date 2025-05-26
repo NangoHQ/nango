@@ -56,6 +56,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
+            sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: []
         });
 
@@ -97,6 +98,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
+            sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: []
         });
         expect(error?.message).toBe(
@@ -169,6 +171,7 @@ describe('Sync config create', () => {
                     input: null,
                     sync_type: 'full',
                     models_json_schema: null,
+                    sdk_version: null,
                     created_at: new Date(),
                     updated_at: new Date()
                 }
@@ -199,6 +202,7 @@ describe('Sync config create', () => {
                 input: null,
                 sync_type: 'full',
                 models_json_schema: null,
+                sdk_version: null,
                 created_at: new Date(),
                 updated_at: new Date()
             });
@@ -228,6 +232,7 @@ describe('Sync config create', () => {
                 input: null,
                 sync_type: 'full',
                 models_json_schema: null,
+                sdk_version: null,
                 created_at: new Date(),
                 updated_at: new Date()
             });
@@ -253,6 +258,7 @@ describe('Sync config create', () => {
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 debug,
+                sdkVersion: '0.0.0-yaml',
                 onEventScriptsByProvider: []
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
