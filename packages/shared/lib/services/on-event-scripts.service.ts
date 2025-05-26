@@ -126,7 +126,7 @@ export const onEventScriptService = {
                         version: version.toString(),
                         active: true,
                         event,
-                        sdk_version: sdkVersion
+                        sdk_version: sdkVersion || null
                     });
                 }
             }
@@ -220,7 +220,7 @@ export const onEventScriptService = {
                         active: true,
                         event,
                         providerConfigKey,
-                        sdkVersion
+                        sdkVersion: sdkVersion || null
                     });
                 }
             }
