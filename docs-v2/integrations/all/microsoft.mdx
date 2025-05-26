@@ -6,7 +6,8 @@ sidebarTitle: Microsoft
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft/PreBuiltUseCases.mdx"
-import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
+import APIGotchas from "/snippets/microsoft-shared/api-gotchas.mdx"
+import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -15,33 +16,105 @@ import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
-
+| Paid dev account | ✅ Not required | Free, self-signup for a [Microsoft account](https://account.microsoft.com/account) and [Azure account](https://azure.microsoft.com/free). |
+| Paid test account | ✅ Not required | Free Microsoft account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to publish your app to the Microsoft commercial marketplace or if your app needs admin consent for certain permissions. |
+| Security audit | ✅ Not required | |
 
 ## Setup guide
-
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Microsoft account and Azure account">
+    If you don't already have them, sign up for a [Microsoft account](https://account.microsoft.com/account) and an [Azure account](https://azure.microsoft.com/free).
+  </Step>
+  <Step title="Register an application in Microsoft Entra ID">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+    2. If you have access to multiple tenants, use the Settings icon in the top menu to switch to the tenant in which you want to register the application.
+    3. From the search bar at the top of the Azure portal, search for **App registrations** and select it. Then choose **New registration**.
+    4. Enter a meaningful name for your application, for example "Nango Integration".
+    5. Under **Supported account types**, select the appropriate option based on your needs:
+       - **Accounts in this organizational directory only** - For single-tenant apps for use only by users in your tenant.
+       - **Accounts in any organizational directory** - For multitenant apps that you want users in any Microsoft Entra tenant to be able to use.
+       - **Accounts in any organizational directory and personal Microsoft accounts** - For multitenant apps that support both organizational and personal Microsoft accounts.
+       - **Personal Microsoft accounts** - For apps used only by personal Microsoft accounts.
+    6. Leave the **Redirect URI** section blank for now; we'll configure it in a later step.
+    7. Click **Register** to complete the app registration.
+  </Step>
+  <Step title="Note your application (client) ID">
+    After registration, you'll be taken to the application's Overview page. Record the **Application (client) ID**, which uniquely identifies your application and is used in your application's code as part of validating security tokens.
+  </Step>
+  <Step title="Add a redirect URI">
+    1. In the left sidebar, select **Authentication**.
+    2. Under **Platform configurations**, select **Add a platform**.
+    3. Select **Web** as the platform type.
+    4. Enter `https://api.nango.dev/oauth/callback` as the Redirect URI.
+    5. Under **Implicit grant and hybrid flows**, check the boxes for **Access tokens** and **ID tokens** if your application needs them.
+    6. Under **Advanced settings**, set **Allow public client flows** to **No** for web applications.
+    7. Click **Configure** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **API permissions**.
+    2. Click **Add a permission**.
+    3. Select the API your application needs to access. Common choices include:
+       - **Microsoft Graph** - For accessing Microsoft 365 data
+       - **Office 365 Exchange Online** - For email and calendar access
+       - **Azure Key Vault** - For accessing secrets
+       - **Dynamics CRM** - For CRM data
+    4. Choose the type of permissions:
+       - **Delegated permissions** - Your app accesses the API as the signed-in user.
+       - **Application permissions** - Your app accesses the API directly without a signed-in user.
+    5. Select the specific permissions your app requires. For Microsoft Graph, common permissions include:
+       - **User.Read** - Read user profile
+       - **Mail.Read** - Read user mail
+       - **Calendars.ReadWrite** - Read and write calendars
+       - **Files.Read** - Read files
+    6. Click **Add permissions**.
+    7. If your application requires admin consent, click **Grant admin consent for [tenant]** to pre-authorize the permissions.
+  </Step>
+  <Step title="Create a client secret">
+    1. In the left sidebar, select **Certificates & secrets**.
+    2. Under **Client secrets**, click **New client secret**.
+    3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom).
+    4. Click **Add**.
+    5. **Important**: Copy the secret value immediately and store it securely. You won't be able to see it again after you leave this page.
+  </Step>
+  <Step title="Configure token settings (optional)">
+    1. In the left sidebar, select **Token configuration**.
+    2. Here you can configure optional claims to be included in the ID and access tokens issued to your application.
+    3. Click **Add optional claim** if you need to include additional information in your tokens.
+  </Step>
+  <Step title="Configure app visibility (optional)">
+    If you want users to see your app on their My Apps page:
+    
+    1. From the search bar at the top of the Azure portal, search for **Enterprise applications**, select it, and then choose your app.
+    2. On the **Properties** page, set **Visible to users?** to **Yes**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
-
-
-## Useful links
-
--   [Overview of Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview)
--   [How to register an Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2)
--   [OAuth related docs](https://learn.microsoft.com/en-us/graph/auth-v2-user?tabs=http)
--   [Microsoft permissions](https://learn.microsoft.com/en-us/graph/permissions-overview?tabs=http)
-
-## API gotchas
-<APIGotchas />
-
+<UsefulLinks />
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
 
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| User.Read | Read user profile |
+| Mail.Read | Read user mail |
+| Calendars.ReadWrite | Read and write calendars |
+| Files.Read | Read files |
+| offline_access | Access to refresh tokens for offline access |
+
+
+
+## API gotchas
+
+-   Microsoft has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Microsoft EntraID, OneNote, Onedrive, Outlook, Sharepoint Online, Microsoft Teams etc.).
+-   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list of notebook objects from Onenote, you can have a look at [List Notebooks permissions](https://learn.microsoft.com/en-us/graph/api/onenote-list-notebooks?view=graph-rest-1.0&tabs=http#permissions).
+<APIGotchas /> 
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
