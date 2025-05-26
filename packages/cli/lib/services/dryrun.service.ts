@@ -341,6 +341,7 @@ export class DryRunService {
                 is_public: false,
                 metadata: {},
                 pre_built: false,
+                sdk_version: null,
                 sync_type: lastSyncDate ? 'incremental' : 'full',
                 version: '0.0.1'
             };

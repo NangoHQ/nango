@@ -26,5 +26,6 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema: JSONSchema7 | null;
+    sdk_version: string | null;
 }
 export type DBSyncConfigInsert = Omit<DBSyncConfig, 'id'>;
