@@ -9,7 +9,7 @@ import { tsToJsPath } from './compile.js';
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, Result } from '@nangohq/types';
 
-const allowed = ['action', 'sync', 'on-events'];
+const allowed = ['action', 'sync', 'onEvent'];
 const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
 
 export async function rebuildParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
@@ -36,7 +36,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
             return Err(new Error(`Script should have a default export ${modulePath}`));
         }
         if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
-            return Err(new Error(`Script should be declared using utility function (createSync, createAction, etc.) ${modulePath}`));
+            return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent) ${modulePath}`));
         }
 
         printDebug(`Parsing ${filePath}`, debug);
@@ -46,9 +46,9 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
             | CreateActionResponse<Zod.ZodAny, Zod.ZodAny>
             | CreateOnEventResponse;
 
-        const basename = path.basename(modulePath, '.cjs');
+        const basename = path.basename(filePath, '.js');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
-        const split = modulePath.split('/');
+        const split = filePath.split('/');
         const integrationId = split[split.length - 3]!;
         const integrationIdClean = integrationId.replaceAll(/[^a-zA-Z0-9]/g, '_');
 
@@ -65,7 +65,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
 
         switch (script.type) {
             case 'sync': {
-                const params = script.params;
+                const params = script;
                 const usedModels: string[] = [...Object.keys(params.models)];
                 const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
                 if (metadata) {
@@ -97,7 +97,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                 break;
             }
             case 'action': {
-                const params = script.params;
+                const params = script;
                 const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
                 parsed.models.set(input.name, { name: input.name, fields: input.value as NangoModelField[] });
 
@@ -116,10 +116,10 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                 });
                 break;
             }
-            case 'on-event': {
-                if (script.params.event === 'post-connection-creation') {
+            case 'onEvent': {
+                if (script.event === 'post-connection-creation') {
                     integration.onEventScripts['post-connection-creation'].push(basename);
-                } else if (script.params.event === 'pre-connection-deletion') {
+                } else if (script.event === 'pre-connection-deletion') {
                     integration.onEventScripts['pre-connection-deletion'].push(basename);
                 }
             }

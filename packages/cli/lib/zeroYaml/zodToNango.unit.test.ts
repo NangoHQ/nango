@@ -21,7 +21,9 @@ describe('zodToNango', () => {
                     any: z.any(),
                     reco: z.record(z.string(), z.date()),
                     opt: z.any().optional(),
-                    ref: ref
+                    ref: ref,
+                    void: z.void(),
+                    never: z.never()
                     // Not supported
                     // lazy: z.lazy(() => ref)
                 })
@@ -70,7 +72,9 @@ describe('zodToNango', () => {
                     name: 'ref',
                     optional: false,
                     value: [{ name: 'id', optional: false, tsType: true, value: 'string' }]
-                }
+                },
+                { name: 'void', optional: true, tsType: true, value: null },
+                { name: 'never', tsType: true, value: 'never' }
             ]
         });
     });

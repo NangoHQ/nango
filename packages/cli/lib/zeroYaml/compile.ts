@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import * as babel from '@babel/core';
 import chalk from 'chalk';
 import { build } from 'esbuild';
 import { glob } from 'glob';
@@ -42,6 +43,14 @@ const tsconfig: ts.CompilerOptions = {
     noEmit: true
 };
 
+/**
+ * This function is used to compile the code in the integration.
+ *
+ * It will:
+ * - Typecheck the code
+ * - Compile the code to .cjs
+ * - Rebuild nango.yaml in memory
+ */
 export async function compileAll({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<boolean>> {
     let spinner = ora({ text: 'Typechecking' }).start();
 
@@ -91,6 +100,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             const buildRes = await esbuild({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
+                console.error(chalk.red(buildRes.error.message));
                 return buildRes;
             }
         }
@@ -105,10 +115,12 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const rebuild = await rebuildParsed({ fullPath, debug });
         if (rebuild.isErr()) {
             spinner.fail(`Failed to compile metadata`);
+            console.log(chalk.red(rebuild.error.message));
             return Err(rebuild.error);
         }
 
         generateAdditionalExports({ parsed: rebuild.value, fullPath, debug });
+
         spinner.succeed();
     } catch (err) {
         console.error(err);
@@ -151,6 +163,10 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
     return Err('errors');
 }
 
+/**
+ * We use esbuild to compile the code to .cjs.
+ * node.vm only supports CJS and we also bundle all imported files in the same file.
+ */
 async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
@@ -160,46 +176,72 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
     // Ensure the output directory exists
     await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
 
-    const res = await build({
-        entryPoints: [entryPoint],
-        outfile: outfile,
-        bundle: true,
-        sourcemap: 'inline',
-        format: 'cjs',
-        target: 'esnext',
-        platform: 'node',
-        logLevel: 'error',
-        treeShaking: true,
-        plugins: [
-            {
-                name: 'external-npm-packages',
-                setup(buildInstance) {
-                    buildInstance.onResolve({ filter: npmPackageRegex }, (args) => {
-                        if (!args.path.startsWith('.') && !path.isAbsolute(args.path)) {
-                            return { path: args.path, external: true };
-                        }
-                        return null; // let esbuild handle other paths
-                    });
+    try {
+        const res = await build({
+            entryPoints: [entryPoint],
+            outfile: outfile,
+            bundle: true,
+            sourcemap: 'inline',
+            format: 'cjs',
+            target: 'esnext',
+            platform: 'node',
+            logLevel: 'silent',
+            treeShaking: true,
+            plugins: [
+                {
+                    name: 'remove-create-wrappers',
+                    setup(build: any) {
+                        build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
+                            const source = await fs.promises.readFile(args.path, 'utf8');
+                            const result = await babel.transformAsync(source, {
+                                filename: args.path,
+                                plugins: [removeCreateWrappersBabelPlugin],
+                                parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+                                generatorOpts: { decoratorsBeforeExport: true }
+                            });
+                            return { contents: result?.code ?? source, loader: 'ts' };
+                        });
+                    }
+                },
+                {
+                    name: 'external-npm-packages',
+                    setup(buildInstance) {
+                        buildInstance.onResolve({ filter: npmPackageRegex }, (args) => {
+                            if (!args.path.startsWith('.') && !path.isAbsolute(args.path)) {
+                                return { path: args.path, external: true };
+                            }
+                            return null; // let esbuild handle other paths
+                        });
+                    }
+                }
+            ],
+            tsconfigRaw: {
+                compilerOptions: {
+                    ...tsconfig,
+                    importsNotUsedAsValues: 'remove',
+                    jsx: 'react',
+                    target: 'esnext'
                 }
             }
-        ],
-        tsconfigRaw: {
-            compilerOptions: {
-                ...tsconfig,
-                importsNotUsedAsValues: 'remove',
-                jsx: 'react',
-                target: 'esnext'
-            }
+        });
+        if (res.errors.length > 0) {
+            // esbuild already prints errors to console with logLevel: 'error'
+            return Err('failed_to_build');
         }
-    });
-    if (res.errors.length > 0) {
-        // esbuild already prints errors to console with logLevel: 'error'
+    } catch (err) {
+        if (err instanceof Error && err.message.includes('invalid_export')) {
+            return Err('invalid_export');
+        }
         return Err('failed_to_build');
     }
 
     return Ok(true);
 }
 
+/**
+ * We need to replace the .js extension with .cjs in the imports.
+ * This is because the code is compiled to .cjs and the imports are not automatically converted.
+ */
 async function postCompile({ fullPath }: { fullPath: string }) {
     const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
 
@@ -217,5 +259,62 @@ async function postCompile({ fullPath }: { fullPath: string }) {
 }
 
 export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll('/', '-').replaceAll('.js', '.cjs');
+    return filePath.replace(/^\.\//, '').replaceAll('/', '_').replaceAll('.js', '.cjs');
+}
+
+/**
+ * This plugin is used to remove the create wrappers from the exports.
+ *
+ * Initially, I didn't want to remove this but because our codebase is ESM and node.vm only compiles CJS
+ * it was annoying to have to compile the code twice. And have mixed code when publishing.
+ * Since the wrapper is only used to stringly type the exports, we can remove it.
+ */
+function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> {
+    const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
+    return {
+        visitor: {
+            ExportDefaultDeclaration(path) {
+                // Prevent double transformation
+                // Since we are adding a new export, babel will try to process it again
+                if ((path.node as any).__transformedByRemoveCreateWrappers) {
+                    return;
+                }
+
+                const decl = path.node.declaration;
+                if (!t.isCallExpression(decl) || !t.isIdentifier(decl.callee) || !allowedExports.includes(decl.callee.name)) {
+                    throw new Error('invalid_export');
+                }
+
+                if (decl.arguments.length !== 1) {
+                    throw new Error('invalid_arguments');
+                }
+
+                const arg = decl.arguments[0];
+                let varName = '';
+                if (decl.callee.name === 'createAction') varName = 'action';
+                if (decl.callee.name === 'createSync') varName = 'sync';
+                if (decl.callee.name === 'createOnEvent') varName = 'onEvent';
+
+                if (!t.isObjectExpression(arg)) {
+                    throw path.buildCodeFrameError(`Argument to ${decl.callee.name} must be an object literal.`);
+                }
+
+                // Directly add/overwrite 'type' property to arg
+                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                const newValue = arg;
+
+                // Insert: export const <varName> = <newValue>;
+                const exportConst = t.exportNamedDeclaration(t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]), []);
+                // Insert: export default <varName>;
+                const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
+
+                // Mark as transformed to prevent double-processing
+                (exportConst as any).__transformedByRemoveCreateWrappers = true;
+                (exportDefault as any).__transformedByRemoveCreateWrappers = true;
+
+                // Replace the export default with both statements
+                path.replaceWithMultiple([exportConst, exportDefault]);
+            }
+        }
+    };
 }

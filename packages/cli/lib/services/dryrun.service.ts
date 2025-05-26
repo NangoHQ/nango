@@ -653,7 +653,7 @@ export class DryRunService {
                         if (payload.type !== 'action') {
                             throw new Error('Incorrect script loaded for action');
                         }
-                        output = await payload.params.exec(nango as any, input);
+                        output = await payload.exec(nango as any, input);
                     } else {
                         output = await scriptExports.default(nango, input);
                     }
@@ -688,7 +688,7 @@ export class DryRunService {
                         throw new Error('Incorrect script loaded for sync');
                     }
 
-                    const results = await payload.params.exec(nango as any);
+                    const results = await payload.exec(nango as any);
                     return { success: true, response: { output: results, nango }, error: null };
                 } else {
                     const results = await scriptExports.default(nango);

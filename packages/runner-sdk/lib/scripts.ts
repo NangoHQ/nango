@@ -19,9 +19,9 @@ export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<an
     exec: (nango: NangoSyncBase<TModels, TMetadata>) => MaybePromise<void>;
     onWebhook?: (nango: NangoSyncBase<TModels, TMetadata>, payload: any) => MaybePromise<void>;
 }
-export interface CreateSyncResponse<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
+export interface CreateSyncResponse<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined>
+    extends CreateSyncProps<TModels, TMetadata> {
     type: 'sync';
-    params: CreateSyncProps<TModels, TMetadata>;
 }
 
 export interface CreateActionProps<
@@ -42,9 +42,8 @@ export interface CreateActionResponse<
     TInput extends Zod.ZodTypeAny,
     TOutput extends Zod.ZodTypeAny,
     TMetadata extends Zod.ZodObject<any> | undefined = undefined
-> {
+> extends CreateActionProps<TInput, TOutput, TMetadata> {
     type: 'action';
-    params: CreateActionProps<TInput, TOutput, TMetadata>;
 }
 
 export interface CreateOnEventProps<TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
@@ -54,9 +53,8 @@ export interface CreateOnEventProps<TMetadata extends Zod.ZodObject<any> | undef
     metadata?: TMetadata;
     exec: (nango: NangoActionBase<TMetadata>) => MaybePromise<void>;
 }
-export interface CreateOnEventResponse<TMetadata extends Zod.ZodObject<any> | undefined = undefined> {
-    type: 'on-event';
-    params: CreateOnEventProps<TMetadata>;
+export interface CreateOnEventResponse<TMetadata extends Zod.ZodObject<any> | undefined = undefined> extends CreateOnEventProps<TMetadata> {
+    type: 'onEvent';
 }
 
 export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
@@ -64,19 +62,19 @@ export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionRespo
 export function createSync<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined>(
     params: CreateSyncProps<TModels, TMetadata>
 ): CreateSyncResponse<TModels, TMetadata> {
-    return { type: 'sync', params };
+    return { type: 'sync', ...params };
 }
 
 export function createAction<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends Zod.ZodObject<any> | undefined = undefined>(
     params: CreateActionProps<TInput, TOutput, TMetadata>
 ): CreateActionResponse<TInput, TOutput, TMetadata> {
-    return { type: 'action', params };
+    return { type: 'action', ...params };
 }
 
 export function createOnEvent<TMetadata extends Zod.ZodObject<any> | undefined = undefined>(
     params: CreateOnEventProps<TMetadata>
 ): CreateOnEventResponse<TMetadata> {
-    return { type: 'on-event', params };
+    return { type: 'onEvent', ...params };
 }
 
 export type { ActionError } from './errors.js';

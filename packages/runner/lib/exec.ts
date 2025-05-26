@@ -11,7 +11,6 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
-import * as NangoScript from '@nangohq/runner-sdk/dist/scripts.js';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
@@ -76,8 +75,6 @@ export async function exec({
                     switch (moduleName) {
                         case 'url':
                             return url;
-                        case 'nango':
-                            return NangoScript;
                         case 'crypto':
                             return crypto;
                         case 'zod':
@@ -115,11 +112,11 @@ export async function exec({
                     if (payload.type !== 'sync') {
                         throw new Error('Incorrect script loaded for webhook');
                     }
-                    if (!payload.params.onWebhook) {
+                    if (!payload.onWebhook) {
                         throw new Error(`Missing onWebhook function`);
                     }
 
-                    const output = await payload.params.onWebhook(nango as any, codeParams);
+                    const output = await payload.onWebhook(nango as any, codeParams);
                     return { success: true, response: output, error: null };
                 } else {
                     if (!scriptExports.onWebhookPayloadReceived) {
@@ -164,11 +161,11 @@ export async function exec({
                     if (payload.type !== 'action') {
                         throw new Error('Incorrect script loaded for action');
                     }
-                    if (!payload.params.exec) {
+                    if (!payload.exec) {
                         throw new Error(`Missing exec function`);
                     }
 
-                    output = await payload.params.exec(nango as any, codeParams);
+                    output = await payload.exec(nango as any, codeParams);
                 } else {
                     output = await scriptExports.default(nango, inputParams);
                 }
@@ -204,11 +201,11 @@ export async function exec({
                 if (payload.type !== 'sync') {
                     throw new Error('Incorrect script loaded for sync');
                 }
-                if (!payload.params.exec) {
+                if (!payload.exec) {
                     throw new Error(`Missing exec function`);
                 }
 
-                await payload.params.exec(nango as any);
+                await payload.exec(nango as any);
                 return { success: true, response: true, error: null };
             } else {
                 await scriptExports.default(nango);

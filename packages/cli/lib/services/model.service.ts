@@ -196,6 +196,8 @@ export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPat
     if (debug) {
         printDebug(`Generated export ${pathJSON}`);
     }
+
+    fs.writeFileSync(path.join(exportPath, 'nango.json'), JSON.stringify(parsed.integrations, null, 2));
 }
 
 export function getExportToTS({ parsed }: { parsed: NangoYamlParsed }): string {
