@@ -69,7 +69,7 @@ export enum PaginationType {
 }
 
 export interface PaginationBase {
-    limit?: number;
+    limit?: number | string;
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;

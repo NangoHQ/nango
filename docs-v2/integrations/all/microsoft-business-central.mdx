@@ -6,7 +6,6 @@ sidebarTitle: Microsoft Business Central
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/microsoft-business-central/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/microsoft-business-central/PreBuiltUseCases.mdx"
-import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -15,11 +14,11 @@ import APIGotchas from "/snippets/microsoft-api-gotchas.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Microsoft account](https://account.microsoft.com/account) and [Azure account](https://azure.microsoft.com/free). |
+| Paid test account | ✅ Not required | Free Microsoft account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to publish your app to the Microsoft commercial marketplace or if your app needs admin consent for certain permissions. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
@@ -33,15 +32,38 @@ _No setup guide yet._
 
 ## Useful links
 
--   [How to register an Application](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication#task-1-register-a-microsoft-entra-application-for-authentication-to-business-central)
--   [OAuth related docs](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication)
--   [REST API docs](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/webservices/api-overview)
+| Topic     | Links                                                                                                                                          |
+|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| General  | [Microsoft Entra Admin Center](https://entra.microsoft.com)                                                                                   |
+|          | [Azure Portal](https://portal.azure.com)                                                                                                      |
+| Developer | [Microsoft identity platform documentation](https://learn.microsoft.com/en-us/entra/identity-platform/)                                      |
+|          | [How to register an Application](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication#task-1-register-a-microsoft-entra-application-for-authentication-to-business-central) |
+|          | [OAuth related documentation](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication) |
+|          | [Microsoft Authentication Libraries (MSAL)](https://learn.microsoft.com/en-us/entra/identity-platform/msal-overview)                         |
+|          | [Microsoft Business Central REST API documentation](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/webservices/api-overview)                         |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
-## API gotchas
-<APIGotchas />
+## Common Permissions
 
+| Permission                      | Description                                                   |
+| -------------------------- | ------------------------------------------------------------- |
+| Financials.Read.All        | Read all financial data (no user sign-in required)            |
+| user_impersonation         | Access as the signed-in user             |
+| AdminCenter.ReadWrite.All  | Full access to Admin Center API   |
+| Automation.ReadWrite.All    | Full access to automation           |
+| API.ReadWrite.All         | Full access to web services API                                 |
+
+## API gotchas
+-   See particularly the `tenantId` parameter under [Get a token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow#get-a-token).
+-   This `tenantId` parameter must be provided as [extra configuration to the frontend SDK](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+-   When requesting application permissions that require admin consent, an Azure AD administrator must pre-authorize the permissions. Without admin consent, the app cannot obtain tokens for those scopes.
+-   For multitenant applications, each tenant administrator must grant consent to the app’s required permissions before access is granted in their tenant.
+-  The [/.default scope](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) is a special scope that tells Azure AD to issue a token containing all the application permissions that have already been granted (consented) for your app on that resource. Using `/.default` ensures your app receives permissions consistent with those configured and consented at the tenant or organization level.
+-   The `.default` scope can't be combined with the scopes registered in the Azure portal. So either just use the `.default` scope or remove it to list out explicit parameters that are required. If you attempt to combine them you'll receive the following error
+```
+.default scope can't be combined with resource-specific scopes
+```
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-business-central.mdx)</Note>
 
 ## Going further

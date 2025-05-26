@@ -7,6 +7,10 @@ const branch = process.argv[4] || 'master';
 const nextTag = `v${nextVersion}`;
 
 echo`Publishing ${nextVersion} on branch ${branch}`;
+
+// Configure git to use the GitHub token for authentication
+await $`git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"`;
+
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
     echo`Tag ${nextTag} already exists`;
