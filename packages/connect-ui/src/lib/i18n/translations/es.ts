@@ -1,4 +1,6 @@
-const es = {
+import type { Translation } from './en';
+
+const es: Translation = {
     common: {
         close: 'Cerrar',
         loading: 'Cargando',
@@ -36,4 +38,3 @@ const es = {
 };
 
 export default es;
-export type Translation = typeof es;
