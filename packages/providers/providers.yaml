@@ -18,7 +18,7 @@
         domain:
             type: string
             title: 1Password SCIM Bridge URL
-            description: The domain for your 1Password SCIM Bridge
+            description: The domain for your 1Password SCIM Bridge. Note this URL is a service hosted in your infrastructure so needs to be setup already by your IT team. Please see the instructions for more info.
             example: scim.example.com
             pattern: '^[a-zA-Z0-9.-]+$'
             prefix: https://
