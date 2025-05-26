@@ -36,7 +36,7 @@ export function getProvider(providerName: string, language?: string): Provider |
     return providers?.[providerName] ?? null;
 }
 
-function loadProvidersYaml(): Record<string, Provider> | undefined {
+export function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
         const providersYamlPath = path.join(pkgRoot, 'providers.yaml');
         const fileEntries = yaml.load(fs.readFileSync(providersYamlPath).toString()) as Record<string, Provider | ProviderAlias>;

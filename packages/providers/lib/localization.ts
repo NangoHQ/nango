@@ -28,7 +28,7 @@ function getLanguageOverrides(language: string): Record<string, any> {
     return overrides;
 }
 
-function loadLanguageOverrides(language: string): Record<string, any> {
+export function loadLanguageOverrides(language: string): Record<string, any> {
     try {
         const languageFilePath = path.join(pkgRoot, 'i18n', `providers.${language}.json`);
 
