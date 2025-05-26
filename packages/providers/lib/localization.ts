@@ -2,8 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { load } from 'js-yaml';
-
 import type { Provider } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,14 +30,14 @@ function getLanguageOverrides(language: string): Record<string, any> {
 
 function loadLanguageOverrides(language: string): Record<string, any> {
     try {
-        const languageFilePath = path.join(pkgRoot, 'i18n', `providers.${language}.yaml`);
+        const languageFilePath = path.join(pkgRoot, 'i18n', `providers.${language}.json`);
 
         if (!fs.existsSync(languageFilePath)) {
             return {};
         }
 
-        const fileContent = fs.readFileSync(languageFilePath).toString();
-        const overrides = load(fileContent) as Record<string, any>;
+        const fileContent = fs.readFileSync(languageFilePath, 'utf8');
+        const overrides = JSON.parse(fileContent) as Record<string, any>;
 
         return overrides || {};
     } catch (err) {

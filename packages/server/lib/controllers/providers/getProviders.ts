@@ -1,9 +1,12 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import { providerConfigKeySchema } from '../../helpers/validation.js';
-import type { ApiProvider, GetPublicProviders } from '@nangohq/types';
+
 import { getProviders } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { ApiProvider, GetPublicProviders } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -18,8 +21,10 @@ export const getPublicProviders = asyncWrapper<GetPublicProviders>((req, res) =>
         return;
     }
 
+    const lang = res.locals['lang'];
+
     const queries: GetPublicProviders['Querystring'] = queryValue.data;
-    const providers = getProviders();
+    const providers = getProviders(lang);
     if (!providers) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to load providers' } });
         return;

@@ -167,7 +167,7 @@ publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
-publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
+publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
 // @deprecated
