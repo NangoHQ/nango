@@ -82,7 +82,8 @@ export async function deploy({
     nangoYamlBody,
     logContextGetter,
     orchestrator,
-    debug
+    debug,
+    sdkVersion
 }: {
     environment: DBEnvironment;
     account: DBTeam;
@@ -94,6 +95,7 @@ export async function deploy({
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
     debug?: boolean;
+    sdkVersion: string | undefined;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
@@ -122,7 +124,8 @@ export async function deploy({
             plan,
             debug: Boolean(debug),
             logCtx,
-            orchestrator
+            orchestrator,
+            sdkVersion
         });
 
         if (!success || !response) {
@@ -185,7 +188,7 @@ export async function deploy({
         }
 
         if (onEventScriptsByProvider) {
-            const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
+            const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
             const result: SyncDeploymentResult[] = updated.map((u) => {
                 return {
                     name: u.name,
@@ -550,6 +553,7 @@ export async function deployPreBuilt({
             enabled: true,
             webhook_subscriptions: null,
             models_json_schema: flowJsonSchema,
+            sdk_version: null, // TODO: fill this somehow
             updated_at: new Date(),
             sync_type: 'sync_type' in config ? (config.sync_type as SyncTypeLiteral) : null
         };
@@ -617,7 +621,8 @@ async function compileDeployInfo({
     plan,
     debug,
     logCtx,
-    orchestrator
+    orchestrator,
+    sdkVersion
 }: {
     flow: FlowParsed;
     jsonSchema?: JSONSchema7 | undefined;
@@ -628,6 +633,7 @@ async function compileDeployInfo({
     debug: boolean;
     logCtx: LogContext;
     orchestrator: Orchestrator;
+    sdkVersion: string | undefined;
 }): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
     const {
         syncName,
@@ -794,6 +800,7 @@ async function compileDeployInfo({
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
                 models_json_schema: jsonSchema ? flowJsonSchema : null,
+                sdk_version: sdkVersion || null,
                 created_at: new Date(),
                 updated_at: new Date()
             }
