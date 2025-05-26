@@ -9,7 +9,7 @@ import type { Paths } from 'type-fest';
 export type TranslationKey = Paths<typeof englishTranslation>;
 
 // Define supported languages
-export const SUPPORTED_LANGUAGES = ['en', 'fr'] as const; // Add more as needed
+export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'] as const; // Add more as needed
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 interface I18nContextType {
