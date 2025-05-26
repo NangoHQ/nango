@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -7,6 +8,7 @@ import {
     configService,
     environmentService,
     errorManager,
+    externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw
@@ -18,11 +20,12 @@ import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
-import type { TaskAction } from '@nangohq/nango-orchestrator';
+import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
+import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -61,7 +64,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
-        void logCtx.info(`Starting action '${task.actionName}'`, {
+        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
             input: task.input,
             action: task.actionName,
             connection: task.connection.connection_id,
@@ -129,7 +132,42 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     }
 }
 export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
-    await setTaskSuccess({ taskId, output });
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+    const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
+        environment: undefined,
+        account: undefined
+    };
+
+    const task = await setTaskSuccess({ taskId, output });
+    if (task.isErr()) {
+        onFailure({
+            connection: {
+                id: nangoProps.nangoConnectionId,
+                connection_id: nangoProps.connectionId,
+                environment_id: nangoProps.environmentId,
+                provider_config_key: nangoProps.providerConfigKey
+            },
+            syncName: nangoProps.syncConfig.sync_name,
+            provider: nangoProps.provider,
+            providerConfigKey: nangoProps.providerConfigKey,
+            activityLogId: nangoProps.activityLogId,
+            runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
+            error: new NangoError('action_script_failure', { error: task.error }),
+            team: account,
+            environment: environment,
+            syncConfig: nangoProps.syncConfig,
+            endUser: nangoProps.endUser
+        });
+        return;
+    }
+    void logCtx.info(`The action was successfully run${formatAttempts(task)}`, {
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+    void logCtx.success();
+
+    metrics.increment(metrics.Types.ACTION_SUCCESS);
 
     const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId,
@@ -143,6 +181,14 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
         type: 'action',
         originalActivityLogId: nangoProps.activityLogId as unknown as string,
         provider: nangoProps.provider
+    });
+
+    await sendWebhookIfNeeded({
+        environment,
+        connectionId: nangoProps.connectionId,
+        providerConfigKey: nangoProps.providerConfigKey,
+        task: task.value,
+        logCtx
     });
 
     void bigQueryClient.insert({
@@ -168,14 +214,55 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
 }
 
 export async function handleActionError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
-    await setTaskFailed({ taskId, error });
-
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
-
     const { account, environment } = accountAndEnv;
+
+    const task = await setTaskFailed({ taskId, error });
+    if (task.isErr()) {
+        onFailure({
+            connection: {
+                id: nangoProps.nangoConnectionId,
+                connection_id: nangoProps.connectionId,
+                environment_id: nangoProps.environmentId,
+                provider_config_key: nangoProps.providerConfigKey
+            },
+            syncName: nangoProps.syncConfig.sync_name,
+            provider: nangoProps.provider,
+            providerConfigKey: nangoProps.providerConfigKey,
+            activityLogId: nangoProps.activityLogId,
+            runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
+            error: new NangoError('action_script_failure', { error: task.error }),
+            team: account,
+            environment: environment,
+            syncConfig: nangoProps.syncConfig,
+            endUser: nangoProps.endUser
+        });
+        return;
+    }
+
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: account.id });
+
+    void logCtx?.error(`Action '${nangoProps.syncConfig.sync_name}' failed${formatAttempts(task)}`, {
+        error,
+        action: nangoProps.syncConfig.sync_name,
+        connection: nangoProps.connectionId,
+        integration: nangoProps.providerConfigKey
+    });
+
+    if (task.value.attempt === task.value.attemptMax) {
+        void logCtx.failed();
+        await sendWebhookIfNeeded({
+            environment,
+            connectionId: nangoProps.connectionId,
+            providerConfigKey: nangoProps.providerConfigKey,
+            task: task.value,
+            logCtx
+        });
+    }
+
     onFailure({
         connection: {
             id: nangoProps.nangoConnectionId,
@@ -221,8 +308,7 @@ function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): void {
-    const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
-    if (team && environment && logCtx) {
+    if (team && environment) {
         try {
             void slackService.reportFailure({
                 account: team,
@@ -230,7 +316,7 @@ function onFailure({
                 connection,
                 name: syncName,
                 type: 'action',
-                originalActivityLogId: logCtx.id,
+                originalActivityLogId: activityLogId,
                 provider
             });
         } catch {
@@ -265,6 +351,50 @@ function onFailure({
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
+        });
+    }
+    metrics.increment(metrics.Types.ACTION_FAILURE);
+}
+
+function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): string {
+    const t = 'id' in task ? task : task.isOk() ? task.value : null;
+    if (!t) {
+        return '';
+    }
+    return t.attemptMax > 1 ? ` (attempt ${t.attempt}/${t.attemptMax})` : '';
+}
+
+async function sendWebhookIfNeeded({
+    environment,
+    connectionId,
+    providerConfigKey,
+    task,
+    logCtx
+}: {
+    environment: DBEnvironment | undefined;
+    connectionId: string;
+    providerConfigKey: string;
+    task: OrchestratorTask;
+    logCtx: LogContext;
+}) {
+    if (!task.isAction()) {
+        return;
+    }
+    if (!environment || !task.retryKey || !task.async) {
+        return;
+    }
+    const webhookSettings = await externalWebhookService.get(environment.id);
+    if (webhookSettings) {
+        await sendAsyncActionWebhook({
+            environment: environment,
+            connectionId: connectionId,
+            providerConfigKey: providerConfigKey,
+            payload: {
+                id: task.retryKey,
+                statusUrl: `/action/${task.retryKey}`
+            },
+            webhookSettings,
+            logCtx
         });
     }
 }

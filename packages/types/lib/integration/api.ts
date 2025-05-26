@@ -33,6 +33,20 @@ export type GetPublicListIntegrations = Endpoint<{
     };
 }>;
 
+export type PostPublicIntegration = Endpoint<{
+    Method: 'POST';
+    Path: '/integrations';
+    Body: {
+        provider: string;
+        unique_key: string;
+        display_name?: string | undefined;
+        credentials?: ApiPublicIntegrationCredentials | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
@@ -41,7 +55,28 @@ export type GetPublicIntegration = Endpoint<{
     Success: { data: ApiPublicIntegration };
 }>;
 
+export type PatchPublicIntegration = Endpoint<{
+    Method: 'PATCH';
+    Path: '/integrations/:uniqueKey';
+    Params: { uniqueKey: string };
+    Body: {
+        unique_key?: string | undefined;
+        display_name?: string | undefined;
+        credentials?: ApiPublicIntegrationCredentials | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type DeletePublicIntegration = Endpoint<{
+    Method: 'DELETE';
+    Path: '/integrations/:uniqueKey';
+    Params: { uniqueKey: string };
+    Success: { success: true };
+}>;
+
+export type DeletePublicIntegrationDeprecated = Endpoint<{
     Method: 'DELETE';
     Path: '/config/:providerConfigKey';
     Params: { providerConfigKey: string };
@@ -153,3 +188,25 @@ export type GetIntegrationFlows = Endpoint<{
         };
     };
 }>;
+
+export type ApiPublicIntegrationCredentials =
+    | {
+          type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
+          client_id: string;
+          client_secret: string;
+          scopes?: string | undefined;
+      }
+    | {
+          type: Extract<AuthModeType, 'APP'>;
+          app_id: string;
+          app_link: string;
+          private_key: string;
+      }
+    | {
+          type: Extract<AuthModeType, 'CUSTOM'>;
+          client_id: string;
+          client_secret: string;
+          app_id: string;
+          app_link: string;
+          private_key: string;
+      };

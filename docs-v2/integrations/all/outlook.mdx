@@ -6,6 +6,8 @@ sidebarTitle: Outlook
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/outlook/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/outlook/PreBuiltUseCases.mdx"
+import APIGotchas from "/snippets/microsoft-shared/api-gotchas.mdx"
+import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -14,52 +16,99 @@ import PreBuiltUseCases from "/snippets/generated/outlook/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
-
+| Paid dev account | ✅ Not required | Free, self-signup for a [Microsoft account](https://account.microsoft.com/account) and [Azure account](https://azure.microsoft.com/free). |
+| Paid test account | ✅ Not required | Free Microsoft account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to publish your app to the Microsoft commercial marketplace or if your app needs admin consent for certain permissions. |
+| Security audit | ✅ Not required | |
 
 ## Setup guide
+<Steps>
+  <Step title="Create a Microsoft account and Azure account">
+    If you don't already have them, sign up for a [Microsoft account](https://account.microsoft.com/account) and an [Azure account](https://azure.microsoft.com/free).
+  </Step>
+  <Step title="Register an application in Microsoft Entra ID">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+    2. If you have access to multiple tenants, use the Settings icon in the top menu to switch to the tenant in which you want to register the application.
+    3. From the search bar at the top of the Azure portal, search for **App registrations** and select it. Then choose **New registration**.
+    4. Enter a meaningful name for your application, for example "Nango Integration".
+    5. Under **Supported account types**, select the appropriate option based on your needs:
+       - **Accounts in this organizational directory only** - For single-tenant apps for use only by users in your tenant.
+       - **Accounts in any organizational directory** - For multitenant apps that you want users in any Microsoft Entra tenant to be able to use.
+       - **Accounts in any organizational directory and personal Microsoft accounts** - For multitenant apps that support both organizational and personal Microsoft accounts.
+       - **Personal Microsoft accounts** - For apps used only by personal Microsoft accounts.
+    6. Leave the **Redirect URI** section blank for now; we'll configure it in a later step.
+    7. Click **Register** to complete the app registration.
+  </Step>
+  <Step title="Note your application (client) ID">
+    After registration, you'll be taken to the application's Overview page. Record the **Application (client) ID**, which uniquely identifies your application and is used in your application's code as part of validating security tokens.
+  </Step>
+  <Step title="Add a redirect URI">
+    1. In the left sidebar, select **Authentication**.
+    2. Under **Platform configurations**, select **Add a platform**.
+    3. Select **Web** as the platform type.
+    4. Enter `https://api.nango.dev/oauth/callback` as the Redirect URI.
+    5. Under **Implicit grant and hybrid flows**, check the boxes for **Access tokens** and **ID tokens** if your application needs them.
+    6. Under **Advanced settings**, set **Allow public client flows** to **No** for web applications.
+    7. Click **Configure** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **API permissions**.
+    2. Click **Add a permission**.
+    3. Select **Microsoft Graph** to integrate with **Outlook**.
+    4. Choose the type of permissions:
+       - **Delegated permissions** - Your app accesses the API as the signed-in user.
+       - **Application permissions** - Your app accesses the API directly without a signed-in user.
+    5. Select the specific permissions your app requires, Please refer to the table below for some of the [commonly used scopes](#common-scopes).
+    6. Click **Add permissions**.
+    7. If your application requires admin consent, click **Grant admin consent for [tenant]** to pre-authorize the permissions.
+  </Step>
+  <Step title="Create a client secret">
+    1. In the left sidebar, select **Certificates & secrets**.
+    2. Under **Client secrets**, click **New client secret**.
+    3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom).
+    4. Click **Add**.
+    5. **Important**: Copy the secret value immediately and store it securely. You won't be able to see it again after you leave this page.
+  </Step>
+  <Step title="Configure token settings (optional)">
+    1. In the left sidebar, select **Token configuration**.
+    2. Here you can configure optional claims to be included in the ID and access tokens issued to your application.
+    3. Click **Add optional claim** if you need to include additional information in your tokens.
+  </Step>
+  <Step title="Configure app visibility (optional)">
+    If you want users to see your app on their My Apps page:
+    
+    1. From the search bar at the top of the Azure portal, search for **Enterprise applications**, select it, and then choose your app.
+    2. On the **Properties** page, set **Visible to users?** to **Yes**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
-_No setup guide yet._
-
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outlook.mdx)</Note>
-
-
-## Useful links
-
--   [How to register an Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2)
--   [OAuth related docs](https://learn.microsoft.com/en-us/graph/auth-v2-user?tabs=http#authentication-and-authorization-steps)
--   [REST API docs](https://learn.microsoft.com/en-us/outlook/rest/#outlook-rest-api-via-microsoft-graph)
-
+<UsefulLinks />
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outlook.mdx)</Note>
 
+## Common Scopes
+
+| Scope                              | Description                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| `Mail.Read`                        | Read the signed-in user's email messages                                    |
+| `Mail.ReadWrite`                   | Read and write the user's mail                                              |
+| `Mail.Send`                        | Send mail as the signed-in user                                             |
+| `Mail.ReadWrite.Shared`           | Read and write mail shared with the user                                    |
+| `Calendars.Read`                  | Read the user's calendar events                                             |
+| `Calendars.ReadWrite`             | Read and write the user's calendar events                                   |
+| `Calendars.Read.Shared`           | Read shared calendars that the user has access to                           |
+| `Calendars.ReadWrite.Shared`      | Read and write shared calendars that the user has access to                 |
+| `Contacts.Read`                   | Read the user's contacts                                                    |
+| `Contacts.ReadWrite`              | Read and write the user's contacts                                          |
+| `offline_access`                  | Access to refresh tokens for offline access                                 |
+| `User.Read.All`                   | Read user profiles in the organization                                      |
+
+
 ## API gotchas
-
--   To get refresh token, you will need to add **`offline_access`** to the list of your scopes.
--   You can find permissions required for each API call in their corresponding API methods section.
--   If you are developing an app for users within your own organization and the app has already been granted adequate permissions at the organization level with user consent turned off, you must override the integration config when calling the create connect session method:
-    - Override `authorization_params` by setting only `response_type: code` to remove the consent screen (this removes both `response_mode` and `prompt`).
-    - Set the scopes to [`.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope) to ensure the permissions remain the same as those granted at the organization level.
-
-```typescript
-const { data } = await nango.createConnectSession({
-  [...],
-  integrations_config_defaults: {
-    "outlook": {
-      authorization_params: {
-        response_type: 'code'
-      },
-      default_scopes: '.default'
-    }
-  }
-});
-```
-
-If this is not done, the app will [show a consent screen prompting the user to grant permissions](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#example-1-the-user-or-tenant-admin-has-granted-permissions) which the user will be unable to do without admin access.
+-   You can find permissions required for each API call in their corresponding API methods section, i.e, to list messages from Outlook, you can have a look at [List Messages permissions](https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0&tabs=http#permissions).
+<APIGotchas />
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outlook.mdx)</Note>

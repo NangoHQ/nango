@@ -62,6 +62,9 @@ export const ENVS = z.object({
     ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
+    ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
+    ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
+    ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
@@ -133,6 +136,10 @@ export const ENVS = z.object({
     FLAG_PLAN_ENABLED: bool,
     FLAG_USAGE_ENABLED: bool,
     ORB_API_KEY: z.string().optional(),
+    BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
+    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
+    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
+    BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
 
     // --- Third parties
     // AWS
@@ -167,6 +174,10 @@ export const ENVS = z.object({
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.string().url().optional(),
+
+    // SMTP
+    SMTP_URL: z.string().url().optional(),
+    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),

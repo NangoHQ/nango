@@ -14,6 +14,9 @@
                 "display_name": {
                     "type": "string"
                 },
+                "alternate_access_token_response_path": {
+                    "type": "string"
+                },
                 "auth": {
                     "type": "object",
                     "additionalProperties": true,
@@ -252,6 +255,23 @@
                                 },
                                 "error_code": {
                                     "type": "number"
+                                },
+                                "in_body": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["path", "strategy"],
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "strategy": {
+                                            "type": "string",
+                                            "enum": ["at", "after"]
+                                        }
+                                    }
                                 }
                             }
                         },

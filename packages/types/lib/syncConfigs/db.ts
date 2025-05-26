@@ -1,7 +1,7 @@
-import type { JSONSchema7 } from 'json-schema';
 import type { TimestampsAndDeleted } from '../db';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
 import type { NangoModel, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { JSONSchema7 } from 'json-schema';
 
 export interface DBSyncConfig extends TimestampsAndDeleted {
     id: number;
@@ -26,5 +26,6 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema: JSONSchema7 | null;
+    sdk_version: string | null;
 }
 export type DBSyncConfigInsert = Omit<DBSyncConfig, 'id'>;

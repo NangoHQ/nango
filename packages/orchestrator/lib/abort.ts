@@ -36,11 +36,13 @@ export async function scheduleAbortTask({ scheduler, task, reason }: { scheduler
               }
             : payload,
         groupKey: aborted.value.groupKey,
+        groupMaxConcurrency: aborted.value.groupMaxConcurrency,
         retryMax: 0,
         retryCount: 0,
         createdToStartedTimeoutSecs: 60,
         startedToCompletedTimeoutSecs: 60,
-        heartbeatTimeoutSecs: 60
+        heartbeatTimeoutSecs: 60,
+        ownerKey: aborted.value.ownerKey
     });
     if (abortTask.isErr()) {
         logger.error(`Failed to create abort task`, abortTask.error);

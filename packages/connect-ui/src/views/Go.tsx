@@ -12,6 +12,7 @@ import { CustomInput } from '@/components/CustomInput';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { triggerClose, triggerConnection } from '@/lib/events';
+import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
@@ -88,6 +89,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 export const Go: React.FC = () => {
     const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
     const nango = useNango();
+    const { t } = useI18n();
 
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<AuthResult>();
@@ -159,7 +161,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (preconfigured[name] || schema.hidden) {
+            if (preconfigured[name] ?? schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -212,7 +214,7 @@ export const Go: React.FC = () => {
             }
 
             telemetry('click:connect');
-            setLoading(true);
+            setLoading(detectClosedAuthWindow);
             setError(null);
             // we don't care if it was already opened
             nango.clear();
@@ -222,7 +224,12 @@ export const Go: React.FC = () => {
                 // Legacy stuff because types were mixed together inappropriately
                 if (provider.auth_mode === 'NONE') {
                     res = await nango.create(integration.unique_key, { ...values });
-                } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'CUSTOM') {
+                } else if (
+                    provider.auth_mode === 'OAUTH2' ||
+                    provider.auth_mode === 'OAUTH1' ||
+                    provider.auth_mode === 'CUSTOM' ||
+                    provider.auth_mode === 'APP'
+                ) {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
                         detectClosedAuthWindow
@@ -240,19 +247,19 @@ export const Go: React.FC = () => {
                 if (err instanceof AuthError) {
                     if (err.type === 'blocked_by_browser') {
                         telemetry('popup:blocked_by_browser');
-                        setError('Auth pop-up blocked by your browser, please allow pop-ups to open');
+                        setError(t('go.popupBlocked'));
                         return;
                     } else if (err.type === 'windowClosed') {
                         telemetry('popup:closed_early');
-                        setError('The auth pop-up was closed before the end of the process, please try again');
+                        setError(t('go.popupClosed'));
                         return;
                     } else if (err.type === 'connection_test_failed') {
                         setConnectionFailed(true);
-                        setError(`${provider.display_name} did not validate your credentials. Please check the values and try again.`);
+                        setError(t('go.invalidCredentials', { provider: provider.display_name }));
                         return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
-                        setError(`You have reached the maximum number of connections allowed. Please reach out to the admin.`);
+                        setError(t('go.resourceCapped'));
                         return;
                     }
                 }
@@ -262,7 +269,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [provider, integration, loading, nango]
+        [provider, integration, loading, nango, t, detectClosedAuthWindow]
     );
 
     if (!provider || !integration) {
@@ -276,11 +283,11 @@ export const Go: React.FC = () => {
                 <div></div>
                 <div className="flex flex-col items-center gap-5">
                     <IconCircleCheckFilled className="text-green-base" size={44} />
-                    <h2 className="text-xl font-semibold">Success!</h2>
-                    <p className="text-dark-500">You&apos;ve successfully set up your {provider.name} integration</p>
+                    <h2 className="text-xl font-semibold">{t('go.success')}</h2>
+                    <p className="text-dark-500">{t('go.successMessage', { provider: provider.name })}</p>
                 </div>
                 <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
-                    Finish
+                    {t('common.finish')}
                 </Button>
             </main>
         );
@@ -292,8 +299,8 @@ export const Go: React.FC = () => {
                 <div></div>
                 <div className="flex flex-col items-center gap-5">
                     <IconExclamationCircleFilled className="text-dark-800" size={44} />
-                    <h2 className="text-xl font-semibold">Connection failed</h2>
-                    {error ? <p className="text-dark-500 text-center w-[80%]">{error}</p> : <p>Please try again</p>}
+                    <h2 className="text-xl font-semibold">{t('go.connectionFailed')}</h2>
+                    {error ? <p className="text-dark-500 text-center w-[80%]">{error}</p> : <p>{t('go.tryAgain')}</p>}
                 </div>
                 <Button
                     className="w-full"
@@ -304,7 +311,7 @@ export const Go: React.FC = () => {
                         setError(null);
                     }}
                 >
-                    Back
+                    {t('common.back')}
                 </Button>
             </main>
         );
@@ -316,14 +323,14 @@ export const Go: React.FC = () => {
                 <div className="absolute top-0 left-0 w-full flex justify-between">
                     {!isSingleIntegration ? (
                         <Link to="/" onClick={() => setIsDirty(false)}>
-                            <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
-                                <IconArrowLeft stroke={1} /> back
+                            <Button className="gap-1" title={t('go.backToList')} variant={'transparent'}>
+                                <IconArrowLeft stroke={1} /> {t('common.back')}
                             </Button>
                         </Link>
                     ) : (
                         <div></div>
                     )}
-                    <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose('click:close')}>
+                    <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
                         <IconX stroke={1} />
                     </Button>
                 </div>
@@ -331,7 +338,7 @@ export const Go: React.FC = () => {
                     <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                         <img src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-xl text-dark-800">Link {provider.display_name} Account</h1>
+                    <h1 className="font-semibold text-xl text-dark-800">{t('go.linkAccount', { provider: provider.display_name })}</h1>
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
@@ -345,14 +352,14 @@ export const Go: React.FC = () => {
                                     const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                    const isPreconfigured = preconfigured[key];
+                                    const isPreconfigured = typeof preconfigured[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
+                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {
@@ -404,8 +411,8 @@ export const Go: React.FC = () => {
                                 <div></div>
                                 <div className="text-sm text-dark-500 w-full text-center -mt-20">
                                     {/* visual centering */}
-                                    We will connect you to {provider.display_name}
-                                    {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popups"}
+                                    {t('go.willConnect', { provider: provider.display_name })}
+                                    {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
                                 </div>
                             </>
                         )}
@@ -423,14 +430,14 @@ export const Go: React.FC = () => {
                                     <div>
                                         <IconExclamationCircle size={20} stroke={1} />
                                     </div>
-                                    A pre-configured field set by the administrator is invalid, please reach out to the support
+                                    {t('go.invalidPreconfigured')}
                                 </div>
                             )}
                             {provider.docs_connect && (
                                 <p className="text-dark-500 text-center">
-                                    Need help?{' '}
+                                    {t('common.needHelp')}{' '}
                                     <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect} onClick={() => telemetry('click:doc')}>
-                                        View connection guide
+                                        {t('common.viewGuide')}
                                     </Link>
                                 </p>
                             )}
@@ -441,7 +448,7 @@ export const Go: React.FC = () => {
                                 size={'lg'}
                                 type="submit"
                             >
-                                {error ? 'Try Again' : loading ? 'Connecting...' : 'Connect'}
+                                {error ? t('common.tryAgain') : loading ? t('common.connecting') : t('go.connect')}
                             </Button>
                         </div>
                     </form>

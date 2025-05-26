@@ -19,6 +19,7 @@ import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
     executeAction: () => Promise.resolve({}) as any,
+    executeActionAsync: () => Promise.resolve({}) as any,
     executeWebhook: () => Promise.resolve({}) as any,
     executeOnEvent: () => Promise.resolve({}) as any,
     executeSync: () => Promise.resolve({}) as any,
@@ -27,7 +28,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     unpauseSync: () => Promise.resolve({}) as any,
     deleteSync: () => Promise.resolve({}) as any,
     updateSyncFrequency: () => Promise.resolve({}) as any,
-    searchSchedules: () => Promise.resolve({}) as any
+    searchSchedules: () => Promise.resolve({}) as any,
+    getOutput: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
@@ -54,6 +56,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
+            sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: []
         });
 
@@ -95,6 +98,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
+            sdkVersion: '0.0.0-yaml',
             onEventScriptsByProvider: []
         });
         expect(error?.message).toBe(
@@ -167,6 +171,7 @@ describe('Sync config create', () => {
                     input: null,
                     sync_type: 'full',
                     models_json_schema: null,
+                    sdk_version: null,
                     created_at: new Date(),
                     updated_at: new Date()
                 }
@@ -197,6 +202,7 @@ describe('Sync config create', () => {
                 input: null,
                 sync_type: 'full',
                 models_json_schema: null,
+                sdk_version: null,
                 created_at: new Date(),
                 updated_at: new Date()
             });
@@ -226,6 +232,7 @@ describe('Sync config create', () => {
                 input: null,
                 sync_type: 'full',
                 models_json_schema: null,
+                sdk_version: null,
                 created_at: new Date(),
                 updated_at: new Date()
             });
@@ -251,6 +258,7 @@ describe('Sync config create', () => {
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 debug,
+                sdkVersion: '0.0.0-yaml',
                 onEventScriptsByProvider: []
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');

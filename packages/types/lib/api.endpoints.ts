@@ -9,6 +9,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api';
+import type { GetAsyncActionResult } from './action/api';
 import type { EndpointMethod } from './api';
 import type {
     PostPublicApiKeyAuthorization,
@@ -54,7 +55,9 @@ import type {
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
     PatchIntegration,
-    PostIntegration
+    PatchPublicIntegration,
+    PostIntegration,
+    PostPublicIntegration
 } from './integration/api';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
@@ -103,7 +106,10 @@ export type PublicApiEndpoints =
     | GetPublicRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
-    | PutPublicSyncConnectionFrequency;
+    | PutPublicSyncConnectionFrequency
+    | PostPublicIntegration
+    | PatchPublicIntegration
+    | GetAsyncActionResult;
 
 export type PrivateApiEndpoints =
     | PostSignup

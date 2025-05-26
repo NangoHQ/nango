@@ -5,6 +5,7 @@ import multer from 'multer';
 
 import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
+import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -17,7 +18,7 @@ import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -33,7 +34,11 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
+import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
+import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
+import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
+import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -164,18 +169,25 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
 
+// @deprecated
 publicAPI.use('/config', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
 // @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
+// @deprecated
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
+// @deprecated
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
+// @deprecated
+publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegrationDeprecated);
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
+publicAPI.route('/integrations').post(apiAuth, postPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, patchPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, deletePublicIntegration);
 
 publicAPI.use('/connection', jsonContentTypeMiddleware);
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
@@ -207,6 +219,10 @@ publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(s
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
+publicAPI.use('/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/mcp').post(apiAuth, postMcp);
+publicAPI.route('/mcp').get(apiAuth, getMcp);
+
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 // @deprecated use /scripts/configs
@@ -217,6 +233,7 @@ publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
@@ -226,6 +243,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
-publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
