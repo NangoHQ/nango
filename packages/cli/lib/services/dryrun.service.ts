@@ -22,12 +22,13 @@ import { displayValidationError } from '../utils/errors.js';
 import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 
-import type { GlobalOptions } from '../types.js';
 import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
-interface RunArgs extends GlobalOptions {
+interface RunArgs {
+    autoConfirm: boolean;
     sync: string;
+    debug: boolean;
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
