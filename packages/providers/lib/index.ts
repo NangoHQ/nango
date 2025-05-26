@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import yaml from 'js-yaml';
 
+import { clearLocalizationCache, getLocalizedProviders } from './localization.js';
+
 import type { Provider, ProviderAlias } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,24 +13,30 @@ const pkgRoot = path.join(__filename, '../../');
 
 let providers: Record<string, Provider> | undefined = undefined;
 
-export function updateProviderCache(update: Record<string, Provider>) {
+export function updateProviderCache(update: Record<string, Provider>): void {
     providers = update;
+    // Clear language cache when base providers are updated
+    clearLocalizationCache();
 }
 
-export function getProviders() {
+export function getProviders(language?: string): Record<string, Provider> | undefined {
     if (!providers) {
         providers = loadProvidersYaml();
     }
 
-    return providers;
+    if (!providers || !language) {
+        return providers;
+    }
+
+    return getLocalizedProviders(providers, language);
 }
 
-export function getProvider(providerName: string): Provider | null {
-    const providers = getProviders();
+export function getProvider(providerName: string, language?: string): Provider | null {
+    const providers = getProviders(language);
     return providers?.[providerName] ?? null;
 }
 
-function loadProvidersYaml(): Record<string, Provider> | undefined {
+export function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
         const providersYamlPath = path.join(pkgRoot, 'providers.yaml');
         const fileEntries = yaml.load(fs.readFileSync(providersYamlPath).toString()) as Record<string, Provider | ProviderAlias>;

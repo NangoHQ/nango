@@ -16,7 +16,8 @@ const locals: Required<RequestLocals> = {
     user: { id: 0 } as DBUser,
     connectSession: { id: 0 } as ConnectSession,
     endUser: { id: 0 } as EndUser,
-    plan: seeders.getTestPlan()
+    plan: seeders.getTestPlan(),
+    lang: 'en'
 };
 
 /**
