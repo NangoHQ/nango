@@ -25,8 +25,9 @@ const sync = createSync({
     runs: 'every hour',
     autoStart: true,
     syncType: 'full',
-
     trackDeletes: true,
+
+    metadata: z.never(),
     models: {
         GithubIssue: issueSchema
     },
