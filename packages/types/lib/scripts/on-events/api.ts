@@ -11,6 +11,7 @@ export interface OnEventScript {
     version: DBOnEventScript['version'];
     active: DBOnEventScript['active'];
     event: OnEventType;
+    sdkVersion: DBOnEventScript['sdk_version'];
     createdAt: DBOnEventScript['created_at'];
     updatedAt: DBOnEventScript['updated_at'];
 }
