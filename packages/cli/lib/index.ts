@@ -111,7 +111,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -149,7 +149,7 @@ program
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -178,7 +178,7 @@ program
         const { compileInterfaces, autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -202,7 +202,7 @@ program
         const options = this.opts<DeployOptions>();
         const { debug } = options;
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -216,7 +216,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -230,7 +230,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -244,7 +244,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -260,7 +260,7 @@ program
     .action(async function (this: Command) {
         const { debug, path: optionalPath, integrationTemplates } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
-        const precheck = await verificationService.ensureNangoV1({ fullPath: absolutePath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath: absolutePath, debug });
         if (!precheck) {
             return;
         }
@@ -286,7 +286,7 @@ program
     .action(async function (this: Command, environment: string) {
         const options = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug: options.debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug: options.debug });
         if (!precheck) {
             return;
         }
@@ -308,7 +308,7 @@ program
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -336,7 +336,7 @@ program
         const { autoConfirm, debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -360,7 +360,7 @@ program
     .action(async function (this: Command, environmentName: string) {
         const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -378,7 +378,7 @@ program
         const { debug, nangoRemoteEnvironment, integration } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }

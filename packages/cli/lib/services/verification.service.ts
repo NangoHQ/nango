@@ -150,7 +150,7 @@ class VerificationService {
         };
     }
 
-    public async ensureNangoV1({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+    public async ensureNangoYaml({ fullPath, debug }: { fullPath: string; debug: boolean }) {
         const precheck = await this.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
             console.log(chalk.red(`Not inside a Nango folder`));
