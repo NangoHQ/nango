@@ -1748,6 +1748,38 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+bullhorn:
+    display_name: Bullhorn
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://auth-${connectionConfig.datacenter}.bullhornstaffing.com/oauth/authorize
+    token_url: https://auth-${connectionConfig.datacenter}.bullhornstaffing.com/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.bullhorn.com
+        headers:
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/jobOrder
+    docs: https://docs.nango.dev/integrations/all/bullhorn
+    docs_connect: https://docs.nango.dev/integrations/all/bullhorn/connect
+    connection_config:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your Bullhorn account
+    credentials:
+        datacenter:
+            type: string
+            title: Datacenter
+            description: The datacenter of your Bullhorn account
+            example: 1
+            doc_section: '#step-1-finding-your-datacenter-id'
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
