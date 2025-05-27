@@ -155,12 +155,6 @@ program
         }
 
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const { success } = await compileAllFiles({ fullPath, debug });
-        if (!success) {
-            console.log(chalk.red('Failed to compile. Exiting'));
-            process.exitCode = 1;
-            return;
-        }
 
         const dryRun = new DryRunService({ fullPath, validation });
         await dryRun.run(
