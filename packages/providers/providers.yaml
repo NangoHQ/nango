@@ -9655,6 +9655,30 @@ teamwork:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
 
+terraform:
+    display_name: Terraform
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.terraform.io
+        headers:
+            Authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/organizations
+    docs: https://docs.nango.dev/integrations/all/terraform
+    docs_connect: https://docs.nango.dev/integrations/all/terraform/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Terraform account
+            doc_section: '#step-1-generating-your-api-key'
+            example: VbQo****************************
+            pattern: '^[a-zA-Z0-9_]+$'
+
 ticktick:
     display_name: TickTick
     categories:
