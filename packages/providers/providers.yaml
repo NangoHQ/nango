@@ -9678,6 +9678,12 @@ terraform:
             doc_section: '#step-1-generating-your-api-key'
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9_]+$'
+    connection_config:
+        organizationId:
+            type: string
+            title: Organization Id
+            description: Your Terraform Organization Id
+            example: demo_organization
 
 ticktick:
     display_name: TickTick
