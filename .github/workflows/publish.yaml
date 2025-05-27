@@ -12,7 +12,7 @@ on:
 
 jobs:
     npm-publish:
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -29,12 +29,12 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Publish npm packages
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-              shell: bash
-              run: |
-                  npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
+            # - name: Publish npm packages
+            #   env:
+            #       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            #   shell: bash
+            #   run: |
+            #       npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
 
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
@@ -45,4 +45,4 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
-                  npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
+                  npx zx ./scripts/gitrelease.debug.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
