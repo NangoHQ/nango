@@ -1,9 +1,12 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { providerNameSchema } from '../../helpers/validation.js';
-import type { GetPublicProvider } from '@nangohq/types';
+
 import { getProvider } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerNameSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { GetPublicProvider } from '@nangohq/types';
 
 export const validationParams = z
     .object({
@@ -24,8 +27,10 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
         return;
     }
 
+    const lang = res.locals['lang'];
+
     const params: GetPublicProvider['Params'] = valParams.data;
-    const provider = getProvider(params.provider);
+    const provider = getProvider(params.provider, lang);
     if (!provider) {
         res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${params.provider}` } });
         return;
