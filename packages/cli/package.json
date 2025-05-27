@@ -3,11 +3,18 @@
     "version": "0.59.7",
     "description": "Nango's CLI tool.",
     "type": "module",
-    "main": "dist/index.js",
     "bin": {
-        "nango": "dist/index.js"
+        "nango": "./dist/index.js"
     },
-    "types": "dist/nango-sync.d.ts",
+    "main": "./dist/sdkScripts.js",
+    "types": "./dist/sdkScripts.d.ts",
+    "typings": "./dist/sdkScripts.d.ts",
+    "exports": {
+        ".": {
+            "require": "./dist/sdkScripts.js",
+            "types": "./dist/sdkScripts.d.ts"
+        }
+    },
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {
