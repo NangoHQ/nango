@@ -133,6 +133,9 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
     return Ok(true);
 }
 
+/**
+ * Runs the typescript compiler to typecheck the code.
+ */
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
         rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
@@ -164,22 +167,12 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 }
 
 /**
- * We use esbuild to compile the code to .cjs.
- * node.vm only supports CJS and we also bundle all imported files in the same file.
+ * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
-export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
-    const rel = path.relative(projectRootPath, entryPoint);
-    // File are compiled to build/integration-type-script-name.cjs
-    // Because it's easier to manipulate the files and it's easier in S3
-    const outfile = path.join(projectRootPath, 'build', tsToJsPath(rel));
-
-    // Ensure the output directory exists
-    await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
-
+export async function bundleFile({ entryPoint }: { entryPoint: string }): Promise<Result<string>> {
     try {
         const res = await build({
             entryPoints: [entryPoint],
-            outfile: outfile,
             bundle: true,
             sourcemap: 'inline',
             format: 'cjs',
@@ -187,7 +180,7 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
             platform: 'node',
             logLevel: 'silent',
             treeShaking: true,
-
+            write: false, // Output in memory
             plugins: [
                 {
                     name: 'remove-create-wrappers',
@@ -228,6 +221,9 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
         if (res.errors.length > 0) {
             return Err('failed_to_build');
         }
+
+        const output = res.outputFiles?.[0]?.text || '';
+        return Ok(output);
     } catch (err) {
         if (err instanceof Error && err.message.includes('export')) {
             return Err('export');
@@ -235,7 +231,31 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
         console.error(chalk.red(err));
         return Err('failed_to_build_unknown');
     }
+}
 
+/**
+ * We use esbuild to compile the code to .cjs.
+ * node.vm only supports CJS and we also bundle all imported files in the same file.
+ */
+export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+    const rel = path.relative(projectRootPath, entryPoint);
+    // File are compiled to build/integration-type-script-name.cjs
+    // Because it's easier to manipulate the files and it's easier in S3
+    const outfile = path.join(projectRootPath, 'build', tsToJsPath(rel));
+
+    // Ensure the output directory exists
+    await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
+
+    const bundleResult = await bundleFile({ entryPoint });
+    if (bundleResult.isErr()) {
+        return Err(bundleResult.error);
+    }
+    try {
+        await fs.promises.writeFile(outfile, bundleResult.value, 'utf8');
+    } catch (err) {
+        console.error(chalk.red(err));
+        return Err('failed_to_write_output');
+    }
     return Ok(true);
 }
 
@@ -329,7 +349,8 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     if (calleeName === 'createOnEvent') varName = 'onEvent';
                     // Inject type property (mutate the object literal)
                     arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
-                    // Do not recreate variable or export default, just mutate
+                    // Replace the variable's initializer with the object literal
+                    binding.path.get('init').replaceWith(arg);
                     return;
                 } else {
                     throw path.buildCodeFrameError(`Unsupported export`);

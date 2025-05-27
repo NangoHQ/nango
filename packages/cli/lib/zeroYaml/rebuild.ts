@@ -82,7 +82,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                     name: basename,
                     output: Object.entries(params.models).map(([name, model]) => {
                         const to = zodToNangoModelField(name, model);
-                        parsed.models.set(name, { name, fields: to['value'] as NangoModelField[] });
+                        parsed.models.set(name, { name, fields: to['value'] as NangoModelField[], isAnon: !Array.isArray(to.value) });
                         usedModels.push(name);
                         return name;
                     }),

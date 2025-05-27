@@ -6,8 +6,21 @@ import { promisify } from 'node:util';
 const exec = promisify(execCb);
 import { describe, expect, it } from 'vitest';
 
-import { compileAll } from './compile.js';
+import { bundleFile, compileAll } from './compile.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
+
+describe('bundleFile', () => {
+    it('should bundle a sync with a constant export', async () => {
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.ts') });
+        const value = result.unwrap();
+        expect(value).toMatchSnapshot();
+    });
+    it('should bundle an action with a default export', async () => {
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.ts') });
+        const value = result.unwrap();
+        expect(value).toMatchSnapshot();
+    });
+});
 
 describe('compileAll', () => {
     it('should compile a minimal integration', async () => {

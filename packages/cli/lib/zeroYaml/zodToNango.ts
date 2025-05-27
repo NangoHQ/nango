@@ -43,9 +43,9 @@ export function zodToNangoModelField(name: string, schema: z.ZodType): NangoMode
         }
         return { name, value: values, tsType: true, union: true, optional };
     } else if (isZodNever(schema)) {
-        return { name, value: 'never', tsType: true };
+        return { name, value: 'never', tsType: true, optional };
     } else if (isZodVoid(schema)) {
-        return { name, value: null, tsType: true, optional };
+        return { name, value: 'void', tsType: true, optional };
     } else if (isZodOptional(schema)) {
         return zodToNangoModelField(name, schema._def.innerType);
     } else {
