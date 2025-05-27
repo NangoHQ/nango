@@ -99,7 +99,7 @@ export async function exec({
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context) as ScriptExports;
 
-            const isZeroYaml = typeof scriptExports.default === 'object' && 'type' in scriptExports.default;
+            const isZeroYaml = nangoProps.syncConfig.sdk_version && nangoProps.syncConfig.sdk_version.includes('-zero');
             const isNangoYaml = !isZeroYaml && typeof scriptExports.default === 'function';
 
             if (!isZeroYaml && !isNangoYaml) {
