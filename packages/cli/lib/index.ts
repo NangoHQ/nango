@@ -24,8 +24,9 @@ import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { compileAll } from './zeroYaml/compile.js';
 
-import type { DeployOptions } from './types.js';
+import type { DeployOptions, GlobalOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -253,9 +254,22 @@ program
     .command('compile', { hidden: true })
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
+        const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.log(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (precheck.isZeroYaml) {
+            const res = await compileAll({ fullPath, debug });
+            if (res.isErr()) {
+                process.exitCode = 1;
+            }
+            return;
+        }
 
         const match = verificationService.filesMatchConfig({ fullPath });
         if (!match) {
