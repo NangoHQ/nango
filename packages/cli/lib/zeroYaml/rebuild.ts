@@ -86,7 +86,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                         usedModels.push(name);
                         return name;
                     }),
-                    runs: params.runs,
+                    runs: params.frequency,
                     scopes: params.scopes || [],
                     sync_type: params.syncType,
                     track_deletes: params.trackDeletes === true,

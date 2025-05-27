@@ -97,7 +97,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await esbuild({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileOne({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.error(chalk.red(buildRes.error.message));
@@ -135,7 +135,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
-        rootNames: entryPoints.map((file) => file.replace('.js', '.ts')),
+        rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
         options: {
             ...tsconfig
         }
@@ -167,7 +167,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
@@ -187,6 +187,7 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
             platform: 'node',
             logLevel: 'silent',
             treeShaking: true,
+
             plugins: [
                 {
                     name: 'remove-create-wrappers',
@@ -225,14 +226,14 @@ async function esbuild({ entryPoint, projectRootPath }: { entryPoint: string; pr
             }
         });
         if (res.errors.length > 0) {
-            // esbuild already prints errors to console with logLevel: 'error'
             return Err('failed_to_build');
         }
     } catch (err) {
-        if (err instanceof Error && err.message.includes('invalid_export')) {
-            return Err('invalid_export');
+        if (err instanceof Error && err.message.includes('export')) {
+            return Err('export');
         }
-        return Err('failed_to_build');
+        console.error(chalk.red(err));
+        return Err('failed_to_build_unknown');
     }
 
     return Ok(true);
@@ -274,46 +275,65 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
     return {
         visitor: {
             ExportDefaultDeclaration(path) {
-                // Prevent double transformation
-                // Since we are adding a new export, babel will try to process it again
                 if ((path.node as any).__transformedByRemoveCreateWrappers) {
                     return;
                 }
 
                 const decl = path.node.declaration;
-                if (!t.isCallExpression(decl) || !t.isIdentifier(decl.callee) || !allowedExports.includes(decl.callee.name)) {
-                    throw new Error('invalid_export');
+                let calleeName = null;
+                let arg = null;
+
+                // Case 1: export default createAction({...})
+                if (t.isCallExpression(decl) && t.isIdentifier(decl.callee) && allowedExports.includes(decl.callee.name)) {
+                    let varName = '';
+                    calleeName = decl.callee.name;
+                    arg = decl.arguments[0];
+                    if (!t.isObjectExpression(arg)) {
+                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                    }
+
+                    if (calleeName === 'createAction') varName = 'action';
+                    if (calleeName === 'createSync') varName = 'sync';
+                    if (calleeName === 'createOnEvent') varName = 'onEvent';
+
+                    // Inject type property
+                    arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                    const newValue = arg;
+                    // Insert: export const <varName> = <newValue>;
+                    const exportConst = t.exportNamedDeclaration(t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]), []);
+                    // Insert: export default <varName>;
+                    const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
+                    (exportConst as any).__transformedByRemoveCreateWrappers = true;
+                    (exportDefault as any).__transformedByRemoveCreateWrappers = true;
+                    path.replaceWithMultiple([exportConst, exportDefault]);
                 }
+                // Case 2: export default action; (or sync/onEvent)
+                else if (t.isIdentifier(decl)) {
+                    const binding = path.scope.getBinding(decl.name);
+                    if (!binding || !binding.path.isVariableDeclarator()) {
+                        throw path.buildCodeFrameError(`Invalid constant export`);
+                    }
+                    const init = binding.path.node.init;
+                    if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
+                        throw path.buildCodeFrameError(`Invalid function used in export`);
+                    }
 
-                if (decl.arguments.length !== 1) {
-                    throw new Error('invalid_arguments');
+                    let varName = '';
+                    calleeName = init.callee.name;
+                    arg = init.arguments[0];
+                    if (!t.isObjectExpression(arg)) {
+                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                    }
+                    if (calleeName === 'createAction') varName = 'action';
+                    if (calleeName === 'createSync') varName = 'sync';
+                    if (calleeName === 'createOnEvent') varName = 'onEvent';
+                    // Inject type property (mutate the object literal)
+                    arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                    // Do not recreate variable or export default, just mutate
+                    return;
+                } else {
+                    throw path.buildCodeFrameError(`Unsupported export`);
                 }
-
-                const arg = decl.arguments[0];
-                let varName = '';
-                if (decl.callee.name === 'createAction') varName = 'action';
-                if (decl.callee.name === 'createSync') varName = 'sync';
-                if (decl.callee.name === 'createOnEvent') varName = 'onEvent';
-
-                if (!t.isObjectExpression(arg)) {
-                    throw path.buildCodeFrameError(`Argument to ${decl.callee.name} must be an object literal.`);
-                }
-
-                // Directly add/overwrite 'type' property to arg
-                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
-                const newValue = arg;
-
-                // Insert: export const <varName> = <newValue>;
-                const exportConst = t.exportNamedDeclaration(t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]), []);
-                // Insert: export default <varName>;
-                const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
-
-                // Mark as transformed to prevent double-processing
-                (exportConst as any).__transformedByRemoveCreateWrappers = true;
-                (exportDefault as any).__transformedByRemoveCreateWrappers = true;
-
-                // Replace the export default with both statements
-                path.replaceWithMultiple([exportConst, exportDefault]);
             }
         }
     };
