@@ -9664,6 +9664,8 @@ terraform:
         base_url: https://app.terraform.io
         headers:
             Authorization: Bearer ${apiKey}
+        retry:
+            after: 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
