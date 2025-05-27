@@ -132,15 +132,18 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
 
     async function onDownloadScript() {
         try {
+            const { provider, unique_key } = integration.integration;
+            const { id, name, version, type, is_public } = flow;
+
             const response = await apiFetch(`${baseUrl}/api/v1/flow/download?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    id: flow.id,
-                    name: flow.name,
-                    provider: integration.integration.provider,
-                    is_public: flow.is_public,
-                    providerConfigKey: integration.integration.unique_key,
-                    flowType: flow.type
+                    id,
+                    name,
+                    provider,
+                    is_public,
+                    providerConfigKey: unique_key,
+                    flowType: type
                 })
             });
 
@@ -152,7 +155,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${flow.name}.zip`;
+            a.download = `${provider}_${name}_${version}.zip`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
