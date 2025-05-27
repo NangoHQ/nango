@@ -8,8 +8,8 @@ const nextTag = `v${nextVersion}`;
 
 echo`Publishing ${nextVersion} on branch ${branch}`;
 
-// Configure git to use the GitHub token for authentication
-await $`git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"`;
+// git to use the GitHub token for authentication
+await $`git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/NangoHQ/nango.git`;
 
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
@@ -37,7 +37,7 @@ await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" tag -a 
 
 echo`Pushing`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
-await $`git push --tags`;
+await $`git push --tags origin`;
 
 echo`Commit pushed, publishing release...`;
 // Push GitHub release
