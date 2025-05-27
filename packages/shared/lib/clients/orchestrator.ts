@@ -138,7 +138,8 @@ export class Orchestrator {
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
             'connection.provider_config_key': connection.provider_config_key,
-            'connection.environment_id': connection.environment_id
+            'connection.environment_id': connection.environment_id,
+            async
         };
 
         const span = tracer.startSpan('execute.action', {
