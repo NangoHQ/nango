@@ -7,7 +7,7 @@ import { printDebug } from '../utils.js';
 import { tsToJsPath } from './compile.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
-import type { NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, Result } from '@nangohq/types';
+import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'onEvent'];
 const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
@@ -42,8 +42,8 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodObject<any>>
-            | CreateActionResponse<Zod.ZodAny, Zod.ZodAny>
+            | CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>
+            | CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
@@ -65,54 +65,18 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
 
         switch (script.type) {
             case 'sync': {
-                const params = script;
-                const usedModels: string[] = [...Object.keys(params.models)];
-                const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
-                if (metadata) {
-                    usedModels.push(metadata.name);
-                    parsed.models.set(metadata.name, { name: metadata.name, fields: metadata.value as NangoModelField[] });
-                }
-
-                integration.syncs.push({
-                    type: 'sync',
-                    description: params.description,
-                    auto_start: params.autoStart === true,
-                    endpoints: params.endpoints,
-                    input: metadata?.name || null,
-                    name: basename,
-                    output: Object.entries(params.models).map(([name, model]) => {
-                        const to = zodToNangoModelField(name, model);
-                        parsed.models.set(name, { name, fields: to['value'] as NangoModelField[], isAnon: !Array.isArray(to.value) });
-                        usedModels.push(name);
-                        return name;
-                    }),
-                    runs: params.frequency,
-                    scopes: params.scopes || [],
-                    sync_type: params.syncType,
-                    track_deletes: params.trackDeletes === true,
-                    usedModels,
-                    version: params.version || '0.0.1',
-                    webhookSubscriptions: params.webhookSubscriptions || []
+                const def = rebuildSync({ params: script, integrationIdClean, basename, basenameClean });
+                integration.syncs.push(def.sync);
+                def.models.forEach((v, k) => {
+                    parsed.models.set(k, v);
                 });
                 break;
             }
             case 'action': {
-                const params = script;
-                const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
-                parsed.models.set(input.name, { name: input.name, fields: input.value as NangoModelField[] });
-
-                const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
-                parsed.models.set(output.name, { name: output.name, fields: input.value as NangoModelField[] });
-                integration.actions.push({
-                    type: 'action',
-                    description: params.description,
-                    endpoint: params.endpoint,
-                    input: input.name,
-                    name: basename,
-                    output: [output.name],
-                    scopes: params.scopes || [],
-                    usedModels: [input.name, output.name],
-                    version: params.version || '0.0.1'
+                const def = rebuildAction({ params: script, integrationIdClean, basename, basenameClean });
+                integration.actions.push(def.action);
+                def.models.forEach((v, k) => {
+                    parsed.models.set(k, v);
                 });
                 break;
             }
@@ -122,6 +86,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                 } else if (script.event === 'pre-connection-deletion') {
                     integration.onEventScripts['pre-connection-deletion'].push(basename);
                 }
+                break;
             }
         }
     }
@@ -133,4 +98,91 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
     printDebug('Correctly parsed', debug);
 
     return Ok(parsed);
+}
+
+export function rebuildSync({
+    params,
+    integrationIdClean,
+    basename,
+    basenameClean
+}: {
+    params: CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>;
+    integrationIdClean: string;
+    basename: string;
+    basenameClean: string;
+}): { sync: ParsedNangoSync; models: Map<string, NangoModel> } {
+    const models = new Map<string, NangoModel>();
+    const usedModels = new Set(Object.keys(params.models));
+    const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
+    if (metadata) {
+        usedModels.add(metadata.name);
+        if (!Array.isArray(metadata.value)) {
+            models.set(metadata.name, { name: metadata.name, fields: [{ ...metadata, name: 'metadata' }], isAnon: true });
+        } else {
+            models.set(metadata.name, { name: metadata.name, fields: metadata.value });
+        }
+    }
+
+    const sync: ParsedNangoSync = {
+        type: 'sync',
+        description: params.description,
+        auto_start: params.autoStart === true,
+        endpoints: params.endpoints,
+        input: metadata?.name || null,
+        name: basename,
+        output: Object.entries(params.models).map(([name, model]) => {
+            const to = zodToNangoModelField(name, model);
+            models.set(name, { name, fields: to['value'] as NangoModelField[] });
+            usedModels.add(name);
+            return name;
+        }),
+        runs: params.frequency,
+        scopes: params.scopes || [],
+        sync_type: params.syncType,
+        track_deletes: params.trackDeletes === true,
+        usedModels: Array.from(usedModels.values()),
+        version: params.version || '0.0.1',
+        webhookSubscriptions: params.webhookSubscriptions || []
+    };
+    return { sync, models };
+}
+
+export function rebuildAction({
+    params,
+    integrationIdClean,
+    basename,
+    basenameClean
+}: {
+    params: CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>;
+    integrationIdClean: string;
+    basename: string;
+    basenameClean: string;
+}): { action: ParsedNangoAction; models: Map<string, NangoModel> } {
+    const models = new Map<string, NangoModel>();
+    const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
+    if (!Array.isArray(input.value)) {
+        models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true });
+    } else {
+        models.set(input.name, { name: input.name, fields: input.value });
+    }
+
+    const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
+    if (!Array.isArray(output.value)) {
+        models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true });
+    } else {
+        models.set(output.name, { name: output.name, fields: output.value });
+    }
+
+    const action: ParsedNangoAction = {
+        type: 'action' as const,
+        description: params.description,
+        endpoint: params.endpoint,
+        input: input.name,
+        name: basename,
+        output: [output.name],
+        scopes: params.scopes || [],
+        usedModels: [input.name, output.name],
+        version: params.version || '0.0.1'
+    };
+    return { action, models };
 }

@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-const exec = promisify(execCb);
 import { describe, expect, it } from 'vitest';
 
 import { bundleFile, compileAll } from './compile.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
+
+const exec = promisify(execCb);
 
 describe('bundleFile', () => {
     it('should bundle a sync with a constant export', async () => {
