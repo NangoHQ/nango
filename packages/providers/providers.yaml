@@ -9663,7 +9663,7 @@ terraform:
     proxy:
         base_url: https://app.terraform.io
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         retry:
             after: 'x-ratelimit-reset'
         verification:
