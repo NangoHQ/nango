@@ -168,7 +168,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
     return (
         <div className="flex flex-col gap-10 text-white text-sm">
             <header className="bg-active-gray flex gap-10 justify-between p-5">
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-5 w-full">
                     <div className="flex items-center justify-between">
                         <h2>
                             <HttpLabel {...flow.endpoint} size="xl" />{' '}
