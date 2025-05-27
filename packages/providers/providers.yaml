@@ -1879,10 +1879,8 @@ canva:
     categories:
         - design
     auth_mode: OAUTH2
-    authorization_url: https://www.canva.com/oauth/authorize
-    token_url: https://www.canva.com/oauth/token
-    default_scopes:
-        - offline
+    authorization_url: https://www.canva.com/api/oauth/authorize
+    token_url: https://api.canva.com/rest/v1/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -1891,7 +1889,12 @@ canva:
         grant_type: refresh_token
     proxy:
         base_url: https://api.canva.com
-    docs:
+        verification:
+            method: GET
+            endpoints:
+                - /rest/v1/users/me
+    docs: https://docs.nango.dev/integrations/all/canva
+    token_request_auth_method: basic
 
 canva-scim:
     display_name: Canva (SCIM API)
