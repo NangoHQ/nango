@@ -114,7 +114,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -190,6 +190,12 @@ program
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
+
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
         tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
@@ -234,7 +240,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -248,7 +254,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -262,7 +268,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -276,7 +282,7 @@ program
     .action(async function (this: Command) {
         const { debug } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoV1({ fullPath, debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
@@ -292,6 +298,11 @@ program
     .action(async function (this: Command) {
         const { debug, path: optionalPath, integrationTemplates } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const precheck = await verificationService.ensureNangoYaml({ fullPath: absolutePath, debug });
+        if (!precheck) {
+            return;
+        }
+
         const ok = await generateDocs({ absolutePath, path: optionalPath, debug, isForIntegrationTemplates: integrationTemplates });
 
         if (ok) {
@@ -313,6 +324,11 @@ program
     .action(async function (this: Command, environment: string) {
         const options = this.opts<DeployOptions>();
         const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug: options.debug });
+        if (!precheck) {
+            return;
+        }
+
         await deployService.prep({ fullPath, options: { ...options, env: 'local' }, environment, debug: options.debug });
     });
 
@@ -364,6 +380,12 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
+
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
         const parsing = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
         if (parsing.isErr()) {
@@ -383,6 +405,11 @@ program
     .action(async function (this: Command, environmentName: string) {
         const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
         await deployService.admin({ fullPath, environmentName, debug });
     });
 
@@ -395,6 +422,12 @@ program
     .action(async function (this: Command, environment: string) {
         const { debug, nangoRemoteEnvironment, integration } = this.opts();
         const fullPath = process.cwd();
+
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
         await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
     });
 

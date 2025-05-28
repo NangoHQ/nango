@@ -15,7 +15,7 @@ export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<an
     version?: string;
     description: string;
     endpoints: NangoSyncEndpointV2[];
-    runs: string;
+    frequency: string;
     models: TModels;
     syncType: 'full' | 'incremental';
     trackDeletes?: boolean;

@@ -46,7 +46,7 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 
 export abstract class NangoActionBase<
     TMetadata extends Zod.ZodObject<any> | undefined = undefined,
-    TMetadataInfered = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
+    TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
 > {
     abstract nango: Nango;
     private attributes = {};
@@ -220,7 +220,7 @@ export abstract class NangoActionBase<
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: TMetadataInfered): Promise<AxiosResponse<SetMetadata['Success']>> {
+    public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
         this.throwIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as any);
@@ -229,7 +229,7 @@ export abstract class NangoActionBase<
         }
     }
 
-    public async updateMetadata(metadata: TMetadataInfered): Promise<AxiosResponse<UpdateMetadata['Success']>> {
+    public async updateMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<UpdateMetadata['Success']>> {
         this.throwIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata as any);
@@ -246,7 +246,7 @@ export abstract class NangoActionBase<
         return await this.setMetadata(fieldMapping as any);
     }
 
-    public async getMetadata<T = TMetadataInfered>(): Promise<T> {
+    public async getMetadata<T = TMetadataInferred>(): Promise<T> {
         this.throwIfAborted();
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
