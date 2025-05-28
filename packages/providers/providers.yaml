@@ -9679,7 +9679,7 @@ terraform:
             description: The API Token for your Terraform account
             doc_section: '#step-1-generating-your-api-token'
             example: VbQo****************************
-            pattern: '^[a-zA-Z0-9_\\.]+\\.atlasv1\\.[a-zA-Z0-9_]+$'
+            pattern: '^[a-zA-Z0-9.]{50,}$'
     connection_config:
         organizationId:
             type: string
