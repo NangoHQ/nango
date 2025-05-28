@@ -51,6 +51,7 @@
         "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
         "npm-package-arg": "^10.1.0",
+        "ora": "8.2.0",
         "promptly": "^3.2.0",
         "semver": "^7.5.4",
         "serialize-error": "11.0.3",
@@ -87,12 +88,11 @@
     },
     "files": [
         "dist/**/*",
-        "docker/docker-compose.yaml",
+        "example/**/*",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",
         "scripts/v1-v2.js",
         "tsconfig.dev.json",
-        "!**/*.json",
         "README.md"
     ]
 }
