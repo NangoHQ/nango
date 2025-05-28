@@ -24,7 +24,7 @@ export interface ConnectUIProps {
     /**
      * Control OAuth popup close detection.
      * If set to false a closed popup will not be detected as a failed authorization
-     * @default true
+     * @default false
      */
     detectClosedAuthWindow?: boolean;
 
