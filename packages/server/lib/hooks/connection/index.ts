@@ -10,7 +10,6 @@ export { default as calendlyPostConnection } from './providers/calendly/post-con
 export { default as docusignPostConnection } from './providers/docusign/post-connection.js';
 export { default as gustoPostConnection } from './providers/gusto/post-connection.js';
 export { default as workablePostConnection } from './providers/workable/post-connection.js';
-export { default as terraformPostConnection } from './providers/terraform/post-connection.js';
 export { default as adobeUmapiPostConnection } from './providers/adobe-umapi/post-connection.js';
 export { default as basecampPostConnection } from './providers/basecamp/post-connection.js';
 export { default as lastpassCredentialsVerification } from './providers/lastpass/credentials-verification.js';
