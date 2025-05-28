@@ -1,15 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+
 import Ajv from 'ajv';
 import addErrors from 'ajv-errors';
 import chalk from 'chalk';
 
-import { getNangoRootPath, printDebug } from '../utils.js';
-import type { NangoYamlParser } from '@nangohq/nango-yaml';
 import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
+
 import { CLIError } from '../utils/errors.js';
 import { Err, Ok } from '../utils/result.js';
-import type { Result } from '../utils/result.js';
+import { getNangoRootPath, printDebug } from '../utils.js';
+
+import type { NangoYamlParser } from '@nangohq/nango-yaml';
+import type { Result } from '@nangohq/types';
 
 export interface ValidationMessage {
     msg: string;
