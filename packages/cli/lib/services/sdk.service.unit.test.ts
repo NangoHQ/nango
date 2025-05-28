@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { NangoSyncCLI } from './sdk.js';
 
 describe('NangoSyncCLI - batchSave', () => {
@@ -8,6 +9,7 @@ describe('NangoSyncCLI - batchSave', () => {
         const mockDryRunService = {
             run: vi.fn(),
             fullPath: '',
+            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };

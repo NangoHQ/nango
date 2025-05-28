@@ -79,13 +79,16 @@ export interface SlimOnEventScript {
 
 export interface SyncAndActionDifferences {
     newSyncs: SlimSync[];
+    updatedSyncs: SlimSync[];
     deletedSyncs: SlimSync[];
     newActions: SlimAction[];
+    updatedActions: SlimAction[];
     deletedActions: SlimAction[];
     deletedModels: string[];
 }
 
 export interface ScriptDifferences extends SyncAndActionDifferences {
     newOnEventScripts: SlimOnEventScript[];
+    updatedOnEventScripts: SlimOnEventScript[];
     deletedOnEventScripts: SlimOnEventScript[];
 }

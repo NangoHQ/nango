@@ -1,15 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { resolve } from 'import-meta-resolve';
+
 import chalk from 'chalk';
-import type { JSONSchema7 } from 'json-schema';
+import { resolve } from 'import-meta-resolve';
 import tsj from 'ts-json-schema-generator';
-import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
-import { printDebug } from '../utils.js';
-import { TYPES_FILE_NAME } from '../constants.js';
-import { parse } from './config.service.js';
+
 import { shouldQuote } from '@nangohq/nango-yaml';
+
+import { TYPES_FILE_NAME } from '../constants.js';
+import { printDebug } from '../utils.js';
+import { parse } from './config.service.js';
 import { NANGO_VERSION } from '../version.js';
+
+import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 export type ModelsMap = Map<string, Record<string, any>>;
 
@@ -192,6 +196,8 @@ export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPat
     if (debug) {
         printDebug(`Generated export ${pathJSON}`);
     }
+
+    fs.writeFileSync(path.join(exportPath, 'nango.json'), JSON.stringify(parsed.integrations, null, 2));
 }
 
 export function getExportToTS({ parsed }: { parsed: NangoYamlParsed }): string {
