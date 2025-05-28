@@ -1874,6 +1874,28 @@ canny:
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
+canva:
+    display_name: Canva
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://www.canva.com/api/oauth/authorize
+    token_url: https://api.canva.com/rest/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.canva.com
+        verification:
+            method: GET
+            endpoints:
+                - /rest/v1/users/me
+    docs: https://docs.nango.dev/integrations/all/canva
+    token_request_auth_method: basic
+
 canva-scim:
     display_name: Canva (SCIM API)
     categories:
@@ -5553,6 +5575,25 @@ jira-data-center-basic:
             title: Password
             description: The password for your Jira Data Center
             doc_section: '#step-2-finding-your-credentials'
+
+jobadder:
+    display_name: Jobadder
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://id.jobadder.com/connect/authorize
+    token_url: https://id.jobadder.com/connect/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.jobadder.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users/current
+    docs: https://docs.nango.dev/integrations/all/jobadder
 
 jotform:
     display_name: Jotform
