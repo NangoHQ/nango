@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import chalk from 'chalk';
+import ora from 'ora';
 
 import { printDebug } from '../utils.js';
+import { NANGO_VERSION } from '../version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,14 +16,14 @@ const __dirname = dirname(__filename);
 const execAsync = promisify(exec);
 
 /**
- * Init
- * If we're not currently in the nango-integrations directory create one
+ * Init a new nango folder
  */
 export async function initZero({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }): Promise<boolean> {
-    const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
-
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
 
+    const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
+
+    // Create directory if it doesn't exist
     if (!stat) {
         printDebug(`Directory does not exist`, debug);
 
@@ -31,24 +33,54 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
         return false;
     }
 
-    const exampleFolderPath = path.join(__dirname, '..', '..', 'example');
-    try {
-        printDebug(`Copy example folder`, debug);
+    // Copy example folder
+    {
+        const spinner = ora({ text: 'Copy example' }).start();
+        const exampleFolderPath = path.join(__dirname, '..', '..', 'example');
+        try {
+            printDebug(`Copy example folder`, debug);
 
-        await fs.promises.mkdir(absolutePath, { recursive: true });
-        await copyRecursive(exampleFolderPath, absolutePath);
+            await fs.promises.mkdir(absolutePath, { recursive: true });
+            await copyRecursive(exampleFolderPath, absolutePath);
+            spinner.succeed();
+        } catch (err) {
+            spinner.fail();
+            console.log(chalk.red(`Failed to copy template: ${err instanceof Error ? err.message : 'unknown error'}`));
+            return false;
+        }
+    }
+
+    // Update nango dependency version in package.json
+    const packageJsonPath = path.join(absolutePath, 'package.json');
+    try {
+        const packageJsonRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
+        const packageJson = JSON.parse(packageJsonRaw) as { devDependencies: { nango: string } };
+        packageJson.devDependencies.nango = NANGO_VERSION;
+        await fs.promises.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8');
     } catch (err) {
-        console.log(chalk.red(`Failed to copy template: ${err instanceof Error ? err.message : 'unknown error'}`));
+        console.log(chalk.red(`Failed to update nango version in package.json: ${err instanceof Error ? err.message : 'unknown error'}`));
         return false;
     }
 
-    try {
-        printDebug(`Running npm install`, debug);
+    // Run npm install
+    {
+        const spinner = ora({ text: 'Install packages' }).start();
+        try {
+            printDebug(`Running npm install`, debug);
 
-        await execAsync('npm install', { cwd: absolutePath });
-    } catch (err) {
-        console.log(chalk.red(`Failed to npm install: ${err instanceof Error ? err.message : 'unknown error'}`));
-        return false;
+            await execAsync('npm install', { cwd: absolutePath });
+            spinner.succeed();
+        } catch (err) {
+            spinner.fail();
+            console.log(chalk.red(`Failed to npm install: ${err instanceof Error ? err.message : 'unknown error'}`));
+            return false;
+        }
+    }
+
+    // TODO: add compileAll
+    {
+        const spinner = ora({ text: 'Initial compilation' }).start();
+        spinner.succeed();
     }
 
     return true;

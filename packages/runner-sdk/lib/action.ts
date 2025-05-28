@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 import { getProvider } from '@nangohq/providers';
 
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
@@ -19,7 +18,6 @@ import type {
     HTTP_METHOD,
     JwtCredentials,
     MaybePromise,
-    Metadata,
     NangoProps,
     OAuth1Token,
     OAuth2ClientCredentials,
@@ -36,7 +34,7 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import type { SafeParseSuccess, ZodSchema } from 'zod';
+import type { SafeParseSuccess, ZodSchema, z } from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
@@ -46,7 +44,10 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
     connectionId?: string;
 };
 
-export abstract class NangoActionBase {
+export abstract class NangoActionBase<
+    TMetadata extends Zod.ZodObject<any> | undefined = undefined,
+    TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
+> {
     abstract nango: Nango;
     private attributes = {};
     activityLogId: string;
@@ -219,19 +220,19 @@ export abstract class NangoActionBase {
         return cachedConnection.connection;
     }
 
-    public async setMetadata(metadata: Metadata): Promise<AxiosResponse<SetMetadata['Success']>> {
+    public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
+            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as any);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }
     }
 
-    public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<UpdateMetadata['Success']>> {
+    public async updateMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<UpdateMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
+            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata as any);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }
@@ -242,10 +243,10 @@ export abstract class NangoActionBase {
      */
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
         console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.setMetadata(fieldMapping);
+        return await this.setMetadata(fieldMapping as any);
     }
 
-    public async getMetadata<T = Metadata>(): Promise<T> {
+    public async getMetadata<T = TMetadataInferred>(): Promise<T> {
         this.throwIfAborted();
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
@@ -259,10 +260,10 @@ export abstract class NangoActionBase {
     /**
      * @deprecated please use getMetadata instead.
      */
-    public async getFieldMapping(): Promise<Metadata> {
+    public async getFieldMapping(): Promise<Record<string, string>> {
         console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        const metadata = await this.getMetadata();
-        return (metadata['fieldMapping'] as Metadata) || {};
+        const metadata = (await this.getMetadata()) as any;
+        return (metadata['fieldMapping'] as Record<string, string>) || {};
     }
 
     /**
