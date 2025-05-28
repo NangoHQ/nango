@@ -8094,6 +8094,29 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recruitcrm:
+    display_name: Recruitcrm
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruitcrm.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/users/search
+    docs: https://docs.nango.dev/integrations/all/recruitcrm
+    docs_connect: https://docs.nango.dev/integrations/all/recruitcrm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Recruitcrm account
+            example: 9SKXL**************************************
+            doc_section: '#step-1-generating-your-api-key'
+
 recruiterflow:
     display_name: Recruiterflow
     categories:
