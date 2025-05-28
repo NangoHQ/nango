@@ -633,6 +633,20 @@ class OAuthController {
                     });
                 }
 
+                if (provider.authorization_url_skip_empty) {
+                    const url = new URL(authorizationUri);
+                    const queryParams = new URLSearchParams(url.search);
+                    // Remove any keys with undefined or empty string values
+                    for (const [key, value] of queryParams.entries()) {
+                        if (value === '') {
+                            queryParams.delete(key);
+                        }
+                    }
+
+                    url.search = queryParams.toString();
+                    authorizationUri = url.toString();
+                }
+
                 void logCtx.info('Redirecting', {
                     authorizationUri,
                     providerConfigKey,
