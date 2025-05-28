@@ -239,6 +239,10 @@ function validateProvider(providerKey: string, provider: Provider) {
         if (!provider.credentials) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for JWT auth mode`);
         }
+    } else if (provider.auth_mode === 'OAUTH2_CC') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for OAUTH2_CC auth mode`);
+        }
     } else {
         if (provider.credentials) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" is defined but not required`);
