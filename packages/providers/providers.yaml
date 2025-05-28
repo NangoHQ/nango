@@ -5576,6 +5576,25 @@ jira-data-center-basic:
             description: The password for your Jira Data Center
             doc_section: '#step-2-finding-your-credentials'
 
+jobadder:
+    display_name: Jobadder
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://id.jobadder.com/connect/authorize
+    token_url: https://id.jobadder.com/connect/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.jobadder.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users/current
+    docs: https://docs.nango.dev/integrations/all/jobadder
+
 jotform:
     display_name: Jotform
     categories:
