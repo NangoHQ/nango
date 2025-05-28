@@ -24,16 +24,18 @@ import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { initZero } from './zeroYaml/init.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
         const cmd = new Command(name);
-        cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
+        cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.', false);
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.', false);
+        cmd.option('--zero', 'Run cli in zero yaml mode (alpha)', false);
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
-            const { debug } = actionCommand.opts();
+            const { debug } = actionCommand.opts<GlobalOptions>();
             printDebug('Debug mode enabled', debug);
             if (debug && fs.existsSync('.env')) {
                 printDebug('.env file detected and loaded', debug);
@@ -95,14 +97,33 @@ program
     .command('init')
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
-    .action(function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
-        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
-        const ok = init({ absolutePath, debug });
+    .action(async function (this: Command) {
+        const { debug, zero } = this.opts<GlobalOptions>();
+        const currentPath = process.cwd();
+        const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
-        if (ok) {
-            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+        const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        if (check.hasNangoYaml || check.isZeroYaml) {
+            console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
+            return;
         }
+
+        if (zero) {
+            const res = await initZero({ absolutePath, debug });
+            if (!res) {
+                process.exitCode = 1;
+            }
+
+            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
+            return;
+        }
+
+        const ok = init({ absolutePath, debug });
+        if (!ok) {
+            process.exitCode = 1;
+        }
+        console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+        return;
     });
 
 program

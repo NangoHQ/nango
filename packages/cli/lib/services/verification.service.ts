@@ -131,7 +131,9 @@ class VerificationService {
         fullPath: string;
         debug: boolean;
     }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string; hasIndexTs: boolean; isZeroYaml: boolean }> {
-        const files = await fs.promises.readdir(fullPath);
+        const stat = fs.statSync(fullPath, { throwIfNoEntry: false });
+
+        const files = stat ? await fs.promises.readdir(fullPath) : [];
 
         const hasNangoYaml = files.includes('nango.yaml');
         const hasNangoFolder = files.includes('.nango');
