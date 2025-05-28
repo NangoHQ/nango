@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.59.12] - 2025-05-28
+
+### Fixed
+
+- *(cli)* Detect nango folder correctly (#4125) by @bodinsamuel
+
+## [v0.59.11] - 2025-05-27
+
+### Added
+
+- Add lang param to connect-ui docs (#4121) by @kaposke
+
+### Changed
+
+- Release script to use short live github token by @TBonnin
+
+### Fixed
+
+- *(cli)* Send sdkVersion (#4111) by @bodinsamuel
+
 ## [v0.59.8] - 2025-05-27
 
 ### Added
@@ -3997,6 +4017,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.59.12]: https://github.com/NangoHQ/nango/compare/v0.59.11..v0.59.12
+[v0.59.11]: https://github.com/NangoHQ/nango/compare/v0.59.8..v0.59.11
 [v0.59.8]: https://github.com/NangoHQ/nango/compare/v0.59.7..v0.59.8
 [v0.59.7]: https://github.com/NangoHQ/nango/compare/v0.59.3..v0.59.7
 [v0.59.3]: https://github.com/NangoHQ/nango/compare/v0.59.1..v0.59.3
