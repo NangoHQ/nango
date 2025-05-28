@@ -8,8 +8,8 @@ const nextTag = `v${nextVersion}`;
 
 echo`Publishing ${nextVersion} on branch ${branch}`;
 
-// Configure git to use the GitHub token for authentication
-await $`git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"`;
+await $`git config --global user.email "contact@nango.dev"`;
+await $`git config --global user.name "Release Bot"`;
 
 const tagExists = await $`git tag -l ${nextTag}`;
 if (tagExists.stdout !== '') {
@@ -30,14 +30,14 @@ echo`Adding file`;
 await $`git add -A package.json package-lock.json packages/**/package.json CHANGELOG.md packages/**/lib/version.ts`;
 
 echo`Creating commit`;
-await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" commit --allow-empty --author="Release Bot <contact@nango.dev>" -m ${releaseMessage} `;
+await $`git commit --allow-empty --author="Release Bot <contact@nango.dev>" -m ${releaseMessage} `;
 
 echo`Creating tag`;
-await $`git -c user.name="Release Bot" -c user.email="contact@nango.dev" tag -a ${nextTag} HEAD -m ${releaseMessage}`;
+await $`git tag -a ${nextTag} HEAD -m ${releaseMessage}`;
 
 echo`Pushing`;
 await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
-await $`git push --tags`;
+await $`git push --tags origin`;
 
 echo`Commit pushed, publishing release...`;
 // Push GitHub release
