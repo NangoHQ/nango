@@ -138,7 +138,7 @@ class VerificationService {
         const hasIndexTs = files.includes('index.ts');
         const isZeroYaml = !hasNangoYaml && hasNangoFolder && hasIndexTs;
 
-        if (isZeroYaml) {
+        if (isZeroYaml || hasNangoYaml) {
             printDebug(isZeroYaml ? 'Mode: zero yaml' : 'Model: classic yaml', debug);
         }
         return {
