@@ -6,10 +6,9 @@ sidebarTitle: Terraform
 # Overview
 
 To authenticate with Terraform, you need:
-1. **Organization Id** - The unique identifier for your Terraform organization where you manage users and memberships.
-2. **API Key** - A key that grants secure access to the API, enabling authorized applications to interact with Terraform resources and services.
+1. **API Token** - A token that grants secure access to the API, enabling authorized applications to interact with Terraform resources and services.
 
-This guide will walk you through generating the API Key within Terraform.
+This guide will walk you through generating the API Token within Terraform.
 
 ### Prerequisites:
 
@@ -17,18 +16,17 @@ This guide will walk you through generating the API Key within Terraform.
 
 ### Instructions:
 
-#### Step 1: Generating Your API Key
+#### Step 1: Generating Your API Token
 
-Generating an API key [following Terraform's guide](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens).
+Generating an API Token [following Terraform's guide](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens).
 
 #### Step 2: Enter credentials in the Connect UI
 
-Once you have the **API Key**:
+Once you have the **API Token**:
 1. Open the form where you need to authenticate with Terraform.
-2. Enter the **Organization Id** in the designated field (e.g. demo_organization)
-3. Enter the **API Key** in the designated field.
-4. Submit the form, and you should be successfully authenticated.
+2. Enter the **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/terraform/form.png" style={{maxWidth: "450px" }}/>
 
-You are now connected to Terraform. 
+You are now connected to Terraform.

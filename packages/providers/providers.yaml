@@ -9663,7 +9663,7 @@ terraform:
     proxy:
         base_url: https://app.terraform.io
         headers:
-            authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiToken}
         retry:
             after: 'x-ratelimit-reset'
         verification:
@@ -9673,19 +9673,22 @@ terraform:
     docs: https://docs.nango.dev/integrations/all/terraform
     docs_connect: https://docs.nango.dev/integrations/all/terraform/connect
     credentials:
-        apiKey:
+        apiToken:
             type: string
-            title: API Key
-            description: The API Key for your Terraform account
-            doc_section: '#step-1-generating-your-api-key'
+            title: API Token
+            description: The API Token for your Terraform account
+            doc_section: '#step-1-generating-your-api-token'
             example: VbQo****************************
-            pattern: '^[a-zA-Z0-9_]+$'
+            pattern: '^[a-zA-Z0-9_\\.]+\\.atlasv1\\.[a-zA-Z0-9_]+$'
     connection_config:
         organizationId:
             type: string
             title: Organization Id
-            description: Your Terraform Organization Id
+            description: Your Terraform Organization Id, if not provided, the first organization will be used
+            pattern: '^[a-z0-9_-]+$'
             example: demo_organization
+            optional: true
+    post_connection_script: terraformPostConnection
 
 ticktick:
     display_name: TickTick
