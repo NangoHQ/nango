@@ -580,6 +580,7 @@
                 "integrations/all/paylocity",
                 "integrations/all/paypal",
                 "integrations/all/paypal-sandbox",
+                "integrations/all/paychex",
                 "integrations/all/pendo",
                 "integrations/all/pennylane",
                 "integrations/all/peopledatalabs",
