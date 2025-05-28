@@ -155,7 +155,11 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${provider}_${name}_${version}.zip`;
+            if (version) {
+                a.download = `${provider}_${name}_v${version}.zip`;
+            } else {
+                a.download = `${provider}_${name}.zip`;
+            }
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
