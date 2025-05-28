@@ -7387,6 +7387,30 @@ pandadoc-api-key:
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
 
+paychex:
+    display_name: Paychex
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://api.paychex.com/auth/oauth/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.paychex.com
+    docs: https://docs.nango.dev/integrations/all/paychex
+    docs_connect: https://docs.nango.dev/integrations/all/paychex/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: A unique identifier for your application on Paychex
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: A confidential key used to authenticate the identity of application (client)
+            doc_section: '#step-1-generating-your-client-credentials'
+
 payfit:
     display_name: Payfit
     categories:
