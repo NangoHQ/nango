@@ -700,6 +700,22 @@ paths:
                                 properties:
                                     message:
                                         type: string
+                '424':
+                    description: Connection refresh exhausted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                description: The error code
+                                            message:
+                                                type: string
+                                                description: A human-readable error message
                 '404':
                     description: Unknown Connection
                     content:

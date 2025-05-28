@@ -62,6 +62,7 @@ export interface BaseProvider {
     };
     authorization_url?: string;
     authorization_url_skip_encode?: string[];
+    authorization_url_skip_empty?: boolean;
     access_token_url?: string;
     authorization_params?: Record<string, string>;
     authorization_code_param_in_callback?: string;
