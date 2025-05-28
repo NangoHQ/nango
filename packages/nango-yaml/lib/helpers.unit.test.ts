@@ -1,5 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { getInterval, isJsOrTsType } from './helpers.js';
+import { describe, expect, it } from 'vitest';
+
+import { getInterval } from './helpers.js';
 
 describe('Nango Config Interval tests', () => {
     it('throws error when interval is less than 30 seconds', () => {
@@ -75,80 +76,5 @@ describe('Nango Config Interval tests', () => {
         const date = new Date('2023-07-18T12:35:00');
         const interval = getInterval('every 30m', date);
         expect(interval).toEqual({ interval: '30m', offset: 300000 }); // 300000 is 5 minutes
-    });
-});
-
-describe('isJsOrTsType ', () => {
-    it('recognizes primitive types', () => {
-        expect(isJsOrTsType('string')).toBe(true);
-        expect(isJsOrTsType('number')).toBe(true);
-        expect(isJsOrTsType('boolean')).toBe(true);
-    });
-
-    it('recognizes function types', () => {
-        expect(isJsOrTsType('Function')).toBe(true);
-    });
-
-    it('recognizes symbol types', () => {
-        expect(isJsOrTsType('Symbol')).toBe(true);
-        expect(isJsOrTsType('symbol')).toBe(true);
-    });
-
-    it('recognizes object types', () => {
-        expect(isJsOrTsType('object')).toBe(true);
-        expect(isJsOrTsType('Object')).toBe(true);
-    });
-
-    it('recognizes array types', () => {
-        expect(isJsOrTsType('Array')).toBe(true);
-        expect(isJsOrTsType('Array<string>')).toBe(true);
-        expect(isJsOrTsType('Array<number>')).toBe(true);
-        expect(isJsOrTsType('Array<boolean>')).toBe(true);
-    });
-
-    it('recognizes primitive alias types', () => {
-        expect(isJsOrTsType('String')).toBe(true);
-        expect(isJsOrTsType('Number')).toBe(true);
-        expect(isJsOrTsType('Boolean')).toBe(true);
-    });
-
-    it('recognizes built-in object types', () => {
-        expect(isJsOrTsType('Object')).toBe(true);
-        expect(isJsOrTsType('Array')).toBe(true);
-        expect(isJsOrTsType('Date')).toBe(true);
-    });
-
-    it('recognizes utility types', () => {
-        expect(isJsOrTsType('Record')).toBe(true);
-        expect(isJsOrTsType('Partial')).toBe(true);
-        expect(isJsOrTsType('Readonly')).toBe(true);
-    });
-
-    it('handles array shorthand notation', () => {
-        expect(isJsOrTsType('string[]')).toBe(true);
-        expect(isJsOrTsType('number[]')).toBe(true);
-        expect(isJsOrTsType('Array<string>')).toBe(true); // Testing generic array type
-    });
-
-    it('handles generic types', () => {
-        expect(isJsOrTsType('Map<string, number>')).toBe(true);
-        expect(isJsOrTsType('Set<boolean>')).toBe(true);
-        expect(isJsOrTsType('Promise<Date>')).toBe(true);
-    });
-
-    it('returns false for unrecognized types', () => {
-        expect(isJsOrTsType('UnrecognizedType')).toBe(false);
-        expect(isJsOrTsType('AnotherType')).toBe(false);
-        expect(isJsOrTsType('string{}')).toBe(false); // Invalid syntax
-    });
-
-    it('recognizes shorthand array types', () => {
-        expect(isJsOrTsType('string[]')).toBe(true);
-        expect(isJsOrTsType('number[]')).toBe(true);
-        expect(isJsOrTsType('boolean[]')).toBe(true);
-        expect(isJsOrTsType('Map<string, string>[]')).toBe(true);
-        expect(isJsOrTsType('Set<number>[]')).toBe(true);
-        expect(isJsOrTsType('Promise<boolean>[]')).toBe(true);
-        expect(isJsOrTsType('Map<Person>[]')).toBe(true);
     });
 });

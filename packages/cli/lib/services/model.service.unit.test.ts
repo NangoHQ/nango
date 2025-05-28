@@ -1,11 +1,14 @@
-import os from 'node:os';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
-import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
-import type { NangoModel } from '@nangohq/types';
+
 import { parse } from './config.service.js';
+import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import { removeVersion } from '../tests/helpers.js';
+
+import type { NangoModel } from '@nangohq/types';
 
 describe('buildModelTs', () => {
     it('should return empty (with sdk)', () => {
