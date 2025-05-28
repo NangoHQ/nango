@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, refreshOrTestCredentials } from '@nangohq/shared';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { Err, metrics, Ok, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { GetPublicConnection } from '@nangohq/types';
+import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -64,6 +64,26 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         return;
     }
 
+    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}): Promise<Result<ApiPublicConnectionFull>> => {
+        // We are using listConnections because it has everything we need, but this is a bit wrong
+        const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
+        if (finalConnections.length !== 1 || !finalConnections[0]) {
+            return Err('Failed to get connection');
+        }
+
+        return Ok(
+            connectionFullToPublicApi({
+                data: {
+                    ...finalConnections[0].connection,
+                    credentials
+                },
+                activeLog: finalConnections[0].active_logs,
+                endUser: finalConnections[0].end_user,
+                provider: finalConnections[0].provider
+            })
+        );
+    };
+
     const credentialResponse = await refreshOrTestCredentials({
         account,
         environment,
@@ -75,8 +95,17 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         onRefreshFailed: connectionRefreshFailedHook
     });
     if (credentialResponse.isErr()) {
+        const { connection, ...payload } = credentialResponse.error.payload || {};
+        const apiPublicConnection = await getApiPublicConnection();
         res.status(credentialResponse.error.status).send({
-            error: { code: 'server_error', message: credentialResponse.error.message || 'Failed to refresh or test credentials' }
+            error: {
+                code: 'invalid_credentials',
+                message: credentialResponse.error.message || 'Failed to refresh or test credentials',
+                payload: {
+                    ...payload,
+                    ...(apiPublicConnection.isOk() ? { connection: apiPublicConnection.value } : {})
+                }
+            }
         });
         return;
     }
@@ -96,20 +125,11 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    // We get connection one last time to get endUser, errors
-    // We are using listConnections because it has everything we need, but this is a bit wrong
-    const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
-    if (finalConnections.length !== 1 || !finalConnections[0]) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get connection' } });
+    const response = await getApiPublicConnection(connection.credentials);
+    if (response.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
         return;
     }
 
-    res.status(200).send(
-        connectionFullToPublicApi({
-            data: { ...finalConnections[0].connection, credentials: connection.credentials },
-            activeLog: finalConnections[0].active_logs,
-            endUser: finalConnections[0].end_user,
-            provider: finalConnections[0].provider
-        })
-    );
+    res.status(200).send(response.value);
 });
