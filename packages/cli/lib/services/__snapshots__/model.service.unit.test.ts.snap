@@ -516,6 +516,8 @@ export interface Base {
   undefined: undefined;
   true: true;
   false: false;
+  void: void;
+  never: never;
   id: string;
   name: string;
 };

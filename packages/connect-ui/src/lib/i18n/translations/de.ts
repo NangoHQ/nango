@@ -9,7 +9,7 @@ const de: Translation = {
         tryAgain: 'Erneut versuchen',
         connecting: 'Verbinde...',
         connect: 'Verbinden',
-        viewGuide: 'Verbindungsanleitung anzeigen',
+        viewGuide: 'Schritt für Schritt Anleitung anzeigen',
         needHelp: 'Benötigen Sie Hilfe?'
     },
     integrationsList: {
@@ -29,7 +29,7 @@ const de: Translation = {
         backToList: 'Zurück zur Integrationsliste',
         willConnect: 'Wir werden Sie mit {provider} verbinden',
         popupWarning: 'Ein Popup wird geöffnet, stellen Sie sicher, dass Ihr Browser Popups nicht blockiert',
-        popupBlocked: 'Auth-Popup von Ihrem Browser blockiert, bitte erlauben Sie Popups',
+        popupBlocked: 'Das Popup wurde von Ihrem Browser blockiert. Bitte erlauben Sie Popups',
         popupClosed: 'Das Auth-Popup wurde vor Ende des Prozesses geschlossen, bitte versuchen Sie es erneut',
         invalidCredentials: '{provider} hat Ihre Anmeldedaten nicht validiert. Bitte überprüfen Sie die Werte und versuchen Sie es erneut.',
         resourceCapped: 'Sie haben die maximale Anzahl erlaubter Verbindungen erreicht. Bitte wenden Sie sich an den Administrator.',
