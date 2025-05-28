@@ -93,7 +93,7 @@ class FlowController {
             }
 
             if (!id && is_public) {
-                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, body.public_route as string, flowType);
+                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, provider, flowType);
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
