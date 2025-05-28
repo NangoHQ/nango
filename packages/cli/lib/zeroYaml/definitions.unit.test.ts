@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { rebuildAction, rebuildSync } from './rebuild.js';
+import { buildAction, buildSync } from './definitions.js';
 
-describe('rebuildSync', () => {
-    it('should rebuild a sync', () => {
-        const res = rebuildSync({
+describe('buildSync', () => {
+    it('should build a sync', () => {
+        const res = buildSync({
             params: {
                 type: 'sync',
                 description: 'A sync',
@@ -59,8 +59,8 @@ describe('rebuildSync', () => {
         ]);
     });
 
-    it('should rebuild an action', () => {
-        const res = rebuildAction({
+    it('should build an action', () => {
+        const res = buildAction({
             params: {
                 type: 'action',
                 description: 'A sync',

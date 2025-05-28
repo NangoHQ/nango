@@ -12,7 +12,7 @@ import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedInteg
 const allowed = ['action', 'sync', 'onEvent'];
 const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
 
-export async function rebuildParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
+export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const indexPath = path.join(fullPath, 'index.ts');
     const indexContent = await fs.readFile(indexPath, 'utf-8');
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
@@ -65,7 +65,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
 
         switch (script.type) {
             case 'sync': {
-                const def = rebuildSync({ params: script, integrationIdClean, basename, basenameClean });
+                const def = buildSync({ params: script, integrationIdClean, basename, basenameClean });
                 integration.syncs.push(def.sync);
                 def.models.forEach((v, k) => {
                     parsed.models.set(k, v);
@@ -73,7 +73,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
                 break;
             }
             case 'action': {
-                const def = rebuildAction({ params: script, integrationIdClean, basename, basenameClean });
+                const def = buildAction({ params: script, integrationIdClean, basename, basenameClean });
                 integration.actions.push(def.action);
                 def.models.forEach((v, k) => {
                     parsed.models.set(k, v);
@@ -100,7 +100,7 @@ export async function rebuildParsed({ fullPath, debug }: { fullPath: string; deb
     return Ok(parsed);
 }
 
-export function rebuildSync({
+export function buildSync({
     params,
     integrationIdClean,
     basename,
@@ -147,7 +147,7 @@ export function rebuildSync({
     return { sync, models };
 }
 
-export function rebuildAction({
+export function buildAction({
     params,
     integrationIdClean,
     basename,

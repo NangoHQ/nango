@@ -11,7 +11,7 @@ import ts from 'typescript';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
-import { rebuildParsed } from './rebuild.js';
+import { buildDefinitions } from './definitions.js';
 
 import type { Result } from '@nangohq/types';
 
@@ -55,25 +55,16 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
     let spinner = ora({ text: 'Typechecking' }).start();
 
     try {
-        const indexTsPath = path.join(fullPath, 'index.ts');
-        let indexContent;
-        try {
-            indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
-        } catch (err) {
+        // Read the index.ts content
+        const indexContentResult = await readIndexContent(fullPath);
+        if (indexContentResult.isErr()) {
             spinner.fail();
-            console.error(`Could not read ${indexTsPath}`, err);
             return Err('failed_to_read_index_ts');
         }
+        const indexContent = indexContentResult.value;
 
-        const entryPoints: string[] = [];
-        let match;
-        while ((match = exportRegex.exec(indexContent)) !== null) {
-            if (!match[1]) {
-                continue;
-            }
-            entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
-        }
-
+        // Get the entry points
+        const entryPoints = getEntryPoints(indexContent);
         if (entryPoints.length === 0) {
             spinner.fail();
             console.error("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile.");
@@ -82,6 +73,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 
         printDebug(`Found ${entryPoints.length} entry points in index.ts: ${entryPoints.join(', ')}`, debug);
 
+        // Typecheck the code
         const typechecked = typeCheck({ fullPath, entryPoints });
         if (typechecked.isErr()) {
             spinner.fail();
@@ -89,6 +81,8 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         }
 
         spinner.succeed();
+
+        // Build the entry points
         const text = `Building ${entryPoints.length} file(s)`;
         spinner = ora({ text }).start();
         printDebug('Building', debug);
@@ -111,10 +105,11 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         spinner.text = text;
         spinner.succeed();
 
-        spinner = ora({ text: `Exporting metadata` }).start();
-        const rebuild = await rebuildParsed({ fullPath, debug });
+        // Build and export the definitions
+        spinner = ora({ text: `Exporting definitions` }).start();
+        const rebuild = await buildDefinitions({ fullPath, debug });
         if (rebuild.isErr()) {
-            spinner.fail(`Failed to compile metadata`);
+            spinner.fail(`Failed to compile definitions`);
             console.log(chalk.red(rebuild.error.message));
             return Err(rebuild.error);
         }
@@ -134,6 +129,35 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 }
 
 /**
+ * Reads the content of index.ts in the given fullPath.
+ */
+async function readIndexContent(fullPath: string): Promise<Result<string>> {
+    const indexTsPath = path.join(fullPath, 'index.ts');
+    try {
+        const indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
+        return Ok(indexContent);
+    } catch (err) {
+        console.error(`Could not read ${indexTsPath}`, err);
+        return Err('failed_to_read_index_ts');
+    }
+}
+
+/**
+ * Extracts the entry points from the index.ts content.
+ */
+function getEntryPoints(indexContent: string): string[] {
+    const entryPoints: string[] = [];
+    let match;
+    while ((match = exportRegex.exec(indexContent)) !== null) {
+        if (!match[1]) {
+            continue;
+        }
+        entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
+    }
+    return entryPoints;
+}
+
+/**
  * Runs the typescript compiler to typecheck the code.
  */
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
@@ -149,6 +173,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
         return Ok(true);
     }
 
+    // On purpose
     console.log('');
     for (const diagnostic of diagnostics) {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
