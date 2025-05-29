@@ -2,6 +2,7 @@ import { NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
+import type { ZodMetadata } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
 import type { z } from 'zod';
 
@@ -9,7 +10,7 @@ export const BASE_VARIANT = 'base';
 
 export abstract class NangoSyncBase<
     TModels extends Record<string, Zod.ZodObject<any>> = never,
-    TMetadata extends Zod.ZodObject<any> | undefined = never,
+    TMetadata extends ZodMetadata = never,
     TModelName extends keyof TModels = keyof TModels
 > extends NangoActionBase<TMetadata> {
     public variant = BASE_VARIANT;

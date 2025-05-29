@@ -131,18 +131,20 @@ class VerificationService {
         fullPath: string;
         debug: boolean;
     }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string; hasIndexTs: boolean; isZeroYaml: boolean }> {
-        const files = await fs.promises.readdir(fullPath);
+        const stat = fs.statSync(fullPath, { throwIfNoEntry: false });
+
+        const files = stat ? await fs.promises.readdir(fullPath) : [];
 
         const hasNangoYaml = files.includes('nango.yaml');
-        const isNango = files.includes('.nango');
+        const hasNangoFolder = files.includes('.nango');
         const hasIndexTs = files.includes('index.ts');
-        const isZeroYaml = !hasNangoYaml && isNango && hasIndexTs;
+        const isZeroYaml = !hasNangoYaml && hasNangoFolder && hasIndexTs;
 
-        if (isNango) {
+        if (isZeroYaml || hasNangoYaml) {
             printDebug(isZeroYaml ? 'Mode: zero yaml' : 'Model: classic yaml', debug);
         }
         return {
-            isNango,
+            isNango: hasNangoFolder || hasNangoYaml,
             folderName: path.basename(fullPath),
             hasNangoYaml,
             hasIndexTs,

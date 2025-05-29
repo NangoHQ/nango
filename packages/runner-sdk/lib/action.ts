@@ -3,6 +3,7 @@ import { getProvider } from '@nangohq/providers';
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
+import type { ZodMetadata } from './types.js';
 import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
@@ -45,7 +46,7 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 };
 
 export abstract class NangoActionBase<
-    TMetadata extends Zod.ZodObject<any> | undefined = undefined,
+    TMetadata extends ZodMetadata = never,
     TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
 > {
     abstract nango: Nango;

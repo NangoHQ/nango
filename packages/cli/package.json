@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.59.11",
+    "version": "0.59.12",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -28,12 +28,14 @@
         "prepublishOnly": "npm run copy:files"
     },
     "dependencies": {
-        "@babel/parser": "^7.22.5",
-        "@babel/traverse": "^7.22.5",
-        "@babel/types": "^7.22.5",
-        "@nangohq/nango-yaml": "0.59.11",
-        "@nangohq/node": "0.59.11",
-        "@nangohq/runner-sdk": "0.59.11",
+        "@babel/core": "7.27.3",
+        "@babel/parser": "7.27.3",
+        "@babel/traverse": "7.27.3",
+        "@babel/types": "7.27.3",
+        "@babel/preset-typescript": "7.27.1",
+        "@nangohq/nango-yaml": "0.59.12",
+        "@nangohq/node": "0.59.12",
+        "@nangohq/runner-sdk": "0.59.12",
         "@swc/core": "^1.5.25",
         "@types/unzipper": "^0.10.10",
         "ajv": "^8.17.1",
@@ -46,11 +48,14 @@
         "copyfiles": "^2.4.1",
         "dotenv": "^16.0.3",
         "ejs": "^3.1.10",
+        "esbuild": "0.25.0",
         "figlet": "^1.6.0",
+        "figures": "6.1.0",
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
         "js-yaml": "^4.1.0",
         "npm-package-arg": "^10.1.0",
+        "ora": "8.2.0",
         "promptly": "^3.2.0",
         "semver": "^7.5.4",
         "serialize-error": "11.0.3",
@@ -62,12 +67,9 @@
         "zod": "3.24.2"
     },
     "devDependencies": {
-        "@babel/core": "^7.22.1",
-        "@babel/preset-env": "^7.22.4",
-        "@babel/preset-typescript": "^7.21.5",
-        "@nangohq/types": "0.59.11",
-        "@types/babel__traverse": "^7.20.1",
-        "@types/babel-traverse": "^6.25.7",
+        "@nangohq/types": "0.59.8",
+        "@types/babel__core": "7.20.5",
+        "@types/babel__traverse": "7.20.7",
         "@types/commander": "^2.12.2",
         "@types/ejs": "^3.1.2",
         "@types/figlet": "^1.5.6",
@@ -87,12 +89,11 @@
     },
     "files": [
         "dist/**/*",
-        "docker/docker-compose.yaml",
+        "example/**/*",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",
         "scripts/v1-v2.js",
         "tsconfig.dev.json",
-        "!**/*.json",
         "README.md"
     ]
 }
