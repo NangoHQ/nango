@@ -71,19 +71,26 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         return null;
     }
 
-    const inputSchema = inputModel ? nangoModelToJsonSchema(inputModel, action.model_schema as NangoModel[]) : { type: 'object' };
+    let inputSchema: Tool['inputSchema'] = { type: 'object' };
+
+    if (inputModel) {
+        const inputSchemaResult = nangoModelToJsonSchema(inputModel, action.model_schema as NangoModel[]);
+        if (inputSchemaResult.isErr()) {
+            return null;
+        }
+
+        inputSchema = inputSchemaResult.value as Tool['inputSchema'];
+    }
 
     if (inputSchema.type !== 'object') {
         // Invalid input schema, skip this action
         return null;
     }
 
-    const description = action.metadata.description || action.sync_name;
-
     return {
         name: action.sync_name,
-        inputSchema: inputSchema as Tool['inputSchema'],
-        description
+        inputSchema: inputSchema,
+        description: action.metadata.description || action.sync_name
     };
 }
 

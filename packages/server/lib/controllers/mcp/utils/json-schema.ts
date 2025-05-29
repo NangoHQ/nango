@@ -1,8 +1,14 @@
-import type { NangoModel, NangoModelField } from '@nangohq/types';
+import { Err, Ok } from '@nangohq/utils';
+
+import type { NangoModel, NangoModelField, Result } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
-export function nangoModelToJsonSchema(model: NangoModel, models_schema: NangoModel[]): JSONSchema7 {
-    return nangoModelToJsonSchemaInternal(model, models_schema, new Set());
+export function nangoModelToJsonSchema(model: NangoModel, models_schema: NangoModel[]): Result<JSONSchema7> {
+    try {
+        return Ok(nangoModelToJsonSchemaInternal(model, models_schema, new Set()));
+    } catch (err) {
+        return Err(err as Error);
+    }
 }
 
 function nangoModelToJsonSchemaInternal(model: NangoModel, models_schema: NangoModel[], visitedModels: Set<string>): JSONSchema7 {
