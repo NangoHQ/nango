@@ -1,0 +1,101 @@
+---
+title: Confluence Data Center
+sidebarTitle: Confluence Data Center
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/confluence-data-center/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/confluence-data-center/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites    | Status         | Comment                                                                                                                                                              |
+| ----------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paid dev account  | ⚠️ Conditional | Confluence Data Center requires a valid license. You can [start a free trial](https://www.atlassian.com/software/confluence/download/data-center) for development. |
+| Paid test account | ⚠️ Conditional | Same as above. A valid license is needed for test environments.                                                                                                      |
+| Partnership       | ✅ Not required | Atlassian partnership is not required to build or test apps on Data Center.                                                                                          |
+| App review        | ✅ Not required | App review is not mandatory unless publishing to the Atlassian Marketplace.                                                                                          |
+| Security audit    | ✅ Not required | A security audit is only required if submitting to the Marketplace under certain programs.                                                                           |
+
+
+
+## Setup guide
+
+<Steps>
+  <Step title="Set up Confluence Data Center">
+    1. Ensure you have a running Confluence Data Center instance. If not, you can:
+       - [Checkout the Free trial](https://www.atlassian.com/software/confluence/download/data-center)
+       - [Install Confluence Data Center](https://confluence.atlassian.com/doc/installing-confluence-data-center-203603.html)
+    2. Make sure you have administrator privileges on your Confluence Data Center instance.
+  </Step>
+  <Step title="Create an incoming link">
+    1. Log in to your **Confluence Data Center** instance as an administrator.
+    2. Navigate to **Administration** menu > **General Configuration** > **Application links**.
+    3. Select **Create link**.
+    4. Select **External application** and then choose **Incoming** as the direction.
+    5. Fill in the details as described in the sections below.
+  </Step>
+  <Step title="Provide application details">
+    In the application details section:
+
+    1. Enter a descriptive name for your application.
+    2. For the **Redirect URL**, enter `https://api.nango.dev/oauth/callback`.
+
+    Note: This is the URL where users will be redirected after authorizing your application.
+  </Step>
+  <Step title="Configure application permissions">
+    Select the appropriate permission scopes for your integration:
+
+    - **READ**: View projects and issues the user can view, including related items like dashboards, filters, attachments, or comments.
+    - **WRITE**: Create, update, and delete projects and issues the user can change, including related items.
+    - **ADMIN**: Perform most administrative functions on the entire Confluence instance.
+    - **SYSTEM_ADMIN**: Perform all administrative functions on the entire Confluence instance.
+
+    Note: Choose only the scopes your application needs. Higher-level scopes automatically include lower-level ones (e.g., WRITE includes READ).
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating the incoming link, you'll receive your OAuth credentials:
+       - **Client ID**: The identifier for your application
+       - **Client Secret**: The secret key for your application
+    2. Store these credentials securely as you'll need them to configure your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## Useful links
+
+| Topic     | Links                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| General   | [Confluence Data Center overview](https://www.atlassian.com/enterprise/data-center/confluence)                              |                                                      |
+|           | [Installation guide](https://confluence.atlassian.com/doc/confluence-installation-guide-135681.html)                      |
+|           | [Supported platforms](https://confluence.atlassian.com/doc/supported-platforms-207488198.html)                            |
+| Developer | [Technical Overview](https://confluence.atlassian.com/enterprise/confluence-data-center-technical-overview-612959401.html)  
+|           | [REST API examples](https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/)                     |
+|           | [REST API reference (v9.5.0+)](https://developer.atlassian.com/server/confluence/rest/v950/intro/#about)                  |
+|           | [OAuth 2.0 provider API documentation](https://developer.atlassian.com/server/confluence/confluence-oauth2-provider-api/) |
+|           | [How to configure an incoming link](https://confluence.atlassian.com/display/DOC/Configure+an+incoming+link)              |
+|           | [List of OAuth 2.0 scopes](https://developer.atlassian.com/server/confluence/confluence-oauth2-provider-api/#scopes)      |
+|           | [How to turn on rate limiting](https://confluence.atlassian.com/doc/improving-instance-stability-with-rate-limiting-992679004.html)      |
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/confluence-data-center.mdx)</Note>
+
+## API gotchas
+
+- Confluence Data Center may be installed with a context path (e.g., `/confluence`) or without one. This affects your API endpoints within Nango. With context: `/confluence/rest/api/...`, or Without context: `/rest/api/...`. Make sure your integration uses the correct one depending on how your Confluence instance is deployed.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/confluence-data-center.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Confluence Data Center" icon="link" href="/integrations/all/confluence-data-center/connect" horizontal>
+  Guide to connect to Confluence Data Center using Connect UI
+</Card>
