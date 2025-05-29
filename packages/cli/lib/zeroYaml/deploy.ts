@@ -246,6 +246,7 @@ async function createPackage({
         }
     }
 
+    // TODO: reup
     // const jsonSchema = loadSchemaJson({ fullPath });
     // if (!jsonSchema) {
     //     return null;
@@ -260,6 +261,9 @@ async function createPackage({
     });
 }
 
+/**
+ * Load source and bundled files
+ */
 async function loadScriptFiles({
     fullPath,
     scriptName,
@@ -284,6 +288,9 @@ async function loadScriptFiles({
     return { js, ts };
 }
 
+/**
+ * Load bundled file
+ */
 async function loadScriptJsFile({
     scriptName,
     providerConfigKey,
@@ -306,6 +313,10 @@ async function loadScriptJsFile({
     }
 }
 
+/**
+ * Load main source file
+ * nb: this is a legacy thing but it should bundle every import too otherwise it's useless
+ */
 async function loadScriptTsFile({
     fullPath,
     scriptName,
@@ -328,6 +339,9 @@ async function loadScriptTsFile({
     }
 }
 
+/**
+ * Call Nango api to get the state of the deploy
+ */
 async function postConfirmation({ body }: { body: PostDeployConfirmation['Body'] }): Promise<Result<PostDeployConfirmation['Success']>> {
     const url = new URL('/sync/deploy/confirmation', hostport);
 
@@ -353,6 +367,9 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
     }
 }
 
+/**
+ * Call Nango api to actually deploy
+ */
 async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Result<string>> {
     const url = new URL('/sync/deploy', hostport);
 
@@ -389,6 +406,9 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
     }
 }
 
+/**
+ * Handle state, display plan and eventually ask for confirmation if destructive
+ */
 async function handleConfirmation({
     autoconfirm,
     allowDestructive,
@@ -427,14 +447,12 @@ async function handleConfirmation({
                     ? chalk.gray('(0 impacted connections)')
                     : chalk.gray(`(${chalk.yellow(`${sync.connections} impacted connections`)})`);
             tmp.push({ name: ` ${chalk.green('+')} ${sync.providerConfigKey} → ${sync.name}`, msg: syncMessage });
-            // console.log(`  ${chalk.green('+')} ${sync.providerConfigKey} → ${sync.name} ${syncMessage}`);
         }
 
         for (const sync of deletedSyncs) {
             const syncMessage =
                 sync.connections === 0 ? chalk.gray('(0 impacted connections)') : chalk.gray(`(${chalk.red(`${sync.connections} impacted connections`)})`);
             tmp.push({ name: ` ${chalk.red('-')} ${sync.providerConfigKey} → ${sync.name}`, msg: syncMessage });
-            // console.log(`  ${chalk.red('-')} ${sync.providerConfigKey} → ${sync.name} ${syncMessage}`);
             deletedSyncsConnectionsCount += sync.connections || 0;
         }
         const columns = columnify(tmp, {
@@ -558,9 +576,6 @@ function getFetchError(err: unknown): string {
           : 'Unknown error';
 }
 
-// function summaryMessage({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): string {
-//     return ` ▸ ${name} ${chalk.gray('to create')} ${chalk.green(`(${newItems.length})`)}  ${chalk.gray('to update')} ${chalk.cyan(`(${updatedItems.length})`)}  ${chalk.gray('to delete')} ${chalk.red(`(${deleteItems.length})`)}`;
-// }
 function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): any {
     return {
         name: ` ↳ ${name}`,
