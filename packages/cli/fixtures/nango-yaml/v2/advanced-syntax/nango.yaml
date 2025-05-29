@@ -35,6 +35,8 @@ models:
         undefined: undefined
         true: true
         false: false
+        void: void
+        never: never
         __extends: Ref,Ref2
 
     Record:
