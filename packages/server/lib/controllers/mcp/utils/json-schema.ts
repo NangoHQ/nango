@@ -5,19 +5,19 @@ export function nangoModelToJsonSchema(model: NangoModel, models_schema: NangoMo
     return nangoModelToJsonSchemaInternal(model, models_schema, new Set());
 }
 
-function nangoModelToJsonSchemaInternal(model: NangoModel, models_schema: NangoModel[], modelStack: Set<string>): JSONSchema7 {
-    if (modelStack.has(model.name)) {
-        throw new Error(`Circular reference detected: ${Array.from(modelStack).join(' -> ')} -> ${model.name}`);
+function nangoModelToJsonSchemaInternal(model: NangoModel, models_schema: NangoModel[], visitedModels: Set<string>): JSONSchema7 {
+    if (visitedModels.has(model.name)) {
+        throw new Error(`Circular reference detected: ${Array.from(visitedModels).join(' -> ')} -> ${model.name}`);
     }
 
-    modelStack.add(model.name);
+    visitedModels.add(model.name);
 
     try {
         const properties: Record<string, JSONSchema7> = {};
         const required: string[] = [];
 
         for (const field of model.fields) {
-            const fieldSchema = nangoFieldToJsonSchemaInternal(field, models_schema, modelStack);
+            const fieldSchema = nangoFieldToJsonSchemaInternal(field, models_schema, visitedModels);
             properties[field.name] = fieldSchema;
 
             if (!field.optional) {
@@ -31,7 +31,7 @@ function nangoModelToJsonSchemaInternal(model: NangoModel, models_schema: NangoM
             required
         };
     } finally {
-        modelStack.delete(model.name);
+        visitedModels.delete(model.name);
     }
 }
 
