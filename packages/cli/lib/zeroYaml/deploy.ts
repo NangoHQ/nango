@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import chalk from 'chalk';
-import figures from 'figures';
+import columnify from 'columnify';
 import ora from 'ora';
 import promptly from 'promptly';
 
-import { rebuildParsed } from './rebuild.js';
+import { buildDefinitions } from './definitions.js';
 import { Err, Ok } from '../utils/result.js';
 import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
@@ -43,13 +43,11 @@ export async function deploy({
 }): Promise<Result<boolean>> {
     const { version, sync: optionalSyncName, action: optionalActionName, debug } = options;
 
-    await parseSecretKey(environmentName, debug);
-
     let pkg: Package;
     const spinnerPackage = ora({ text: 'Packaging' }).start();
     try {
         // Prepare retro-compat json
-        const parsed = await rebuildParsed({ fullPath, debug });
+        const parsed = await buildDefinitions({ fullPath, debug });
         if (parsed.isErr()) {
             spinnerPackage.fail();
             console.log(chalk.red(parsed.error.message));
@@ -72,11 +70,14 @@ export async function deploy({
         return Err('failed');
     }
 
+    // Get the private key before reaching the API
+    await parseSecretKey(environmentName, debug);
+
     const nangoYamlBody = '';
     const sdkVersion = `${NANGO_VERSION}-zero`;
 
     // Check remote state
-    const spinnerState = ora({ text: 'Acquire remote state' }).start();
+    const spinnerState = ora({ text: `Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}` }).start();
     let confirmation: ScriptDifferences;
     try {
         const confirmationRes = await postConfirmation({
@@ -101,8 +102,10 @@ export async function deploy({
         return Err('not_confirmed');
     }
 
+    console.log('');
     // Actual deploy
-    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${pkg.flowConfigs.length} scripts` }).start();
+    const total = pkg.flowConfigs.length + (pkg.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0);
+    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${total} scripts` }).start();
     try {
         const deployRes = await postDeploy({
             body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
@@ -292,7 +295,7 @@ async function loadScriptJsFile({
     providerConfigKey: string;
     fullPath: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, 'build', providerConfigKey, type, `${scriptName}.cjs`);
+    const filePath = path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -340,13 +343,13 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 
         const json = (await res.json()) as PostDeployConfirmation['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error checking state with the following error: ${JSON.stringify(json.error, null, 2)}`));
+            return Err(new Error(`Error checking state:\n${json.error.message} ${chalk.gray(`(${json.error.code})`)}`));
         }
 
         return Ok(json);
     } catch (err) {
         const errorMessage = getFetchError(err);
-        return Err(new Error(`Error checking state with the following error: ${errorMessage}`));
+        return Err(new Error(`Error checking state:\n${errorMessage}`));
     }
 }
 
@@ -365,7 +368,7 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
 
         const json = (await res.json()) as PostDeploy['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error deploying the scripts with the following error: ${JSON.stringify(json.error, null, 2)}`));
+            return Err(new Error(`Error deploying:\n${json.error.message} ${chalk.gray(`(${json.error.code})`)}`));
         }
 
         if (json.length === 0) {
@@ -382,7 +385,7 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
         );
     } catch (err) {
         const errorMessage = getFetchError(err);
-        return Err(new Error(`Error deploying the scripts with the following error: ${errorMessage}`));
+        return Err(new Error(`Error deploying the scripts:\n${errorMessage}`));
     }
 }
 
@@ -395,50 +398,82 @@ async function handleConfirmation({
     allowDestructive: boolean;
     confirmation: PostDeployConfirmation['Success'];
 }): Promise<Result<boolean>> {
-    // Show response in term
-
-    const c = confirmation;
-    console.log(
-        ` ${figures.triangleRightSmall} Syncs    ${chalk.green(`new [${c.newSyncs.length}]`)}, ${chalk.blue(`update [${c.updatedSyncs.length}]`)}, ${chalk.red(`delete [${c.deletedSyncs.length}]`)}`
-    );
-    if (c.deletedSyncs.length > 0) {
-        console.log(
-            c.deletedSyncs
-                .map((row) => {
-                    return chalk.red(`  ${figures.cross} Will delete script "${row.name}.ts", in ${row.providerConfigKey}`);
-                })
-                .join('\r\n')
-        );
-    }
-    console.log(
-        ` ${figures.triangleRightSmall} Actions  ${chalk.green(`new [${c.newActions.length}]`)}, ${chalk.blue(`update [${c.updatedActions.length}]`)}, ${chalk.red(`delete [${c.deletedActions.length}]`)}`
-    );
-    console.log(
-        ` ${figures.triangleRightSmall} OnEvents ${chalk.green(`new [${c.newOnEventScripts.length}]`)}, ${chalk.blue(`update [${c.updatedOnEventScripts.length}]`)}, ${chalk.red(`delete [${c.deletedOnEventScripts.length}]`)}`
-    );
-    if (c.deletedModels.length > 0) {
-        console.log(`- Models ${chalk.red(`delete [${c.deletedModels.length}]`)}`);
-    }
-    console.log('');
-
-    const { newSyncs, deletedSyncs, deletedModels } = confirmation;
-
-    for (const sync of newSyncs) {
-        const syncMessage =
-            sync.connections === 0 || !sync.auto_start
-                ? 'The sync will be added to your Nango instance if you deploy.'
-                : `Nango will start syncing the corresponding data for ${sync.connections} existing connections.`;
-        console.log(chalk.yellow(`Sync "${sync.name}" is new. ${syncMessage}`));
-    }
-
+    const {
+        newSyncs,
+        updatedSyncs,
+        deletedSyncs,
+        newActions,
+        updatedActions,
+        deletedActions,
+        newOnEventScripts,
+        updatedOnEventScripts,
+        deletedOnEventScripts,
+        deletedModels
+    } = confirmation;
     let deletedSyncsConnectionsCount = 0;
-    for (const sync of deletedSyncs) {
-        console.log(
-            chalk.red(
-                `Sync "${sync.name}" has been removed. It will stop running and the corresponding data will be deleted for ${sync.connections} existing connections.`
-            )
-        );
-        deletedSyncsConnectionsCount += sync.connections || 0;
+
+    console.log('');
+    console.log('', chalk.underline('Nango will perform this plan:'));
+
+    // Syncs
+    if (newSyncs.length > 0 || deletedSyncs.length > 0) {
+        console.log('');
+        console.log(shortSummaryMessage({ name: 'Syncs', newItems: newSyncs, deleteItems: deletedSyncs }));
+
+        const tmp = [];
+        for (const sync of newSyncs) {
+            const syncMessage =
+                sync.connections === 0 || !sync.auto_start
+                    ? chalk.gray('(0 impacted connections)')
+                    : chalk.gray(`(${chalk.yellow(`${sync.connections} impacted connections`)})`);
+            tmp.push({ name: ` ${chalk.green('+')} ${sync.providerConfigKey} → ${sync.name}`, msg: syncMessage });
+            // console.log(`  ${chalk.green('+')} ${sync.providerConfigKey} → ${sync.name} ${syncMessage}`);
+        }
+
+        for (const sync of deletedSyncs) {
+            const syncMessage =
+                sync.connections === 0 ? chalk.gray('(0 impacted connections)') : chalk.gray(`(${chalk.red(`${sync.connections} impacted connections`)})`);
+            tmp.push({ name: ` ${chalk.red('-')} ${sync.providerConfigKey} → ${sync.name}`, msg: syncMessage });
+            // console.log(`  ${chalk.red('-')} ${sync.providerConfigKey} → ${sync.name} ${syncMessage}`);
+            deletedSyncsConnectionsCount += sync.connections || 0;
+        }
+        const columns = columnify(tmp, {
+            showHeaders: false,
+            minWidth: 30,
+            config: {
+                name: {
+                    dataTransform: (a) => {
+                        return `\u2063\u2063${a}`;
+                    }
+                },
+                msg: { align: 'right' }
+            }
+        });
+        console.log(columns);
+    }
+
+    // Actions
+    if (newActions.length > 0 || deletedActions.length > 0) {
+        console.log('');
+        console.log(shortSummaryMessage({ name: 'Actions', newItems: newActions, deleteItems: deletedActions }));
+        for (const action of newActions) {
+            console.log(` ${chalk.green('+')} ${action.providerConfigKey} → ${action.name}`);
+        }
+        for (const action of deletedActions) {
+            console.log(` ${chalk.red('-')} ${action.providerConfigKey} → ${action.name}`);
+        }
+    }
+
+    // OnEvents
+    if (newOnEventScripts.length > 0 || deletedOnEventScripts.length > 0) {
+        console.log('');
+        console.log(shortSummaryMessage({ name: 'OnEvents', newItems: newOnEventScripts, deleteItems: deletedOnEventScripts }));
+        for (const onEvent of newOnEventScripts) {
+            console.log(` ${chalk.green('+')} ${onEvent.providerConfigKey} → ${onEvent.name}`);
+        }
+        for (const onEvent of deletedOnEventScripts) {
+            console.log(` ${chalk.red('-')} ${onEvent.providerConfigKey} → ${onEvent.name}`);
+        }
     }
 
     if (deletedModels.length > 0) {
@@ -450,9 +485,32 @@ async function handleConfirmation({
         );
     }
 
+    console.log('');
+    console.log('', chalk.underline('Summary'));
+    const columns = columnify(
+        [
+            summaryMessageColumns({ name: 'Syncs', newItems: newSyncs, updatedItems: updatedSyncs, deleteItems: deletedSyncs }),
+            summaryMessageColumns({ name: 'Actions', newItems: newActions, updatedItems: updatedActions, deleteItems: deletedActions }),
+            summaryMessageColumns({ name: 'OnEvents', newItems: newOnEventScripts, updatedItems: updatedOnEventScripts, deleteItems: deletedOnEventScripts })
+        ],
+        {
+            showHeaders: false,
+            minWidth: 18,
+            config: {
+                name: {
+                    dataTransform: (a) => {
+                        return `\u2063\u2063${a}`;
+                    }
+                }
+            }
+        }
+    );
+    console.log(columns);
+    console.log('');
+
     const shouldConfirmDestructive = deletedSyncsConnectionsCount > 0 || deletedModels.length > 0;
     if (!shouldConfirmDestructive) {
-        console.log(chalk.grey('Not a destructive operation, proceeding without confirmation'));
+        console.log(chalk.grey('No sync deleted with active connections, proceeding without confirmation'));
 
         return Ok(true);
     }
@@ -498,4 +556,19 @@ function getFetchError(err: unknown): string {
         : err instanceof Error
           ? err.message
           : 'Unknown error';
+}
+
+// function summaryMessage({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): string {
+//     return ` ▸ ${name} ${chalk.gray('to create')} ${chalk.green(`(${newItems.length})`)}  ${chalk.gray('to update')} ${chalk.cyan(`(${updatedItems.length})`)}  ${chalk.gray('to delete')} ${chalk.red(`(${deleteItems.length})`)}`;
+// }
+function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): any {
+    return {
+        name: ` ↳ ${name}`,
+        create: chalk.gray(`to create [ ${chalk.green(`${newItems.length}`)} ]`),
+        update: chalk.gray(`to update [ ${chalk.cyan(`${updatedItems.length}`)} ]`),
+        delete: chalk.gray(`to delete [ ${chalk.red(`${deleteItems.length}`)} ]`)
+    };
+}
+function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: any[]; deleteItems: any[] }): string {
+    return ` [${name} ${chalk.green(`+${newItems.length}`)} ${chalk.red(`-${deleteItems.length}`)}]`;
 }

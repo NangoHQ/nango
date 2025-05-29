@@ -20,7 +20,7 @@ const action = createAction({
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
     input: issueSchema,
-    output: z.void(),
+    output: z.any(),
 
     // Action execution
     exec: async (nango, input) => {
@@ -35,5 +35,5 @@ const action = createAction({
     }
 });
 
-export type NangoActionLocal = Parameters<(typeof action)['params']['exec']>[0];
+export type NangoActionLocal = Parameters<(typeof action)['exec']>[0];
 export default action;

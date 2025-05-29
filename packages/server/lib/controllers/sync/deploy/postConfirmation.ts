@@ -57,7 +57,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
                     event: script.event
                 };
             }),
-            updatedOnEventScripts: diff.added.map((script) => {
+            updatedOnEventScripts: diff.updated.map((script) => {
                 return {
                     providerConfigKey: script.providerConfigKey,
                     name: script.name,
