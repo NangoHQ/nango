@@ -41,11 +41,11 @@ function nangoModelToJsonSchemaInternal(model: NangoModel, models_schema: NangoM
     }
 }
 
-function nangoFieldToJsonSchemaInternal(field: NangoModelField, models_schema: NangoModel[], modelStack: Set<string>): JSONSchema7 {
+function nangoFieldToJsonSchemaInternal(field: NangoModelField, models_schema: NangoModel[], visitedModels: Set<string>): JSONSchema7 {
     if (field.array) {
         return {
             type: 'array',
-            items: nangoFieldToJsonSchemaInternal({ ...field, array: false }, models_schema, modelStack)
+            items: nangoFieldToJsonSchemaInternal({ ...field, array: false }, models_schema, visitedModels)
         };
     }
 
@@ -61,7 +61,7 @@ function nangoFieldToJsonSchemaInternal(field: NangoModelField, models_schema: N
             throw new Error(`Model ${modelName} not found`);
         }
 
-        return nangoModelToJsonSchemaInternal(model, models_schema, modelStack);
+        return nangoModelToJsonSchemaInternal(model, models_schema, visitedModels);
     }
 
     if (field.union) {
@@ -70,7 +70,7 @@ function nangoFieldToJsonSchemaInternal(field: NangoModelField, models_schema: N
         }
 
         return {
-            oneOf: field.value.map((v) => nangoFieldToJsonSchemaInternal(v, models_schema, modelStack))
+            oneOf: field.value.map((v) => nangoFieldToJsonSchemaInternal(v, models_schema, visitedModels))
         };
     }
 
