@@ -282,6 +282,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
                 break;
 
+            case 'connection_refresh_exhausted':
+                this.status = 424;
+                this.message = 'The refresh limit has been reached for this connection.';
+                break;
+
             case 'connection_test_failed':
                 this.status = status || 400;
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
@@ -487,6 +492,31 @@ export class NangoError extends NangoInternalError {
             case 'concurrent_deployment':
                 this.status = 409;
                 this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
+                break;
+
+            case 'webhook_invalid_signature':
+                this.status = 401;
+                this.message = 'Invalid webhook signature';
+                break;
+
+            case 'webhook_missing_signature':
+                this.status = 401;
+                this.message = 'Missing webhook signature';
+                break;
+
+            case 'webhook_invalid_payload':
+                this.status = 400;
+                this.message = 'Invalid webhook payload';
+                break;
+
+            case 'webhook_no_connection_or_existing_installation_id':
+                this.status = 400;
+                this.message = 'No connection or existing installation_id';
+                break;
+
+            case 'webhook_unknown_provider':
+                this.status = 400;
+                this.message = 'Unknown provider';
                 break;
 
             default:

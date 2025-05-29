@@ -21,7 +21,7 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
@@ -109,7 +109,8 @@ class SyncController {
             const environmentId = res.locals['environment'].id;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
-            const path = '/' + req.params['0'];
+            const url = new URL(req.originalUrl, baseUrl);
+            const path = url.pathname.replace(/^\/v1\//, '/');
             if (!connectionId) {
                 res.status(400).send({ error: 'Missing connection id' });
 
@@ -136,6 +137,7 @@ class SyncController {
                 req.body['input'] = input;
                 await this.triggerAction(req, res, next);
             } else if (model) {
+                Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true });
                 req.query['model'] = model;
                 getPublicRecords(req, res, next);
             } else {
@@ -157,6 +159,9 @@ class SyncController {
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
+        const async = req.get('X-Async') === 'true';
+        const retryMaxHeaderName = 'X-Max-Retries';
+        const retryMax = parseInt(req.get(retryMaxHeaderName) || '0');
         let logCtx: LogContextOrigin | undefined;
         try {
             if (!action_name || typeof action_name !== 'string') {
@@ -175,6 +180,13 @@ class SyncController {
 
             if (!providerConfigKey) {
                 res.status(400).send({ error: 'Missing provider config key' });
+
+                span.finish();
+                return;
+            }
+
+            if (async && (retryMax < 0 || retryMax > 5)) {
+                res.status(400).send({ error: `${retryMaxHeaderName} must be between 0 and 5` });
 
                 span.finish();
                 return;
@@ -223,16 +235,29 @@ class SyncController {
                 connection,
                 actionName: action_name,
                 input,
+                async,
+                retryMax,
                 logCtx
             });
 
             if (actionResponse.isOk()) {
                 span.finish();
-                await logCtx.success();
-                res.status(200).json(actionResponse.value);
 
-                if (plan && plan.name !== 'free') {
-                    void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
+                if ('statusUrl' in actionResponse.value) {
+                    res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
+                } else {
+                    res.status(200).json(actionResponse.value.data);
+                }
+
+                if (plan) {
+                    billing.add('billable_actions', 1, {
+                        accountId: account.id,
+                        idempotencyKey: logCtx.id,
+                        environmentId: connection.environment_id,
+                        providerConfigKey,
+                        connectionId,
+                        actionName: action_name
+                    });
                 }
 
                 return;
@@ -240,19 +265,7 @@ class SyncController {
                 span.setTag('nango.error', actionResponse.error);
                 await logCtx.failed();
 
-                if (actionResponse.error.type === 'script_http_error') {
-                    res.status(424).json({
-                        error: {
-                            payload: actionResponse.error.payload,
-                            code: actionResponse.error.type,
-                            ...(actionResponse.error.additional_properties && 'upstream_response' in actionResponse.error.additional_properties
-                                ? { upstream: actionResponse.error.additional_properties['upstream_response'] }
-                                : {})
-                        }
-                    });
-                } else {
-                    errorManager.errResFromNangoErr(res, actionResponse.error);
-                }
+                errorManager.errResFromNangoErr(res, actionResponse.error);
 
                 span.finish();
                 return;

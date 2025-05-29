@@ -6,10 +6,10 @@ import {
     connectionService,
     errorManager,
     flowService,
-    getActionsByProviderConfigKey,
     getGlobalWebhookReceiveUrl,
     getProvider,
     getProviders,
+    getSimplifiedActionsByProviderConfigKey,
     getSyncConfigsAsStandardConfig,
     getUniqueSyncsByProviderConfig
 } from '@nangohq/shared';
@@ -172,7 +172,7 @@ class ConfigController {
                 };
             });
 
-            const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
+            const actions = await getSimplifiedActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
@@ -440,17 +440,20 @@ class ConfigController {
                 return;
             }
 
-            await configService.editProviderConfig({
-                ...oldConfig,
-                unique_key: uniqueKey,
-                provider: providerName,
-                oauth_client_id: req.body['oauth_client_id'],
-                oauth_client_secret,
-                oauth_scopes: req.body['oauth_scopes'],
-                app_link: req.body['app_link'],
-                environment_id: environmentId,
-                custom
-            });
+            await configService.editProviderConfig(
+                {
+                    ...oldConfig,
+                    unique_key: uniqueKey,
+                    provider: providerName,
+                    oauth_client_id: req.body['oauth_client_id'],
+                    oauth_client_secret,
+                    oauth_scopes: req.body['oauth_scopes'],
+                    app_link: req.body['app_link'],
+                    environment_id: environmentId,
+                    custom
+                },
+                provider
+            );
             res.status(200).send({
                 config: {
                     unique_key: uniqueKey,

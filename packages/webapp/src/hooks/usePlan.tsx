@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiPlan, GetPlans, PostPlanExtendTrial } from '@nangohq/types';
+import type { ApiPlan, GetPlans, GetUsage, PostPlanExtendTrial } from '@nangohq/types';
 
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
@@ -26,6 +26,25 @@ export function useApiGetPlans(env: string) {
             });
 
             const json = (await res.json()) as GetPlans['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export function useApiGetUsage(env: string) {
+    return useQuery<GetUsage['Success'], APIError>({
+        enabled: Boolean(env),
+        queryKey: ['plans', 'usage'],
+        queryFn: async (): Promise<GetUsage['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/usage?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetUsage['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }

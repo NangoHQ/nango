@@ -59,10 +59,13 @@ export const EnvironmentPicker: React.FC = () => {
                 side="bottom"
                 align="start"
                 style={{ width: 'var(--radix-popover-trigger-width)' }}
+                onOpenAutoFocus={(e) => {
+                    if (meta.environments.length < 5) e.preventDefault();
+                }}
                 className="bg-grayscale-900 w-full px-0 border-grayscale-700 py-0"
             >
                 <Command>
-                    {meta.environments.length > 5 && (
+                    {meta.environments.length >= 5 && (
                         <CommandInput
                             placeholder="Search..."
                             className="text-white ring-0 focus:ring-0 focus-visible:outline-none border-transparent border-b-grayscale-700 rounded-b-none px-2.5    "

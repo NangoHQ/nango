@@ -9,7 +9,7 @@ import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfi
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { AuthModeType, DBConnection, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
+import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider } from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -146,19 +146,17 @@ class ConfigService {
         return true;
     }
 
-    async editProviderConfig(config: ProviderConfig) {
-        const provider = getProvider(config.provider);
-        if (!provider) {
-            throw new NangoError('unknown_provider');
-        }
-
+    async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
         const encrypted = encryptionManager.encryptProviderConfig(config);
         encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+        encrypted.updated_at = new Date();
 
-        return db.knex
-            .from<ProviderConfig>(`_nango_configs`)
+        const res = await db.knex
+            .from<DBIntegrationCrypted>(`_nango_configs`)
             .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
-            .update(encrypted);
+            .update(encrypted)
+            .returning('*');
+        return res[0]!;
     }
 
     async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {

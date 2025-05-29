@@ -1,8 +1,9 @@
-import type { AxiosResponse } from 'axios';
-import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
 import set from 'lodash-es/set.js';
+import parseLinksHeader from 'parse-link-header';
+
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 function isValidURL(str: string): boolean {
     try {
@@ -168,7 +169,7 @@ class PaginationService {
 
             yield responseData;
 
-            if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
+            if (paginationConfig['limit'] && responseData.length < Number(paginationConfig['limit'])) {
                 return;
             }
 

@@ -78,7 +78,7 @@ paths:
                                         items:
                                             $ref: '#/components/schemas/Integration'
         post:
-            description: Create a new integration
+            description: Create a new integration. Deprecated, please use `POST /integrations`
             requestBody:
                 required: true
                 content:
@@ -136,7 +136,7 @@ paths:
                                     message:
                                         type: string
         put:
-            description: Edits an integration (only for OAuth APIs)
+            description: Edits an integration (only for OAuth APIs). Deprecated, please use `PATCH /integrations/:uniqueKey`
             requestBody:
                 required: true
                 content:
@@ -298,7 +298,7 @@ paths:
                                     message:
                                         type: string
         delete:
-            description: Deletes a specific integration
+            description: Deletes a specific integration. Deprecated, please use `DELETE /integrations/:uniqueKey`
             parameters:
                 - name: providerConfigKey
                   in: path
@@ -357,6 +357,49 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '404':
                     $ref: '#/components/responses/NotFound'
+
+        post:
+            description: Create an integration
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - unique_key
+                                - provider
+                            properties:
+                                unique_key:
+                                    type: string
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
+                                provider:
+                                    type: string
+                                    description: The provider unique name.
+                                display_name:
+                                    type: string
+                                    description: The integration display name.
+                                credentials:
+                                    $ref: '#/components/schemas/IntegrationCredentials'
+
+            responses:
+                '200':
+                    description: Successfully created an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
     /integrations/{uniqueKey}:
         get:
             description: Returns a specific integration
@@ -387,6 +430,75 @@ paths:
                                 properties:
                                     data:
                                         $ref: '#/components/schemas/IntegrationFull'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+        patch:
+            description: Edit an integration
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                unique_key:
+                                    type: string
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
+                                display_name:
+                                    type: string
+                                    description: The integration display name.
+                                credentials:
+                                    $ref: '#/components/schemas/IntegrationCredentials'
+            responses:
+                '200':
+                    description: Successfully updated an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+        delete:
+            description: Deletes a specific integration.
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+            responses:
+                '200':
+                    description: Successfully deleted an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -588,6 +700,22 @@ paths:
                                 properties:
                                     message:
                                         type: string
+                '424':
+                    description: Connection refresh exhausted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                description: The error code
+                                            message:
+                                                type: string
+                                                description: A human-readable error message
                 '404':
                     description: Unknown Connection
                     content:
@@ -1577,6 +1705,59 @@ paths:
                                             message:
                                                 type: string
 
+    /action/{actionId}:
+        get:
+            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/actions/use-an-action#checking-the-action-result) for more details.
+            parameters:
+                - name: actionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
+            responses:
+                '200':
+                    description: The action has completed successfully (output cannot exceed 10MB)
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                description: The data returned by the action
+                                properties:
+                                    your-properties:
+                                        type: string
+                                        description: The data returned by the action
+                                        example: 'The data returned by the action'
+                '404':
+                    description: No results. The action has not completed yet
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                                example: 'Action not completed yet'
+                '500':
+                    description: The action has completed with an error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
+
     /sync/update-connection-frequency:
         put:
             description: Override a sync's default frequency for a specific connection, or revert to the default frequency.
@@ -1644,6 +1825,21 @@ paths:
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
+                - name: X-Async
+                  in: header
+                  required: false
+                  schema:
+                      type: boolean
+                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/actions/use-an-action#asynchronous-action) for more details.
+                - name: X-Max-Retries
+                  in: header
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 5
+                      default: 0
+                  description: The maximum number of retries in case of failure (between 0 and 5). Only applicable when X-Async is true. Default to 0 if not specified.
             requestBody:
                 required: true
                 content:
@@ -1662,16 +1858,32 @@ paths:
 
             responses:
                 '200':
-                    description: Returns the result of the action
+                    description: The result of the action.
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    your-properties:
-                                        type: string
-                                        description: The data returned by the action
-                                        example: 'The data returned by the action'
+                                oneOf:
+                                    - type: object
+                                      description: The result of the action when triggered synchronously. (cannot exceed 10MB)
+                                      properties:
+                                          your-properties:
+                                              type: object
+                                              description: The data returned by the action
+                                              example: 'The data returned by the action'
+                                    - type: object
+                                      description: The ID and the status URL of the action to poll for the result when triggered asynchronously.
+                                      required:
+                                          - statusUrl
+                                          - id
+                                      properties:
+                                          statusUrl:
+                                              type: string
+                                              description: URL to poll for the action result
+                                              example: '/action/35f461d4-e681-4957-ab14-c0ae1609431d'
+                                          id:
+                                              type: string
+                                              description: Unique identifier for the asynchronous action
+                                              example: '35f461d4-e681-4957-ab14-c0ae1609431d'
 
                 '400':
                     description: Invalid request
@@ -1715,6 +1927,28 @@ paths:
                                                     body:
                                                         type: object
                                                         additionalProperties: true
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
+                                    required:
+                                        - error
+                '500':
+                    description: Action error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
                                         required:
                                             - message
                                             - code
@@ -2443,38 +2677,7 @@ components:
                           nullable: true
                       credentials:
                           nullable: true
-                          oneOf:
-                              - type: object
-                                additionalProperties: false
-                                properties:
-                                    type:
-                                        type: string
-                                        enum: ['OAUTH2', 'OAUTH1', 'TBA']
-                                    client_id:
-                                        type: string
-                                        nullable: true
-                                    client_secret:
-                                        type: string
-                                        nullable: true
-                                    scopes:
-                                        type: string
-                                        nullable: true
-
-                              - type: object
-                                additionalProperties: false
-                                properties:
-                                    type:
-                                        type: string
-                                        enum: ['APP']
-                                    app_id:
-                                        type: string
-                                        nullable: true
-                                    private_key:
-                                        type: string
-                                        nullable: true
-                                    app_link:
-                                        type: string
-                                        nullable: true
+                          $ref: '#/components/schemas/IntegrationCredentials'
 
         ConnectSessionInput:
             type: object
@@ -3026,3 +3229,81 @@ components:
                         - items:
                               type: array
                               $ref: '#/components/schemas/NangoModelField'
+
+        IntegrationCredentials:
+            description: Integration credentials schema for different authentication types.
+            oneOf:
+                - type: object
+                  required:
+                      - type
+                      - client_id
+                      - client_secret
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - OAUTH1
+                              - OAUTH2
+                              - TBA
+                      client_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_secret:
+                          type: string
+                          minLength: 1
+                      scopes:
+                          type: string
+                          pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
+                          nullable: true
+                - type: object
+                  required:
+                      - type
+                      - app_id
+                      - app_link
+                      - private_key
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - APP
+                      app_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      app_link:
+                          type: string
+                          minLength: 1
+                      private_key:
+                          type: string
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                      - client_id
+                      - client_secret
+                      - app_id
+                      - app_link
+                      - private_key
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - CUSTOM
+                      client_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_secret:
+                          type: string
+                          minLength: 1
+                      app_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      app_link:
+                          type: string
+                          minLength: 1
+                      private_key:
+                          type: string
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'

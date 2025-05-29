@@ -1,13 +1,17 @@
-import type { Config } from '@nangohq/shared';
-import { externalWebhookService, getProvider } from '@nangohq/shared';
-import { internalNango } from './internal-nango.js';
-import { getLogger } from '@nangohq/utils';
-import * as webhookHandlers from './index.js';
-import type { WebhookHandlersMap } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import { forwardWebhook } from '@nangohq/webhooks';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import tracer from 'dd-trace';
+
+import { NangoError, externalWebhookService, getProvider } from '@nangohq/shared';
+import type { Result } from '@nangohq/utils';
+import { getLogger, Err } from '@nangohq/utils';
+import { forwardWebhook } from '@nangohq/webhooks';
+
+import * as webhookHandlers from './index.js';
+import { internalNango } from './internal-nango.js';
+
+import type { WebhookResponse, WebhookHandlersMap } from './types.js';
+import type { LogContextGetter } from '@nangohq/logs';
+import type { Config } from '@nangohq/shared';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Manager');
 
@@ -29,38 +33,68 @@ export async function routeWebhook({
     body: any;
     rawBody: string;
     logContextGetter: LogContextGetter;
-}): Promise<unknown> {
+}): Promise<WebhookResponse> {
     if (!body) {
-        return;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     const provider = getProvider(integration.provider);
     if (!provider || !provider['webhook_routing_script']) {
-        return;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
     const webhookRoutingScript = provider['webhook_routing_script'];
     const handler = handlers[webhookRoutingScript];
     if (!handler) {
-        return;
+        return {
+            content: null,
+            statusCode: 204
+        };
     }
 
-    const res = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
+    const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            return await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
+            const handlerResult = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
+            return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
+            return Err(err instanceof Error ? err : new Error(String(err)));
         }
-        return null;
     });
 
-    const webhookBodyToForward = res?.parsedBody || body;
-    const connectionIds = res?.connectionIds || [];
+    if (result.isErr()) {
+        const err = result.error;
+        if (err instanceof NangoError) {
+            return {
+                content: { error: err.message },
+                statusCode: err.status
+            };
+        }
+        return {
+            content: { error: 'internal_error' },
+            statusCode: 500
+        };
+    }
 
-    const webhookSettings = await externalWebhookService.get(environment.id);
+    const res = result.value;
 
-    await tracer.trace('webhook.forward', async () => {
-        await forwardWebhook({
+    // Only forward webhook if there was no error
+    if (res.statusCode === 200) {
+        const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
+        const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
+
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
+        // Forward the webhook to the customer asynchronously to avoid provider timeouts.
+        // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
+        const forwardSpan = tracer.startSpan('webhook.forward');
+        void forwardWebhook({
             integration,
             account,
             environment,
@@ -69,8 +103,8 @@ export async function routeWebhook({
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
             logContextGetter
-        });
-    });
+        }).finally(() => forwardSpan.finish());
+    }
 
-    return res ? res.acknowledgementResponse : null;
+    return res;
 }

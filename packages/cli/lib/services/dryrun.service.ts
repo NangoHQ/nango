@@ -22,12 +22,13 @@ import { displayValidationError } from '../utils/errors.js';
 import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 
-import type { GlobalOptions } from '../types.js';
 import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
-interface RunArgs extends GlobalOptions {
+interface RunArgs {
+    autoConfirm: boolean;
     sync: string;
+    debug: boolean;
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
@@ -254,7 +255,7 @@ export class DryRunService {
             return;
         }
 
-        let stubbedMetadata;
+        let stubbedMetadata: Metadata | undefined = undefined;
         let normalizedInput;
 
         const saveResponsesDir = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
@@ -341,6 +342,7 @@ export class DryRunService {
                 is_public: false,
                 metadata: {},
                 pre_built: false,
+                sdk_version: null,
                 sync_type: lastSyncDate ? 'incremental' : 'full',
                 version: '0.0.1'
             };
@@ -379,7 +381,8 @@ export class DryRunService {
                                 providerConfigKey,
                                 connectionId: nangoConnection.connection_id,
                                 syncName,
-                                syncVariant
+                                syncVariant,
+                                hasStubbedMetadata: Boolean(stubbedMetadata)
                             }),
                         onRejected: (error: unknown) =>
                             responseSaver.onAxiosRequestRejected({
@@ -392,10 +395,9 @@ export class DryRunService {
                     }
                 };
             }
-            console.log('---');
 
             if (options.saveResponses && stubbedMetadata) {
-                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
                 const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
                 fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
             }
@@ -407,7 +409,6 @@ export class DryRunService {
                 input: normalizedInput,
                 stubbedMetadata: stubbedMetadata
             });
-            console.log('---');
 
             if (results.error) {
                 const err = results.error;
@@ -521,7 +522,7 @@ export class DryRunService {
         nangoProps: NangoProps;
         loadLocation: string;
         input: object;
-        stubbedMetadata?: Metadata;
+        stubbedMetadata: Metadata | undefined;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {

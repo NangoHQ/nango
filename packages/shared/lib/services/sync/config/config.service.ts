@@ -170,7 +170,8 @@ export async function countSyncConfigByConfigId(environmentId: number): Promise<
         .where({
             environment_id: environmentId,
             active: true,
-            deleted: false
+            deleted: false,
+            enabled: true
         })
         .groupBy('nango_config_id');
 
@@ -235,7 +236,29 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
     return false;
 }
 
-export async function getActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
+export async function getActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<DBSyncConfig[]> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return [];
+    }
+
+    const result = await schema().from<DBSyncConfig>(TABLE).where({
+        environment_id,
+        nango_config_id,
+        deleted: false,
+        active: true,
+        type: 'action'
+    });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
+}
+
+export async function getSimplifiedActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
     const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
 
     if (!nango_config_id) {
@@ -494,7 +517,7 @@ export async function getConnectionCountsByProviderConfigKey(
         .select<{ providerConfigKey: string; connectionsWithScripts: string; total: string }[]>(
             '_nango_configs.unique_key as providerConfigKey',
             db.knex.raw(`
-                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as "connectionsWithScripts"
+                COUNT(DISTINCT CASE WHEN _nango_sync_configs.active = true AND _nango_sync_configs.enabled = true AND _nango_sync_configs.deleted = false THEN _nango_connections.id END) as "connectionsWithScripts"
             `),
             db.knex.raw(`
                 COUNT(DISTINCT _nango_connections.id) as total

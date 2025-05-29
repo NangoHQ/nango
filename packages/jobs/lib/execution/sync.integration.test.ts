@@ -184,7 +184,10 @@ const runJob = async (
         syncName: sync.name,
         syncVariant: 'base',
         groupKey: 'group-key',
-        attempt: 0,
+        groupMaxConcurrency: 0,
+        retryKey: 'retry-key',
+        attempt: 1,
+        attemptMax: 1,
         state: 'CREATED',
         debug: false,
         connection: {
@@ -193,6 +196,7 @@ const runJob = async (
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
         },
+        ownerKey: null,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

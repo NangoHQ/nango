@@ -633,6 +633,20 @@ class OAuthController {
                     });
                 }
 
+                if (provider.authorization_url_skip_empty) {
+                    const url = new URL(authorizationUri);
+                    const queryParams = new URLSearchParams(url.search);
+                    // Remove any keys with undefined or empty string values
+                    for (const [key, value] of queryParams.entries()) {
+                        if (value === '') {
+                            queryParams.delete(key);
+                        }
+                    }
+
+                    url.search = queryParams.toString();
+                    authorizationUri = url.toString();
+                }
+
                 void logCtx.info('Redirecting', {
                     authorizationUri,
                     providerConfigKey,
@@ -776,7 +790,7 @@ class OAuthController {
         return res.redirect(redirectUrl);
     }
 
-    public async oauthCallback(req: Request, res: Response<any, never>, _: NextFunction) {
+    public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
         const { state } = req.query;
 
         const installation_id = req.query['installation_id'] as string | undefined;
@@ -920,7 +934,6 @@ class OAuthController {
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
         }
 
-        // no need to do anything here until the request is approved
         if (session.authMode === 'CUSTOM' && req.query['setup_action'] === 'update' && installationId) {
             // this means the update request was performed from the provider itself
             if (!req.query['state']) {
@@ -929,11 +942,8 @@ class OAuthController {
                 return;
             }
 
-            void logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
-            await logCtx.success();
-
-            await publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
-            return;
+            // this could be a new connection that is actually using updated permissions
+            // so we continue to upsert the connection to be sure
         }
 
         // check for oauth overrides in the connection config
@@ -1017,7 +1027,7 @@ class OAuthController {
             let parsedRawCredentials: OAuth2Credentials;
 
             try {
-                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, 'OAUTH2') as OAuth2Credentials;
+                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
             } catch (err) {
                 void logCtx.error('The OAuth token response from the server could not be parsed - OAuth flow failed.', { error: err, rawCredentials });
                 await logCtx.failed();

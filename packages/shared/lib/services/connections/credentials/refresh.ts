@@ -81,11 +81,11 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         // TODO: remove this when cron is using other columns
         await connectionService.updateLastFetched(props.connection.id);
+        props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
-        // we can't return an error because it would a breaking change in GET /connection
         if (props.connection.refresh_exhausted && !props.instantRefresh) {
-            return Ok(props.connection);
+            return Err(new NangoError('connection_refresh_exhausted'));
         }
 
         let res: Result<DBConnectionDecrypted, NangoError>;
@@ -146,7 +146,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                updated_at: new Date()
             });
         }
 
@@ -309,7 +310,7 @@ async function testCredentials(
     return Ok(oldConnection);
 }
 
-async function refreshCredentialsIfNeeded({
+export async function refreshCredentialsIfNeeded({
     connectionId,
     environmentId,
     providerConfig,

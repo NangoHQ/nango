@@ -11,6 +11,7 @@ import { enrichHeaders, http, isCI, parseSecretKey, printDebug } from '../utils.
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
 import { cloudHost, localhostUrl } from '../constants.js';
+import { NANGO_VERSION } from '../version.js';
 
 import type { DeployOptions, InternalDeployOptions } from '../types.js';
 import type {
@@ -232,13 +233,15 @@ class DeployService {
 
         const nangoYamlBody = parser.yaml;
 
+        const sdkVersion = `${NANGO_VERSION}-yaml`;
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
         const bodyDeploy: PostDeploy['Body'] = {
             ...postData,
             reconcile: true,
             debug,
             nangoYamlBody,
-            singleDeployMode
+            singleDeployMode,
+            sdkVersion
         };
 
         const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
@@ -249,7 +252,8 @@ class DeployService {
                 ...postData,
                 reconcile: false,
                 debug,
-                singleDeployMode
+                singleDeployMode,
+                sdkVersion
             };
             const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
 

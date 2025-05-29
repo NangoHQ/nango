@@ -2,11 +2,8 @@ export type AuthErrorType =
     | 'missingAuthToken'
     | 'blocked_by_browser'
     | 'invalidHostUrl'
-    | 'windowIsOpened'
     | 'missingCredentials'
     | 'windowClosed'
-    | 'request_error'
-    | 'missing_ws_client_id'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'resource_capped';

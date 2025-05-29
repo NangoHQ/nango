@@ -1,8 +1,10 @@
 import { z } from 'zod';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler, Task } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type EventEmitter from 'node:events';
 
 const path = '/v1/dequeue';
@@ -43,10 +45,11 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 };
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
-    return async (req: EndpointRequest<PostDequeue>, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, limit, longPolling: longPolling } = req.body;
+    return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
+        const { groupKey, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
         const eventId = `task:created:${groupKey}`;
+        const groupKeyPrefix = `${groupKey}*`; // Dequeuing all tasks with the same group key prefix
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -60,7 +63,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
         };
         const onTaskStarted = (_t: Task) => {
             cleanupAndRespond(async (res) => {
-                const getTasks = await scheduler.dequeue({ groupKey, limit });
+                const getTasks = await scheduler.dequeue({ groupKey: groupKeyPrefix, limit });
                 if (getTasks.isErr()) {
                     res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
                 } else {
@@ -72,7 +75,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).send([]));
         }, longPollingTimeoutMs);
 
-        const getTasks = await scheduler.dequeue({ groupKey, limit });
+        const getTasks = await scheduler.dequeue({ groupKey: groupKeyPrefix, limit });
         if (getTasks.isErr()) {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;

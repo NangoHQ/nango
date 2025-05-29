@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
-
 import { useGlobal } from './store';
+
+import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
@@ -17,7 +17,8 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
         (TEndpoint['Body'] extends never ? { body?: undefined } : { body: TEndpoint['Body'] }) &
         (TEndpoint['Querystring'] extends never ? { query?: undefined } : { query: TEndpoint['Querystring'] }) &
-        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }),
+        (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
+        (TEndpoint['Headers'] extends never ? { headers?: Record<string, any> } : { headers: TEndpoint['Headers'] }),
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(useGlobal.getState().apiURL);
@@ -41,6 +42,21 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     const headers = new Headers();
     if (opts?.body) {
         headers.append('content-type', 'application/json');
+    }
+
+    if (opts?.headers) {
+        for (const [key, value] of Object.entries(opts.headers)) {
+            if (typeof value === 'string') {
+                headers.append(key, value);
+            }
+            if (Array.isArray(value)) {
+                for (const val of value) {
+                    if (typeof val === 'string') {
+                        headers.append(key, val);
+                    }
+                }
+            }
+        }
     }
 
     const sessionToken = useGlobal.getState().sessionToken;
@@ -89,6 +105,6 @@ export async function getIntegrations() {
     return await fetchApi<GetPublicListIntegrations>('/integrations', {});
 }
 
-export async function getProvider(params: GetPublicProvider['Params']) {
-    return await fetchApi<GetPublicProvider>(`/providers/:provider`, { params });
+export async function getProvider(params: GetPublicProvider['Params'], lang?: string) {
+    return await fetchApi<GetPublicProvider>(`/providers/:provider`, { params, headers: { 'accept-language': lang } });
 }

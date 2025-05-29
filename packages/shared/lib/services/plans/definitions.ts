@@ -69,12 +69,30 @@ export const plansList: PlanDefinition[] = [
             sync_frequency_secs_min: 30
         }
     },
+    {
+        code: 'internal',
+        title: 'Internal',
+        description: 'Congrats, you are an insider.',
+        canUpgrade: false,
+        canDowngrade: false,
+        cta: 'Contact Us',
+        hidden: true,
+        flags: {
+            api_rate_limit_size: 'l',
+            connection_with_scripts_max: null,
+            environments_max: 3,
+            has_otel: false,
+            has_sync_variants: false,
+            name: 'yc',
+            sync_frequency_secs_min: 30
+        }
+    },
 
     // Old plans
     {
         code: 'starter',
         title: 'Starter',
-        description: '',
+        description: 'Tailored to your scale.',
         canUpgrade: false,
         canDowngrade: false,
         hidden: true,
@@ -91,7 +109,7 @@ export const plansList: PlanDefinition[] = [
     {
         code: 'scale',
         title: 'Scale',
-        description: '',
+        description: 'Tailored to your scale.',
         canUpgrade: false,
         canDowngrade: false,
         hidden: true,

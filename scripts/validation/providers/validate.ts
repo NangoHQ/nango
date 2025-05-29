@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import Ajv from 'ajv';
 import chalk from 'chalk';
+
+import Ajv from 'ajv';
 import jsYaml from 'js-yaml';
 
 import type { Provider } from '@nangohq/types';
@@ -237,6 +238,10 @@ function validateProvider(providerKey: string, provider: Provider) {
     } else if (provider.auth_mode === 'JWT') {
         if (!provider.credentials) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for JWT auth mode`);
+        }
+    } else if (provider.auth_mode === 'OAUTH2_CC') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for OAUTH2_CC auth mode`);
         }
     } else {
         if (provider.credentials) {

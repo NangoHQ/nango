@@ -15,9 +15,15 @@ jobs:
         if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/create-github-app-token@v2
+              id: create_github_app_token
+              with:
+                  app-id: ${{ secrets.GH_APP_PUSHER_ID }}
+                  private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+
             - uses: actions/checkout@v4
               with:
-                  token: ${{ secrets.GH_PAT }}
+                  token: ${{ steps.create_github_app_token.outputs.token }}
                   fetch-depth: 0
 
             - uses: actions/setup-node@v4
@@ -38,6 +44,6 @@ jobs:
 
             - name: Publish release
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
                   npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"

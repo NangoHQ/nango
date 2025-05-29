@@ -40,7 +40,7 @@ const webappBuildPath = '../../../webapp/dist';
 const staticSite = express.Router();
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
 staticSite.use(express.static(path.join(dirname(), webappBuildPath), { cacheControl: true, maxAge: '1h' }));
-staticSite.get('*', (_, res) => {
+staticSite.get('*splat', (_, res) => {
     const fp = path.join(dirname(), webappBuildPath, 'index.html');
     res.sendFile(fp, { headers: { 'Cache-Control': 'no-cache, private' } });
 });

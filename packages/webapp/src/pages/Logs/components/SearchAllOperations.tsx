@@ -6,10 +6,10 @@ import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parse
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
-import { DatePicker } from './DatePicker';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 import { TypesSelect } from './TypesSelect';
 import { MultiSelect } from '../../../components/MultiSelect';
+import { PeriodSelector } from '../../../components/PeriodSelector';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Spinner from '../../../components/ui/Spinner';
 import * as Table from '../../../components/ui/Table';
@@ -19,13 +19,13 @@ import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList } from '../constants';
 import { OperationRow } from './OperationRow';
 import { apiFetch } from '../../../utils/api';
-import { getPresetRange, slidePeriod } from '../../../utils/logs';
+import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
 
+import type { Period } from '../../../utils/dates';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-import type { DateRange } from 'react-day-picker';
 
 interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
@@ -40,9 +40,7 @@ const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withDefault
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parseConnections = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parseSyncs = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
-const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',')
-    .withOptions({ history: 'push' })
-    .withDefault(Object.values(getPresetRange('last24h')) as Date[]);
+const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
 
 export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const env = useStore((state) => state.env);
@@ -99,7 +97,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
             // We do it only at query time so the URL stays the same
             if (isLive) {
                 const tmp = slidePeriod({ from: period[0], to: period[1] });
-                periodCopy = { from: tmp.from!.toISOString(), to: tmp.to!.toISOString() };
+                periodCopy = { from: tmp.from.toISOString(), to: tmp.to!.toISOString() };
             } else {
                 periodCopy = { from: new Date(period[0]).toISOString(), to: new Date(period[1]).toISOString() };
             }
@@ -249,8 +247,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     }, [data, hasNextPage]);
 
     // --- Period
-    const onPeriodChange = (range: DateRange, live: boolean) => {
-        void setPeriod(range.from && range.to ? [range.from, range.to] : []);
+    const onPeriodChange = (period: Period | null, live: boolean) => {
+        void setPeriod(period ? [period.from, period.to ?? new Date()] : []);
         void setLive(live);
     };
 
@@ -287,7 +285,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />
 
-                    <DatePicker isLive={!manualLoadMore && isLive} period={{ from: period[0], to: period[1] }} onChange={onPeriodChange} />
+                    <PeriodSelector
+                        isLive={!manualLoadMore && isLive}
+                        period={{ from: period[0], to: period[1] }}
+                        onChange={onPeriodChange}
+                        presets={logsPresets}
+                        defaultPreset={last24hPreset}
+                    />
                 </div>
             </div>
             <div

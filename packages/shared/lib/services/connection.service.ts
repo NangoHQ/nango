@@ -471,7 +471,8 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .where({ id })
             .update({
-                last_refresh_failure: new Date(),
+                updated_at: now,
+                last_refresh_failure: now,
                 last_refresh_success: null,
                 refresh_attempts: attempt,
                 refresh_exhausted: attempt >= MAX_CONSECUTIVE_DAYS_FAILED_REFRESH
@@ -839,10 +840,15 @@ class ConnectionService {
 
         switch (authMode) {
             case 'OAUTH2': {
-                if (!rawCreds['access_token']) {
-                    throw new NangoError(`incomplete_raw_credentials`);
+                let accessToken: string | undefined = rawCreds['access_token'];
+
+                if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
+                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
                 }
 
+                if (!accessToken) {
+                    throw new NangoError(`incomplete_raw_credentials`);
+                }
                 let expiresAt: Date | undefined;
 
                 if (rawCreds['expires_at']) {
@@ -853,7 +859,7 @@ class ConnectionService {
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
-                    access_token: rawCreds['access_token'],
+                    access_token: accessToken,
                     refresh_token: rawCreds['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
@@ -1004,7 +1010,11 @@ class ConnectionService {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
-        let tokenParams = provider.token_params && Object.keys(provider.token_params).length > 0 ? new URLSearchParams(provider.token_params).toString() : '';
+        let interpolatedParams: Record<string, any> = {};
+        if (provider.token_params) {
+            interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
+        }
+        let tokenParams = interpolatedParams && Object.keys(interpolatedParams).length > 0 ? new URLSearchParams(interpolatedParams).toString() : '';
 
         if (connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string') {
             const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
@@ -1284,7 +1294,7 @@ class ConnectionService {
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
-            const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2') as OAuth2Credentials;
+            const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
@@ -1515,7 +1525,6 @@ class ConnectionService {
                     .from('_nango_connections as c')
                     .join('_nango_environments as e', 'c.environment_id', 'e.id')
                     .join('plans', 'plans.account_id', 'e.account_id')
-                    .where('plans.name', '<>', 'free')
                     .where((builder) => {
                         builder.where('c.deleted_at', null).orWhereRaw(`c.deleted_at >= (SELECT month_start FROM month_info)`);
                     })
