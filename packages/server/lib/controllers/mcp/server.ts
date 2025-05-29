@@ -4,9 +4,8 @@ import tracer from 'dd-trace';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { Err, Ok, truncateJson } from '@nangohq/utils';
+import { Err, Ok, nangoModelToJsonSchema, truncateJson } from '@nangohq/utils';
 
-import { nangoModelToJsonSchema } from './utils/json-schema.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';

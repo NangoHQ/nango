@@ -16,7 +16,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -39,7 +39,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -61,7 +61,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -84,7 +84,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -116,7 +116,7 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [{ name: 'addresses', value: 'Address', model: true, array: true, optional: false }]
             };
 
-            const result = nangoModelToJsonSchema(userModel, [addressModel]);
+            const result = nangoModelToJsonSchema(userModel, [addressModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -156,7 +156,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(userModel, [addressModel]);
+            const result = nangoModelToJsonSchema(userModel, [addressModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -200,7 +200,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(userModel, [addressModel, countryModel]);
+            const result = nangoModelToJsonSchema(userModel, [addressModel, countryModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -244,7 +244,7 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [unionField]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -283,7 +283,7 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [unionField]
             };
 
-            const result = nangoModelToJsonSchema(model, [personModel, companyModel]);
+            const result = nangoModelToJsonSchema(model, [personModel, companyModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -332,7 +332,7 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [{ name: 'id', value: 'string', optional: false }, unionField]
             };
 
-            const result = nangoModelToJsonSchema(model, [tagModel]);
+            const result = nangoModelToJsonSchema(model, [tagModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -390,7 +390,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(complexModel, [metadataModel]);
+            const result = nangoModelToJsonSchema(complexModel, [metadataModel]).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -422,34 +422,49 @@ describe('nangoModelToJsonSchema', () => {
     });
 
     describe('error cases', () => {
-        it('should throw error when model field references non-existent model', () => {
+        it('should return error when model field references non-existent model', () => {
             const model: NangoModel = {
                 name: 'User',
                 fields: [{ name: 'profile', value: 'NonExistentModel', model: true, optional: false }]
             };
 
-            expect(() => nangoModelToJsonSchema(model, [])).toThrow('Model NonExistentModel not found');
+            const result = nangoModelToJsonSchema(model, []);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Model NonExistentModel not found');
+            }
         });
 
-        it('should throw error when model field value is not a string', () => {
+        it('should return error when model field value is not a string', () => {
             const model: NangoModel = {
                 name: 'User',
                 fields: [{ name: 'profile', value: 123, model: true, optional: false } as any]
             };
 
-            expect(() => nangoModelToJsonSchema(model, [])).toThrow('field is model but value is not a string');
+            const result = nangoModelToJsonSchema(model, []);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('field is model but value is not a string');
+            }
         });
 
-        it('should throw error when union field value is not an array', () => {
+        it('should return error when union field value is not an array', () => {
             const model: NangoModel = {
                 name: 'User',
                 fields: [{ name: 'data', value: 'string', union: true, optional: false } as any]
             };
 
-            expect(() => nangoModelToJsonSchema(model, [])).toThrow('field is union but value is not an array');
+            const result = nangoModelToJsonSchema(model, []);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('field is union but value is not an array');
+            }
         });
 
-        it('should throw error on circular reference', () => {
+        it('should return error on circular reference', () => {
             const userModel: NangoModel = {
                 name: 'User',
                 fields: [
@@ -466,10 +481,15 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            expect(() => nangoModelToJsonSchema(userModel, [userModel, profileModel])).toThrow('Circular reference detected: User -> Profile -> User');
+            const result = nangoModelToJsonSchema(userModel, [userModel, profileModel]);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Circular reference detected: User -> Profile -> User');
+            }
         });
 
-        it('should throw error on self-referencing model', () => {
+        it('should return error on self-referencing model', () => {
             const treeModel: NangoModel = {
                 name: 'TreeNode',
                 fields: [
@@ -478,10 +498,15 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            expect(() => nangoModelToJsonSchema(treeModel, [treeModel])).toThrow('Circular reference detected: TreeNode -> TreeNode');
+            const result = nangoModelToJsonSchema(treeModel, [treeModel]);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Circular reference detected: TreeNode -> TreeNode');
+            }
         });
 
-        it('should throw error on complex circular reference chain', () => {
+        it('should return error on complex circular reference chain', () => {
             const aModel: NangoModel = {
                 name: 'A',
                 fields: [{ name: 'b', value: 'B', model: true, optional: false }]
@@ -497,10 +522,15 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [{ name: 'a', value: 'A', model: true, optional: false }]
             };
 
-            expect(() => nangoModelToJsonSchema(aModel, [aModel, bModel, cModel])).toThrow('Circular reference detected: A -> B -> C -> A');
+            const result = nangoModelToJsonSchema(aModel, [aModel, bModel, cModel]);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Circular reference detected: A -> B -> C -> A');
+            }
         });
 
-        it('should throw error on circular reference in union types', () => {
+        it('should return error on circular reference in union types', () => {
             const nodeModel: NangoModel = {
                 name: 'Node',
                 fields: [
@@ -517,10 +547,15 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            expect(() => nangoModelToJsonSchema(nodeModel, [nodeModel])).toThrow('Circular reference detected: Node -> Node');
+            const result = nangoModelToJsonSchema(nodeModel, [nodeModel]);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Circular reference detected: Node -> Node');
+            }
         });
 
-        it('should throw error on circular reference in arrays', () => {
+        it('should return error on circular reference in arrays', () => {
             const categoryModel: NangoModel = {
                 name: 'Category',
                 fields: [
@@ -529,7 +564,12 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            expect(() => nangoModelToJsonSchema(categoryModel, [categoryModel])).toThrow('Circular reference detected: Category -> Category');
+            const result = nangoModelToJsonSchema(categoryModel, [categoryModel]);
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.message).toBe('Circular reference detected: Category -> Category');
+            }
         });
     });
 
@@ -540,7 +580,7 @@ describe('nangoModelToJsonSchema', () => {
                 fields: []
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -558,7 +598,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(model, []);
+            const result = nangoModelToJsonSchema(model, []).unwrap();
 
             expect(result).toEqual({
                 type: 'object',
@@ -592,7 +632,7 @@ describe('nangoModelToJsonSchema', () => {
                 ]
             };
 
-            const result = nangoModelToJsonSchema(treeModel, [treeModel, branchModel, leafModel]);
+            const result = nangoModelToJsonSchema(treeModel, [treeModel, branchModel, leafModel]).unwrap();
 
             expect(result.type).toBe('object');
             expect(result.properties?.['id']).toEqual({ type: 'string' });
