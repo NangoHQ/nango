@@ -1,0 +1,187 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`bundleFile > should bundle a sync with a constant export 1`] = `
+""use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// packages/cli/fixtures/zero/valid/github/syncs/fetchIssues.ts
+var fetchIssues_exports = {};
+__export(fetchIssues_exports, {
+  default: () => fetchIssues_default
+});
+module.exports = __toCommonJS(fetchIssues_exports);
+var import_zod = require("zod");
+var LIMIT = 100;
+var issueSchema = import_zod.z.object({
+  id: import_zod.z.string(),
+  owner: import_zod.z.string(),
+  repo: import_zod.z.string(),
+  issue_number: import_zod.z.number(),
+  title: import_zod.z.string(),
+  state: import_zod.z.string(),
+  author: import_zod.z.string(),
+  author_id: import_zod.z.number(),
+  body: import_zod.z.string(),
+  date_created: import_zod.z.string(),
+  date_last_modified: import_zod.z.string()
+});
+var sync = {
+  type: "sync",
+  description: \`Fetches the Github issues from all a user's repositories.\`,
+  version: "1.0.0",
+  endpoints: [{
+    method: "GET",
+    path: "/example/github/issues",
+    group: "Issues"
+  }],
+  frequency: "every hour",
+  autoStart: true,
+  syncType: "full",
+  trackDeletes: true,
+  metadata: import_zod.z.void(),
+  models: {
+    GithubIssue: issueSchema
+  },
+  // Sync execution
+  exec: async (nango) => {
+    const repos = await getAllRepositories(nango);
+    for (const repo of repos) {
+      const proxyConfig = {
+        endpoint: \`/repos/\${repo.owner.login}/\${repo.name}/issues\`,
+        paginate: {
+          limit: LIMIT
+        }
+      };
+      for await (const issueBatch of nango.paginate(proxyConfig)) {
+        const issues = issueBatch.filter((issue) => !("pull_request" in issue));
+        const mappedIssues = issues.map((issue) => ({
+          id: issue.id,
+          owner: repo.owner.login,
+          repo: repo.name,
+          issue_number: issue.number,
+          title: issue.title,
+          state: issue.state,
+          author: issue.user.login,
+          author_id: issue.user.id,
+          body: issue.body,
+          date_created: issue.created_at,
+          date_last_modified: issue.updated_at
+        }));
+        if (mappedIssues.length > 0) {
+          await nango.batchSave(mappedIssues, "GithubIssue");
+          await nango.log(\`Sent \${mappedIssues.length} issues from \${repo.owner.login}/\${repo.name}\`);
+        }
+      }
+    }
+  },
+  // Webhook handler
+  onWebhook: async (nango, payload) => {
+    await nango.log("This is a webhook script", payload);
+  }
+};
+var fetchIssues_default = sync;
+async function getAllRepositories(nango) {
+  const records = [];
+  const proxyConfig = {
+    endpoint: "/user/repos",
+    paginate: {
+      limit: LIMIT
+    }
+  };
+  for await (const recordBatch of nango.paginate(proxyConfig)) {
+    records.push(...recordBatch);
+  }
+  return records;
+}
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsicGFja2FnZXMvY2xpL2ZpeHR1cmVzL3plcm8vdmFsaWQvZ2l0aHViL3N5bmNzL2ZldGNoSXNzdWVzLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyJpbXBvcnQgeyBjcmVhdGVTeW5jIH0gZnJvbSAnbmFuZ28nO1xuaW1wb3J0IHsgeiB9IGZyb20gJ3pvZCc7XG5jb25zdCBMSU1JVCA9IDEwMDtcbmNvbnN0IGlzc3VlU2NoZW1hID0gei5vYmplY3Qoe1xuICBpZDogei5zdHJpbmcoKSxcbiAgb3duZXI6IHouc3RyaW5nKCksXG4gIHJlcG86IHouc3RyaW5nKCksXG4gIGlzc3VlX251bWJlcjogei5udW1iZXIoKSxcbiAgdGl0bGU6IHouc3RyaW5nKCksXG4gIHN0YXRlOiB6LnN0cmluZygpLFxuICBhdXRob3I6IHouc3RyaW5nKCksXG4gIGF1dGhvcl9pZDogei5udW1iZXIoKSxcbiAgYm9keTogei5zdHJpbmcoKSxcbiAgZGF0ZV9jcmVhdGVkOiB6LnN0cmluZygpLFxuICBkYXRlX2xhc3RfbW9kaWZpZWQ6IHouc3RyaW5nKClcbn0pO1xudHlwZSBHaXRodWJJc3N1ZSA9IHouaW5mZXI8dHlwZW9mIGlzc3VlU2NoZW1hPjtcbmNvbnN0IHN5bmMgPSB7XG4gIHR5cGU6IFwic3luY1wiLFxuICBkZXNjcmlwdGlvbjogYEZldGNoZXMgdGhlIEdpdGh1YiBpc3N1ZXMgZnJvbSBhbGwgYSB1c2VyJ3MgcmVwb3NpdG9yaWVzLmAsXG4gIHZlcnNpb246ICcxLjAuMCcsXG4gIGVuZHBvaW50czogW3tcbiAgICBtZXRob2Q6ICdHRVQnLFxuICAgIHBhdGg6ICcvZXhhbXBsZS9naXRodWIvaXNzdWVzJyxcbiAgICBncm91cDogJ0lzc3VlcydcbiAgfV0sXG4gIGZyZXF1ZW5jeTogJ2V2ZXJ5IGhvdXInLFxuICBhdXRvU3RhcnQ6IHRydWUsXG4gIHN5bmNUeXBlOiAnZnVsbCcsXG4gIHRyYWNrRGVsZXRlczogdHJ1ZSxcbiAgbWV0YWRhdGE6IHoudm9pZCgpLFxuICBtb2RlbHM6IHtcbiAgICBHaXRodWJJc3N1ZTogaXNzdWVTY2hlbWFcbiAgfSxcbiAgLy8gU3luYyBleGVjdXRpb25cbiAgZXhlYzogYXN5bmMgbmFuZ28gPT4ge1xuICAgIGNvbnN0IHJlcG9zID0gYXdhaXQgZ2V0QWxsUmVwb3NpdG9yaWVzKG5hbmdvKTtcbiAgICBmb3IgKGNvbnN0IHJlcG8gb2YgcmVwb3MpIHtcbiAgICAgIGNvbnN0IHByb3h5Q29uZmlnID0ge1xuICAgICAgICBlbmRwb2ludDogYC9yZXBvcy8ke3JlcG8ub3duZXIubG9naW59LyR7cmVwby5uYW1lfS9pc3N1ZXNgLFxuICAgICAgICBwYWdpbmF0ZToge1xuICAgICAgICAgIGxpbWl0OiBMSU1JVFxuICAgICAgICB9XG4gICAgICB9O1xuICAgICAgZm9yIGF3YWl0IChjb25zdCBpc3N1ZUJhdGNoIG9mIG5hbmdvLnBhZ2luYXRlKHByb3h5Q29uZmlnKSkge1xuICAgICAgICBjb25zdCBpc3N1ZXMgPSBpc3N1ZUJhdGNoLmZpbHRlcihpc3N1ZSA9PiAhKCdwdWxsX3JlcXVlc3QnIGluIGlzc3VlKSk7XG4gICAgICAgIGNvbnN0IG1hcHBlZElzc3VlczogR2l0aHViSXNzdWVbXSA9IGlzc3Vlcy5tYXAoaXNzdWUgPT4gKHtcbiAgICAgICAgICBpZDogaXNzdWUuaWQsXG4gICAgICAgICAgb3duZXI6IHJlcG8ub3duZXIubG9naW4sXG4gICAgICAgICAgcmVwbzogcmVwby5uYW1lLFxuICAgICAgICAgIGlzc3VlX251bWJlcjogaXNzdWUubnVtYmVyLFxuICAgICAgICAgIHRpdGxlOiBpc3N1ZS50aXRsZSxcbiAgICAgICAgICBzdGF0ZTogaXNzdWUuc3RhdGUsXG4gICAgICAgICAgYXV0aG9yOiBpc3N1ZS51c2VyLmxvZ2luLFxuICAgICAgICAgIGF1dGhvcl9pZDogaXNzdWUudXNlci5pZCxcbiAgICAgICAgICBib2R5OiBpc3N1ZS5ib2R5LFxuICAgICAgICAgIGRhdGVfY3JlYXRlZDogaXNzdWUuY3JlYXRlZF9hdCxcbiAgICAgICAgICBkYXRlX2xhc3RfbW9kaWZpZWQ6IGlzc3VlLnVwZGF0ZWRfYXRcbiAgICAgICAgfSkpO1xuICAgICAgICBpZiAobWFwcGVkSXNzdWVzLmxlbmd0aCA+IDApIHtcbiAgICAgICAgICBhd2FpdCBuYW5nby5iYXRjaFNhdmUobWFwcGVkSXNzdWVzLCAnR2l0aHViSXNzdWUnKTtcbiAgICAgICAgICBhd2FpdCBuYW5nby5sb2coYFNlbnQgJHttYXBwZWRJc3N1ZXMubGVuZ3RofSBpc3N1ZXMgZnJvbSAke3JlcG8ub3duZXIubG9naW59LyR7cmVwby5uYW1lfWApO1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfVxuICB9LFxuICAvLyBXZWJob29rIGhhbmRsZXJcbiAgb25XZWJob29rOiBhc3luYyAobmFuZ28sIHBheWxvYWQpID0+IHtcbiAgICBhd2FpdCBuYW5nby5sb2coJ1RoaXMgaXMgYSB3ZWJob29rIHNjcmlwdCcsIHBheWxvYWQpO1xuICB9XG59O1xuZXhwb3J0IHR5cGUgTmFuZ29TeW5jTG9jYWwgPSBQYXJhbWV0ZXJzPCh0eXBlb2Ygc3luYylbJ2V4ZWMnXT5bMF07XG5leHBvcnQgZGVmYXVsdCBzeW5jO1xuYXN5bmMgZnVuY3Rpb24gZ2V0QWxsUmVwb3NpdG9yaWVzKG5hbmdvOiBOYW5nb1N5bmNMb2NhbCk6IFByb21pc2U8YW55W10+IHtcbiAgY29uc3QgcmVjb3JkczogYW55W10gPSBbXTtcbiAgY29uc3QgcHJveHlDb25maWcgPSB7XG4gICAgZW5kcG9pbnQ6ICcvdXNlci9yZXBvcycsXG4gICAgcGFnaW5hdGU6IHtcbiAgICAgIGxpbWl0OiBMSU1JVFxuICAgIH1cbiAgfTtcbiAgZm9yIGF3YWl0IChjb25zdCByZWNvcmRCYXRjaCBvZiBuYW5nby5wYWdpbmF0ZShwcm94eUNvbmZpZykpIHtcbiAgICByZWNvcmRzLnB1c2goLi4ucmVjb3JkQmF0Y2gpO1xuICB9XG4gIHJldHVybiByZWNvcmRzO1xufSJdLAogICJtYXBwaW5ncyI6ICI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBLGlCQUFrQjtBQUNsQixJQUFNLFFBQVE7QUFDZCxJQUFNLGNBQWMsYUFBRSxPQUFPO0FBQUEsRUFDM0IsSUFBSSxhQUFFLE9BQU87QUFBQSxFQUNiLE9BQU8sYUFBRSxPQUFPO0FBQUEsRUFDaEIsTUFBTSxhQUFFLE9BQU87QUFBQSxFQUNmLGNBQWMsYUFBRSxPQUFPO0FBQUEsRUFDdkIsT0FBTyxhQUFFLE9BQU87QUFBQSxFQUNoQixPQUFPLGFBQUUsT0FBTztBQUFBLEVBQ2hCLFFBQVEsYUFBRSxPQUFPO0FBQUEsRUFDakIsV0FBVyxhQUFFLE9BQU87QUFBQSxFQUNwQixNQUFNLGFBQUUsT0FBTztBQUFBLEVBQ2YsY0FBYyxhQUFFLE9BQU87QUFBQSxFQUN2QixvQkFBb0IsYUFBRSxPQUFPO0FBQy9CLENBQUM7QUFFRCxJQUFNLE9BQU87QUFBQSxFQUNYLE1BQU07QUFBQSxFQUNOLGFBQWE7QUFBQSxFQUNiLFNBQVM7QUFBQSxFQUNULFdBQVcsQ0FBQztBQUFBLElBQ1YsUUFBUTtBQUFBLElBQ1IsTUFBTTtBQUFBLElBQ04sT0FBTztBQUFBLEVBQ1QsQ0FBQztBQUFBLEVBQ0QsV0FBVztBQUFBLEVBQ1gsV0FBVztBQUFBLEVBQ1gsVUFBVTtBQUFBLEVBQ1YsY0FBYztBQUFBLEVBQ2QsVUFBVSxhQUFFLEtBQUs7QUFBQSxFQUNqQixRQUFRO0FBQUEsSUFDTixhQUFhO0FBQUEsRUFDZjtBQUFBO0FBQUEsRUFFQSxNQUFNLE9BQU0sVUFBUztBQUNuQixVQUFNLFFBQVEsTUFBTSxtQkFBbUIsS0FBSztBQUM1QyxlQUFXLFFBQVEsT0FBTztBQUN4QixZQUFNLGNBQWM7QUFBQSxRQUNsQixVQUFVLFVBQVUsS0FBSyxNQUFNLEtBQUssSUFBSSxLQUFLLElBQUk7QUFBQSxRQUNqRCxVQUFVO0FBQUEsVUFDUixPQUFPO0FBQUEsUUFDVDtBQUFBLE1BQ0Y7QUFDQSx1QkFBaUIsY0FBYyxNQUFNLFNBQVMsV0FBVyxHQUFHO0FBQzFELGNBQU0sU0FBUyxXQUFXLE9BQU8sV0FBUyxFQUFFLGtCQUFrQixNQUFNO0FBQ3BFLGNBQU0sZUFBOEIsT0FBTyxJQUFJLFlBQVU7QUFBQSxVQUN2RCxJQUFJLE1BQU07QUFBQSxVQUNWLE9BQU8sS0FBSyxNQUFNO0FBQUEsVUFDbEIsTUFBTSxLQUFLO0FBQUEsVUFDWCxjQUFjLE1BQU07QUFBQSxVQUNwQixPQUFPLE1BQU07QUFBQSxVQUNiLE9BQU8sTUFBTTtBQUFBLFVBQ2IsUUFBUSxNQUFNLEtBQUs7QUFBQSxVQUNuQixXQUFXLE1BQU0sS0FBSztBQUFBLFVBQ3RCLE1BQU0sTUFBTTtBQUFBLFVBQ1osY0FBYyxNQUFNO0FBQUEsVUFDcEIsb0JBQW9CLE1BQU07QUFBQSxRQUM1QixFQUFFO0FBQ0YsWUFBSSxhQUFhLFNBQVMsR0FBRztBQUMzQixnQkFBTSxNQUFNLFVBQVUsY0FBYyxhQUFhO0FBQ2pELGdCQUFNLE1BQU0sSUFBSSxRQUFRLGFBQWEsTUFBTSxnQkFBZ0IsS0FBSyxNQUFNLEtBQUssSUFBSSxLQUFLLElBQUksRUFBRTtBQUFBLFFBQzVGO0FBQUEsTUFDRjtBQUFBLElBQ0Y7QUFBQSxFQUNGO0FBQUE7QUFBQSxFQUVBLFdBQVcsT0FBTyxPQUFPLFlBQVk7QUFDbkMsVUFBTSxNQUFNLElBQUksNEJBQTRCLE9BQU87QUFBQSxFQUNyRDtBQUNGO0FBRUEsSUFBTyxzQkFBUTtBQUNmLGVBQWUsbUJBQW1CLE9BQXVDO0FBQ3ZFLFFBQU0sVUFBaUIsQ0FBQztBQUN4QixRQUFNLGNBQWM7QUFBQSxJQUNsQixVQUFVO0FBQUEsSUFDVixVQUFVO0FBQUEsTUFDUixPQUFPO0FBQUEsSUFDVDtBQUFBLEVBQ0Y7QUFDQSxtQkFBaUIsZUFBZSxNQUFNLFNBQVMsV0FBVyxHQUFHO0FBQzNELFlBQVEsS0FBSyxHQUFHLFdBQVc7QUFBQSxFQUM3QjtBQUNBLFNBQU87QUFDVDsiLAogICJuYW1lcyI6IFtdCn0K
+"
+`;
+
+exports[`bundleFile > should bundle an action with a default export 1`] = `
+""use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// packages/cli/fixtures/zero/valid/github/actions/createIssue.ts
+var createIssue_exports = {};
+__export(createIssue_exports, {
+  action: () => action,
+  default: () => createIssue_default
+});
+module.exports = __toCommonJS(createIssue_exports);
+var import_zod = require("zod");
+var issueSchema = import_zod.z.object({
+  id: import_zod.z.string(),
+  owner: import_zod.z.string(),
+  repo: import_zod.z.string(),
+  issue_number: import_zod.z.number(),
+  title: import_zod.z.string(),
+  state: import_zod.z.string(),
+  author: import_zod.z.string(),
+  author_id: import_zod.z.number(),
+  body: import_zod.z.string(),
+  date_created: import_zod.z.string(),
+  date_last_modified: import_zod.z.string()
+});
+var action = {
+  type: "action",
+  description: \`Create an issue in GitHub\`,
+  version: "1.0.0",
+  endpoint: {
+    method: "POST",
+    path: "/example/github/issues",
+    group: "Issues"
+  },
+  input: issueSchema,
+  output: import_zod.z.void(),
+  // Action execution
+  exec: async (nango, input) => {
+    await nango.proxy({
+      endpoint: "/repos/NangoHQ/interactive-demo/issues",
+      data: {
+        title: \`[demo] \${input.title}\`,
+        body: \`This issue was created automatically using Nango Action.\`,
+        labels: ["automatic"]
+      }
+    });
+  }
+};
+var createIssue_default = action;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  action
+});
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsicGFja2FnZXMvY2xpL2ZpeHR1cmVzL3plcm8vdmFsaWQvZ2l0aHViL2FjdGlvbnMvY3JlYXRlSXNzdWUudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImltcG9ydCB7IGNyZWF0ZUFjdGlvbiB9IGZyb20gJ25hbmdvJztcbmltcG9ydCB7IHogfSBmcm9tICd6b2QnO1xuY29uc3QgaXNzdWVTY2hlbWEgPSB6Lm9iamVjdCh7XG4gIGlkOiB6LnN0cmluZygpLFxuICBvd25lcjogei5zdHJpbmcoKSxcbiAgcmVwbzogei5zdHJpbmcoKSxcbiAgaXNzdWVfbnVtYmVyOiB6Lm51bWJlcigpLFxuICB0aXRsZTogei5zdHJpbmcoKSxcbiAgc3RhdGU6IHouc3RyaW5nKCksXG4gIGF1dGhvcjogei5zdHJpbmcoKSxcbiAgYXV0aG9yX2lkOiB6Lm51bWJlcigpLFxuICBib2R5OiB6LnN0cmluZygpLFxuICBkYXRlX2NyZWF0ZWQ6IHouc3RyaW5nKCksXG4gIGRhdGVfbGFzdF9tb2RpZmllZDogei5zdHJpbmcoKVxufSk7XG5leHBvcnQgY29uc3QgYWN0aW9uID0ge1xuICB0eXBlOiBcImFjdGlvblwiLFxuICBkZXNjcmlwdGlvbjogYENyZWF0ZSBhbiBpc3N1ZSBpbiBHaXRIdWJgLFxuICB2ZXJzaW9uOiAnMS4wLjAnLFxuICBlbmRwb2ludDoge1xuICAgIG1ldGhvZDogJ1BPU1QnLFxuICAgIHBhdGg6ICcvZXhhbXBsZS9naXRodWIvaXNzdWVzJyxcbiAgICBncm91cDogJ0lzc3VlcydcbiAgfSxcbiAgaW5wdXQ6IGlzc3VlU2NoZW1hLFxuICBvdXRwdXQ6IHoudm9pZCgpLFxuICAvLyBBY3Rpb24gZXhlY3V0aW9uXG4gIGV4ZWM6IGFzeW5jIChuYW5nbywgaW5wdXQpID0+IHtcbiAgICBhd2FpdCBuYW5nby5wcm94eSh7XG4gICAgICBlbmRwb2ludDogJy9yZXBvcy9OYW5nb0hRL2ludGVyYWN0aXZlLWRlbW8vaXNzdWVzJyxcbiAgICAgIGRhdGE6IHtcbiAgICAgICAgdGl0bGU6IGBbZGVtb10gJHtpbnB1dC50aXRsZX1gLFxuICAgICAgICBib2R5OiBgVGhpcyBpc3N1ZSB3YXMgY3JlYXRlZCBhdXRvbWF0aWNhbGx5IHVzaW5nIE5hbmdvIEFjdGlvbi5gLFxuICAgICAgICBsYWJlbHM6IFsnYXV0b21hdGljJ11cbiAgICAgIH1cbiAgICB9KTtcbiAgfVxufTtcbmV4cG9ydCBkZWZhdWx0IGFjdGlvbjsiXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBLGlCQUFrQjtBQUNsQixJQUFNLGNBQWMsYUFBRSxPQUFPO0FBQUEsRUFDM0IsSUFBSSxhQUFFLE9BQU87QUFBQSxFQUNiLE9BQU8sYUFBRSxPQUFPO0FBQUEsRUFDaEIsTUFBTSxhQUFFLE9BQU87QUFBQSxFQUNmLGNBQWMsYUFBRSxPQUFPO0FBQUEsRUFDdkIsT0FBTyxhQUFFLE9BQU87QUFBQSxFQUNoQixPQUFPLGFBQUUsT0FBTztBQUFBLEVBQ2hCLFFBQVEsYUFBRSxPQUFPO0FBQUEsRUFDakIsV0FBVyxhQUFFLE9BQU87QUFBQSxFQUNwQixNQUFNLGFBQUUsT0FBTztBQUFBLEVBQ2YsY0FBYyxhQUFFLE9BQU87QUFBQSxFQUN2QixvQkFBb0IsYUFBRSxPQUFPO0FBQy9CLENBQUM7QUFDTSxJQUFNLFNBQVM7QUFBQSxFQUNwQixNQUFNO0FBQUEsRUFDTixhQUFhO0FBQUEsRUFDYixTQUFTO0FBQUEsRUFDVCxVQUFVO0FBQUEsSUFDUixRQUFRO0FBQUEsSUFDUixNQUFNO0FBQUEsSUFDTixPQUFPO0FBQUEsRUFDVDtBQUFBLEVBQ0EsT0FBTztBQUFBLEVBQ1AsUUFBUSxhQUFFLEtBQUs7QUFBQTtBQUFBLEVBRWYsTUFBTSxPQUFPLE9BQU8sVUFBVTtBQUM1QixVQUFNLE1BQU0sTUFBTTtBQUFBLE1BQ2hCLFVBQVU7QUFBQSxNQUNWLE1BQU07QUFBQSxRQUNKLE9BQU8sVUFBVSxNQUFNLEtBQUs7QUFBQSxRQUM1QixNQUFNO0FBQUEsUUFDTixRQUFRLENBQUMsV0FBVztBQUFBLE1BQ3RCO0FBQUEsSUFDRixDQUFDO0FBQUEsRUFDSDtBQUNGO0FBQ0EsSUFBTyxzQkFBUTsiLAogICJuYW1lcyI6IFtdCn0K
+"
+`;

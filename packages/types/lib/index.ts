@@ -9,6 +9,7 @@ export type * from './logs/api.js';
 export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
+export type * from './action/api.js';
 export type * from './account/api.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
@@ -74,3 +75,5 @@ export type * from './fleet/index.js';
 
 export type * from './persist/api.js';
 export type * from './jobs/api.js';
+
+export type * from './mcp/api.js';

@@ -27,11 +27,11 @@ export interface BillingIngestEvent {
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;
-    properties: Record<string, string | number>;
+    properties: Record<string, string | number | Date>;
 }
 
 export interface BillingMetric {
     type: BillingIngestEvent['type'];
     value: number;
-    properties: { accountId: number; timestamp?: Date | undefined; idempotencyKey?: string | undefined };
+    properties: { accountId: number; timestamp?: Date | undefined; idempotencyKey?: string | undefined } & BillingIngestEvent['properties'];
 }

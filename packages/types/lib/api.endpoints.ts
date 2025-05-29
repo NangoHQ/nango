@@ -9,6 +9,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api';
+import type { GetAsyncActionResult } from './action/api';
 import type { EndpointMethod } from './api';
 import type {
     PostPublicApiKeyAuthorization,
@@ -107,7 +108,8 @@ export type PublicApiEndpoints =
     | PostPublicConnectTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
-    | PatchPublicIntegration;
+    | PatchPublicIntegration
+    | GetAsyncActionResult;
 
 export type PrivateApiEndpoints =
     | PostSignup

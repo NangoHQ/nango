@@ -16,7 +16,7 @@ interface DeleteButtonProps {
 export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled, disabledTooltip }) => {
     const tooltipContent = disabled ? disabledTooltip : '';
     const trigger = (
-        <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray">
+        <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray pointer-events-none">
             <Button variant="select" className="text-alert-400 flex gap-2 items-center text-sm" disabled={disabled}>
                 <IconTrash stroke={1} size={18} />
                 <span>Delete environment</span>

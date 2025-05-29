@@ -1,7 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
 import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types.js';
-import * as groups from './models/groups.js';
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
@@ -96,10 +95,22 @@ export class Scheduler {
      * @param params.ids - Task IDs
      * @param params.groupKey - Group key
      * @param params.state - Task state
+     * @param params.scheduleId - Schedule ID
+     * @param params.retryKey - Retry key
+     * @param params.ownerKey - Owner key
+     * @param params.limit - Limit
      * @example
      * const tasks = await scheduler.search({ groupKey: 'test', state: 'CREATED' });
      */
-    public async searchTasks(params?: { ids?: string[]; groupKey?: string; state?: TaskState; scheduleId?: string; limit?: number }): Promise<Result<Task[]>> {
+    public async searchTasks(params?: {
+        ids?: string[];
+        groupKey?: string;
+        state?: TaskState;
+        scheduleId?: string;
+        retryKey?: string;
+        ownerKey?: string;
+        limit?: number;
+    }): Promise<Result<Task[]>> {
         return tasks.search(this.dbClient.db, params);
     }
 
@@ -134,7 +145,7 @@ export class Scheduler {
      *         createdToStartedTimeoutSecs: 1,
      *         startedToCompletedTimeoutSecs: 1,
      *         heartbeatTimeoutSecs: 1,
-     *         groupKeyMaxConcurrency: 1
+     *         groupMaxConcurrency: 1
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
@@ -168,6 +179,7 @@ export class Scheduler {
                     name: `${schedule.name}:${uuidv7()}`,
                     payload: schedule.payload,
                     groupKey: schedule.groupKey,
+                    groupMaxConcurrency: 0,
                     retryMax: schedule.retryMax,
                     retryCount: 0,
                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
@@ -183,19 +195,6 @@ export class Scheduler {
                     startsAfter: now,
                     scheduleId: null
                 };
-
-                const group = await groups.upsert(
-                    trx,
-                    {
-                        key: props.groupKey,
-                        maxConcurrency: props.groupKeyMaxConcurrency,
-                        lastTaskAddedAt: now
-                    },
-                    { skipLocked: true }
-                );
-                if (group.isErr()) {
-                    return Err(group.error);
-                }
             }
 
             const created = await tasks.create(trx, taskProps);
@@ -226,22 +225,11 @@ export class Scheduler {
      *    createdToStartedTimeoutSecs: 1,
      *    startedToCompletedTimeoutSecs: 1,
      *    heartbeatTimeoutSecs: 1,
-     *    groupKeyMaxConcurrency: 1
      * };
      * const schedule = await scheduler.recurring(schedulingProps);
      */
     public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
-        return this.dbClient.db.transaction(async (trx) => {
-            const group = await groups.upsert(trx, {
-                key: props.groupKey,
-                maxConcurrency: props.groupKeyMaxConcurrency,
-                lastTaskAddedAt: null
-            });
-            if (group.isErr()) {
-                return Err(group.error);
-            }
-            return schedules.create(this.dbClient.db, props);
-        });
+        return schedules.create(this.dbClient.db, props);
     }
 
     /**
@@ -319,6 +307,7 @@ export class Scheduler {
                         name: `${task.name}:${task.retryCount + 1}`, // Append retry count to make it unique
                         payload: task.payload,
                         groupKey: task.groupKey,
+                        groupMaxConcurrency: task.groupMaxConcurrency,
                         retryMax: task.retryMax,
                         retryCount: task.retryCount + 1,
                         createdToStartedTimeoutSecs: task.createdToStartedTimeoutSecs,
