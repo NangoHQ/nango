@@ -12,7 +12,8 @@ describe('nangoModelToJsonSchema', () => {
                 fields: [
                     { name: 'id', value: 'string', optional: false },
                     { name: 'age', value: 'number', optional: false },
-                    { name: 'isActive', value: 'boolean', optional: false }
+                    { name: 'isActive', value: 'boolean', optional: false },
+                    { name: 'date', value: 'date', optional: false }
                 ]
             };
 
@@ -23,9 +24,10 @@ describe('nangoModelToJsonSchema', () => {
                 properties: {
                     id: { type: 'string' },
                     age: { type: 'number' },
-                    isActive: { type: 'boolean' }
+                    isActive: { type: 'boolean' },
+                    date: { type: 'integer', format: 'date-time' }
                 },
-                required: ['id', 'age', 'isActive']
+                required: ['id', 'age', 'isActive', 'date']
             });
         });
 
@@ -52,7 +54,7 @@ describe('nangoModelToJsonSchema', () => {
             });
         });
 
-        it('should default unknown types to string', () => {
+        it('should default unknown types to string records (additionalProperties)', () => {
             const model: NangoModel = {
                 name: 'User',
                 fields: [
@@ -66,8 +68,18 @@ describe('nangoModelToJsonSchema', () => {
             expect(result).toEqual({
                 type: 'object',
                 properties: {
-                    id: { type: 'string' },
-                    data: { type: 'string' }
+                    id: {
+                        type: 'object',
+                        additionalProperties: {
+                            type: 'string'
+                        }
+                    },
+                    data: {
+                        type: 'object',
+                        additionalProperties: {
+                            type: 'string'
+                        }
+                    }
                 },
                 required: ['id', 'data']
             });

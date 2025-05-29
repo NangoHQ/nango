@@ -82,9 +82,21 @@ function nangoFieldToJsonSchemaInternal(field: NangoModelField, models_schema: N
         return {
             type: 'boolean'
         };
+    } else if (field.value === 'string') {
+        return {
+            type: 'string'
+        };
+    } else if (field.value === 'date') {
+        return {
+            type: 'integer',
+            format: 'date-time'
+        };
     }
 
     return {
-        type: 'string'
+        type: 'object',
+        additionalProperties: {
+            type: 'string'
+        }
     };
 }
