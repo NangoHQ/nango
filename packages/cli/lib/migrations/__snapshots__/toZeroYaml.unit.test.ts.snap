@@ -215,6 +215,9 @@ const sync = createSync({
 
   },
 
+  /**
+   * This comment should also be preserved
+   */
   onWebhook: async (nango, payload) => {
     await nango.log('Received webhook', payload);
     await nango.batchSave([{}], 'Model');

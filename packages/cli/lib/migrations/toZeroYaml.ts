@@ -307,19 +307,25 @@ export function transformSync({ content, sync, models }: { content: string; sync
 
         // Find and move onWebhookPayloadReceived if present
         let onWebhookArrow = null;
+        let onWebhookComments = null;
         root.find(j.ExportNamedDeclaration).forEach((p) => {
             const decl = p.node.declaration;
             if (decl && decl.type === 'FunctionDeclaration' && decl.id && decl.id.name === 'onWebhookPayloadReceived') {
                 const webhookExecProp = buildExecProp(j, decl);
                 // Extract the arrow function from the exec property
                 onWebhookArrow = webhookExecProp.value;
-
+                // Capture comments
+                onWebhookComments = (decl as any).leadingComments || (p.node as any).leadingComments;
                 // Remove the original function declaration
                 j(p).remove();
             }
         });
         if (onWebhookArrow) {
-            props.push(j.objectProperty(j.identifier('onWebhook'), onWebhookArrow));
+            const onWebhookProp = j.objectProperty(j.identifier('onWebhook'), onWebhookArrow);
+            if (onWebhookComments) {
+                (onWebhookProp as any).comments = onWebhookComments;
+            }
+            props.push(onWebhookProp);
         }
 
         const obj = j.objectExpression(props);
