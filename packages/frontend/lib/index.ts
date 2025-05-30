@@ -23,6 +23,7 @@ import type {
     TableauCredentials,
     TwoStepCredentials
 } from './types';
+import { AuthErrorTypeV2 } from './types.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
 export type * from './types';
@@ -48,12 +49,29 @@ export type NangoOptions = {
       }
 );
 
+/**
+ * * @deprecated Use AuthErrorV2 instead.
+ * */
 export class AuthError extends Error {
     type;
 
     constructor(message: string, type: AuthErrorType) {
         super(message);
         this.type = type;
+    }
+}
+
+export class AuthErrorV2 extends Error {
+    legacy?: AuthError;
+    type: AuthErrorTypeV2;
+
+    constructor(message: string, type: AuthErrorTypeV2, legacyType?: AuthErrorType) {
+        super(message);
+        this.type = type;
+
+        if (legacyType) {
+            this.legacy = new AuthError(message, legacyType);
+        }
     }
 }
 
@@ -100,7 +118,7 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch {
-            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+            throw new AuthErrorV2('Invalid URL provided for the Nango host.', AuthErrorTypeV2.InvalidHostUrl, 'invalidHostUrl');
         }
     }
 
@@ -193,8 +211,8 @@ export default class Nango {
                 return;
             };
 
-            const errorHandler: ErrorHandler = (errorType, errorDesc) => {
-                reject(new AuthError(errorDesc, errorType));
+            const errorHandler: ErrorHandler = (errorDesc, errorType, legacyErrorType) => {
+                reject(new AuthErrorV2(errorDesc, errorType, legacyErrorType));
                 return;
             };
 
@@ -204,7 +222,7 @@ export default class Nango {
             }
 
             if (!modal || modal.closed || typeof modal.closed == 'undefined') {
-                errorHandler('blocked_by_browser', 'Modal blocked by browser');
+                errorHandler('Modal blocked by browser', AuthErrorTypeV2.BlockedByBrowser, 'blocked_by_browser');
                 return;
             }
 
@@ -212,7 +230,7 @@ export default class Nango {
             try {
                 url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
             } catch {
-                errorHandler('invalidHostUrl', 'Invalid URL provided for the Nango host.');
+                errorHandler('Invalid URL provided for the Nango host.', AuthErrorTypeV2.InvalidHostUrl, 'invalidHostUrl');
                 return;
             }
 
@@ -241,7 +259,13 @@ export default class Nango {
                     this.win.close();
 
                     this.win = null;
-                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
+                    reject(
+                        new AuthErrorV2(
+                            'The authorization window was closed before the authorization flow was completed',
+                            AuthErrorTypeV2.WindowClosed,
+                            'windowClosed'
+                        )
+                    );
                 }
             }, 500);
         }).finally(() => {
@@ -466,7 +490,7 @@ export default class Nango {
         const { params: credentials } = connectionConfigWithCredentials;
 
         if (!credentials) {
-            throw new AuthError('You must specify credentials.', 'missingCredentials');
+            throw new AuthErrorV2('You must specify credentials.', AuthErrorTypeV2.MissingCredentials, 'missingCredentials');
         }
 
         if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
@@ -616,7 +640,11 @@ export default class Nango {
      */
     private ensureCredentials() {
         if (!this.publicKey && !this.connectSessionToken) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
+            throw new AuthErrorV2(
+                'You must specify a public key OR a connect session token (cf. documentation).',
+                AuthErrorTypeV2.MissingAuthToken,
+                'missingAuthToken'
+            );
         }
     }
 }

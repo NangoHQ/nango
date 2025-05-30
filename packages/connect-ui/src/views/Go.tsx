@@ -244,6 +244,7 @@ export const Go: React.FC = () => {
                 setResult(res);
                 triggerConnection(res);
             } catch (err) {
+                // TODO: remove this after migrating
                 if (err instanceof AuthError) {
                     if (err.type === 'blocked_by_browser') {
                         telemetry('popup:blocked_by_browser');
