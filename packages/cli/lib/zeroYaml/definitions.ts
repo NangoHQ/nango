@@ -10,7 +10,7 @@ import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } 
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'onEvent'];
-const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
+const importRegex = /^import ['"](.+)['"];?$/gm;
 
 export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const indexPath = path.join(fullPath, 'index.ts');
@@ -19,7 +19,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
     printDebug('Rebuilding parsed from js files', debug);
 
-    const matched = indexContent.matchAll(exportRegex);
+    const matched = indexContent.matchAll(importRegex);
     let num = 0;
 
     for (const match of matched) {
