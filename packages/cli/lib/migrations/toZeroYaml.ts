@@ -650,7 +650,7 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
 }
 
 /**
- * Generates an index.ts file exporting all syncs, actions, and on-event scripts for the given integrations.
+ * Generates an index.ts file importing all syncs, actions, and on-event scripts for the given integrations.
  */
 async function generateIndexTs({ fullPath, parsed }: { fullPath: string; parsed: NangoYamlParsed }): Promise<void> {
     const indexLines: string[] = [];
@@ -658,14 +658,14 @@ async function generateIndexTs({ fullPath, parsed }: { fullPath: string; parsed:
         const base = integration.providerConfigKey;
         indexLines.push(`// -- Integration: ${base}`);
         for (const sync of integration.syncs) {
-            indexLines.push(`export * from './${base}/syncs/${sync.name}.js';`);
+            indexLines.push(`import './${base}/syncs/${sync.name}.js';`);
         }
         for (const action of integration.actions) {
-            indexLines.push(`export * from './${base}/actions/${action.name}.js';`);
+            indexLines.push(`import './${base}/actions/${action.name}.js';`);
         }
         for (const [_eventType, eventNames] of Object.entries(integration.onEventScripts)) {
             for (const eventName of eventNames) {
-                indexLines.push(`export * from './${base}/on-events/${eventName}.js';`);
+                indexLines.push(`import './${base}/on-events/${eventName}.js';`);
             }
         }
         indexLines.push('');

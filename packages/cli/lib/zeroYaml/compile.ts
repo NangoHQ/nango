@@ -16,7 +16,7 @@ import { buildDefinitions } from './definitions.js';
 import type { Result } from '@nangohq/types';
 
 const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
-const exportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"];/g;
+const exportRegex = /(export|import)(\s+\*\s+from\s+|\s+)['"](?<path>\.\/[^'"]+)['"];/g;
 
 const tsconfig: ts.CompilerOptions = {
     module: ts.ModuleKind.CommonJS,
@@ -59,6 +59,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const indexContentResult = await readIndexContent(fullPath);
         if (indexContentResult.isErr()) {
             spinner.fail();
+            console.error(chalk.red(`Could not read index.ts`));
             return Err('failed_to_read_index_ts');
         }
         const indexContent = indexContentResult.value;
@@ -67,7 +68,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const entryPoints = getEntryPoints(indexContent);
         if (entryPoints.length === 0) {
             spinner.fail();
-            console.error("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile.");
+            console.error(chalk.red("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile."));
             return Err('no_file');
         }
 
@@ -136,8 +137,7 @@ async function readIndexContent(fullPath: string): Promise<Result<string>> {
     try {
         const indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
         return Ok(indexContent);
-    } catch (err) {
-        console.error(`Could not read ${indexTsPath}`, err);
+    } catch {
         return Err('failed_to_read_index_ts');
     }
 }
@@ -149,10 +149,11 @@ function getEntryPoints(indexContent: string): string[] {
     const entryPoints: string[] = [];
     let match;
     while ((match = exportRegex.exec(indexContent)) !== null) {
-        if (!match[1]) {
+        const fp = match.groups?.['path'];
+        if (!fp) {
             continue;
         }
-        entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
+        entryPoints.push(fp.endsWith('.js') ? fp : `${fp}.js`);
     }
     return entryPoints;
 }
