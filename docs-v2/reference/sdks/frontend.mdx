@@ -271,17 +271,17 @@ All errors from the Nango Frontend SDK follow this structure:
 
 ## Handling Errors
 
-You can handle these errors in your code using the `AuthError` class.
+You can handle these errors in your code using the `AuthErrorV2` class.
 
 ```ts
-import { AuthError } from '@nangohq/frontend';
+import { AuthErrorV2 } from '@nangohq/frontend';
 
 try {
     const result = await nango.auth('<INTEGRATION-ID>', {
         credentials: { apiKey: '<END-USER-API-KEY>' }
     });
 } catch (error) {
-    if (error instanceof AuthError && error.type === '<error_type>') {
+    if (error instanceof AuthErrorV2 && error.type === '<error_type>') {
         // Handle specific error
         console.error('Your error message');
     }

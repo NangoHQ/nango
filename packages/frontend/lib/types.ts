@@ -1,12 +1,26 @@
+/**
+ * * @deprecated Use AuthErrorTypeV2 instead.
+ * */
 export type AuthErrorType =
-    | 'missing_auth_token'
+    | 'missingAuthToken'
     | 'blocked_by_browser'
-    | 'invalid_host_url'
-    | 'missing_credentials'
-    | 'window_closed'
+    | 'invalidHostUrl'
+    | 'missingCredentials'
+    | 'windowClosed'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'resource_capped';
+
+export enum AuthErrorTypeV2 {
+    MissingAuthToken = 'missing_auth_token',
+    BlockedByBrowser = 'blocked_by_browser',
+    InvalidHostUrl = 'invalid_host_url',
+    MissingCredentials = 'missing_credentials',
+    WindowClosed = 'window_closed',
+    ConnectionTestFailed = 'connection_test_failed',
+    MissingConnectSessionToken = 'missing_connect_session_token',
+    ResourceCapped = 'resource_capped'
+}
 
 export interface AuthResult {
     providerConfigKey: string;
@@ -18,7 +32,7 @@ export type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
 } & (ConnectionConfig | OAuthCredentialsOverride);
 
-export type ErrorHandler = (errorType: AuthErrorType, errorDesc: string) => void;
+export type ErrorHandler = (errorType: AuthErrorTypeV2, legacyErrorType: AuthErrorType, errorDesc: string) => void;
 
 export interface ConnectionConfig {
     params?: Record<string, string>;
