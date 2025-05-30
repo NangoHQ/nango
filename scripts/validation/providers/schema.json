@@ -97,6 +97,9 @@
                         "type": "string"
                     }
                 },
+                "authorization_url_skip_empty": {
+                    "type": "boolean"
+                },
                 "authorization_url_replacements": {
                     "type": "object",
                     "additionalProperties": true

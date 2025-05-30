@@ -1874,6 +1874,28 @@ canny:
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
+canva:
+    display_name: Canva
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://www.canva.com/api/oauth/authorize
+    token_url: https://api.canva.com/rest/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.canva.com
+        verification:
+            method: GET
+            endpoints:
+                - /rest/v1/users/me
+    docs: https://docs.nango.dev/integrations/all/canva
+    token_request_auth_method: basic
+
 canva-scim:
     display_name: Canva (SCIM API)
     categories:
@@ -2563,6 +2585,27 @@ confluence-basic:
             secret: true
             doc_section: '#step-1-getting-your-api-token'
 
+confluence-data-center:
+    display_name: Confluence Data Center
+    categories:
+        - productivity
+        - ticketing
+    alias: jira-data-center
+    proxy:
+        retry:
+            after: 'retry-after'
+        base_url: https://${connectionConfig.endpointURL}
+    docs: https://docs.nango.dev/integrations/all/confluence-data-center
+    docs_connect: https://docs.nango.dev/integrations/all/confluence-data-center/connect
+    connection_config:
+        endpointURL:
+            type: string
+            title: Domain
+            description: The domain of your Confluence Data Center instance
+            prefix: https://
+            example: confluence.company.com
+            doc_section: '#step-1-finding-your-domain'
+
 contentful:
     display_name: Contentful
     categories:
@@ -3120,6 +3163,27 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+dropbox-sign:
+    display_name: Dropbox Sign
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://app.hellosign.com/oauth/authorize
+    token_url: https://app.hellosign.com/oauth/token
+    authorization_url_skip_empty: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    refresh_url: https://app.hellosign.com/oauth/token?refresh
+    proxy:
+        retry:
+            at: 'x-ratelimit-reset'
+        base_url: https://api.hellosign.com
+    docs: https://docs.nango.dev/integrations/all/dropbox-sign
 
 drupal:
     display_name: Drupal
@@ -5554,6 +5618,25 @@ jira-data-center-basic:
             description: The password for your Jira Data Center
             doc_section: '#step-2-finding-your-credentials'
 
+jobadder:
+    display_name: Jobadder
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://id.jobadder.com/connect/authorize
+    token_url: https://id.jobadder.com/connect/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.jobadder.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users/current
+    docs: https://docs.nango.dev/integrations/all/jobadder
+
 jotform:
     display_name: Jotform
     categories:
@@ -7346,6 +7429,30 @@ pandadoc-api-key:
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
 
+paychex:
+    display_name: Paychex
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://api.paychex.com/auth/oauth/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.paychex.com
+    docs: https://docs.nango.dev/integrations/all/paychex
+    docs_connect: https://docs.nango.dev/integrations/all/paychex/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: A unique identifier for your application on Paychex
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: A confidential key used to authenticate the identity of application (client)
+            doc_section: '#step-1-generating-your-client-credentials'
+
 payfit:
     display_name: Payfit
     categories:
@@ -8093,6 +8200,29 @@ recharge:
             example: sk_test_1p1_**************************************************
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
+
+recruitcrm:
+    display_name: Recruitcrm
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruitcrm.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/users/search
+    docs: https://docs.nango.dev/integrations/all/recruitcrm
+    docs_connect: https://docs.nango.dev/integrations/all/recruitcrm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Recruitcrm account
+            example: 9SKXL**************************************
+            doc_section: '#step-1-generating-your-api-key'
 
 recruiterflow:
     display_name: Recruiterflow
@@ -9654,6 +9784,32 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://docs.nango.dev/integrations/all/teamwork
+
+terraform:
+    display_name: Terraform
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.terraform.io
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after: 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/organizations
+    docs: https://docs.nango.dev/integrations/all/terraform
+    docs_connect: https://docs.nango.dev/integrations/all/terraform/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Terraform account
+            doc_section: '#step-1-generating-your-api-token'
+            example: VbQo****************************
+            pattern: '^[a-zA-Z0-9.]{50,}$'
 
 ticktick:
     display_name: TickTick
