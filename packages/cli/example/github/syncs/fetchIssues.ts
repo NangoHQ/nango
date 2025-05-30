@@ -21,13 +21,12 @@ const sync = createSync({
     description: `Fetches the Github issues from all a user's repositories.`,
     version: '1.0.0',
     endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
-    integrationId: 'github',
-    runs: 'every hour',
+    frequency: 'every hour',
     autoStart: true,
     syncType: 'full',
     trackDeletes: true,
 
-    metadata: z.never(),
+    metadata: z.void(),
     models: {
         GithubIssue: issueSchema
     },
