@@ -1,11 +1,13 @@
-import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
-import { validateRequest } from '@nangohq/utils';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { records } from '@nangohq/records';
-import { getRecordsRequestParser } from './validate.js';
-import type { LogContextStateless } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { records } from '@nangohq/records';
+import { validateRequest } from '@nangohq/utils';
+
+import { getRecordsRequestParser } from './validate.js';
+
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
+import type { LogContextStateless } from '@nangohq/logs';
+import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 type GetRecords = Endpoint<{
     Method: typeof method;
@@ -31,11 +33,11 @@ const method = 'GET';
 
 const validate = validateRequest<GetRecords>(getRecordsRequestParser);
 
-const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<GetRecords, AuthLocals>) => {
+const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, AuthLocals>) => {
     const {
-        params: { nangoConnectionId },
-        query: { model, externalIds, cursor, limit, activityLogId }
-    } = req;
+        parsedParams: { nangoConnectionId },
+        parsedQuery: { model, externalIds, cursor, limit, activityLogId }
+    } = res.locals;
 
     let logCtx: LogContextStateless | undefined = undefined;
     const { account } = res.locals;

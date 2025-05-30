@@ -5,6 +5,7 @@ import { Err, Ok, axiosInstance as axios, redactHeaders, redactURL, retryFlexibl
 import { getProxyRetryFromErr } from './retry.js';
 import { ProxyError, getAxiosConfiguration } from './utils.js';
 
+import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
 import type { Result, RetryAttemptArgument } from '@nangohq/utils';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -12,7 +13,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     logger: (msg: MessageRowInsert) => MaybePromise<void>;
-    onError?: (args: { err: unknown; max: number; attempt: number }) => { retry: boolean; reason: string; wait?: number };
+    onError?: (args: { err: unknown; max: number; attempt: number; retry: RetryReason }) => RetryReason;
     getConnection: () => MaybePromise<ConnectionForProxy>;
 }
 
@@ -83,7 +84,7 @@ export class ProxyRequest {
 
                         // Only call onError if it's an actionable error
                         if (retry.reason !== 'unknown_error' && this.onError) {
-                            retry = this.onError({ err, max, attempt });
+                            retry = this.onError({ err, max, attempt, retry });
                         }
 
                         if (retry.retry) {

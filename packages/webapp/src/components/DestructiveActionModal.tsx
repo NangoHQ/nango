@@ -34,7 +34,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+            {trigger && <DialogTrigger>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogTitle>{title}</DialogTitle>
                 <DialogDescription>{description}</DialogDescription>

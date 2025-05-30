@@ -77,6 +77,10 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   <ResponseField name="detectClosedAuthWindow" type="boolean" default="false">
     Control OAuth popup close detection. If set to true, a closed popup will be detected as a failed authorization.
   </ResponseField>
+
+  <ResponseField name="lang" type="string">
+    The language to use for the UI. Defaults to browser language or english if not supported.
+  </ResponseField>
 </Expandable>
 
 **Response**

@@ -29,4 +29,5 @@ export interface RequestLocals {
     connectSession?: ConnectSession;
     endUser?: EndUser;
     plan?: DBPlan | null;
+    lang?: string;
 }

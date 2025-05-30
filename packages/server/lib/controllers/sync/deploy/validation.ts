@@ -9,7 +9,7 @@ const jsonSchema = z
     .object({
         $schema: z.literal('http://json-schema.org/draft-07/schema#'),
         $comment: z.string(),
-        definitions: z.record(z.string(), z.object({}))
+        definitions: z.record(z.string(), z.object({}).passthrough())
     })
     .strict();
 
@@ -125,7 +125,11 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false)
+        singleDeployMode: z.boolean().optional().default(false),
+        sdkVersion: z
+            .string()
+            .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
+            .optional()
     })
     .strict();
 

@@ -157,7 +157,7 @@ export async function persistRecords({
         const mar = new Set(summary.billedKeys).size;
 
         if (plan) {
-            void billing.send('monthly_active_records', mar, { accountId });
+            billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
         }
 
         metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });

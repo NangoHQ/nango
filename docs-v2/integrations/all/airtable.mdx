@@ -14,34 +14,96 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Airtable account](https://airtable.com/signup). |
+| Paid test account | ✅ Not required | Free Airtable account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No app review process for OAuth integrations. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create an Airtable account">
+    If you don't already have one, sign up for an [Airtable account](https://airtable.com/signup).
+  </Step>
+  <Step title="Register a new OAuth integration">
+    1. Go to the [OAuth integrations panel](https://airtable.com/create/oauth) in your Airtable account.
+    2. Click **Register new OAuth integration**.
+    3. Enter a unique name for your integration.
+    4. Add `https://api.nango.dev/oauth/callback` as your OAuth redirect URI.
+    5. Click **Register integration**.
+  </Step>
+  <Step title="Configure your OAuth integration">
+    After creating your integration, you'll be taken to the management page where you can configure the following properties:
+
+    1. **Name**: You can update the name of your integration if needed.
+    2. **OAuth redirect URI**: Verify that `https://api.nango.dev/oauth/callback` is set correctly.
+    3. **Permission scopes**: Select the scopes your application requires. Common scopes include:
+       - `data.records:read` - Read records from bases
+       - `data.records:write` - Create, update, and delete records
+       - `data.recordComments:read` - Read record comments
+       - `data.recordComments:write` - Create, update, and delete record comments
+       - `schema.bases:read` - Read base schema information
+    4. **Tagline** (optional): Add a brief description of what your integration does.
+    5. **Homepage URL** (optional): Add your website or homepage URL.
+    6. **Logo** (optional): Upload a logo for your integration.
+    7. **Support email** (optional): Add an email address where users can reach you for support.
+    8. **Privacy policy URL** (required to share integration): Add your privacy policy URL.
+    9. **Terms of service URL** (required to share integration): Add your terms of service URL.
+
+    Click **Save changes** when you're done.
+  </Step>
+  <Step title="Generate a client secret">
+    1. On your integration's management page, click **Generate client secret**.
+    2. Confirm the action by clicking **Generate**.
+    3. Copy the client secret that appears. Note that this is the only time you'll see this secret, so make sure to store it securely.
+    4. Click **Done** after copying the secret.
+  </Step>
+  <Step title="Obtain your client ID">
+    Your client ID is displayed on your integration's management page. You'll need both the client ID and client secret when configuring your integration in Nango.
+  </Step>
+  <Step title="Preview the user authorization dialog">
+    You can preview what users will see when authorizing your integration by clicking the **Preview authorization dialog** button on your integration's management page.
+  </Step>
+  <Step title="Make your integration available to users">
+    To make your integration available to other users, you must add:
+    - A support email
+    - A privacy policy URL
+    - A terms of service URL
+
+    Once these are added and saved, other users will be able to authorize your integration.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
-
 
 ## Useful links
-
--   [Web API docs (their REST API)](https://airtable.com/developers/web/api/introduction)
--   [SCIM API docs (their REST SCIM API)](https://airtable.com/developers/web/api/scim-overview)
--   [List of OAuth scopes](https://airtable.com/developers/web/api/scopes)
--   [Information on rate limits](https://airtable.com/developers/web/api/rate-limits)
+- [Airtable Website](https://airtable.com/)
+- [Create an Airtable account](https://airtable.com/signup)
+- [OAuth Integrations Panel](https://airtable.com/create/oauth)
+- [Web API Documentation](https://airtable.com/developers/web/api/introduction)
+- [OAuth Reference](https://airtable.com/developers/web/api/oauth-reference)
+- [OAuth Integrations Guide](https://airtable.com/developers/web/guides/oauth-integrations)
+- [OAuth Scopes](https://airtable.com/developers/web/api/scopes)
+- [Authentication Reference](https://airtable.com/developers/web/api/authentication)
+- [Rate Limits](https://airtable.com/developers/web/api/rate-limits)
+- [SCIM API Documentation](https://airtable.com/developers/web/api/scim-overview)
+- [Example OAuth Setup Repository](https://github.com/Airtable/oauth-example)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
+
+## Scopes
+
+See the full list of available scopes in the [Airtable OAuth Scopes documentation](https://airtable.com/developers/web/api/scopes).
+
 
 ## API gotchas
 
 -   During the OAuth flow, the user can decide to which resources (Bases) the app should have access to. [Read more here](https://airtable.com/developers/web/api/oauth-reference#resources)
--   Refresh tokens also expire after 60 days of non use. Make sure you call `nango.getConnection()` at least every 60 days to trigger a refresh.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>

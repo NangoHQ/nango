@@ -1,7 +1,9 @@
 import path from 'node:path';
+
 import ms from 'ms';
-import type { StringValue } from 'ms';
+
 import type { HTTP_METHOD, NangoSyncEndpointV2, NangoYaml, NangoYamlParsed, NangoYamlParsedIntegration, NangoYamlV2Endpoint } from '@nangohq/types';
+import type { StringValue } from 'ms';
 
 interface IntervalResponse {
     interval: StringValue;
@@ -103,29 +105,12 @@ export function getInterval(runs: string, date: Date): IntervalResponse | Error 
 }
 
 export const JAVASCRIPT_AND_TYPESCRIPT_TYPES = {
-    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol'],
+    primitives: ['string', 'number', 'boolean', 'bigint', 'symbol', 'never', 'void'],
     builtInObjects: ['Object', 'Array', 'Function', 'Date', 'RegExp', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error'],
     utilityTypes: ['Record', 'Partial', 'Readonly', 'Pick', 'Omit', 'Awaited', 'Required', 'Exclude', 'Extract', 'Uppercase', 'Lowercase']
 };
-const typesLowercase = Object.values(JAVASCRIPT_AND_TYPESCRIPT_TYPES)
-    .flat()
-    .map((v) => v.toLocaleLowerCase());
+
 const typesWithGenerics = [...JAVASCRIPT_AND_TYPESCRIPT_TYPES.builtInObjects, ...JAVASCRIPT_AND_TYPESCRIPT_TYPES.utilityTypes];
-// Only used externally
-export function isJsOrTsType(type?: string): boolean {
-    if (!type) {
-        return false;
-    }
-
-    const baseType = type.replace(/\[\]$/, '').toLocaleLowerCase();
-    if (typesLowercase.includes(baseType)) {
-        return true;
-    }
-
-    const genericTypeRegex = new RegExp(`^(${typesWithGenerics.join('|')})<.+>$`, 'i');
-
-    return genericTypeRegex.test(baseType);
-}
 
 export const typesAliases: Record<string, string> = {
     integer: 'number',
@@ -136,6 +121,8 @@ export const typesAliases: Record<string, string> = {
     bool: 'boolean',
     string: 'string',
     number: 'number',
+    never: 'never',
+    void: 'void',
     boolean: 'boolean',
     bigint: 'bigint',
     date: 'Date',

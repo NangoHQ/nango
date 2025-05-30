@@ -1,7 +1,8 @@
-import type { Request, NextFunction } from 'express';
 import { z } from 'zod';
-import type { ValidationError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse } from './route.js';
+
+import type { EndpointLocals, EndpointRequest, EndpointResponse } from './route.js';
+import type { Endpoint, ValidationError } from '@nangohq/types';
+import type { NextFunction, Request } from 'express';
 
 interface RequestParser<E extends Endpoint<any>> {
     parseBody?: (data: unknown) => E['Body'];
@@ -11,28 +12,32 @@ interface RequestParser<E extends Endpoint<any>> {
 
 export const validateRequest =
     <E extends Endpoint<any>>(parser: RequestParser<E>) =>
-    (req: EndpointRequest<E>, res: EndpointResponse<E, any>, next: NextFunction) => {
+    (req: EndpointRequest, res: EndpointResponse<E, EndpointLocals<E>>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
-                req.body = parser.parseBody(req.body);
+                res.locals.parsedBody = parser.parseBody(req.body || {});
             } else {
-                z.object({}).strict('Body is not allowed').parse(req.body);
+                z.object({})
+                    .strict('Body is not allowed')
+                    .parse(req.body || {});
             }
             if (parser.parseQuery) {
-                req.query = parser.parseQuery(req.query);
+                res.locals.parsedQuery = parser.parseQuery(req.query);
             } else {
                 z.object({}).strict('Query string parameters are not allowed').parse(req.query);
             }
             if (parser.parseParams) {
-                req.params = parser.parseParams(req.params);
+                res.locals.parsedParams = parser.parseParams(req.params);
             } else {
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }
-            return next();
+            next();
         } catch (err) {
             if (err instanceof z.ZodError) {
                 res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
+                return;
             }
+            res.status(400).send({ error: { code: 'invalid_request', message: 'unknown error' } });
         }
     };
 

@@ -1,18 +1,20 @@
-import db, { schema, dbNamespace } from '@nangohq/database';
-import type { ServiceResponse } from '../../models/Generic.js';
-import environmentService from '../environment.service.js';
-import type { Result } from '@nangohq/utils';
-import { basePublicUrl, Err, getLogger, Ok, stringToHash, truncateJson } from '@nangohq/utils';
-import connectionService from '../connection.service.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
-import type { NangoError } from '../../utils/error.js';
-import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
+import db, { dbNamespace, schema } from '@nangohq/database';
+import { Err, Ok, basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
+
 import configService from '../config.service.js';
+import connectionService from '../connection.service.js';
+import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
+import environmentService from '../environment.service.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
+
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { Config } from '../../models/Provider.js';
+import type { NangoError } from '../../utils/error.js';
 import type { FeatureFlags } from '@nangohq/kvstore';
+import type { LogContextGetter } from '@nangohq/logs';
+import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -40,7 +42,7 @@ interface NotificationPayload {
 interface PostSlackMessageResponse {
     ok: boolean;
     channel: string;
-    ts: string;
+    ts?: string | undefined;
     message: {
         bot_id: string;
         type: string;
@@ -180,7 +182,8 @@ export class SlackService {
         const res = await this.sendSlackNotification({ account, environment, type, name, connection, payload, lookupError: error });
 
         if (res.isOk() && slackNotificationStatus) {
-            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, res.value.ts);
+            const ts = res.value.ts || res.value.message.ts;
+            await this.updateNotificationWithTimestamp(slackNotificationStatus.id, ts);
         }
     }
 
@@ -661,7 +664,13 @@ export class SlackService {
             await logCtx.failed();
             return Err(res.error);
         }
-        void logCtx.info(`Posted to https://slack.com/archives/${res.value.channel}/p${res.value.ts.replace('.', '')}`);
+
+        const ts = res.value.ts || res.value.message.ts;
+        if (ts) {
+            void logCtx.info(`Posted to https://slack.com/archives/${res.value.channel}/p${ts.replace('.', '')}`);
+        } else {
+            void logCtx.info(`Posted to Slack`, { payload: res.value });
+        }
         await logCtx.success();
         return Ok(res.value);
     }
@@ -686,7 +695,7 @@ export class SlackService {
         // Join the Slack channel
         let proxyConfig = getProxyConfiguration({
             externalConfig: {
-                method: 'POST' as const,
+                method: 'POST',
                 endpoint: 'conversations.join',
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 data: { channel },
@@ -748,7 +757,7 @@ export class SlackService {
 
         proxyConfig = getProxyConfiguration({
             externalConfig: {
-                method: 'POST' as const,
+                method: 'POST',
                 endpoint: data.ts ? 'chat.update' : 'chat.postMessage',
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 data,

@@ -28,8 +28,7 @@ export const forwardWebhook = async ({
     if (!webhookSettings) {
         return;
     }
-
-    if (!shouldSend({ success: true, type: 'forward', webhookSettings, operation: 'incoming_webhook' })) {
+    if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
         return;
     }
 

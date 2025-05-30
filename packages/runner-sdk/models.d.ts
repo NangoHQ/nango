@@ -15,7 +15,7 @@ export declare const oldLevelToNewLevel: {
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 interface Pagination {
     type: string;
-    limit?: number;
+    limit?: number | string;
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;

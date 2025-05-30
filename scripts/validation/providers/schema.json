@@ -97,6 +97,9 @@
                         "type": "string"
                     }
                 },
+                "authorization_url_skip_empty": {
+                    "type": "boolean"
+                },
                 "authorization_url_replacements": {
                     "type": "object",
                     "additionalProperties": true
@@ -255,6 +258,23 @@
                                 },
                                 "error_code": {
                                     "type": "number"
+                                },
+                                "in_body": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["path", "strategy"],
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "strategy": {
+                                            "type": "string",
+                                            "enum": ["at", "after"]
+                                        }
+                                    }
                                 }
                             }
                         },

@@ -1,20 +1,23 @@
-import axios, { AxiosError } from 'axios';
+import { spawn } from 'child_process';
 import fs from 'fs';
-import os from 'os';
-import npa from 'npm-package-arg';
+import https from 'node:https';
 import Module from 'node:module';
+import os from 'os';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import semver from 'semver';
-import { spawn } from 'child_process';
-import promptly from 'promptly';
+
+import axios, { AxiosError } from 'axios';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
-import { state } from './state.js';
-import https from 'node:https';
-import type { GetPublicConnection } from '@nangohq/types';
-import { NANGO_VERSION } from './version.js';
+import npa from 'npm-package-arg';
+import promptly from 'promptly';
+import semver from 'semver';
+
 import { cloudHost } from './constants.js';
+import { state } from './state.js';
+import { NANGO_VERSION } from './version.js';
+
+import type { GetPublicConnection } from '@nangohq/types';
 import type { PackageJson } from 'type-fest';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,8 +39,10 @@ if (parsedHostport.slice(-1) === '/') {
 
 export const hostport = parsedHostport;
 
-export function printDebug(message: string) {
-    console.log(chalk.gray(message));
+export function printDebug(message: string, debug?: boolean) {
+    if (debug === true || debug === undefined) {
+        console.log(chalk.gray(message));
+    }
 }
 
 export function isLocallyInstalled(packageName: string, debug = false) {

@@ -15,19 +15,19 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     const authorizationHeader = req.get('authorization');
 
     if (!authorizationHeader) {
-        res.status(401).json({ error: 'Missing authorization header' });
+        res.status(401).json({ error: { code: 'missing_auth_header', message: 'Missing authorization header' } });
         return;
     }
 
     const secret = authorizationHeader.split('Bearer ').pop();
     if (!secret) {
-        res.status(401).json({ error: 'Malformed authorization header. Expected `Bearer SECRET_KEY`' });
+        res.status(401).json({ error: { code: 'malformed_auth_header', message: 'Malformed authorization header. Expected `Bearer SECRET_KEY`' } });
         return;
     }
 
     const environmentId = parseInt(req.params['environmentId'] || '');
     if (!environmentId) {
-        res.status(401).json({ error: 'Missing environmentId' });
+        res.status(401).json({ error: { code: 'missing_environment', message: 'Missing environmentId' } });
         return;
     }
 
@@ -41,7 +41,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
         if (flagHasPlan) {
             const resPlan = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
             if (resPlan.isErr()) {
-                res.status(401).json({ error: `Unauthorized: ${stringifyError(resPlan.error)}` });
+                res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(resPlan.error)}` } });
                 return;
             }
             plan = resPlan.value;
@@ -53,6 +53,6 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
         tagTraceUser({ ...accountAndEnv, plan });
         next();
     } catch (err) {
-        res.status(401).json({ error: `Unauthorized: ${stringifyError(err)}` });
+        res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });
     }
 };

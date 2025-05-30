@@ -532,7 +532,7 @@ export class SyncManagerService {
             id: sync.id,
             connection_id: sync.connection_id,
             type: latestJob?.type === SyncJobsType.INCREMENTAL ? latestJob.type : 'INITIAL',
-            finishedAt: latestJob?.updated_at,
+            finishedAt: latestJob?.status !== 'RUNNING' ? latestJob?.updated_at : undefined,
             nextScheduledSyncAt: schedule.nextDueDate,
             name: sync.name,
             variant: sync.variant,

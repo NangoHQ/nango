@@ -104,7 +104,7 @@ export type GetPublicConnection = Endpoint<{
         force_refresh?: boolean | undefined;
     };
     Path: '/connection/:connectionId';
-    Error: ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;
     Success: ApiPublicConnectionFull;
 }>;
 

@@ -11,6 +11,7 @@ export interface Task {
     readonly name: string;
     readonly payload: JsonValue;
     readonly groupKey: string;
+    readonly groupMaxConcurrency: number;
     readonly retryMax: number;
     readonly retryCount: number;
     readonly startsAfter: Date;
@@ -28,11 +29,8 @@ export interface Task {
     readonly ownerKey: string | null;
 }
 
-interface WithGroupKeyMaxConcurrency {
-    groupKeyMaxConcurrency?: number | undefined;
-}
-export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'> & WithGroupKeyMaxConcurrency;
-export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> & WithGroupKeyMaxConcurrency;
+export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
+export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;

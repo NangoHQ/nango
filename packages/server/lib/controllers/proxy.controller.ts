@@ -1,6 +1,4 @@
-import querystring from 'querystring';
 import { PassThrough, Readable, Transform } from 'stream';
-import url from 'url';
 
 import { isAxiosError } from 'axios';
 
@@ -19,18 +17,16 @@ import {
 import { getHeaders, getLogger, metrics, redactHeaders } from '@nangohq/utils';
 
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
+import { featureFlags } from '../utils/utils.js';
 
+import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
+import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { TransformCallback } from 'stream';
 import type stream from 'stream';
-import type { UrlWithParsedQuery } from 'url';
-
-import type { RequestLocals } from '../utils/express.js';
-import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
-import { featureFlags } from '../utils/utils.js';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -76,10 +72,8 @@ class ProxyController {
 
             const { method } = req;
 
-            const path = req.params[0] as string;
-            const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
-            const queryString = querystring.stringify(query);
-            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
+            // contains the path and querystring
+            const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
 
             const headers = parseHeaders(req);
 

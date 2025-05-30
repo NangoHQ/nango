@@ -1,15 +1,18 @@
-import { inspect } from 'node:util';
-import type { Server } from 'node:http';
 import { createServer } from 'node:http';
+import { inspect } from 'node:util';
+
 import express from 'express';
-import { expect } from 'vitest';
-import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath } from '@nangohq/types';
 import getPort from 'get-port';
-import { migrateLogsMapping } from '@nangohq/logs';
+import { expect } from 'vitest';
+
 import db, { multipleMigrations } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
+import { migrateLogsMapping } from '@nangohq/logs';
 
 import { router } from '../routes.js';
+
+import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;

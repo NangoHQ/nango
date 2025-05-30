@@ -14,20 +14,74 @@ import PreBuiltUseCases from "/snippets/generated/jira-data-center/PreBuiltUseCa
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ⚠️ Conditional | Jira Data Center requires a license. You can [start a free trial](https://www.atlassian.com/software/jira/data-center/free-trial) for development. |
+| Paid test account | ⚠️ Conditional | Same as above. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Set up Jira Data Center">
+    1. Ensure you have a running Jira Data Center instance. If not, you can:
+       - [Start a free trial](https://www.atlassian.com/software/jira/data-center/free-trial)
+       - [Install Jira Data Center](https://confluence.atlassian.com/adminjiraserver/installing-jira-data-center-938846870.html)
+    2. Make sure you have administrator privileges on your Jira Data Center instance.
+  </Step>
+  <Step title="Create an incoming link">
+    1. Log in to your Jira Data Center instance as an administrator.
+    2. Navigate to **Administration** > **Applications** > **Application links**.
+    3. Select **Create link**.
+    4. Select **External application** and then choose **Incoming** as the direction.
+    5. Fill in the details as described in the sections below.
+  </Step>
+  <Step title="Provide application details">
+    In the application details section:
+
+    1. Enter a descriptive name for your application.
+    2. For the **Redirect URL**, enter `https://api.nango.dev/oauth/callback`.
+
+    Note: This is the URL where users will be redirected after authorizing your application.
+  </Step>
+  <Step title="Configure application permissions">
+    Select the appropriate permission scopes for your integration:
+
+    - **READ**: View projects and issues the user can view, including related items like dashboards, filters, attachments, or comments.
+    - **WRITE**: Create, update, and delete projects and issues the user can change, including related items.
+    - **ADMIN**: Perform most administrative functions on the entire Jira instance.
+    - **SYSTEM_ADMIN**: Perform all administrative functions on the entire Jira instance.
+
+    Note: Choose only the scopes your application needs. Higher-level scopes automatically include lower-level ones (e.g., WRITE includes READ).
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating the incoming link, you'll receive your OAuth credentials:
+       - **Client ID**: The identifier for your application
+       - **Client Secret**: The secret key for your application
+
+    2. Store these credentials securely as you'll need them to configure your integration in Nango.
+  </Step>
+  <Step title="Configure your integration in Nango">
+    When setting up your Jira Data Center integration in Nango:
+
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://[your-jira-instance]/rest/oauth2/latest/authorize`
+    - For the token URL, use: `https://[your-jira-instance]/rest/oauth2/latest/token`
+    - Replace `[your-jira-instance]` with your actual Jira Data Center instance URL
+  </Step>
+  <Step title="Test the OAuth flow">
+    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
+    2. The authorization flow will redirect users to Jira where they can approve access to their account.
+    3. After approval, users will be redirected back to your application with an authorization code.
+    4. This code will be exchanged for access and refresh tokens.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-data-center.mdx)</Note>
 
 
 ## Useful links
@@ -39,7 +93,10 @@ _No setup guide yet._
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-data-center.mdx)</Note>
 
+## Common Scopes
+The list of scopes supported by the Jira Data Center API can be found in the [Provider API scopes documentation](https://confluence.atlassian.com/adminjiraserver/jira-oauth-2-0-provider-api-1115659070.html#JiraOAuth2.0providerAPI-scopes)
+
+
 ## API gotchas
--  Jira Data Center enforce HTTPS for the base URL of production environments. You can use insecure URIs and base URLs for staging or development environments by enabling the relevant [system properties](https://confluence.atlassian.com/adminjiraserver/oauth-2-0-provider-system-properties-1115659073.html)
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-data-center.mdx)</Note>

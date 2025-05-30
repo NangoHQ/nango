@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { SearchMessages } from '@nangohq/types';
-import { model, envs, operationIdRegex } from '@nangohq/logs';
+
+import { envs, model, operationIdRegex } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { SearchMessages } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -15,7 +18,8 @@ const validation = z
             .optional()
             .default(['all']),
         cursorBefore: z.string().or(z.null()).optional(),
-        cursorAfter: z.string().or(z.null()).optional()
+        cursorAfter: z.string().or(z.null()).optional(),
+        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional()
     })
     .strict();
 
@@ -64,7 +68,8 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
         states: body.states,
         search: body.search,
         cursorBefore: body.cursorBefore,
-        cursorAfter: body.cursorAfter
+        cursorAfter: body.cursorAfter,
+        period: body.period
     });
 
     res.status(200).send({

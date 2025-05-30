@@ -1,9 +1,11 @@
 import { z } from 'zod';
-import type { JsonValue } from 'type-fest';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler, TaskState } from '@nangohq/scheduler';
 import type { Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 type GetRetryOutput = Endpoint<{
     Method: typeof method;
@@ -30,8 +32,8 @@ const validate = validateRequest<GetRetryOutput>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<GetRetryOutput>, res: EndpointResponse<GetRetryOutput>) => {
-        const tasks = await scheduler.searchTasks({ retryKey: req.params.retryKey, ownerKey: req.query.ownerKey });
+    return async (_req: EndpointRequest, res: EndpointResponse<GetRetryOutput>) => {
+        const tasks = await scheduler.searchTasks({ retryKey: res.locals.parsedParams.retryKey, ownerKey: res.locals.parsedQuery.ownerKey });
         if (tasks.isErr()) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tasks' } });
             return;

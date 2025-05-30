@@ -1,9 +1,11 @@
 import db from '@nangohq/database';
-import remoteFileService from './file/remote.service.js';
 import { env } from '@nangohq/utils';
-import type { OnEventScriptsByProvider, DBOnEventScript, DBTeam, DBEnvironment, OnEventType, OnEventScript } from '@nangohq/types';
-import { increment } from './sync/config/config.service.js';
+
 import configService from './config.service.js';
+import remoteFileService from './file/remote.service.js';
+import { increment } from './sync/config/config.service.js';
+
+import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
 
 const TABLE = 'on_event_scripts';
 
@@ -36,6 +38,7 @@ const dbMapper = {
             version: script.version,
             active: script.active,
             event: eventTypeMapper.toDb(script.event),
+            sdk_version: script.sdkVersion,
             created_at: script.createdAt,
             updated_at: script.updatedAt
         };
@@ -50,6 +53,7 @@ const dbMapper = {
             version: dbScript.version,
             active: dbScript.active,
             event: eventTypeMapper.fromDb(dbScript.event),
+            sdkVersion: dbScript.sdk_version,
             createdAt: dbScript.created_at,
             updatedAt: dbScript.updated_at
         };
@@ -60,11 +64,13 @@ export const onEventScriptService = {
     async update({
         environment,
         account,
-        onEventScriptsByProvider
+        onEventScriptsByProvider,
+        sdkVersion
     }: {
         environment: DBEnvironment;
         account: DBTeam;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
+        sdkVersion: string | undefined;
     }): Promise<OnEventScript[]> {
         return db.knex.transaction(async (trx) => {
             const onEventInserts: Omit<DBOnEventScript, 'id' | 'created_at' | 'updated_at'>[] = [];
@@ -119,7 +125,8 @@ export const onEventScriptService = {
                         file_location,
                         version: version.toString(),
                         active: true,
-                        event
+                        event,
+                        sdk_version: sdkVersion || null
                     });
                 }
             }
@@ -155,10 +162,14 @@ export const onEventScriptService = {
 
     diffChanges: async ({
         environmentId,
-        onEventScriptsByProvider
+        onEventScriptsByProvider,
+        singleDeployMode = false,
+        sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
+        singleDeployMode?: boolean;
+        sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
         deleted: OnEventScript[];
@@ -170,41 +181,53 @@ export const onEventScriptService = {
             updated: []
         };
 
+        const deployingProviders = onEventScriptsByProvider.map((p) => p.providerConfigKey);
+
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
+        // Filter existing scripts to only include those from providers being deployed when in single deploy mode
+        const relevantExistingScripts = singleDeployMode
+            ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
+            : existingScripts;
+
         // Create a map of existing scripts for easier lookup
-        const previousMap = new Map(existingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
+        const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
 
+        // Process incoming scripts
         for (const provider of onEventScriptsByProvider) {
-            const config = await configService.getProviderConfig(provider.providerConfigKey, environmentId);
-            if (!config || !config.id) continue;
+            const { providerConfigKey, scripts } = provider;
+            if (!scripts || scripts.length === 0) continue;
 
-            for (const script of provider.scripts) {
-                const key = `${config.id}:${script.name}:${script.event}`;
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
+            if (!config || !config.id) continue; // Skip if provider config doesn't exist
 
-                const maybeScript = previousMap.get(key);
-                if (maybeScript) {
-                    // Script already exists - it's an update
-                    res.updated.push(maybeScript);
+            for (const script of scripts) {
+                const { name, event } = script;
+                const key = `${config.id}:${name}:${event}`;
+                const existingScript = previousMap.get(key);
 
+                if (existingScript) {
+                    // Script exists - it's an update
+                    res.updated.push(existingScript);
                     // Remove from map to track deletions
                     previousMap.delete(key);
                 } else {
                     // Script doesn't exist - it's new
                     res.added.push({
                         configId: config.id,
-                        name: script.name,
+                        name,
                         version: '0.0.1',
                         active: true,
-                        event: script.event,
-                        providerConfigKey: provider.providerConfigKey
+                        event,
+                        providerConfigKey,
+                        sdkVersion: sdkVersion || null
                     });
                 }
             }
         }
 
         // Any remaining scripts in the map were not found - they are deleted
-        res.deleted.push(...Array.from(previousMap.values()));
+        res.deleted = Array.from(previousMap.values());
 
         return res;
     }

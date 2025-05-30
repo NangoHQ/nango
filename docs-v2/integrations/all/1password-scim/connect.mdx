@@ -18,8 +18,9 @@ This guide will help you retrieve your SCIM credentials and set up the connectio
 - A **SCIM API Key** generated from your **1Password Admin Console**.
 - The **SCIM Bridge URL** (e.g., `https://scim.example.com`).
 
-🚨 **Important**:  
+🚨 **Important**:
 1Password requires **SCIM Bridge** to be hosted on your infrastructure for security reasons. This ensures that **encryption keys** are never exposed to third parties.
+See the [1Password docs](https://support.1password.com/scim/#step-1-set-up-and-deploy-1password-scim-bridge) on how to deploy a SCIM Bridge.
 
 ---
 
@@ -52,14 +53,14 @@ If you're unsure of your SCIM Bridge URL:
 #### **SCIM Bridge Behavior Based on Identity Provider**
 🚨 **Important Note on Google Workspace, Entra, and Okta**:
 
-- If your **SCIM Bridge is configured for Google Workspace**, the **SCIM API is disabled**. Instead, 1Password pulls data directly using **Google APIs** rather than SCIM.  
+- If your **SCIM Bridge is configured for Google Workspace**, the **SCIM API is disabled**. Instead, 1Password pulls data directly using **Google APIs** rather than SCIM.
   🔴 **This means that the SCIM integration will not work if Google Workspace is your IdP**.
 
 - If your **SCIM Bridge is configured for Entra (Azure AD) or Okta**, then **SCIM is enabled**. In this case:
   - The **IdP (Identity Provider)** will connect to **SCIM Bridge** to provision and deprovision users.
   - The **SCIM interface remains active**.
 
-✅ **How to check if SCIM is enabled?**  
+✅ **How to check if SCIM is enabled?**
 1. Go to **SCIM Bridge Settings** in your 1Password Admin Console.
 2. If your IdP is **Google Workspace**, SCIM is **disabled**.
 3. If your IdP is **Entra or Okta**, SCIM is **enabled** and can be used for provisioning.

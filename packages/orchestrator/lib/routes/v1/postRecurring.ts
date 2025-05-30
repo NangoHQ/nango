@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import type { JsonValue } from 'type-fest';
+
+import { validateRequest } from '@nangohq/utils';
+
+import { syncArgsSchema } from '../../clients/validate.js';
+
+import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
-import { syncArgsSchema } from '../../clients/validate.js';
-import type { TaskType } from '../../types.js';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 const path = '/v1/recurring';
 const method = 'POST';
@@ -73,19 +76,18 @@ const validate = validateRequest<PostRecurring>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostRecurring>, res: EndpointResponse<PostRecurring>) => {
+    return async (_req: EndpointRequest, res: EndpointResponse<PostRecurring>) => {
         const schedule = await scheduler.recurring({
-            name: req.body.name,
-            state: req.body.state,
-            payload: req.body.args,
-            startsAt: req.body.startsAt,
-            frequencyMs: req.body.frequencyMs,
-            groupKey: req.body.group.key,
-            groupKeyMaxConcurrency: req.body.group.maxConcurrency,
-            retryMax: req.body.retry.max,
-            createdToStartedTimeoutSecs: req.body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: req.body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat,
+            name: res.locals.parsedBody.name,
+            state: res.locals.parsedBody.state,
+            payload: res.locals.parsedBody.args,
+            startsAt: res.locals.parsedBody.startsAt,
+            frequencyMs: res.locals.parsedBody.frequencyMs,
+            groupKey: res.locals.parsedBody.group.key,
+            retryMax: res.locals.parsedBody.retry.max,
+            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
+            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
+            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat,
             lastScheduledTaskId: null
         });
         if (schedule.isErr()) {

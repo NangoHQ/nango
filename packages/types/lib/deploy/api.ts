@@ -1,9 +1,8 @@
-import type { JSONSchema7 } from 'json-schema';
-
-import type { Endpoint, ApiError } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';
@@ -15,6 +14,7 @@ export type PostDeployConfirmation = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Success: ScriptDifferences;
 }>;
@@ -30,6 +30,7 @@ export type PostDeploy = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Success: SyncDeploymentResult[];
 }>;
@@ -48,6 +49,7 @@ export type PostDeployInternal = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
+        sdkVersion?: string | undefined;
     };
     Error: ApiError<'forbidden'> | ApiError<'environment_creation_error'>;
     Success: SyncDeploymentResult[];

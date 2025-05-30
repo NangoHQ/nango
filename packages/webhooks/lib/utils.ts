@@ -5,7 +5,7 @@ import { isAxiosError } from 'axios';
 import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible } from '@nangohq/utils';
 
 import type { LogContext } from '@nangohq/logs';
-import type { AuthOperationType, DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, SyncOperationType, WebhookTypes } from '@nangohq/types';
+import type { DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
@@ -76,13 +76,11 @@ export const filterHeaders = (headers: Record<string, string>): Record<string, s
 export const shouldSend = ({
     webhookSettings,
     success,
-    type,
-    operation
+    type
 }: {
     webhookSettings: DBExternalWebhook;
     success: boolean;
-    type: 'auth' | 'sync' | 'forward';
-    operation: SyncOperationType | AuthOperationType | 'incoming_webhook';
+    type: 'auth_creation' | 'auth_refresh' | 'sync' | 'forward' | 'async_action';
 }): boolean => {
     const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 
@@ -94,22 +92,20 @@ export const shouldSend = ({
         return false;
     }
 
-    if (type === 'auth') {
-        if (operation === 'creation' && !webhookSettings.on_auth_creation) {
-            return false;
-        }
-
-        if (operation === 'refresh' && !webhookSettings.on_auth_refresh_error) {
-            return false;
-        }
-
-        return true;
+    if (type === 'auth_creation' && !webhookSettings.on_auth_creation) {
+        return false;
     }
 
-    if (type === 'sync') {
-        if (!success && !webhookSettings.on_sync_error) {
-            return false;
-        }
+    if (type === 'auth_refresh' && !webhookSettings.on_auth_refresh_error) {
+        return false;
+    }
+
+    if (type === 'sync' && !success && !webhookSettings.on_sync_error) {
+        return false;
+    }
+
+    if (type === 'async_action' && !webhookSettings.on_async_action_completion) {
+        return false;
     }
 
     return true;

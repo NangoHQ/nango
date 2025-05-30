@@ -1,6 +1,7 @@
 export interface GlobalOptions {
     autoConfirm: boolean;
     debug: boolean;
+    zero: boolean;
 }
 
 export type ENV = 'local' | 'cloud';

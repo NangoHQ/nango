@@ -1,3 +1,5 @@
+import he from 'he';
+
 import { basePublicUrl } from '@nangohq/utils';
 
 import { EmailClient } from '../clients/email.client.js';
@@ -10,7 +12,7 @@ export async function sendVerificationEmail(email: string, name: string, token: 
         email,
         `Verify your email address`,
         `
-<p>Hi ${name},</p>
+<p>Hi ${he.encode(name)},</p>
 
 <p>Please verify your account on Nango by clicking <a href="${basePublicUrl}/signup/verification/${token}">${basePublicUrl}/signup/verification/${token}</a></p>
 
@@ -27,7 +29,7 @@ export async function sendResetPasswordEmail({ user, token }: { user: DBUser; to
     await emailClient.send(
         user.email,
         'Nango password reset',
-        `<p>Hi ${user.name},</p>
+        `<p>Hi ${he.encode(user.name)},</p>
 
         <p>Someone requested a password reset.</p>
         <p><a href="${basePublicUrl}/reset-password/${token}">Reset password</a></p>
@@ -53,10 +55,10 @@ export async function sendInviteEmail({
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         email,
-        `You're Invited! Join "${account.name}" on Nango`,
+        `You're Invited! Join "${he.encode(account.name)}" on Nango`,
         `<p>Hi,</p>
 
-<p>${user.name} invites you to join "${account.name}" on Nango.</p>
+<p>${he.encode(user.name)} invites you to join "${he.encode(account.name)}" on Nango.</p>
 
 <p>Join this team by clicking <a href="${basePublicUrl}/signup/${invitation.token}">here</a> and completing your signup.</p>
 
@@ -73,7 +75,7 @@ export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DB
     await emailClient.send(
         user.email,
         `Your Nango trial ends in ${inDays} days`,
-        `<p>Hi ${user.name},</p>
+        `<p>Hi ${he.encode(user.name)},</p>
 
 <p>Your free Nango trial expires in ${inDays} days. After that, integration endpoints and scripts will be paused. All authorization features will continue to work.</p>
 
@@ -94,7 +96,7 @@ export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' 
     await emailClient.send(
         user.email,
         `Your Nango trial has expired`,
-        `<p>Hi ${user.name},</p>
+        `<p>Hi ${he.encode(user.name)},</p>
 
 <p>Your Nango trial has expired. Integration endpoints and scripts have been paused, but authorization features are still active.</p>
 

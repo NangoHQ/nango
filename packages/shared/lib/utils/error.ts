@@ -282,6 +282,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
                 break;
 
+            case 'connection_refresh_exhausted':
+                this.status = 424;
+                this.message = 'The refresh limit has been reached for this connection.';
+                break;
+
             case 'connection_test_failed':
                 this.status = status || 400;
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;

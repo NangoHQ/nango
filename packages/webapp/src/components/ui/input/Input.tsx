@@ -1,9 +1,10 @@
-import { forwardRef } from 'react';
-import type { InputHTMLAttributes } from 'react';
-import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { forwardRef } from 'react';
 
 import { cn } from '../../../utils/utils';
+
+import type { VariantProps } from 'class-variance-authority';
+import type { InputHTMLAttributes } from 'react';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 export type InputVariantProp = VariantProps<typeof wrapperStyles>;
@@ -44,9 +45,7 @@ const Input = forwardRef<
         InputVariantProp
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
-        <div
-            className={cn('transition-colors relative flex items-center bg-transparent w-full rounded border text-sm ', wrapperStyles({ variant }), className)}
-        >
+        <div className={cn('transition-colors relative flex items-center bg-transparent w-full rounded border text-sm', wrapperStyles({ variant }), className)}>
             {before && <div className="absolute text-text-light-gray px-2">{before}</div>}
             <input
                 type={type}

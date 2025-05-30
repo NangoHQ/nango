@@ -84,9 +84,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
-        // we can't return an error because it would a breaking change in GET /connection
         if (props.connection.refresh_exhausted && !props.instantRefresh) {
-            return Ok(props.connection);
+            return Err(new NangoError('connection_refresh_exhausted'));
         }
 
         let res: Result<DBConnectionDecrypted, NangoError>;

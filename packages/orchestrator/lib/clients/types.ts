@@ -29,6 +29,7 @@ interface ActionArgs {
     connection: ConnectionJobs;
     activityLogId: string;
     input: JsonValue;
+    async: boolean;
 }
 interface WebhookArgs {
     webhookName: string;
@@ -69,10 +70,12 @@ interface TaskCommonFields {
     id: string;
     name: string;
     groupKey: string;
+    groupMaxConcurrency: number;
     state: TaskState;
     attempt: number;
     attemptMax: number;
     ownerKey: string | null;
+    retryKey: string | null;
 }
 interface TaskCommon extends TaskCommonFields {
     isSync(this: OrchestratorTask): this is TaskSync;
@@ -89,10 +92,12 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         abortedTask: props.abortedTask,
         name: props.name,
         state: props.state,
+        retryKey: props.retryKey,
         attempt: props.attempt,
         attemptMax: props.attemptMax,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
@@ -110,6 +115,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         id: props.id,
         name: props.name,
         state: props.state,
+        retryKey: props.retryKey,
         attempt: props.attempt,
         attemptMax: props.attemptMax,
         syncId: props.syncId,
@@ -118,6 +124,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
@@ -135,6 +142,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         abortedTask: props.abortedTask,
         name: props.name,
         state: props.state,
+        retryKey: props.retryKey,
         attempt: props.attempt,
         attemptMax: props.attemptMax,
         syncId: props.syncId,
@@ -143,6 +151,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
@@ -161,13 +170,16 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         name: props.name,
         state: props.state,
         attempt: props.attempt,
+        retryKey: props.retryKey,
         attemptMax: props.attemptMax,
         actionName: props.actionName,
         connection: props.connection,
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
+        async: props.async,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => true,
@@ -183,6 +195,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         id: props.id,
         name: props.name,
         state: props.state,
+        retryKey: props.retryKey,
         attempt: props.attempt,
         attemptMax: props.attemptMax,
         webhookName: props.webhookName,
@@ -191,6 +204,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => true,
@@ -207,6 +221,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         id: props.id,
         state: props.state,
         name: props.name,
+        retryKey: props.retryKey,
         attempt: props.attempt,
         attemptMax: props.attemptMax,
         onEventName: props.onEventName,
@@ -215,6 +230,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,

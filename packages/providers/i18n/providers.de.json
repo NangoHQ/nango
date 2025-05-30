@@ -1,0 +1,24 @@
+{
+    "workday": {
+        "connection_config": {
+            "hostname": {
+                "title": "Hostname",
+                "description": "Der Hostname Ihres Workday-Kontos"
+            },
+            "tenant": {
+                "title": "Mandant",
+                "description": "Der Mandant Ihres Workday-Kontos"
+            }
+        },
+        "credentials": {
+            "username": {
+                "title": "Benutzername",
+                "description": "Workday API Benutzername"
+            },
+            "password": {
+                "title": "Passwort",
+                "description": "Workday API Passwort"
+            }
+        }
+    }
+}

@@ -236,7 +236,29 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
     return false;
 }
 
-export async function getActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
+export async function getActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<DBSyncConfig[]> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return [];
+    }
+
+    const result = await schema().from<DBSyncConfig>(TABLE).where({
+        environment_id,
+        nango_config_id,
+        deleted: false,
+        active: true,
+        type: 'action'
+    });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
+}
+
+export async function getSimplifiedActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
     const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
 
     if (!nango_config_id) {

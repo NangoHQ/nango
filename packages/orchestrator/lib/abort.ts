@@ -36,6 +36,7 @@ export async function scheduleAbortTask({ scheduler, task, reason }: { scheduler
               }
             : payload,
         groupKey: aborted.value.groupKey,
+        groupMaxConcurrency: aborted.value.groupMaxConcurrency,
         retryMax: 0,
         retryCount: 0,
         createdToStartedTimeoutSecs: 60,

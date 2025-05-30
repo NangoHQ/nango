@@ -1,11 +1,13 @@
-import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
-import type { Result } from '@nangohq/utils';
-import { SIGNATURE_METHOD, Err, Ok } from '@nangohq/utils';
-import FormData from 'form-data';
 
-import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
+import FormData from 'form-data';
+import OAuth from 'oauth-1.0a';
+
+import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+
+import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
+
 import type {
     ApplicationConstructedProxyConfiguration,
     ConnectionForProxy,
@@ -13,6 +15,7 @@ import type {
     InternalProxyConfiguration,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { AxiosRequestConfig } from 'axios';
 
 type ProxyErrorCode =
@@ -24,6 +27,12 @@ type ProxyErrorCode =
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection';
+
+export interface RetryReason {
+    retry: boolean;
+    reason: string;
+    wait?: number;
+}
 
 export class ProxyError extends Error {
     code: ProxyErrorCode;

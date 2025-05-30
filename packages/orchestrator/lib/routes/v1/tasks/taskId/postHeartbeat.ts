@@ -1,8 +1,10 @@
 import { z } from 'zod';
+
+import { validateRequest } from '@nangohq/utils';
+
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
-import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import { validateRequest } from '@nangohq/utils';
+import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const path = '/v1/tasks/:taskId/heartbeat';
 const method = 'POST';
@@ -22,8 +24,8 @@ const validate = validateRequest<PostHeartbeat>({
 });
 
 const handler = (scheduler: Scheduler) => {
-    return async (req: EndpointRequest<PostHeartbeat>, res: EndpointResponse<PostHeartbeat>) => {
-        const { taskId } = req.params;
+    return async (_req: EndpointRequest, res: EndpointResponse<PostHeartbeat>) => {
+        const { taskId } = res.locals.parsedParams;
         const heartbeat = await scheduler.heartbeat({ taskId: taskId });
         if (heartbeat.isErr()) {
             res.status(500).json({ error: { code: 'post_heartbeat_failed', message: heartbeat.error.message } });

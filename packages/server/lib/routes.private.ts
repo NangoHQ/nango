@@ -209,7 +209,7 @@ if (!isCloud && !isEnterprise) {
 
 // -------
 // 404
-web.use('/api/*', (_req, res) => {
+web.use('/api/*splat', (_req, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'endpoint not found' } });
 });
 

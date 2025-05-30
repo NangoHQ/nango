@@ -2,10 +2,12 @@ import { IconArrowLeft, IconX, IconZoom } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { addMinutes } from 'date-fns';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
+import { PeriodSelector } from '../../../../components/PeriodSelector';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import Spinner from '../../../../components/ui/Spinner';
@@ -19,10 +21,18 @@ import { formatQuantity } from '../../../../utils/utils';
 import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
 
+import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
 
 const drawerWidth = '834px';
+
+const fullPeriod: PeriodPreset = {
+    name: 'full',
+    label: 'All logs',
+    shortLabel: 'All',
+    toPeriod: () => null // Null means no period
+};
 
 export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ operationId, isLive }) => {
     const env = useStore((state) => state.env);
@@ -34,6 +44,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
+    const [period, setPeriod] = useState<Period | null>(null);
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
@@ -45,7 +56,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         unknown[],
         { before: string | null } | { after: string | null } | null
     >({
-        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch],
+        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, period],
         queryFn: async ({ pageParam, signal }) => {
             const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
@@ -54,7 +65,8 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     limit: defaultLimit,
                     search: debouncedSearch,
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined,
+                    period: period ? { from: period.from.toISOString(), to: period.to?.toISOString() ?? new Date().toISOString() } : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
@@ -153,6 +165,27 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
 
+    const earliestToLatestPeriod = useMemo(() => {
+        if (period || !flatData.length) {
+            return;
+        }
+
+        const { earliest, latest } = flatData.reduce(
+            (acc, curr) => {
+                return {
+                    earliest: new Date(acc.earliest.createdAt) < new Date(curr.createdAt) ? acc.earliest : curr,
+                    latest: new Date(acc.latest.createdAt) > new Date(curr.createdAt) ? acc.latest : curr
+                };
+            },
+            { earliest: flatData[0], latest: flatData[0] }
+        );
+
+        return {
+            from: new Date(earliest.createdAt),
+            to: addMinutes(new Date(latest.createdAt), 1)
+        };
+    }, [flatData, period]);
+
     return (
         <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -161,7 +194,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
-            <header>
+            <header className="flex gap-2 items-center">
                 <Input
                     before={<IconZoom stroke={1} size={18} />}
                     after={
@@ -180,9 +213,19 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     }
                     value={search}
                     placeholder="Search logs..."
-                    className="border-border-gray-400"
+                    className="flex-grow border-border-gray-400"
                     onChange={(e) => setSearch(e.target.value)}
                 />
+                <div className="border border-transparent">
+                    <PeriodSelector
+                        period={period}
+                        isLive={isLive}
+                        onChange={setPeriod}
+                        presets={[fullPeriod]}
+                        defaultPreset={fullPeriod}
+                        customPeriodExample={earliestToLatestPeriod}
+                    />
+                </div>
             </header>
             <div
                 style={{ height: '100%', overflow: 'auto', position: 'relative' }}

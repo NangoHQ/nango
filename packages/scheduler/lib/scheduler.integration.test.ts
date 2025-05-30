@@ -195,6 +195,7 @@ async function immediate(
             name: props?.taskProps?.name || nanoid(),
             payload: props?.taskProps?.payload || {},
             groupKey: props?.taskProps?.groupKey || nanoid(),
+            groupMaxConcurrency: props?.taskProps?.groupMaxConcurrency || 0,
             retryMax: props?.taskProps?.retryMax || 1,
             retryCount: props?.taskProps?.retryCount || 0,
             createdToStartedTimeoutSecs: props?.taskProps?.createdToStartedTimeoutSecs || 3600,
