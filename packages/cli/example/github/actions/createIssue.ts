@@ -35,5 +35,5 @@ const action = createAction({
     }
 });
 
-export type NangoActionLocal = Parameters<(typeof action)['params']['exec']>[0];
+export type NangoActionLocal = Parameters<(typeof action)['exec']>[0];
 export default action;

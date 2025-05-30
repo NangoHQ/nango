@@ -74,7 +74,7 @@ const sync = createSync({
     }
 });
 
-export type NangoSyncLocal = Parameters<(typeof sync)['params']['exec']>[0];
+export type NangoSyncLocal = Parameters<(typeof sync)['exec']>[0];
 export default sync;
 
 async function getAllRepositories(nango: NangoSyncLocal): Promise<any[]> {
