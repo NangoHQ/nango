@@ -71,10 +71,13 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [],
-            deletedOnEventScripts: []
+            deletedOnEventScripts: [],
+            updatedOnEventScripts: []
         });
         expect(res.res.status).toBe(200);
     });
@@ -112,7 +115,9 @@ describe(`POST ${endpoint}`, () => {
             deletedActions: [],
             deletedSyncs: [],
             newActions: [],
+            updatedActions: [],
             newSyncs: [],
+            updatedSyncs: [],
             deletedModels: [],
             newOnEventScripts: [
                 {
@@ -121,6 +126,7 @@ describe(`POST ${endpoint}`, () => {
                     event: 'post-connection-creation'
                 }
             ],
+            updatedOnEventScripts: [],
             deletedOnEventScripts: [
                 {
                     name: existingOnEvent.name,

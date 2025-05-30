@@ -9,6 +9,7 @@ import ora from 'ora';
 
 import { printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
+import { compileAll } from './compile.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,6 +43,7 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
 
             await fs.promises.mkdir(absolutePath, { recursive: true });
             await copyRecursive(exampleFolderPath, absolutePath);
+            await fs.promises.rename(path.join(absolutePath, '.env.example'), path.join(absolutePath, '.env'));
             spinner.succeed();
         } catch (err) {
             spinner.fail();
@@ -79,8 +81,10 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
 
     // TODO: add compileAll
     {
-        const spinner = ora({ text: 'Initial compilation' }).start();
-        spinner.succeed();
+        const res = await compileAll({ fullPath: absolutePath, debug });
+        if (res.isErr()) {
+            return false;
+        }
     }
 
     return true;

@@ -7916,7 +7916,7 @@ precisefp:
     token_url: https://app.precisefp.com/oauth/token
     authorization_params:
         response_type: code
-        scope: "*"
+        scope: '*'
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -8047,7 +8047,6 @@ quickbooks-sandbox:
             pattern: '^\d{16}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
-
 
 ragieai:
     display_name: Ragie AI
