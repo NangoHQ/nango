@@ -20,7 +20,7 @@ const action = createAction({
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
     input: issueSchema,
-    output: z.any(),
+    output: z.void(),
 
     // Action execution
     exec: async (nango, input) => {

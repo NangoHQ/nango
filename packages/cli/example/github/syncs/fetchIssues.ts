@@ -26,7 +26,7 @@ const sync = createSync({
     syncType: 'full',
     trackDeletes: true,
 
-    metadata: z.object({}),
+    metadata: z.void(),
     models: {
         GithubIssue: issueSchema
     },
