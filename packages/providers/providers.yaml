@@ -2585,6 +2585,27 @@ confluence-basic:
             secret: true
             doc_section: '#step-1-getting-your-api-token'
 
+confluence-data-center:
+    display_name: Confluence Data Center
+    categories:
+        - productivity
+        - ticketing
+    alias: jira-data-center
+    proxy:
+        retry:
+            after: 'retry-after'
+        base_url: https://${connectionConfig.endpointURL}
+    docs: https://docs.nango.dev/integrations/all/confluence-data-center
+    docs_connect: https://docs.nango.dev/integrations/all/confluence-data-center/connect
+    connection_config:
+        endpointURL:
+            type: string
+            title: Domain
+            description: The domain of your Confluence Data Center instance
+            prefix: https://
+            example: confluence.company.com
+            doc_section: '#step-1-finding-your-domain'
+
 contentful:
     display_name: Contentful
     categories:
@@ -3142,6 +3163,27 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+dropbox-sign:
+    display_name: Dropbox Sign
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://app.hellosign.com/oauth/authorize
+    token_url: https://app.hellosign.com/oauth/token
+    authorization_url_skip_empty: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    refresh_url: https://app.hellosign.com/oauth/token?refresh
+    proxy:
+        retry:
+            at: 'x-ratelimit-reset'
+        base_url: https://api.hellosign.com
+    docs: https://docs.nango.dev/integrations/all/dropbox-sign
 
 drupal:
     display_name: Drupal
@@ -7844,6 +7886,7 @@ posthog:
             title: API Key
             description: The API key for your PostHog account
             doc_section: '#step-1-finding-your-posthog-api-key'
+
 prive:
     display_name: Prive
     categories:
@@ -7862,6 +7905,26 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+precisefp:
+    display_name: PreciseFP
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.precisefp.com/oauth/authorize
+    token_url: https://app.precisefp.com/oauth/token
+    authorization_params:
+        response_type: code
+        scope: '*'
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    authorization_method: header
+    proxy:
+        base_url: https://app.precisefp.com
+    docs: https://docs.nango.dev/integrations/all/precisefp
 
 productboard:
     display_name: Productboard
