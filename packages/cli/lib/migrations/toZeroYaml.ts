@@ -59,6 +59,11 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
 
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
+                if (await hasSymlinkInPath(targetFile, fullPath)) {
+                    spinner.warn('Skipping symlink');
+                    continue;
+                }
+
                 const content = await getContent({ targetFile });
                 const transformed = transformSync({ content, sync, models: parsed.models });
                 await fs.promises.writeFile(targetFile, transformed);
@@ -76,6 +81,11 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
 
             const spinner = ora({ text: `Migrating: ${fp}` }).start();
             try {
+                if (await hasSymlinkInPath(targetFile, fullPath)) {
+                    spinner.warn('Skipping symlink');
+                    continue;
+                }
+
                 const content = await getContent({ targetFile });
                 const transformed = transformAction({ content, action, models: parsed.models });
                 await fs.promises.writeFile(targetFile, transformed);
@@ -94,6 +104,11 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
 
                 const spinner = ora({ text: `Migrating: ${fp}` }).start();
                 try {
+                    if (await hasSymlinkInPath(targetFile, fullPath)) {
+                        spinner.warn('Skipping symlink');
+                        continue;
+                    }
+
                     const content = await getContent({ targetFile });
                     const transformed = transformOnEvents({ eventType: onEventScript[0], content, models: parsed.models });
                     await fs.promises.writeFile(targetFile, transformed);
@@ -128,7 +143,6 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     {
         const spinner = ora({ text: 'Deleting nango.yaml' }).start();
         await fs.promises.rm(path.join(fullPath, 'nango.yaml'));
-        // await fs.promises.rm(path.join(fullPath, 'models.ts'));
         spinner.succeed();
     }
 
@@ -1015,14 +1029,11 @@ async function processHelperFiles({ fullPath, parsed }: { fullPath: string; pars
             continue;
         }
 
-        try {
-            await fs.promises.access(absPath, fs.constants.F_OK);
-        } catch {
-            console.error('File does not exist', absPath);
-            continue; // File does not exist
-        }
-
         const spinner = ora({ text: `Migrating ${absPath.replace(fullPath, '')}` }).start();
+        if (await hasSymlinkInPath(absPath, fullPath)) {
+            spinner.warn('Skipping symlink');
+            continue;
+        }
 
         const content = await fs.promises.readFile(absPath, 'utf-8');
         const { root, changed } = processHelperFile({ content });
@@ -1105,4 +1116,31 @@ function isImportSpecifier(s: unknown): s is ImportSpecifier {
         (s as any).imported &&
         (s as any).imported.type === 'Identifier'
     );
+}
+
+// Helper to check if a file or any parent directory is a symlink
+async function hasSymlinkInPath(filePath: string, stopAtPath: string): Promise<boolean> {
+    let current = path.resolve(filePath);
+    while (true) {
+        try {
+            const stat = await fs.promises.lstat(current);
+            if (stat.isSymbolicLink()) {
+                return true;
+            }
+        } catch {
+            // ignore
+        }
+
+        if (current === stopAtPath) {
+            break;
+        }
+
+        const parent = path.dirname(current);
+        if (parent === current) {
+            // reached root
+            break;
+        }
+        current = parent;
+    }
+    return false;
 }
