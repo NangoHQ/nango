@@ -3164,6 +3164,27 @@ dropbox:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
 
+dropbox-sign:
+    display_name: Dropbox Sign
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://app.hellosign.com/oauth/authorize
+    token_url: https://app.hellosign.com/oauth/token
+    authorization_url_skip_empty: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    refresh_url: https://app.hellosign.com/oauth/token?refresh
+    proxy:
+        retry:
+            at: 'x-ratelimit-reset'
+        base_url: https://api.hellosign.com
+    docs: https://docs.nango.dev/integrations/all/dropbox-sign
+
 drupal:
     display_name: Drupal
     categories:
