@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import readline from 'readline';
 
 import { printDebug } from '../utils.js';
 
@@ -48,15 +48,7 @@ export async function generateTests({
                     printDebug(`Auto-confirm enabled. Skipping prompt and overwriting existing config files.`);
                 }
             } else {
-                const { overwrite } = await inquirer.prompt([
-                    {
-                        type: 'confirm',
-                        name: 'overwrite',
-                        message: 'Config files already exist. Do you want to overwrite them?',
-                        default: false
-                    }
-                ]);
-                forceOverwrite = overwrite;
+                forceOverwrite = await askQuestion('Tests config files already exist. Do you want to overwrite them?');
             }
         }
 
@@ -121,6 +113,20 @@ export async function generateTests({
         console.error(chalk.red(`Error generating tests: ${err}`));
         return false;
     }
+}
+
+function askQuestion(query: string): Promise<boolean> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(query + ' (y/N): ', (answer) => {
+            rl.close();
+            resolve(/^y(es)?$/i.test(answer.trim()));
+        });
+    });
 }
 
 async function directoryExists(path: string): Promise<boolean> {
