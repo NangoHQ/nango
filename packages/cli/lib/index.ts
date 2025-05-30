@@ -11,7 +11,6 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
-
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 import { generate, getVersionOutput, tscWatch } from './cli.js';
@@ -29,6 +28,8 @@ import { deploy } from './zeroYaml/deploy.js';
 import { initZero } from './zeroYaml/init.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
+
+import { generateTests } from './services/test.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -438,6 +439,28 @@ program
         }
 
         await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
+    });
+
+program
+    .command('generate:tests')
+    .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .description('Generate tests for integration scripts and config files')
+    .action(async function (this: Command) {
+        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+
+        const ok = await generateTests({
+            absolutePath,
+            integrationId,
+            debug: Boolean(debug),
+            autoConfirm: Boolean(autoConfirm)
+        });
+
+        if (ok) {
+            console.log(chalk.green(`Tests have been generated successfully!`));
+        } else {
+            console.log(chalk.red(`Failed to generate tests`));
+        }
     });
 
 program.parse();
