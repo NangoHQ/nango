@@ -21,8 +21,7 @@ export function getLogsUrl(
             from.setHours(0, 0);
             const to = new Date(val);
             to.setHours(23, 59);
-            usp.set('from', from.toISOString());
-            usp.set('to', to.toISOString());
+            usp.set('period', `${from.getTime()},${to.getTime()}`);
             continue;
         }
         usp.set(key, val as any);
