@@ -389,18 +389,17 @@ program
 
 program
     .command('generate:tests')
-    .argument('[integration-path]', 'Path to the integration directory (default: current directory)')
     .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
-    .option('-d, --debug', 'Enable debug output')
     .description('Generate tests for integration scripts and config files')
     .action(async function (this: Command) {
-        const { debug, integration: integrationId } = this.opts();
+        const { debug, integration: integrationId, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
         const ok = await generateTests({
             absolutePath,
             integrationId,
-            debug: Boolean(debug)
+            debug: Boolean(debug),
+            autoConfirm: Boolean(autoConfirm)
         });
 
         if (ok) {

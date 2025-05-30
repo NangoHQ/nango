@@ -18,11 +18,13 @@ const ACTION_TEMPLATE_PATH = path.resolve(__dirname, '../templates/action-test-t
 export async function generateTests({
     absolutePath,
     integrationId,
-    debug = false
+    debug = false,
+    autoConfirm = false
 }: {
     absolutePath: string;
     integrationId?: string;
     debug?: boolean;
+    autoConfirm?: boolean;
 }): Promise<boolean> {
     try {
         if (debug) {
@@ -40,15 +42,22 @@ export async function generateTests({
         let forceOverwrite = true;
 
         if (viteExists || vitestExists) {
-            const { overwrite } = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'overwrite',
-                    message: 'Config files already exist. Do you want to overwrite them?',
-                    default: false
+            if (autoConfirm) {
+                forceOverwrite = true;
+                if (debug) {
+                    printDebug(`Auto-confirm enabled. Skipping prompt and overwriting existing config files.`);
                 }
-            ]);
-            forceOverwrite = overwrite;
+            } else {
+                const { overwrite } = await inquirer.prompt([
+                    {
+                        type: 'confirm',
+                        name: 'overwrite',
+                        message: 'Config files already exist. Do you want to overwrite them?',
+                        default: false
+                    }
+                ]);
+                forceOverwrite = overwrite;
+            }
         }
 
         await generateTestConfigs({ debug, force: forceOverwrite });
