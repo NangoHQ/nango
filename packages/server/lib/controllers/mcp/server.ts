@@ -4,15 +4,14 @@ import tracer from 'dd-trace';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { Err, Ok, truncateJson } from '@nangohq/utils';
+import { Err, Ok, nangoModelToJsonSchema, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { Config } from '@nangohq/shared';
-import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
+import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, LegacySyncModelSchema, NangoModel, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
-import type { JSONSchema7 } from 'json-schema';
 
 export async function createMcpServerForConnection(
     account: DBTeam,
@@ -58,27 +57,39 @@ async function getActionsForProvider(environment: DBEnvironment, providerConfig:
     return getActionsByProviderConfigKey(environment.id, providerConfig.unique_key);
 }
 
+function isLegacyModelSchema(model_schema: NangoModel | LegacySyncModelSchema): model_schema is LegacySyncModelSchema {
+    return model_schema.fields.some((f) => 'type' in f);
+}
+
 function actionToTool(action: DBSyncConfig): Tool | null {
-    const inputSchema =
-        action.input && action.models_json_schema?.definitions && action.models_json_schema?.definitions?.[action.input]
-            ? (action.models_json_schema.definitions[action.input] as JSONSchema7)
-            : ({ type: 'object' } as JSONSchema7);
+    const inputModelName = action.input;
+    const inputModel = action.model_schema?.find((m) => m.name === inputModelName);
+
+    if (inputModel && isLegacyModelSchema(inputModel)) {
+        // We don't support legacy model schemas for MCP. Redeploying the action should update the model schema.
+        return null;
+    }
+
+    let inputSchema: Tool['inputSchema'] = { type: 'object' };
+
+    if (inputModel) {
+        const inputSchemaResult = nangoModelToJsonSchema(inputModel, action.model_schema as NangoModel[]);
+        if (inputSchemaResult.isErr()) {
+            return null;
+        }
+
+        inputSchema = inputSchemaResult.value as Tool['inputSchema'];
+    }
 
     if (inputSchema.type !== 'object') {
         // Invalid input schema, skip this action
         return null;
     }
 
-    const description = action.metadata.description || action.sync_name;
-
     return {
         name: action.sync_name,
-        inputSchema: {
-            type: 'object',
-            properties: inputSchema.properties,
-            required: inputSchema.required
-        },
-        description
+        inputSchema: inputSchema,
+        description: action.metadata.description || action.sync_name
     };
 }
 
