@@ -22,7 +22,7 @@ import type {
     TBACredentials,
     TableauCredentials,
     TwoStepCredentials
-} from './types.js';
+} from './types';
 import { AuthErrorTypeV2 } from './types.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
@@ -211,7 +211,7 @@ export default class Nango {
                 return;
             };
 
-            const errorHandler: ErrorHandler = (errorType, legacyErrorType, errorDesc) => {
+            const errorHandler: ErrorHandler = (errorDesc, errorType, legacyErrorType) => {
                 reject(new AuthErrorV2(errorDesc, errorType, legacyErrorType));
                 return;
             };
@@ -222,7 +222,7 @@ export default class Nango {
             }
 
             if (!modal || modal.closed || typeof modal.closed == 'undefined') {
-                errorHandler(AuthErrorTypeV2.BlockedByBrowser, 'blocked_by_browser', 'Modal blocked by browser');
+                errorHandler('Modal blocked by browser', AuthErrorTypeV2.BlockedByBrowser, 'blocked_by_browser');
                 return;
             }
 
@@ -230,7 +230,7 @@ export default class Nango {
             try {
                 url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
             } catch {
-                errorHandler(AuthErrorTypeV2.InvalidHostUrl, 'invalidHostUrl', 'Invalid URL provided for the Nango host.');
+                errorHandler('Invalid URL provided for the Nango host.', AuthErrorTypeV2.InvalidHostUrl, 'invalidHostUrl');
                 return;
             }
 

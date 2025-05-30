@@ -1,4 +1,4 @@
-import { WSMessageType } from './types.js';
+import { WSMessageType, AuthErrorTypeV2 } from './types.js';
 
 import type { ErrorHandler } from './types.js';
 
@@ -152,7 +152,7 @@ export class AuthorizationModal {
         this.modal.location = this.baseURL.href;
 
         if (!this.modal || this.modal.closed || typeof this.modal.closed == 'undefined') {
-            this.errorHandler('blocked_by_browser', 'Modal blocked by browser');
+            this.errorHandler('Modal blocked by browser', AuthErrorTypeV2.BlockedByBrowser, 'blocked_by_browser');
             return;
         }
     }
