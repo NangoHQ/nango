@@ -125,6 +125,9 @@ describe('generateModelsTs', () => {
 describe('transformSync', () => {
     it('should transform a sync', () => {
         const ts = `import type { Model, NangoSync } from "../../models";
+/**
+ * This comment should be preserved
+ */
 export default async function fetchData(nango: NangoSync) {
     await nango.log('hello');
     await nango.batchSave<Model>([{
@@ -132,6 +135,10 @@ export default async function fetchData(nango: NangoSync) {
     }], 'Model');
 
 }
+
+/**
+ * This comment should also be preserved
+ */
 export async function onWebhookPayloadReceived(
   nango: NangoSync,
   payload: any,
@@ -144,6 +151,9 @@ export async function onWebhookPayloadReceived(
   };
 }
 
+/**
+ * This comment should also be preserved 2
+ */
 function foobar(nango: NangoSync) {
    nango.batchSave<Model>([{}], 'Model');
 
@@ -180,6 +190,7 @@ function foobar(nango: NangoSync) {
 interface Config extends ProxyConfiguration {
   params: Record<string, string | number>;
 }
+
 export default async function fetchData(nango: NangoSync) {
     await nango.log('hello');
     await nango.batchSave<Model>([{
@@ -214,6 +225,9 @@ describe('transformAction', () => {
     it('should transform an action', () => {
         const ts = `import type { NangoAction, IssueOutput, IssueInput } from "../../models";
 
+/**
+ * This comment should be preserved
+ */
 export default async function runAction(nango: NangoAction, input: IssueInput): Promise<IssueOutput> {
   await nango.log("✅ hello from action");
   const output: IssueOutput = {
@@ -249,6 +263,9 @@ describe('transformOnEvents', () => {
     it('should transform an on-event script', () => {
         const ts = `import type { NangoSync } from "../../models";
 
+/**
+ * This comment should be preserved
+ */
 export default async function onEvent(nango: NangoSync): Promise<void> {
   await nango.log("test pre script");
 }`;

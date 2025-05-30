@@ -82,6 +82,9 @@ exports[`transformAction > should transform an action 1`] = `
 "import { createAction } from "nango";
 import { IssueOutput, IssueInput } from "../../models.js";
 
+/**
+ * This comment should be preserved
+ */
 const action = createAction({
   description: "Test action",
   version: "1.0.0",
@@ -117,13 +120,16 @@ function foobar(nango: NangoActionLocal) {
 exports[`transformOnEvents > should transform an on-event script 1`] = `
 "import { createOnEvent } from "nango";
 
+/**
+ * This comment should be preserved
+ */
 export default createOnEvent({
-  event: "pre-connection-deletion",
-  description: "pre-connection-deletion event handler",
+ event: "pre-connection-deletion",
+ description: "pre-connection-deletion event handler",
 
-  exec: async nango => {
-    await nango.log("test pre script");
-  }
+ exec: async nango => {
+   await nango.log("test pre script");
+ }
 });"
 `;
 
@@ -174,6 +180,9 @@ exports[`transformSync > should transform a sync 1`] = `
 import type { ProxyConfiguration } from "nango";
 import { Model, ModelDynamic, Metadata, ActionErrorResponse } from "../../models.js";
 
+/**
+ * This comment should be preserved
+ */
 const sync = createSync({
   description: "Test sync",
   version: "1.2.3",
@@ -219,6 +228,9 @@ const sync = createSync({
 export type NangoSyncLocal = Parameters<typeof sync["exec"]>[0];
 export default sync;
 
+/**
+ * This comment should also be preserved 2
+ */
 function foobar(nango: NangoSyncLocal) {
    nango.batchSave([{}], 'Model');
 

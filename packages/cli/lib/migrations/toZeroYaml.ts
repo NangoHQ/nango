@@ -237,6 +237,9 @@ export function transformSync({ content, sync, models }: { content: string; sync
             return;
         }
 
+        // Preserve leading comments
+        const leadingComments = (func as any).leadingComments || (path.node as any).leadingComments;
+
         const execProp = buildExecProp(j, func);
 
         // Creats default props
@@ -321,6 +324,9 @@ export function transformSync({ content, sync, models }: { content: string; sync
 
         const obj = j.objectExpression(props);
         const syncVar = j.variableDeclaration('const', [j.variableDeclarator(j.identifier('sync'), j.callExpression(j.identifier('createSync'), [obj]))]);
+        if (leadingComments) {
+            syncVar.comments = leadingComments;
+        }
         const nangoType = createNangoLocalType({ j, name: 'NangoSyncLocal', variable: 'sync' });
         const exportDefault = j.exportDefaultDeclaration(j.identifier('sync'));
         path.replace(syncVar, nangoType, exportDefault);
@@ -364,6 +370,9 @@ export function transformAction({ content, action, models }: { content: string; 
         if (func.type !== 'FunctionDeclaration') {
             return;
         }
+
+        // Preserve leading comments
+        const leadingComments = (func as any).leadingComments || (path.node as any).leadingComments;
 
         // Determine output type for exec return type
         let outputType: string | undefined = undefined;
@@ -421,6 +430,9 @@ export function transformAction({ content, action, models }: { content: string; 
         props.push(execProp);
         const obj = j.objectExpression(props);
         const actionVar = j.variableDeclaration('const', [j.variableDeclarator(j.identifier('action'), j.callExpression(j.identifier('createAction'), [obj]))]);
+        if (leadingComments) {
+            actionVar.comments = leadingComments;
+        }
         const nangoType = createNangoLocalType({ j, name: 'NangoActionLocal', variable: 'action' });
         const exportDefault = j.exportDefaultDeclaration(j.identifier('action'));
         path.replace(actionVar, nangoType, exportDefault);
@@ -464,6 +476,9 @@ export function transformOnEvents({ content, eventType, models }: { content: str
             return;
         }
 
+        // Preserve leading comments
+        const leadingComments = (func as any).leadingComments || (path.node as any).leadingComments;
+
         const execProp = buildExecProp(j, func);
 
         // Build createOnEvent object
@@ -472,7 +487,11 @@ export function transformOnEvents({ content, eventType, models }: { content: str
 
         const props = [eventProp, descriptionProp, execProp];
         const obj = j.objectExpression(props);
-        path.replace(j.exportDefaultDeclaration(j.callExpression(j.identifier('createOnEvent'), [obj])));
+        const exportDefault = j.exportDefaultDeclaration(j.callExpression(j.identifier('createOnEvent'), [obj]));
+        if (leadingComments) {
+            exportDefault.comments = leadingComments;
+        }
+        path.replace(exportDefault);
     });
 
     // Find all used Types in the file that might be available in "nango"
