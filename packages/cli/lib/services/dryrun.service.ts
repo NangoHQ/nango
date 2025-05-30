@@ -24,6 +24,7 @@ import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 
 import type { GlobalOptions } from '../types.js';
+import type { NangoActionBase } from '@nangohq/runner-sdk';
 import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
@@ -614,7 +615,8 @@ export class DryRunService {
                 };
 
                 const context = vm.createContext(sandbox);
-                const scriptExports: any = scriptObj.runInContext(context);
+                const scriptExports: { default?: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse } =
+                    scriptObj.runInContext(context);
 
                 if (!scriptExports.default) {
                     const content = `There is no default export that is a function for ${syncName}`;
@@ -648,12 +650,12 @@ export class DryRunService {
                     }
 
                     let output: unknown;
-                    if (this.isZeroYaml) {
-                        const payload = scriptExports.default as unknown as nangoScript.CreateActionResponse<any, any>;
+                    if (typeof scriptExports.default !== 'function') {
+                        const payload = scriptExports.default;
                         if (payload.type !== 'action') {
                             throw new Error('Incorrect script loaded for action');
                         }
-                        output = await payload.exec(nango as any, input);
+                        output = await payload.exec(nango, input);
                     } else {
                         output = await scriptExports.default(nango, input);
                     }
@@ -682,7 +684,7 @@ export class DryRunService {
                 }
 
                 // Sync
-                if (this.isZeroYaml) {
+                if (typeof scriptExports.default !== 'function') {
                     const payload = scriptExports.default as unknown as nangoScript.CreateSyncResponse<any, any>;
                     if (payload.type !== 'sync') {
                         throw new Error('Incorrect script loaded for sync');
