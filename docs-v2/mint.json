@@ -716,6 +716,7 @@
                 "integrations/all/vercel",
                 "integrations/all/vimeo",
                 "integrations/all/vimeo-basic",
+                "integrations/all/precisefp",
                 "integrations/all/wakatime",
                 "integrations/all/wave-accounting",
                 "integrations/all/wealthbox",

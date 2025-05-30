@@ -25,6 +25,7 @@ import { directoryMigration, endpointMigration, v1toV2Migration } from './servic
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { compileAll } from './zeroYaml/compile.js';
+import { deploy } from './zeroYaml/deploy.js';
 import { initZero } from './zeroYaml/init.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -113,6 +114,7 @@ program
             const res = await initZero({ absolutePath, debug });
             if (!res) {
                 process.exitCode = 1;
+                return;
             }
 
             console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
@@ -122,6 +124,7 @@ program
         const ok = init({ absolutePath, debug });
         if (!ok) {
             process.exitCode = 1;
+            return;
         }
         console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
         return;
@@ -234,8 +237,20 @@ program
         const options = this.opts<DeployOptions>();
         const { debug } = options;
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (precheck.isZeroYaml) {
+            const resCompile = await compileAll({ fullPath, debug });
+            if (resCompile.isErr()) {
+                process.exitCode = 1;
+                return;
+            }
+
+            const res = await deploy({ fullPath, options, environmentName: environment });
+            if (res.isErr()) {
+                process.exitCode = 1;
+                return;
+            }
             return;
         }
 
