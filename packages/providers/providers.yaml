@@ -7886,6 +7886,7 @@ posthog:
             title: API Key
             description: The API key for your PostHog account
             doc_section: '#step-1-finding-your-posthog-api-key'
+
 prive:
     display_name: Prive
     categories:
@@ -7904,6 +7905,26 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+precisefp:
+    display_name: PreciseFP
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.precisefp.com/oauth/authorize
+    token_url: https://app.precisefp.com/oauth/token
+    authorization_params:
+        response_type: code
+        scope: "*"
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    authorization_method: header
+    proxy:
+        base_url: https://app.precisefp.com
+    docs: https://docs.nango.dev/integrations/all/precisefp
 
 productboard:
     display_name: Productboard
@@ -8026,6 +8047,7 @@ quickbooks-sandbox:
             pattern: '^\d{16}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
+
 
 ragieai:
     display_name: Ragie AI
