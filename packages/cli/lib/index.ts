@@ -174,14 +174,24 @@ program
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango || precheck.hasNangoYaml) {
+            await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            if (!success) {
+                console.log(chalk.red('Failed to compile. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+        } else {
+            const res = await compileAll({ fullPath, debug });
+            if (res.isErr()) {
+                process.exitCode = 1;
+                return;
+            }
         }
 
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-
-        const dryRun = new DryRunService({ fullPath, validation });
+        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: precheck.isZeroYaml });
         await dryRun.run(
             {
                 ...this.opts(),
