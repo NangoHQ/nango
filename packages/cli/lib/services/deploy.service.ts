@@ -586,7 +586,7 @@ class DeployService {
                     const body: CLIDeployFlowConfig = {
                         syncName: action.name,
                         providerConfigKey,
-                        models: action.output || [],
+                        models: [...(action.output || []), action.input].filter(Boolean) as string[],
                         version: version || action.version,
                         runs: null,
                         metadata: metadata,
