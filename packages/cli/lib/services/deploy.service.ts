@@ -583,10 +583,20 @@ class DeployService {
                         printDebug(`Scripts files found for "${action.name}"`);
                     }
 
+                    const models = new Set<string>();
+                    if (action.output) {
+                        for (const model of action.output) {
+                            models.add(model);
+                        }
+                    }
+                    if (action.input) {
+                        models.add(action.input);
+                    }
+
                     const body: CLIDeployFlowConfig = {
                         syncName: action.name,
                         providerConfigKey,
-                        models: [...(action.output || []), action.input].filter(Boolean) as string[],
+                        models: Array.from(models),
                         version: version || action.version,
                         runs: null,
                         metadata: metadata,
