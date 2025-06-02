@@ -5,6 +5,7 @@ import multer from 'multer';
 
 import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
+import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -37,6 +38,7 @@ import { postPublicIntegration } from './controllers/integrations/postIntegratio
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
+import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
@@ -53,6 +55,7 @@ import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -61,7 +64,6 @@ import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
-import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -165,8 +167,8 @@ publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
-publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
-publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
+publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
+publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
 // @deprecated
 publicAPI.use('/config', jsonContentTypeMiddleware);
@@ -218,6 +220,10 @@ publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(s
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
+publicAPI.use('/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/mcp').post(apiAuth, postMcp);
+publicAPI.route('/mcp').get(apiAuth, getMcp);
+
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 // @deprecated use /scripts/configs
@@ -238,6 +244,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
-publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));

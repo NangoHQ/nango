@@ -1,13 +1,17 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { NangoSyncCLI } from './sdk.js';
+
+import type { DryRunService } from './dryrun.service.js';
 
 describe('NangoSyncCLI - batchSave', () => {
     let instance: NangoSyncCLI;
 
     beforeEach(() => {
-        const mockDryRunService = {
+        const mockDryRunService: DryRunService = {
             run: vi.fn(),
             fullPath: '',
+            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };

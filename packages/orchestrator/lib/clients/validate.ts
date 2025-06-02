@@ -49,6 +49,7 @@ export const actionArgsSchema = z.object({
     actionName: z.string().min(1),
     activityLogId: z.string(),
     input: jsonSchema,
+    async: z.boolean().optional().default(false),
     ...commonSchemaArgsFields
 });
 export const webhookArgsSchema = z.object({
@@ -72,7 +73,9 @@ const commonSchemaFields = {
     id: z.string().uuid(),
     name: z.string().min(1),
     groupKey: z.string().min(1),
+    groupMaxConcurrency: z.number().int().min(0).default(0),
     state: z.enum(taskStates),
+    retryKey: z.string().min(1).nullable(),
     retryCount: z.number().int(),
     retryMax: z.number().int(),
     ownerKey: z.string().min(1).nullable()
@@ -117,6 +120,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
+                groupMaxConcurrency: sync.data.groupMaxConcurrency,
+                retryKey: sync.data.retryKey,
                 ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug
             })
@@ -137,7 +142,9 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncVariant: syncAbort.data.payload.syncVariant,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
+                groupMaxConcurrency: syncAbort.data.groupMaxConcurrency,
                 ownerKey: syncAbort.data.ownerKey,
+                retryKey: syncAbort.data.retryKey,
                 reason: syncAbort.data.payload.reason,
                 debug: syncAbort.data.payload.debug
             })
@@ -156,8 +163,11 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 connection: action.data.payload.connection,
                 activityLogId: action.data.payload.activityLogId,
                 groupKey: action.data.groupKey,
+                groupMaxConcurrency: action.data.groupMaxConcurrency,
                 ownerKey: action.data.ownerKey,
-                input: action.data.payload.input
+                retryKey: action.data.retryKey,
+                input: action.data.payload.input,
+                async: action.data.payload.async
             })
         );
     }
@@ -175,7 +185,9 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 connection: webhook.data.payload.connection,
                 activityLogId: webhook.data.payload.activityLogId,
                 groupKey: webhook.data.groupKey,
+                groupMaxConcurrency: webhook.data.groupMaxConcurrency,
                 ownerKey: webhook.data.ownerKey,
+                retryKey: webhook.data.retryKey,
                 input: webhook.data.payload.input
             })
         );
@@ -193,7 +205,9 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 version: onEvent.data.payload.version,
                 connection: onEvent.data.payload.connection,
                 groupKey: onEvent.data.groupKey,
+                groupMaxConcurrency: onEvent.data.groupMaxConcurrency,
                 ownerKey: onEvent.data.ownerKey,
+                retryKey: onEvent.data.retryKey,
                 fileLocation: onEvent.data.payload.fileLocation,
                 activityLogId: onEvent.data.payload.activityLogId
             })
@@ -211,7 +225,9 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attemptMax: abort.data.retryMax + 1,
                 connection: abort.data.payload.connection,
                 groupKey: abort.data.groupKey,
+                groupMaxConcurrency: abort.data.groupMaxConcurrency,
                 ownerKey: abort.data.ownerKey,
+                retryKey: abort.data.retryKey,
                 reason: abort.data.payload.reason
             })
         );

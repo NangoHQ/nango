@@ -88,7 +88,8 @@ export class NangoActionCLI extends NangoActionBase {
             ...syncArgs,
             connectionId,
             autoConfirm: true,
-            debug: false
+            debug: false,
+            zero: this.dryRunService.isZeroYaml
         });
     }
 

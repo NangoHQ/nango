@@ -1,0 +1,60 @@
+---
+title: PreciseFP
+sidebarTitle: PreciseFP
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/precisefp/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/precisefp/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | You need API credentials (Client ID and Client Secret) |
+| Paid test account | ✅ | No separate test account needed |
+| Partnership | ✅ | Partnership is required, and an integration plan must be presented |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+
+
+## Setup guide
+
+### 1. Create a PreciseFP account
+
+1. Go to [PreciseFP](https://app.precisefp.com/) and sign up for an account.
+2. Go to [Docupace Developer Portal](https://www.docupace.com/developer-resources/) and signup for access to the API documentation.
+3. Contact PreciseFP support at support@precisefp.com to request a partnership meeting.
+4. Once the partnership and integration plan is approved, you will be provided with API credentials (Client ID and Client Secret)
+
+
+
+### 2. Configure OAuth in Nango
+
+1. In the [Nango UI](https://app.nango.dev/integrations), create a new integration with PreciseFP
+2. Enter your Client ID and Client Secret
+3. Set the redirect URL to `https://api.nango.dev/oauth/callback`
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/precisefp.mdx)</Note>
+
+
+## Useful links
+
+-   [PreciseFP API docs](https://www.docupace.com/developer-resources/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/precisefp.mdx)</Note>
+
+## API gotchas
+-   To implement OAuth for your application, you must be issued API credentials first. Please reach out to PreciseFP support at support@precisefp.com to get your API credentials (Client ID and Client Secret).
+-   Once you have your API credentials (Client ID and Client Secret), you are ready to start implementing the OAuth Authorization.
+-   The scope of access should always be "*" as required by PreciseFP's API. This is the only scope value accepted by their authorization server. PreciseFP manages access control on their server side based on the user's permissions.
+-   The API has a rate limit of 60 requests per minute. Exceeding this limit will result in HTTP 429 responses.
+-   The API uses standard HTTP status codes to indicate success and error responses.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/precisefp.mdx)</Note>

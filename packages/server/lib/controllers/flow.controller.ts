@@ -1,19 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { FlowDownloadBody } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
 import {
-    flowService,
-    errorManager,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
-    syncManager,
-    remoteFileService,
     environmentService,
+    errorManager,
+    flowService,
+    getSyncConfigById,
     getSyncConfigsAsStandardConfig,
-    getSyncConfigById
+    remoteFileService,
+    syncManager
 } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
+
 import { getOrchestrator } from '../utils/utils.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { FlowDownloadBody } from '@nangohq/shared';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -29,7 +31,7 @@ class FlowController {
         }
     }
 
-    public async adminDeployPrivateFlow(req: Request, res: Response<any, never>, next: NextFunction) {
+    public async adminDeployPrivateFlow(req: Request, res: Response<any, any>, next: NextFunction) {
         try {
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 
@@ -91,7 +93,7 @@ class FlowController {
             }
 
             if (!id && is_public) {
-                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, body.public_route as string, flowType);
+                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, provider, flowType);
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
