@@ -540,7 +540,7 @@ class DeployService {
                     const body: CLIDeployFlowConfig = {
                         syncName: sync.name,
                         providerConfigKey,
-                        models: sync.output || [],
+                        models: sync.usedModels,
                         version: version || sync.version,
                         runs: sync.runs,
                         track_deletes: sync.track_deletes,
@@ -583,20 +583,10 @@ class DeployService {
                         printDebug(`Scripts files found for "${action.name}"`);
                     }
 
-                    const models = new Set<string>();
-                    if (action.output) {
-                        for (const model of action.output) {
-                            models.add(model);
-                        }
-                    }
-                    if (action.input) {
-                        models.add(action.input);
-                    }
-
                     const body: CLIDeployFlowConfig = {
                         syncName: action.name,
                         providerConfigKey,
-                        models: Array.from(models),
+                        models: action.usedModels,
                         version: version || action.version,
                         runs: null,
                         metadata: metadata,
