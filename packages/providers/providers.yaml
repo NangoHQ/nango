@@ -10389,6 +10389,69 @@ ukg-pro-wfm:
             example: wfm
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
+ukg-pro:
+    display_name: UKG Pro
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.terraform.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/user-details
+    docs: https://docs.nango.dev/integrations/all/ukg-pro
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Pro instance
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+
+ukg-ready:
+    display_name: UKG Ready
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://welcome-us.ukg.net/authorize
+    token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        audience: https://wfm.ukg.net/api
+        realm: ${connectionConfig.tenantName}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://docs.nango.dev/integrations/all/ukg-ready
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Ready instance
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The tenant name of your UKG Ready instance
+            example: wfm
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+
 unanet:
     display_name: Unanet
     categories:
