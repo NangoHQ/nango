@@ -50,10 +50,6 @@ a docker container with local storage using Docker registries. This is a no-go f
 Connect Nango to an external Postgres DB that lives outside the docker setup to
 mitigate this.
 
-<Note>
-    Nango does not currently support accessing an external Postgres DB through a database pooler.
-</Note>
-
 
 To do so, modify the default values of the following server env variables (in
 the `.env` file):
@@ -71,6 +67,12 @@ or using a database URL string:
 NANGO_DATABASE_URL=postgresql://user:password@host:port/dbname
 ```
 Special characters in the NANGO_DATABASE_URL should be URL encoded.
+
+<Note>
+    For external databases using poolers, Nango does not play well with `pool_mode=transaction`
+     which some providers (e.g. Neon and DigitalOcean) use in their poolers. Use a direct connection or change the pooler mode.
+</Note>
+
 
 Records saved by syncs can be persisted in a dedicated database. If you opt in for this setup, set the `RECORDS_DATABASE_URL` env var. Ex:
 ```sh
@@ -128,7 +130,7 @@ encryption key once you have set it.
 The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow.
 If you want more isolation between websockets and the dashboard (also served from `/`), then you can set the `NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
 
-```
+```sh
 NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
 ```
 
