@@ -6,7 +6,7 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 /**
  * Creates a new JSON schema with only the definitions for the given models.
  */
-export function pickRelevantJsonSchemaDefinitions(jsonSchema: JSONSchema7, models: string[]): Result<JSONSchema7> {
+export function filterJsonSchemaForModels(jsonSchema: JSONSchema7, models: string[]): Result<JSONSchema7> {
     if (!jsonSchema.definitions || Object.keys(jsonSchema.definitions).length === 0) {
         return Ok({});
     }

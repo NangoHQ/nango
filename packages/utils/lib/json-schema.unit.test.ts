@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { getDefinition, getDefinitionsRecursively, pickRelevantJsonSchemaDefinitions } from './json-schema.js';
+import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively } from './json-schema.js';
 
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
-describe('pickRelevantJsonSchemaDefinitions', () => {
+describe('filterJsonSchemaForModels', () => {
     it('should return empty schema when no definitions exist', () => {
         const jsonSchema: JSONSchema7 = {};
         const models = ['User', 'Profile'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -37,7 +37,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -78,7 +78,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User', 'Profile'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -123,7 +123,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -159,7 +159,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -196,7 +196,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -241,7 +241,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User', 'Profile', 'Address'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -280,7 +280,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User', 'Profile'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -315,7 +315,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['UserList', 'User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -339,7 +339,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User', 'NonExistentModel'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -361,7 +361,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models = ['User'];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -382,7 +382,7 @@ describe('pickRelevantJsonSchemaDefinitions', () => {
         };
         const models: string[] = [];
 
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+        const result = filterJsonSchemaForModels(jsonSchema, models);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {

@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Ok, env, pickRelevantJsonSchemaDefinitions } from '@nangohq/utils';
+import { Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
 
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -490,7 +490,7 @@ export async function deployPreBuilt({
             if (jsonSchemaString) {
                 const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
                 const allModels = [...models, config.input].filter(Boolean) as string[];
-                const result = pickRelevantJsonSchemaDefinitions(jsonSchema, allModels);
+                const result = filterJsonSchemaForModels(jsonSchema, allModels);
                 if (result.isErr()) {
                     return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
                 }
@@ -735,7 +735,7 @@ async function compileDeployInfo({
     let models_json_schema: JSONSchema7 | null = null;
     if (jsonSchema) {
         const allModels = [...models, flow.input].filter(Boolean) as string[];
-        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, allModels);
+        const result = filterJsonSchemaForModels(jsonSchema, allModels);
         if (result.isErr()) {
             return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }
