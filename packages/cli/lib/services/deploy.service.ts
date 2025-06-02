@@ -540,7 +540,7 @@ class DeployService {
                     const body: CLIDeployFlowConfig = {
                         syncName: sync.name,
                         providerConfigKey,
-                        models: sync.usedModels,
+                        models: sync.output || [],
                         version: version || sync.version,
                         runs: sync.runs,
                         track_deletes: sync.track_deletes,
@@ -586,7 +586,7 @@ class DeployService {
                     const body: CLIDeployFlowConfig = {
                         syncName: action.name,
                         providerConfigKey,
-                        models: action.usedModels,
+                        models: action.output || [],
                         version: version || action.version,
                         runs: null,
                         metadata: metadata,

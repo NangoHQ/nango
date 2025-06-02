@@ -1,8 +1,395 @@
 import { describe, expect, it } from 'vitest';
 
-import { getDefinition, getDefinitionsRecursively } from './json-schema.js';
+import { getDefinition, getDefinitionsRecursively, pickRelevantJsonSchemaDefinitions } from './json-schema.js';
 
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+
+describe('pickRelevantJsonSchemaDefinitions', () => {
+    it('should return empty schema when no definitions exist', () => {
+        const jsonSchema: JSONSchema7 = {};
+        const models = ['User', 'Profile'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toEqual({});
+        }
+    });
+
+    it('should return simple case with single model', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {})).toEqual(['User']);
+            expect(result.value.definitions?.['User']).toEqual({
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' }
+                }
+            });
+        }
+    });
+
+    it('should return multiple models without references', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' }
+                    }
+                },
+                Address: {
+                    type: 'object',
+                    properties: {
+                        street: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User', 'Profile'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['Profile', 'User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeDefined();
+            expect(result.value.definitions?.['Address']).toBeUndefined();
+        }
+    });
+
+    it('should handle recursion and include referenced models', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        profile: { $ref: '#/definitions/Profile' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' },
+                        address: { $ref: '#/definitions/Address' }
+                    }
+                },
+                Address: {
+                    type: 'object',
+                    properties: {
+                        street: { type: 'string' },
+                        city: { type: 'string' }
+                    }
+                },
+                UnrelatedModel: {
+                    type: 'object',
+                    properties: {
+                        data: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['Address', 'Profile', 'User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeDefined();
+            expect(result.value.definitions?.['Address']).toBeDefined();
+            expect(result.value.definitions?.['UnrelatedModel']).toBeUndefined();
+        }
+    });
+
+    it('should handle circular references without infinite loop', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        friends: {
+                            type: 'array',
+                            items: { $ref: '#/definitions/User' }
+                        }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' },
+                        user: { $ref: '#/definitions/User' }
+                    }
+                }
+            }
+        };
+        const models = ['User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {})).toEqual(['User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeUndefined();
+        }
+    });
+
+    it('should handle complex circular references', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        profile: { $ref: '#/definitions/Profile' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' },
+                        user: { $ref: '#/definitions/User' }
+                    }
+                },
+                UnrelatedModel: {
+                    type: 'object',
+                    properties: {
+                        data: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['Profile', 'User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeDefined();
+            expect(result.value.definitions?.['UnrelatedModel']).toBeUndefined();
+        }
+    });
+
+    it('should handle case where referenced model is also in the list of names', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        profile: { $ref: '#/definitions/Profile' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' },
+                        address: { $ref: '#/definitions/Address' }
+                    }
+                },
+                Address: {
+                    type: 'object',
+                    properties: {
+                        street: { type: 'string' },
+                        city: { type: 'string' }
+                    }
+                },
+                UnrelatedModel: {
+                    type: 'object',
+                    properties: {
+                        data: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User', 'Profile', 'Address'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['Address', 'Profile', 'User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeDefined();
+            expect(result.value.definitions?.['Address']).toBeDefined();
+            expect(result.value.definitions?.['UnrelatedModel']).toBeUndefined();
+        }
+    });
+
+    it('should handle case where referenced model is in list but root model has no references', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' },
+                        user: { $ref: '#/definitions/User' }
+                    }
+                },
+                Address: {
+                    type: 'object',
+                    properties: {
+                        street: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User', 'Profile'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['Profile', 'User']);
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeDefined();
+            expect(result.value.definitions?.['Address']).toBeUndefined();
+        }
+    });
+
+    it('should handle array items with references where referenced model is also in list', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                UserList: {
+                    type: 'array',
+                    items: { $ref: '#/definitions/User' }
+                },
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' }
+                    }
+                },
+                Profile: {
+                    type: 'object',
+                    properties: {
+                        bio: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['UserList', 'User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Object.keys(result.value.definitions || {}).sort()).toEqual(['User', 'UserList']);
+            expect(result.value.definitions?.['UserList']).toBeDefined();
+            expect(result.value.definitions?.['User']).toBeDefined();
+            expect(result.value.definitions?.['Profile']).toBeUndefined();
+        }
+    });
+
+    it('should return error when a requested model does not exist', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models = ['User', 'NonExistentModel'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toBe('json_schema doesn\'t contain model "NonExistentModel"');
+        }
+    });
+
+    it('should return error when a referenced model does not exist', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        profile: { $ref: '#/definitions/NonExistentProfile' }
+                    }
+                }
+            }
+        };
+        const models = ['User'];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toBe('json_schema doesn\'t contain model "NonExistentProfile"');
+        }
+    });
+
+    it('should handle empty models array', () => {
+        const jsonSchema: JSONSchema7 = {
+            definitions: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' }
+                    }
+                }
+            }
+        };
+        const models: string[] = [];
+
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, models);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toEqual({ definitions: {} });
+        }
+    });
+});
 
 describe('getDefinition', () => {
     it('should return the definition when it exists', () => {

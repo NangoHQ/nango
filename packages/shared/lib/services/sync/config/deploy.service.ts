@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Err, Ok, env, getDefinition } from '@nangohq/utils';
+import { Ok, env, pickRelevantJsonSchemaDefinitions } from '@nangohq/utils';
 
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -35,7 +35,7 @@ import type {
     SyncTypeLiteral
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import type { Merge } from 'type-fest';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -489,8 +489,8 @@ export async function deployPreBuilt({
 
             if (jsonSchemaString) {
                 const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
-
-                const result = getJsonSchemaForModels(models, jsonSchema);
+                const allModels = [...models, config.input].filter(Boolean) as string[];
+                const result = pickRelevantJsonSchemaDefinitions(jsonSchema, allModels);
                 if (result.isErr()) {
                     return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
                 }
@@ -733,9 +733,9 @@ async function compileDeployInfo({
     });
 
     let models_json_schema: JSONSchema7 | null = null;
-
     if (jsonSchema) {
-        const result = getJsonSchemaForModels(models, jsonSchema);
+        const allModels = [...models, flow.input].filter(Boolean) as string[];
+        const result = pickRelevantJsonSchemaDefinitions(jsonSchema, allModels);
         if (result.isErr()) {
             return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }
@@ -821,25 +821,4 @@ function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints
     }
 
     return endpoints;
-}
-
-/**
- * Returns a JSON schema with only the definitions for the given models.
- */
-function getJsonSchemaForModels(models: string[], jsonSchema: JSONSchema7): Result<JSONSchema7 | null> {
-    if (models.length === 0) {
-        return Ok(null);
-    }
-
-    const definitions: Record<string, JSONSchema7Definition> = {};
-
-    for (const model of models) {
-        const result = getDefinition(model, jsonSchema);
-        if (result.isErr()) {
-            return Err(result.error);
-        }
-        definitions[model] = result.value;
-    }
-
-    return Ok(definitions);
 }
