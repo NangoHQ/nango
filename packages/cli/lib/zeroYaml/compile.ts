@@ -4,7 +4,6 @@ import path from 'node:path';
 import * as babel from '@babel/core';
 import chalk from 'chalk';
 import { build } from 'esbuild';
-import { glob } from 'glob';
 import ora from 'ora';
 import ts from 'typescript';
 
@@ -16,9 +15,9 @@ import { buildDefinitions } from './definitions.js';
 import type { Result } from '@nangohq/types';
 
 const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
-const exportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"];/g;
+const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
 
-const tsconfig: ts.CompilerOptions = {
+export const tsconfig: ts.CompilerOptions = {
     module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ESNext,
     strict: true,
@@ -42,6 +41,24 @@ const tsconfig: ts.CompilerOptions = {
     checkJs: false,
     noEmit: true
 };
+export const tsconfigString: Record<string, any> = {
+    ...tsconfig,
+    module: 'commonjs',
+    target: 'esnext',
+    importsNotUsedAsValues: 'remove',
+    jsx: 'react',
+    moduleResolution: 'node16'
+};
+
+class CompileError extends Error {
+    type: string;
+    msg: string;
+    constructor(type: string, msg: string) {
+        super(msg);
+        this.type = type;
+        this.msg = msg;
+    }
+}
 
 /**
  * This function is used to compile the code in the integration.
@@ -99,10 +116,6 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             }
         }
 
-        spinner.text = `${text} - Post compilation`;
-        printDebug('Post compilation', debug);
-        await postCompile({ fullPath });
-        spinner.text = text;
         spinner.succeed();
 
         // Build and export the definitions
@@ -131,7 +144,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 /**
  * Reads the content of index.ts in the given fullPath.
  */
-async function readIndexContent(fullPath: string): Promise<Result<string>> {
+export async function readIndexContent(fullPath: string): Promise<Result<string>> {
     const indexTsPath = path.join(fullPath, 'index.ts');
     try {
         const indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
@@ -145,14 +158,15 @@ async function readIndexContent(fullPath: string): Promise<Result<string>> {
 /**
  * Extracts the entry points from the index.ts content.
  */
-function getEntryPoints(indexContent: string): string[] {
+export function getEntryPoints(indexContent: string): string[] {
     const entryPoints: string[] = [];
     let match;
-    while ((match = exportRegex.exec(indexContent)) !== null) {
-        if (!match[1]) {
+    while ((match = importRegex.exec(indexContent)) !== null) {
+        const fp = match.groups?.['path'];
+        if (!fp) {
             continue;
         }
-        entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
+        entryPoints.push(fp.endsWith('.js') ? fp : `${fp}.js`);
     }
     return entryPoints;
 }
@@ -235,12 +249,7 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
                 }
             ],
             tsconfigRaw: {
-                compilerOptions: {
-                    ...tsconfig,
-                    importsNotUsedAsValues: 'remove',
-                    jsx: 'react',
-                    target: 'esnext'
-                }
+                compilerOptions: tsconfigString
             }
         });
         if (res.errors.length > 0) {
@@ -250,11 +259,10 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
-        if (err instanceof Error && err.message.includes('export')) {
-            return Err('export');
+        if (err instanceof Error && err.message.includes('nango_export')) {
+            return Err(new CompileError('export', err.message));
         }
-        console.error(chalk.red(err));
-        return Err('failed_to_build_unknown');
+        return Err(new CompileError('failed_to_build_unknown', err instanceof Error ? err.message : 'unknown_error'));
     }
 }
 
@@ -282,26 +290,6 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
         return Err('failed_to_write_output');
     }
     return Ok(true);
-}
-
-/**
- * We need to replace the .js extension with .cjs in the imports.
- * This is because the code is compiled to .cjs and the imports are not automatically converted.
- */
-async function postCompile({ fullPath }: { fullPath: string }) {
-    const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
-
-    // Replace import with correct extension
-    await Promise.all(
-        files.map(async (file) => {
-            let code = await fs.promises.readFile(file, 'utf8');
-
-            // Rewrite .js to .cjs in import/require paths
-            code = code.replace(/((?:import|require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.cjs$3');
-
-            await fs.promises.writeFile(file, code);
-        })
-    );
 }
 
 export function tsToJsPath(filePath: string) {
@@ -356,11 +344,11 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                 else if (t.isIdentifier(decl)) {
                     const binding = path.scope.getBinding(decl.name);
                     if (!binding || !binding.path.isVariableDeclarator()) {
-                        throw path.buildCodeFrameError(`Invalid constant export`);
+                        throw path.buildCodeFrameError(`Invalid constant export (nango_export)`);
                     }
                     const init = binding.path.node.init;
                     if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
-                        throw path.buildCodeFrameError(`Invalid function used in export`);
+                        throw path.buildCodeFrameError(`Invalid function used in export (nango_export)`);
                     }
 
                     let varName = '';
@@ -378,7 +366,7 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     binding.path.get('init').replaceWith(arg);
                     return;
                 } else {
-                    throw path.buildCodeFrameError(`Unsupported export`);
+                    throw path.buildCodeFrameError(`Unsupported export (nango_export)`);
                 }
             }
         }
