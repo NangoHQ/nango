@@ -69,8 +69,7 @@ NANGO_DATABASE_URL=postgresql://user:password@host:port/dbname
 Special characters in the NANGO_DATABASE_URL should be URL encoded.
 
 <Note>
-    For external databases using poolers, Nango does not play well with `pool_mode=transaction`
-     which some providers (e.g. Neon and DigitalOcean) use in their poolers. Use a direct connection or change the pooler mode.
+Nango is incompatible with connection poolers using `pool_mode=transaction`. Please use a direct database connection or configure the pooler to use a different mode.
 </Note>
 
 
