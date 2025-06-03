@@ -41,7 +41,7 @@
         "@nangohq/database": "file:../database",
         "@types/connect-timeout": "0.0.39",
         "@types/unzipper": "^0.10.10",
-        "typescript": "5.7.3",
+        "typescript": "5.8.3",
         "vitest": "3.1.2"
     }
 }
