@@ -18,7 +18,8 @@ const logger = getLogger('Webhook.GithubAppOauth');
 function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
     const custom = integration.custom as Record<string, string>;
     const private_key = custom['private_key'];
-    const hash = `${custom['app_id']}${private_key}${integration.app_link}`;
+    const decodedPrivateKey = private_key ? Buffer.from(private_key, 'base64').toString('ascii') : private_key;
+    const hash = `${custom['app_id']}${decodedPrivateKey}${integration.app_link}`;
     const secret = crypto.createHash('sha256').update(hash).digest('hex');
 
     const signature = crypto.createHmac('sha256', secret).update(JSON.stringify(body)).digest('hex');
