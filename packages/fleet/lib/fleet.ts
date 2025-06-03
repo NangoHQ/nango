@@ -30,19 +30,13 @@ export class Fleet {
     private supervisor: Supervisor | undefined = undefined;
     private nodeProvider: NodeProvider;
 
-    constructor({
-        fleetId,
-        dbUrl = defaultDbUrl,
-        nodeProvider = noopNodeProvider
-    }: {
-        fleetId: FleetId;
-        dbUrl?: string | undefined;
-        nodeProvider?: NodeProvider;
-    }) {
+    constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: FleetId; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
-        this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
-        this.nodeProvider = nodeProvider;
+        if (nodeProvider) {
+            this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
+        }
+        this.nodeProvider = nodeProvider || noopNodeProvider;
     }
 
     public async migrate(): Promise<void> {
