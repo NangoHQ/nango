@@ -62,7 +62,7 @@
         "serialize-error": "11.0.3",
         "ts-json-schema-generator": "^2.3.0",
         "ts-node": "^10.9.1",
-        "tsup": "^8.1.0",
+        "tsup": "^8.5.0",
         "typescript": "5.7.3",
         "unzipper": "^0.12.3",
         "zod": "3.24.2"
