@@ -686,6 +686,12 @@ export class Orchestrator {
                 name: syncName,
                 isAction: false
             });
+            if (!syncConfig) {
+                throw new Error(`Sync not found: ${sync.id}`);
+            }
+            if (!syncConfig.enabled) {
+                throw new Error(`Sync is disabled: ${sync.id}`);
+            }
 
             const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
 
@@ -696,7 +702,7 @@ export class Orchestrator {
                     environment,
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id, name: nangoConnection.connection_id },
-                    syncConfig: { id: syncConfig!.id, name: syncConfig!.sync_name }
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
                 }
             );
 

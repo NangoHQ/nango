@@ -759,7 +759,6 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
             sync_name: opts.name,
             nango_config_id: opts.config_id,
             active: true,
-            enabled: true,
             type: opts.isAction ? 'action' : 'sync',
             deleted: false
         })
