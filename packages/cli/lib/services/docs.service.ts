@@ -232,7 +232,6 @@ function requestResponse(scriptConfig: NangoSyncOrAction, models: { name: string
 
     const scriptOutput = Array.isArray(scriptConfig.output) ? scriptConfig.output[0] : scriptConfig.output;
     if (scriptOutput) {
-        console.dir(models, { depth: null });
         const expanded = modelToJson({ model: models.find((m) => m.name === scriptOutput)!.def, models });
         const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
         out.push(``, '```json', ...expandedLines, '```', '');
