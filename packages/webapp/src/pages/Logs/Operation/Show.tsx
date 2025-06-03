@@ -182,7 +182,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                         style={{
                             minHeight: '100px',
                             height: '30vh',
-                            maxHeight: '80vh',
+                            maxHeight: '60vh',
                             resize: 'vertical'
                         }}
                     >
