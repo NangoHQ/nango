@@ -53,7 +53,10 @@ describe('buildSync', () => {
                 name: 'SyncMetadata_github_fetchIssues'
             },
             {
-                fields: [{ name: 'foobar', optional: false, tsType: true, value: 'string' }],
+                fields: [
+                    { name: 'id', optional: false, tsType: true, value: 'string' },
+                    { name: 'foobar', optional: false, tsType: true, value: 'string' }
+                ],
                 name: 'Model'
             }
         ]);
