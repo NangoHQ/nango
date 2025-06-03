@@ -57,6 +57,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         if (!syncConfig) {
             throw new Error(`Action config not found: ${task.id}`);
         }
+        if (!syncConfig.enabled) {
+            throw new Error(`Action is disabled: ${task.id}`);
+        }
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
