@@ -4,44 +4,17 @@ import path from 'node:path';
 import * as babel from '@babel/core';
 import chalk from 'chalk';
 import { build } from 'esbuild';
-import { glob } from 'glob';
 import ora from 'ora';
 import ts from 'typescript';
 
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
+import { BabelError, CompileError, customErrors, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
 
+import type { BabelErrorType } from './constants.js';
 import type { Result } from '@nangohq/types';
-
-const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
-const exportRegex = /export\s+\*\s+from\s+['"](\.\/[^'"]+)['"];/g;
-
-const tsconfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ESNext,
-    strict: true,
-    esModuleInterop: true,
-    skipLibCheck: true,
-    forceConsistentCasingInFileNames: true,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    allowUnusedLabels: false,
-    allowUnreachableCode: false,
-    exactOptionalPropertyTypes: true,
-    noFallthroughCasesInSwitch: true,
-    noImplicitOverride: true,
-    noImplicitReturns: true,
-    noPropertyAccessFromIndexSignature: true,
-    noUncheckedIndexedAccess: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    declaration: false,
-    sourceMap: true,
-    composite: false,
-    checkJs: false,
-    noEmit: true
-};
 
 /**
  * This function is used to compile the code in the integration.
@@ -99,10 +72,6 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             }
         }
 
-        spinner.text = `${text} - Post compilation`;
-        printDebug('Post compilation', debug);
-        await postCompile({ fullPath });
-        spinner.text = text;
         spinner.succeed();
 
         // Build and export the definitions
@@ -131,7 +100,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 /**
  * Reads the content of index.ts in the given fullPath.
  */
-async function readIndexContent(fullPath: string): Promise<Result<string>> {
+export async function readIndexContent(fullPath: string): Promise<Result<string>> {
     const indexTsPath = path.join(fullPath, 'index.ts');
     try {
         const indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
@@ -145,14 +114,15 @@ async function readIndexContent(fullPath: string): Promise<Result<string>> {
 /**
  * Extracts the entry points from the index.ts content.
  */
-function getEntryPoints(indexContent: string): string[] {
+export function getEntryPoints(indexContent: string): string[] {
     const entryPoints: string[] = [];
     let match;
-    while ((match = exportRegex.exec(indexContent)) !== null) {
-        if (!match[1]) {
+    while ((match = importRegex.exec(indexContent)) !== null) {
+        const fp = match.groups?.['path'];
+        if (!fp) {
             continue;
         }
-        entryPoints.push(match[1].endsWith('.js') ? match[1] : `${match[1]}.js`);
+        entryPoints.push(fp.endsWith('.js') ? fp : `${fp}.js`);
     }
     return entryPoints;
 }
@@ -163,9 +133,7 @@ function getEntryPoints(indexContent: string): string[] {
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
         rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
-        options: {
-            ...tsconfig
-        }
+        options: tsconfig
     });
 
     const diagnostics = ts.getPreEmitDiagnostics(program);
@@ -235,12 +203,7 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
                 }
             ],
             tsconfigRaw: {
-                compilerOptions: {
-                    ...tsconfig,
-                    importsNotUsedAsValues: 'remove',
-                    jsx: 'react',
-                    target: 'esnext'
-                }
+                compilerOptions: tsconfigString
             }
         });
         if (res.errors.length > 0) {
@@ -250,11 +213,12 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
-        if (err instanceof Error && err.message.includes('export')) {
-            return Err('export');
+        // We can throw our own error, so we throw one with a custom code that we get back and re-hydrate a new error
+        if (err instanceof Error && err.message.includes('nango_')) {
+            const code = /(nango_[a-z_]+)/.exec(err.message)?.[1] as BabelErrorType;
+            return Err(new CompileError(code, customErrors[code]));
         }
-        console.error(chalk.red(err));
-        return Err('failed_to_build_unknown');
+        return Err(new CompileError('failed_to_build_unknown', err instanceof Error ? err.message : 'unknown_error'));
     }
 }
 
@@ -282,26 +246,6 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
         return Err('failed_to_write_output');
     }
     return Ok(true);
-}
-
-/**
- * We need to replace the .js extension with .cjs in the imports.
- * This is because the code is compiled to .cjs and the imports are not automatically converted.
- */
-async function postCompile({ fullPath }: { fullPath: string }) {
-    const files = await glob(path.join(fullPath, 'build', '/**/*.cjs'));
-
-    // Replace import with correct extension
-    await Promise.all(
-        files.map(async (file) => {
-            let code = await fs.promises.readFile(file, 'utf8');
-
-            // Rewrite .js to .cjs in import/require paths
-            code = code.replace(/((?:import|require|from)\s*\(?['"])(\.\/[^'"]+)\.js(['"])/g, '$1$2.cjs$3');
-
-            await fs.promises.writeFile(file, code);
-        })
-    );
 }
 
 export function tsToJsPath(filePath: string) {
@@ -334,7 +278,7 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     calleeName = decl.callee.name;
                     arg = decl.arguments[0];
                     if (!t.isObjectExpression(arg)) {
-                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                        throw new BabelError('nango_invalid_function_param');
                     }
 
                     if (calleeName === 'createAction') varName = 'action';
@@ -356,18 +300,18 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                 else if (t.isIdentifier(decl)) {
                     const binding = path.scope.getBinding(decl.name);
                     if (!binding || !binding.path.isVariableDeclarator()) {
-                        throw path.buildCodeFrameError(`Invalid constant export`);
+                        throw new BabelError('nango_invalid_default_export');
                     }
                     const init = binding.path.node.init;
                     if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
-                        throw path.buildCodeFrameError(`Invalid function used in export`);
+                        throw new BabelError('nango_invalid_default_export');
                     }
 
                     let varName = '';
                     calleeName = init.callee.name;
                     arg = init.arguments[0];
                     if (!t.isObjectExpression(arg)) {
-                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                        throw new BabelError('nango_invalid_function_param');
                     }
                     if (calleeName === 'createAction') varName = 'action';
                     if (calleeName === 'createSync') varName = 'sync';
@@ -378,7 +322,7 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     binding.path.get('init').replaceWith(arg);
                     return;
                 } else {
-                    throw path.buildCodeFrameError(`Unsupported export`);
+                    throw new BabelError('nango_unsupported_export');
                 }
             }
         }

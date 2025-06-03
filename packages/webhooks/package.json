@@ -23,7 +23,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "typescript": "5.7.3",
+        "typescript": "5.8.3",
         "vitest": "3.1.2"
     },
     "files": [
