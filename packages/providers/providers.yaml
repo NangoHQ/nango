@@ -10395,7 +10395,7 @@ ukg-pro:
         - hr
     auth_mode: API_KEY
     proxy:
-        base_url: https://app.terraform.io
+        base_url: https://${connectionConfig.hostname}
         headers:
             authorization: Bearer ${apiKey}
         verification:
@@ -10407,11 +10407,10 @@ ukg-pro:
     connection_config:
         hostname:
             type: string
-            title: Tenant URL
+            title: Hostname
             description: The tenant URL of your UKG Pro instance
             format: hostname
-            example: wfm.us1.ukg.com
-            suffix: /api
+            example: servicet.ultipro.com
             prefix: https://
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
@@ -10420,19 +10419,19 @@ ukg-ready:
     categories:
         - hr
     auth_mode: OAUTH2
-    authorization_url: https://welcome-us.ukg.net/authorize
+    authorization_url: https://${connectionConfig.hostname}/api/v2/client/tokens
     token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
     scope_separator: ' '
     authorization_params:
         response_type: code
-        audience: https://wfm.ukg.net/api
+        audience: https://${connectionConfig.hostname}/api
         realm: ${connectionConfig.tenantName}
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.hostname}/api
+        base_url: https://${connectionConfig.hostname}
     docs: https://docs.nango.dev/integrations/all/ukg-ready
     docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
     connection_config:
