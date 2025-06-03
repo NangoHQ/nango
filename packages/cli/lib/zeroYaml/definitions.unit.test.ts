@@ -18,7 +18,7 @@ describe('buildSync', () => {
                 webhookSubscriptions: ['*'],
                 scopes: ['foobar'],
                 models: {
-                    Model: z.object({ foobar: z.string() })
+                    Model: z.object({ id: z.string(), foobar: z.string() })
                 },
                 metadata: z.void(),
                 exec: () => {
