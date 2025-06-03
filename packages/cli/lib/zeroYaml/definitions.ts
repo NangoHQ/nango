@@ -1,34 +1,29 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { zodToNangoModelField } from './zodToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
-import { tsToJsPath } from './compile.js';
+import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'onEvent'];
-const importRegex = /^import ['"](.+)['"];?$/gm;
 
 export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
-    const indexPath = path.join(fullPath, 'index.ts');
-    const indexContent = await fs.readFile(indexPath, 'utf-8');
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
 
-    const matched = indexContent.matchAll(importRegex);
+    const indexRes = await readIndexContent(fullPath);
+    if (indexRes.isErr()) {
+        return Err(indexRes.error);
+    }
+    const matched = getEntryPoints(indexRes.value);
     let num = 0;
 
-    for (const match of matched) {
-        const filePath = match[1];
-        if (!filePath) {
-            continue;
-        }
-
+    for (const filePath of matched) {
         num += 1;
 
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));

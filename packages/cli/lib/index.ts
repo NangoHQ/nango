@@ -27,6 +27,7 @@ import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { compileAll } from './zeroYaml/compile.js';
 import { deploy } from './zeroYaml/deploy.js';
+import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -176,6 +177,12 @@ program
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return;
+        }
+
         if (!precheck.isNango || precheck.hasNangoYaml) {
             await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
             const { success } = await compileAllFiles({ fullPath, debug });
@@ -211,15 +218,20 @@ program
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm, debug } = this.opts();
+        const { compileInterfaces, debug } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
             return;
         }
 
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
+        if (precheck.isZeroYaml) {
+            dev({ fullPath, debug });
+            return;
+        }
 
         tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
     });
@@ -240,6 +252,12 @@ program
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return;
+        }
+
         if (precheck.isZeroYaml) {
             const resCompile = await compileAll({ fullPath, debug });
             if (resCompile.isErr()) {
