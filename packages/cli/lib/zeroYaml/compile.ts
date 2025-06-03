@@ -15,7 +15,7 @@ import { buildDefinitions } from './definitions.js';
 import type { Result } from '@nangohq/types';
 
 const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
-const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
+export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
 
 export const tsconfig: ts.CompilerOptions = {
     module: ts.ModuleKind.CommonJS,

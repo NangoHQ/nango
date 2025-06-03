@@ -9,7 +9,7 @@ import ora from 'ora';
 import ts from 'typescript';
 
 import { printDebug } from '../utils.js';
-import { compileOne, getEntryPoints, tsToJsPath, tsconfig } from './compile.js';
+import { compileOne, tsToJsPath, tsconfig } from './compile.js';
 
 import type { Ora } from 'ora';
 
@@ -21,13 +21,19 @@ export function dev({ fullPath, debug }: { fullPath: string; debug: boolean }) {
         fs.mkdirSync(outDir);
     }
 
-    typescriptWatch({ fullPath, debug });
+    manualWatch({ fullPath, debug });
+    typescriptWatchSimple({ fullPath, debug });
 }
 
+/**
+ * Manual watch uses chokidar to listen to files changes and bundle what's declared in index.ts
+ * We are not relying on tsc because it's not always sending the appropriate events on delete or rename.
+ */
 function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) {
     const watchPath = ['./**/*.ts'];
     printDebug(`Watching ${watchPath.join(', ')}`, debug);
 
+    const graph = new DependencyGraph({ fullPath });
     const indexTs = 'index.ts';
     const processing = new Set<string>();
     const failures = new Map<string, string>();
@@ -52,13 +58,13 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
 
         processing.add(filePath);
         try {
-            const fp = path.join(fullPath, filePath);
+            graph.updatesForFile(filePath);
+
             if (filePath === indexTs) {
                 // When the user modify index.ts
                 // Keep track of what we need to build or not
                 // We rely on index.ts being the first file to be parsed
-                const indexContent = fs.readFileSync(fp).toString();
-                const tmp = getEntryPoints(indexContent).map((e) => e.replace('.js', '.ts').substring(2));
+                const tmp = graph.graph.get('index.ts')!;
 
                 const newEntries = tmp.filter((e) => !entryPoints.includes(e));
                 if (newEntries.length > 0) {
@@ -70,6 +76,7 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
                 }
 
                 entryPoints = tmp;
+
                 if (isReady) {
                     nextTick(() => {
                         for (const entry of newEntries) {
@@ -84,9 +91,17 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
                 return;
             }
 
-            // Not a know file
+            // Not a known file
             if (!entryPoints.includes(filePath)) {
                 printDebug(`File ${filePath} modified but not imported in index.ts`, debug);
+
+                // Find all dependents and re-bundle them
+                const dependents = Array.from(graph.findAllDependents(filePath));
+                for (const dep of dependents) {
+                    if (entryPoints.includes(dep)) {
+                        await onAddOrUpdate(dep);
+                    }
+                }
                 return;
             }
 
@@ -95,7 +110,7 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
             const res = await compileOne({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
             if (res.isErr()) {
                 spinner.fail();
-                bufferOrDisplayError(filePath, res.error.message);
+                // bufferOrDisplayError(filePath, res.error.message);
             } else {
                 spinner.succeed();
             }
@@ -108,11 +123,14 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
     }
 
     function onDelete(filePath: string) {
+        console.log(chalk.red('-'), `Removed ${filePath}`);
         try {
             fs.unlinkSync(path.join(fullPath, 'build', tsToJsPath(filePath)));
         } catch {
             printDebug(`Failed to remove ${filePath}`, debug);
         }
+
+        graph.removeFile(filePath);
     }
 
     watcher.on('ready', () => {
@@ -152,28 +170,20 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
             return;
         }
 
-        if (entryPoints.includes(filePath.replace('.ts', '.js'))) {
+        const jsFilePath = filePath.replace('.ts', '.js');
+        if (entryPoints.includes(jsFilePath)) {
             console.warn(chalk.yellow(`You need to remove import ${filePath} from index.ts`));
         }
 
-        onDelete(filePath.replace('.ts', '.js'));
+        onDelete(jsFilePath);
     });
 }
 
 /**
- * Use typescript watch program to:
- * - Typescript all files inside the folder
- * - Register change and bundle files
+ * Use typescript watch program to typecheck all files in parallel
  */
-function typescriptWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) {
-    let entryPoints: string[] = [];
+function typescriptWatchSimple({ fullPath, debug }: { fullPath: string; debug: boolean }) {
     let hasError = false;
-    let indexTsChanged = false;
-
-    function updateEntryPoints() {
-        const sourceFile = prm.getProgram().getSourceFile('index.ts') as ts.SourceFile & { imports: any[] };
-        entryPoints = sourceFile.imports.map((i) => i.text.substring(2).replace('.js', '.ts')) as string[];
-    }
 
     function reportDiagnostic(diagnostic: ts.Diagnostic) {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
@@ -215,99 +225,109 @@ function typescriptWatch({ fullPath, debug }: { fullPath: string; debug: boolean
         ts.sys,
         ts.createSemanticDiagnosticsBuilderProgram,
         reportDiagnostic,
-        reportWatchStatusChanged,
-        { excludeDirectories: true }
+        reportWatchStatusChanged
     );
-    const changedFiles = new Set<string>();
 
-    // Patch watchFile to track changes
-    const origWatchFile = host.watchFile;
-    host.watchFile = (fileName, callback, ...args) => {
-        return origWatchFile(
-            fileName,
-            (file, eventKind) => {
-                console.log(fileName, eventKind);
-                const relative = fileName.replace(fullPath, '').substring(1);
-                if (eventKind === ts.FileWatcherEventKind.Changed || eventKind === ts.FileWatcherEventKind.Created) {
-                    console.log('add or upd', relative);
-                    if (entryPoints.includes(relative)) {
-                        changedFiles.add(relative);
-                    } else if (relative === 'index.ts') {
-                        indexTsChanged = true;
-                    }
-                } else if (eventKind === ts.FileWatcherEventKind.Deleted) {
-                    indexTsChanged = true;
-                }
-                callback(file, eventKind);
-            },
-            ...args
-        );
-    };
-
-    const origAfterProgramCreate = host.afterProgramCreate;
-    host.afterProgramCreate = (program) => {
-        if (origAfterProgramCreate) {
-            origAfterProgramCreate(program);
-        }
-        if (indexTsChanged) {
-            console.log('index.ts changed');
-            updateEntryPoints();
-            for (const entryPoint of entryPoints) {
-                try {
-                    if (!fs.statSync(path.join(fullPath, entryPoint)).isFile()) {
-                        console.error(chalk.red(`Import ${entryPoint} is not a file`));
-                    }
-                } catch (err) {
-                    console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'));
-                }
-            }
-            indexTsChanged = false;
-        }
-
-        if (changedFiles.size > 0) {
-            if (hasError) {
-                return;
-            }
-
-            void compileMultiples({ fullPath, entryPoints: Array.from(changedFiles) });
-            changedFiles.clear();
-        }
-    };
-
-    const prm = ts.createWatchProgram(host);
-    updateEntryPoints();
-    void compileMultiples({ fullPath, entryPoints });
+    ts.createWatchProgram(host);
 }
 
-async function compileMultiples({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }) {
-    const failures: string[] = [];
+const importRegex = /^import(\s+[^'"\n]+from)?\s+['"](?<path>.+)['"]/gm;
 
-    for (const entryPoint of entryPoints) {
-        const absolutePath = path.join(fullPath, entryPoint);
+/**
+ * Dependency graph to track imports and dependents
+ * so we can re-bundle files when an imported file is updated
+ */
+class DependencyGraph {
+    graph = new Map<string, string[]>();
+    reverse = new Map<string, Set<string>>();
+    fullPath: string;
 
-        let spinner: Ora | undefined;
-        try {
-            spinner = ora({ text: `Compiling ${entryPoint}` }).start();
+    constructor({ fullPath }: { fullPath: string }) {
+        this.fullPath = fullPath;
+    }
 
-            if (!fs.statSync(absolutePath).isFile()) {
-                spinner.fail();
-                failures.push(chalk.red(`Import ${entryPoint} is not a file`));
+    parseImports(filePath: string): string[] {
+        const absPath = path.join(this.fullPath, filePath);
+        if (!fs.existsSync(absPath)) {
+            return [];
+        }
+
+        const content = fs.readFileSync(absPath, 'utf8');
+        const imports: string[] = [];
+        let match;
+        while ((match = importRegex.exec(content))) {
+            const imp = match.groups?.['path'];
+            if (!imp || !imp.startsWith('.')) {
                 continue;
             }
 
-            const res = await compileOne({ entryPoint: absolutePath.replace('.ts', '.js'), projectRootPath: fullPath });
-            if (res.isErr()) {
-                spinner.fail();
-            } else {
-                spinner.succeed();
+            let resolvedImp = imp;
+            if (resolvedImp.endsWith('.js')) {
+                resolvedImp = resolvedImp.replace('.js', '.ts');
+            } else if (!resolvedImp.endsWith('.ts')) {
+                resolvedImp += '.ts';
             }
-        } catch (err) {
-            spinner?.fail();
-            failures.push(chalk.red(err instanceof Error ? err.message : 'Unknown error'));
+            const resolved = path.normalize(path.join(path.dirname(filePath), resolvedImp));
+            imports.push(resolved);
+        }
+        return imports;
+    }
+
+    /**
+     * Update the graphs for a single file
+     */
+    updatesForFile(file: string) {
+        // Remove old reverse links
+        if (this.graph.has(file)) {
+            for (const imp of this.graph.get(file)!) {
+                this.reverse.get(imp)?.delete(file);
+            }
+        }
+
+        // Parse new imports
+        if (fs.existsSync(path.join(this.fullPath, file))) {
+            const imports = this.parseImports(file);
+            this.graph.set(file, imports);
+            for (const imp of imports) {
+                if (!this.reverse.get(imp)) {
+                    this.reverse.set(imp, new Set());
+                }
+                this.reverse.get(imp)!.add(file);
+            }
+        } else {
+            // File deleted
+            this.graph.delete(file);
         }
     }
 
-    for (const fail of failures) {
-        console.error(fail);
+    /**
+     * Remove a file from the graphs
+     */
+    removeFile(file: string) {
+        if (this.graph.has(file)) {
+            for (const imp of this.graph.get(file)!) {
+                this.reverse.get(imp)?.delete(file);
+            }
+
+            this.graph.delete(file);
+        }
+        this.reverse.delete(file);
+    }
+
+    /**
+     * Find all dependents recursively
+     */
+    findAllDependents(file: string, visited = new Set<string>()) {
+        if (!this.reverse.has(file)) {
+            return visited;
+        }
+
+        for (const dep of this.reverse.get(file)!) {
+            if (!visited.has(dep)) {
+                visited.add(dep);
+                this.findAllDependents(dep, visited);
+            }
+        }
+        return visited;
     }
 }
