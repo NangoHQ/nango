@@ -10,55 +10,11 @@ import ts from 'typescript';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
+import { BabelError, CompileError, customErrors, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
 
+import type { BabelErrorType } from './constants.js';
 import type { Result } from '@nangohq/types';
-
-const npmPackageRegex = /^[^./\s]/; // Regex to identify npm packages (not starting with . or /)
-export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
-
-export const tsconfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ESNext,
-    strict: true,
-    esModuleInterop: true,
-    skipLibCheck: true,
-    forceConsistentCasingInFileNames: true,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    allowUnusedLabels: false,
-    allowUnreachableCode: false,
-    exactOptionalPropertyTypes: true,
-    noFallthroughCasesInSwitch: true,
-    noImplicitOverride: true,
-    noImplicitReturns: true,
-    noPropertyAccessFromIndexSignature: true,
-    noUncheckedIndexedAccess: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    declaration: false,
-    sourceMap: true,
-    composite: false,
-    checkJs: false,
-    noEmit: true
-};
-export const tsconfigString: Record<string, any> = {
-    ...tsconfig,
-    module: 'commonjs',
-    target: 'esnext',
-    importsNotUsedAsValues: 'remove',
-    jsx: 'react',
-    moduleResolution: 'node16'
-};
-
-class CompileError extends Error {
-    type: string;
-    msg: string;
-    constructor(type: string, msg: string) {
-        super(msg);
-        this.type = type;
-        this.msg = msg;
-    }
-}
 
 /**
  * This function is used to compile the code in the integration.
@@ -177,9 +133,7 @@ export function getEntryPoints(indexContent: string): string[] {
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
         rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
-        options: {
-            ...tsconfig
-        }
+        options: tsconfig
     });
 
     const diagnostics = ts.getPreEmitDiagnostics(program);
@@ -259,8 +213,10 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
-        if (err instanceof Error && err.message.includes('nango_export')) {
-            return Err(new CompileError('export', err.message));
+        // We can throw our own error, so we throw one with a custom code that we get back and re-hydrate a new error
+        if (err instanceof Error && err.message.includes('nango_')) {
+            const code = /(nango_[a-z_]+)/.exec(err.message)?.[1] as BabelErrorType;
+            return Err(new CompileError(code, customErrors[code]));
         }
         return Err(new CompileError('failed_to_build_unknown', err instanceof Error ? err.message : 'unknown_error'));
     }
@@ -322,7 +278,7 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     calleeName = decl.callee.name;
                     arg = decl.arguments[0];
                     if (!t.isObjectExpression(arg)) {
-                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                        throw new BabelError('nango_invalid_function_param');
                     }
 
                     if (calleeName === 'createAction') varName = 'action';
@@ -344,18 +300,18 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                 else if (t.isIdentifier(decl)) {
                     const binding = path.scope.getBinding(decl.name);
                     if (!binding || !binding.path.isVariableDeclarator()) {
-                        throw path.buildCodeFrameError(`Invalid constant export (nango_export)`);
+                        throw new BabelError('nango_invalid_default_export');
                     }
                     const init = binding.path.node.init;
                     if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
-                        throw path.buildCodeFrameError(`Invalid function used in export (nango_export)`);
+                        throw new BabelError('nango_invalid_default_export');
                     }
 
                     let varName = '';
                     calleeName = init.callee.name;
                     arg = init.arguments[0];
                     if (!t.isObjectExpression(arg)) {
-                        throw path.buildCodeFrameError(`Argument to ${calleeName} must be an object literal.`);
+                        throw new BabelError('nango_invalid_function_param');
                     }
                     if (calleeName === 'createAction') varName = 'action';
                     if (calleeName === 'createSync') varName = 'sync';
@@ -366,7 +322,7 @@ function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.typ
                     binding.path.get('init').replaceWith(arg);
                     return;
                 } else {
-                    throw path.buildCodeFrameError(`Unsupported export (nango_export)`);
+                    throw new BabelError('nango_unsupported_export');
                 }
             }
         }

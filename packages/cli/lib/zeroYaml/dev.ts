@@ -9,7 +9,8 @@ import ora from 'ora';
 import ts from 'typescript';
 
 import { printDebug } from '../utils.js';
-import { compileOne, tsToJsPath, tsconfig } from './compile.js';
+import { compileOne, tsToJsPath } from './compile.js';
+import { CompileError, tsconfig } from './constants.js';
 
 import type { Ora } from 'ora';
 
@@ -45,9 +46,12 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
         ignored: ['node_modules', '.nango', 'dist', 'build']
     });
 
+    function fileError(filePath: string, msg: string) {
+        console.error(chalk.red('err'), '-', chalk.blue(filePath), `\r\n  ${msg}\r\n`);
+    }
     function bufferOrDisplayError(filePath: string, msg: string) {
         if (isReady) {
-            console.error(chalk.red(msg));
+            fileError(filePath, msg);
         } else {
             failures.set(filePath, msg);
         }
@@ -110,7 +114,10 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
             const res = await compileOne({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
             if (res.isErr()) {
                 spinner.fail();
-                // bufferOrDisplayError(filePath, res.error.message);
+                // Errors are already displayed by typescriptWatchSimple
+                if (res.error instanceof CompileError && res.error.type !== 'failed_to_build_unknown') {
+                    bufferOrDisplayError(filePath, res.error.message);
+                }
             } else {
                 spinner.succeed();
             }
@@ -146,7 +153,7 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
 
             if (failures.size) {
                 for (const fail of failures) {
-                    console.error(chalk.red(fail));
+                    fileError(fail[0], fail[1]);
                 }
             }
             isReady = true;
