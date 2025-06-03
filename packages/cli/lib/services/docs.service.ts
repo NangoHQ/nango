@@ -264,6 +264,9 @@ function changelog(scriptPath: string) {
     ].join('\n');
 }
 
+/**
+ * Transform JSONSchema to human readable JSON
+ */
 export function modelToJson({
     model,
     models
@@ -275,13 +278,12 @@ export function modelToJson({
         return '<unknown>';
     }
 
-    // Handle $ref
+    // Handle $ref (other models)
     if ('$ref' in model && typeof model['$ref'] === 'string') {
         const ref = model['$ref'];
 
         // JSON Schema refs are like '#/definitions/ModelName'
         const refName = ref.split('/').pop();
-        // return `<${refName}>`;
         const found = models.find((m) => m && m.name === refName);
         if (found) {
             return modelToJson({ model: found.def, models });
@@ -305,13 +307,13 @@ export function modelToJson({
         return `<${unionTypes.join(' | ')}>`;
     }
 
-    // If it's an enum
+    // Handle enums
     if ('enum' in model && Array.isArray(model.enum)) {
         const enumVals = model.enum.map((v) => `'${String(v as string)}'`);
         return `<enum: ${enumVals.join(' | ')}>`;
     }
 
-    // Handle type
+    // Handle regular types
     if ('type' in model && typeof model.type === 'string') {
         switch (model.type) {
             case 'object': {
