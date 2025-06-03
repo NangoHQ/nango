@@ -55,7 +55,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             isAction: true
         });
         if (!syncConfig) {
-            throw new Error(`Action config not found: ${task.id}`);
+            throw new Error(`Action not found: ${task.id}`);
         }
         if (!syncConfig.enabled) {
             throw new Error(`Action is disabled: ${task.id}`);

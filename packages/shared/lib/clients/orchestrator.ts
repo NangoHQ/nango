@@ -687,7 +687,7 @@ export class Orchestrator {
                 isAction: false
             });
             if (!syncConfig) {
-                throw new Error(`Sync config not found: ${sync.id}`);
+                throw new Error(`Sync not found: ${sync.id}`);
             }
             if (!syncConfig.enabled) {
                 throw new Error(`Sync is disabled: ${sync.id}`);

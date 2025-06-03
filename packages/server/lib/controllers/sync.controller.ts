@@ -214,7 +214,7 @@ class SyncController {
             }
 
             if (!syncConfig.enabled) {
-                res.status(400).json({ error: { code: 'disabled' } });
+                res.status(404).json({ error: { code: 'disabled_resource', message: 'The action is disabled' } });
                 return;
             }
 
@@ -475,7 +475,7 @@ class SyncController {
             }
 
             if (!syncConfig.enabled) {
-                res.status(400).json({ error: { code: 'disabled' } });
+                res.status(404).json({ error: { code: 'disabled_resource', message: 'The sync is disabled' } });
                 return;
             }
 
