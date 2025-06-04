@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.0] - 2025-06-04
+
+### Added
+
+- *(integrations)* Add support for PreciseFP (#3975) by @h55nick
+- *(cli)* Zero deploy (#4129) by @bodinsamuel
+- *(exec)* Support zero yaml script in runner and dryrun (#4115) by @bodinsamuel
+- *(cli)* Zeroyaml nango dev (#4148) by @bodinsamuel
+- *(cli)* Migrate to zero (#4138) by @bodinsamuel
+- *(integrations)* Add support for ukg pro and ukg ready (#4143) by @ChoqueCastroLD
+
+### Changed
+
+- *(deps)* Bump tar-fs (#4145) by @dependabot[bot]
+- Improved pg pooler docs and fixed formatting of env variables (#4139) by @paradoxloop
+
+### Fixed
+
+- *(webapp)* Show logs from connection page (#4140) by @kaposke
+- Failed starting supervisor error when remote runner (#4141) by @TBonnin
+- *(deploy)* Use same logic for models_json_schema in custom and prebuilt (#4142) by @kaposke
+- *(deps)* Upgrade soap, tsup (#4149) by @bodinsamuel
+- *(deps)* Upgrade tooling (#4150) by @bodinsamuel
+- More descriptive errors for disabled sync configs (#4146) by @rossmcewan
+- Adjustable log payload height (#4147) by @rossmcewan
+- *(frontend-sdk)* Fix two-step credentials types (#4153) by @hassan254-prog
+
 ## [v0.59.13] - 2025-05-30
 
 ### Added
@@ -4045,6 +4072,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.0]: https://github.com/NangoHQ/nango/compare/v0.59.13..v0.60.0
 [v0.59.13]: https://github.com/NangoHQ/nango/compare/v0.59.12..v0.59.13
 [v0.59.12]: https://github.com/NangoHQ/nango/compare/v0.59.11..v0.59.12
 [v0.59.11]: https://github.com/NangoHQ/nango/compare/v0.59.8..v0.59.11
