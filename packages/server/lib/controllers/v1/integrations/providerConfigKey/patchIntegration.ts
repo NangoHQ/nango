@@ -4,7 +4,7 @@ import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
-import { integrationDisplayNameSchema, privateKeySchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { integrationDisplayNameSchema, integrationForwardWebhooksSchema, privateKeySchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PatchIntegration } from '@nangohq/types';
@@ -13,7 +13,8 @@ const validationBody = z
     .object({
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.string().min(0).max(255).optional(),
-        displayName: integrationDisplayNameSchema.optional()
+        displayName: integrationDisplayNameSchema.optional(),
+        forward_webhooks: integrationForwardWebhooksSchema.optional()
     })
     .strict()
     .or(
@@ -111,6 +112,11 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     // Custom display name
     if ('displayName' in body && body.displayName) {
         integration.display_name = body.displayName;
+    }
+
+    // Forward webhooks
+    if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
+        integration.forward_webhooks = body.forward_webhooks;
     }
 
     // Credentials

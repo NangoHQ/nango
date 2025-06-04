@@ -4,7 +4,13 @@ import { configService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../formatters/integration.js';
-import { integrationCredentialsSchema, integrationDisplayNameSchema, providerConfigKeySchema, providerSchema } from '../../helpers/validation.js';
+import {
+    integrationCredentialsSchema,
+    integrationDisplayNameSchema,
+    integrationForwardWebhooksSchema,
+    providerConfigKeySchema,
+    providerSchema
+} from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { DBCreateIntegration, PostPublicIntegration } from '@nangohq/types';
@@ -14,7 +20,8 @@ const validationBody = z
         provider: providerSchema,
         unique_key: providerConfigKeySchema,
         display_name: integrationDisplayNameSchema.optional(),
-        credentials: integrationCredentialsSchema.optional()
+        credentials: integrationCredentialsSchema.optional(),
+        forward_webhooks: integrationForwardWebhooksSchema.optional()
     })
     .strict();
 
@@ -68,7 +75,8 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         display_name: body.display_name || null,
         unique_key: body.unique_key,
         custom: null,
-        missing_fields: []
+        missing_fields: [],
+        forward_webhooks: body.forward_webhooks === undefined ? true : body.forward_webhooks
     };
 
     if (creds) {

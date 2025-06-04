@@ -15,6 +15,7 @@ import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { formatDateToInternationalFormat } from '../../../../../utils/utils';
+import { Switch } from '../../../../../components/ui/Switch';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
@@ -65,10 +66,14 @@ export const SettingsGeneral: React.FC<{
     const env = useStore((state) => state.env);
     const [showEditIntegrationId, setShowEditIntegrationId] = useState(false);
     const [showEditDisplayName, setShowEditDisplayName] = useState(false);
+    const [showEditForwardWebhooks, setShowEditForwardWebhooks] = useState(false);
     const [displayName, setDisplayName] = useState(integration.display_name || template.display_name);
     const [integrationId, setIntegrationId] = useState(integration.unique_key);
     const [webhookSecret, setWebhookSecret] = useState(integration.custom?.webhookSecret || '');
     const [loading, setLoading] = useState(false);
+    const [forwardWebhooks, setForwardWebhooks] = useState(integration.forward_webhooks);
+
+    console.log('forwardWebhooks', forwardWebhooks);
 
     const onSaveDisplayName = async () => {
         setLoading(true);
@@ -111,6 +116,19 @@ export const SettingsGeneral: React.FC<{
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'Successfully updated webhook secret', variant: 'success' });
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
+        }
+    };
+
+    const onSaveForwardWebhooks = async () => {
+        setLoading(true);
+        const updated = await apiPatchIntegration(env, integration.unique_key, { forward_webhooks: forwardWebhooks });
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated forward webhooks', variant: 'success' });
+            setShowEditForwardWebhooks(false);
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
         }
     };
@@ -221,6 +239,39 @@ export const SettingsGeneral: React.FC<{
 
             {template.webhook_routing_script && (
                 <div className="grid grid-cols-1 gap-10">
+                    <InfoBloc title="Forward Webhooks" help={<p>Enable or disable webhook forwarding for this integration</p>}>
+                        {showEditForwardWebhooks ? (
+                            <div className="flex flex-col gap-5 grow">
+                                <Switch
+                                    name="webhook_forwarding"
+                                    checked={forwardWebhooks}
+                                    onCheckedChange={(checked) => setForwardWebhooks(Boolean(checked))}
+                                />
+                                <div className="flex justify-end gap-2 items-center">
+                                    <Button
+                                        size={'xs'}
+                                        variant={'emptyFaded'}
+                                        onClick={() => {
+                                            setForwardWebhooks(integration.forward_webhooks);
+                                            setShowEditForwardWebhooks(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button size={'xs'} variant={'primary'} onClick={() => onSaveForwardWebhooks()} isLoading={loading}>
+                                        Save
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center text-white text-sm">
+                                <div className="mr-2">{forwardWebhooks ? 'Yes' : 'No'}</div>
+                                <Button variant={'icon'} onClick={() => setShowEditForwardWebhooks(true)} size={'xs'}>
+                                    <Pencil1Icon />
+                                </Button>
+                            </div>
+                        )}
+                    </InfoBloc>
                     <InfoBloc
                         title="Webhook Url"
                         help={<p>Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks</p>}

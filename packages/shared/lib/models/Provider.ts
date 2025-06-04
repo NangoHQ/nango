@@ -16,6 +16,7 @@ export interface Config extends TimestampsAndDeleted {
     custom?: Record<string, string> | undefined;
     missing_fields: string[];
     display_name: string | null;
+    forward_webhooks?: boolean;
 }
 
 export interface IntegrationWithCreds extends Integration {

@@ -31,6 +31,9 @@ export const forwardWebhook = async ({
     if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
         return;
     }
+    if (!integration.forward_webhooks) {
+        return;
+    }
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'webhook', action: 'forward' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
