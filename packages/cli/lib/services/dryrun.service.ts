@@ -158,7 +158,7 @@ export class DryRunService {
             parsed = parsing.value.parsed!;
         }
 
-        if (options.optionalProviderConfigKey && parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+        if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
         }
