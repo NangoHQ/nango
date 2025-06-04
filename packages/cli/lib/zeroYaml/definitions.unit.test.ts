@@ -18,7 +18,7 @@ describe('buildSync', () => {
                 webhookSubscriptions: ['*'],
                 scopes: ['foobar'],
                 models: {
-                    Model: z.object({ foobar: z.string() })
+                    Model: z.object({ id: z.string(), foobar: z.string() })
                 },
                 metadata: z.void(),
                 exec: () => {
@@ -53,7 +53,10 @@ describe('buildSync', () => {
                 name: 'SyncMetadata_github_fetchIssues'
             },
             {
-                fields: [{ name: 'foobar', optional: false, tsType: true, value: 'string' }],
+                fields: [
+                    { name: 'id', optional: false, tsType: true, value: 'string' },
+                    { name: 'foobar', optional: false, tsType: true, value: 'string' }
+                ],
                 name: 'Model'
             }
         ]);

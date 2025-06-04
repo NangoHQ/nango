@@ -29,7 +29,7 @@ export function zodToNangoModelField(name: string, schema: z.ZodType): NangoMode
     } else if (isZodAny(schema)) {
         return { name, value: 'any', tsType: true, optional };
     } else if (isZodDate(schema)) {
-        return { name, value: 'date', tsType: true, optional };
+        return { name, value: 'Date', tsType: true, optional };
     } else if (isZodRecord(schema)) {
         return { name, value: [{ ...zodToNangoModelField('__string', schema._def.valueType), dynamic: true }], optional };
     } else if (isZodArray(schema)) {
