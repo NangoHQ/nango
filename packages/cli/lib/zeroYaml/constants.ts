@@ -1,5 +1,8 @@
+import path from 'node:path';
+
 import ts from 'typescript';
 
+export const exampleFolder = path.join(import.meta.dirname, '../../example');
 export const npmPackageRegex = /^[^./\s]/;
 export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
 

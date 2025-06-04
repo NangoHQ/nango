@@ -489,7 +489,7 @@ export async function deployPreBuilt({
 
             if (jsonSchemaString) {
                 const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
-                const allModels = [...models, config.input].filter(Boolean) as string[];
+                const allModels = [...models, config.input?.name].filter(Boolean) as string[];
                 const result = filterJsonSchemaForModels(jsonSchema, allModels);
                 if (result.isErr()) {
                     return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
