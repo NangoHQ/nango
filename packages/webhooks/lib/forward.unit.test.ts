@@ -34,7 +34,8 @@ const webhookSettings: DBExternalWebhook = {
 const integration = {
     id: 1,
     provider: 'hubspot',
-    unique_key: 'hubspot'
+    unique_key: 'hubspot',
+    forward_webhooks: true
 } as IntegrationConfig;
 
 describe('Webhooks: forward notification tests', () => {

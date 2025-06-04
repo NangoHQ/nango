@@ -31,7 +31,7 @@ export const forwardWebhook = async ({
     if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
         return;
     }
-    if (!integration.forward_webhooks) {
+    if (integration.forward_webhooks === false) {
         return;
     }
 
