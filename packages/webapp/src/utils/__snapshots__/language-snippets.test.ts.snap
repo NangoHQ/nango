@@ -1,0 +1,249 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`language snippets > httpSnippet > GET endpoint > should generate Go snippet 1`] = `
+"package main
+
+import (
+	"fmt"
+	"net/http"
+	"io"
+)
+
+func main() {
+
+	url := "https://api.nango.dev/v1/users"
+
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Authorization", "Bearer nang****")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Connection-Id", "test_connection_id")
+	req.Header.Add("Provider-Config-Key", "github")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+}"
+`;
+
+exports[`language snippets > httpSnippet > GET endpoint > should generate Java snippet 1`] = `
+"HttpResponse<String> response = Unirest.get("https://api.nango.dev/v1/users")
+  .header("Authorization", "Bearer nang****")
+  .header("Content-Type", "application/json")
+  .header("Connection-Id", "test_connection_id")
+  .header("Provider-Config-Key", "github")
+  .asString();"
+`;
+
+exports[`language snippets > httpSnippet > GET endpoint > should generate PHP snippet 1`] = `
+"<?php
+
+$client = new \\GuzzleHttp\\Client();
+
+$response = $client->request('GET', 'https://api.nango.dev/v1/users', [
+  'headers' => [
+    'Authorization' => 'Bearer nang****',
+    'Connection-Id' => 'test_connection_id',
+    'Content-Type' => 'application/json',
+    'Provider-Config-Key' => 'github',
+  ],
+]);
+
+echo $response->getBody();"
+`;
+
+exports[`language snippets > httpSnippet > GET endpoint > should generate Python snippet 1`] = `
+"import http.client
+
+conn = http.client.HTTPSConnection("api.nango.dev")
+
+headers = {
+    'Authorization': "Bearer nang****",
+    'Content-Type': "application/json",
+    'Connection-Id': "test_connection_id",
+    'Provider-Config-Key': "github"
+}
+
+conn.request("GET", "/v1/users", headers=headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))"
+`;
+
+exports[`language snippets > httpSnippet > GET endpoint > should generate cURL snippet 1`] = `
+"curl --request GET \\
+  --url https://api.nango.dev/v1/users \\
+  --header 'Authorization: Bearer nang****' \\
+  --header 'Connection-Id: test_connection_id' \\
+  --header 'Content-Type: application/json' \\
+  --header 'Provider-Config-Key: github'"
+`;
+
+exports[`language snippets > httpSnippet > POST endpoint with input > should generate Go snippet with input 1`] = `
+"package main
+
+import (
+	"fmt"
+	"strings"
+	"net/http"
+	"io"
+)
+
+func main() {
+
+	url := "https://api.nango.dev/v1/users"
+
+	payload := strings.NewReader("    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}")
+
+	req, err := http.NewRequest("POST", url, payload)
+
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Authorization", "Bearer nang****")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Connection-Id", "test_connection_id")
+	req.Header.Add("Provider-Config-Key", "github")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+}"
+`;
+
+exports[`language snippets > httpSnippet > POST endpoint with input > should generate Java snippet with input 1`] = `
+"HttpResponse<String> response = Unirest.post("https://api.nango.dev/v1/users")
+  .header("Authorization", "Bearer nang****")
+  .header("Content-Type", "application/json")
+  .header("Connection-Id", "test_connection_id")
+  .header("Provider-Config-Key", "github")
+  .body("    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}")
+  .asString();"
+`;
+
+exports[`language snippets > httpSnippet > POST endpoint with input > should generate PHP snippet with input 1`] = `
+"<?php
+
+$client = new \\GuzzleHttp\\Client();
+
+$response = $client->request('POST', 'https://api.nango.dev/v1/users', [
+  'body' => '    {    "name": "<string>",    "age": "<number>",    "addresses": "<Address[]>",}',
+  'headers' => [
+    'Authorization' => 'Bearer nang****',
+    'Connection-Id' => 'test_connection_id',
+    'Content-Type' => 'application/json',
+    'Provider-Config-Key' => 'github',
+  ],
+]);
+
+echo $response->getBody();"
+`;
+
+exports[`language snippets > httpSnippet > POST endpoint with input > should generate Python snippet with input 1`] = `
+"import http.client
+
+conn = http.client.HTTPSConnection("api.nango.dev")
+
+payload = "    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}"
+
+headers = {
+    'Authorization': "Bearer nang****",
+    'Content-Type': "application/json",
+    'Connection-Id': "test_connection_id",
+    'Provider-Config-Key': "github"
+}
+
+conn.request("POST", "/v1/users", payload, headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))"
+`;
+
+exports[`language snippets > httpSnippet > POST endpoint with input > should generate cURL snippet with input 1`] = `
+"curl --request POST \\
+  --url https://api.nango.dev/v1/users \\
+  --header 'Authorization: Bearer nang****' \\
+  --header 'Connection-Id: test_connection_id' \\
+  --header 'Content-Type: application/json' \\
+  --header 'Provider-Config-Key: github' \\
+  --data '    {
+    "name": "<string>",
+    "age": "<number>",
+    "addresses": "<Address[]>",
+}'"
+`;
+
+exports[`language snippets > httpSnippet > with hideSecret option > should generate cURL snippet with hidden secret 1`] = `
+"curl --request GET \\
+  --url https://api.nango.dev/v1/users \\
+  --header 'Authorization: Bearer nang****' \\
+  --header 'Connection-Id: test_connection_id' \\
+  --header 'Content-Type: application/json' \\
+  --header 'Provider-Config-Key: github'"
+`;
+
+exports[`language snippets > httpSnippet > with hideSecret option > should generate cURL snippet with visible secret 1`] = `
+"curl --request GET \\
+  --url https://api.nango.dev/v1/users \\
+  --header 'Authorization: Bearer nango_secret_key_123456789' \\
+  --header 'Connection-Id: test_connection_id' \\
+  --header 'Content-Type: application/json' \\
+  --header 'Provider-Config-Key: github'"
+`;
+
+exports[`language snippets > nodeActionSnippet > should match snapshot 1`] = `
+"import Nango from '@nangohq/node';
+const nango = new Nango({ secretKey: 'secr****' });
+
+const response = await nango.triggerAction(
+    'providerConfigKey',
+    'connectionId',
+    'createUser',
+    {
+    "name": "<string>",
+    "age": "<number>",
+    "addresses": "<Address[]>",
+}
+);"
+`;
+
+exports[`language snippets > nodeSyncSnippet > should match snapshot 1`] = `
+"import { Nango } from '@nangohq/node';
+const nango = new Nango({ secretKey: 'secr****' });
+
+const records = await nango.listRecords({
+    providerConfigKey: 'providerConfigKey',
+    connectionId: 'connectionId',
+    model: 'users'
+});
+"
+`;
