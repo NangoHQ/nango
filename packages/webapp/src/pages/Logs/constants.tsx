@@ -3,7 +3,7 @@ import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat } from '../../utils/utils';
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
 import type { MultiSelectArgs } from '../../components/MultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
@@ -16,6 +16,19 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         size: 180,
         cell: ({ row }) => {
             return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
+        }
+    },
+    {
+        accessorKey: 'duration',
+        header: 'Duration',
+        size: 100,
+        cell: ({ row }) => {
+            if (!row.original.endedAt || !row.original.startedAt) {
+                return 'n/a';
+            }
+
+            const duration = getRunTime(new Date(row.original.startedAt).toISOString(), new Date(row.original.endedAt).toISOString());
+            return <div className="font-code text-s">{duration}</div>;
         }
     },
     {
