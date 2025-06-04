@@ -66,6 +66,9 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         if (!syncConfig) {
             throw new Error(`Webhook config not found: ${task.id}`);
         }
+        if (!syncConfig.enabled) {
+            throw new Error(`Webhook is disabled: ${task.id}`);
+        }
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
