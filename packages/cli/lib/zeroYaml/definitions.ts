@@ -6,6 +6,7 @@ import { printDebug } from '../utils.js';
 import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
+import type { ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'onEvent'];
@@ -37,7 +38,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>
+            | CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>
             | CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>
             | CreateOnEventResponse;
 
@@ -101,7 +102,7 @@ export function buildSync({
     basename,
     basenameClean
 }: {
-    params: CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>;
+    params: CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;

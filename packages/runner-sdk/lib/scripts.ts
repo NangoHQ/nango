@@ -1,6 +1,6 @@
 import type { NangoActionBase } from './action.js';
 import type { NangoSyncBase } from './sync.js';
-import type { ZodMetadata } from './types.js';
+import type { ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
 import type { z } from 'zod';
@@ -12,7 +12,7 @@ export type { NangoActionBase as NangoAction, ProxyConfiguration } from './actio
 export type { NangoSyncBase as NangoSync } from './sync.js';
 
 // ----- Sync
-export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends ZodMetadata = never> {
+export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = never> {
     version?: string;
     description: string;
     endpoints: NangoSyncEndpointV2[];
@@ -27,14 +27,14 @@ export interface CreateSyncProps<TModels extends Record<string, Zod.ZodObject<an
     exec: (nango: NangoSyncBase<TModels, TMetadata>) => MaybePromise<void>;
     onWebhook?: (nango: NangoSyncBase<TModels, TMetadata>, payload: any) => MaybePromise<void>;
 }
-export interface CreateSyncResponse<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends ZodMetadata = undefined>
+export interface CreateSyncResponse<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = undefined>
     extends CreateSyncProps<TModels, TMetadata> {
     type: 'sync';
 }
 /**
  * Create a sync script
  */
-export function createSync<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends ZodMetadata = undefined>(
+export function createSync<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = undefined>(
     params: CreateSyncProps<TModels, TMetadata>
 ): CreateSyncResponse<TModels, TMetadata> {
     return { type: 'sync', ...params };

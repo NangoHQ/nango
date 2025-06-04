@@ -15,6 +15,7 @@ import figlet from 'figlet';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 import { generate, getVersionOutput, tscWatch } from './cli.js';
+import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
@@ -315,6 +316,20 @@ program
         }
 
         endpointMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('migrate-to-zero-yaml')
+    .description('Migrate from nango.yaml to pure typescript')
+    .action(async function (this: Command) {
+        const { debug } = this.opts<DeployOptions>();
+        const fullPath = process.cwd();
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        if (!precheck) {
+            return;
+        }
+
+        await migrateToZeroYaml({ fullPath, debug });
     });
 
 program
