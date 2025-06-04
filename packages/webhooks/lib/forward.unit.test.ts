@@ -67,6 +67,29 @@ describe('Webhooks: forward notification tests', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
+    it('Should not send a forward webhook if forward_webhooks is false', async () => {
+        await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as DBEnvironment,
+            webhookSettings,
+            logContextGetter,
+            integration: {
+                ...integration,
+                forward_webhooks: false
+            },
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {
+                'content-type': 'application/json'
+            }
+        });
+        expect(spy).not.toHaveBeenCalled();
+    });
+
     it('Should send a forward webhook if the webhook url is not present but the secondary is', async () => {
         await forwardWebhook({
             connectionIds: [],
