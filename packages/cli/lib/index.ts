@@ -229,7 +229,7 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            dev({ fullPath, debug });
+            await dev({ fullPath, debug });
             return;
         }
 

@@ -160,7 +160,7 @@ class LocalFileService {
         providerConfigKey: string;
     }): string {
         if (syncConfig.sdk_version && syncConfig.sdk_version.includes('zero')) {
-            return path.resolve(basePath, `build/${providerConfigKey}-${scriptTypeToPath[scriptType]}-${syncConfig.sync_name}.cjs`);
+            return path.resolve(basePath, `build/${providerConfigKey}_${scriptTypeToPath[scriptType]}_${syncConfig.sync_name}.cjs`);
         } else {
             return path.resolve(basePath, `dist/${syncConfig.sync_name}-${providerConfigKey}.js`);
         }
