@@ -32,6 +32,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const indexContentResult = await readIndexContent(fullPath);
         if (indexContentResult.isErr()) {
             spinner.fail();
+            console.error(chalk.red(`Could not read index.ts`));
             return Err('failed_to_read_index_ts');
         }
         const indexContent = indexContentResult.value;
@@ -40,7 +41,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const entryPoints = getEntryPoints(indexContent);
         if (entryPoints.length === 0) {
             spinner.fail();
-            console.error("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile.");
+            console.error(chalk.red("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile."));
             return Err('no_file');
         }
 
@@ -105,8 +106,7 @@ export async function readIndexContent(fullPath: string): Promise<Result<string>
     try {
         const indexContent = await fs.promises.readFile(indexTsPath, 'utf8');
         return Ok(indexContent);
-    } catch (err) {
-        console.error(`Could not read ${indexTsPath}`, err);
+    } catch {
         return Err('failed_to_read_index_ts');
     }
 }

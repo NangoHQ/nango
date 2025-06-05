@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.59.13",
+    "version": "0.60.1",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -33,9 +33,9 @@
         "@babel/traverse": "7.27.3",
         "@babel/types": "7.27.3",
         "@babel/preset-typescript": "7.27.1",
-        "@nangohq/nango-yaml": "0.59.13",
-        "@nangohq/node": "0.59.13",
-        "@nangohq/runner-sdk": "0.59.13",
+        "@nangohq/nango-yaml": "0.60.1",
+        "@nangohq/node": "0.60.1",
+        "@nangohq/runner-sdk": "0.60.1",
         "@swc/core": "^1.5.25",
         "@types/unzipper": "^0.10.11",
         "ajv": "^8.17.1",
@@ -53,6 +53,7 @@
         "figlet": "^1.6.0",
         "glob": "^10.3.10",
         "import-meta-resolve": "^4.1.0",
+        "jscodeshift": "17.3.0",
         "js-yaml": "^4.1.0",
         "npm-package-arg": "^10.1.0",
         "ora": "8.2.0",
@@ -67,7 +68,7 @@
         "zod": "3.24.2"
     },
     "devDependencies": {
-        "@nangohq/types": "0.59.13",
+        "@nangohq/types": "0.60.1",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",
@@ -75,6 +76,7 @@
         "@types/ejs": "^3.1.5",
         "@types/figlet": "^1.5.6",
         "@types/glob": "^8.1.0",
+        "@types/jscodeshift": "17.3.0",
         "@types/json-schema": "7.0.15",
         "@types/node": "^20.1.4",
         "@types/npm-package-arg": "^6.1.4",

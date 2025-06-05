@@ -1,0 +1,55 @@
+---
+title: UKG Pro - How do I link my account?
+sidebarTitle: UKG Pro
+---
+
+# Overview
+
+To authenticate with UKG Pro, you need:
+1. **Web Service Account Username** - A unique username for the web service account
+2. **Web Service Account Password** - The password for the web service account
+3. **User API Key** - A unique API key assigned to the web service account
+4. **Service Endpoint** - The base URL for your UKG Pro instance
+
+This guide will walk you through setting up a web service account and finding your service endpoint.
+
+### Prerequisites:
+
+- You must have UKG Pro system administrator rights to create web service accounts
+
+### Instructions:
+
+#### Step 1: Creating a Web Service Account
+
+To create a web service account in UKG Pro: ([for more details, refer to ukg documentation](https://developer.ukg.com/hcm/docs/web-service-account))
+1. Log into UKG Pro as a system administrator
+2. Navigate to **System Configuration > Security > Service Account Administration**
+3. Create a new web service account with:
+   - A unique username
+   - A secure password
+   - Appropriate permissions for only the required API resources and methods
+
+<img src="/integrations/all/ukg-pro/service-account.png" style={{maxWidth: "450px" }}/>
+
+#### Step 2: Finding Your Service Endpoint
+
+To locate your service endpoint:
+1. Navigate to **System Configuration > Security > Web Services**
+2. Note your base service URL - it will be similar to "https://servicet.ultipro.com/services/" but specific to your datacenter and environment
+3. The complete endpoint combines this base URL with specific resource paths
+
+<img src="/integrations/all/ukg-pro/web-services.png" style={{maxWidth: "450px" }}/>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have gathered all credentials:
+1. Open the form where you need to authenticate with UKG Pro
+2. Enter your:
+   - User API Key
+   - Tenant URL (Service Endpoint Hostname)
+   <img src="/integrations/all/ukg-pro/hostname.png" style={{maxWidth: "250px" }}/>
+3. Submit the form, and you should be successfully authenticated
+
+<img src="/integrations/all/ukg-pro/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to UKG Pro.

@@ -2,14 +2,14 @@ import { NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
-import type { ZodMetadata } from './types.js';
+import type { ZodMetadata, ZodModel } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
 import type { z } from 'zod';
 
 export const BASE_VARIANT = 'base';
 
 export abstract class NangoSyncBase<
-    TModels extends Record<string, Zod.ZodObject<any>> = never,
+    TModels extends Record<string, ZodModel> = never,
     TMetadata extends ZodMetadata = never,
     TModelName extends keyof TModels = keyof TModels
 > extends NangoActionBase<TMetadata> {
@@ -50,9 +50,15 @@ export abstract class NangoSyncBase<
 
     public abstract batchSave(results: z.infer<TModels[TModelName]>[], model: TModelName): MaybePromise<boolean>;
 
-    public abstract batchDelete(results: z.infer<TModels[TModelName]>[], model: TModelName): MaybePromise<boolean>;
+    public abstract batchDelete<TModel extends z.infer<TModels[TModelName]>>(
+        results: (Pick<TModel, 'id'> & Partial<TModel>)[],
+        model: TModelName
+    ): MaybePromise<boolean>;
 
-    public abstract batchUpdate(results: z.infer<TModels[TModelName]>[], model: TModelName): MaybePromise<boolean>;
+    public abstract batchUpdate<TModel extends z.infer<TModels[TModelName]>>(
+        results: (Pick<TModel, 'id'> & Partial<TModel>)[],
+        model: TModelName
+    ): MaybePromise<boolean>;
 
     public abstract getRecordsByIds<K = string | number, T = any>(ids: K[], model: TModelName): MaybePromise<Map<K, T>>;
 
