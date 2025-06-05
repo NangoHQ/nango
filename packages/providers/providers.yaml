@@ -5658,12 +5658,14 @@ jobvite:
             type: string
             title: API Key
             description: The API key for your Jobvite account
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
     connection_config:
         secretKey:
             type: string
             title: Secret Key
             description: The secret key for your Jobvite account
             secret: true
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
 
 jotform:
     display_name: Jotform
