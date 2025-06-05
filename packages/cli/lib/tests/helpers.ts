@@ -1,8 +1,11 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const fixturesPath = path.resolve(import.meta.dirname, '../../fixtures');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+export const fixturesPath = path.resolve(__dirname, '../../fixtures');
 
 export async function copyDirectoryAndContents(source: string, destination: string) {
     await fs.mkdir(destination, { recursive: true });
