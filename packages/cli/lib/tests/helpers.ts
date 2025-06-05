@@ -29,7 +29,7 @@ export function removeVersion(res: string) {
 }
 
 export async function getTestDirectory(name: string) {
-    const dir = path.join(os.tmpdir(), name);
+    const dir = path.join(os.tmpdir(), name, 'nango-integrations');
     await fs.mkdir(dir, { recursive: true });
     await fs.rm(dir, { recursive: true, force: true });
     return dir;
