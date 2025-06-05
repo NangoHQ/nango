@@ -73,8 +73,6 @@ export const SettingsGeneral: React.FC<{
     const [loading, setLoading] = useState(false);
     const [forwardWebhooks, setForwardWebhooks] = useState(integration.forward_webhooks);
 
-    console.log('forwardWebhooks', forwardWebhooks);
-
     const onSaveDisplayName = async () => {
         setLoading(true);
 

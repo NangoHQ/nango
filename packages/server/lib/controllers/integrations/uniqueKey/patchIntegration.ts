@@ -20,7 +20,7 @@ const validationBody = z
         unique_key: providerConfigKeySchema.optional(),
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema.optional()
+        forward_webhooks: integrationForwardWebhooksSchema
     })
     .strict();
 

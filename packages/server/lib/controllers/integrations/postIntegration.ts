@@ -21,7 +21,7 @@ const validationBody = z
         unique_key: providerConfigKeySchema,
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema.optional()
+        forward_webhooks: integrationForwardWebhooksSchema
     })
     .strict();
 
@@ -76,7 +76,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         unique_key: body.unique_key,
         custom: null,
         missing_fields: [],
-        forward_webhooks: body.forward_webhooks === undefined ? true : body.forward_webhooks
+        forward_webhooks: body.forward_webhooks ?? true
     };
 
     if (creds) {

@@ -14,7 +14,7 @@ const validationBody = z
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.string().min(0).max(255).optional(),
         displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema.optional()
+        forward_webhooks: integrationForwardWebhooksSchema
     })
     .strict()
     .or(
