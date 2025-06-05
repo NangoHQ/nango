@@ -6,20 +6,51 @@ import type { NangoModel, NangoSyncEndpointV2 } from '@nangohq/types';
 
 describe('language snippets', () => {
     const sampleInput: NangoModel = {
-        name: 'User',
+        name: 'TopLevelModel',
         fields: [
             {
-                name: 'name',
+                name: 'aString',
                 value: 'string',
                 tsType: true
             },
             {
-                name: 'age',
+                name: 'aNumber',
                 value: 'number',
                 tsType: true
             },
             {
-                name: 'addresses',
+                name: 'aBoolean',
+                value: 'boolean',
+                tsType: true
+            },
+            {
+                name: 'anArrayOfStrings',
+                value: 'string[]',
+                tsType: true
+            },
+            {
+                name: 'anObject',
+                value: [
+                    {
+                        name: 'anotherString',
+                        value: 'string',
+                        tsType: true
+                    }
+                ]
+            },
+            {
+                name: 'anArrayOfObjects',
+                array: true,
+                value: [
+                    {
+                        name: 'anotherString',
+                        value: 'string',
+                        tsType: true
+                    }
+                ]
+            },
+            {
+                name: 'anArrayOfReferencedModel',
                 array: true,
                 model: true,
                 value: 'Address'

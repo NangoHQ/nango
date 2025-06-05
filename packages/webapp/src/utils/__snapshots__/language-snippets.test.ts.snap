@@ -109,7 +109,7 @@ func main() {
 
 	url := "https://api.nango.dev/v1/users"
 
-	payload := strings.NewReader("    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}")
+	payload := strings.NewReader("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}")
 
 	req, err := http.NewRequest("POST", url, payload)
 
@@ -144,7 +144,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
   .header("Content-Type", "application/json")
   .header("Connection-Id", "test_connection_id")
   .header("Provider-Config-Key", "github")
-  .body("    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}")
+  .body("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}")
   .asString();"
 `;
 
@@ -154,7 +154,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
 $client = new \\GuzzleHttp\\Client();
 
 $response = $client->request('POST', 'https://api.nango.dev/v1/users', [
-  'body' => '    {    "name": "<string>",    "age": "<number>",    "addresses": "<Address[]>",}',
+  'body' => '    {    "aString": "<string>",    "aNumber": "<number>",    "aBoolean": "<boolean>",    "anArrayOfStrings": "<string[]>",    "anObject": {  "anotherString": "<string>", },    "anArrayOfObjects": "<(string)[]>",    "anArrayOfReferencedModel": "<Address[]>",}',
   'headers' => [
     'Authorization' => 'Bearer nang****',
     'Connection-Id' => 'test_connection_id',
@@ -171,7 +171,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
 
 conn = http.client.HTTPSConnection("api.nango.dev")
 
-payload = "    {    \\"name\\": \\"<string>\\",    \\"age\\": \\"<number>\\",    \\"addresses\\": \\"<Address[]>\\",}"
+payload = "    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}"
 
 headers = {
     'Authorization': "Bearer nang****",
@@ -196,9 +196,13 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
   --header 'Content-Type: application/json' \\
   --header 'Provider-Config-Key: github' \\
   --data '    {
-    "name": "<string>",
-    "age": "<number>",
-    "addresses": "<Address[]>",
+    "aString": "<string>",
+    "aNumber": "<number>",
+    "aBoolean": "<boolean>",
+    "anArrayOfStrings": "<string[]>",
+    "anObject": {  "anotherString": "<string>", },
+    "anArrayOfObjects": "<(string)[]>",
+    "anArrayOfReferencedModel": "<Address[]>",
 }'"
 `;
 
@@ -229,9 +233,13 @@ const response = await nango.triggerAction(
     'connectionId',
     'createUser',
     {
-    "name": "<string>",
-    "age": "<number>",
-    "addresses": "<Address[]>",
+    "aString": "<string>",
+    "aNumber": "<number>",
+    "aBoolean": "<boolean>",
+    "anArrayOfStrings": "<string[]>",
+    "anObject": {  "anotherString": "<string>", },
+    "anArrayOfObjects": "<(string)[]>",
+    "anArrayOfReferencedModel": "<Address[]>",
 }
 );"
 `;
