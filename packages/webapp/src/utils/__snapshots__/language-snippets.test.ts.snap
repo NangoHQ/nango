@@ -109,7 +109,7 @@ func main() {
 
 	url := "https://api.nango.dev/v1/users"
 
-	payload := strings.NewReader("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}")
+	payload := strings.NewReader("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<({  \\"anotherString\\": \\"<string>\\", })[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",    \\"aUnion\\": \\"<string | number>\\",}")
 
 	req, err := http.NewRequest("POST", url, payload)
 
@@ -144,7 +144,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
   .header("Content-Type", "application/json")
   .header("Connection-Id", "test_connection_id")
   .header("Provider-Config-Key", "github")
-  .body("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}")
+  .body("    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<({  \\"anotherString\\": \\"<string>\\", })[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",    \\"aUnion\\": \\"<string | number>\\",}")
   .asString();"
 `;
 
@@ -154,7 +154,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
 $client = new \\GuzzleHttp\\Client();
 
 $response = $client->request('POST', 'https://api.nango.dev/v1/users', [
-  'body' => '    {    "aString": "<string>",    "aNumber": "<number>",    "aBoolean": "<boolean>",    "anArrayOfStrings": "<string[]>",    "anObject": {  "anotherString": "<string>", },    "anArrayOfObjects": "<(string)[]>",    "anArrayOfReferencedModel": "<Address[]>",}',
+  'body' => '    {    "aString": "<string>",    "aNumber": "<number>",    "aBoolean": "<boolean>",    "anArrayOfStrings": "<string[]>",    "anObject": {  "anotherString": "<string>", },    "anArrayOfObjects": "<({  "anotherString": "<string>", })[]>",    "anArrayOfReferencedModel": "<Address[]>",    "aUnion": "<string | number>",}',
   'headers' => [
     'Authorization' => 'Bearer nang****',
     'Connection-Id' => 'test_connection_id',
@@ -171,7 +171,7 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
 
 conn = http.client.HTTPSConnection("api.nango.dev")
 
-payload = "    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<(string)[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",}"
+payload = "    {    \\"aString\\": \\"<string>\\",    \\"aNumber\\": \\"<number>\\",    \\"aBoolean\\": \\"<boolean>\\",    \\"anArrayOfStrings\\": \\"<string[]>\\",    \\"anObject\\": {  \\"anotherString\\": \\"<string>\\", },    \\"anArrayOfObjects\\": \\"<({  \\"anotherString\\": \\"<string>\\", })[]>\\",    \\"anArrayOfReferencedModel\\": \\"<Address[]>\\",    \\"aUnion\\": \\"<string | number>\\",}"
 
 headers = {
     'Authorization': "Bearer nang****",
@@ -201,8 +201,9 @@ exports[`language snippets > httpSnippet > POST endpoint with input > should gen
     "aBoolean": "<boolean>",
     "anArrayOfStrings": "<string[]>",
     "anObject": {  "anotherString": "<string>", },
-    "anArrayOfObjects": "<(string)[]>",
+    "anArrayOfObjects": "<({  "anotherString": "<string>", })[]>",
     "anArrayOfReferencedModel": "<Address[]>",
+    "aUnion": "<string | number>",
 }'"
 `;
 
@@ -238,8 +239,9 @@ const response = await nango.triggerAction(
     "aBoolean": "<boolean>",
     "anArrayOfStrings": "<string[]>",
     "anObject": {  "anotherString": "<string>", },
-    "anArrayOfObjects": "<(string)[]>",
+    "anArrayOfObjects": "<({  "anotherString": "<string>", })[]>",
     "anArrayOfReferencedModel": "<Address[]>",
+    "aUnion": "<string | number>",
 }
 );"
 `;

@@ -43,9 +43,14 @@ describe('language snippets', () => {
                 array: true,
                 value: [
                     {
-                        name: 'anotherString',
-                        value: 'string',
-                        tsType: true
+                        name: 'anObject',
+                        value: [
+                            {
+                                name: 'anotherString',
+                                value: 'string',
+                                tsType: true
+                            }
+                        ]
                     }
                 ]
             },
@@ -54,6 +59,22 @@ describe('language snippets', () => {
                 array: true,
                 model: true,
                 value: 'Address'
+            },
+            {
+                name: 'aUnion',
+                union: true,
+                value: [
+                    {
+                        name: '0',
+                        value: 'string',
+                        tsType: true
+                    },
+                    {
+                        name: '1',
+                        value: 'number',
+                        tsType: true
+                    }
+                ]
             }
         ]
     };
