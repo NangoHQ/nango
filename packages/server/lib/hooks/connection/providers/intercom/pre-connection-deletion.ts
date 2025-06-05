@@ -13,6 +13,7 @@ export default async function execute(nango: InternalNango) {
 
         // Intercom API to revoke access token
         const response = await axios.post(
+            // https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/installing-uninstalling-apps#revoking-access
             'https://api.intercom.io/auth/uninstall',
             {},
             {

@@ -11,7 +11,7 @@ export default async function execute(nango: InternalNango) {
             return;
         }
 
-        // HubSpot API to delete/revoke refresh token
+        // https://developers.hubspot.com/docs/guides/api/app-management/oauth-tokens#delete-a-refresh-token
         const response = await axios.delete(`https://api.hubapi.com/oauth/v1/refresh-tokens/${credentials.refresh_token}`, {
             headers: {
                 'Content-Type': 'application/json'

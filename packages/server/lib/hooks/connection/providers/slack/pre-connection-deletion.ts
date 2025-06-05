@@ -11,8 +11,7 @@ export default async function execute(nango: InternalNango) {
             return;
         }
 
-        // Slack API to revoke access token
-        // According to docs: https://api.slack.com/methods/auth.revoke
+        // https://api.slack.com/methods/auth.revoke
         const response = await axios.get('https://slack.com/api/auth.revoke', {
             headers: {
                 Authorization: `Bearer ${credentials.access_token}`,
