@@ -46,10 +46,7 @@ export async function generate({
     for (const config of integrations) {
         const integration = config.providerConfigKey;
 
-        const toGenerate: NangoSyncOrAction[] = [];
-
-        toGenerate.push(...Object.values(config.syncs));
-        toGenerate.push(...Object.values(config.actions));
+        const toGenerate: NangoSyncOrAction[] = [...Object.values(config.syncs), ...Object.values(config.actions)];
 
         for (const entry of toGenerate) {
             const scriptPath = `${integration}/${entry.type}s/${entry.name}`;
@@ -291,8 +288,11 @@ export function modelToJson({
     }
 
     // Handle union (anyOf)
-    if ('anyOf' in model && Array.isArray(model.anyOf)) {
-        const unionTypes = model.anyOf.map((subSchema) => {
+    const of = model.oneOf || model.anyOf;
+    if (of && Array.isArray(of)) {
+        const unionTypes = of.map((subSchema) => {
+            // Do not pass models for enum prop to make them readable
+            // We can revisit later if we want
             const val = modelToJson({ model: subSchema, models: [] });
             if (typeof val === 'string') {
                 return val;
