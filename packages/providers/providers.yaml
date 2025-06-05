@@ -5637,6 +5637,34 @@ jobadder:
                 - /v2/users/current
     docs: https://docs.nango.dev/integrations/all/jobadder
 
+jobvite:
+    display_name: Jobvite
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.jobvite.com/api
+        headers:
+            content-type: application/json
+            x-jvi-api: ${apiKey}
+            x-jvi-sc: ${secretKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/candidate
+    docs: https://docs.nango.dev/integrations/all/jobvite
+    docs_connect: https://docs.nango.dev/integrations/all/jobvite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Jobvite account
+        secretKey:
+            type: string
+            title: Secret Key
+            description: The secret key for your Jobvite account
+            secret: true
+
 jotform:
     display_name: Jotform
     categories:
