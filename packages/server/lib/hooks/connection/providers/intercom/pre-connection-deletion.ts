@@ -1,5 +1,5 @@
 import type { OAuth2Credentials } from '@nangohq/types';
-import type { InternalNango } from '../../post-connection.js';
+import type { InternalNango } from '../../shared-hook-logic';
 import axios from 'axios';
 
 export default async function execute(nango: InternalNango) {
@@ -11,28 +11,23 @@ export default async function execute(nango: InternalNango) {
             return;
         }
 
-        // Intercom API to revoke access token
-        const response = await axios.post(
+        await nango.proxy({
+            method: 'POST',
             // https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/installing-uninstalling-apps#revoking-access
-            'https://api.intercom.io/auth/uninstall',
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${credentials.access_token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            endpoint: 'https://api.intercom.io/auth/uninstall',
+            providerConfigKey: connection.provider_config_key,
+            data: {},
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
             }
-        );
-
-        if (response.status >= 200 && response.status < 300) {
-            return;
-        } else {
-            throw new Error(`Failed to revoke Intercom token: ${response.status} ${response.statusText}`);
-        }
+        });
+        return;
     } catch (err) {
         if (axios.isAxiosError(err)) {
-            throw new Error(`Error revoking Intercom token: ${err.message}`);
+            // Extract error message from Intercom's response structure
+            const intercomError = err.response?.data?.errors?.[0]?.message || err.response?.data?.message || err.message;
+            throw new Error(`Error revoking Intercom token: ${intercomError}`);
         }
         throw err;
     }
