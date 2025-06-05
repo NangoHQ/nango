@@ -92,7 +92,7 @@ export async function executeHookScriptLogic<
 
     try {
         await handler(internalNango);
-        void logCtx.info('Success');
+        void logCtx.info(`${scriptTypeDescription} script succeeded`);
         await logCtx.success();
         metrics.increment(metricsSuccessType);
     } catch (err) {
