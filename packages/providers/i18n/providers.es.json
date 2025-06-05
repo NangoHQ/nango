@@ -20,5 +20,23 @@
                 "description": "Contraseña de la API de Workday"
             }
         }
+    },
+    "oracle-hcm": {
+        "connection_config": {
+            "restServerUrl": {
+                "title": "URL del servidor REST",
+                "description": "La URL del servidor REST para su Oracle Fusion Cloud"
+            }
+        },
+        "credentials": {
+            "username": {
+                "title": "Nombre de usuario",
+                "description": "Su nombre de usuario del servicio Oracle Cloud"
+            },
+            "password": {
+                "title": "Contraseña",
+                "description": "Su contraseña del servicio Oracle Cloud"
+            }
+        }
     }
 }

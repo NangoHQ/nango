@@ -16,6 +16,8 @@ import { loadYamlAndGenerate } from '../services/model.service.js';
 
 import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type { Collection, ImportSpecifier } from 'jscodeshift';
+import { exampleFolder } from '../zeroYaml/constants.js';
+import { syncTsConfig } from '../zeroYaml/utils.js';
 
 const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];
 const batchMethods = ['batchSave', 'batchUpdate', 'batchDelete'];
@@ -37,8 +39,9 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     spinner.succeed();
 
     {
-        const spinner = ora({ text: 'Add package.json' }).start();
+        const spinner = ora({ text: 'Init folder' }).start();
         await addPackageJson({ fullPath, debug });
+        await syncTsConfig({ fullPath });
         spinner.succeed();
     }
 
@@ -636,7 +639,7 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
 async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: boolean }) {
     // Ensure package.json exists and has nango in devDependencies
     const packageJsonPath = path.join(fullPath, 'package.json');
-    const examplePackageJsonPath = path.join(import.meta.dirname, '../../example/package.json');
+    const examplePackageJsonPath = path.join(exampleFolder, 'package.json');
     let packageJsonExists = false;
     try {
         await fs.promises.access(packageJsonPath, fs.constants.F_OK);

@@ -11,10 +11,11 @@ import ts from 'typescript';
 import { printDebug } from '../utils.js';
 import { compileOne, tsToJsPath } from './compile.js';
 import { CompileError, tsconfig } from './constants.js';
+import { syncTsConfig } from './utils.js';
 
 import type { Ora } from 'ora';
 
-export function dev({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+export async function dev({ fullPath, debug }: { fullPath: string; debug: boolean }) {
     const outDir = path.join(fullPath, 'build');
 
     if (!fs.existsSync(outDir)) {
@@ -22,6 +23,7 @@ export function dev({ fullPath, debug }: { fullPath: string; debug: boolean }) {
         fs.mkdirSync(outDir);
     }
 
+    await syncTsConfig({ fullPath });
     manualWatch({ fullPath, debug });
     typescriptWatchSimple({ fullPath, debug });
 }

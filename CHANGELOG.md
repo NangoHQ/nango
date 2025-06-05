@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.1] - 2025-06-04
+
+### Added
+
+- Add section about handling invalid connections (#4132) by @TBonnin
+- *(webapp)* Add duration to logs and sub-logs (#4155) by @rossmcewan
+- *(providers)* Localize oracle-hcm (#4158) by @kaposke
+- *(webapp)* Add second-level precision to period log search (#4154) by @rossmcewan
+
+### Fixed
+
+- *(server)* Mistake on getting json_schema models (#4157) by @kaposke
+- *(zeroyaml)* Various bug fixes (#4156) by @bodinsamuel
+- *(cli)* Dryrun with --integration-id flag has incorrect check (#4164) by @kaposke
+
 ## [v0.60.0] - 2025-06-04
 
 ### Added
@@ -4072,6 +4087,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.1]: https://github.com/NangoHQ/nango/compare/v0.60.0..v0.60.1
 [v0.60.0]: https://github.com/NangoHQ/nango/compare/v0.59.13..v0.60.0
 [v0.59.13]: https://github.com/NangoHQ/nango/compare/v0.59.12..v0.59.13
 [v0.59.12]: https://github.com/NangoHQ/nango/compare/v0.59.11..v0.59.12

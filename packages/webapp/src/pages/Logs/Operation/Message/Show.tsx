@@ -1,9 +1,9 @@
 import { Prism } from '@mantine/prism';
-import { IconCalendar } from '@tabler/icons-react';
+import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
 import { Tag } from '../../../../components/ui/label/Tag';
-import { formatDateToLogFormat } from '../../../../utils/utils';
+import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
 import { LevelTag } from '../../components/LevelTag';
 
 import type { MessageRow } from '@nangohq/types';
@@ -40,6 +40,17 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         return pl;
     }, [message.meta, message.error]);
 
+    const duration = useMemo<string>(() => {
+        if (!message) {
+            return '';
+        }
+        if (!message.durationMs) {
+            return 'n/a';
+        }
+
+        return millisecondsToRuntime(message.durationMs);
+    }, [message]);
+
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
@@ -50,6 +61,15 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     <div className="flex">
                         <LevelTag level={message.level} />
                     </div>
+                    {message.durationMs ? (
+                        <div className="flex gap-2 items-center">
+                            <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                            <div className="flex gap-2 items-center">
+                                <IconClockHour4 stroke={1} size={18} />
+                                <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
+                            </div>
+                        </div>
+                    ) : null}
                     <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconCalendar stroke={1} size={18} />
