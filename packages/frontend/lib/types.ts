@@ -91,6 +91,7 @@ export interface BillCredentials {
 
 export interface TwoStepCredentials {
     type: 'TWO_STEP';
+    [key: string]: any;
 }
 
 export interface SignatureCredentials {

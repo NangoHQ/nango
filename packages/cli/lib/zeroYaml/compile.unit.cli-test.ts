@@ -34,6 +34,7 @@ describe('compileAll', () => {
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
         await exec('npm i', { cwd: dir });
         const result = await compileAll({ fullPath: dir, debug: false });
+        result.unwrap();
         expect(result.isOk()).toBe(true);
     });
 });

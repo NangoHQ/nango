@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Ok, env } from '@nangohq/utils';
+import { Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
 
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -472,11 +472,9 @@ export async function deployPreBuilt({
             throw new NangoError('file_upload_error');
         }
 
-        const flowJsonSchema: JSONSchema7 = {
-            definitions: {}
-        };
+        let models_json_schema: JSONSchema7 | null = null;
 
-        const flowModels = Array.isArray(models) ? models : [models];
+        const model_schema = typeof model_schema_string === 'string' ? (JSON.parse(model_schema_string) as NangoModel[]) : model_schema_string;
 
         if (is_public) {
             await remoteFileService.copy(
@@ -487,19 +485,16 @@ export async function deployPreBuilt({
                 `${sync_name}.ts`
             );
             // fetch the json schema so we have type checking
-            const jsonSchema = await remoteFileService.getPublicTemplateJsonSchemaFile(firstConfig.public_route, environment.id);
+            const jsonSchemaString = await remoteFileService.getPublicTemplateJsonSchemaFile(firstConfig.public_route, environment.id);
 
-            if (jsonSchema) {
-                const parsedJsonSchema = JSON.parse(jsonSchema);
-                for (const model of flowModels) {
-                    const schema = parsedJsonSchema.definitions![model];
-                    if (!schema) {
-                        const error = new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model}"`);
-
-                        return { success: false, error, response: null };
-                    }
-                    flowJsonSchema.definitions![model] = schema;
+            if (jsonSchemaString) {
+                const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
+                const allModels = [...models, config.input?.name].filter(Boolean) as string[];
+                const result = filterJsonSchemaForModels(jsonSchema, allModels);
+                if (result.isErr()) {
+                    return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
                 }
+                models_json_schema = result.value;
             }
         } else {
             if (typeof config.fileBody === 'object' && config.fileBody.ts) {
@@ -520,14 +515,12 @@ export async function deployPreBuilt({
 
         const created_at = new Date();
 
-        const model_schema = typeof model_schema_string === 'string' ? JSON.parse(model_schema_string) : model_schema_string;
-
         if (input && Object.keys(input).length === 0) {
             input = undefined;
         }
 
         if (input && typeof input !== 'string' && input.name) {
-            model_schema.push(input);
+            model_schema.push(input as NangoModel);
         }
 
         const flowData: DBSyncConfigInsert = {
@@ -536,7 +529,7 @@ export async function deployPreBuilt({
             nango_config_id,
             file_location,
             version,
-            models: flowModels,
+            models,
             active: true,
             runs,
             input: (input && typeof input !== 'string' ? String(input.name) : input) || null,
@@ -552,7 +545,7 @@ export async function deployPreBuilt({
             is_public,
             enabled: true,
             webhook_subscriptions: null,
-            models_json_schema: flowJsonSchema,
+            models_json_schema,
             sdk_version: null, // TODO: fill this somehow
             updated_at: new Date(),
             sync_type: 'sync_type' in config ? (config.sync_type as SyncTypeLiteral) : null
@@ -566,7 +559,7 @@ export async function deployPreBuilt({
             ...flowData,
             last_deployed: created_at,
             input: typeof input !== 'string' ? (input as SyncModelSchema) : String(input),
-            models: model_schema
+            models
         });
     }
 
@@ -739,38 +732,14 @@ async function compileDeployInfo({
         plan
     });
 
-    // Only store relevant JSON schema
-    const flowJsonSchema: JSONSchema7 = {
-        definitions: {}
-    };
+    let models_json_schema: JSONSchema7 | null = null;
     if (jsonSchema) {
-        for (const model of model_schema) {
-            const schema = jsonSchema.definitions![model.name];
-            if (!schema) {
-                return {
-                    success: false,
-                    error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model.name}"`),
-                    response: null
-                };
-            }
-
-            flowJsonSchema.definitions![model.name] = schema;
-            const models = findModelInModelSchema(model.fields);
-
-            // Fields that may contain other Model
-            for (const modelName of models) {
-                const schema = jsonSchema.definitions![modelName];
-                if (!schema) {
-                    return {
-                        success: false,
-                        error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${modelName}"`),
-                        response: null
-                    };
-                }
-
-                flowJsonSchema.definitions![modelName] = schema;
-            }
+        const allModels = [...models, flow.input].filter(Boolean) as string[];
+        const result = filterJsonSchemaForModels(jsonSchema, allModels);
+        if (result.isErr()) {
+            return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }
+        models_json_schema = result.value;
     }
 
     return {
@@ -799,7 +768,7 @@ async function compileDeployInfo({
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
-                models_json_schema: jsonSchema ? flowJsonSchema : null,
+                models_json_schema,
                 sdk_version: sdkVersion || null,
                 created_at: new Date(),
                 updated_at: new Date()
@@ -831,23 +800,6 @@ async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<void> {
             [oldSyncConfigId, oldSyncConfigId]
         );
     });
-}
-
-function findModelInModelSchema(fields: NangoModel['fields']) {
-    const models = new Set<string>();
-    for (const field of fields) {
-        if (field.model) {
-            models.add(field.value as string);
-        }
-        if (Array.isArray(field.value)) {
-            const res = findModelInModelSchema(field.value);
-            if (res.size > 0) {
-                res.forEach((name) => models.add(name));
-            }
-        }
-    }
-
-    return models;
 }
 
 function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints' | 'models'>, sync_config_id: number) {

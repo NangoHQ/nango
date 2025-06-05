@@ -65,9 +65,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             name: task.syncName,
             isAction: false
         });
-
         if (!syncConfig) {
             throw new Error(`Sync config not found. TaskId: ${task.id}`);
+        }
+        if (!syncConfig.enabled) {
+            throw new Error(`Sync is disabled: ${task.id}`);
         }
 
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
@@ -557,6 +559,9 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
 
         if (!syncConfig) {
             throw new Error(`Sync config not found. TaskId: ${task.id}`);
+        }
+        if (!syncConfig.enabled) {
+            throw new Error(`Sync is disabled: ${task.id}`);
         }
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
