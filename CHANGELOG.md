@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.2] - 2025-06-05
+
+### Added
+
+- *(cli)* ZeroYaml generate:docs  (#4152) by @bodinsamuel
+
+### Changed
+
+- *(deps)* Bump multer from 2.0.0 to 2.0.1 in /packages/server (#4166) by @dependabot[bot]
+
+### Fixed
+
+- *(webhook)* Decode private key before hashing in validation (#4151) by @priyesh2609
+- *(cli)* Use old syntax for dirname (#4168) by @bodinsamuel
+
 ## [v0.60.1] - 2025-06-04
 
 ### Added
@@ -4087,6 +4102,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.2]: https://github.com/NangoHQ/nango/compare/v0.60.1..v0.60.2
 [v0.60.1]: https://github.com/NangoHQ/nango/compare/v0.60.0..v0.60.1
 [v0.60.0]: https://github.com/NangoHQ/nango/compare/v0.59.13..v0.60.0
 [v0.59.13]: https://github.com/NangoHQ/nango/compare/v0.59.12..v0.59.13
