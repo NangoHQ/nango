@@ -57,10 +57,10 @@ export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
     }
 
     const { environment } = res.locals;
+
     const body: PatchWebhook['Body'] = val.data;
 
     const data: Partial<DBExternalWebhook> = {};
-    console.log('this is the body.primary_url in here we are checking', body.primary_url);
     if (typeof body.primary_url !== 'undefined') {
         data.primary_url = body.primary_url;
     }
