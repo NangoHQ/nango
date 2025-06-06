@@ -34,7 +34,8 @@ const webhookSettings: DBExternalWebhook = {
 const integration = {
     id: 1,
     provider: 'hubspot',
-    unique_key: 'hubspot'
+    unique_key: 'hubspot',
+    forward_webhooks: true
 } as IntegrationConfig;
 
 describe('Webhooks: forward notification tests', () => {
@@ -58,6 +59,29 @@ describe('Webhooks: forward notification tests', () => {
             },
             logContextGetter,
             integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {
+                'content-type': 'application/json'
+            }
+        });
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('Should not send a forward webhook if forward_webhooks is false', async () => {
+        await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as DBEnvironment,
+            webhookSettings,
+            logContextGetter,
+            integration: {
+                ...integration,
+                forward_webhooks: false
+            },
             payload: { some: 'data' },
             webhookOriginalHeaders: {
                 'content-type': 'application/json'

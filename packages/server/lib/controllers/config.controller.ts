@@ -341,7 +341,8 @@ class ConfigController {
                 environment_id: environmentId,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             };
             if (custom) {
                 config.custom = custom;

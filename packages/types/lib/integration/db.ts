@@ -16,6 +16,7 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     custom?: Record<string, string> | undefined | null;
     missing_fields: string[];
     display_name: string | null;
+    forward_webhooks: boolean;
 }
 
 export type DBIntegrationCrypted = Tagged<IntegrationConfig, 'IntegrationCrypted'>;

@@ -16,7 +16,8 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
-        display_name: data.display_name
+        display_name: data.display_name,
+        forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks
     };
 }
 
@@ -35,6 +36,7 @@ export function integrationToPublicApi({
         display_name: integration.display_name || provider.display_name,
         logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
         ...include,
+        forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),
         updated_at: integration.updated_at.toISOString()
     };
