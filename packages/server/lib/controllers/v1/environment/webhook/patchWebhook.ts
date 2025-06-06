@@ -1,13 +1,40 @@
+import { URL } from 'url';
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { externalWebhookService } from '@nangohq/shared';
+import { externalWebhookService, getApiUrl } from '@nangohq/shared';
+
+const serverBaseUrl = new URL(getApiUrl()).origin;
 
 const validation = z
     .object({
-        primary_url: z.string().url().or(z.literal('')).optional(),
-        secondary_url: z.string().url().or(z.literal('')).optional(),
+        primary_url: z
+            .string()
+            .url()
+            .or(z.literal(''))
+            .optional()
+            .refine(
+                (url) => {
+                    if (!url || url.trim() === '') return true;
+                    const inputUrl = new URL(url);
+                    return inputUrl.origin !== serverBaseUrl;
+                },
+                { message: `Webhook URLs cannot point to the server domain (${serverBaseUrl}).` }
+            ),
+        secondary_url: z
+            .string()
+            .url()
+            .or(z.literal(''))
+            .optional()
+            .refine(
+                (url) => {
+                    if (!url || url.trim() === '') return true;
+                    const inputUrl = new URL(url);
+                    return inputUrl.origin !== serverBaseUrl;
+                },
+                { message: `Webhook URLs cannot point to the server domain (${serverBaseUrl}).` }
+            ),
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),
