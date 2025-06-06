@@ -30,6 +30,7 @@ import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
+import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
@@ -353,7 +354,8 @@ program
         if (precheck.isZeroYaml) {
             const def = await buildDefinitions({ fullPath, debug });
             if (def.isErr()) {
-                console.log(def.error.message);
+                console.log('');
+                console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
                 process.exitCode = 1;
                 return;
             }
