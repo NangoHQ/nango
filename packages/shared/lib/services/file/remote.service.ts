@@ -7,12 +7,12 @@ import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { isCloud, isEnterprise, isLocal, isTest, report } from '@nangohq/utils';
 
 import localFileService from './local.service.js';
-import { LogActionEnum } from '../../models/Telemetry.js';
 import { NangoError } from '../../utils/error.js';
-import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import errorManager from '../../utils/error.manager.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
 let client: S3Client | null = null;
@@ -193,14 +193,17 @@ class RemoteFileService {
         await client?.send(deleteObjectsCommand);
     }
 
-    async zipAndSendPublicFiles(
-        res: Response,
-        integrationName: string,
-        accountId: number,
-        environmentId: number,
-        providerPath: string,
-        flowType: string
-    ): Promise<void> {
+    async zipAndSendPublicFiles({
+        res,
+        integrationName,
+        providerPath,
+        flowType
+    }: {
+        res: Response;
+        integrationName: string;
+        providerPath: string;
+        flowType: string;
+    }): Promise<void> {
         const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
         if (!success || nangoYaml === null) {
             errorManager.errResFromNangoErr(res, error);
@@ -215,30 +218,32 @@ class RemoteFileService {
             errorManager.errResFromNangoErr(res, tsError);
             return;
         }
-        await this.zipAndSend(res, integrationName, nangoYaml, tsFile, environmentId, accountId);
+        await this.zipAndSend({ res, integrationName, nangoYaml, tsFile });
     }
 
-    async zipAndSendFiles(
-        res: Response,
-        integrationName: string,
-        accountId: number,
-        environmentId: number,
-        nangoConfigId: number,
-        file_location: string,
-        providerConfigKey: string,
-        flowType: string
-    ): Promise<void> {
+    async zipAndSendFiles({
+        res,
+        integrationName,
+        providerConfigKey,
+        syncConfig
+    }: {
+        res: Response;
+        integrationName: string;
+        providerConfigKey: string;
+        syncConfig: DBSyncConfig;
+    }): Promise<void> {
         if (!isCloud && !useS3) {
-            return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId, providerConfigKey, flowType);
+            return localFileService.zipAndSendFiles({ res, integrationName, providerConfigKey, syncConfig });
         } else {
-            const nangoConfigLocation = file_location.split('/').slice(0, -3).join('/');
+            const nangoConfigLocation = syncConfig.file_location.split('/').slice(0, -3).join('/');
             const { success, error, response: nangoYaml } = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
 
             if (!success || nangoYaml === null) {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
-            const integrationFileLocation = file_location.split('/').slice(0, -1).join('/');
+
+            const integrationFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
             const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${integrationName}.ts`);
 
             if (!tsSuccess || tsFile === null) {
@@ -246,40 +251,27 @@ class RemoteFileService {
                 return;
             }
 
-            await this.zipAndSend(res, integrationName, nangoYaml, tsFile, environmentId, accountId, nangoConfigId);
+            await this.zipAndSend({ res, integrationName, nangoYaml, tsFile, nangoConfigId: syncConfig.nango_config_id });
         }
     }
 
-    async zipAndSend(
-        res: Response,
-        integrationName: string,
-        nangoYaml: Readable,
-        tsFile: Readable,
-        environmentId: number,
-        accountId: number,
-        nangoConfigId?: number
-    ) {
+    async zipAndSend({
+        res,
+        integrationName,
+        nangoYaml,
+        tsFile,
+        nangoConfigId
+    }: {
+        res: Response;
+        integrationName: string;
+        nangoYaml: Readable;
+        tsFile: Readable;
+        nangoConfigId?: number;
+    }) {
         const archive = archiver('zip');
 
         archive.on('error', (err) => {
-            const metadata: Record<string, string | number> = {
-                integrationName,
-                accountId
-            };
-
-            if (nangoConfigId) {
-                metadata['nangoConfigId'] = nangoConfigId;
-            }
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                environmentId,
-                operation: LogActionEnum.FILE,
-                metadata: {
-                    integrationName,
-                    accountId,
-                    nangoConfigId: nangoConfigId || null
-                }
-            });
+            report(err, { integrationName, nangoConfigId });
 
             errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
             return;
