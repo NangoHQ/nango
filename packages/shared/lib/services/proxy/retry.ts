@@ -183,7 +183,9 @@ function parseRetryValue({
         let retryAtEpoch: number;
         const numericValue = Number(rawValue);
         if (!isNaN(numericValue)) {
-            retryAtEpoch = numericValue > currentEpochTime + 60 * 60 * 24 * 365 ? Math.floor(numericValue / 1000) : numericValue;
+            const dateFromValue = new Date(numericValue);
+            const isMs = dateFromValue.getFullYear() > 1971;
+            retryAtEpoch = isMs ? Math.floor(numericValue / 1000) : numericValue;
         } else {
             const dateValue = new Date(rawValue).getTime();
             if (isNaN(dateValue)) {
