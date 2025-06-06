@@ -68,7 +68,8 @@ describe(`PATCH ${endpoint}`, () => {
                 logo: 'http://localhost:3003/images/template-logos/github.svg',
                 provider: 'github',
                 unique_key: 'github',
-                updated_at: expect.toBeIsoDate()
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
             }
         });
     });

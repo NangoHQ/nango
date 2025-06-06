@@ -142,7 +142,8 @@ describe('Sync config create', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
         });
 

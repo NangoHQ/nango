@@ -32,7 +32,8 @@ describe('Config service integration tests', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['oauth_client_id']);
@@ -48,7 +49,8 @@ describe('Config service integration tests', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['oauth_client_secret']);
@@ -65,7 +67,8 @@ describe('Config service integration tests', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['oauth_client_id']);
@@ -82,7 +85,8 @@ describe('Config service integration tests', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['oauth_client_secret']);
@@ -99,7 +103,8 @@ describe('Config service integration tests', () => {
                 environment_id: 1,
                 created_at: new Date(),
                 updated_at: new Date(),
-                missing_fields: []
+                missing_fields: [],
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['app_link']);
@@ -120,7 +125,8 @@ describe('Config service integration tests', () => {
                 custom: {
                     app_id: '',
                     private_key: ''
-                }
+                },
+                forward_webhooks: true
             });
 
             expect(maybeError).toEqual(['app_id', 'private_key']);

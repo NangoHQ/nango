@@ -308,7 +308,12 @@ export async function getUniqueSyncsByProviderConfig(
     return [];
 }
 
-export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<DBSyncConfig | null> {
+export async function getSyncAndActionConfigByParams(
+    environment_id: number,
+    sync_name: string,
+    providerConfigKey: string,
+    is_public: boolean
+): Promise<DBSyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -316,14 +321,16 @@ export async function getSyncAndActionConfigByParams(environment_id: number, syn
     }
 
     try {
-        const result = await schema()
+        const result = await db.knex
             .from<DBSyncConfig>(TABLE)
+            .select('*')
             .where({
                 environment_id,
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
-                deleted: false
+                deleted: false,
+                is_public: is_public
             })
             .orderBy('created_at', 'desc')
             .first();

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { report } from '@nangohq/utils';
 
 import { LogActionEnum } from '../../models/Telemetry.js';
 import { NangoError } from '../../utils/error.js';
@@ -45,17 +46,15 @@ class LocalFileService {
         }
     }
 
-    public putIntegrationFile(syncName: string, fileContents: string, distPrefix: boolean) {
+    public putIntegrationFile({ filePath, fileContent }: { filePath: string; fileContent: string }) {
         try {
-            const realPath = fs.realpathSync(basePath);
-            if (distPrefix) {
-                fs.mkdirSync(`${realPath}/build`, { recursive: true });
-            }
-            fs.writeFileSync(`${realPath}${distPrefix ? '/build' : ''}/${syncName}`, fileContents, 'utf8');
+            const fp = path.join(basePath, filePath);
+            fs.mkdirSync(fp.replace(path.basename(fp), ''), { recursive: true });
+            fs.writeFileSync(fp, fileContent, 'utf8');
 
             return true;
         } catch (err) {
-            console.log(err);
+            report(err);
             return false;
         }
     }
