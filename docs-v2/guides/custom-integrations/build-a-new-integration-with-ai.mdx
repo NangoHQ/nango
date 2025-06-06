@@ -1,0 +1,145 @@
+---
+title: 'Build a new integration with AI'
+sidebarTitle: 'Build with AI'
+description: 'Guide on how to best use AI to build custom integrations in Nango.'
+---
+
+Building custom integrations for Nango is significantly faster and more efficient when using AI-powered development tools. This guide shows you how to leverage Cursor with agent mode or Claude Code to build high-quality integrations quickly.
+
+## Overview of Recommended Tools
+
+We recommend using one of these AI-powered development environments:
+
+- **Cursor with Agent Mode**
+- **Claude Code**: Anthropic's official CLI tool
+
+Both tools understand Nango's architecture and can help you build integrations following best practices.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+1. **Working Nango integrations folder**: Either an existing `nango-integrations` directory or run `nango init` to create one
+2. **Environment setup**: Your `.env` file configured with development environment secret (found in [dashboard settings](https://app.nango.dev/dev/environment-settings))
+3. **Provider configured**: The provider should already be configured in your [Nango dashboard](https://app.nango.dev/dev/integrations)
+4. **Test connection**: At least one working test connection for the provider you're integrating
+
+## Step-by-Step Process
+
+### 1. Set Up Your Development Environment
+
+First, make sure your Nango project is properly initialized:
+
+```bash
+# If you don't have a nango-integrations folder yet
+nango init
+
+# Navigate to your integrations directory
+cd nango-integrations
+
+# Ensure your environment is configured
+# Check that .env contains your NANGO_SECRET_KEY_DEV
+# Get your dev secret from: https://app.nango.dev/dev/environment-settings
+```
+
+### 2. Craft Effective Prompts
+
+When working with your AI assistant, provide clear, specific prompts:
+
+**Example prompt structure:**
+```
+I need to build a Nango custom [SYNC/ACTION] for [PROVIDER_NAME] called [INTEGRATION_NAME].
+
+## Context
+- Provider: [provider-name]
+- Integration: [integration-name]
+- Type: [sync/action]
+- Test connection ID: [connection-id]
+
+## Additional details
+- **Output schema**: [describe the expected data structure]
+- **Field mapping**:
+  - `api_field_name` → `nango_field_name`
+  - other transformations (ex: dates)
+- **API Documentation**: [link-to-docs]
+- **Data source**: [specific API endpoint(s) to call]
+- **Error handling requirements**
+
+Please implement this step by step and use `nango dryrun <integration-name> <connection-id> --validation [--input '{...}']` to test.
+```
+
+### 3. Key Prompt Tips
+
+- **Be specific about the provider and integration name** - this helps the AI understand the context
+- **Specify sync vs action** - clearly state whether you're building a sync (continuous data synchronization) or action (one-time operation)
+- **Specify data models** - clearly describe what data you want to be synced or returned and its structure
+- **Include field mapping details** - specify how API fields should map to your desired output schema and any transformations needed
+- **Provide the test connection ID** - enables the AI to run `nango dryrun` for testing
+- **Include API documentation links** - if available, provide links to the provider's API docs
+
+### 4. Iterative Development
+
+Work with your AI assistant iteratively:
+
+1. Start with basic data fetching
+2. Test with `nango dryrun`
+3. Add data transformation and validation
+4. Implement error handling
+5. Add pagination if needed
+6. Final testing and cleanup
+
+## Common Pitfalls and Checklist
+
+When using AI to build integrations, watch out for these common issues:
+
+### ❌ API Knowledge Gaps
+- **Problem**: AI may not know specific API endpoints/parameters or may use non-existent endpoints
+- **Solution**: Provide API documentation and verify endpoint usage against the actual API docs
+- **Watch for**: Endpoints that don't exist in the provider's API, client-side filtering instead of using proper query parameters
+
+### ❌ Code Artifacts
+- **Problem**: Leftover debugging code or incomplete implementations
+- **Solution**: Review generated code thoroughly and ask AI to clean up artifacts
+
+### ❌ Missing Validation
+- **Problem**: No input validation or data type checking
+- **Solution**: Explicitly ask for validation of API responses and input parameters
+
+### ❌ Poor Error Handling
+- **Problem**: Basic or missing error handling for API failures or missing data
+- **Solution**: Request comprehensive error handling for common API error scenarios
+
+### ✅ Quality Checklist
+
+Before finalizing your integration, verify:
+
+- [ ] API endpoints are correctly implemented
+- [ ] Proper query parameters are used
+- [ ] All debugging code and artifacts are removed
+- [ ] Input and output validation is implemented
+- [ ] Error handling covers common failure scenarios
+- [ ] Pagination is implemented correctly
+- [ ] Data models match the expected schema
+- [ ] `nango dryrun` passes successfully and without errors
+
+## When to Restart with Fresh Context
+
+Consider starting with a fresh AI context when:
+
+- The conversation becomes too long and the AI loses track of requirements
+- Multiple failed attempts have cluttered the context
+- The AI starts suggesting irrelevant or incorrect solutions
+
+**Tip**: Save working code snippets before restarting, so you can quickly provide context to the fresh session.
+
+## Best Practices for AI-Assisted Development
+
+1. **Start simple**: Begin with basic functionality and iterate
+2. **Test frequently**: Ensure the agent is running `nango dryrun` after each significant change
+3. **Provide feedback**: Give clear feedback on what works and what doesn't
+4. **Stay focused**: Keep prompts focused on specific tasks
+5. **Review thoroughly**: Always review AI-generated code before deploying
+
+By following this guide and leveraging AI assistance effectively, you can build robust Nango integrations much faster than traditional development approaches.
+
+
