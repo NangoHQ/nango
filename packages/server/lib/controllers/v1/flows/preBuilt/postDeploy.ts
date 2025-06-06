@@ -83,8 +83,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         account,
         template: flow,
         deployInfo: { integrationId: body.providerConfigKey, provider: body.provider },
-        logContextGetter,
-        orchestrator
+        logContextGetter
     });
     if (resDeploy.isErr()) {
         res.status(503).send({ error: { code: 'failed_to_deploy', errors: [resDeploy.error] } });

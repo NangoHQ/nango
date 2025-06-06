@@ -385,7 +385,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, false);
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {

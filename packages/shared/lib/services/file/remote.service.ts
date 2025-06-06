@@ -94,7 +94,9 @@ class RemoteFileService {
         destinationPath: string;
         /**
          * sic
-         * Destination when not uploading to S3, it should be similar to destinationPath but no
+         * Destination when not uploading to S3
+         * This method handles when S3 is not enabled (like locally)
+         * TODO: We probably need to do it outside but until now it's like this
          */
         destinationLocalPath: string;
     }): Promise<string | null> {

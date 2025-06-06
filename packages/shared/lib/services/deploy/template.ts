@@ -6,10 +6,8 @@ import { NangoError } from '../../utils/error.js';
 import configService from '../config.service.js';
 import { switchActiveSyncConfig } from './utils.js';
 import remoteFileService from '../file/remote.service.js';
-import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from '../sync/config/config.service.js';
-import { getSyncsByProviderConfigKey } from '../sync/sync.service.js';
+import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
 
-import type { Orchestrator } from '../../clients/orchestrator';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     DBEnvironment,
@@ -30,15 +28,13 @@ export async function deployTemplate({
     account,
     template,
     deployInfo,
-    logContextGetter,
-    orchestrator
+    logContextGetter
 }: {
     environment: DBEnvironment;
     account: DBTeam;
     template: NangoSyncConfig;
     deployInfo: { integrationId: string; provider: string };
     logContextGetter: LogContextGetter;
-    orchestrator: Orchestrator;
 }): Promise<Result<{ result: SyncDeploymentResult; logCtx: LogContext }>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
 
@@ -67,41 +63,12 @@ export async function deployTemplate({
 
     const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId);
-    let bumpedVersion = '';
-
-    if (previousSyncAndActionConfig) {
-        bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
-
-        if (template.type === 'sync') {
-            const syncs = await getSyncsByProviderConfigKey({
-                environmentId: environment.id,
-                providerConfigKey: deployInfo.integrationId,
-                filter: [{ syncName: template.name, syncVariant: 'base' }]
-            });
-            for (const sync of syncs) {
-                const interval = sync.frequency || template.runs || 'every 30d';
-                const res = await orchestrator.updateSyncFrequency({
-                    syncId: sync.id,
-                    interval,
-                    syncName: template.name,
-                    environmentId: environment.id,
-                    logCtx
-                });
-                if (res.isErr()) {
-                    return Err(
-                        new NangoError('error_updating_sync_schedule_frequency', {
-                            syncId: sync.id,
-                            environmentId: environment.id,
-                            interval
-                        })
-                    );
-                }
-            }
-        }
+    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, true);
+    if (exists) {
+        return Err(new NangoError('template_already_deployed'));
     }
 
-    const version = template.version || bumpedVersion || '0.0.1';
+    const version = template.version || '0.0.1';
 
     void logCtx.info(`Uploading ${deployInfo.integrationId} -> ${template.name}@${version}`);
 
@@ -164,7 +131,7 @@ export async function deployTemplate({
         nango_config_id: integration.id!,
         file_location,
         version,
-        models: modelsNames,
+        models: template.returns,
         active: true,
         runs: template.type === 'sync' ? template.runs! : null,
         input: template.input?.name || null,

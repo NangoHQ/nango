@@ -31,7 +31,6 @@ export interface LegacySyncModelSchema {
     }[];
 }
 
-// TODO: split into action | sync type
 export interface PreBuiltAction {
     type: 'action';
     models: string[];
