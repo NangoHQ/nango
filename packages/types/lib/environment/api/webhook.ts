@@ -18,4 +18,13 @@ export type PatchWebhook = Endpoint<{
     Success: {
         success: boolean;
     };
+    Error: {
+        error: {
+            code: 'invalid_body';
+            errors: {
+                path: string[];
+                message: string;
+            }[];
+        };
+    };
 }>;
