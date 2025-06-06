@@ -463,22 +463,6 @@ program
         console.log(chalk.green(JSON.stringify({ ...parsing.value.parsed, models: Array.from(parsing.value.parsed!.models.values()) }, null, 2)));
     });
 
-// admin only commands
-program
-    .command('admin:deploy', { hidden: true })
-    .description('Deploy a Nango integration to an account')
-    .arguments('environmentName')
-    .action(async function (this: Command, environmentName: string) {
-        const { debug } = this.opts<GlobalOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        await deployService.admin({ fullPath, environmentName, debug });
-    });
-
 program
     .command('admin:deploy-internal', { hidden: true })
     .description('Deploy a Nango integration to the internal Nango dev account')

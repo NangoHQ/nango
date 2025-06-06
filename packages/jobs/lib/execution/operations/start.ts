@@ -32,10 +32,9 @@ export async function startScript({
 
     try {
         const integrationData = { fileLocation: nangoProps.syncConfig.file_location };
-        const environmentId = nangoProps.environmentId;
         const script: string | null =
             isCloud || integrationFilesAreRemote
-                ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
+                ? await remoteFileService.getFile(integrationData.fileLocation)
                 : localFileService.getIntegrationFile({
                       syncConfig: nangoProps.syncConfig,
                       providerConfigKey: nangoProps.providerConfigKey,

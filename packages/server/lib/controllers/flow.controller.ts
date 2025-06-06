@@ -1,23 +1,8 @@
-import { logContextGetter } from '@nangohq/logs';
-import {
-    configService,
-    deployPreBuilt as deployPreBuiltSyncConfig,
-    environmentService,
-    errorManager,
-    flowService,
-    getSyncConfigById,
-    getSyncConfigsAsStandardConfig,
-    remoteFileService,
-    syncManager
-} from '@nangohq/shared';
-
-import { getOrchestrator } from '../utils/utils.js';
+import { configService, flowService, getSyncConfigById, getSyncConfigsAsStandardConfig, remoteFileService } from '@nangohq/shared';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { FlowDownloadBody } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
-
-const orchestrator = getOrchestrator();
 
 class FlowController {
     public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -26,48 +11,6 @@ class FlowController {
             const addedFlows = await flowService.getAddedPublicFlows(res.locals['environment'].id);
 
             res.send({ addedFlows, availableFlows });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    public async adminDeployPrivateFlow(req: Request, res: Response<any, any>, next: NextFunction) {
-        try {
-            const { targetAccountUUID, targetEnvironment, config } = req.body;
-
-            const result = await environmentService.getAccountAndEnvironment({ accountUuid: targetAccountUUID, envName: targetEnvironment });
-            if (!result) {
-                res.status(400).send('Invalid environment');
-                return;
-            }
-
-            const { environment, account } = result;
-
-            const {
-                success: preBuiltSuccess,
-                error: preBuiltError,
-                response: preBuiltResponse
-            } = await deployPreBuiltSyncConfig({
-                environment,
-                account,
-                configs: config,
-                logContextGetter,
-                orchestrator
-            });
-
-            if (!preBuiltSuccess || preBuiltResponse === null) {
-                errorManager.errResFromNangoErr(res, preBuiltError);
-                return;
-            }
-
-            await syncManager.triggerIfConnectionsExist({
-                flows: preBuiltResponse.result,
-                environmentId: environment.id,
-                logContextGetter,
-                orchestrator
-            });
-
-            res.sendStatus(200);
         } catch (err) {
             next(err);
         }
