@@ -36,7 +36,7 @@ export type PostSyncVariant = Endpoint<{
     Success: { id: string; name: string; variant: string };
 }>;
 
-export type UpdateSyncConnectionFrequency = Endpoint<{
+export type UpdateConnectionFrequency = Endpoint<{
     Method: 'PUT';
     Path: '/api/v1/sync/update-connection-frequency';
     Querystring: { env: string };
