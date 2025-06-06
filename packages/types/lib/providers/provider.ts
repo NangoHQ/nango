@@ -80,6 +80,7 @@ export interface BaseProvider {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    pre_connection_deletion_script?: string;
     credentials_verification_script?: string;
     categories?: string[];
     connection_configuration?: string[];

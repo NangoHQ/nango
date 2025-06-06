@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
+import type { InternalNango as Nango } from '../../shared-hook-logic';
 import { isAxiosError } from 'axios';
 import type { WorkableAccountsResponse } from './types.js';
 

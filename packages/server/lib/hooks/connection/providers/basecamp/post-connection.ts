@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
+import type { InternalNango as Nango } from '../../shared-hook-logic';
 import type { BasecampAuthorizationResponse } from './types.js';
 import { isAxiosError } from 'axios';
 

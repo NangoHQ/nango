@@ -280,6 +280,17 @@ function validateProvider(providerKey: string, provider: Provider) {
         }
     }
 
+    if (provider.pre_connection_deletion_script) {
+        if (!scriptsContent.includes(provider.pre_connection_deletion_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `pre_connection_deletion_script "${provider.pre_connection_deletion_script}" not found in connection scripts index.ts`
+            );
+            error = true;
+        }
+    }
+
     if (provider.credentials_verification_script) {
         if (!scriptsContent.includes(provider.credentials_verification_script)) {
             console.error(

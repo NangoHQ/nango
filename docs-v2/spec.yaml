@@ -2515,6 +2515,8 @@ components:
                     type: boolean
                 post_connection_script:
                     type: string
+                pre_connection_deletion_script:
+                    type: string
                 categories:
                     items:
                         type: string

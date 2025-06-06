@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
+import type { InternalNango as Nango } from '../../shared-hook-logic';
 import type { OAuth2Credentials } from '@nangohq/types';
 import jwt from 'jsonwebtoken';
 
