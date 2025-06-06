@@ -62,7 +62,7 @@ export abstract class NangoSyncBase<
 
     public abstract getRecordsByIds<K = string | number, T = any>(ids: K[], model: TModelName): MaybePromise<Map<K, T>>;
 
-    public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
+    public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
 
     protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
         // Validate records

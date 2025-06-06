@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.3] - 2025-06-06
+
+### Added
+
+- *(integrations)* Add Jobvite integration documentation and configuration (#4169) by @viictoo
+- *(webapp)* Add snapshot tests to snippets (#4162) by @kaposke
+- Database changes for webhook forwarding enabled (#4171) by @rossmcewan
+- Option to deactivate forwarding webhooks by integration (#4161) by @rossmcewan
+
+### Fixed
+
+- *(deploy)* Refactor template deploy (#4159) by @bodinsamuel
+
+## [v0.60.2] - 2025-06-05
+
+### Added
+
+- *(cli)* ZeroYaml generate:docs  (#4152) by @bodinsamuel
+
+### Changed
+
+- *(deps)* Bump multer from 2.0.0 to 2.0.1 in /packages/server (#4166) by @dependabot[bot]
+
+### Fixed
+
+- *(webhook)* Decode private key before hashing in validation (#4151) by @priyesh2609
+- *(cli)* Use old syntax for dirname (#4168) by @bodinsamuel
+
+## [v0.60.1] - 2025-06-04
+
+### Added
+
+- Add section about handling invalid connections (#4132) by @TBonnin
+- *(webapp)* Add duration to logs and sub-logs (#4155) by @rossmcewan
+- *(providers)* Localize oracle-hcm (#4158) by @kaposke
+- *(webapp)* Add second-level precision to period log search (#4154) by @rossmcewan
+
+### Fixed
+
+- *(server)* Mistake on getting json_schema models (#4157) by @kaposke
+- *(zeroyaml)* Various bug fixes (#4156) by @bodinsamuel
+- *(cli)* Dryrun with --integration-id flag has incorrect check (#4164) by @kaposke
+
 ## [v0.60.0] - 2025-06-04
 
 ### Added
@@ -4072,6 +4115,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.3]: https://github.com/NangoHQ/nango/compare/v0.60.2..v0.60.3
+[v0.60.2]: https://github.com/NangoHQ/nango/compare/v0.60.1..v0.60.2
+[v0.60.1]: https://github.com/NangoHQ/nango/compare/v0.60.0..v0.60.1
 [v0.60.0]: https://github.com/NangoHQ/nango/compare/v0.59.13..v0.60.0
 [v0.59.13]: https://github.com/NangoHQ/nango/compare/v0.59.12..v0.59.13
 [v0.59.12]: https://github.com/NangoHQ/nango/compare/v0.59.11..v0.59.12
