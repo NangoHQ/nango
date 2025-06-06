@@ -5,10 +5,36 @@ import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { externalWebhookService, getApiUrl } from '@nangohq/shared';
 
+const serverBaseUrl = new URL(getApiUrl()).origin;
+
 const validation = z
     .object({
-        primary_url: z.string().url().or(z.literal('')).optional(),
-        secondary_url: z.string().url().or(z.literal('')).optional(),
+        primary_url: z
+            .string()
+            .url()
+            .or(z.literal(''))
+            .optional()
+            .refine(
+                (url) => {
+                    if (!url || url.trim() === '') return true;
+                    const inputUrl = new URL(url);
+                    return inputUrl.origin !== serverBaseUrl;
+                },
+                { message: `Webhook URLs cannot point to the server domain (${serverBaseUrl}).` }
+            ),
+        secondary_url: z
+            .string()
+            .url()
+            .or(z.literal(''))
+            .optional()
+            .refine(
+                (url) => {
+                    if (!url || url.trim() === '') return true;
+                    const inputUrl = new URL(url);
+                    return inputUrl.origin !== serverBaseUrl;
+                },
+                { message: `Webhook URLs cannot point to the server domain (${serverBaseUrl}).` }
+            ),
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),
@@ -16,20 +42,6 @@ const validation = z
         on_async_action_completion: z.boolean().optional()
     })
     .strict();
-
-const serverHostname = new URL(getApiUrl()).hostname;
-
-const isInvalidWebhookUrl = (url?: string): boolean => {
-    if (!url || url.trim() === '') {
-        return false;
-    }
-
-    try {
-        return new URL(url).hostname === serverHostname;
-    } catch {
-        return false;
-    }
-};
 
 export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -45,24 +57,10 @@ export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
     }
 
     const { environment } = res.locals;
-
     const body: PatchWebhook['Body'] = val.data;
-    if (isInvalidWebhookUrl(body.primary_url) || isInvalidWebhookUrl(body.secondary_url)) {
-        res.status(400).send({
-            error: {
-                code: 'invalid_body' as const,
-                errors: [
-                    {
-                        path: ['primary_url', 'secondary_url'],
-                        message: `Webhook URLs cannot point to the server domain (${serverHostname}).`
-                    }
-                ]
-            }
-        });
-        return;
-    }
 
     const data: Partial<DBExternalWebhook> = {};
+    console.log('this is the body.primary_url in here we are checking', body.primary_url);
     if (typeof body.primary_url !== 'undefined') {
         data.primary_url = body.primary_url;
     }
