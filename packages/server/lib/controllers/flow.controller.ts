@@ -19,7 +19,6 @@ class FlowController {
     public async downloadFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
 
             const body: FlowDownloadBody = req.body as FlowDownloadBody;
 
@@ -36,19 +35,23 @@ class FlowController {
             }
 
             if (!id && is_public) {
-                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, provider, flowType);
+                await remoteFileService.zipAndSendPublicFiles({ res, integrationName: name, providerPath: provider, flowType });
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
                 // either way, we need to fetch it from the users directory in s3
-                const configLookupResult = await getSyncConfigById(environmentId, id as number);
-                if (!configLookupResult) {
+                const syncConfig = await getSyncConfigById(environmentId, id as number);
+                if (!syncConfig) {
                     res.status(400).send('Invalid file reference');
                     return;
                 }
 
-                const { nango_config_id, file_location } = configLookupResult;
-                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location, providerConfigKey, flowType);
+                await remoteFileService.zipAndSendFiles({
+                    res,
+                    integrationName: name,
+                    syncConfig,
+                    providerConfigKey
+                });
                 return;
             }
         } catch (err) {
