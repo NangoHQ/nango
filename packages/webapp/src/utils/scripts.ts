@@ -75,7 +75,7 @@ function propertiesToTypescriptExamples(schema: JSONSchema7): string[] {
  * @example "string"
  * @example "{ aString: "<string>", aNumber: "<number>" }"
  */
-function propertyToTypescriptExample(schema: JSONSchema7): string {
+export function propertyToTypescriptExample(schema: JSONSchema7): string {
     if (schema.$ref) {
         // Ref format is: #/definitions/ModelName
         return schema.$ref.split('/').pop() || 'any';

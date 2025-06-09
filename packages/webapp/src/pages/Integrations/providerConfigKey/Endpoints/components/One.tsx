@@ -14,11 +14,13 @@ import { useEnvironment } from '../../../../../hooks/useEnvironment';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { apiFetch } from '../../../../../utils/api';
+import { getDefinition } from '../../../../../utils/json-schema';
 import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from '../../../../../utils/language-snippets';
-import { fieldToTypescript, getSyncResponse, modelToString } from '../../../../../utils/scripts';
+import { getSyncResponse, modelToString, propertyToTypescriptExample } from '../../../../../utils/scripts';
 
 import type { NangoSyncConfigWithEndpoint } from './List';
-import type { GetIntegration, NangoModel } from '@nangohq/types';
+import type { GetIntegration } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const syncDefaultQueryParams = [
     {
@@ -61,8 +63,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                 return endpoint.method === flow.endpoint.method && endpoint.path === flow.endpoint.path;
             });
             const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
-            // This code is completely valid but webpack is complaining for some obscure reason
-            const outputModel = (flow.models as unknown as NangoModel[]).find((m) => m.name === outputModelName);
+
+            const inputModel = flow.input ? getDefinition(flow.input, flow.json_schema as JSONSchema7) || undefined : undefined;
+            const outputModel = getDefinition(outputModelName, flow.json_schema as JSONSchema7);
 
             const providerConfigKey = integration.integration.unique_key;
             const secretKey = environmentAndAccount!.environment.secret_key;
@@ -71,13 +74,13 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             if (language === 'node') {
                 setRequestSnippet(
                     flow.type === 'sync'
-                        ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey })
-                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input })
+                        ? nodeSyncSnippet({ modelName: outputModelName, secretKey, connectionId, providerConfigKey })
+                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: inputModel })
                 );
                 setRequestSnippetCopy(
                     flow.type === 'sync'
-                        ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey, hideSecret: false })
-                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input, hideSecret: false })
+                        ? nodeSyncSnippet({ modelName: outputModelName, secretKey, connectionId, providerConfigKey, hideSecret: false })
+                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: inputModel, hideSecret: false })
                 );
             } else {
                 setRequestSnippet(
@@ -87,7 +90,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: flow.type === 'action' ? flow.input : undefined,
+                        input: inputModel,
                         language: language === 'curl' ? 'shell' : language!
                     })
                 );
@@ -98,7 +101,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: flow.type === 'action' ? flow.input : undefined,
+                        input: inputModel,
                         language: language === 'curl' ? 'shell' : language!,
                         hideSecret: false
                     })
@@ -122,13 +125,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
         return flow.type === 'sync' ? syncDefaultQueryParams : null;
     }, [flow]);
 
-    const body = useMemo(() => {
-        return flow.type === 'action' && flow.input ? flow.input : null;
-    }, [flow.input, flow.type]);
-
-    const metadata = useMemo(() => {
-        return flow.type === 'sync' && flow.input ? flow.input : null;
-    }, [flow.input, flow.type]);
+    const inputSchema: JSONSchema7 | null = useMemo(() => {
+        return flow.input ? getDefinition(flow.input, flow.json_schema as JSONSchema7) : null;
+    }, [flow]);
 
     async function onDownloadScript() {
         try {
@@ -227,7 +226,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                 </div>
                             </div>
                         )}
-                        {metadata && (
+                        {/* {inputSchema && (
                             <div className="bg-active-gray p-5 rounded-sm">
                                 <h3 className="text-xl font-semibold pb-6">
                                     Metadata{' '}
@@ -235,45 +234,41 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                         (!('isAnon' in metadata) && <code className="font-code italic text-green-base">&lt;{metadata.name}&gt;</code>)}
                                 </h3>
                                 <div className="flex flex-col gap-5">
-                                    {metadata.fields.map((field) => {
+                                    {Object.entries(inputSchema.properties || {}).map(([name, propertySchema]) => {
                                         return (
-                                            <div key={field.name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
+                                            <div key={name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
                                                 <div className="flex justify-between">
                                                     <div className="flex gap-2">
-                                                        <code className="font-code text-text-light-gray text-s">{field.name}</code>
+                                                        <code className="font-code text-text-light-gray text-s">{name}</code>
                                                         <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
-                                                            {'value' in field ? fieldToTypescript({ field }) : field.type}
+                                                            {propertyToTypescriptExample(propertySchema as JSONSchema7)}
                                                         </code>
                                                     </div>
-                                                    {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
+                                                    {!inputSchema.required?.includes(name) && <div className="text-text-light-gray text-s">Optional</div>}
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-                        )}
-                        {body && (
+                        )} */}
+                        {inputSchema && (
                             <div className="bg-active-gray p-5 rounded-md">
                                 <h3 className="text-xl font-semibold pb-6">
-                                    Body <code className="font-code italic text-green-base">&lt;{body.name}&gt;</code>
+                                    Body <code className="font-code italic text-green-base">&lt;{flow.input}&gt;</code>
                                 </h3>
                                 <div className="flex flex-col gap-5">
-                                    {body.fields.map((field) => {
+                                    {Object.entries(inputSchema.properties || {}).map(([name, propertySchema]) => {
                                         return (
-                                            <div key={field.name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
+                                            <div key={name} className="flex flex-col pb-5 gap-2.5 border-b border-b-border-gray last-of-type:border-b-0">
                                                 <div className="flex justify-between">
                                                     <div className="flex gap-2">
-                                                        <code className="font-code text-text-light-gray text-s">{field.name}</code>
+                                                        <code className="font-code text-text-light-gray text-s">{name}</code>
                                                         <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
-                                                            {'value' in field
-                                                                ? fieldToTypescript({ field })
-                                                                : typeof field.type === 'object'
-                                                                  ? JSON.stringify(field.type)
-                                                                  : field.type}
+                                                            {propertyToTypescriptExample(propertySchema as JSONSchema7)}
                                                         </code>
                                                     </div>
-                                                    {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}
+                                                    {!inputSchema.required?.includes(name) && <div className="text-text-light-gray text-s">Optional</div>}
                                                 </div>
                                             </div>
                                         );
@@ -282,7 +277,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                             </div>
                         )}
 
-                        {!queryParams && !metadata && !body && <div className="text-text-light-gray px-5 italic">No parameters or body</div>}
+                        {!queryParams && !inputSchema && <div className="text-text-light-gray px-5 italic">No parameters or body</div>}
                     </div>
                     <ScriptSettings flow={flow} integration={integration} />
                 </div>
