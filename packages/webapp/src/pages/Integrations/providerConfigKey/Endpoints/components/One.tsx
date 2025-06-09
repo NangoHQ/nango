@@ -113,7 +113,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             if (flow.type === 'sync') {
                 res = outputModel ? getSyncResponse(outputModel) : 'no response';
             } else {
-                res = outputModel ? modelToString(outputModel) : 'no response';
+                res = outputModel ? modelToString(outputModel, true) : 'no response';
             }
             setResponseSnippet(res);
         };

@@ -1,12 +1,12 @@
 import type { JSONSchema7 } from 'json-schema';
 
 export function getSyncResponse(model: JSONSchema7) {
-    const record = propertiesToTypescriptExamples(model).join('\n    ');
+    const record = propertiesToTypescriptExamples(model).join('\n      ');
     return [
         '{',
         '  "records": [',
         '    {',
-        `    ${record}`,
+        `      ${record}`,
         '      "_nango_metadata": {',
         '        "deleted_at": "date | null",',
         '        "last_action": "ADDED | UPDATED | DELETED",',
