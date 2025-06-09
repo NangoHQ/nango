@@ -1,5 +1,4 @@
 import type { ScriptTypeLiteral } from '../nangoYaml';
-import type { LegacySyncModelSchema } from './incomingFlow';
 
 // TODO split by type
 // and fix id being optional
@@ -9,7 +8,7 @@ export interface SyncDeploymentResult {
     providerConfigKey: string;
     type: ScriptTypeLiteral;
     last_deployed?: Date;
-    input?: string | LegacySyncModelSchema | undefined | null;
+    input?: string | undefined | null;
     models: string | string[];
     id?: number | undefined;
     runs?: string | null;

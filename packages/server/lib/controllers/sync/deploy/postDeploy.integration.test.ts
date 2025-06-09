@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
-import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
+
 import { envs } from '@nangohq/logs';
+import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+
 import type { DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -112,12 +115,7 @@ describe(`POST ${endpoint}`, () => {
                             sync_type: 'full',
                             track_deletes: false,
                             input: 'Input',
-                            models: ['Output'],
-                            model_schema: [
-                                { name: 'Input', fields: [{ name: 'id', value: 'number', tsType: true, array: false, optional: false }] },
-                                { name: 'Output', fields: [{ name: 'ref', value: 'Ref', model: true, array: false, optional: false }] },
-                                { name: 'Ref', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
-                            ]
+                            models: ['Output']
                         }
                     ],
                     nangoYamlBody: ``,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively } from './json-schema.js';
 
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 
 describe('filterJsonSchemaForModels', () => {
     it('should return empty schema when no definitions exist', () => {
@@ -499,8 +499,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -535,8 +534,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -585,8 +583,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -611,8 +608,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('UserList', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('UserList', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -638,8 +634,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('Mixed', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('Mixed', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -664,8 +659,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('Entity', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('Entity', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -689,13 +683,11 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(Object.keys(result.value)).toEqual(['User']);
-            expect(visitedDefinitions.size).toBe(1);
         }
     });
 
@@ -719,13 +711,11 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(Object.keys(result.value).sort()).toEqual(['Profile', 'User']);
-            expect(visitedDefinitions.size).toBe(2);
         }
     });
 
@@ -752,8 +742,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('Container', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('Container', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -771,8 +760,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('NonExistent', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('NonExistent', rootSchema);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -793,8 +781,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('User', rootSchema);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -817,7 +804,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
+        const visitedDefinitions = new Set<JSONSchema7>();
         visitedDefinitions.add(userDefinition);
 
         const result = getDefinitionsRecursively('User', rootSchema, visitedDefinitions);
@@ -841,8 +828,7 @@ describe('getDefinitionsRecursively', () => {
             }
         };
 
-        const visitedDefinitions = new Set<JSONSchema7Definition>();
-        const result = getDefinitionsRecursively('Container', rootSchema, visitedDefinitions);
+        const result = getDefinitionsRecursively('Container', rootSchema);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {

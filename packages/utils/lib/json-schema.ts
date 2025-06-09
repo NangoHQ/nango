@@ -1,7 +1,7 @@
 import { Err, Ok } from './result.js';
 
 import type { Result } from '@nangohq/types';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 
 /**
  * Creates a new JSON schema with only the definitions for the given models.
@@ -11,9 +11,9 @@ export function filterJsonSchemaForModels(jsonSchema: JSONSchema7, models: strin
         return Ok({});
     }
 
-    const definitions: Record<string, JSONSchema7Definition> = {};
+    const definitions: Record<string, JSONSchema7> = {};
 
-    const visitedDefinitions = new Set<JSONSchema7Definition>();
+    const visitedDefinitions = new Set<JSONSchema7>();
 
     for (const model of models) {
         const definitionsResult = getDefinitionsRecursively(model, jsonSchema, visitedDefinitions);
@@ -29,7 +29,7 @@ export function filterJsonSchemaForModels(jsonSchema: JSONSchema7, models: strin
     return Ok({ definitions });
 }
 
-export function getDefinition(name: string, rootSchema: JSONSchema7): Result<JSONSchema7Definition> {
+export function getDefinition(name: string, rootSchema: JSONSchema7): Result<JSONSchema7> {
     const schema = rootSchema.definitions?.[name];
     if (!schema || typeof schema !== 'object') {
         return Err(new Error(`json_schema doesn't contain model "${name}"`));
@@ -43,9 +43,9 @@ export function getDefinition(name: string, rootSchema: JSONSchema7): Result<JSO
 export function getDefinitionsRecursively(
     name: string,
     rootSchema: JSONSchema7,
-    visitedDefinitions: Set<JSONSchema7Definition>
-): Result<Record<string, JSONSchema7Definition>> {
-    const definitions: Record<string, JSONSchema7Definition> = {};
+    visitedDefinitions = new Set<JSONSchema7>()
+): Result<Record<string, JSONSchema7>> {
+    const definitions: Record<string, JSONSchema7> = {};
 
     const schema = getDefinition(name, rootSchema);
     if (schema.isErr()) {
@@ -77,7 +77,7 @@ export function getDefinitionsRecursively(
 /**
  * Finds all references in a JSON schema.
  */
-function findReferencesInSchema(schema: JSONSchema7Definition, rootSchema: JSONSchema7): string[] {
+function findReferencesInSchema(schema: JSONSchema7, rootSchema: JSONSchema7): string[] {
     if (typeof schema !== 'object' || schema === null) {
         return [];
     }
@@ -91,30 +91,30 @@ function findReferencesInSchema(schema: JSONSchema7Definition, rootSchema: JSONS
 
     if (schema.properties) {
         for (const property of Object.values(schema.properties)) {
-            references.push(...findReferencesInSchema(property, rootSchema));
+            references.push(...findReferencesInSchema(property as JSONSchema7, rootSchema));
         }
     }
 
     if (schema.items) {
         if (Array.isArray(schema.items)) {
             for (const item of schema.items) {
-                references.push(...findReferencesInSchema(item, rootSchema));
+                references.push(...findReferencesInSchema(item as JSONSchema7, rootSchema));
             }
         } else {
-            references.push(...findReferencesInSchema(schema.items, rootSchema));
+            references.push(...findReferencesInSchema(schema.items as JSONSchema7, rootSchema));
         }
     }
 
     const complexSchemas = schema.oneOf || schema.anyOf || schema.allOf;
     if (complexSchemas) {
         for (const complexSchema of complexSchemas) {
-            references.push(...findReferencesInSchema(complexSchema, rootSchema));
+            references.push(...findReferencesInSchema(complexSchema as JSONSchema7, rootSchema));
         }
     }
 
     if (schema.definitions) {
         for (const property of Object.values(schema.definitions)) {
-            references.push(...findReferencesInSchema(property, rootSchema));
+            references.push(...findReferencesInSchema(property as JSONSchema7, rootSchema));
         }
     }
 
