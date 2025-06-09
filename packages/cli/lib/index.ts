@@ -34,6 +34,7 @@ import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
+import { initAI } from './ai/init.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -104,13 +105,24 @@ program
     .command('init')
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
+    .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
     .action(async function (this: Command) {
-        const { debug, zero } = this.opts<GlobalOptions>();
+        const { debug, zero, ai } = this.opts<GlobalOptions & { ai: string[] }>();
         const currentPath = process.cwd();
         const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
+        const setupAI = async (): Promise<void> => {
+            const initAiOk = await initAI({ absolutePath, debug, aiOpts: ai });
+            if (!initAiOk) {
+                console.error(chalk.red(`Failed to initialize AI agent instructions files.`));
+                return;
+            }
+            printDebug(`AI agent instructions files initialized in ${absolutePath}`, debug);
+        };
+
         const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
         if (check.hasNangoYaml || check.isZeroYaml) {
+            await setupAI();
             console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
             return;
         }
@@ -122,15 +134,18 @@ program
                 return;
             }
 
+            await setupAI();
             console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
             return;
         }
 
-        const ok = init({ absolutePath, debug });
-        if (!ok) {
+        const initOk = init({ absolutePath, debug });
+        if (!initOk) {
             process.exitCode = 1;
             return;
         }
+
+        await setupAI();
         console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
         return;
     });
