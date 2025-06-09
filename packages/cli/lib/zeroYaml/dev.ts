@@ -10,8 +10,8 @@ import ts from 'typescript';
 
 import { printDebug } from '../utils.js';
 import { compileOne, tsToJsPath } from './compile.js';
-import { CompileError, tsconfig } from './constants.js';
-import { syncTsConfig } from './utils.js';
+import { tsconfig } from './constants.js';
+import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from './utils.js';
 
 import type { Ora } from 'ora';
 
@@ -48,12 +48,9 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
         ignored: ['node_modules', '.nango', 'dist', 'build']
     });
 
-    function fileError(filePath: string, msg: string) {
-        console.error(chalk.red('err'), '-', chalk.blue(filePath), `\r\n  ${msg}\r\n`);
-    }
     function bufferOrDisplayError(filePath: string, msg: string) {
         if (isReady) {
-            fileError(filePath, msg);
+            fileErrorToText({ filePath, msg });
         } else {
             failures.set(filePath, msg);
         }
@@ -155,7 +152,7 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
 
             if (failures.size) {
                 for (const fail of failures) {
-                    fileError(fail[0], fail[1]);
+                    fileErrorToText({ filePath: fail[0], msg: fail[1] });
                 }
             }
             isReady = true;
@@ -194,17 +191,6 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
 function typescriptWatchSimple({ fullPath, debug }: { fullPath: string; debug: boolean }) {
     let hasError = false;
 
-    function reportDiagnostic(diagnostic: ts.Diagnostic) {
-        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        if (diagnostic.file && diagnostic.start != null) {
-            const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-            const fileName = diagnostic.file.fileName.replace(`${fullPath}/`, '');
-            console.error(chalk.red('err'), '-', `${chalk.blue(fileName)}${chalk.yellow(`:${line + 1}:${character + 1}`)}`, `\r\n  ${message}\r\n`);
-        } else {
-            console.error(message);
-        }
-    }
-
     function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
         if (typeof diagnostic.messageText !== 'string') {
             return;
@@ -233,7 +219,7 @@ function typescriptWatchSimple({ fullPath, debug }: { fullPath: string; debug: b
         tsconfig,
         ts.sys,
         ts.createSemanticDiagnosticsBuilderProgram,
-        reportDiagnostic,
+        tsDiagnosticToText(fullPath),
         reportWatchStatusChanged
     );
 

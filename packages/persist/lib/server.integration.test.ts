@@ -428,7 +428,8 @@ const initDb = async () => {
             environment_id: env.id,
             oauth_client_id: '',
             oauth_client_secret: '',
-            missing_fields: []
+            missing_fields: [],
+            forward_webhooks: true
         },
         googleProvider
     );

@@ -103,21 +103,21 @@ export const onEventScriptService = {
                     const previousScriptVersion = previousScriptVersions.find((p) => p.config_id === config.id && p.name === name && p.event === event);
                     const version = previousScriptVersion ? increment(previousScriptVersion.version) : '0.0.1';
 
-                    const file_location = await remoteFileService.upload(
-                        fileBody.js,
-                        `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
-                        environment.id
-                    );
+                    const file_location = await remoteFileService.upload({
+                        content: fileBody.js,
+                        destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
+                        destinationLocalPath: `${name}-${providerConfigKey}.js`
+                    });
 
                     if (!file_location) {
                         throw new Error(`Failed to upload the onEvent script file: ${name}`);
                     }
 
-                    await remoteFileService.upload(
-                        fileBody.ts,
-                        `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
-                        environment.id
-                    );
+                    await remoteFileService.upload({
+                        content: fileBody.ts,
+                        destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
+                        destinationLocalPath: `${providerConfigKey}/on-events/${name}.ts`
+                    });
 
                     onEventInserts.push({
                         config_id: config.id,

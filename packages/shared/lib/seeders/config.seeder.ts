@@ -64,7 +64,8 @@ export async function createConfigSeed(
             unique_key,
             provider: providerName,
             environment_id: env.id,
-            ...rest
+            ...rest,
+            forward_webhooks: true
         },
         provider
     );

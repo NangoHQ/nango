@@ -12,12 +12,12 @@ const exec = promisify(execCb);
 
 describe('bundleFile', () => {
     it('should bundle a sync with a constant export', async () => {
-        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.ts') });
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.ts'), projectRootPath: fixturesPath });
         const value = result.unwrap();
         expect(value).toMatchSnapshot();
     });
     it('should bundle an action with a default export', async () => {
-        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.ts') });
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.ts'), projectRootPath: fixturesPath });
         const value = result.unwrap();
         expect(value).toMatchSnapshot();
     });

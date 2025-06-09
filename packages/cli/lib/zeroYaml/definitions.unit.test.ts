@@ -6,6 +6,7 @@ import { buildAction, buildSync } from './definitions.js';
 describe('buildSync', () => {
     it('should build a sync', () => {
         const res = buildSync({
+            filePath: './fetchIssues.ts',
             params: {
                 type: 'sync',
                 description: 'A sync',
@@ -29,8 +30,9 @@ describe('buildSync', () => {
             basenameClean: 'fetchIssues',
             integrationIdClean: 'github'
         });
+        const def = res.unwrap();
 
-        expect(res.sync).toStrictEqual<typeof res.sync>({
+        expect(def.sync).toStrictEqual<typeof def.sync>({
             type: 'sync',
             name: 'fetchIssues',
             description: 'A sync',
@@ -46,7 +48,7 @@ describe('buildSync', () => {
             input: 'SyncMetadata_github_fetchIssues',
             output: ['Model']
         });
-        expect(Array.from(res.models.values())).toStrictEqual([
+        expect(Array.from(def.models.values())).toStrictEqual([
             {
                 fields: [{ name: 'metadata', optional: true, tsType: true, value: 'void' }],
                 isAnon: true,

@@ -30,6 +30,7 @@ import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
+import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
@@ -353,7 +354,8 @@ program
         if (precheck.isZeroYaml) {
             const def = await buildDefinitions({ fullPath, debug });
             if (def.isErr()) {
-                console.log(def.error.message);
+                console.log('');
+                console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
                 process.exitCode = 1;
                 return;
             }
@@ -461,22 +463,6 @@ program
         }
 
         console.log(chalk.green(JSON.stringify({ ...parsing.value.parsed, models: Array.from(parsing.value.parsed!.models.values()) }, null, 2)));
-    });
-
-// admin only commands
-program
-    .command('admin:deploy', { hidden: true })
-    .description('Deploy a Nango integration to an account')
-    .arguments('environmentName')
-    .action(async function (this: Command, environmentName: string) {
-        const { debug } = this.opts<GlobalOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        await deployService.admin({ fullPath, environmentName, debug });
     });
 
 program
