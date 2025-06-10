@@ -112,12 +112,10 @@ program
         const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
         const setupAI = async (): Promise<void> => {
-            const initAiOk = await initAI({ absolutePath, debug, aiOpts: ai });
-            if (!initAiOk) {
-                console.error(chalk.red(`Failed to initialize AI agent instructions files.`));
-                return;
+            const ok = await initAI({ absolutePath, debug, aiOpts: ai });
+            if (ok) {
+                printDebug(`AI agent instructions files initialized in ${absolutePath}`, debug);
             }
-            printDebug(`AI agent instructions files initialized in ${absolutePath}`, debug);
         };
 
         const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
@@ -139,8 +137,8 @@ program
             return;
         }
 
-        const initOk = init({ absolutePath, debug });
-        if (!initOk) {
+        const ok = init({ absolutePath, debug });
+        if (!ok) {
             process.exitCode = 1;
             return;
         }

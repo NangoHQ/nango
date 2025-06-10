@@ -2,10 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import { getNangoRootPath, printDebug } from '../utils.js';
-import { isArray } from 'node:util';
+import { z } from 'zod';
 
+const supportedAgents = ['claude', 'cursor'] as const;
+const optsValidation = z.array(z.enum(supportedAgents));
 const srcPath = path.join(getNangoRootPath(), 'lib', 'ai', 'instructions', 'basics.md');
-const supportedAgents = ['claude', 'cursor'];
 
 export async function initAI({
     absolutePath,
@@ -16,52 +17,39 @@ export async function initAI({
     aiOpts: string[] | undefined;
     debug?: boolean;
 }): Promise<boolean> {
-    if (!isArray(aiOpts)) {
-        printDebug(`Invalid options. Expected an array of AI agents.`, debug);
+    const agents = optsValidation.safeParse(aiOpts);
+
+    if (!agents.success) {
+        console.log(chalk.red(`Invalid AI options provided: expected one or more of '${supportedAgents.join(', ')}'`));
         return false;
     }
 
-    const [validAgents, invalidAgents] = aiOpts.reduce<[string[], string[]]>(
-        (acc, agent) => {
-            if (supportedAgents.includes(agent)) {
-                acc[0].push(agent);
-            } else {
-                acc[1].push(agent);
-            }
-            return acc;
-        },
-        [[], []]
-    );
-    if (invalidAgents.length > 0) {
-        console.log(chalk.red(`Invalid AI agents provided: ${invalidAgents.join(', ')}. Supported agents are: ${supportedAgents.join(', ')}.`));
-        return false;
-    }
-
-    for (const agent of validAgents) {
+    let res = true;
+    for (const agent of agents.data) {
         if (agent === 'claude') {
             const ok = await initClaude({ absolutePath, debug });
             if (!ok) {
-                return false;
+                res = false;
             }
         } else if (agent === 'cursor') {
             const ok = await initCursor({ absolutePath, debug });
             if (!ok) {
-                return false;
+                res = false;
             }
         }
     }
 
-    return true;
+    return res;
 }
 
 async function initCursor({ absolutePath, debug = false }: { absolutePath: string; debug: boolean }): Promise<boolean> {
     try {
-        printDebug(`Creating the Cursor agent rules files in ${absolutePath}`, debug);
         const destPath = path.join(absolutePath, '.cursor', 'rules', 'nango.mdc');
+        printDebug(`Copying Cursor agent rules files at ${destPath}`, debug);
         const stat = fs.statSync(destPath, { throwIfNoEntry: false });
         if (stat) {
             console.log(chalk.yellow(`${destPath} already exists. Skipping.`));
-            return true;
+            return false;
         }
         await fs.promises.mkdir(path.dirname(destPath), { recursive: true });
         const header = `---
@@ -82,13 +70,13 @@ alwaysApply: false
 
 async function initClaude({ absolutePath, debug = false }: { absolutePath: string; debug: boolean }): Promise<boolean> {
     try {
-        printDebug(`Creating the Claude agent instructions file in ${absolutePath}`, debug);
         const destPath = path.join(absolutePath, 'claude.md');
+        printDebug(`Copying Claude agent instructions file at ${destPath}`, debug);
 
         const stat = fs.statSync(destPath, { throwIfNoEntry: false });
         if (stat) {
             console.log(chalk.yellow(`${destPath} already exists. Skipping.`));
-            return true;
+            return false;
         }
 
         await fs.promises.copyFile(srcPath, destPath);
