@@ -94,6 +94,7 @@
         "example/**/*",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",
+        "lib/ai/instructions/*",
         "scripts/v1-v2.js",
         "tsconfig.dev.json",
         "README.md"
