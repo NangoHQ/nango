@@ -15,6 +15,7 @@ export interface ValidationError {
 export type ResDefaultErrors =
     | ApiError<'invalid_content_type'>
     | ApiError<'not_found'>
+    | ApiError<'disabled_resource'>
     | ApiError<'conflict'>
     | ApiError<'plan_limit'>
     | ApiError<'forbidden'>

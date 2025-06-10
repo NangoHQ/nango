@@ -1,12 +1,16 @@
-import yaml from 'js-yaml';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+
+import yaml from 'js-yaml';
+
+import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
+import { stringifyError } from '@nangohq/utils';
+
+import { errorManager } from '../index.js';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
-import { errorManager } from '../index.js';
-import { stringifyError } from '@nangohq/utils';
+
 import type { FlowsYaml, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
-import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
 
 class FlowService {
     flowsRaw: FlowsYaml | undefined;

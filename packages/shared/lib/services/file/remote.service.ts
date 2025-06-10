@@ -1,15 +1,19 @@
-import type { Response } from 'express';
-import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
-import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
+
+import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import archiver from 'archiver';
-import { isCloud, isEnterprise, isLocal, isTest } from '@nangohq/utils';
+
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { isCloud, isEnterprise, isLocal, isTest, report } from '@nangohq/utils';
+
+import localFileService from './local.service.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import { LogActionEnum } from '../../models/Telemetry.js';
+
 import type { ServiceResponse } from '../../models/Generic.js';
-import localFileService from './local.service.js';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
+import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import type { Response } from 'express';
 
 let client: S3Client | null = null;
 let useS3 = !isLocal && !isTest;
@@ -33,11 +37,17 @@ class RemoteFileService {
     bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
     publicRoute = 'integration-templates';
 
-    async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
+    async upload({
+        content,
+        destinationPath,
+        destinationLocalPath
+    }: {
+        content: string;
+        destinationPath: string;
+        destinationLocalPath: string;
+    }): Promise<string | null> {
         if (isEnterprise && !useS3) {
-            const fileNameOnly = fileName.split('/').slice(-1)[0];
-            const versionStrippedFileName = fileNameOnly?.replace(/-v[\d.]+(?=\.js$)/, '');
-            localFileService.putIntegrationFile(versionStrippedFileName as string, fileContents, fileName.endsWith('.js'));
+            localFileService.putIntegrationFile({ filePath: destinationLocalPath, fileContent: content });
 
             return '_LOCAL_FILE_';
         }
@@ -49,21 +59,14 @@ class RemoteFileService {
             await client?.send(
                 new PutObjectCommand({
                     Bucket: this.bucket,
-                    Key: fileName,
-                    Body: fileContents
+                    Key: destinationPath,
+                    Body: content
                 })
             );
 
-            return fileName;
+            return destinationPath;
         } catch (err) {
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                environmentId,
-                operation: LogActionEnum.FILE,
-                metadata: {
-                    fileName
-                }
-            });
+            report(err);
 
             return null;
         }
@@ -73,8 +76,8 @@ class RemoteFileService {
         return `${this.publicRoute}/${integrationName}/dist/${fileName}.js`;
     }
 
-    public async getPublicFlowFile(filePath: string, environmentId: number): Promise<string | null> {
-        return this.getFile(filePath, environmentId);
+    public async getPublicFlowFile(filePath: string): Promise<string | null> {
+        return await this.getFile(filePath);
     }
 
     /**
@@ -82,10 +85,23 @@ class RemoteFileService {
      * @desc copy an existing public integration file to user's location in s3,
      * on local copy to the set local destination
      */
-    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number, destinationFileName: string): Promise<string | null> {
+    async copy({
+        sourcePath,
+        destinationPath,
+        destinationLocalPath
+    }: {
+        sourcePath: string;
+        destinationPath: string;
+        /**
+         * sic
+         * Destination when not uploading to S3
+         * This method handles when S3 is not enabled (like locally)
+         * TODO: We probably need to do it outside but until now it's like this
+         */
+        destinationLocalPath: string;
+    }): Promise<string | null> {
+        const s3FilePath = `${this.publicRoute}/${sourcePath}`;
         try {
-            const s3FilePath = `${this.publicRoute}/${integrationName}/${fileName}`;
-
             if (isCloud) {
                 await client?.send(
                     new CopyObjectCommand({
@@ -97,31 +113,24 @@ class RemoteFileService {
 
                 return destinationPath;
             } else {
-                const fileContents = await this.getFile(s3FilePath, environmentId);
-                if (fileContents) {
-                    localFileService.putIntegrationFile(destinationFileName, fileContents, integrationName.includes('dist'));
+                const fileContent = await this.getFile(s3FilePath);
+                if (fileContent) {
+                    localFileService.putIntegrationFile({ filePath: destinationLocalPath, fileContent });
                 }
                 return '_LOCAL_FILE_';
             }
         } catch (err) {
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                environmentId,
-                operation: LogActionEnum.FILE,
-                metadata: {
-                    fileName
-                }
-            });
+            report(err, { filePath: s3FilePath });
 
             return null;
         }
     }
 
-    async getPublicTemplateJsonSchemaFile(integrationName: string, environmentId: number): Promise<string | null> {
-        return this.getFile(`${this.publicRoute}/${integrationName}/.nango/schema.json`, environmentId);
+    async getPublicTemplateJsonSchemaFile(integrationName: string): Promise<string | null> {
+        return await this.getFile(`${this.publicRoute}/${integrationName}/.nango/schema.json`);
     }
 
-    getFile(fileName: string, environmentId: number): Promise<string> {
+    getFile(fileName: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const getObjectCommand = new GetObjectCommand({
                 Bucket: this.bucket,
@@ -144,14 +153,6 @@ class RemoteFileService {
                     }
                 })
                 .catch((err: unknown) => {
-                    errorManager.report(err, {
-                        source: ErrorSourceEnum.PLATFORM,
-                        environmentId,
-                        operation: LogActionEnum.FILE,
-                        metadata: {
-                            fileName
-                        }
-                    });
                     reject(err as Error);
                 });
         });

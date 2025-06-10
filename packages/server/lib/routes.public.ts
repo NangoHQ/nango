@@ -32,7 +32,6 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
-import flowController from './controllers/flow.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -69,11 +68,6 @@ const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddlew
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const adminAuth: RequestHandler[] = [
-    authMiddleware.secretKeyAuth.bind(authMiddleware),
-    authMiddleware.adminKeyAuth.bind(authMiddleware),
-    rateLimiterMiddleware
-];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
@@ -154,10 +148,6 @@ publicAPI.use('/unauth', jsonContentTypeMiddleware);
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
-
-// API Admin routes
-publicAPI.use('/admin', jsonContentTypeMiddleware);
-publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 
 // API routes (Secret key auth).
 publicAPI.use('/provider', jsonContentTypeMiddleware);

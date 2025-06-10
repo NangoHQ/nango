@@ -22,6 +22,7 @@ import { displayValidationError } from '../utils/errors.js';
 import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
+import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
 import type { NangoActionBase } from '@nangohq/runner-sdk';
@@ -144,7 +145,8 @@ export class DryRunService {
         if (this.isZeroYaml) {
             const def = await buildDefinitions({ fullPath: this.fullPath, debug });
             if (def.isErr()) {
-                console.log(chalk.red(def.error.message));
+                console.log('');
+                console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
                 return;
             }
             parsed = def.value;
@@ -158,7 +160,7 @@ export class DryRunService {
             parsed = parsing.value.parsed!;
         }
 
-        if (options.optionalProviderConfigKey && parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+        if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
         }
