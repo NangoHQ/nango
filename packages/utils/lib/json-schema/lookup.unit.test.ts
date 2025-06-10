@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively } from './json-schema.js';
+import { filterJsonSchemaForModels, getDefinition, getDefinitionsRecursively } from './lookup.js';
 
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 

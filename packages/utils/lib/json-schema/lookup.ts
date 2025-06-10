@@ -1,4 +1,4 @@
-import { Err, Ok } from './result.js';
+import { Err, Ok } from '../result.js';
 
 import type { Result } from '@nangohq/types';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';

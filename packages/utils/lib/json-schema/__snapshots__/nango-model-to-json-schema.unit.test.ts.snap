@@ -1,0 +1,424 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`nangoModelToJsonSchema > array fields > should handle array of model references 1`] = `
+{
+  "properties": {
+    "addresses": {
+      "items": {
+        "properties": {
+          "city": {
+            "type": "string",
+          },
+          "street": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "street",
+          "city",
+        ],
+        "type": "object",
+      },
+      "type": "array",
+    },
+  },
+  "required": [
+    "addresses",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > array fields > should handle array of primitive types 1`] = `
+{
+  "properties": {
+    "scores": {
+      "items": {
+        "type": "number",
+      },
+      "type": "array",
+    },
+    "tags": {
+      "items": {
+        "type": "string",
+      },
+      "type": "array",
+    },
+  },
+  "required": [
+    "tags",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > complex combinations > should handle model with arrays, unions, and nested models 1`] = `
+{
+  "properties": {
+    "content": {
+      "oneOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "number",
+        },
+      ],
+    },
+    "id": {
+      "type": "string",
+    },
+    "isActive": {
+      "type": "boolean",
+    },
+    "metadata": {
+      "items": {
+        "properties": {
+          "key": {
+            "type": "string",
+          },
+          "value": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "key",
+          "value",
+        ],
+        "type": "object",
+      },
+      "type": "array",
+    },
+    "tags": {
+      "items": {
+        "type": "string",
+      },
+      "type": "array",
+    },
+  },
+  "required": [
+    "id",
+    "metadata",
+    "content",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > edge cases > should handle empty model 1`] = `
+{
+  "properties": {},
+  "required": [],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > edge cases > should handle model with all optional fields 1`] = `
+{
+  "properties": {
+    "field1": {
+      "type": "string",
+    },
+    "field2": {
+      "type": "number",
+    },
+  },
+  "required": [],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > edge cases > should handle non-circular complex nested models 1`] = `
+{
+  "properties": {
+    "branches": {
+      "items": {
+        "properties": {
+          "leaves": {
+            "items": {
+              "properties": {
+                "value": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "value",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "name": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "leaves",
+        ],
+        "type": "object",
+      },
+      "type": "array",
+    },
+    "id": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "id",
+    "branches",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error on circular reference 1`] = `"Circular reference detected: User -> Profile -> User"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error on circular reference in arrays 1`] = `"Circular reference detected: Category -> Category"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error on circular reference in union types 1`] = `"Circular reference detected: Node -> Node"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error on complex circular reference chain 1`] = `"Circular reference detected: A -> B -> C -> A"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error on self-referencing model 1`] = `"Circular reference detected: TreeNode -> TreeNode"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error when model field references non-existent model 1`] = `"Model NonExistentModel not found"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error when model field value is not a string 1`] = `"field is model but value is not a string"`;
+
+exports[`nangoModelToJsonSchema > error cases > should return error when union field value is not an array 1`] = `"field is union but value is not an array"`;
+
+exports[`nangoModelToJsonSchema > nested models > should handle deeply nested models 1`] = `
+{
+  "properties": {
+    "address": {
+      "properties": {
+        "country": {
+          "properties": {
+            "code": {
+              "type": "string",
+            },
+            "name": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "code",
+            "name",
+          ],
+          "type": "object",
+        },
+        "street": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "street",
+        "country",
+      ],
+      "type": "object",
+    },
+    "name": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "name",
+    "address",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > nested models > should handle nested model references 1`] = `
+{
+  "properties": {
+    "address": {
+      "properties": {
+        "street": {
+          "type": "string",
+        },
+        "zipCode": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "street",
+      ],
+      "type": "object",
+    },
+    "name": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "name",
+    "address",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > simple models > should convert a simple model with basic types 1`] = `
+{
+  "properties": {
+    "age": {
+      "type": "number",
+    },
+    "date": {
+      "format": "date-time",
+      "type": "integer",
+    },
+    "id": {
+      "type": "string",
+    },
+    "isActive": {
+      "type": "boolean",
+    },
+  },
+  "required": [
+    "id",
+    "age",
+    "isActive",
+    "date",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > simple models > should default unknown types to string records (additionalProperties) 1`] = `
+{
+  "properties": {
+    "data": {
+      "additionalProperties": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+    "id": {
+      "additionalProperties": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+  },
+  "required": [
+    "id",
+    "data",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > simple models > should handle optional fields 1`] = `
+{
+  "properties": {
+    "age": {
+      "type": "number",
+    },
+    "email": {
+      "type": "string",
+    },
+    "id": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "id",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > union types > should handle union of primitive types 1`] = `
+{
+  "properties": {
+    "value": {
+      "oneOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "number",
+        },
+      ],
+    },
+  },
+  "required": [
+    "value",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > union types > should handle union with mixed types and arrays 1`] = `
+{
+  "properties": {
+    "id": {
+      "type": "string",
+    },
+    "metadata": {
+      "oneOf": [
+        {
+          "type": "string",
+        },
+        {
+          "items": {
+            "properties": {
+              "label": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "label",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+      ],
+    },
+  },
+  "required": [
+    "id",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`nangoModelToJsonSchema > union types > should handle union with model references 1`] = `
+{
+  "properties": {
+    "entity": {
+      "oneOf": [
+        {
+          "properties": {
+            "name": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "name",
+          ],
+          "type": "object",
+        },
+        {
+          "properties": {
+            "companyName": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "companyName",
+          ],
+          "type": "object",
+        },
+      ],
+    },
+  },
+  "required": [
+    "entity",
+  ],
+  "type": "object",
+}
+`;
