@@ -187,6 +187,7 @@
                         "guides/custom-integrations/overview",
                         "guides/custom-integrations/build-a-custom-integration",
                         "guides/custom-integrations/extend-a-pre-built-integration",
+                        "guides/custom-integrations/build-a-new-integration-with-ai",
                         "guides/custom-integrations/event-based-scripts",
                         "guides/custom-integrations/service"
                     ]
