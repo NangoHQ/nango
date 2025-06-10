@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.5] - 2025-06-10
+
+### Added
+
+- *(cli)* Add --ai options to nango init (#4178) by @TBonnin
+
 ## [v0.60.4] - 2025-06-10
 
 ### Added
@@ -4131,6 +4137,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.5]: https://github.com/NangoHQ/nango/compare/v0.60.4..v0.60.5
 [v0.60.4]: https://github.com/NangoHQ/nango/compare/v0.60.3..v0.60.4
 [v0.60.3]: https://github.com/NangoHQ/nango/compare/v0.60.2..v0.60.3
 [v0.60.2]: https://github.com/NangoHQ/nango/compare/v0.60.1..v0.60.2
