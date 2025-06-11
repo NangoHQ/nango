@@ -25,9 +25,8 @@ export default async function execute(nango: InternalNango) {
         return;
     } catch (err) {
         if (axios.isAxiosError(err)) {
-            // Extract error message from Intercom's response structure
-            const intercomError = err.response?.data?.errors?.[0]?.message || err.response?.data?.message || err.message;
-            throw new Error(`Error revoking Intercom token: ${intercomError}`);
+            const message = err.response?.data?.message || err.message;
+            throw new Error(`Error revoking Intercom token: ${message}`);
         }
         throw err;
     }

@@ -1,5 +1,5 @@
 import type { OAuth2Credentials } from '@nangohq/types';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import type { InternalNango } from '../../internal-nango';
 
 interface SlackRevokeResponse {
@@ -24,19 +24,20 @@ export default async function execute(nango: InternalNango) {
             providerConfigKey: connection.provider_config_key
         });
 
-        if (result && 'data' in result && result.data?.ok) {
-            return;
-        } else if (result && 'data' in result) {
-            // Handle known error cases from Slack API
-            const error = result.data?.error || 'Unknown error from Slack';
+        if (isAxiosError(result)) {
+            const error = (result.response?.data as SlackRevokeResponse)?.error ?? result.message;
             throw new Error(`Failed to revoke Slack token: ${error}`);
-        } else {
-            const errorMessage = (result as any)?.message || 'Unknown error during Slack token revocation';
-            throw new Error(`Failed to revoke Slack token: ${errorMessage}`);
+        }
+
+        if (result.data.ok) {
+            return;
+        }
+
+        if (result.data.error) {
+            throw new Error(`Failed to revoke Slack token: ${result.data.error}`);
         }
     } catch (err) {
         if (axios.isAxiosError(err)) {
-            // Handle rate limits and other Slack API errors
             const slackError = err.response?.data?.error || err.message;
             throw new Error(`Error revoking Slack token: ${slackError}`);
         }
