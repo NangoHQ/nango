@@ -2,9 +2,9 @@ import { connectionService, getProvider } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
-import type { RecentlyCreatedConnection, Provider } from '@nangohq/types';
+import type { RecentlyCreatedConnection } from '@nangohq/types';
 import type { InternalNango } from './internal-nango.js';
-import { getInternalNango, executeHookScriptLogic, getHandler } from './internal-nango.js';
+import { getInternalNango, getHandler } from './internal-nango.js';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;
@@ -13,7 +13,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 async function execute(createdConnection: RecentlyCreatedConnection, providerName: string, logContextGetter: LogContextGetter) {
     const { connection: upsertedConnection, environment, account } = createdConnection;
 
-    let logCtx: LogContextOrigin | undefined;
+    let logCtx: LogContextOrigin | undefined = undefined;
 
     try {
         const connectionRes = await connectionService.getConnection(upsertedConnection.connection_id, upsertedConnection.provider_config_key, environment.id);
@@ -23,37 +23,28 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
         const connection = connectionRes.response;
 
         const internalNango = getInternalNango(connection, providerName);
-        const providerInstance = getProvider(providerName);
+        const provider = getProvider(providerName);
 
-        // Define the expected Provider type for this specific hook
-        type PostConnectionProvider = Provider & { post_connection_script?: string; provider_name?: string; [key: string]: string | undefined };
-
-        const scriptTypeDescription = 'Post-connection';
-        const handler = getHandler<PostConnectionProvider, PostConnectionHandlersMap>(
-            providerInstance as PostConnectionProvider,
-            'post_connection_script',
-            handlers,
-            scriptTypeDescription
-        );
+        const handler = getHandler({
+            provider: provider,
+            providerScriptPropertyName: 'post_connection_script',
+            handlers
+        });
 
         if (handler) {
-            const getLogContext = () => {
-                const logContextBasePayload = { operation: { type: 'auth', action: 'post_connection' } } as const;
-                const logContextEntityPayload = {
+            logCtx = await logContextGetter.create(
+                { operation: { type: 'auth', action: 'post_connection' } },
+                {
                     account,
                     environment,
                     integration: { id: upsertedConnection.config_id, name: upsertedConnection.provider_config_key, provider: providerName },
                     connection: { id: upsertedConnection.id, name: upsertedConnection.connection_id }
-                };
-                return logContextGetter.create(logContextBasePayload, logContextEntityPayload);
-            };
-            await executeHookScriptLogic({
-                internalNango,
-                handler,
-                getLogContext,
-                metricsSuccessType: metrics.Types.POST_CONNECTION_SUCCESS,
-                scriptTypeDescription
-            });
+                }
+            );
+            await handler(internalNango);
+            void logCtx.info(`post-connection-creation script succeeded`);
+            await logCtx.success();
+            metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS);
         }
     } catch (err) {
         metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);

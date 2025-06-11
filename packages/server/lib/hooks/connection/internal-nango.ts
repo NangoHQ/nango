@@ -1,7 +1,5 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import { connectionService, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import type { LogContextOrigin } from '@nangohq/logs';
-import { metrics } from '@nangohq/utils';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, UserProvidedProxyConfiguration, Provider } from '@nangohq/types';
 
 export interface InternalNango {
@@ -50,15 +48,15 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
     };
 }
 
-export function getHandler<
-    P extends Provider & { [key: string]: string | undefined; provider_name?: string },
-    H extends Record<string, (internalNango: InternalNango) => Promise<void>>
->(
-    provider: P | undefined,
-    providerScriptPropertyName: keyof P & string,
-    handlersMap: H,
-    scriptTypeDescription: string
-): ((internalNango: InternalNango) => Promise<void>) | undefined {
+export function getHandler({
+    provider,
+    providerScriptPropertyName,
+    handlers
+}: {
+    provider: Provider | null;
+    providerScriptPropertyName: 'pre_connection_deletion_script' | 'post_connection_script';
+    handlers: Record<string, (internalNango: InternalNango) => Promise<void>>;
+}): ((internalNango: InternalNango) => Promise<void>) | undefined {
     if (!provider || !provider[providerScriptPropertyName]) {
         return undefined;
     }
@@ -67,43 +65,14 @@ export function getHandler<
     if (!scriptName) {
         return undefined;
     }
-    const handler = handlersMap[scriptName];
+    const handler = handlers[scriptName];
 
     if (!handler) {
         console.warn(
-            `No handler found for ${scriptTypeDescription} script: '${scriptName}' for provider '${
-                provider['provider_name'] || 'unknown'
-            }'. Check script name and handler registration.`
+            `No handler found for ${providerScriptPropertyName} script: '${scriptName}' for provider '${provider.display_name}'. Check script name and handler registration.`
         );
         return undefined;
     }
 
     return handler;
-}
-
-export async function executeHookScriptLogic({
-    internalNango,
-    handler,
-    getLogContext,
-    metricsSuccessType,
-    scriptTypeDescription
-}: {
-    internalNango: InternalNango;
-    handler: (internalNango: InternalNango) => Promise<void>;
-    getLogContext: () => Promise<LogContextOrigin>;
-    metricsSuccessType: metrics.Types;
-    scriptTypeDescription: string;
-}) {
-    const logCtx = await getLogContext();
-
-    try {
-        await handler(internalNango);
-        void logCtx.info(`${scriptTypeDescription} script succeeded`);
-        await logCtx.success();
-        metrics.increment(metricsSuccessType);
-    } catch (err) {
-        void logCtx.error(`${scriptTypeDescription} script failed`, { error: err });
-        await logCtx.failed();
-        throw err;
-    }
 }
