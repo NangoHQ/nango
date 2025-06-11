@@ -263,7 +263,6 @@ async function createPackage({
         return Err(new Error('No scripts to deploy'));
     }
 
-    // TODO: reup
     const jsonSchema = loadSchemaJson({ fullPath });
     if (!jsonSchema) {
         return Err(new Error('Failed to load schema.json'));
