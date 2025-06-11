@@ -5774,7 +5774,7 @@ integrations:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.1
+                version: 1.0.2
                 endpoint:
                     method: GET
                     path: /users
@@ -5935,7 +5935,7 @@ integrations:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.1
+                version: 1.0.2
                 endpoint:
                     method: GET
                     path: /users

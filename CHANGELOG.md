@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.60.5] - 2025-06-10
+
+### Added
+
+- *(cli)* Add --ai options to nango init (#4178) by @TBonnin
+
+## [v0.60.4] - 2025-06-10
+
+### Added
+
+- *(cli)* ZeroYaml definitions validation (#4173) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bd6ae92e24d1bb4bcc2b03b895583dd028f1d18b by Victor Lang'at. Commit message: feat: conditionally add currency code to accounts (#341) by @github-actions[bot]
+- *(frontend)* Update en.ts (#4179) by @wub
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/98f5ce93bd350b32ebec09c23068fb115bd0c587 by Hassan_Wari. Commit message: fix(gong): fix gong integrations (#342) by @github-actions[bot]
+- *(file)* Support zip for zeroyaml (#4176) by @bodinsamuel
+
 ## [v0.60.3] - 2025-06-06
 
 ### Added
@@ -300,7 +322,7 @@ All notable changes to this project will be documented in this file.
 - *(docs)* Add documentation around microsoft approval flow (#3964) by @lordsarcastic
 - *(grammarly)* Added Grammarly to integrations (#3965) by @lordsarcastic
 - *(integrations)* Add support for auth0 client credentials (#3978) by @hassan254-prog
-- *(integrations)* Add support for ClickSend provider (#3959) by @SteliosMav
+- *(integrations)* Add support for ClickSend provider (#3959) by @steliosmavro
 - *(api)* POST/PATCH/DELETE /integrations/:unique_key by @bodinsamuel
 - *(jira)* Update Jira integration with multiple domain support (#3963) by @viictoo
 - *(integrations)* Add support for cyberimpact (#3954) by @matthewbelair
@@ -395,7 +417,7 @@ All notable changes to this project will be documented in this file.
 - *(plans)* Add connections_max flag (#3931) by @bodinsamuel
 - *(persist)* Log unchanged records (#3929) by @bodinsamuel
 - Event tracking v2 (#3922) by @bodinsamuel
-- *(ui, api, db)* Allow editing integration name via new field (#3882) by @SteliosMav
+- *(ui, api, db)* Allow editing integration name via new field (#3882) by @steliosmavro
 - *(api)* Enforce max cli version with flag (#2957) by @bodinsamuel
 - *(cli)* Version command shorthand (#3942) by @kaposke
 - *(api)* Enforce max connections (#3935) by @bodinsamuel
@@ -417,7 +439,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Fix typos across the docs (#3895) by @SteliosMav
+- Fix typos across the docs (#3895) by @steliosmavro
 - *(ui)* Logs fix history, virtualization, data loading and caching (#3888) by @bodinsamuel
 - *(docker)* Incorrect providers path (#3896) by @bodinsamuel
 - *(gong-oauth)* Make api_base_url_for_customer field not required (#3898) by @hassan254-prog
@@ -513,7 +535,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - *(deps-dev)* Bump vite from 6.0.11 to 6.0.13 (#3818) by @dependabot[bot]
-- Update .env.example (#3826) by @SteliosMav
+- Update .env.example (#3826) by @steliosmavro
 - *(deps)* Bump tar-fs and testcontainers (#3812) by @dependabot[bot]
 - Webhook can execute for 1 hour (15mins previously) (#3815) by @TBonnin
 - *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fa13e02ca460a0d35b94ba868ecaad94df542b88 by Khaliq. Commit message: feat(unification): HRIS employees unification (#301) by @github-actions[bot]
@@ -530,7 +552,7 @@ All notable changes to this project will be documented in this file.
 - *(deps)* Upgrade vitest, axios, zod (#3841) by @bodinsamuel
 - *(docker)* Cleanup (#3838) by @bodinsamuel
 - Display git hash in api and UI (#3843) by @bodinsamuel
-- *(connect-ui)* Show unique_key suffix when integration names are du… (#3846) by @SteliosMav
+- *(connect-ui)* Show unique_key suffix when integration names are du… (#3846) by @steliosmavro
 - *(integrations)* Remove the pattern in Avalara for the client. (#3852) by @hassan254-prog
 - *(docs)* Doc improvements (#3855) by @khaliqgant
 - *(cli)* Remove global store to allow tests to reuse code (#3850) by @bodinsamuel
@@ -4115,6 +4137,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.60.5]: https://github.com/NangoHQ/nango/compare/v0.60.4..v0.60.5
+[v0.60.4]: https://github.com/NangoHQ/nango/compare/v0.60.3..v0.60.4
 [v0.60.3]: https://github.com/NangoHQ/nango/compare/v0.60.2..v0.60.3
 [v0.60.2]: https://github.com/NangoHQ/nango/compare/v0.60.1..v0.60.2
 [v0.60.1]: https://github.com/NangoHQ/nango/compare/v0.60.0..v0.60.1
