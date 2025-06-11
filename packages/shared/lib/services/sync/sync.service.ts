@@ -251,10 +251,12 @@ export const getSyncsByConnectionId = async ({
 export const getSyncsByProviderConfigKey = async ({
     environmentId,
     providerConfigKey,
+    syncConfigId,
     filter = []
 }: {
     environmentId: number;
     providerConfigKey: string;
+    syncConfigId?: number;
     filter?: { syncName: string; syncVariant: string }[];
 }): Promise<SyncWithConnectionId[]> => {
     const query = db.knex
@@ -267,6 +269,9 @@ export const getSyncsByProviderConfigKey = async ({
             [`_nango_connections.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });
+    if (syncConfigId) {
+        query.where('sync_config_id', syncConfigId);
+    }
     if (filter && filter.length > 0) {
         query.andWhere((builder) => {
             for (const { syncName, syncVariant } of filter) {

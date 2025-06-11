@@ -1,8 +1,11 @@
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
-export const exampleFolder = path.join(import.meta.dirname, '../../example');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+export const exampleFolder = path.join(__dirname, '../../example');
 export const npmPackageRegex = /^[^./\s]/;
 export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
 
@@ -38,30 +41,3 @@ export const tsconfigString: Record<string, any> = {
     jsx: 'react',
     moduleResolution: 'node16'
 };
-
-export type BabelErrorType = 'nango_unsupported_export' | 'nango_invalid_function_param' | 'nango_invalid_default_export' | 'nango_invalid_export_constant';
-export class BabelError extends Error {
-    type;
-    constructor(type: BabelErrorType) {
-        super(type);
-        this.type = type;
-    }
-}
-
-const defaultMsg = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
-export const customErrors: Record<BabelErrorType, string> = {
-    nango_unsupported_export: defaultMsg,
-    nango_invalid_function_param: 'Invalid function parameter, should be an object',
-    nango_invalid_default_export: defaultMsg,
-    nango_invalid_export_constant: defaultMsg
-};
-export class CompileError extends Error {
-    type: BabelErrorType | 'failed_to_build_unknown';
-    msg: string;
-    filePath?: string;
-    constructor(type: BabelErrorType | 'failed_to_build_unknown', msg: string) {
-        super(msg);
-        this.type = type;
-        this.msg = msg;
-    }
-}

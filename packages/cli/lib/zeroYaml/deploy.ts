@@ -10,6 +10,7 @@ import { buildDefinitions } from './definitions.js';
 import { Err, Ok } from '../utils/result.js';
 import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
+import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -47,15 +48,16 @@ export async function deploy({
     const spinnerPackage = ora({ text: 'Packaging' }).start();
     try {
         // Prepare retro-compat json
-        const parsed = await buildDefinitions({ fullPath, debug });
-        if (parsed.isErr()) {
+        const def = await buildDefinitions({ fullPath, debug });
+        if (def.isErr()) {
             spinnerPackage.fail();
-            console.log(chalk.red(parsed.error.message));
-            return Err(parsed.error);
+            console.log('');
+            console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
+            return Err(def.error);
         }
 
         // Create deploy package
-        const postData = await createPackage({ parsed: parsed.value, fullPath, debug, version, optionalSyncName, optionalActionName });
+        const postData = await createPackage({ parsed: def.value, fullPath, debug, version, optionalSyncName, optionalActionName });
         if (postData.isErr()) {
             spinnerPackage.fail();
             console.log(chalk.red(postData.error.message));
