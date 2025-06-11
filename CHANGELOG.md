@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.61.0] - 2025-06-11
+
+### Added
+
+- *(node)* Upgrade backend to >=22, drop node 18 for cli and node sdk (#4160) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f30e504347af1420ec68ce5bacc4341d1e6493e5 by Hassan_Wari. Commit message: feat(gong): handle no users error gracefully (#343) by @github-actions[bot]
+
+### Fixed
+
+- *(retry-logic)* Handle both seconds and milliseconds in retry-at logic (#4175) by @hassan254-prog
+
 ## [v0.60.5] - 2025-06-10
 
 ### Added
@@ -4137,6 +4151,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.61.0]: https://github.com/NangoHQ/nango/compare/v0.60.5..v0.61.0
 [v0.60.5]: https://github.com/NangoHQ/nango/compare/v0.60.4..v0.60.5
 [v0.60.4]: https://github.com/NangoHQ/nango/compare/v0.60.3..v0.60.4
 [v0.60.3]: https://github.com/NangoHQ/nango/compare/v0.60.2..v0.60.3
