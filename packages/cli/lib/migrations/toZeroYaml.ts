@@ -1157,81 +1157,79 @@ function isImportSpecifier(s: unknown): s is ImportSpecifier {
     );
 }
 
+const reservedWords = new Set([
+    'break',
+    'case',
+    'catch',
+    'class',
+    'const',
+    'continue',
+    'debugger',
+    'default',
+    'delete',
+    'do',
+    'else',
+    'export',
+    'extends',
+    'finally',
+    'for',
+    'function',
+    'if',
+    'import',
+    'in',
+    'instanceof',
+    'new',
+    'return',
+    'super',
+    'switch',
+    'this',
+    'throw',
+    'try',
+    'typeof',
+    'var',
+    'void',
+    'while',
+    'with',
+    'yield',
+    'let',
+    'static',
+    'enum',
+    'implements',
+    'interface',
+    'package',
+    'private',
+    'protected',
+    'public',
+    'abstract',
+    'boolean',
+    'byte',
+    'char',
+    'double',
+    'final',
+    'float',
+    'goto',
+    'int',
+    'long',
+    'native',
+    'short',
+    'synchronized',
+    'throws',
+    'transient',
+    'volatile'
+]);
 // Helper to check if a string is a valid JavaScript identifier
 function isValidIdentifier(name: string): boolean {
     if (!name || typeof name !== 'string') {
         return false;
     }
-    // Must start with letter, underscore, or dollar sign
-    if (!/^[a-zA-Z_$]/.test(name)) {
-        return false;
-    }
+
     // Can only contain letters, digits, underscores, and dollar signs
     if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name)) {
         return false;
     }
+
     // Check for reserved words
-    const reservedWords = [
-        'break',
-        'case',
-        'catch',
-        'class',
-        'const',
-        'continue',
-        'debugger',
-        'default',
-        'delete',
-        'do',
-        'else',
-        'export',
-        'extends',
-        'finally',
-        'for',
-        'function',
-        'if',
-        'import',
-        'in',
-        'instanceof',
-        'new',
-        'return',
-        'super',
-        'switch',
-        'this',
-        'throw',
-        'try',
-        'typeof',
-        'var',
-        'void',
-        'while',
-        'with',
-        'yield',
-        'let',
-        'static',
-        'enum',
-        'implements',
-        'interface',
-        'package',
-        'private',
-        'protected',
-        'public',
-        'abstract',
-        'boolean',
-        'byte',
-        'char',
-        'double',
-        'final',
-        'float',
-        'goto',
-        'int',
-        'long',
-        'native',
-        'short',
-        'synchronized',
-        'throws',
-        'transient',
-        'volatile'
-    ];
-    return !reservedWords.includes(name);
+    return !reservedWords.has(name);
 }
 
 // Helper to check if a file or any parent directory is a symlink
