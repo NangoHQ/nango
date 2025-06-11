@@ -60,10 +60,10 @@ export abstract class NangoSyncBase<
         model: TModelName
     ): MaybePromise<boolean>;
 
-    public abstract getRecordsByIds<K = string | number, TModel extends RawModel = z.infer<TModels[TModelName]>>(
-        ids: K[],
+    public abstract getRecordsByIds<TKey = string | number, TModel extends RawModel = z.infer<TModels[TModelName]>>(
+        ids: TKey[],
         model: TModelName
-    ): MaybePromise<Map<K, TModel>>;
+    ): MaybePromise<Map<TKey, TModel>>;
 
     public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
 

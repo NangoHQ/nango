@@ -43,7 +43,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const entryPoints = getEntryPoints(indexContent);
         if (entryPoints.length === 0) {
             spinner.fail();
-            console.error(chalk.red("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile."));
+            console.error(chalk.red("No entry points found in index.ts, add one like this `import './syncs/github/fetch.js'`"));
             return Err('no_file');
         }
 
