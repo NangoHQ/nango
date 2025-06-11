@@ -109,14 +109,11 @@ export async function deploy({
     const idsToMarkAsInactive: number[] = [];
     const syncConfigs: DBSyncConfigInsert[] = [];
     for (const flow of flows) {
-        const flowParsed: FlowParsed = {
-            ...flow
-        };
-        const { fileBody: _fileBody, ...rest } = flowParsed;
+        const { fileBody: _fileBody, ...rest } = flow;
         flowsWithoutScript.push({ ...rest });
 
         const { success, error, response } = await compileDeployInfo({
-            flow: flowParsed,
+            flow,
             jsonSchema,
             env,
             environment_id: environment.id,

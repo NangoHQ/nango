@@ -104,7 +104,7 @@ export async function deployTemplate({
         return Err(new NangoError('source_copy_error'));
     }
 
-    const modelsNames = [...template.returns, template.input || null].filter(Boolean) as string[];
+    const modelsNames = [...template.returns, template.input].filter(Boolean) as string[];
     if (jsonSchemaString) {
         const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
         const result = filterJsonSchemaForModels(jsonSchema, modelsNames);

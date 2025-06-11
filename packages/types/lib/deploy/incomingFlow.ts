@@ -22,15 +22,6 @@ export interface NangoConfigMetadata {
     description?: string | undefined;
 }
 
-// TODO: change that to use Parsed type
-export interface LegacySyncModelSchema {
-    name: string;
-    fields: {
-        name: string;
-        type: string;
-    }[];
-}
-
 export interface PreBuiltAction {
     type: 'action';
     models: string[];

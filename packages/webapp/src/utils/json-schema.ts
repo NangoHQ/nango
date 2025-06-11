@@ -7,3 +7,7 @@ export function getDefinition(name: string, rootSchema: JSONSchema7): JSONSchema
     }
     return schema;
 }
+
+export function isPrimitiveType(schema: JSONSchema7 | null): boolean {
+    return typeof schema?.type === 'string' && ['string', 'number', 'boolean', 'integer'].includes(schema.type);
+}

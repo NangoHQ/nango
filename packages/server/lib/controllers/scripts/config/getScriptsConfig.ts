@@ -73,7 +73,13 @@ export function transformToOpenAIFunctions(configs: StandardNangoConfig[]): Open
         // Process actions
         for (const action of config.actions) {
             // Get the input schema from the input model
-            const inputSchema = action.input ? getDefinition(action.input, action.json_schema as JSONSchema7).unwrap() : undefined;
+            let inputSchema = null;
+            if (action.input) {
+                const definition = getDefinition(action.input, action.json_schema as JSONSchema7);
+                if (definition.isOk()) {
+                    inputSchema = definition.unwrap();
+                }
+            }
 
             // Parse parameter descriptions from the action description
             const parameterDescriptions: Record<string, string> = {};
