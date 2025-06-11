@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.60.4",
+    "version": "0.61.0",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -57,7 +57,7 @@
         "@eslint/js": "9.28.0",
         "@testcontainers/elasticsearch": "10.24.2",
         "@testcontainers/postgresql": "10.24.2",
-        "@types/node": "20.17.16",
+        "@types/node": "22.15.29",
         "@typescript-eslint/eslint-plugin": "8.33.1",
         "@typescript-eslint/parser": "8.33.1",
         "concurrently": "8.2.2",
@@ -89,6 +89,6 @@
         ]
     },
     "engines": {
-        "node": ">=18.0.0 || >=20.0.0"
+        "node": ">=20.0.0"
     }
 }
