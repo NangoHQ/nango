@@ -11,6 +11,7 @@ import { Err, Ok } from '../utils/result.js';
 import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { ReadableError } from './utils.js';
+import { loadSchemaJson } from '../services/model.service.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -25,13 +26,8 @@ import type {
     ScriptDifferences,
     ScriptFileType
 } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
 
-interface Package {
-    flowConfigs: CLIDeployFlowConfig[];
-    onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined;
-    jsonSchema: JSONSchema7 | undefined;
-}
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'jsonSchema'>;
 
 export async function deploy({
     fullPath,
@@ -42,7 +38,7 @@ export async function deploy({
     options: DeployOptions;
     environmentName: string;
 }): Promise<Result<boolean>> {
-    const { version, sync: optionalSyncName, action: optionalActionName, debug } = options;
+    const { version, debug } = options;
 
     let pkg: Package;
     const spinnerPackage = ora({ text: 'Packaging' }).start();
@@ -57,7 +53,15 @@ export async function deploy({
         }
 
         // Create deploy package
-        const postData = await createPackage({ parsed: def.value, fullPath, debug, version, optionalSyncName, optionalActionName });
+        const postData = await createPackage({
+            parsed: def.value,
+            fullPath,
+            debug,
+            version,
+            optionalIntegrationId: options.integration,
+            optionalSyncName: options.sync,
+            optionalActionName: options.action
+        });
         if (postData.isErr()) {
             spinnerPackage.fail();
             console.log(chalk.red(postData.error.message));
@@ -132,6 +136,7 @@ async function createPackage({
     fullPath,
     debug,
     version = '',
+    optionalIntegrationId,
     optionalSyncName,
     optionalActionName
 }: {
@@ -139,6 +144,7 @@ async function createPackage({
     fullPath: string;
     debug: boolean;
     version?: string | undefined;
+    optionalIntegrationId?: string | undefined;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
 }): Promise<Result<Package>> {
@@ -146,9 +152,14 @@ async function createPackage({
 
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
+    const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
+
+        if (optionalIntegrationId && integration.providerConfigKey !== optionalIntegrationId) {
+            continue;
+        }
 
         if (onEventScriptsByProvider) {
             const scripts: OnEventScriptsByProvider['scripts'] = [];
@@ -246,18 +257,20 @@ async function createPackage({
         }
     }
 
-    // TODO: reup
-    // const jsonSchema = loadSchemaJson({ fullPath });
-    // if (!jsonSchema) {
-    //     return null;
-    // }
+    if (postData.length <= 0) {
+        return Err(new Error('No scripts to deploy'));
+    }
 
-    // console.log(postData);
+    const jsonSchema = loadSchemaJson({ fullPath });
+    if (!jsonSchema) {
+        return Err(new Error('Failed to load schema.json'));
+    }
 
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema: undefined
+        jsonSchema,
+        singleDeployMode
     });
 }
 
@@ -501,6 +514,19 @@ async function handleConfirmation({
                 "WARNING: Renaming a model is the equivalent of deleting the old model and creating a new one. Records from the old model won't be transferred to the new model. Consider running a full sync to transfer records."
             )
         );
+    }
+
+    if (
+        newSyncs.length <= 0 &&
+        deletedSyncs.length <= 0 &&
+        newActions.length <= 0 &&
+        deletedActions.length <= 0 &&
+        newOnEventScripts.length <= 0 &&
+        deletedOnEventScripts.length <= 0 &&
+        deletedModels.length <= 0
+    ) {
+        console.log('');
+        console.log(chalk.gray.italic('  Only updates'));
     }
 
     console.log('');

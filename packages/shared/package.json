@@ -46,10 +46,6 @@
         "simple-oauth2": "5.1.0",
         "uuid": "^9.0.0"
     },
-    "engines": {
-        "node": ">=18.0",
-        "npm": ">=6.14.11"
-    },
     "devDependencies": {
         "@types/archiver": "6.0.3",
         "@nangohq/logs": "file:../logs",
