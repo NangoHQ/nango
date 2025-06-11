@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import { connectionService, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import type { LogContextGetter } from '@nangohq/logs';
+import type { LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, UserProvidedProxyConfiguration, Provider } from '@nangohq/types';
 
@@ -10,7 +10,7 @@ export interface InternalNango {
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
-export function createInternalNangoInstance(connection: DBConnectionDecrypted, providerName: string): InternalNango {
+export function getInternalNango(connection: DBConnectionDecrypted, providerName: string): InternalNango {
     const internalConfig: InternalProxyConfiguration = {
         providerName
     };
@@ -50,45 +50,51 @@ export function createInternalNangoInstance(connection: DBConnectionDecrypted, p
     };
 }
 
-export async function executeHookScriptLogic<
-    P extends Provider & { [key: string]: string | undefined; provider_name?: string }, // Ensure provider_name can exist
+export function getHandler<
+    P extends Provider & { [key: string]: string | undefined; provider_name?: string },
     H extends Record<string, (internalNango: InternalNango) => Promise<void>>
->({
-    internalNango,
-    provider,
-    providerScriptPropertyName,
-    handlersMap,
-    logContextGetter,
-    logContextBasePayload,
-    logContextEntityPayload,
-    metricsSuccessType,
-    scriptTypeDescription
-}: {
-    internalNango: InternalNango;
-    provider: P | undefined;
-    providerScriptPropertyName: keyof P & string;
-    handlersMap: H;
-    logContextGetter: LogContextGetter;
-    logContextBasePayload: Parameters<LogContextGetter['create']>[0];
-    logContextEntityPayload: Parameters<LogContextGetter['create']>[1];
-    metricsSuccessType: metrics.Types;
-    scriptTypeDescription: string;
-}) {
+>(
+    provider: P | undefined,
+    providerScriptPropertyName: keyof P & string,
+    handlersMap: H,
+    scriptTypeDescription: string
+): ((internalNango: InternalNango) => Promise<void>) | undefined {
     if (!provider || !provider[providerScriptPropertyName]) {
-        return;
+        return undefined;
     }
 
     const scriptName = provider[providerScriptPropertyName];
+    if (!scriptName) {
+        return undefined;
+    }
     const handler = handlersMap[scriptName];
 
     if (!handler) {
         console.warn(
-            `No handler found for ${scriptTypeDescription} script: '${scriptName}' for provider '${provider['provider_name'] || 'unknown'}'. Check script name and handler registration.`
+            `No handler found for ${scriptTypeDescription} script: '${scriptName}' for provider '${
+                provider['provider_name'] || 'unknown'
+            }'. Check script name and handler registration.`
         );
-        return;
+        return undefined;
     }
 
-    const logCtx = await logContextGetter.create(logContextBasePayload, logContextEntityPayload);
+    return handler;
+}
+
+export async function executeHookScriptLogic({
+    internalNango,
+    handler,
+    getLogContext,
+    metricsSuccessType,
+    scriptTypeDescription
+}: {
+    internalNango: InternalNango;
+    handler: (internalNango: InternalNango) => Promise<void>;
+    getLogContext: () => Promise<LogContextOrigin>;
+    metricsSuccessType: metrics.Types;
+    scriptTypeDescription: string;
+}) {
+    const logCtx = await getLogContext();
 
     try {
         await handler(internalNango);
