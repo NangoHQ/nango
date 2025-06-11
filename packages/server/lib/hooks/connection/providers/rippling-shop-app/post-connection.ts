@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../shared-hook-logic';
+import type { InternalNango as Nango } from '../../internal-nango';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();

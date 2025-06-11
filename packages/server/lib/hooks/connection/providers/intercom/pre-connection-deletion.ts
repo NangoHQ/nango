@@ -1,5 +1,5 @@
 import type { OAuth2Credentials } from '@nangohq/types';
-import type { InternalNango } from '../../shared-hook-logic';
+import type { InternalNango } from '../../internal-nango';
 import axios from 'axios';
 
 export default async function execute(nango: InternalNango) {

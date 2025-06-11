@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../shared-hook-logic';
+import type { InternalNango as Nango } from '../../internal-nango';
 import { getLogger } from '@nangohq/utils';
 
 const logger = getLogger('post-connection:salesforce');

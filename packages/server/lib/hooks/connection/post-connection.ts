@@ -3,8 +3,8 @@ import * as postConnectionHandlers from './index.js';
 import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 import type { RecentlyCreatedConnection, Provider } from '@nangohq/types';
-import type { InternalNango } from './shared-hook-logic.js';
-import { createInternalNangoInstance, executeHookScriptLogic } from './shared-hook-logic.js';
+import type { InternalNango } from './internal-nango.js';
+import { createInternalNangoInstance, executeHookScriptLogic } from './internal-nango.js';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;

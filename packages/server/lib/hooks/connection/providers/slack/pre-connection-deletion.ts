@@ -1,6 +1,6 @@
 import type { OAuth2Credentials } from '@nangohq/types';
 import axios from 'axios';
-import type { InternalNango } from '../../shared-hook-logic';
+import type { InternalNango } from '../../internal-nango';
 
 interface SlackRevokeResponse {
     ok: boolean;

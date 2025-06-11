@@ -1,5 +1,5 @@
 import type { OAuth2Credentials } from '@nangohq/types';
-import type { InternalNango } from '../../shared-hook-logic';
+import type { InternalNango } from '../../internal-nango';
 import { AxiosError, isAxiosError } from 'axios';
 
 export default async function execute(nango: InternalNango) {
@@ -25,23 +25,17 @@ export default async function execute(nango: InternalNango) {
             throw response;
         }
 
-        if (response.status === 204 || response.status === 200) {
-            return;
-        } else {
+        if (response.status >= 400) {
             const errorData = response.data;
             const message = errorData?.message || `Unexpected status code: ${response.status}`;
             throw new Error(`Failed to revoke HubSpot token: ${message}`);
+        } else {
+            return;
         }
     } catch (err) {
         if (isAxiosError(err)) {
-            let specificMessage = err.message;
-            if (err.response && err.response.data) {
-                const errorData = err.response.data;
-                if (errorData && typeof errorData.message === 'string') {
-                    specificMessage = errorData.message;
-                }
-            }
-            throw new Error(`Error revoking HubSpot token: ${specificMessage}`);
+            const message = err.response?.data?.message || err.message;
+            throw new Error(`Error revoking HubSpot token: ${message}`);
         }
         throw err;
     }

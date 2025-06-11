@@ -3,8 +3,8 @@ import * as preConnectionHandlers from './index.js';
 import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 import type { DBConnectionDecrypted, Provider, DBTeam, DBEnvironment } from '@nangohq/types';
-import type { InternalNango } from './shared-hook-logic.js';
-import { createInternalNangoInstance, executeHookScriptLogic } from './shared-hook-logic.js';
+import type { InternalNango } from './internal-nango.js';
+import { createInternalNangoInstance, executeHookScriptLogic } from './internal-nango.js';
 
 type PreConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 type PreConnectionHandlersMap = Record<string, PreConnectionHandler>;
