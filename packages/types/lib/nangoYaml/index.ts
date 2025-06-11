@@ -128,11 +128,14 @@ export interface ParsedNangoAction {
 
 export type LayoutMode = 'root' | 'nested';
 
+// TODO: delete when fully replaced by json-schema
 export interface NangoModel {
     name: string;
     fields: NangoModelField[];
     isAnon?: boolean | undefined;
 }
+
+// TODO: delete when fully replaced by json-schema
 export interface NangoModelField {
     name: string;
     value: string | number | boolean | null | NangoModelField[];

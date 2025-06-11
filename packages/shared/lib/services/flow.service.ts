@@ -3,7 +3,7 @@ import path from 'path';
 
 import yaml from 'js-yaml';
 
-import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
+import { NangoYamlParserV2, nangoModelsToJsonSchema } from '@nangohq/nango-yaml';
 import { stringifyError } from '@nangohq/utils';
 
 import { errorManager } from '../index.js';
@@ -69,6 +69,9 @@ class FlowService {
             };
 
             for (const item of [...integration.actions, ...integration.syncs]) {
+                const models = item.usedModels.map((model) => parsed.models.get(model)!);
+                const jsonSchema = models.length > 0 ? nangoModelsToJsonSchema(models) : null;
+
                 if (item.type === 'action') {
                     std.actions.push({
                         name: item.name,
@@ -85,7 +88,7 @@ class FlowService {
                         enabled: false,
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes }
                     });
                 } else {
@@ -108,7 +111,7 @@ class FlowService {
                         enabled: false,
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes }
                     });
                 }
