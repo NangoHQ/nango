@@ -18,10 +18,6 @@
         "directory": "packages/server"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "engines": {
-        "node": ">=18.0",
-        "npm": ">=6.14.11"
-    },
     "dependencies": {
         "@modelcontextprotocol/sdk": "1.11.4",
         "@nangohq/billing": "file:../billing",
