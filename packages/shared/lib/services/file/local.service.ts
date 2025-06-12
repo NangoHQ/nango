@@ -104,12 +104,12 @@ class LocalFileService {
      */
     public async zipAndSendFiles({
         res,
-        integrationName,
+        scriptName,
         providerConfigKey,
         syncConfig
     }: {
         res: Response;
-        integrationName: string;
+        scriptName: string;
         providerConfigKey: string;
         syncConfig: DBSyncConfig;
     }) {
@@ -124,7 +124,7 @@ class LocalFileService {
             files.push(yamlPath);
         }
 
-        const tsFilePath = this.resolveTsFile({ scriptName: integrationName, providerConfigKey, syncConfig });
+        const tsFilePath = this.resolveTsFile({ scriptName, providerConfigKey, syncConfig });
         if (!tsFilePath) {
             errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
             return;
