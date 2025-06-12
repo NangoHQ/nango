@@ -8566,6 +8566,39 @@ sage:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
 
+sage-hr:
+    display_name: Sage HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.sage.hr
+        headers:
+            x-auth-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/employees
+    docs: https://docs.nango.dev/integrations/all/sage-hr
+    docs_connect: https://docs.nango.dev/integrations/all/sage-hr/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Sage HR account
+            doc_section: '#step-1-enabling-api-access'
+            example: apikey****************************
+            pattern: '^[a-zA-Z0-9.]+$'
+    connection_config:
+        subdomain:
+            type: string
+            title: Sage HR Subdomain
+            description: The subdomain of your Sage HR account
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: subdomain
+            suffix: .sage.hr
+            prefix: https://
+
 sage-intacct-oauth:
     display_name: Sage Intacct (OAuth)
     categories:
