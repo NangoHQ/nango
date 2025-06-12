@@ -10031,6 +10031,29 @@ trakstar-hire:
             default_value: ''
             hidden: true
 
+trafft:
+    display_name: Trafft
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.admin.trafft.com/api/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api
+    docs: https://docs.nango.dev/integrations/all/trafft
+    docs_connect: https://docs.nango.dev/integrations/all/trafft/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Trafft instance
+            example: subdomain
+            format: hostname
+            prefix: https://
+            suffix: .admin.trafft.com
+            doc_section: '#step-1-access-api-settings'
+
 tremendous:
     display_name: Tremendous
     categories:
