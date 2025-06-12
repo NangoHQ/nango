@@ -22,23 +22,7 @@ import PreBuiltUseCases from "/snippets/generated/trafft/PreBuiltUseCases.mdx"
 
 ## Setup guide
 
-<Steps>
-  <Step title="Create a Trafft account">
-    Go to [Trafft signup page](https://www.trafft.com/signup/) and create an account if you don't have one already.
-  </Step>
-  <Step title="Get your OAuth credentials">
-    1. Log in to your Trafft admin panel at `https://your-subdomain.admin.trafft.com`
-    2. Navigate to **Features** > **Integrations** > **API Settings**
-    3. Here you will find your:
-       - API URL
-       - Client ID
-       - Client Secret
-    4. You will need these credentials and your subdomain from the API URL when configuring your integration in Nango.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+_No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -55,7 +39,8 @@ import PreBuiltUseCases from "/snippets/generated/trafft/PreBuiltUseCases.mdx"
 
 ## Connection configuration in Nango
 
-Trafft requires a subdomain to authenticate. You need to provide this when creating a connection
+Trafft requires a subdomain to run OAuth. You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
 ## API gotchas
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/trafft.mdx)</Note>
