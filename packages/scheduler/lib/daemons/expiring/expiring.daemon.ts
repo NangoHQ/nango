@@ -34,13 +34,13 @@ export class ExpiringDaemon extends SchedulerDaemon {
         const expired = await tasks.expiresIfTimeout(this.db);
         if (expired.isErr()) {
             logger.error(`Error expiring tasks: ${stringifyError(expired.error)}`);
-        } else {
-            if (expired.value.length > 0) {
-                for (const task of expired.value) {
-                    this.onTaskStateChange(task);
-                }
-                logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))}`);
+            return;
+        }
+        if (expired.value.length > 0) {
+            for (const task of expired.value) {
+                this.onTaskStateChange(task);
             }
+            logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))}`);
         }
     }
 }
