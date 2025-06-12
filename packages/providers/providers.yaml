@@ -10034,12 +10034,10 @@ trafft:
         - productivity
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.subdomain}.admin.trafft.com/api/v2/token
-    token_request_auth_method: basic
-    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api/v2
+        base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api
     docs: https://docs.nango.dev/integrations/all/trafft
     connection_config:
         subdomain:
