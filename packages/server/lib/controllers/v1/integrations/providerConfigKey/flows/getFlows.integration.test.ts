@@ -71,7 +71,6 @@ describe(`GET ${route}`, () => {
             is_public: true,
             json_schema: expect.any(Object),
             last_deployed: null,
-            models: expect.any(Array),
             name: 'write-file',
             pre_built: true,
             returns: ['GithubWriteFileActionResult'],
