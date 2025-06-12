@@ -5,28 +5,24 @@ import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { externalWebhookService, getApiUrl } from '@nangohq/shared';
 
-const serverBaseUrl = new URL(getApiUrl()).origin;
-
-const urlValidator = () => {
-    return z
-        .string()
-        .url()
-        .or(z.literal(''))
-        .optional()
-        .refine(
-            (url) => {
-                if (!url || url.trim() === '') return true;
-                const inputUrl = new URL(url);
-                return inputUrl.origin !== serverBaseUrl;
-            },
-            { message: `Webhook URLs cannot point to domain (${serverBaseUrl}).` }
-        );
-};
+const urlValidation = z
+    .string()
+    .url()
+    .or(z.literal(''))
+    .optional()
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            const inputUrl = new URL(url);
+            return inputUrl.origin !== new URL(getApiUrl()).origin;
+        },
+        { message: `Webhook URLs cannot point to domain (${new URL(getApiUrl()).origin}).` }
+    );
 
 const validation = z
     .object({
-        primary_url: urlValidator(),
-        secondary_url: urlValidator(),
+        primary_url: urlValidation,
+        secondary_url: urlValidation,
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),
