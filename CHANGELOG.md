@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.61.2] - 2025-06-12
+
+### Fixed
+
+- *(cli)* Missing export for zeroyaml (#4186) by @bodinsamuel
+- *(webhook-url)* Prevent updating webhook url to match server url (#4174) by @hassan254-prog
+
 ## [v0.61.1] - 2025-06-12
 
 ### Added
@@ -4165,6 +4172,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
 [v0.61.1]: https://github.com/NangoHQ/nango/compare/v0.61.0..v0.61.1
 [v0.61.0]: https://github.com/NangoHQ/nango/compare/v0.60.5..v0.61.0
 [v0.60.5]: https://github.com/NangoHQ/nango/compare/v0.60.4..v0.60.5
