@@ -22,8 +22,9 @@ const eventsHandler = new EventsHandler({
     CANCELLED: () => {}
 });
 const scheduler = new Scheduler({
-    dbClient,
-    on: eventsHandler.onCallbacks
+    db: dbClient.db,
+    on: eventsHandler.onCallbacks,
+    onError: () => {}
 });
 const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
