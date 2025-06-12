@@ -159,7 +159,10 @@ export function getRunTime(created_at: string, updated_at: string): string {
     const updatedAt = new Date(updated_at);
 
     const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
+    return millisecondsToRuntime(diffMilliseconds);
+}
 
+export function millisecondsToRuntime(diffMilliseconds: number): string {
     const milliseconds = diffMilliseconds % 1000;
     const seconds = Math.floor((diffMilliseconds / 1000) % 60);
     const minutes = Math.floor((diffMilliseconds / (1000 * 60)) % 60);

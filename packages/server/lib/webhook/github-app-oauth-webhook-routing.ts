@@ -15,13 +15,14 @@ import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
-function validate(integration: ProviderConfig, headerSignature: string, body: any): boolean {
+function validate(integration: ProviderConfig, headerSignature: string, rawBody: any): boolean {
     const custom = integration.custom as Record<string, string>;
     const private_key = custom['private_key'];
-    const hash = `${custom['app_id']}${private_key}${integration.app_link}`;
+    const decodedPrivateKey = private_key ? Buffer.from(private_key, 'base64').toString('ascii') : private_key;
+    const hash = `${custom['app_id']}${decodedPrivateKey}${integration.app_link}`;
     const secret = crypto.createHash('sha256').update(hash).digest('hex');
 
-    const signature = crypto.createHmac('sha256', secret).update(JSON.stringify(body)).digest('hex');
+    const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
     const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
     const untrusted = Buffer.from(headerSignature, 'ascii');
@@ -29,11 +30,11 @@ function validate(integration: ProviderConfig, headerSignature: string, body: an
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
-        const valid = validate(integration, signature, body);
+        const valid = validate(integration, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
