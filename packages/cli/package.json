@@ -12,8 +12,10 @@
     "exports": {
         ".": {
             "require": "./dist/sdkScripts.js",
-            "types": "./dist/sdkScripts.d.ts"
-        }
+            "types": "./dist/sdkScripts.d.ts",
+            "default": "./dist/sdkScripts.js"
+        },
+        "./package.json": "./package.json"
     },
     "keywords": [],
     "author": "bastien@nango.dev",
