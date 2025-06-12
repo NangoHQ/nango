@@ -188,7 +188,8 @@
                         "guides/custom-integrations/build-a-custom-integration",
                         "guides/custom-integrations/extend-a-pre-built-integration",
                         "guides/custom-integrations/event-based-scripts",
-                        "guides/custom-integrations/service"
+                        "guides/custom-integrations/service",
+                        "guides/custom-integrations/migrate-to-zero-yaml"
                     ]
                 },
                 {

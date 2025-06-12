@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
+import type { InternalNango as Nango } from '../../internal-nango';
 import { isAxiosError } from 'axios';
 
 export default async function execute(nango: Nango) {
