@@ -17,21 +17,15 @@ import type { Response } from 'express';
 
 let client: S3Client | null = null;
 let useS3 = !isLocal && !isTest;
+let region = process.env['AWS_REGION'] as string;
 
 if (isEnterprise) {
     useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
-    client = new S3Client({
-        region: (process.env['AWS_REGION'] as string) || 'us-west-2'
-    });
-} else {
-    client = new S3Client({
-        region: process.env['AWS_REGION'] as string,
-        credentials: {
-            accessKeyId: process.env['AWS_ACCESS_KEY_ID'] as string,
-            secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] as string
-        }
-    });
+    region = region ?? 'us-west-2';
 }
+client = new S3Client({
+    region
+});
 
 class RemoteFileService {
     bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
@@ -136,7 +130,6 @@ class RemoteFileService {
                 Bucket: this.bucket,
                 Key: fileName
             });
-
             client
                 ?.send(getObjectCommand)
                 .then((response: GetObjectCommandOutput) => {
