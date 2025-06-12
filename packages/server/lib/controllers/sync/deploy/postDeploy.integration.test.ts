@@ -161,17 +161,9 @@ describe(`POST ${endpoint}`, () => {
                             description: 'a',
                             enabled: true,
                             endpoints: [{ method: 'GET', path: '/path', group: null }],
-                            input: {
-                                fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
-                                name: 'Input'
-                            },
+                            input: 'Input',
                             is_public: false,
                             last_deployed: expect.toBeIsoDate(),
-                            models: [
-                                { name: 'Input', fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }] },
-                                { name: 'Output', fields: [{ array: false, name: 'ref', optional: false, model: true, value: 'Ref' }] },
-                                { name: 'Ref', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
-                            ],
                             returns: ['Output'],
                             scopes: [],
                             pre_built: false,
