@@ -10039,6 +10039,7 @@ trafft:
     proxy:
         base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api
     docs: https://docs.nango.dev/integrations/all/trafft
+    docs_connect: https://docs.nango.dev/integrations/all/trafft/connect
     connection_config:
         subdomain:
             type: string
@@ -10048,6 +10049,7 @@ trafft:
             format: hostname
             prefix: https://
             suffix: .admin.trafft.com
+            doc_section: '#step-1-access-api-settings'
 
 tremendous:
     display_name: Tremendous
