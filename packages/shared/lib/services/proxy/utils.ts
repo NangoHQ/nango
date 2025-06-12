@@ -318,7 +318,15 @@ export function buildProxyHeaders({
     }
 
     if (config.headers) {
-        // Headers set in scripts should override the default ones
+        // Headers set in scripts should override the default ones except for special headers like 'user-agent'
+        const specialHeaders = ['user-agent'];
+        for (const key of specialHeaders) {
+            const lowerKey = key.toLowerCase() as Lowercase<string>;
+            if (headers[lowerKey]) {
+                config.headers[key] = headers[lowerKey];
+            }
+        }
+
         headers = { ...headers, ...config.headers };
     }
 
