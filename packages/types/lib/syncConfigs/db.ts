@@ -1,6 +1,6 @@
 import type { TimestampsAndDeleted } from '../db';
-import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
-import type { NangoModel, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { NangoConfigMetadata } from '../deploy/incomingFlow';
+import type { ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 import type { JSONSchema7 } from 'json-schema';
 
 export interface DBSyncConfig extends TimestampsAndDeleted {
@@ -12,7 +12,6 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     models: string[];
     active: boolean;
     runs: string | null;
-    model_schema: LegacySyncModelSchema[] | NangoModel[] | null;
     environment_id: number;
     track_deletes: boolean;
     type: ScriptTypeLiteral;

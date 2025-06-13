@@ -14,7 +14,7 @@ import { onEventScriptService } from '../../on-event-scripts.service.js';
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import type { Config } from '../../../models/Provider.js';
-import type { Sync, SyncModelSchema } from '../../../models/Sync.js';
+import type { Sync } from '../../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     CLIDeployFlowConfig,
@@ -27,7 +27,6 @@ import type {
     DBSyncEndpointCreate,
     DBTeam,
     HTTP_METHOD,
-    NangoModel,
     NangoSyncConfig,
     NangoSyncEndpointV2,
     OnEventScriptsByProvider,
@@ -35,7 +34,6 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
-import type { Merge } from 'type-fest';
 
 const TABLE = dbNamespace + 'sync_configs';
 const SYNC_TABLE = dbNamespace + 'syncs';
@@ -43,7 +41,7 @@ const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 
 const nameOfType = 'sync/action';
 
-type FlowParsed = Merge<CleanedIncomingFlowConfig, { model_schema: NangoModel[] }>;
+type FlowParsed = CleanedIncomingFlowConfig;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
 
 interface SyncConfigResult {
@@ -111,15 +109,11 @@ export async function deploy({
     const idsToMarkAsInactive: number[] = [];
     const syncConfigs: DBSyncConfigInsert[] = [];
     for (const flow of flows) {
-        const flowParsed: FlowParsed = {
-            ...flow,
-            model_schema: typeof flow.model_schema === 'string' ? (JSON.parse(flow.model_schema) as NangoModel[]) : flow.model_schema
-        };
-        const { fileBody: _fileBody, ...rest } = flowParsed;
+        const { fileBody: _fileBody, ...rest } = flow;
         flowsWithoutScript.push({ ...rest });
 
         const { success, error, response } = await compileDeployInfo({
-            flow: flowParsed,
+            flow,
             jsonSchema,
             env,
             environment_id: environment.id,
@@ -166,15 +160,7 @@ export async function deploy({
     const flowNames = flows.map((flow) => flow.syncName);
 
     try {
-        const flowIds = await db.knex
-            .from<DBSyncConfig>(TABLE)
-            .insert(
-                syncConfigs.map((syncConfig) => {
-                    // We need to stringify before inserting
-                    return { ...syncConfig, model_schema: JSON.stringify(syncConfig.model_schema) as any };
-                })
-            )
-            .returning('id');
+        const flowIds = await db.knex.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
 
         const endpoints: DBSyncEndpointCreate[] = [];
         for (const [index, row] of flowIds.entries()) {
@@ -283,7 +269,6 @@ export async function upgradePreBuilt({
         updated_at: now,
         version: flow.version!,
         file_location,
-        model_schema: JSON.stringify(flow.models) as any,
         metadata: flow.metadata || {},
         auto_start: flow.auto_start === true,
         track_deletes: flow.track_deletes === true,
@@ -369,7 +354,6 @@ async function compileDeployInfo({
         models,
         runs,
         version: optionalVersion,
-        model_schema,
         type = 'sync',
         track_deletes,
         auto_start,
@@ -497,7 +481,6 @@ async function compileDeployInfo({
                 file_location,
                 runs,
                 active: true,
-                model_schema: model_schema as unknown as SyncModelSchema[],
                 input: typeof flow.input === 'string' ? flow.input : null,
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],

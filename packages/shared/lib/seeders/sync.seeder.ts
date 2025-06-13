@@ -1,5 +1,7 @@
 import db from '@nangohq/database';
+
 import * as syncService from '../services/sync/sync.service.js';
+
 import type { Sync } from '../models/Sync.js';
 import type { DBSyncConfig, DBSyncEndpoint, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
@@ -34,8 +36,7 @@ export async function createSyncSeeds({
             enabled: true,
             created_at: now,
             updated_at: now,
-            models: syncData.models || [],
-            model_schema: []
+            models: syncData.models || []
         })
         .returning('*');
     if (!syncConfig) {

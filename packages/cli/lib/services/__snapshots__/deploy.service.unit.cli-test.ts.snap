@@ -85,20 +85,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     "metadata": {
       "scopes": [],
     },
-    "model_schema": [
-      {
-        "fields": [
-          {
-            "array": false,
-            "name": "id",
-            "optional": false,
-            "tsType": true,
-            "value": "string",
-          },
-        ],
-        "name": "Contact",
-      },
-    ],
     "models": [
       "Contact",
     ],
@@ -159,7 +145,6 @@ export default async function runAction(nango: NangoAction): Promise<void> {
     "metadata": {
       "scopes": [],
     },
-    "model_schema": [],
     "models": [],
     "providerConfigKey": "hubspot",
     "runs": null,
@@ -218,20 +203,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
     "metadata": {
       "scopes": [],
     },
-    "model_schema": [
-      {
-        "fields": [
-          {
-            "array": false,
-            "name": "id",
-            "optional": false,
-            "tsType": true,
-            "value": "string",
-          },
-        ],
-        "name": "Issue",
-      },
-    ],
     "models": [
       "Issue",
     ],
@@ -292,7 +263,6 @@ export default async function runAction(nango: NangoAction): Promise<void> {
     "metadata": {
       "scopes": [],
     },
-    "model_schema": [],
     "models": [],
     "providerConfigKey": "github",
     "runs": null,

@@ -1,5 +1,7 @@
-import { expect, describe, it, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import FlowService from './flow.service.js';
+
 import type { FlowsYaml } from '@nangohq/types';
 
 const flows: FlowsYaml = {
@@ -162,7 +164,7 @@ describe('Flow service tests', () => {
 
         const flow = FlowService.getFlow('issues-lite');
         expect(flow).not.toBeNull();
-        expect(flow?.models).not.toBeUndefined();
+        expect(flow?.returns).not.toBeUndefined();
     });
 
     it('should get flows.yaml', () => {

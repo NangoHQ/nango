@@ -3,7 +3,7 @@ import path from 'path';
 
 import yaml from 'js-yaml';
 
-import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
+import { NangoYamlParserV2, nangoModelsToJsonSchema } from '@nangohq/nango-yaml';
 import { stringifyError } from '@nangohq/utils';
 
 import { errorManager } from '../index.js';
@@ -69,6 +69,9 @@ class FlowService {
             };
 
             for (const item of [...integration.actions, ...integration.syncs]) {
+                const models = item.usedModels.map((model) => parsed.models.get(model)!);
+                const jsonSchema = models.length > 0 ? nangoModelsToJsonSchema(models) : null;
+
                 if (item.type === 'action') {
                     std.actions.push({
                         name: item.name,
@@ -81,12 +84,11 @@ class FlowService {
                         is_public: true,
                         pre_built: true,
                         endpoints: item.endpoint ? [item.endpoint] : [],
-                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        input: item.input || undefined,
                         enabled: false,
-                        models: item.usedModels.map((name) => parsed.models.get(name)!),
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes }
                     });
                 } else {
@@ -104,13 +106,12 @@ class FlowService {
                         is_public: true,
                         pre_built: true,
                         endpoints: item.endpoints,
-                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        input: item.input || undefined,
                         runs: item.runs,
                         enabled: false,
-                        models: item.usedModels.map((name) => parsed.models.get(name)!),
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes }
                     });
                 }

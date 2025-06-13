@@ -39,7 +39,6 @@ const nangoPropsSchema = z
                 auto_start: z.boolean(),
                 enabled: z.boolean(),
                 webhook_subscriptions: z.array(z.string()).or(z.null()),
-                model_schema: z.array(z.any()),
                 models_json_schema: z.object({}).nullable(),
                 created_at: z.coerce.date(),
                 updated_at: z.coerce.date(),

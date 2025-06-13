@@ -1,5 +1,5 @@
-import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
-import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { NangoConfigMetadata } from '../deploy/incomingFlow';
+import type { NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 import type { JSONSchema7 } from 'json-schema';
 
 // TODO: Split by type
@@ -14,14 +14,13 @@ export interface NangoSyncConfig {
     metadata?: NangoConfigMetadata;
     track_deletes?: boolean;
     returns: string[];
-    models: NangoModel[] | LegacySyncModelSchema[];
     endpoints: NangoSyncEndpointV2[];
     is_public?: boolean | null;
     pre_built?: boolean | null;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
-    input?: NangoModel | LegacySyncModelSchema | undefined;
+    input?: string | undefined;
     sync_type?: SyncTypeLiteral;
     webhookSubscriptions?: string[];
     enabled?: boolean;

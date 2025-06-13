@@ -1,4 +1,4 @@
-import type { SyncTypeLiteral, ActiveLog } from '@nangohq/types';
+import type { ActiveLog, SyncTypeLiteral } from '@nangohq/types';
 
 export type SyncResult = Record<string, Result>;
 
