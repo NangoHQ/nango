@@ -24,7 +24,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [18.x]
+                node-version: [24.x]
                 os: ${{ fromJson(needs.compute-matrix.outputs.os-matrix) }}
 
         runs-on: ${{ matrix.os }}

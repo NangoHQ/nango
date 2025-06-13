@@ -1,7 +1,8 @@
-import { configService, onEventScriptService } from '@nangohq/shared';
+import { configService, onEventScriptService, getProvider } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { defaultOperationExpiration } from '@nangohq/logs';
 import { getOrchestrator } from '../../../utils/utils.js';
+import preConnectionExecute from '../pre-connection.js';
 import type { DBTeam, DBEnvironment, DBConnection, DBConnectionDecrypted } from '@nangohq/types';
 
 export async function preConnectionDeletion({
@@ -19,14 +20,35 @@ export async function preConnectionDeletion({
         return;
     }
 
+    const integration = await configService.getProviderConfig(connection.provider_config_key, environment.id);
+
+    // Check for provider-specific pre-connection deletion script
+    if (integration?.provider) {
+        const provider = getProvider(integration.provider);
+
+        if (provider && 'pre_connection_deletion_script' in provider) {
+            try {
+                await preConnectionExecute({
+                    connection: connection as DBConnectionDecrypted,
+                    environment,
+                    team,
+                    providerName: integration.provider,
+                    logContextGetter
+                });
+            } catch (err) {
+                // Continue with other scripts even if provider-specific script fails
+                console.error('Provider-specific pre-connection deletion script failed:', err);
+            }
+        }
+    }
+
+    // Run custom on-event scripts
     const event = 'pre-connection-deletion';
     const preConnectionDeletionScripts = await onEventScriptService.getByConfig(connection.config_id, event);
 
     if (preConnectionDeletionScripts.length === 0) {
         return;
     }
-
-    const integration = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
     for (const script of preConnectionDeletionScripts) {
         const { name, file_location: fileLocation, version } = script;

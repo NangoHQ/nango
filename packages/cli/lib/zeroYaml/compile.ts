@@ -5,15 +5,17 @@ import * as babel from '@babel/core';
 import chalk from 'chalk';
 import { build } from 'esbuild';
 import ora from 'ora';
+import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
-import { BabelError, CompileError, customErrors, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
+import { importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
+import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 
-import type { BabelErrorType } from './constants.js';
+// import type { BabelErrorType } from './constants.js';
 import type { Result } from '@nangohq/types';
 
 /**
@@ -41,7 +43,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         const entryPoints = getEntryPoints(indexContent);
         if (entryPoints.length === 0) {
             spinner.fail();
-            console.error(chalk.red("No entry points found in index.ts (e.g., export * from './syncs/github/fetch.js'). Nothing to compile."));
+            console.error(chalk.red("No entry points found in index.ts, add one like this `import './syncs/github/fetch.js'`"));
             return Err('no_file');
         }
 
@@ -68,23 +70,26 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             const buildRes = await compileOne({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
-                console.error(chalk.red(buildRes.error.message));
+                console.log('');
+                console.error(buildRes.error instanceof CompileError ? buildRes.error.toText() : chalk.red(buildRes.error.message));
                 return buildRes;
             }
         }
 
+        spinner.text = `Building ${entryPoints.length} file(s)`;
         spinner.succeed();
 
         // Build and export the definitions
         spinner = ora({ text: `Exporting definitions` }).start();
-        const rebuild = await buildDefinitions({ fullPath, debug });
-        if (rebuild.isErr()) {
+        const def = await buildDefinitions({ fullPath, debug });
+        if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
-            console.log(chalk.red(rebuild.error.message));
-            return Err(rebuild.error);
+            console.log('');
+            console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
+            return Err(def.error);
         }
 
-        generateAdditionalExports({ parsed: rebuild.value, fullPath, debug });
+        generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {
@@ -143,15 +148,9 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 
     // On purpose
     console.log('');
+    const report = tsDiagnosticToText(fullPath);
     for (const diagnostic of diagnostics) {
-        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        if (diagnostic.file && diagnostic.start != null) {
-            const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-            const fileName = diagnostic.file.fileName.replace(`${fullPath}/`, '');
-            console.error(chalk.red('err'), '-', `${chalk.blue(fileName)}${chalk.yellow(`:${line + 1}:${character + 1}`)}`, `\r\n  ${message}\r\n`);
-        } else {
-            console.error(message);
-        }
+        report(diagnostic);
     }
 
     console.error(`Found ${diagnostics.length} error${diagnostics.length > 1 ? 's' : ''}`);
@@ -162,8 +161,10 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 /**
  * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
-export async function bundleFile({ entryPoint }: { entryPoint: string }): Promise<Result<string>> {
+export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
+    const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
     try {
+        const { plugin, bag } = nangoPlugin();
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -176,13 +177,13 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
             write: false, // Output in memory
             plugins: [
                 {
-                    name: 'remove-create-wrappers',
+                    name: 'nango-plugin',
                     setup(build: any) {
                         build.onLoad({ filter: /\.ts$/ }, async (args: any) => {
                             const source = await fs.promises.readFile(args.path, 'utf8');
                             const result = await babel.transformAsync(source, {
                                 filename: args.path,
-                                plugins: [removeCreateWrappersBabelPlugin],
+                                plugins: [plugin],
                                 parserOpts: { sourceType: 'module', plugins: ['typescript'] },
                                 generatorOpts: { decoratorsBeforeExport: true }
                             });
@@ -210,15 +211,49 @@ export async function bundleFile({ entryPoint }: { entryPoint: string }): Promis
             return Err('failed_to_build');
         }
 
+        if (
+            bag.batchingRecordsLines.length > 0 &&
+            bag.setMergingStrategyLines.length > 0 &&
+            bag.setMergingStrategyLines.some((line) => line > Math.min(...bag.batchingRecordsLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `setMergingStrategy should be called before any batching records function`,
+                    line: Math.min(...bag.setMergingStrategyLines)
+                })
+            );
+        }
+        if (
+            bag.proxyLines.length > 0 &&
+            bag.setMergingStrategyLines.length > 0 &&
+            bag.setMergingStrategyLines.some((line) => line > Math.min(...bag.proxyLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `setMergingStrategy should be called before any proxy function`,
+                    line: Math.min(...bag.setMergingStrategyLines)
+                })
+            );
+        }
+
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
-        // We can throw our own error, so we throw one with a custom code that we get back and re-hydrate a new error
-        if (err instanceof Error && err.message.includes('nango_')) {
-            const code = /(nango_[a-z_]+)/.exec(err.message)?.[1] as BabelErrorType;
-            return Err(new CompileError(code, customErrors[code]));
+        if (err instanceof Error) {
+            // Babel is wrapping our own custom error but I couldn't find a way to access the original error easily
+            // So we serialize it and hope for the best
+            const obj = serializeError(err) as Record<string, any>;
+            if ('errors' in obj) {
+                const custom = obj['errors'][0]['detail'];
+                if (custom['type']) {
+                    return Err(new CompileError(custom['type'], custom['lineNumber'], custom['customMessage'], friendlyPath));
+                }
+            }
         }
-        return Err(new CompileError('failed_to_build_unknown', err instanceof Error ? err.message : 'unknown_error'));
+
+        return Err(new CompileError('failed_to_build_unknown', 0, err instanceof Error ? err.message : 'Unknown error', friendlyPath));
     }
 }
 
@@ -235,7 +270,7 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
     // Ensure the output directory exists
     await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
 
-    const bundleResult = await bundleFile({ entryPoint });
+    const bundleResult = await bundleFile({ entryPoint, projectRootPath });
     if (bundleResult.isErr()) {
         return Err(bundleResult.error);
     }
@@ -259,72 +294,171 @@ export function tsToJsPath(filePath: string) {
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
-function removeCreateWrappersBabelPlugin({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> {
-    const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
+function nangoPlugin() {
+    const proxyLines: number[] = [];
+    const batchingRecordsLines: number[] = [];
+    const setMergingStrategyLines: number[] = [];
+    const bag = {
+        proxyLines,
+        batchingRecordsLines,
+        setMergingStrategyLines
+    };
+
     return {
-        visitor: {
-            ExportDefaultDeclaration(path) {
-                if ((path.node as any).__transformedByRemoveCreateWrappers) {
-                    return;
+        bag,
+        plugin: ({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> => {
+            const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
+            const needsAwait = [
+                'batchSend',
+                'batchSave',
+                'batchDelete',
+                'log',
+                'getFieldMapping',
+                'setFieldMapping',
+                'getMetadata',
+                'setMetadata',
+                'proxy',
+                'get',
+                'post',
+                'put',
+                'patch',
+                'delete',
+                'getConnection',
+                'getEnvironmentVariables',
+                'triggerAction'
+            ];
+            const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
+            const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
+
+            return {
+                visitor: {
+                    CallExpression(path) {
+                        const lineNumber = path.node.loc?.start.line || 0;
+                        const callee = path.node.callee;
+                        if (!('object' in callee) || !('property' in callee)) {
+                            return;
+                        }
+                        if (callee.object.type !== 'Identifier' || callee.object.name !== 'nango' || callee.property?.type !== 'Identifier') {
+                            return;
+                        }
+
+                        const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
+                        const isThenOrCatch = path.findParent(
+                            (parentPath) =>
+                                t.isMemberExpression(parentPath.node) &&
+                                (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
+                        );
+
+                        const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+
+                        if (!isAwaited && !isThenOrCatch && !isReturned && needsAwait.includes(callee.property.name)) {
+                            throw new CompileError(
+                                'method_need_await',
+                                lineNumber,
+                                `nango.${callee.property.name}() calls must be awaited in. Not awaiting can lead to unexpected results.`
+                            );
+                        }
+
+                        const callArguments = path.node.arguments;
+                        if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
+                            let retriesPropertyFound = false;
+                            let retryOnPropertyFound = false;
+                            callArguments[0].properties.forEach((prop) => {
+                                if (!t.isObjectProperty(prop)) {
+                                    return;
+                                }
+                                if (t.isIdentifier(prop.key) && prop.key.name === 'retries') {
+                                    retriesPropertyFound = true;
+                                }
+                                if (t.isIdentifier(prop.key) && prop.key.name === 'retryOn') {
+                                    retryOnPropertyFound = true;
+                                }
+                            });
+
+                            if (!retriesPropertyFound && retryOnPropertyFound) {
+                                throw new CompileError('retryon_need_retries', lineNumber, `Proxy call: 'retryOn' should not be used if 'retries' is not set.`);
+                            }
+                        }
+
+                        if (callsProxy.includes(callee.property.name)) {
+                            proxyLines.push(lineNumber);
+                        }
+                        if (callsBatchingRecords.includes(callee.property.name)) {
+                            batchingRecordsLines.push(lineNumber);
+                        }
+                        if (callee.property.name === 'setMergingStrategy') {
+                            setMergingStrategyLines.push(lineNumber);
+                        }
+                    },
+
+                    ExportDefaultDeclaration(path) {
+                        if ((path.node as any).__transformedByRemoveCreateWrappers) {
+                            return;
+                        }
+
+                        const lineNumber = path.node.loc?.start.line || 0;
+                        const decl = path.node.declaration;
+                        let calleeName = null;
+                        let arg = null;
+
+                        // Case 1: export default createAction({...})
+                        if (t.isCallExpression(decl) && t.isIdentifier(decl.callee) && allowedExports.includes(decl.callee.name)) {
+                            let varName = '';
+                            calleeName = decl.callee.name;
+                            arg = decl.arguments[0];
+                            if (!t.isObjectExpression(arg)) {
+                                throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
+                            }
+
+                            if (calleeName === 'createAction') varName = 'action';
+                            if (calleeName === 'createSync') varName = 'sync';
+                            if (calleeName === 'createOnEvent') varName = 'onEvent';
+
+                            // Inject type property
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                            const newValue = arg;
+                            // Insert: export const <varName> = <newValue>;
+                            const exportConst = t.exportNamedDeclaration(
+                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]),
+                                []
+                            );
+                            // Insert: export default <varName>;
+                            const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
+                            (exportConst as any).__transformedByRemoveCreateWrappers = true;
+                            (exportDefault as any).__transformedByRemoveCreateWrappers = true;
+                            path.replaceWithMultiple([exportConst, exportDefault]);
+                        }
+                        // Case 2: export default action; (or sync/onEvent)
+                        else if (t.isIdentifier(decl)) {
+                            const binding = path.scope.getBinding(decl.name);
+                            if (!binding || !binding.path.isVariableDeclarator()) {
+                                throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
+                            }
+                            const init = binding.path.node.init;
+                            if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
+                                throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
+                            }
+
+                            let varName = '';
+                            calleeName = init.callee.name;
+                            arg = init.arguments[0];
+                            if (!t.isObjectExpression(arg)) {
+                                throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
+                            }
+                            if (calleeName === 'createAction') varName = 'action';
+                            if (calleeName === 'createSync') varName = 'sync';
+                            if (calleeName === 'createOnEvent') varName = 'onEvent';
+                            // Inject type property (mutate the object literal)
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                            // Replace the variable's initializer with the object literal
+                            binding.path.get('init').replaceWith(arg);
+                            return;
+                        } else {
+                            throw new CompileError('nango_unsupported_export', lineNumber, badExportCompilerError);
+                        }
+                    }
                 }
-
-                const decl = path.node.declaration;
-                let calleeName = null;
-                let arg = null;
-
-                // Case 1: export default createAction({...})
-                if (t.isCallExpression(decl) && t.isIdentifier(decl.callee) && allowedExports.includes(decl.callee.name)) {
-                    let varName = '';
-                    calleeName = decl.callee.name;
-                    arg = decl.arguments[0];
-                    if (!t.isObjectExpression(arg)) {
-                        throw new BabelError('nango_invalid_function_param');
-                    }
-
-                    if (calleeName === 'createAction') varName = 'action';
-                    if (calleeName === 'createSync') varName = 'sync';
-                    if (calleeName === 'createOnEvent') varName = 'onEvent';
-
-                    // Inject type property
-                    arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
-                    const newValue = arg;
-                    // Insert: export const <varName> = <newValue>;
-                    const exportConst = t.exportNamedDeclaration(t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]), []);
-                    // Insert: export default <varName>;
-                    const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
-                    (exportConst as any).__transformedByRemoveCreateWrappers = true;
-                    (exportDefault as any).__transformedByRemoveCreateWrappers = true;
-                    path.replaceWithMultiple([exportConst, exportDefault]);
-                }
-                // Case 2: export default action; (or sync/onEvent)
-                else if (t.isIdentifier(decl)) {
-                    const binding = path.scope.getBinding(decl.name);
-                    if (!binding || !binding.path.isVariableDeclarator()) {
-                        throw new BabelError('nango_invalid_default_export');
-                    }
-                    const init = binding.path.node.init;
-                    if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
-                        throw new BabelError('nango_invalid_default_export');
-                    }
-
-                    let varName = '';
-                    calleeName = init.callee.name;
-                    arg = init.arguments[0];
-                    if (!t.isObjectExpression(arg)) {
-                        throw new BabelError('nango_invalid_function_param');
-                    }
-                    if (calleeName === 'createAction') varName = 'action';
-                    if (calleeName === 'createSync') varName = 'sync';
-                    if (calleeName === 'createOnEvent') varName = 'onEvent';
-                    // Inject type property (mutate the object literal)
-                    arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
-                    // Replace the variable's initializer with the object literal
-                    binding.path.get('init').replaceWith(arg);
-                    return;
-                } else {
-                    throw new BabelError('nango_unsupported_export');
-                }
-            }
+            };
         }
     };
 }
