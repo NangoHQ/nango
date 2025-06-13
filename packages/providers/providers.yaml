@@ -5327,12 +5327,13 @@ instantly:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/instantly
+    docs_connect: https://docs.nango.dev/integrations/all/instantly/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Instantly account
-            pattern: '^[a-zA-Z0-9-_=]+$'
+            pattern: '^[A-Za-z0-9._=-]+$'
             doc_section: '#step-1-generate-an-api-key'
 
 instagram:
