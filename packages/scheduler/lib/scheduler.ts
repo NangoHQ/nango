@@ -1,23 +1,23 @@
-import { isMainThread } from 'node:worker_threads';
 import type { JsonValue } from 'type-fest';
 import type { Task, TaskState, Schedule, ScheduleProps, ImmediateProps, ScheduleState } from './types.js';
 import * as tasks from './models/tasks.js';
 import * as schedules from './models/schedules.js';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
-import { MonitorWorker } from './workers/monitor/monitor.worker.js';
-import { SchedulingWorker } from './workers/scheduling/scheduling.worker.js';
-import type { DatabaseClient } from './db/client.js';
+import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
+import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
+import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { logger } from './utils/logger.js';
 import { uuidv7 } from 'uuidv7';
-import { CleanupWorker } from './workers/cleanup/cleanup.worker.js';
+import type knex from 'knex';
 
 export class Scheduler {
-    private monitor: MonitorWorker | null = null;
-    private scheduling: SchedulingWorker | null = null;
-    private cleanup: CleanupWorker | null = null;
+    private expiring: ExpiringDaemon;
+    private scheduling: SchedulingDaemon;
+    private cleaning: CleaningDaemon;
+    private ac: AbortController;
     private onCallbacks: Record<TaskState, (scheduler: Scheduler, task: Task) => void>;
-    private dbClient: DatabaseClient;
+    private db: knex.Knex;
 
     /**
      * Scheduler
@@ -36,47 +36,31 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ dbClient, on }: { dbClient: DatabaseClient; on: Record<TaskState, (scheduler: Scheduler, task: Task) => void> }) {
-        if (isMainThread) {
-            this.onCallbacks = on;
-            this.dbClient = dbClient;
-            this.monitor = new MonitorWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
-            this.monitor.on(async (message) => {
-                const { ids } = message;
-                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
-                if (fetched.isErr()) {
-                    logger.error(`Error fetching tasks expired by monitor: ${stringifyError(fetched.error)}`);
-                    return;
-                }
-                for (const task of fetched.value) {
-                    this.onCallbacks[task.state](this, task);
-                }
-            });
-            this.monitor.start();
-            this.scheduling = new SchedulingWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
-            this.scheduling.on(async (message) => {
-                const { ids } = message;
-                const fetched = await tasks.search(this.dbClient.db, { ids, limit: ids.length });
-                if (fetched.isErr()) {
-                    logger.error(`Error fetching tasks created by scheduling: ${stringifyError(fetched.error)}`);
-                    return;
-                }
-                for (const task of fetched.value) {
-                    this.onCallbacks[task.state](this, task);
-                }
-            });
-            this.scheduling.start();
-            this.cleanup = new CleanupWorker({ databaseUrl: dbClient.url, databaseSchema: dbClient.schema });
-            this.cleanup.start();
-        } else {
-            throw new Error('Scheduler must be instantiated in the main thread');
-        }
+    constructor({ db, on, onError }: { db: knex.Knex; on: Record<TaskState, (scheduler: Scheduler, task: Task) => void>; onError: (err: Error) => void }) {
+        this.ac = new AbortController();
+        this.onCallbacks = on;
+        this.db = db;
+
+        const onTaskStateChange = (task: Task) => {
+            this.onCallbacks[task.state](this, task);
+        };
+        this.expiring = new ExpiringDaemon({ db, abortSignal: this.ac.signal, onTaskStateChange, onError });
+        this.scheduling = new SchedulingDaemon({ db, abortSignal: this.ac.signal, onTaskStateChange, onError });
+        this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
     }
 
-    stop(): void {
-        this.monitor?.stop();
-        this.scheduling?.stop();
-        this.cleanup?.stop();
+    start(): void {
+        // we don't await. Errors will be handled by the onError callback
+        void this.expiring.start();
+        void this.scheduling.start();
+        void this.cleaning.start();
+    }
+
+    async stop(): Promise<void> {
+        this.ac.abort();
+        await this.cleaning.waitUntilStopped();
+        await this.expiring.waitUntilStopped();
+        await this.scheduling.waitUntilStopped();
     }
 
     /**
@@ -86,7 +70,7 @@ export class Scheduler {
      * const task = await scheduler.get({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
     public async get({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        return tasks.get(this.dbClient.db, taskId);
+        return tasks.get(this.db, taskId);
     }
 
     /**
@@ -111,7 +95,7 @@ export class Scheduler {
         ownerKey?: string;
         limit?: number;
     }): Promise<Result<Task[]>> {
-        return tasks.search(this.dbClient.db, params);
+        return tasks.search(this.db, params);
     }
 
     /**
@@ -128,7 +112,7 @@ export class Scheduler {
         limit: number;
         forUpdate?: boolean;
     }): Promise<Result<Schedule[]>> {
-        return schedules.search(this.dbClient.db, params);
+        return schedules.search(this.db, params);
     }
 
     /**
@@ -150,7 +134,7 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
-        return this.dbClient.db.transaction(async (trx) => {
+        return this.db.transaction(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
             if ('scheduleName' in props) {
@@ -229,7 +213,7 @@ export class Scheduler {
      * const schedule = await scheduler.recurring(schedulingProps);
      */
     public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
-        return schedules.create(this.dbClient.db, props);
+        return schedules.create(this.db, props);
     }
 
     /**
@@ -241,7 +225,7 @@ export class Scheduler {
      * const dequeued = await scheduler.dequeue({ groupKey: 'test', limit: 1 });
      */
     public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
-        const dequeued = await tasks.dequeue(this.dbClient.db, { groupKey, limit });
+        const dequeued = await tasks.dequeue(this.db, { groupKey, limit });
         if (dequeued.isOk()) {
             dequeued.value.forEach((task) => this.onCallbacks[task.state](this, task));
         }
@@ -256,7 +240,7 @@ export class Scheduler {
      * const heartbeat = await scheduler.heartbeat({ taskId: 'test' });
      */
     public async heartbeat({ taskId }: { taskId: string }): Promise<Result<Task>> {
-        return tasks.heartbeat(this.dbClient.db, taskId);
+        return tasks.heartbeat(this.db, taskId);
     }
 
     /**
@@ -268,7 +252,7 @@ export class Scheduler {
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
      */
     public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
-        const succeeded = await tasks.transitionState(this.dbClient.db, { taskId, newState: 'SUCCEEDED', output });
+        const succeeded = await tasks.transitionState(this.db, { taskId, newState: 'SUCCEEDED', output });
         if (succeeded.isOk()) {
             const task = succeeded.value;
             this.onCallbacks[task.state](this, task);
@@ -285,7 +269,7 @@ export class Scheduler {
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000', error: {message: 'error'});
      */
     public async fail({ taskId, error }: { taskId: string; error: JsonValue }): Promise<Result<Task>> {
-        return await this.dbClient.db.transaction(async (trx) => {
+        return await this.db.transaction(async (trx) => {
             const task = await tasks.get(trx, taskId);
             if (task.isErr()) {
                 return Err(`fail: Error fetching task '${taskId}': ${stringifyError(task.error)}`);
@@ -335,7 +319,7 @@ export class Scheduler {
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
     public async cancel(cancelBy: { taskId: string; reason: JsonValue }): Promise<Result<Task>> {
-        const cancelled = await tasks.transitionState(this.dbClient.db, {
+        const cancelled = await tasks.transitionState(this.db, {
             taskId: cancelBy.taskId,
             newState: 'CANCELLED',
             output: { reason: cancelBy.reason }
@@ -357,7 +341,7 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
-        return this.dbClient.db.transaction(async (trx) => {
+        return this.db.transaction(async (trx) => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
             const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (found.isErr()) {
@@ -409,7 +393,7 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleFrequency({ scheduleName: 'schedule123', frequencyMs: 600_000 });
      */
     public async setScheduleFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<Result<Schedule>> {
-        return this.dbClient.db.transaction(async (trx) => {
+        return this.db.transaction(async (trx) => {
             const schedule = await schedules.search(trx, { names: [scheduleName], limit: 1 });
             if (schedule.isErr()) {
                 return Err(schedule.error);

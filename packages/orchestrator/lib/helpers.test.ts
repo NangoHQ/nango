@@ -29,8 +29,9 @@ export class TestOrchestratorService {
     async start() {
         await this.dbClient.migrate();
         this.scheduler = new Scheduler({
-            dbClient: this.dbClient,
-            on: this.eventsHandler.onCallbacks
+            db: this.dbClient.db,
+            on: this.eventsHandler.onCallbacks,
+            onError: () => {}
         });
         const server = getServer(this.scheduler, this.eventsHandler);
         server.listen(this.port);
