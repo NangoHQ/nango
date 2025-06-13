@@ -249,7 +249,7 @@ export const Go: React.FC = () => {
                         telemetry('popup:blocked_by_browser');
                         setError(t('go.popupBlocked'));
                         return;
-                    } else if (err.type === 'windowClosed') {
+                    } else if (err.type === 'window_closed') {
                         telemetry('popup:closed_early');
                         setError(t('go.popupClosed'));
                         return;
