@@ -64,9 +64,18 @@ try {
     });
 
     const scheduler = new Scheduler({
-        dbClient,
-        on: eventsHandler.onCallbacks
+        db: dbClient.db,
+        on: eventsHandler.onCallbacks,
+        onError: async (err) => {
+            report(err);
+            logger.error(`Scheduler error: ${stringifyError(err)}`);
+            await dbClient.destroy();
+            logger.close();
+
+            process.exit(1); // scheduler error is critical, we exit the process
+        }
     });
+    scheduler.start();
 
     // default max listener is 10
     // but we need more listeners
@@ -84,7 +93,7 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
-            scheduler.stop();
+            await scheduler.stop();
             await dbClient.destroy();
 
             logger.close();

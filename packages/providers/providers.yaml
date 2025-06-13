@@ -8463,6 +8463,7 @@ rippling:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
+            user-agent: Node.js/20.12.2 (linux; x64)
         base_url: https://rest.ripplingapis.com
     docs: https://docs.nango.dev/integrations/all/rippling
     docs_connect: https://docs.nango.dev/integrations/all/rippling/connect

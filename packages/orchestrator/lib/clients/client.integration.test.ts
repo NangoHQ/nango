@@ -19,8 +19,9 @@ const eventsHandler = new EventsHandler({
     CANCELLED: () => {}
 });
 const scheduler = new Scheduler({
-    dbClient,
-    on: eventsHandler.onCallbacks
+    db: dbClient.db,
+    on: eventsHandler.onCallbacks,
+    onError: () => {}
 });
 
 describe('OrchestratorClient', async () => {
