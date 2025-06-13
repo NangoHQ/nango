@@ -19,6 +19,7 @@ const models = new Map<string, NangoModel>([
                 { name: 'any', tsType: true, value: 'any' },
                 { name: 'opt', value: 'number', tsType: true, optional: true },
                 { name: 'ref', value: 'Foo', tsType: false, model: true, optional: true },
+                { name: 'withBadChar:', value: [{ name: 'nes?', value: 'ted' }], tsType: true },
                 {
                     name: 'union',
                     union: true,

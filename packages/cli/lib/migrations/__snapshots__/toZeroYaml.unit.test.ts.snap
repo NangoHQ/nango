@@ -11,6 +11,11 @@ export const Model = z.object({
   any: z.any(),
   opt: z.number().optional(),
   ref: z.literal("Foo").optional(),
+
+  "withBadChar:": z.object({
+    "nes?": z.literal("ted")
+  }),
+
   union: z.union([z.literal("literal1"), z.literal("literal2")]),
   array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
 

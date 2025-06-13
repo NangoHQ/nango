@@ -19,7 +19,7 @@ interface Models {
 describe('NangoSyncBase type signatures', () => {
     describe('batchSave', () => {
         it('accepts a full model', () => {
-            expectTypeOf<NangoSyncBase<Models>['batchSave']>().parameter(0).toEqualTypeOf<User[]>();
+            expectTypeOf<User[]>().toExtend<Parameters<NangoSyncBase<Models>['batchSave']>[0]>();
         });
         it('should not allow missing id', () => {
             interface NoId {
@@ -32,7 +32,7 @@ describe('NangoSyncBase type signatures', () => {
 
     describe('batchDelete', () => {
         it('should accepts models with id', () => {
-            expectTypeOf<NangoSyncBase<Models>['batchDelete']>().parameter(0).toEqualTypeOf<(Pick<User, 'id'> & Partial<User>)[]>();
+            expectTypeOf<(Pick<User, 'id'> & Partial<User>)[]>().toExtend<Parameters<NangoSyncBase<Models>['batchDelete']>[0]>();
         });
         it('should not allow missing id', () => {
             interface NoId {
@@ -45,7 +45,7 @@ describe('NangoSyncBase type signatures', () => {
 
     describe('batchUpdate', () => {
         it('should accepts models with id', () => {
-            expectTypeOf<NangoSyncBase<Models>['batchUpdate']>().parameter(0).toEqualTypeOf<(Pick<User, 'id'> & Partial<User>)[]>();
+            expectTypeOf<(Pick<User, 'id'> & Partial<User>)[]>().toExtend<Parameters<NangoSyncBase<Models>['batchUpdate']>[0]>();
         });
         it('should not allow missing id', () => {
             interface NoId {

@@ -5774,7 +5774,7 @@ integrations:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.2
+                version: 1.0.3
                 endpoint:
                     method: GET
                     path: /users
@@ -5788,7 +5788,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.1
+                version: 1.0.2
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5805,7 +5805,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.1
+                version: 1.0.2
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -5876,7 +5876,7 @@ integrations:
                 purpose: string | null
                 meeting_url: string
                 is_private: boolean
-                calendar_event_id: string
+                calendar_event_id: string | null
                 context?: GongCallContext | undefined
                 parties:
                     - id: string
@@ -5935,7 +5935,7 @@ integrations:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.2
+                version: 1.0.3
                 endpoint:
                     method: GET
                     path: /users
@@ -5949,7 +5949,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.1
+                version: 1.0.2
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5966,7 +5966,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.1
+                version: 1.0.2
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -6037,7 +6037,7 @@ integrations:
                 purpose: string | null
                 meeting_url: string
                 is_private: boolean
-                calendar_event_id: string
+                calendar_event_id: string | null
                 context?: GongCallContext | undefined
                 parties:
                     - id: string
@@ -18819,7 +18819,7 @@ integrations:
                     - channels:read
                     - channels:join
             messages:
-                version: 1.0.2
+                version: 1.0.3
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &
@@ -20113,7 +20113,7 @@ integrations:
                     group: Accounts
                 scopes:
                     - accounting.settings
-                version: 1.0.4
+                version: 1.0.5
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,

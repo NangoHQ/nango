@@ -2,7 +2,7 @@ import { NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
-import type { ZodMetadata, ZodModel } from './types.js';
+import type { RawModel, ZodMetadata, ZodModel } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
 import type { z } from 'zod';
 
@@ -44,23 +44,26 @@ export abstract class NangoSyncBase<
     /**
      * @deprecated please use batchSave
      */
-    public async batchSend(results: z.infer<TModels[TModelName]>[], model: TModelName): Promise<boolean | null> {
+    public async batchSend<TModel extends RawModel = z.infer<TModels[TModelName]>>(results: TModel[], model: TModelName): Promise<boolean | null> {
         return this.batchSave(results, model);
     }
 
-    public abstract batchSave(results: z.infer<TModels[TModelName]>[], model: TModelName): MaybePromise<boolean>;
+    public abstract batchSave<TModel extends RawModel = z.infer<TModels[TModelName]>>(results: TModel[], model: TModelName): MaybePromise<boolean>;
 
-    public abstract batchDelete<TModel extends z.infer<TModels[TModelName]>>(
+    public abstract batchDelete<TModel extends RawModel = z.infer<TModels[TModelName]>>(
         results: (Pick<TModel, 'id'> & Partial<TModel>)[],
         model: TModelName
     ): MaybePromise<boolean>;
 
-    public abstract batchUpdate<TModel extends z.infer<TModels[TModelName]>>(
+    public abstract batchUpdate<TModel extends RawModel = z.infer<TModels[TModelName]>>(
         results: (Pick<TModel, 'id'> & Partial<TModel>)[],
         model: TModelName
     ): MaybePromise<boolean>;
 
-    public abstract getRecordsByIds<K = string | number, T = any>(ids: K[], model: TModelName): MaybePromise<Map<K, T>>;
+    public abstract getRecordsByIds<TKey = string | number, TModel extends RawModel = z.infer<TModels[TModelName]>>(
+        ids: TKey[],
+        model: TModelName
+    ): MaybePromise<Map<TKey, TModel>>;
 
     public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
 
