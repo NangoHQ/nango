@@ -58,7 +58,10 @@ export interface UpsertSummary {
     updatedKeys: string[];
     deletedKeys?: string[];
     unchangedKeys: string[];
-    billedKeys: string[];
+    /**
+     * MAR - Monthly Active Records - Carries keys that have been added/modified from the start of the month
+     */
+    activatedKeys: string[];
     nonUniqueKeys: string[];
     nextMerging: MergingStrategy;
 }
