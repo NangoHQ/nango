@@ -18,9 +18,10 @@ describe('Scheduler', () => {
         EXPIRED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('EXPIRED')),
         CANCELLED: vi.fn((_scheduler: Scheduler, task: Task) => expect(task.state).toBe('CANCELLED'))
     };
-    const scheduler = new Scheduler({ dbClient, on: callbacks });
+    const scheduler = new Scheduler({ db: dbClient.db, on: callbacks, onError: () => {} });
 
     beforeAll(async () => {
+        scheduler.start();
         await dbClient.migrate();
     });
 
@@ -34,7 +35,7 @@ describe('Scheduler', () => {
     });
 
     afterAll(async () => {
-        scheduler.stop();
+        await scheduler.stop();
         await dbClient.clearDatabase();
     });
 
@@ -94,13 +95,13 @@ describe('Scheduler', () => {
     it('should call callback when task is expired', async () => {
         const timeoutMs = 1000;
         await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         expect(callbacks.EXPIRED).toHaveBeenCalledOnce();
     });
     it('should monitor and expires created tasks if timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         const expired = (await tasks.get(db, task.id)).unwrap();
         expect(expired.state).toBe('EXPIRED');
     });
@@ -108,7 +109,7 @@ describe('Scheduler', () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
@@ -116,7 +117,7 @@ describe('Scheduler', () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_MONITOR_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         const taskAfter = (await tasks.get(db, task.id)).unwrap();
         expect(taskAfter.state).toBe('EXPIRED');
     });
