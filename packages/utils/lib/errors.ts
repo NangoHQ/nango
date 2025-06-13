@@ -14,7 +14,36 @@ export function errorToObject(err: unknown) {
  * Transform any Error or primitive to a string
  */
 export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
-    return JSON.stringify(serializeError(err), ['name', 'message', ...(opts?.stack ? ['stack', 'cause'] : [])], opts?.pretty ? 2 : undefined);
+    const serialized = serializeError(err);
+    const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack', 'cause'] : [])];
+
+    const enriched: Record<string, unknown> = {
+        ...serialized
+    };
+
+    // Extract additional context from Boom error objects (used in simpleoauth flow)
+    // since Boom errors often wrap valuable information like `data.payload`,
+    // which isn't included in the default serialization but is useful for user-facing error messages.
+    if (typeof err === 'object' && err != null) {
+        const anyErr = err as any;
+
+        const payload = anyErr.data?.payload;
+        if (payload && typeof payload === 'object') {
+            enriched['provider_error_payload'] = payload;
+        }
+    }
+
+    const fullSerialized = JSON.stringify(enriched, null, opts?.pretty ? 2 : undefined);
+    const parsed = JSON.parse(fullSerialized);
+    const filtered: Record<string, unknown> = {};
+
+    for (const key of allowedErrorProperties) {
+        if (key in parsed) {
+            filtered[key] = parsed[key];
+        }
+    }
+
+    return JSON.stringify(filtered, null, opts?.pretty ? 2 : undefined);
 }
 
 export function initSentry({ dsn, hash, applicationName }: { dsn: string | undefined; hash?: string | undefined; applicationName: string }) {
