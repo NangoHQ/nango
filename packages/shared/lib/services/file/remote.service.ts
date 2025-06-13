@@ -17,21 +17,15 @@ import type { Response } from 'express';
 
 let client: S3Client | null = null;
 let useS3 = !isLocal && !isTest;
+let region = process.env['AWS_REGION'] as string;
 
 if (isEnterprise) {
     useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
-    client = new S3Client({
-        region: (process.env['AWS_REGION'] as string) || 'us-west-2'
-    });
-} else {
-    client = new S3Client({
-        region: process.env['AWS_REGION'] as string,
-        credentials: {
-            accessKeyId: process.env['AWS_ACCESS_KEY_ID'] as string,
-            secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] as string
-        }
-    });
+    region = region ?? 'us-west-2';
 }
+client = new S3Client({
+    region
+});
 
 class RemoteFileService {
     bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
@@ -136,7 +130,6 @@ class RemoteFileService {
                 Bucket: this.bucket,
                 Key: fileName
             });
-
             client
                 ?.send(getObjectCommand)
                 .then((response: GetObjectCommandOutput) => {
@@ -195,83 +188,81 @@ class RemoteFileService {
 
     async zipAndSendPublicFiles({
         res,
-        integrationName,
+        scriptName,
         providerPath,
         flowType
     }: {
         res: Response;
-        integrationName: string;
+        scriptName: string;
         providerPath: string;
         flowType: string;
     }): Promise<void> {
+        // TODO: handle zero yaml here
+
+        const files: { name: string; content: Readable }[] = [];
         const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
         if (!success || nangoYaml === null) {
             errorManager.errResFromNangoErr(res, error);
             return;
         }
+        files.push({ name: 'nango.yaml', content: nangoYaml });
+
         const {
             success: tsSuccess,
             error: tsError,
             response: tsFile
-        } = await this.getStream(`${this.publicRoute}/${providerPath}/${flowType}s/${integrationName}.ts`);
+        } = await this.getStream(`${this.publicRoute}/${providerPath}/${flowType}s/${scriptName}.ts`);
         if (!tsSuccess || tsFile === null) {
             errorManager.errResFromNangoErr(res, tsError);
             return;
         }
-        await this.zipAndSend({ res, integrationName, nangoYaml, tsFile });
+        files.push({ name: `${scriptName}.ts`, content: tsFile });
+
+        await this.zipAndSend({ res, files });
     }
 
     async zipAndSendFiles({
         res,
-        integrationName,
+        scriptName,
         providerConfigKey,
         syncConfig
     }: {
         res: Response;
-        integrationName: string;
+        scriptName: string;
         providerConfigKey: string;
         syncConfig: DBSyncConfig;
     }): Promise<void> {
         if (!isCloud && !useS3) {
-            return localFileService.zipAndSendFiles({ res, integrationName, providerConfigKey, syncConfig });
+            return localFileService.zipAndSendFiles({ res, scriptName, providerConfigKey, syncConfig });
         } else {
-            const nangoConfigLocation = syncConfig.file_location.split('/').slice(0, -3).join('/');
-            const { success, error, response: nangoYaml } = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
-
-            if (!success || nangoYaml === null) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
+            const files: { name: string; content: Readable }[] = [];
+            if (!syncConfig.sdk_version?.includes('-zero')) {
+                const nangoConfigLocation = syncConfig.file_location.split('/').slice(0, -3).join('/');
+                const resGet = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
+                if (!resGet.success || !resGet.response) {
+                    errorManager.errResFromNangoErr(res, resGet.error);
+                    return;
+                }
+                files.push({ name: 'nango.yaml', content: resGet.response });
             }
 
             const integrationFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
-            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${integrationName}.ts`);
-
+            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${scriptName}.ts`);
             if (!tsSuccess || tsFile === null) {
                 errorManager.errResFromNangoErr(res, tsError);
                 return;
             }
+            files.push({ name: `${scriptName}.ts`, content: tsFile });
 
-            await this.zipAndSend({ res, integrationName, nangoYaml, tsFile, nangoConfigId: syncConfig.nango_config_id });
+            await this.zipAndSend({ res, files, nangoConfigId: syncConfig.nango_config_id });
         }
     }
 
-    async zipAndSend({
-        res,
-        integrationName,
-        nangoYaml,
-        tsFile,
-        nangoConfigId
-    }: {
-        res: Response;
-        integrationName: string;
-        nangoYaml: Readable;
-        tsFile: Readable;
-        nangoConfigId?: number;
-    }) {
+    async zipAndSend({ res, files, nangoConfigId }: { res: Response; files: { name: string; content: Readable }[]; nangoConfigId?: number }) {
         const archive = archiver('zip');
 
         archive.on('error', (err) => {
-            report(err, { integrationName, nangoConfigId });
+            report(err, { files: files.map((f) => f.name).join(', '), nangoConfigId });
 
             errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
             return;
@@ -282,8 +273,9 @@ class RemoteFileService {
 
         archive.pipe(res);
 
-        archive.append(nangoYaml, { name: nangoConfigFile });
-        archive.append(tsFile, { name: `${integrationName}.ts` });
+        for (const file of files) {
+            archive.append(file.content, { name: file.name });
+        }
 
         await archive.finalize();
     }
