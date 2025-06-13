@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import type { SWRError } from '../utils/api';
 import { apiFetch, swrFetcher } from '../utils/api';
-import type { GetConnections, DeleteConnection, GetConnectionsCount, GetConnection, PostConnectionRefresh } from '@nangohq/types';
+import type { GetConnections, DeleteConnection, GetConnectionsCount, GetConnection, PostConnectionRefresh, UpdateConnectionFrequency } from '@nangohq/types';
 import { useMemo } from 'react';
 
 export function useConnections(queries: GetConnections['Querystring']) {
@@ -79,6 +79,21 @@ export async function apiRefreshConnection(params: PostConnectionRefresh['Params
     return {
         res,
         json: (await res.json()) as PostConnectionRefresh['Reply']
+    };
+}
+
+export async function apiUpdateSyncConnectionFrequency(env: string, { name: sync_name, ...body }: UpdateConnectionFrequency['Body']) {
+    const method: UpdateConnectionFrequency['Method'] = 'PUT';
+    const path: UpdateConnectionFrequency['Path'] = '/api/v1/sync/update-connection-frequency';
+
+    const res = await apiFetch(`${path}?env=${env}`, {
+        method,
+        body: JSON.stringify({ ...body, sync_name })
+    });
+
+    return {
+        res,
+        json: (await res.json()) as UpdateConnectionFrequency['Reply']
     };
 }
 
