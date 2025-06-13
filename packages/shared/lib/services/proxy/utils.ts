@@ -43,7 +43,7 @@ export class ProxyError extends Error {
 }
 
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
-const specialHeaders: Lowercase<string>[] = ['user-agent'];
+const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
 export function getAxiosConfiguration({
     proxyConfig,
@@ -320,7 +320,7 @@ export function buildProxyHeaders({
 
     if (config.headers) {
         // Headers set in scripts should override the default ones except for special headers like 'user-agent'
-        for (const key of specialHeaders) {
+        for (const key of providedHeaders) {
             if (headers[key]) {
                 config.headers[key] = headers[key];
             }
