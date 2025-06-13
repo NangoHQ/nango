@@ -36,10 +36,9 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "@types/node": "^20.12.2",
-        "nodemon": "3.1.9",
-        "typescript": "5.7.3",
-        "type-fest": "4.40.0",
+        "nodemon": "3.1.10",
+        "typescript": "5.8.3",
+        "type-fest": "4.41.0",
         "vitest": "3.1.2"
     }
 }

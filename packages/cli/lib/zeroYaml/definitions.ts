@@ -1,33 +1,38 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import { getInterval } from '@nangohq/nango-yaml';
 
 import { zodToNangoModelField } from './zodToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
-import { tsToJsPath } from './compile.js';
+import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import {
+    DuplicateEndpointDefinitionError,
+    DuplicateModelDefinitionError,
+    EndpointMismatchDefinitionError,
+    InvalidIntervalDefinitionError,
+    InvalidModelDefinitionError
+} from './utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
+import type { ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 
 const allowed = ['action', 'sync', 'onEvent'];
-const exportRegex = /^export \* from ['"](.+)['"];?$/gm;
 
 export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
-    const indexPath = path.join(fullPath, 'index.ts');
-    const indexContent = await fs.readFile(indexPath, 'utf-8');
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
 
-    const matched = indexContent.matchAll(exportRegex);
+    const indexRes = await readIndexContent(fullPath);
+    if (indexRes.isErr()) {
+        return Err(indexRes.error);
+    }
+    const matched = getEntryPoints(indexRes.value);
     let num = 0;
 
-    for (const match of matched) {
-        const filePath = match[1];
-        if (!filePath) {
-            continue;
-        }
-
+    for (const filePath of matched) {
         num += 1;
 
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
@@ -42,11 +47,12 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>
+            | CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>
             | CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
+        const realPath = filePath.replace('.js', '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const split = filePath.split('/');
         const integrationId = split[split.length - 3]!;
@@ -65,7 +71,11 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
         switch (script.type) {
             case 'sync': {
-                const def = buildSync({ params: script, integrationIdClean, basename, basenameClean });
+                const resBuild = buildSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
+                if (resBuild.isErr()) {
+                    return Err(resBuild.error);
+                }
+                const def = resBuild.value;
                 integration.syncs.push(def.sync);
                 def.models.forEach((v, k) => {
                     parsed.models.set(k, v);
@@ -91,6 +101,11 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         }
     }
 
+    const postValidationRes = postValidation(parsed);
+    if (postValidationRes.isErr()) {
+        return Err(postValidationRes.error);
+    }
+
     if (num === 0) {
         return Err(new Error('No export in index.ts'));
     }
@@ -100,17 +115,21 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
     return Ok(parsed);
 }
 
+const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
+
 export function buildSync({
+    filePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
-    params: CreateSyncResponse<Record<string, Zod.ZodObject<any>>, Zod.ZodTypeAny>;
+    filePath: string;
+    params: CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): { sync: ParsedNangoSync; models: Map<string, NangoModel> } {
+}): Result<{ sync: ParsedNangoSync; models: Map<string, NangoModel> }> {
     const models = new Map<string, NangoModel>();
     const usedModels = new Set(Object.keys(params.models));
     const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
@@ -120,6 +139,31 @@ export function buildSync({
             models.set(metadata.name, { name: metadata.name, fields: [{ ...metadata, name: 'metadata' }], isAnon: true });
         } else {
             models.set(metadata.name, { name: metadata.name, fields: metadata.value });
+        }
+    }
+
+    // Validation
+    // TODO: We should probably share this with the backend and have a single zod validation
+    const interval = getInterval(params.frequency, new Date());
+    if (interval instanceof Error) {
+        return Err(new InvalidIntervalDefinitionError(filePath, ['createSync', 'frequency']));
+    }
+    if (Object.keys(params.models).length !== params.endpoints.length) {
+        return Err(new EndpointMismatchDefinitionError(filePath, ['createSync', 'endpoints']));
+    }
+
+    const seen = new Set();
+    for (const endpoint of params.endpoints) {
+        const key = `${endpoint.method} ${endpoint.path}`;
+        if (seen.has(key)) {
+            return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+        }
+        seen.add(key);
+    }
+
+    for (const modelName of Object.keys(params.models)) {
+        if (!regexModelName.test(modelName)) {
+            return Err(new InvalidModelDefinitionError(modelName, filePath, ['createSync', 'models']));
         }
     }
 
@@ -144,7 +188,7 @@ export function buildSync({
         version: params.version || '0.0.1',
         webhookSubscriptions: params.webhookSubscriptions || []
     };
-    return { sync, models };
+    return Ok({ sync, models });
 }
 
 export function buildAction({
@@ -185,4 +229,43 @@ export function buildAction({
         version: params.version || '0.0.1'
     };
     return { action, models };
+}
+
+function postValidation(parsed: NangoYamlParsed): Result<void> {
+    for (const integration of parsed.integrations) {
+        const seenEndpoints = new Set<string>();
+        const seenModels = new Set<string>();
+
+        for (const sync of integration.syncs) {
+            for (const model of sync.usedModels) {
+                if (seenModels.has(model)) {
+                    return Err(new DuplicateModelDefinitionError(model, `${integration.providerConfigKey}/syncs/${sync.name}.ts`, ['createSync', 'input']));
+                }
+                seenModels.add(model);
+            }
+
+            for (const endpoint of sync.endpoints) {
+                const key = `${endpoint.method} ${endpoint.path}`;
+                if (seenEndpoints.has(key)) {
+                    return Err(
+                        new DuplicateEndpointDefinitionError(key, `${integration.providerConfigKey}/syncs/${sync.name}.ts`, ['createSync', 'endpoints'])
+                    );
+                }
+                seenEndpoints.add(key);
+            }
+        }
+
+        for (const action of integration.actions) {
+            if (action.endpoint) {
+                const key = `${action.endpoint.method} ${action.endpoint.path}`;
+                if (seenEndpoints.has(key)) {
+                    return Err(
+                        new DuplicateEndpointDefinitionError(key, `${integration.providerConfigKey}/actions/${action.name}.ts`, ['createAction', 'endpoint'])
+                    );
+                }
+                seenEndpoints.add(key);
+            }
+        }
+    }
+    return Ok(undefined);
 }

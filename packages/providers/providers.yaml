@@ -5244,6 +5244,7 @@ hubspot:
     connection_configuration:
         - portalId
     post_connection_script: hubspotPostConnection
+    pre_connection_deletion_script: hubspotPreConnectionDeletion
     webhook_routing_script: hubspotWebhookRouting
     proxy:
         retry:
@@ -5323,12 +5324,18 @@ instantly:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.instantly.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/instantly
+    docs_connect: https://docs.nango.dev/integrations/all/instantly/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Instantly account
+            pattern: '^[A-Za-z0-9._=-]+$'
+            example: ZTQ****************************************QQ==
+            doc_section: '#step-1-generate-an-api-key'
 
 instagram:
     display_name: Instagram
@@ -5359,6 +5366,7 @@ intercom:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
+    pre_connection_deletion_script: intercomPreConnectionDeletion
 
 intuit:
     display_name: Intuit
@@ -5636,6 +5644,36 @@ jobadder:
             endpoints:
                 - /v2/users/current
     docs: https://docs.nango.dev/integrations/all/jobadder
+
+jobvite:
+    display_name: Jobvite
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.jobvite.com/api
+        headers:
+            x-jvi-api: ${apiKey}
+            x-jvi-sc: ${connectionConfig.secretKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/candidate
+    docs: https://docs.nango.dev/integrations/all/jobvite
+    docs_connect: https://docs.nango.dev/integrations/all/jobvite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Jobvite account
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
+    connection_config:
+        secretKey:
+            type: string
+            title: Secret Key
+            description: The secret key for your Jobvite account
+            secret: true
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
 
 jotform:
     display_name: Jotform
@@ -8536,6 +8574,39 @@ sage:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
 
+sage-hr:
+    display_name: Sage HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.sage.hr
+        headers:
+            x-auth-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/employees
+    docs: https://docs.nango.dev/integrations/all/sage-hr
+    docs_connect: https://docs.nango.dev/integrations/all/sage-hr/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Sage HR account
+            doc_section: '#step-1-enabling-api-access'
+            example: apikey****************************
+            pattern: '^[a-zA-Z0-9.]+$'
+    connection_config:
+        subdomain:
+            type: string
+            title: Sage HR Subdomain
+            description: The subdomain of your Sage HR account
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: subdomain
+            suffix: .sage.hr
+            prefix: https://
+
 sage-intacct-oauth:
     display_name: Sage Intacct (OAuth)
     categories:
@@ -9291,6 +9362,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
+    pre_connection_deletion_script: slackPreConnectionDeletion
     docs: https://docs.nango.dev/integrations/all/slack
 
 smartlead-ai:
@@ -9965,6 +10037,29 @@ trakstar-hire:
             default_value: ''
             hidden: true
 
+trafft:
+    display_name: Trafft
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.admin.trafft.com/api/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api
+    docs: https://docs.nango.dev/integrations/all/trafft
+    docs_connect: https://docs.nango.dev/integrations/all/trafft/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Trafft instance
+            example: subdomain
+            format: hostname
+            prefix: https://
+            suffix: .admin.trafft.com
+            doc_section: '#step-1-access-api-settings'
+
 tremendous:
     display_name: Tremendous
     categories:
@@ -10389,6 +10484,74 @@ ukg-pro-wfm:
             example: wfm
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
+ukg-pro:
+    display_name: UKG Pro
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/user-details
+    docs: https://docs.nango.dev/integrations/all/ukg-pro
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your UKG Pro account
+            doc_section: '#step-1-creating-a-web-service-account'
+            pattern: '^[a-zA-Z0-9.]{50,}$'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The tenant URL of your UKG Pro instance
+            format: hostname
+            example: servicet.ultipro.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-service-endpoint'
+
+ukg-ready:
+    display_name: UKG Ready
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/api/v2/client/tokens
+    token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        audience: https://${connectionConfig.hostname}/api
+        realm: ${connectionConfig.tenantName}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://docs.nango.dev/integrations/all/ukg-ready
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Ready instance
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The tenant name of your UKG Ready instance
+            example: wfm
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 unanet:
     display_name: Unanet
     categories:

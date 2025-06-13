@@ -1,0 +1,249 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateModelsTs > should generate models.ts 1`] = `
+"import { z } from "zod";
+
+export const Model = z.object({
+  id: z.string(),
+  arrTsType: z.string().array(),
+  null: z.nullable(),
+  bool: z.boolean(),
+  any: z.any(),
+  opt: z.number().optional(),
+  ref: z.literal("Foo").optional(),
+
+  "withBadChar:": z.object({
+    "nes?": z.literal("ted")
+  }),
+
+  union: z.union([z.literal("literal1"), z.literal("literal2")]),
+  array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
+
+  obj: z.object({
+    nes: z.literal("ted")
+  }),
+
+  dynamicObj: z.object({}).catchall(z.literal("date")),
+  union2: z.union([Model, Model.array()]),
+  dateOrNull: z.date().optional()
+});
+
+export type Model = z.infer<typeof Model>;
+
+export const ModelDynamic = z.object({
+  id: z.string()
+}).catchall(z.string());
+
+export type ModelDynamic = z.infer<typeof ModelDynamic>;
+
+export const Metadata = z.object({
+  foo: z.literal("bar"),
+  model: Model
+});
+
+export type Metadata = z.infer<typeof Metadata>;
+
+export const IssueInput = z.object({
+  title: z.string(),
+  body: z.string()
+});
+
+export type IssueInput = z.infer<typeof IssueInput>;
+
+export const IssueOutput = z.object({
+  id: z.string(),
+  status: z.string()
+});
+
+export type IssueOutput = z.infer<typeof IssueOutput>;
+
+export const ActionErrorResponse = z.object({
+  msg: z.string()
+});
+
+export type ActionErrorResponse = z.infer<typeof ActionErrorResponse>;
+
+export const models = {
+  Model: Model,
+  ModelDynamic: ModelDynamic,
+  Metadata: Metadata,
+  IssueInput: IssueInput,
+  IssueOutput: IssueOutput,
+  ActionErrorResponse: ActionErrorResponse
+};"
+`;
+
+exports[`processHelperFiles > should process helper files 1`] = `
+"import { NangoAction, NangoSync, ProxyConfiguration } from "nango";
+import type { Model } from "../models";
+
+function foobar(nango: NangoSync) {
+    nango.batchSave<Model>([{}], 'Model');
+}
+"
+`;
+
+exports[`transformAction > should transform an action 1`] = `
+"import { createAction } from "nango";
+import { IssueOutput, IssueInput } from "../../models.js";
+
+/**
+ * This comment should be preserved
+ */
+const action = createAction({
+  description: "Test action",
+  version: "1.0.0",
+
+  endpoint: {
+    method: "POST",
+    path: "/example/github/issues",
+    group: "Issues"
+  },
+
+  input: IssueInput,
+  output: IssueOutput,
+  scopes: ["repo"],
+
+  exec: async (nango, input): Promise<IssueOutput> => {
+    await nango.log("✅ hello from action");
+    const output: IssueOutput = {
+      id: '123',
+      status: 'open'
+    };
+    return output;
+  }
+});
+
+export type NangoActionLocal = Parameters<typeof action["exec"]>[0];
+export default action;
+
+function foobar(nango: NangoActionLocal) {
+   nango.batchSave([{}], 'Model');
+}"
+`;
+
+exports[`transformOnEvents > should transform an on-event script 1`] = `
+"import { createOnEvent } from "nango";
+
+/**
+ * This comment should be preserved
+ */
+export default createOnEvent({
+ event: "pre-connection-deletion",
+ description: "pre-connection-deletion event handler",
+
+ exec: async nango => {
+   await nango.log("test pre script");
+ }
+});"
+`;
+
+exports[`transformSync > should transform a sync (different values) 1`] = `
+"import { createSync } from "nango";
+import type { ProxyConfiguration } from "nango";
+import { Model } from "../../models.js";
+import { z } from "zod";
+
+interface Config extends ProxyConfiguration {
+  params: Record<string, string | number>;
+}
+
+const sync = createSync({
+    description: "Test sync",
+    version: "1.2.3",
+    frequency: "every 32 days",
+    autoStart: false,
+    syncType: "incremental",
+    trackDeletes: true,
+
+    endpoints: [{
+        method: "GET",
+        path: "top",
+        group: "foobar"
+    }],
+
+    models: {
+        Model: Model
+    },
+
+    metadata: z.object({}),
+
+    exec: async nango => {
+        await nango.log('hello');
+        await nango.batchSave([{
+            'id': 'foobar',
+        }], 'Model');
+    }
+});
+
+export type NangoSyncLocal = Parameters<typeof sync["exec"]>[0];
+export default sync;"
+`;
+
+exports[`transformSync > should transform a sync 1`] = `
+"import { createSync } from "nango";
+import type { ProxyConfiguration } from "nango";
+import { Model, ModelDynamic, Metadata, ActionErrorResponse } from "../../models.js";
+
+/**
+ * This comment should be preserved
+ */
+const sync = createSync({
+  description: "Test sync",
+  version: "1.2.3",
+  frequency: "every hour",
+  autoStart: true,
+  syncType: "full",
+  trackDeletes: false,
+
+  endpoints: [{
+    method: "GET",
+    path: "top",
+    group: "foobar"
+  }],
+
+  webhookSubscriptions: ["*"],
+  scopes: ["repo", "user"],
+
+  models: {
+    Model: Model,
+    ModelDynamic: ModelDynamic
+  },
+
+  metadata: Metadata,
+
+  exec: async nango => {
+      await nango.log('hello');
+      await nango.batchSave([{
+          'id': 'foobar',
+      }], 'Model');
+
+  },
+
+  /**
+   * This comment should also be preserved
+   */
+  onWebhook: async (nango, payload) => {
+    await nango.log('Received webhook', payload);
+    await nango.batchSave([{}], 'Model');
+    const proxyConfig: ProxyConfiguration = {
+      endpoint: '/issues',
+      retries: 15,
+    };
+  }
+});
+
+export type NangoSyncLocal = Parameters<typeof sync["exec"]>[0];
+export default sync;
+
+/**
+ * This comment should also be preserved 2
+ */
+function foobar(nango: NangoSyncLocal) {
+   nango.batchSave([{}], 'Model');
+
+   throw new nango.ActionError<ActionErrorResponse>({
+     msg: 'Failed',
+   });
+}"
+`;

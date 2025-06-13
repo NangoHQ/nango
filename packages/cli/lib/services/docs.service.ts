@@ -1,35 +1,30 @@
 import { promises as fs } from 'node:fs';
 
-import chalk from 'chalk';
-
 import { printDebug } from '../utils.js';
-import { parse } from './config.service.js';
+import { loadSchemaJson } from './model.service.js';
 
-import type { NangoYamlModel, NangoYamlV2Endpoint, NangoYamlV2IntegrationAction, NangoYamlV2IntegrationSync } from '@nangohq/types';
+import type { NangoYamlParsed, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
+import type { JSONSchema7Definition } from 'json-schema';
 
-type NangoSyncOrAction = NangoYamlV2IntegrationSync | NangoYamlV2IntegrationAction;
+type NangoSyncOrAction = ParsedNangoSync | ParsedNangoAction;
 
 const divider = '<!-- END  GENERATED CONTENT -->';
 
 export async function generate({
     absolutePath,
     path,
+    parsed,
     isForIntegrationTemplates = false,
     debug = false
 }: {
     absolutePath: string;
+    parsed: NangoYamlParsed;
     path?: string;
     debug?: boolean;
     isForIntegrationTemplates?: false;
 }): Promise<boolean> {
     const pathPrefix = path && path.startsWith('/') ? path.slice(1) : path;
-    const parsing = parse(absolutePath, debug);
 
-    if (parsing.isErr()) {
-        console.log(chalk.red(`Error parsing nango.yaml: ${parsing.error}`));
-        return false;
-    }
-    const yamlConfig = parsing.value.raw;
     const writePath = pathPrefix ? `${absolutePath}/${pathPrefix}` : absolutePath;
 
     if (debug) {
@@ -42,24 +37,21 @@ export async function generate({
 
     await fs.mkdir(writePath, { recursive: true });
 
-    const integrations = yamlConfig.integrations;
-    for (const integration of Object.keys(integrations)) {
-        const models = yamlConfig.models || {};
-        const config = integrations[integration];
+    const jsonSchema = loadSchemaJson({ fullPath: absolutePath });
+    if (!jsonSchema) {
+        return false;
+    }
 
-        const toGenerate: [string, string, string, NangoSyncOrAction][] = [];
+    const integrations = parsed.integrations;
+    for (const config of integrations) {
+        const integration = config.providerConfigKey;
 
-        toGenerate.push(
-            ...Object.entries(config?.syncs || {}).map<[string, string, string, NangoSyncOrAction]>(([key, sync]) => ['sync', integration, key, sync])
-        );
-        toGenerate.push(
-            ...Object.entries(config?.actions || {}).map<[string, string, string, NangoSyncOrAction]>(([key, action]) => ['action', integration, key, action])
-        );
+        const toGenerate: NangoSyncOrAction[] = [...Object.values(config.syncs), ...Object.values(config.actions)];
 
-        for (const [type, integration, key, config] of toGenerate) {
-            const scriptPath = `${integration}/${type}s/${key}`;
+        for (const entry of toGenerate) {
+            const scriptPath = `${integration}/${entry.type}s/${entry.name}`;
             try {
-                const filename = path ? `${writePath}/${key}.md` : `${writePath}/${scriptPath}.md`;
+                const filename = path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`;
 
                 let markdown;
                 try {
@@ -68,10 +60,18 @@ export async function generate({
                     markdown = '';
                 }
 
-                const updatedMarkdown = updateReadme(markdown, key, scriptPath, type, config, models, isForIntegrationTemplates);
-                await fs.writeFile(path ? `${writePath}/${key}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
+                const updatedMarkdown = updateReadme({
+                    markdown,
+                    scriptName: entry.name,
+                    scriptPath,
+                    endpointType: entry.type,
+                    scriptConfig: entry,
+                    models: entry.usedModels.map((name) => ({ name, def: jsonSchema.definitions![name]! })),
+                    isForIntegrationTemplates
+                });
+                await fs.writeFile(path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
             } catch {
-                console.error(`Error generating readme for ${integration} ${type} ${key}`);
+                console.error(`Error generating readme for ${integration} ${entry.type} ${entry.name}`);
                 return false;
             }
         }
@@ -89,15 +89,23 @@ async function directoryExists(path: string): Promise<boolean> {
     }
 }
 
-function updateReadme(
-    markdown: string,
-    scriptName: string,
-    scriptPath: string,
-    endpointType: string,
-    scriptConfig: NangoSyncOrAction,
-    models: NangoYamlModel,
-    isForIntegrationTemplates: boolean
-): string {
+function updateReadme({
+    markdown,
+    scriptName,
+    scriptPath,
+    endpointType,
+    scriptConfig,
+    models,
+    isForIntegrationTemplates
+}: {
+    markdown: string;
+    scriptName: string;
+    scriptPath: string;
+    endpointType: string;
+    scriptConfig: NangoSyncOrAction;
+    models: { name: string; def: JSONSchema7Definition }[];
+    isForIntegrationTemplates: boolean;
+}): string {
     const [, custom = ''] = markdown.split(divider);
 
     const prettyName = scriptName
@@ -118,9 +126,11 @@ function updateReadme(
         requestBody(scriptConfig, endpointType, models),
         requestResponse(scriptConfig, models)
     ];
-    const metadata = expectedMetadata(scriptConfig, endpointType, models);
-    if (metadata) {
-        generatedLines.push(metadata);
+    if (scriptConfig.type === 'sync') {
+        const metadata = expectedMetadata(scriptConfig, endpointType, models);
+        if (metadata) {
+            generatedLines.push(metadata);
+        }
     }
 
     if (isForIntegrationTemplates) {
@@ -137,7 +147,7 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
         console.warn(`Warning: no description for ${scriptPath}`);
     }
 
-    const endpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
+    const endpoints = scriptConfig.type === 'action' ? [scriptConfig.endpoint] : scriptConfig.endpoints;
     const [endpoint] = endpoints;
 
     const modelList = Array.isArray(scriptConfig.output) ? scriptConfig.output : [scriptConfig.output];
@@ -173,10 +183,8 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
 }
 
 function requestEndpoint(scriptConfig: NangoSyncOrAction) {
-    const rawEndpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
-    const endpoints = rawEndpoints.map((endpoint: NangoYamlV2Endpoint | string) =>
-        typeof endpoint !== 'string' ? `\`${endpoint?.method || 'GET'} ${endpoint?.path}\`` : ''
-    );
+    const rawEndpoints = scriptConfig.type === 'sync' ? scriptConfig.endpoints : [scriptConfig.endpoint];
+    const endpoints = rawEndpoints.map((endpoint) => (typeof endpoint !== 'string' ? `\`${endpoint?.method || 'GET'} ${endpoint?.path}\`` : ''));
 
     return ['### Request Endpoint', ``, endpoints.join(', '), ``].join('\n');
 }
@@ -201,16 +209,14 @@ function requestParams(endpointType: string) {
     return out.join('\n');
 }
 
-function requestBody(scriptConfig: NangoSyncOrAction, endpointType: string, models: NangoYamlModel) {
+function requestBody(scriptConfig: NangoSyncOrAction, endpointType: string, models: { name: string; def: JSONSchema7Definition }[]) {
     const out = ['### Request Body'];
 
     if (endpointType === 'action' && scriptConfig.input) {
-        let expanded = expandModels(scriptConfig.input, models);
-        if (Array.isArray(expanded)) {
-            expanded = { input: expanded } as unknown as NangoYamlModel;
-        }
+        const inputName = Array.isArray(scriptConfig.input) ? scriptConfig.input[0] : scriptConfig.input;
+        const expanded = modelToJson({ model: models.find((m) => m.name === inputName)!.def, models });
         const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
-        out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
+        out.push(``, '```json', ...expandedLines, '```', '');
     } else {
         out.push(``, `_No request body_`, ``);
     }
@@ -218,15 +224,14 @@ function requestBody(scriptConfig: NangoSyncOrAction, endpointType: string, mode
     return out.join('\n');
 }
 
-function requestResponse(scriptConfig: NangoSyncOrAction, models: NangoYamlModel) {
+function requestResponse(scriptConfig: NangoSyncOrAction, models: { name: string; def: JSONSchema7Definition }[]) {
     const out = ['### Request Response'];
 
     const scriptOutput = Array.isArray(scriptConfig.output) ? scriptConfig.output[0] : scriptConfig.output;
-
     if (scriptOutput) {
-        const expanded = expandModels(scriptOutput, models);
+        const expanded = modelToJson({ model: models.find((m) => m.name === scriptOutput)!.def, models });
         const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
-        out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
+        out.push(``, '```json', ...expandedLines, '```', '');
     } else {
         out.push(``, `_No request response_`, ``);
     }
@@ -234,14 +239,12 @@ function requestResponse(scriptConfig: NangoSyncOrAction, models: NangoYamlModel
     return out.join('\n');
 }
 
-function expectedMetadata(scriptConfig: any, endpointType: string, models: NangoYamlModel) {
+function expectedMetadata(scriptConfig: ParsedNangoSync, endpointType: string, models: { name: string; def: JSONSchema7Definition }[]) {
     if (endpointType === 'sync' && scriptConfig.input) {
         const out = ['### Expected Metadata'];
-
-        const expanded = expandModels(scriptConfig.input, models);
+        const expanded = modelToJson({ model: models.find((m) => m.name === scriptConfig.input)!.def, models });
         const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
-        out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
-
+        out.push(``, '```json', ...expandedLines, '```', '');
         return out.join('\n');
     }
     return;
@@ -257,38 +260,97 @@ function changelog(scriptPath: string) {
     ].join('\n');
 }
 
-function expandModels(model: string | NangoYamlModel, models: NangoYamlModel): NangoYamlModel | NangoYamlModel[] {
-    if (typeof model === 'undefined' || model === null) {
-        return [];
+/**
+ * Transform JSONSchema to human readable JSON
+ */
+export function modelToJson({
+    model,
+    models
+}: {
+    model: JSONSchema7Definition;
+    models: { name: string; def: JSONSchema7Definition }[];
+}): Record<string, unknown> | string | string[] | Record<string, unknown>[] {
+    if (!model || typeof model !== 'object') {
+        return '<unknown>';
     }
 
-    if (typeof model === 'string') {
-        if (model.endsWith('[]')) {
-            return [expandModels(model.slice(0, -2), models)] as NangoYamlModel[];
-        }
+    // Handle $ref (other models)
+    if ('$ref' in model && typeof model['$ref'] === 'string') {
+        const ref = model['$ref'];
 
-        if (models[model]) {
-            model = models[model] as NangoYamlModel;
-        } else {
-            model = `<${model}>`;
+        // JSON Schema refs are like '#/definitions/ModelName'
+        const refName = ref.split('/').pop();
+        const found = models.find((m) => m && m.name === refName);
+        if (found) {
+            return modelToJson({ model: found.def, models });
         }
+        return `<${refName}>`;
     }
 
-    if (typeof model === 'object') {
-        if ('__extends' in model) {
-            const extension = model['__extends'];
-            if (typeof extension === 'string') {
-                model = { ...models[extension], ...model } as NangoYamlModel;
-                delete (model as Record<string, unknown>)['__extends'];
+    // Handle union (anyOf)
+    const of = model.oneOf || model.anyOf;
+    if (of && Array.isArray(of)) {
+        const unionTypes = of.map((subSchema) => {
+            // Do not pass models for enum prop to make them readable
+            // We can revisit later if we want
+            const val = modelToJson({ model: subSchema, models: [] });
+            if (typeof val === 'string') {
+                return val;
+            } else if (Array.isArray(val)) {
+                return JSON.stringify(val);
+            } else if (typeof val === 'object') {
+                return JSON.stringify(val);
             }
-        }
-
-        model = Object.fromEntries(
-            Object.entries(model).map(([key, value]) => {
-                return [key, expandModels(value as NangoYamlModel, models)];
-            })
-        ) as NangoYamlModel;
+            return '<unknown>';
+        });
+        return `<${unionTypes.join(' | ')}>`;
     }
 
-    return model as NangoYamlModel;
+    // Handle enums
+    if ('enum' in model && Array.isArray(model.enum)) {
+        const enumVals = model.enum.map((v) => `'${String(v as string)}'`);
+        return `<enum: ${enumVals.join(' | ')}>`;
+    }
+
+    // Handle regular types
+    if ('type' in model && typeof model.type === 'string') {
+        switch (model.type) {
+            case 'object': {
+                const result: Record<string, unknown> = {};
+                const properties = model.properties || {};
+                for (const [key, prop] of Object.entries(properties)) {
+                    result[key] = modelToJson({ model: prop, models });
+                }
+                return result;
+            }
+            case 'array': {
+                const items = model.items;
+                if (items) {
+                    const itemExample = modelToJson({ model: items as JSONSchema7Definition, models });
+                    if (typeof itemExample === 'string') {
+                        return `<${itemExample.replace(/[<>]/g, '')}[]>`;
+                    }
+                    return [itemExample] as Record<string, unknown>[];
+                }
+                return '<array>';
+            }
+            case 'string':
+                if (model.format === 'date-time') {
+                    return '<Date>';
+                }
+                return `<${model.type}>`;
+            case 'number':
+            case 'integer':
+            case 'boolean':
+                return `<${model.type}>`;
+            default:
+                return `<${model.type}>`;
+        }
+    }
+    if ('type' in model && Array.isArray(model.type)) {
+        return `<${model.type.join(' | ')}>`;
+    }
+
+    // Fallback
+    return '<unknown>';
 }

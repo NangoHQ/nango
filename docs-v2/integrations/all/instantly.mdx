@@ -14,12 +14,11 @@ import PreBuiltUseCases from "/snippets/generated/instantly/PreBuiltUseCases.mdx
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
-
+| Paid dev account | ✅ Required | Hypergrowth plan required for full API access |
+| Paid test account | ✅ Not required | Free account includes 100 tokens for testing |
+| Partnership | ❌ Not required | |
+| App review | ❌ Not required | |
+| Security audit | ❌ Not required | |
 
 ## Setup guide
 
@@ -29,41 +28,31 @@ _No setup guide yet._
 
 <Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
 
-
 ## Useful links
 
--   [Generate an API key](https://app.instantly.ai/app/settings/integrations)
--   [API docs](https://app.theneo.io/instantly-ai/instantlyapidocs/introduction)
+- [Generate an API key](https://app.instantly.ai/app/settings/integrations)
+- [API docs](https://developer.instantly.ai)
+- [Rate limits documentation](https://developer.instantly.ai/getting-started/rate-limit)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
 
 ## API gotchas
-- You need to be on the Hypergrowth plan (or above) to be able to access the API key.
-- Instantly in Nango uses the `API_KEY` authentication mode to access different endpoints. The `api_key` is used differently depending on the endpoint. For GET, PATCH and DELETE requests, it is appended to the query parameters, while for some POST requests, it is included in the request body. To clarify this please check on the corresponding Instantly docs pages.
-- After creating a connection, you can use the `api_key` as follows;
-```js
-    const connection = await nango.getConnection();
 
-    let api_key: string;
-    if ('apiKey' in connection.credentials) {
-        api_key = connection.credentials.apiKey;
-    } else {
-        throw new nango.ActionError({
-            message: `API key credentials is incomplete`
-        });
-    }
+- The Hypergrowth plan is required for full API access
+- Free accounts start with 100 API tokens for testing
+- Instantly has two API versions:
+  - v2 (current) - Recommended for new integrations
+    - Uses Bearer token authentication
+    - Supports multiple API keys with granular scopes
+    - Follows REST API standards
+    - No compatibility with v1
+  - v1 (deprecated 2025, maintained for a while)
+- Rate limit: 10 requests per second for both API versions
+- API keys can only be viewed once during creation
+- Multiple API keys can be created with different scopes for enhanced security
 
-    const postData = {
-        api_key: api_key,
-        campaign_id: input.campaign_id,
-        name: input.name
-    };
-
-    const resp = await nango.post({
-        endpoint: `/v1/campaign/set/name`,
-        data: postData
-    });
-```
-- You can have a look at the [pre-built integrations](#pre-built-integrations) based on [Instantly Set campaign name action](https://app.theneo.io/instantly-ai/instantlyapidocs/campaign-1/set-campaign-name)
-- Instantly enforces a general rate limit of 10 requests per second. For more details check [Instantly rate limits](https://app.theneo.io/instantly-ai/instantlyapidocs/introduction/rate-limits)
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+
+<Card title="Connect to Instantly" icon="link" href="/integrations/all/instantly/connect" horizontal>
+  Guide to connect to Instantly using Connect UI
+</Card>
