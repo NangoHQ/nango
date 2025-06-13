@@ -5,7 +5,7 @@ import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
 import getPort from 'get-port';
-import { EventsHandler } from '../events.js';
+import { TaskEventsHandler } from '../events.js';
 import { Err, Ok, nanoid } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { OrchestratorTask } from './types.js';
@@ -13,7 +13,7 @@ import { tracer } from 'dd-trace';
 import { setTimeout } from 'timers/promises';
 
 const dbClient = getTestDbClient();
-const eventsHandler = new EventsHandler({
+const taskEventsHandler = new TaskEventsHandler({
     CREATED: () => {},
     STARTED: () => {},
     SUCCEEDED: () => {},
@@ -23,14 +23,14 @@ const eventsHandler = new EventsHandler({
 });
 const scheduler = new Scheduler({
     db: dbClient.db,
-    on: eventsHandler.onCallbacks,
+    on: taskEventsHandler.onCallbacks,
     onError: () => {}
 });
 const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
 describe('OrchestratorProcessor', () => {
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, taskEventsHandler);
 
     beforeAll(async () => {
         await dbClient.migrate();

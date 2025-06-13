@@ -11,17 +11,17 @@ import { envs } from '../../env.js';
 import type { Task } from '../../types.js';
 
 export class SchedulingDaemon extends SchedulerDaemon {
-    private readonly onTaskStateChange: (task: Task) => void;
+    private readonly onScheduling: (task: Task) => void;
 
     constructor({
         db,
         abortSignal,
-        onTaskStateChange,
+        onScheduling,
         onError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
-        onTaskStateChange: (task: Task) => void;
+        onScheduling: (task: Task) => void;
         onError: (err: Error) => void;
     }) {
         super({
@@ -31,7 +31,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
             abortSignal,
             onError
         });
-        this.onTaskStateChange = onTaskStateChange;
+        this.onScheduling = onScheduling;
     }
 
     async run(): Promise<void> {
@@ -86,7 +86,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     if (task.scheduleId) {
                                         await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
                                     }
-                                    this.onTaskStateChange(task);
+                                    this.onScheduling(task);
                                 }
                             }
                         });
