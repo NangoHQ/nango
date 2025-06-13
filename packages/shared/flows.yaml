@@ -20113,7 +20113,7 @@ integrations:
                     group: Accounts
                 scopes:
                     - accounting.settings
-                version: 1.0.4
+                version: 1.0.5
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
