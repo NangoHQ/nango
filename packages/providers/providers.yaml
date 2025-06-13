@@ -5334,6 +5334,7 @@ instantly:
             title: API Key
             description: The API key for your Instantly account
             pattern: '^[A-Za-z0-9._=-]+$'
+            example: ZTQ****************************************QQ==
             doc_section: '#step-1-generate-an-api-key'
 
 instagram:
