@@ -74,27 +74,8 @@ import PreBuiltUseCases from "/snippets/generated/freshbooks/PreBuiltUseCases.md
     When setting up your FreshBooks integration in Nango:
     
     - Use your **Client ID** and **Client Secret** from the previous step
-    - For the authorization URL, use: `https://auth.freshbooks.com/oauth/authorize`
-    - For the token URL, use: `https://api.freshbooks.com/auth/oauth/token`
   </Step>
   
-  <Step title="Understand the OAuth flow">
-    The FreshBooks OAuth flow follows these steps:
-    
-    1. Users are redirected to FreshBooks' authorization page
-    2. Users log in to FreshBooks and approve access for your application
-    3. After authorization, users are redirected back to your redirect URL with an authorization code
-    4. Your application exchanges this code for an access token using the token endpoint
-    5. The access token is used in the `Authorization: Bearer {access_token}` header for all API requests
-    6. FreshBooks also provides a refresh token that can be used to obtain a new access token when the current one expires
-  </Step>
-  
-  <Step title="Test the OAuth flow">
-    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
-    2. The authorization flow will redirect users to FreshBooks where they can approve access to their account.
-    3. After approval, users will be redirected back to your application with an authorization code.
-    4. This code will be exchanged for an access token that can be used to make API requests.
-  </Step>
   
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
