@@ -154,7 +154,7 @@ export async function persistRecords({
             return acc;
         }, 0);
 
-        const mar = new Set(summary.billedKeys).size;
+        const mar = new Set(summary.activatedKeys).size;
 
         if (plan) {
             billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
