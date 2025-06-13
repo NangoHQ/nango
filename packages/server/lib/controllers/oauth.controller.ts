@@ -915,7 +915,6 @@ class OAuthController {
                     tokenParams: provider.token_params as string
                 },
                 response: {
-                    ...(req.headers && { headers: req.headers }),
                     ...(req.query && { queryParams: req.query })
                 }
             });

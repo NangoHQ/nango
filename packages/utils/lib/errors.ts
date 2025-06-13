@@ -32,17 +32,7 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
             enriched['provider_error_payload'] = payload;
         }
     }
-
-    const fullSerialized = JSON.stringify(enriched, null, opts?.pretty ? 2 : undefined);
-    const parsed = JSON.parse(fullSerialized);
-    const filtered: Record<string, unknown> = {};
-
-    for (const key of allowedErrorProperties) {
-        if (key in parsed) {
-            filtered[key] = parsed[key];
-        }
-    }
-
+    const filtered: Record<string, unknown> = Object.fromEntries(Object.entries(enriched).filter(([key]) => allowedErrorProperties.includes(key)));
     return JSON.stringify(filtered, null, opts?.pretty ? 2 : undefined);
 }
 
