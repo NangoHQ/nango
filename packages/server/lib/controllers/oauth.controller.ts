@@ -909,9 +909,14 @@ class OAuthController {
         if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
             void logCtx.error(error.message, {
-                scopes: config.oauth_scopes,
-                basicAuthEnabled: provider.token_request_auth_method === 'basic',
-                tokenParams: provider.token_params as string
+                config: {
+                    scopes: config.oauth_scopes,
+                    basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                    tokenParams: provider.token_params as string
+                },
+                response: {
+                    ...(req.query && { queryParams: req.query })
+                }
             });
             await logCtx.failed();
 
