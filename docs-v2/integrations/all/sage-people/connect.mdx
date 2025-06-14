@@ -1,0 +1,53 @@
+---
+title: Sage People - How do I link my account?
+sidebarTitle: Sage People
+---
+
+# Overview
+
+To authenticate with Sage People, you need:
+1. **API User** - A user with the correct permission sets for the endpoints you want to access
+2. **Access Token** - A bearer token obtained through Salesforce OAuth authentication
+
+This guide will walk you through setting up API access and obtaining an access token within Sage People.
+
+### Prerequisites:
+
+- You must have a Sage People account with Admin rights
+- You need to create a Connected App in Salesforce for OAuth authentication
+
+### Instructions:
+
+#### Step 1: Create an API User with Correct Permissions
+
+For detailed instructions on creating an API user, see the [Sage People API documentation](https://developer.sage.com/people/get-started/#create-a-sage-people-api-user).
+
+1. Log into your Sage People account
+2. Go to **Setup** > **Administration Setup** > **Manage Users** > **Users**
+3. Create a new user or select an existing user
+4. Assign the appropriate permission sets based on the endpoints you need to access
+
+Note: Make sure to set appropriate object-level permissions. The 'read' permission allows viewing records created by the user and shared with them, while 'view all' permission grants access to all records across the organization.
+
+#### Step 2: Set Up OAuth Authentication
+
+For detailed instructions on OAuth setup, see the [Sage People OAuth documentation](https://developer.sage.com/people/get-started/#obtain-an-access-token).
+
+1. Create a Connected App in Salesforce for OAuth authentication
+2. Configure the Connected App with the following OAuth scope:
+   - Access and manage your data (api)
+3. Follow the Salesforce OAuth flow to obtain an access token
+
+<img src="/integrations/all/sage-people/oauth_settings.png" style={{maxWidth: "450px" }}/>
+
+#### Step 3: Enter Credentials in the Connect UI
+
+Once you have set up the API user and obtained an access token:
+
+1. Open the form where you need to authenticate with Sage People
+2. Enter your **Access Token** obtained through the OAuth flow
+3. Submit the form to complete authentication
+
+<img src="/integrations/all/sage-people/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Sage People.
