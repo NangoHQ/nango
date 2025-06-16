@@ -2,10 +2,6 @@ import type { NangoModel, NangoModelField } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 /**
- * TODO: delete this file when NangoModel is fully replaced.
- */
-
-/**
  * Converts a list of Nango models to a JSON Schema with all the schemas stored in the definitions property.
  */
 export function nangoModelsToJsonSchema(models: NangoModel[]): JSONSchema7 {

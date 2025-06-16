@@ -12,6 +12,7 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     models: string[];
     active: boolean;
     runs: string | null;
+    model_schema: LegacySyncModelSchema[] | NangoModel[] | null;
     environment_id: number;
     track_deletes: boolean;
     type: ScriptTypeLiteral;
