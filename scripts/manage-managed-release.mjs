@@ -2,41 +2,28 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import semver from 'semver';
+import { fileURLToPath } from 'url';
 
-interface ReleaseManifest {
-    latest: {
-        imageVersion: string;
-        appVersion: string;
-        commitHash: string;
-        releaseDate: string;
-        changes: string[];
-    };
-    history: {
-        imageVersion: string;
-        appVersion: string;
-        commitHash: string;
-        releaseDate: string;
-        changes: string[];
-    }[];
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const MANIFEST_PATH = path.join(process.cwd(), 'managed-manifest.json');
 
-function readManifest(): ReleaseManifest {
+function readManifest() {
     const manifestContent = fs.readFileSync(MANIFEST_PATH, 'utf-8');
     return JSON.parse(manifestContent);
 }
 
-function writeManifest(manifest: ReleaseManifest): void {
+function writeManifest(manifest) {
     fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 }
 
-function getAppVersion(): string {
+function getAppVersion() {
     const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
     return packageJson.version;
 }
 
-function getChangesSinceLastRelease(lastCommitHash: string): string[] {
+function getChangesSinceLastRelease(lastCommitHash) {
     try {
         const changes = execSync(`git log ${lastCommitHash}..HEAD --pretty=format:"%s"`).toString().split('\n');
         return changes.filter((change) => change.trim() !== '');
@@ -46,7 +33,7 @@ function getChangesSinceLastRelease(lastCommitHash: string): string[] {
     }
 }
 
-function determineImageVersion(manifest: ReleaseManifest, appVersion: string, forceMajorBump: boolean = false): string {
+function determineImageVersion(manifest, appVersion, forceMajorBump = false) {
     const lastImageVersion = manifest.latest.imageVersion;
     const lastAppVersion = manifest.latest.appVersion;
 
@@ -69,7 +56,7 @@ function determineImageVersion(manifest: ReleaseManifest, appVersion: string, fo
     return `${semver.major(lastImageVersion)}.${semver.minor(lastImageVersion)}.${semver.patch(lastImageVersion) + 1}`;
 }
 
-function updateManifest(commitHash: string, forceMajorBump: boolean = false): void {
+function updateManifest(commitHash, forceMajorBump = false) {
     const manifest = readManifest();
     const appVersion = getAppVersion();
     const imageVersion = determineImageVersion(manifest, appVersion, forceMajorBump);
@@ -92,7 +79,7 @@ function updateManifest(commitHash: string, forceMajorBump: boolean = false): vo
 }
 
 // If running directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
     const commitHash = process.argv[2];
     if (!commitHash) {
         console.error('Please provide a commit hash');
@@ -100,4 +87,4 @@ if (require.main === module) {
     }
     const forceMajorBump = process.argv.includes('--bump-major');
     updateManifest(commitHash, forceMajorBump);
-}
+} 

@@ -27,28 +27,23 @@ jobs:
 
             - name: Get versions
               id: versions
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.commit_hash }}
+                  fetch-depth: 1
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install dependencies
               run: |
-                  # Download the script and manifest
-                  if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/scripts/manage-managed-release.ts > manage-managed-release.ts; then
-                    echo "Failed to download manage-managed-release.ts"
-                    exit 1
-                  fi
+                  echo "installing dependencies"
+                  npm install -w scripts --ignore-scripts
 
-                  if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/managed-manifest.json > managed-manifest.json; then
-                    echo "Failed to download managed-manifest.json"
-                    exit 1
-                  fi
-
-                  # Verify files exist and have content
-                  if [ ! -s manage-managed-release.ts ] || [ ! -s managed-manifest.json ]; then
-                    echo "Downloaded files are empty or missing"
-                    exit 1
-                  fi
-
-                  # Run the script with ts-node
-                  npx ts-node manage-managed-release.ts ${{ inputs.commit_hash }}
-                  echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
-                  echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+            - name: Run version script
+              run: |
+                  echo "running version script"
+                  node scripts/manage-managed-release.mjs ${{ inputs.commit_hash }}
+                  echo "image_version=$(node -p "require('./scripts/managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                  echo "app_version=$(node -p "require('./scripts/managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
 
     test-deployment:
         needs: manage-versions
@@ -176,29 +171,17 @@ jobs:
                   RESPONSE=$(gh issue view $ISSUE_NUMBER --json comments --jq '.comments | last | .body' | tr '[:upper:]' '[:lower:]')
 
                   if [[ "$RESPONSE" == *"approve"* ]]; then
-                    # Download the script and manifest
-                    if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/scripts/manage-managed-release.ts > manage-managed-release.ts; then
-                      echo "Failed to download manage-managed-release.ts"
-                      exit 1
-                    fi
+                    # Checkout the code
+                    git fetch origin ${{ inputs.commit_hash }}
+                    git checkout ${{ inputs.commit_hash }}
                     
-                    if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/managed-manifest.json > managed-manifest.json; then
-                      echo "Failed to download managed-manifest.json"
-                      exit 1
-                    fi
-                    
-                    # Verify files exist and have content
-                    if [ ! -s manage-managed-release.ts ] || [ ! -s managed-manifest.json ]; then
-                      echo "Downloaded files are empty or missing"
-                      exit 1
-                    fi
-                    
-                    # Run the script with ts-node
-                    npx ts-node manage-managed-release.ts ${{ inputs.commit_hash }} --bump-major
+                    # Install dependencies and run script
+                    npm install -w scripts --ignore-scripts
+                    node scripts/manage-managed-release.mjs ${{ inputs.commit_hash }} --bump-major
                     
                     # Get new versions
-                    echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
-                    echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+                    echo "image_version=$(node -p "require('./scripts/managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                    echo "app_version=$(node -p "require('./scripts/managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
                   fi
 
             - name: Login to Docker Hub
