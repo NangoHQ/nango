@@ -1,6 +1,6 @@
 import type { DatabaseClient } from '@nangohq/scheduler';
 import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
-import { EventsHandler } from './events.js';
+import { TaskEventsHandler } from './events.js';
 import { OrchestratorClient } from './clients/client.js';
 import { getServer } from './server.js';
 
@@ -9,11 +9,11 @@ export class TestOrchestratorService {
     private port: number;
     private dbClient: DatabaseClient;
     private scheduler: Scheduler | null;
-    private eventsHandler: EventsHandler;
+    private eventsHandler: TaskEventsHandler;
 
     constructor({ port }: { port: number }) {
         this.dbClient = getTestDbClient();
-        this.eventsHandler = new EventsHandler({
+        this.eventsHandler = new TaskEventsHandler({
             CREATED: () => {},
             STARTED: () => {},
             SUCCEEDED: () => {},
@@ -29,8 +29,9 @@ export class TestOrchestratorService {
     async start() {
         await this.dbClient.migrate();
         this.scheduler = new Scheduler({
-            dbClient: this.dbClient,
-            on: this.eventsHandler.onCallbacks
+            db: this.dbClient.db,
+            on: this.eventsHandler.onCallbacks,
+            onError: () => {}
         });
         const server = getServer(this.scheduler, this.eventsHandler);
         server.listen(this.port);

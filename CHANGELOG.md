@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.61.2] - 2025-06-12
+
+### Fixed
+
+- *(cli)* Missing export for zeroyaml (#4186) by @bodinsamuel
+- *(webhook-url)* Prevent updating webhook url to match server url (#4174) by @hassan254-prog
+
+## [v0.61.1] - 2025-06-12
+
+### Added
+
+- *(cli)* Zeroyaml single script deploy  (#4183) by @bodinsamuel
+- *(utils)* Add NangoModel to json-schema mapping (#4181) by @kaposke
+- *(sage-hr)* Ext-731 Add Sage HR configuration and documentation (#4180) by @ChoqueCastroLD
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5bd5a3b1b59fd02efdf945eaf14f5365c1f710ba by Victor Lang'at. Commit message: chore(slack): add removeBlockIds function to clean message data (#344) by @github-actions[bot]
+
+### Fixed
+
+- *(cli)* Zeroyaml feedback and test (#4184) by @bodinsamuel
+- *(deps)* Pin everything (#4185) by @bodinsamuel
+
 ## [v0.61.0] - 2025-06-11
 
 ### Added
@@ -4151,6 +4172,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
+[v0.61.1]: https://github.com/NangoHQ/nango/compare/v0.61.0..v0.61.1
 [v0.61.0]: https://github.com/NangoHQ/nango/compare/v0.60.5..v0.61.0
 [v0.60.5]: https://github.com/NangoHQ/nango/compare/v0.60.4..v0.60.5
 [v0.60.4]: https://github.com/NangoHQ/nango/compare/v0.60.3..v0.60.4

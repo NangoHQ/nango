@@ -4,13 +4,13 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import getPort from 'get-port';
-import { EventsHandler } from '../events.js';
+import { TaskEventsHandler } from '../events.js';
 import type { Result } from '@nangohq/utils';
 import { nanoid } from '@nangohq/utils';
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 
 const dbClient = getTestDbClient();
-const eventsHandler = new EventsHandler({
+const eventsHandler = new TaskEventsHandler({
     CREATED: () => {},
     STARTED: () => {},
     SUCCEEDED: () => {},
@@ -19,8 +19,9 @@ const eventsHandler = new EventsHandler({
     CANCELLED: () => {}
 });
 const scheduler = new Scheduler({
-    dbClient,
-    on: eventsHandler.onCallbacks
+    db: dbClient.db,
+    on: eventsHandler.onCallbacks,
+    onError: () => {}
 });
 
 describe('OrchestratorClient', async () => {

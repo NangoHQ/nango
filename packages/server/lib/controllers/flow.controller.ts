@@ -2,6 +2,7 @@ import { configService, flowService, getSyncConfigById, getSyncConfigsAsStandard
 
 import type { RequestLocals } from '../utils/express.js';
 import type { FlowDownloadBody } from '@nangohq/shared';
+import type { ScriptTypeLiteral } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class FlowController {
@@ -35,7 +36,12 @@ class FlowController {
             }
 
             if (!id && is_public) {
-                await remoteFileService.zipAndSendPublicFiles({ res, integrationName: name, providerPath: provider, flowType });
+                const flow = flowService.getFlowByIntegrationAndName({ provider, type: flowType as ScriptTypeLiteral, scriptName: name });
+                if (!flow) {
+                    res.status(400).send({ error: { code: 'invalid_query' } });
+                    return;
+                }
+                await remoteFileService.zipAndSendPublicFiles({ res, scriptName: name, providerPath: provider, flowType });
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
@@ -48,7 +54,7 @@ class FlowController {
 
                 await remoteFileService.zipAndSendFiles({
                     res,
-                    integrationName: name,
+                    scriptName: name,
                     syncConfig,
                     providerConfigKey
                 });
