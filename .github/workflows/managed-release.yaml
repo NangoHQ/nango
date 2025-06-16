@@ -42,8 +42,8 @@ jobs:
               run: |
                   echo "running version script"
                   node scripts/manage-managed-release.mjs ${{ inputs.commit_hash }}
-                  echo "image_version=$(node -p "require('./scripts/managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
-                  echo "app_version=$(node -p "require('./scripts/managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+                  echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                  echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
 
     test-deployment:
         needs: manage-versions
@@ -53,6 +53,7 @@ jobs:
               uses: helm/kind-action@v1
               with:
                   version: 'v0.20.0'
+                  install_only: true
 
             - name: Install Helm
               uses: azure/setup-helm@v3
@@ -60,21 +61,80 @@ jobs:
                   version: 'v3.12.3'
 
             - name: Deploy to sandbox
-              id: deploy
               run: |
-                  # Create kind cluster
+                  echo "commit_hash: ${{ needs.manage-versions.outputs.commit_hash }}"
+                  # Create a new kind cluster for testing
                   kind create cluster --name nango-test
 
-                  # Add Nango Helm repo
-                  helm repo add nango https://nangohq.github.io/helm-charts
+                  # Create namespace and secrets
+                  kubectl create namespace nango
+
+                  # Create secrets file
+                  cat <<EOF > nango-secrets.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: nango-secrets
+                    namespace: nango
+                  type: Opaque
+                  data:
+                    postgres-password: bmFuZ28xMjM=
+                    encryption-key: bUJVcm5WQ2xUdmJkTXlwMjNwWTRkNXJiaE56VENZN1JWWjY5OE9zVm9raz0=
+                    mailgun-api-key: eW91ci1tYWlsZ3VuLWtleS1oZXJl
+                  ---
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: nango-env-secrets
+                    namespace: nango
+                  type: Opaque
+                  stringData:
+                    NANGO_ENCRYPTION_KEY: "mBUrnVClTvbdMyp23pY4d5rbhNzTCY7RVZ698OsVokk="
+                    NANGO_DB_PASSWORD: "nango123"
+                  EOF
+
+                  # Apply secrets
+                  kubectl apply -f nango-secrets.yaml
+
+                  # Add the Nango Helm repository
+                  helm repo add nangohq https://nangohq.github.io/nango-helm-charts
                   helm repo update
 
-                  # Install Nango in kind cluster
-                  helm install nango nango/nango \
-                    --set image.tag=${{ inputs.commit_hash }} \
-                    --set image.repository=nangohq/nango \
-                    --set environment=test \
-                    --wait
+                  # Debug: Show available charts
+                  echo "Available charts in nangohq repo:"
+                  helm search repo nangohq
+
+                  # Install Nango using Helm in background
+                  echo "Installing Helm chart..."
+                  helm upgrade --install nango nangohq/nango \
+                    --namespace nango \
+                    --create-namespace \
+                    --set shared.namespace=nango \
+                    --set shared.tag=fad962aa974d496bd1fdbb00652ef3945864c061 \
+                    --set image.tag=${{ needs.manage-versions.outputs.commit_hash }} \
+                    --set elasticsearch.enabled=false \
+                    --wait=false &
+
+                  # Give some time for the deployment to start
+                  sleep 10
+
+                  # Debug: Check Helm release status
+                  echo "Checking Helm release status..."
+                  helm list -n nango
+                  helm status nango -n nango
+
+                  # Poll for deployment status
+                  for i in {1..30}; do
+                    echo "Checking deployment status (attempt $i/30)..."
+                    if kubectl get pods -n nango | grep -q "Running"; then
+                      echo "Deployment is running"
+                      exit 0
+                    fi
+                    sleep 10
+                  done
+
+                  echo "Deployment failed to start in time"
+                  exit 1
 
             - name: Check cluster state
               id: cluster-state
@@ -82,11 +142,11 @@ jobs:
               run: |
                   # Wait for all pods to be ready
                   echo "Waiting for pods to be ready..."
-                  kubectl wait --for=condition=ready pod --all --timeout=300s || true
+                  kubectl wait --for=condition=ready pod --all -n nango --timeout=300s || true
 
                   # Get pod status
                   echo "Checking pod status..."
-                  POD_STATUS=$(kubectl get pods -o wide)
+                  POD_STATUS=$(kubectl get pods -n nango -o wide)
                   echo "pod_status<<EOF" >> $GITHUB_OUTPUT
                   echo "$POD_STATUS" >> $GITHUB_OUTPUT
                   echo "EOF" >> $GITHUB_OUTPUT
@@ -94,16 +154,16 @@ jobs:
                   # Get pod logs for any pods not in Running state
                   echo "Checking logs for non-running pods..."
                   POD_LOGS=""
-                  for pod in $(kubectl get pods -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}'); do
+                  for pod in $(kubectl get pods -n nango -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}'); do
                     POD_LOGS+="\n\nLogs for pod $pod:\n"
-                    POD_LOGS+="$(kubectl logs $pod --tail=50)"
+                    POD_LOGS+="$(kubectl logs -n nango $pod --tail=50)"
                   done
                   echo "pod_logs<<EOF" >> $GITHUB_OUTPUT
                   echo -e "$POD_LOGS" >> $GITHUB_OUTPUT
                   echo "EOF" >> $GITHUB_OUTPUT
 
                   # Check for any pods not in Running state
-                  if kubectl get pods -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}' | grep -q .; then
+                  if kubectl get pods -n nango -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}' | grep -q .; then
                     echo "status=failure" >> $GITHUB_OUTPUT
                     echo "message=Some pods are not in Running state" >> $GITHUB_OUTPUT
                     exit 1
@@ -154,6 +214,12 @@ jobs:
                       - `approve` - Issues are expected and require a major version bump due to breaking changes
                       - `deny` - Do not proceed with release (e.g., if issues are unrelated to the release)
 
+            - name: Cleanup kind cluster
+              if: always()
+              run: |
+                  echo "Cleaning up kind cluster..."
+                  kind delete cluster --name nango-test || true
+
     finalize-release:
         needs: [manage-versions, test-deployment]
         if: success()
@@ -180,8 +246,8 @@ jobs:
                     node scripts/manage-managed-release.mjs ${{ inputs.commit_hash }} --bump-major
                     
                     # Get new versions
-                    echo "image_version=$(node -p "require('./scripts/managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
-                    echo "app_version=$(node -p "require('./scripts/managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+                    echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                    echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
                   fi
 
             - name: Login to Docker Hub
