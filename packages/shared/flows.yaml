@@ -13793,6 +13793,7 @@ integrations:
                 runs: every hour
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 scopes:
                     - Files.Read
                     - Files.Read.All
