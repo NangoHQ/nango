@@ -23,7 +23,7 @@ import {
     oauth2Client,
     providerClientManager
 } from '@nangohq/shared';
-import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
+import { errorToObject, metrics, stringifyError, stringifyEnrichedError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
@@ -1235,7 +1235,7 @@ class OAuthController {
             await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
             return;
         } catch (err) {
-            const prettyError = stringifyError(err, { pretty: true });
+            const prettyError = stringifyEnrichedError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,

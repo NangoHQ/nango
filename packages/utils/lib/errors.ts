@@ -14,6 +14,10 @@ export function errorToObject(err: unknown) {
  * Transform any Error or primitive to a string
  */
 export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
+    return JSON.stringify(serializeError(err), ['name', 'message', ...(opts?.stack ? ['stack', 'cause'] : [])], opts?.pretty ? 2 : undefined);
+}
+
+export function stringifyEnrichedError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
     const serialized = serializeError(err);
     const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack', 'cause'] : [])];
 
@@ -21,9 +25,11 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
         ...serialized
     };
 
-    // Extract additional context from Boom error objects (used in simpleoauth flow)
-    // since Boom errors often wrap valuable information like `data.payload`,
-    // which isn't included in the default serialization but is useful for user-facing error messages.
+    // Handle Boom-style error objects like the ones use in simpleOauth2
+    // These errors often contain valuable debugging information in `data.payload` that
+    // wouldn't be included in standard error serialization. We explicitly extract this
+    // as 'provider_error_payload' since it typically contains API-specific error details
+    // that are useful for debugging.
     if (typeof err === 'object' && err != null) {
         const anyErr = err as any;
 
