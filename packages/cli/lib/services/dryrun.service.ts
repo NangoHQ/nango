@@ -176,15 +176,30 @@ export class DryRunService {
             }
 
             // Priority for syncs and actions
+            let foundInProviderConfigKey: string | undefined;
             for (const script of [...integration.syncs, ...integration.actions]) {
                 if (script.name !== syncName) {
                     continue;
                 }
                 if (scriptInfo) {
-                    console.log(chalk.red(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`));
+                    // TODO: Confirm: If exists another script with the same name in the same integration, it's a variant issue
+                    if (foundInProviderConfigKey === providerConfigKey) {
+                        console.log(
+                            chalk.red(
+                                `Multiple variants of script "${syncName}" found in integration "${providerConfigKey}". Please specify which variant to use with "--variant"`
+                            )
+                        );
+                    } else {
+                        console.log(
+                            chalk.red(
+                                `Script "${syncName}" exists in multiple integrations (${foundInProviderConfigKey}, ${providerConfigKey}). Please specify which integration to use with "--integration-id"`
+                            )
+                        );
+                    }
                     return;
                 }
                 scriptInfo = script;
+                foundInProviderConfigKey = providerConfigKey;
                 providerConfigKey = integration.providerConfigKey;
             }
 
