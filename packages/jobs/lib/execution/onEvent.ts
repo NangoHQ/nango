@@ -61,6 +61,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             environment_id: task.connection.environment_id,
             nango_config_id: -1,
             runs: '',
+            model_schema: null,
             webhook_subscriptions: [],
             attributes: {},
             input: null,

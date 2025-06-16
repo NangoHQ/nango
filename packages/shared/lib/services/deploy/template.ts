@@ -133,6 +133,7 @@ export async function deployTemplate({
         models: template.returns,
         active: true,
         runs: template.type === 'sync' ? template.runs! : null,
+        model_schema: null,
         input: template.input || null,
         environment_id: environment.id,
         deleted: false,

@@ -335,6 +335,7 @@ export class DryRunService {
                 sync_name: syncName,
                 file_location: '',
                 models: scriptInfo?.output || [],
+                model_schema: null,
                 input: scriptInfo?.input || null,
                 track_deletes: false,
                 type: scriptInfo?.type || 'sync',

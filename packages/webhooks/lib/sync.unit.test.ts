@@ -48,6 +48,7 @@ const syncConfig: DBSyncConfig = {
     pre_built: true,
     is_public: false,
     metadata: {},
+    model_schema: null,
     input: null,
     sync_type: 'full',
     webhook_subscriptions: null,

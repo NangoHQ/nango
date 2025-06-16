@@ -485,6 +485,7 @@ async function compileDeployInfo({
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
+                model_schema: null,
                 models_json_schema,
                 sdk_version: sdkVersion || null,
                 created_at: new Date(),
