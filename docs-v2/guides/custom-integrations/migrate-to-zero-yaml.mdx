@@ -91,7 +91,7 @@ This command will:
 
 ### Post-Migration Steps
 
-The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct. 
+The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct.
 
 <Note>Because the new format is stricter, some types issues can arise after the migration.</Note>
 
@@ -248,6 +248,18 @@ import './github/actions/createIssue.js';
 
 ## Migration Gotchas & FAQ
 
+### Official release
+
+**Q: When will it be generally available?**
+
+**A:** It's currently in open beta, without any restriction. We will officially release this feature mid-july 2025.
+
+### Nango.yaml EOL
+
+**Q: When will nango.yaml stop being supported?**
+
+**A:** nango.yaml integrations will be supported until the end of 2025. Zero YAML will be the only supported way to build integrations after that. An official roadmap will be published soon.
+
 ### Package.json Requirement
 
 **Q: Why is package.json now mandatory?**
@@ -258,6 +270,8 @@ import './github/actions/createIssue.js';
 - Better integration with modern development tools
 
 If you don't have one, the migration command will create it automatically.
+
+<Info>Note: Bundling custom dependencies is not yet possible but is now on our roadmap thanks to this update.</Info>
 
 ### Backward Compatibility
 
