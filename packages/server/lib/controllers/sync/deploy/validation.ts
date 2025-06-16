@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
+import type { NangoModelField } from '@nangohq/types';
+
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
     .object({
@@ -11,11 +13,22 @@ const jsonSchema = z
     })
     .strict();
 
+const nangoModelFieldsBase = z.object({
+    name: z.string(),
+    dynamic: z.boolean().optional(),
+    model: z.boolean().optional(),
+    union: z.boolean().optional(),
+    array: z.boolean().optional(),
+    tsType: z.boolean().optional(),
+    optional: z.boolean().optional()
+});
+
 const nangoModelFields: z.ZodType<NangoModelField> = nangoModelFieldsBase
     .extend({
         value: z.union([z.string(), z.number(), z.boolean(), z.null(), z.lazy(() => nangoModelFields.array())])
     })
     .strict();
+
 const nangoModel = z
     .object({
         name: z.string().max(255),
