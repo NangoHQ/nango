@@ -1,0 +1,223 @@
+name: '[Release] Managed Nango Release'
+
+on:
+    workflow_dispatch:
+        inputs:
+            commit_hash:
+                description: 'Commit hash to release'
+                required: true
+                type: string
+
+permissions:
+    contents: write
+    issues: write
+    pull-requests: write
+
+jobs:
+    manage-versions:
+        runs-on: ubuntu-latest
+        outputs:
+            image_version: ${{ steps.versions.outputs.image_version }}
+            app_version: ${{ steps.versions.outputs.app_version }}
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+
+            - name: Get versions
+              id: versions
+              run: |
+                  # Download the script and manifest
+                  if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/scripts/manage-managed-release.ts > manage-managed-release.ts; then
+                    echo "Failed to download manage-managed-release.ts"
+                    exit 1
+                  fi
+
+                  if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/managed-manifest.json > managed-manifest.json; then
+                    echo "Failed to download managed-manifest.json"
+                    exit 1
+                  fi
+
+                  # Verify files exist and have content
+                  if [ ! -s manage-managed-release.ts ] || [ ! -s managed-manifest.json ]; then
+                    echo "Downloaded files are empty or missing"
+                    exit 1
+                  fi
+
+                  # Run the script with ts-node
+                  npx ts-node manage-managed-release.ts ${{ inputs.commit_hash }}
+                  echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                  echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+
+    test-deployment:
+        needs: manage-versions
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup kind
+              uses: helm/kind-action@v1
+              with:
+                  version: 'v0.20.0'
+
+            - name: Install Helm
+              uses: azure/setup-helm@v3
+              with:
+                  version: 'v3.12.3'
+
+            - name: Deploy to sandbox
+              id: deploy
+              run: |
+                  # Create kind cluster
+                  kind create cluster --name nango-test
+
+                  # Add Nango Helm repo
+                  helm repo add nango https://nangohq.github.io/helm-charts
+                  helm repo update
+
+                  # Install Nango in kind cluster
+                  helm install nango nango/nango \
+                    --set image.tag=${{ inputs.commit_hash }} \
+                    --set image.repository=nangohq/nango \
+                    --set environment=test \
+                    --wait
+
+            - name: Check cluster state
+              id: cluster-state
+              continue-on-error: true
+              run: |
+                  # Wait for all pods to be ready
+                  echo "Waiting for pods to be ready..."
+                  kubectl wait --for=condition=ready pod --all --timeout=300s || true
+
+                  # Get pod status
+                  echo "Checking pod status..."
+                  POD_STATUS=$(kubectl get pods -o wide)
+                  echo "pod_status<<EOF" >> $GITHUB_OUTPUT
+                  echo "$POD_STATUS" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  # Get pod logs for any pods not in Running state
+                  echo "Checking logs for non-running pods..."
+                  POD_LOGS=""
+                  for pod in $(kubectl get pods -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}'); do
+                    POD_LOGS+="\n\nLogs for pod $pod:\n"
+                    POD_LOGS+="$(kubectl logs $pod --tail=50)"
+                  done
+                  echo "pod_logs<<EOF" >> $GITHUB_OUTPUT
+                  echo -e "$POD_LOGS" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  # Check for any pods not in Running state
+                  if kubectl get pods -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}' | grep -q .; then
+                    echo "status=failure" >> $GITHUB_OUTPUT
+                    echo "message=Some pods are not in Running state" >> $GITHUB_OUTPUT
+                    exit 1
+                  else
+                    echo "status=success" >> $GITHUB_OUTPUT
+                    echo "message=All pods are running successfully" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Run integration tests
+              id: tests
+              if: steps.cluster-state.outputs.status == 'success'
+              run: |
+                  # Add your integration test commands here
+                  # This should verify the deployment and test critical functionality
+                  echo "Running integration tests..."
+
+            - name: Wait for approval on failure
+              if: steps.cluster-state.outputs.status == 'failure' || failure()
+              uses: trstringer/manual-approval@v1
+              with:
+                  secret: ${{ github.TOKEN }}
+                  approvers: ${{ secrets.RELEASE_APPROVERS }}
+                  minimum-approvals: 1
+                  issue-title: 'Deployment Review: Managed Nango v${{ needs.manage-versions.outputs.app_version }}'
+                  issue-body: |
+                      Deployment or tests have failed for Managed Nango v${{ needs.manage-versions.outputs.app_version }}. Please review and indicate the required action.
+
+                      ## Release Details
+                      - Image Version: ${{ needs.manage-versions.outputs.image_version }}
+                      - App Version: ${{ needs.manage-versions.outputs.app_version }}
+                      - Commit: ${{ inputs.commit_hash }}
+
+                      ## Deployment Status
+                      ${{ steps.cluster-state.outputs.message }}
+
+                      ## Pod Status
+                      ```
+                      ${{ steps.cluster-state.outputs.pod_status }}
+                      ```
+
+                      ## Pod Logs
+                      ```
+                      ${{ steps.cluster-state.outputs.pod_logs }}
+                      ```
+
+                      ## Required Action
+                      Please respond with one of the following:
+                      - `approve` - Issues are expected and require a major version bump due to breaking changes
+                      - `deny` - Do not proceed with release (e.g., if issues are unrelated to the release)
+
+    finalize-release:
+        needs: [manage-versions, test-deployment]
+        if: success()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+
+            - name: Bump major version if approved
+              run: |
+                  # Get the latest comment from the approval issue
+                  ISSUE_NUMBER=$(echo "${{ needs.test-deployment.outputs.issue_url }}" | grep -o '[0-9]*$')
+                  RESPONSE=$(gh issue view $ISSUE_NUMBER --json comments --jq '.comments | last | .body' | tr '[:upper:]' '[:lower:]')
+
+                  if [[ "$RESPONSE" == *"approve"* ]]; then
+                    # Download the script and manifest
+                    if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/scripts/manage-managed-release.ts > manage-managed-release.ts; then
+                      echo "Failed to download manage-managed-release.ts"
+                      exit 1
+                    fi
+                    
+                    if ! curl -s -f https://raw.githubusercontent.com/NangoHQ/nango/${{ inputs.commit_hash }}/managed-manifest.json > managed-manifest.json; then
+                      echo "Failed to download managed-manifest.json"
+                      exit 1
+                    fi
+                    
+                    # Verify files exist and have content
+                    if [ ! -s manage-managed-release.ts ] || [ ! -s managed-manifest.json ]; then
+                      echo "Downloaded files are empty or missing"
+                      exit 1
+                    fi
+                    
+                    # Run the script with ts-node
+                    npx ts-node manage-managed-release.ts ${{ inputs.commit_hash }} --bump-major
+                    
+                    # Get new versions
+                    echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                    echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Retag and push final image
+              run: |
+                  # Pull the image with commit hash
+                  docker pull nangohq/nango:${{ inputs.commit_hash }}
+
+                  # Tag it as the managed release
+                  docker tag nangohq/nango:${{ inputs.commit_hash }} \
+                    nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ inputs.commit_hash }}
+                  docker tag nangohq/nango:${{ inputs.commit_hash }} \
+                    nangohq/nango:managed-latest
+
+                  # Push the final tags
+                  docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ inputs.commit_hash }}
+                  docker push nangohq/nango:managed-latest
