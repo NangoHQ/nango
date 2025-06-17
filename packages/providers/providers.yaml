@@ -10506,18 +10506,18 @@ ukg-pro:
             type: string
             title: Service Account Username
             description: The username for your UKG Pro service account
-            doc_section: '#step-1-creating-a-web-service-account'
+            doc_section: '#step-2-creating-a-web-service-account'
         password:
             type: string
             title: Service Account Password
             description: The password generated for your UKG Pro service account
-            doc_section: '#step-1-creating-a-web-service-account'
+            doc_section: '#step-2-creating-a-web-service-account'
             secret: true
         customerApiKey:
             type: string
             title: Customer API Key
             description: Your UKG Pro Customer API Key found in Service Account Administration
-            doc_section: '#step-1-creating-a-web-service-account'
+            doc_section: '#step-1-finding-your-customer-api-key'
             secret: true
     connection_config:
         hostname:
@@ -10527,7 +10527,7 @@ ukg-pro:
             format: hostname
             example: servicet.ultipro.com
             prefix: https://
-            doc_section: '#step-2-finding-your-service-endpoint'
+            doc_section: '#step-3-finding-your-service-endpoint'
 
 ukg-ready:
     display_name: UKG Ready
