@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -25,6 +25,20 @@ export class OrbClient implements BillingClient {
             await this.orbSDK.events.ingest({
                 events: batch.map(toOrbEvent)
             });
+        }
+    }
+
+    async createCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        try {
+            const customer = await this.orbSDK.customers.create({
+                external_customer_id: String(team.id),
+                currency: 'USD',
+                name: team.name,
+                email: user.email
+            });
+            return Ok({ id: customer.id, portalUrl: customer.portal_url });
+        } catch (err) {
+            return Err(new Error('failed_to_create_customer', { cause: err }));
         }
     }
 

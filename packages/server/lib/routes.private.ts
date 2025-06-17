@@ -65,6 +65,8 @@ import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js'
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
+import { postStripeCollectPayment } from './controllers/v1/stripe/postCollectPayment.js';
+import { postStripWebhooks } from './controllers/v1/stripe/postWebhooks.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';

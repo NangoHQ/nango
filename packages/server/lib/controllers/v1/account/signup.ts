@@ -3,8 +3,9 @@ import util from 'util';
 
 import { z } from 'zod';
 
+import { billing } from '@nangohq/billing';
 import { acceptInvitation, accountService, getInvitation, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -106,6 +107,13 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
+    }
+
+    if (!token) {
+        const resCreate = await billing.createCustomer(account, user);
+        if (resCreate.isErr()) {
+            report(resCreate.error);
+        }
     }
 
     // Ask for email validation if not coming from an invitation
