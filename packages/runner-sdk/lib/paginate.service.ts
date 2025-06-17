@@ -107,13 +107,12 @@ class PaginationService {
 
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
+        let previousPageLink: string | undefined;
+
         while (true) {
             const response = await proxy(config);
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
-            if (!responseData.length) {
-                return;
-            }
 
             yield responseData;
 
@@ -123,9 +122,11 @@ class PaginationService {
                 await paginationConfig.on_page({ nextPageParam: nextPageLink, response });
             }
 
-            if (!nextPageLink) {
+            if (!nextPageLink || nextPageLink === previousPageLink) {
                 return;
             }
+
+            previousPageLink = nextPageLink;
 
             if (!isValidURL(nextPageLink)) {
                 // some providers only send path+query params in the link so we can immediately assign those to the endpoint
