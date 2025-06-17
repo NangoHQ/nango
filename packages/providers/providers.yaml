@@ -10516,12 +10516,14 @@ ukg-pro:
     connection_config:
         customerApiKey:
             type: string
+            order: 2
             title: Customer API Key
             description: Your UKG Pro Customer API Key found in Service Account Administration
             doc_section: '#step-1-finding-your-customer-api-key'
             secret: true
         hostname:
             type: string
+            order: 1
             title: Hostname
             description: The tenant URL of your UKG Pro instance
             format: hostname
