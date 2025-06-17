@@ -10,13 +10,15 @@ import { nanoid } from '@nangohq/utils';
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 
 const dbClient = getTestDbClient();
-const eventsHandler = new TaskEventsHandler({
-    CREATED: () => {},
-    STARTED: () => {},
-    SUCCEEDED: () => {},
-    FAILED: () => {},
-    EXPIRED: () => {},
-    CANCELLED: () => {}
+const eventsHandler = new TaskEventsHandler(dbClient.db, {
+    on: {
+        CREATED: () => {},
+        STARTED: () => {},
+        SUCCEEDED: () => {},
+        FAILED: () => {},
+        EXPIRED: () => {},
+        CANCELLED: () => {}
+    }
 });
 const scheduler = new Scheduler({
     db: dbClient.db,

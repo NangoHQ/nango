@@ -9,6 +9,8 @@ servers:
       description: Production server
     - url: http://localhost:3003
       description: Local server
+security:
+    - bearerAuth: []
 paths:
     /providers:
         get:
@@ -2312,6 +2314,11 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
 components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            description: The secret key from your Nango environment.
     responses:
         BadRequest:
             description: Bad request
