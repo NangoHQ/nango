@@ -1,7 +1,7 @@
 import semver from 'semver';
 
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { filterJsonSchemaForModels, getDefinition } from '@nangohq/utils';
+import { filterJsonSchemaForModels, getDefinition, getLogger } from '@nangohq/utils';
 
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
@@ -17,6 +17,8 @@ import type { JSONSchema7 } from 'json-schema';
 const TABLE = dbNamespace + 'sync_configs';
 
 type ExtendedSyncConfig = DBSyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] | null };
+
+const logger = getLogger('sync.config');
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
@@ -812,6 +814,7 @@ async function updateOutdatedJsonSchemas(syncConfigs: ExtendedSyncConfig[]): Pro
 
         const fullJsonSchemaString = await remoteFileService.getPublicTemplateJsonSchemaFile(syncConfig.provider);
         if (!fullJsonSchemaString) {
+            logger.error(`Missing public template JSON schema file for provider`, { provider: syncConfig.provider, syncConfigId: syncConfig.id });
             continue;
         }
 
@@ -819,6 +822,11 @@ async function updateOutdatedJsonSchemas(syncConfigs: ExtendedSyncConfig[]): Pro
         const allModels = [...syncConfig.models, syncConfig.input].filter(Boolean) as string[];
         const result = filterJsonSchemaForModels(fullJsonSchema, allModels);
         if (result.isErr()) {
+            logger.error(`Error filtering JSON schema for models`, {
+                provider: syncConfig.provider,
+                syncConfigId: syncConfig.id,
+                error: result.error
+            });
             continue;
         }
 
