@@ -10494,7 +10494,7 @@ ukg-pro:
         base_url: https://${connectionConfig.hostname}
         headers:
             content-type: application/json
-            us-customer-api-key: ${credentials.customerApiKey}
+            us-customer-api-key: ${connectionConfig.customerApiKey}
         verification:
             method: GET
             endpoints:
@@ -10513,13 +10513,13 @@ ukg-pro:
             description: The password generated for your UKG Pro service account
             doc_section: '#step-2-creating-a-web-service-account'
             secret: true
+    connection_config:
         customerApiKey:
             type: string
             title: Customer API Key
             description: Your UKG Pro Customer API Key found in Service Account Administration
             doc_section: '#step-1-finding-your-customer-api-key'
             secret: true
-    connection_config:
         hostname:
             type: string
             title: Hostname
