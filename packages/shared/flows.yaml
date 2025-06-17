@@ -14604,7 +14604,6 @@ integrations:
                 currency: string
             BillingSubscriptionObject:
                 id: string | null
-            IndividualCustomer: PennylaneIndividualCustomer
             UpdateIndividualCustomer:
                 id: string
                 customer: PennylaneIndividualCustomer

@@ -7,17 +7,17 @@ import { envs } from '../../env.js';
 import type { Task } from '../../types.js';
 
 export class ExpiringDaemon extends SchedulerDaemon {
-    private onTaskStateChange: (task: Task) => void;
+    private onExpiring: (task: Task) => void;
 
     constructor({
         db,
         abortSignal,
-        onTaskStateChange,
+        onExpiring,
         onError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
-        onTaskStateChange: (task: Task) => void;
+        onExpiring: (task: Task) => void;
         onError: (err: Error) => void;
     }) {
         super({
@@ -27,7 +27,7 @@ export class ExpiringDaemon extends SchedulerDaemon {
             abortSignal,
             onError
         });
-        this.onTaskStateChange = onTaskStateChange;
+        this.onExpiring = onExpiring;
     }
 
     async run(): Promise<void> {
@@ -38,7 +38,7 @@ export class ExpiringDaemon extends SchedulerDaemon {
         }
         if (expired.value.length > 0) {
             for (const task of expired.value) {
-                this.onTaskStateChange(task);
+                this.onExpiring(task);
             }
             logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))}`);
         }
