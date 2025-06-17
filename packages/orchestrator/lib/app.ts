@@ -32,32 +32,35 @@ try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
     await dbClient.migrate();
 
-    const eventsHandler = new TaskEventsHandler({
-        CREATED: (task: Task) => {
-            logger.info(`Task created: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
-        },
-        STARTED: (task: Task) => {
-            logger.info(`Task started: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
-        },
-        SUCCEEDED: (task: Task) => {
-            logger.info(`Task succeeded: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
-        },
-        FAILED: (task: Task) => {
-            logger.error(`Task failed: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
-        },
-        EXPIRED: (task: Task) => {
-            logger.error(`Task expired: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
-        },
-        CANCELLED: (task: Task) => {
-            logger.info(`Task cancelled: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+    const eventsHandler = new TaskEventsHandler(dbClient.db, {
+        on: {
+            CREATED: (task: Task) => {
+                logger.info(`Task created: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
+            },
+            STARTED: (task: Task) => {
+                logger.info(`Task started: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+            },
+            SUCCEEDED: (task: Task) => {
+                logger.info(`Task succeeded: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+            },
+            FAILED: (task: Task) => {
+                logger.error(`Task failed: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+            },
+            EXPIRED: (task: Task) => {
+                logger.error(`Task expired: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
+            },
+            CANCELLED: (task: Task) => {
+                logger.info(`Task cancelled: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+            }
         }
     });
+    await eventsHandler.connect();
 
     const scheduler = new Scheduler({
         db: dbClient.db,
@@ -90,6 +93,7 @@ try {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
             await scheduler.stop();
+            await eventsHandler.disconnect();
             await dbClient.destroy();
 
             logger.close();
