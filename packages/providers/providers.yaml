@@ -9746,7 +9746,8 @@ stripe-app-sandbox:
         appDomain:
             type: string
             title: App Domain
-            description: The domain of your Stripe app
+            description: The unique identifier Stripe assigns to your app instance
+            doc_section: '#step-1-finding-your-app-domain'
 
 supabase:
     display_name: Supabase
