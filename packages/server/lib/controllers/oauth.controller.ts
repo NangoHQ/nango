@@ -23,7 +23,7 @@ import {
     oauth2Client,
     providerClientManager
 } from '@nangohq/shared';
-import { errorToObject, metrics, stringifyError, stringifyEnrichedError } from '@nangohq/utils';
+import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
@@ -37,7 +37,8 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject
+    missesInterpolationParamInObject,
+    stringifyEnrichedError
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
