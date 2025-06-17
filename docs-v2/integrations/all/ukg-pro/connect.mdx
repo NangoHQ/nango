@@ -6,47 +6,70 @@ sidebarTitle: UKG Pro
 # Overview
 
 To authenticate with UKG Pro, you need:
-1. **Web Service Account Username** - A unique username for the web service account
-2. **Web Service Account Password** - The password for the web service account
-3. **User API Key** - A unique API key assigned to the web service account
-4. **Service Endpoint** - The base URL for your UKG Pro instance
+1. **Service Account Username** - The username for your UKG Pro service account
+2. **Service Account Password** - The password generated for your UKG Pro service account
+3. **Customer API Key** - Your UKG Pro Customer API Key found in Service Account Administration
+4. **Hostname** - The tenant URL of your UKG Pro instance (e.g. servicet.ultipro.com)
 
-This guide will walk you through setting up a web service account and finding your service endpoint.
+This guide will walk you through finding your Customer API Key, setting up a service account, and locating your hostname.
 
 ### Prerequisites:
 
-- You must have UKG Pro system administrator rights to create web service accounts
+- You must have UKG Pro system administrator rights to create service accounts
 
 ### Instructions:
 
-#### Step 1: Creating a Web Service Account
+#### Step 1: Finding Your Customer API Key
 
-To create a web service account in UKG Pro: ([for more details, refer to ukg documentation](https://developer.ukg.com/hcm/docs/web-service-account))
-1. Log into UKG Pro as a system administrator
-2. Navigate to **System Configuration > Security > Service Account Administration**
-3. Create a new web service account with:
-   - A unique username
-   - A secure password
-   - Appropriate permissions for only the required API resources and methods
+To find your Customer API Key in UKG Pro:
+
+1. Open the Service Account Administration page
+   - Click "Settings" from the side menu
+   - Go to the "Security" tab
+   - Select "Service Account Administration"
+   <img src="/integrations/all/ukg-pro/service-account-tab.png" style={{maxWidth: "250px" }}/>
+2. Locate your Customer API Key
+   - The Customer API Key will be displayed at the top of the page
 
 <img src="/integrations/all/ukg-pro/service-account.png" style={{maxWidth: "450px" }}/>
 
-#### Step 2: Finding Your Service Endpoint
+#### Step 2: Creating a Web Service Account
 
-To locate your service endpoint:
+To create a service account:
+
+1. On the Service Account Administration page, click the Add (+) button located at the top right of the page
+   <img src="/integrations/all/ukg-pro/add-service-account.png" style={{maxWidth: "250px" }}/>
+2. Enter Service Account Details
+   - Enter a username for the account
+   - Provide an email address
+   <img src="/integrations/all/ukg-pro/service-account-details.png" style={{maxWidth: "250px" }}/>
+3. Assign Permissions
+   - In the Web Services table, assign the appropriate permissions for the API resources you need to access
+   <img src="/integrations/all/ukg-pro/service-account-permissions.png" style={{maxWidth: "250px" }}/>
+4. Save and Generate Password
+   - Click the Save button at the top of the page
+   - A new password will be generated for the account
+   <img src="/integrations/all/ukg-pro/generate-password.png" style={{maxWidth: "250px" }}/>
+
+#### Step 3: Finding Your Service Endpoint
+
+To locate your hostname:
 1. Navigate to **System Configuration > Security > Web Services**
-2. Note your base service URL - it will be similar to "https://servicet.ultipro.com/services/" but specific to your datacenter and environment
-3. The complete endpoint combines this base URL with specific resource paths
+2. Your hostname will be the domain of your service URL (e.g. servicet.ultipro.com)
+   - The full service URL might look like "https://servicet.ultipro.com/services/"
+   - You only need the hostname portion (servicet.ultipro.com)
 
 <img src="/integrations/all/ukg-pro/web-services.png" style={{maxWidth: "450px" }}/>
 
-#### Step 3: Enter credentials in the Connect UI
+#### Step 4: Enter credentials in the Connect UI
 
 Once you have gathered all credentials:
 1. Open the form where you need to authenticate with UKG Pro
 2. Enter your:
-   - User API Key
-   - Tenant URL (Service Endpoint Hostname)
+   - Service Account Username
+   - Service Account Password
+   - Customer API Key
+   - Hostname (e.g. servicet.ultipro.com)
    <img src="/integrations/all/ukg-pro/hostname.png" style={{maxWidth: "250px" }}/>
 3. Submit the form, and you should be successfully authenticated
 

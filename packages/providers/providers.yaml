@@ -10489,24 +10489,36 @@ ukg-pro:
     display_name: UKG Pro
     categories:
         - hr
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/json
+            us-customer-api-key: ${credentials.customerApiKey}
         verification:
             method: GET
             endpoints:
-                - /v1/user-details
+                - /configuration/v1/earnings
     docs: https://docs.nango.dev/integrations/all/ukg-pro
     docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: API Token
-            description: The API Token for your UKG Pro account
+            title: Service Account Username
+            description: The username for your UKG Pro service account
             doc_section: '#step-1-creating-a-web-service-account'
-            pattern: '^[a-zA-Z0-9.]{50,}$'
+        password:
+            type: string
+            title: Service Account Password
+            description: The password generated for your UKG Pro service account
+            doc_section: '#step-1-creating-a-web-service-account'
+            secret: true
+        customerApiKey:
+            type: string
+            title: Customer API Key
+            description: Your UKG Pro Customer API Key found in Service Account Administration
+            doc_section: '#step-1-creating-a-web-service-account'
+            secret: true
     connection_config:
         hostname:
             type: string
