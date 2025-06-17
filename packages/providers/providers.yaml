@@ -10529,7 +10529,7 @@ ukg-pro:
             format: hostname
             example: servicet.ultipro.com
             prefix: https://
-            doc_section: '#step-3-finding-your-service-endpoint'
+            doc_section: '#step-3-finding-your-hostname'
 
 ukg-ready:
     display_name: UKG Ready
