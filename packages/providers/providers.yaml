@@ -9742,6 +9742,7 @@ stripe-app-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/stripe-app-sandbox/connect
     connection_config:
         appDomain:
             type: string
