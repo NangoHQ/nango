@@ -13,13 +13,15 @@ import { tracer } from 'dd-trace';
 import { setTimeout } from 'timers/promises';
 
 const dbClient = getTestDbClient();
-const taskEventsHandler = new TaskEventsHandler({
-    CREATED: () => {},
-    STARTED: () => {},
-    SUCCEEDED: () => {},
-    FAILED: () => {},
-    EXPIRED: () => {},
-    CANCELLED: () => {}
+const taskEventsHandler = new TaskEventsHandler(dbClient.db, {
+    on: {
+        CREATED: () => {},
+        STARTED: () => {},
+        SUCCEEDED: () => {},
+        FAILED: () => {},
+        EXPIRED: () => {},
+        CANCELLED: () => {}
+    }
 });
 const scheduler = new Scheduler({
     db: dbClient.db,
