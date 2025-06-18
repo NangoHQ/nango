@@ -1,29 +1,18 @@
-import type { MessagePort } from 'node:worker_threads';
 import * as tasks from '../../models/tasks.js';
 import * as schedules from '../../models/schedules.js';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
-import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { SchedulerDaemon } from '../daemon.js';
 import { envs } from '../../env.js';
 
-export class CleanupWorker extends SchedulerWorker {
-    constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
-        super({
-            workerUrl: new URL('../../../dist/workers/cleanup/cleanup.worker.boot.js', import.meta.url),
-            name: 'Cleanup',
-            databaseUrl: databaseUrl,
-            databaseSchema
-        });
-    }
-}
-
-export class CleanupChild extends SchedulerWorkerChild {
-    constructor(parent: MessagePort, db: knex.Knex) {
+export class CleaningDaemon extends SchedulerDaemon {
+    constructor({ db, abortSignal, onError }: { db: knex.Knex; abortSignal: AbortSignal; onError: (err: Error) => void }) {
         super({
             name: 'Cleanup',
-            parent,
             db,
-            tickIntervalMs: envs.ORCHESTRATOR_CLEANUP_TICK_INTERVAL_MS
+            tickIntervalMs: envs.ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS,
+            abortSignal,
+            onError
         });
     }
 

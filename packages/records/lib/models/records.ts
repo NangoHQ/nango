@@ -37,18 +37,18 @@ interface UpsertResult {
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
-function isBillable(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
+function isInactiveThisMonth(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
     const firstDayOfMonth = dayjs().utc().startOf('month');
     const previousLastModifiedAt = dayjs(record.previous_last_modified_at).utc();
     return previousLastModifiedAt.isBefore(firstDayOfMonth);
 }
 
-function billable(records: UpsertResult[]): UpsertResult[] {
+function getInactiveThisMonth(records: UpsertResult[]): UpsertResult[] {
     return records.filter((r) => {
         if (!r.previous_last_modified_at) {
             return true;
         }
-        return isBillable({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
+        return isInactiveThisMonth({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
     });
 }
 
@@ -318,7 +318,15 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [], unchangedKeys: [] };
+    const summary: UpsertSummary = {
+        addedKeys: [],
+        updatedKeys: [],
+        deletedKeys: [],
+        nonUniqueKeys,
+        nextMerging: merging,
+        activatedKeys: [],
+        unchangedKeys: []
+    };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -419,11 +427,11 @@ export async function upsert({
                     const undeletedKeys = undeletedRes.map((r) => r.external_id);
                     const addedKeys = insertedKeys.concat(undeletedKeys);
                     const updatedKeys = changedRes.map((r) => r.external_id);
-                    const billableKeys = [...insertedKeys, ...billable(changedRes).map((r) => r.external_id)];
+                    const activatedKeys = [...insertedKeys, ...getInactiveThisMonth(changedRes).map((r) => r.external_id)];
 
                     summary.addedKeys.push(...addedKeys);
                     summary.updatedKeys.push(...updatedKeys);
-                    summary.billedKeys.push(...billableKeys);
+                    summary.activatedKeys.push(...activatedKeys);
                     summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
                 }
 
@@ -511,7 +519,7 @@ export async function update({
 
     try {
         const updatedKeys: string[] = [];
-        const billedKeys: string[] = [];
+        const activatedKeys: string[] = [];
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent updates
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
@@ -586,8 +594,8 @@ export async function update({
                         if (!oldRecord?.updated_at) {
                             continue;
                         }
-                        if (isBillable({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
-                            billedKeys.push(record.external_id);
+                        if (isInactiveThisMonth({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
+                            activatedKeys.push(record.external_id);
                         }
                     }
 
@@ -605,7 +613,7 @@ export async function update({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
-            billedKeys,
+            activatedKeys,
             nonUniqueKeys,
             nextMerging,
             unchangedKeys: []

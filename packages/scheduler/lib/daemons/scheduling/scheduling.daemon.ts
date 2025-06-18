@@ -1,40 +1,41 @@
-import type { MessagePort } from 'node:worker_threads';
-import type { Result } from '@nangohq/utils';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { stringifyError } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { dueSchedules } from './scheduling.js';
 import * as tasks from '../../models/tasks.js';
 import * as schedules from '../../models/schedules.js';
-import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
+import { SchedulerDaemon } from '../daemon.js';
 import tracer from 'dd-trace';
 import { envs } from '../../env.js';
+import type { Task } from '../../types.js';
 
-export class SchedulingWorker extends SchedulerWorker {
-    constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
-        super({
-            workerUrl: new URL('../../../dist/workers/scheduling/scheduling.worker.boot.js', import.meta.url),
-            name: 'Scheduling',
-            databaseUrl: databaseUrl,
-            databaseSchema
-        });
-    }
-}
+export class SchedulingDaemon extends SchedulerDaemon {
+    private readonly onScheduling: (task: Task) => void;
 
-export class SchedulingChild extends SchedulerWorkerChild {
-    constructor(parent: MessagePort, db: knex.Knex) {
+    constructor({
+        db,
+        abortSignal,
+        onScheduling,
+        onError
+    }: {
+        db: knex.Knex;
+        abortSignal: AbortSignal;
+        onScheduling: (task: Task) => void;
+        onError: (err: Error) => void;
+    }) {
         super({
             name: 'Scheduling',
-            parent,
             db,
-            tickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS
+            tickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS,
+            abortSignal,
+            onError
         });
+        this.onScheduling = onScheduling;
     }
 
     async run(): Promise<void> {
-        const res = await this.db.transaction(async (trx): Promise<Result<string[]>> => {
-            const taskIds: string[] = [];
+        return this.db.transaction(async (trx) => {
             const span = tracer.startSpan('scheduler.scheduling.schedule');
             try {
                 // Try to acquire a lock to prevent multiple instances from scheduling at the same time
@@ -53,7 +54,7 @@ export class SchedulingChild extends SchedulerWorkerChild {
                     dueSchedulesSpan.finish();
 
                     if (getDueSchedules.isErr()) {
-                        return Err(`Failed to get due schedules: ${stringifyError(getDueSchedules.error)}`);
+                        throw new Error(`Failed to get due schedules: ${stringifyError(getDueSchedules.error)}`);
                     } else {
                         const tasksCreationSpan = tracer.startSpan('scheduler.scheduling.tasks_creation', { childOf: span });
                         await tracer.scope().activate(tasksCreationSpan, async () => {
@@ -85,7 +86,7 @@ export class SchedulingChild extends SchedulerWorkerChild {
                                     if (task.scheduleId) {
                                         await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
                                     }
-                                    taskIds.push(task.id);
+                                    this.onScheduling(task);
                                 }
                             }
                         });
@@ -94,23 +95,12 @@ export class SchedulingChild extends SchedulerWorkerChild {
                 } else {
                     await setTimeout(1000); // wait for 1s to prevent retrying too quickly
                 }
-                return Ok(taskIds);
             } catch (err) {
                 span.setTag('error', err);
-                throw err;
+                logger.error(err);
             } finally {
                 span.finish();
             }
         });
-
-        if (res.isErr()) {
-            logger.error(res.error);
-            return;
-        }
-
-        // notifying parent (Scheduler) that tasks have been created
-        if (res.value.length > 0) {
-            this.parent.postMessage({ ids: res.value });
-        }
     }
 }

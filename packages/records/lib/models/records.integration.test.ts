@@ -75,7 +75,7 @@ describe('Records service', () => {
             addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
             updatedKeys: [],
             deletedKeys: [],
-            billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+            activatedKeys: expect.arrayContaining(['1', '2', '3', '4']),
             unchangedKeys: [],
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
@@ -89,7 +89,7 @@ describe('Records service', () => {
         expect(upserted).toStrictEqual({
             addedKeys: [],
             updatedKeys: ['2'],
-            billedKeys: [],
+            activatedKeys: [],
             unchangedKeys: ['1'],
             deletedKeys: [],
             nonUniqueKeys: [],
@@ -107,7 +107,7 @@ describe('Records service', () => {
             addedKeys: [],
             updatedKeys: ['1'],
             deletedKeys: [],
-            billedKeys: [],
+            activatedKeys: [],
             unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
@@ -133,7 +133,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
-                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    activatedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     unchangedKeys: [],
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
@@ -148,7 +148,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['2'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: ['1'],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
@@ -187,7 +187,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
-                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    activatedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
@@ -205,7 +205,7 @@ describe('Records service', () => {
                 expect(added).toStrictEqual({
                     addedKeys: ['5'],
                     updatedKeys: ['4'],
-                    billedKeys: ['5'],
+                    activatedKeys: ['5'],
                     unchangedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: [],
@@ -231,7 +231,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
@@ -282,7 +282,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: [],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: ['1', '2'],
                     nonUniqueKeys: [],
                     nextMerging: {
@@ -309,7 +309,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['3'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
@@ -349,7 +349,7 @@ describe('Records service', () => {
                     updatedKeys: acc.updatedKeys.concat(curr.updatedKeys),
                     deletedKeys: (acc.deletedKeys || []).concat(curr.deletedKeys || []),
                     nonUniqueKeys: acc.nonUniqueKeys.concat(curr.nonUniqueKeys),
-                    billedKeys: acc.billedKeys.concat(curr.billedKeys),
+                    activatedKeys: acc.activatedKeys.concat(curr.activatedKeys),
                     nextMerging: curr.nextMerging,
                     unchangedKeys: acc.unchangedKeys.concat(curr.unchangedKeys)
                 };
@@ -358,7 +358,7 @@ describe('Records service', () => {
                 addedKeys: ['1'],
                 updatedKeys: [],
                 deletedKeys: [],
-                billedKeys: ['1'],
+                activatedKeys: ['1'],
                 nonUniqueKeys: [],
                 unchangedKeys: ['1', '1', '1', '1'],
                 nextMerging: { strategy: 'override' }
@@ -379,7 +379,7 @@ describe('Records service', () => {
                 addedKeys: ['1'],
                 updatedKeys: [],
                 deletedKeys: [],
-                billedKeys: ['1'],
+                activatedKeys: ['1'],
                 unchangedKeys: [],
                 nonUniqueKeys: [],
                 nextMerging: {
@@ -409,7 +409,7 @@ describe('Records service', () => {
                 addedKeys: [],
                 updatedKeys: ['1'],
                 deletedKeys: [],
-                billedKeys: [],
+                activatedKeys: [],
                 unchangedKeys: [],
                 nonUniqueKeys: [],
                 nextMerging: {
@@ -449,7 +449,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
-                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    activatedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     unchangedKeys: [],
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
@@ -460,7 +460,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
@@ -492,7 +492,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
-                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    activatedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
@@ -513,7 +513,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['4'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
@@ -537,7 +537,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
-                    billedKeys: [],
+                    activatedKeys: [],
                     unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'ignore_if_modified_after_cursor', cursor: nextCursor }
@@ -593,7 +593,7 @@ describe('Records service', () => {
             addedKeys: [],
             updatedKeys: [],
             deletedKeys: expect.arrayContaining(['1', '2']),
-            billedKeys: [],
+            activatedKeys: [],
             unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
@@ -606,7 +606,7 @@ describe('Records service', () => {
             addedKeys: [],
             updatedKeys: [],
             deletedKeys: [],
-            billedKeys: [],
+            activatedKeys: [],
             unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
