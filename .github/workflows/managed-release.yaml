@@ -112,7 +112,7 @@ jobs:
                   # Execute the command
                   eval $HELM_CMD &
 
-                  # Give some time for the deployment to star
+                  # Give some time for the deployment to start
                   sleep 10
 
                   # Debug: Check Helm release status
