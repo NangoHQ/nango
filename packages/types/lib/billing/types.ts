@@ -1,7 +1,10 @@
 import type { Result } from '../result';
+import type { DBTeam } from '../team/db';
+import type { DBUser } from '../user/db';
 
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
+    upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;

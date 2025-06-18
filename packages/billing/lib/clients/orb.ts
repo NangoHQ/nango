@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -25,6 +25,34 @@ export class OrbClient implements BillingClient {
             await this.orbSDK.events.ingest({
                 events: batch.map(toOrbEvent)
             });
+        }
+    }
+
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        try {
+            let exists: Orb.Customers.Customer | null = null;
+            try {
+                exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
+            } catch {
+                // expected error
+            }
+
+            if (exists) {
+                await this.orbSDK.customers.update(exists.id, {
+                    name: team.name
+                });
+                return Ok({ id: exists.id, portalUrl: exists.portal_url });
+            }
+
+            const customer = await this.orbSDK.customers.create({
+                external_customer_id: String(team.id),
+                currency: 'USD',
+                name: team.name,
+                email: user.email
+            });
+            return Ok({ id: customer.id, portalUrl: customer.portal_url });
+        } catch (err) {
+            return Err(new Error('failed_to_upsert_customer', { cause: err }));
         }
     }
 

@@ -5,8 +5,7 @@ import { getServer } from './server.js';
 import { envs } from './env.js';
 import type { Task } from '@nangohq/scheduler';
 import { Scheduler, DatabaseClient, stringifyTask } from '@nangohq/scheduler';
-import { EventsHandler } from './events.js';
-import { scheduleAbortTask } from './abort.js';
+import { TaskEventsHandler } from './events.js';
 import { logger } from './utils.js';
 
 process.on('unhandledRejection', (reason) => {
@@ -33,35 +32,35 @@ try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
     await dbClient.migrate();
 
-    const eventsHandler = new EventsHandler({
-        CREATED: (_scheduler: Scheduler, task: Task) => {
-            logger.info(`Task created: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
-        },
-        STARTED: (_scheduler: Scheduler, task: Task) => {
-            logger.info(`Task started: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
-        },
-        SUCCEEDED: (_scheduler: Scheduler, task: Task) => {
-            logger.info(`Task succeeded: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
-        },
-        FAILED: (_scheduler: Scheduler, task: Task) => {
-            logger.error(`Task failed: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
-        },
-        EXPIRED: async (scheduler: Scheduler, task: Task) => {
-            logger.error(`Task expired: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
-            const { reason } = task.output as unknown as { reason?: string };
-            await scheduleAbortTask({ scheduler, task, reason: `Execution expired: ${reason || 'unknown reason'}` });
-        },
-        CANCELLED: async (scheduler: Scheduler, task: Task) => {
-            logger.info(`Task cancelled: ${stringifyTask(task)}`);
-            metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
-            await scheduleAbortTask({ scheduler, task, reason: `Execution was cancelled` });
+    const eventsHandler = new TaskEventsHandler(dbClient.db, {
+        on: {
+            CREATED: (task: Task) => {
+                logger.info(`Task created: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
+            },
+            STARTED: (task: Task) => {
+                logger.info(`Task started: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+            },
+            SUCCEEDED: (task: Task) => {
+                logger.info(`Task succeeded: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+            },
+            FAILED: (task: Task) => {
+                logger.error(`Task failed: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+            },
+            EXPIRED: (task: Task) => {
+                logger.error(`Task expired: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
+            },
+            CANCELLED: (task: Task) => {
+                logger.info(`Task cancelled: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+            }
         }
     });
+    await eventsHandler.connect();
 
     const scheduler = new Scheduler({
         db: dbClient.db,
@@ -94,6 +93,7 @@ try {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
             await scheduler.stop();
+            await eventsHandler.disconnect();
             await dbClient.destroy();
 
             logger.close();
