@@ -83,4 +83,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
     const forceMajorBump = process.argv.includes('--bump-major');
     updateManifest(commitHash, forceMajorBump);
-} 
+}
