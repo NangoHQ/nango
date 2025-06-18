@@ -2,11 +2,21 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingMetric, BillingSubscription, BillingUsageMetric } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 import { Batcher } from './batcher.js';
-import { logger } from './logger.js';
 import { envs } from './envs.js';
+import { logger } from './logger.js';
+
+import type {
+    BillingClient,
+    BillingCustomer,
+    BillingIngestEvent,
+    BillingMetric,
+    BillingSubscription,
+    BillingUsageMetric,
+    DBTeam,
+    DBUser
+} from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export class Billing {
     private batcher: Batcher<BillingIngestEvent> | null;
@@ -79,6 +89,10 @@ export class Billing {
             }
         }
         return Ok(undefined);
+    }
+
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        return await this.client.upsertCustomer(team, user);
     }
 
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
