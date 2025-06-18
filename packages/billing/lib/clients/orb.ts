@@ -30,7 +30,13 @@ export class OrbClient implements BillingClient {
 
     async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
         try {
-            const exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
+            let exists: Orb.Customers.Customer | null = null;
+            try {
+                exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
+            } catch {
+                // expected error
+            }
+
             if (exists) {
                 await this.orbSDK.customers.update(exists.id, {
                     name: team.name
