@@ -23,7 +23,6 @@ function getGitHubComparisonUrl(lastCommitHash, currentCommitHash) {
     try {
         // Get the remote URL to determine the GitHub repository
         const remoteUrl = execSync('git remote get-url origin').toString().trim();
-        
         // Extract owner and repo from various remote URL formats
         let owner, repo;
         if (remoteUrl.includes('github.com')) {
@@ -34,11 +33,9 @@ function getGitHubComparisonUrl(lastCommitHash, currentCommitHash) {
                 repo = match[2];
             }
         }
-        
         if (owner && repo) {
             return `https://github.com/${owner}/${repo}/compare/${lastCommitHash}...${currentCommitHash}`;
         }
-        
         return null;
     } catch (err) {
         console.warn('Could not generate GitHub comparison URL:', err.message);
@@ -49,22 +46,18 @@ function getGitHubComparisonUrl(lastCommitHash, currentCommitHash) {
 function determineImageVersion(manifest, appVersion, forceMajorBump = false) {
     const lastImageVersion = manifest.latest.imageVersion;
     const lastAppVersion = manifest.latest.appVersion;
-
     // If force major bump is requested, bump major version
     if (forceMajorBump) {
         return `${semver.major(lastImageVersion) + 1}.0.0`;
     }
-
     // If app version is a major version bump, bump image major version
     if (semver.major(appVersion) > semver.major(lastAppVersion)) {
         return `${semver.major(lastImageVersion) + 1}.0.0`;
     }
-
     // If app version is a minor version bump, bump image minor version
     if (semver.minor(appVersion) > semver.minor(lastAppVersion)) {
         return `${semver.major(lastImageVersion)}.${semver.minor(lastImageVersion) + 1}.0`;
     }
-
     // Otherwise, bump patch version
     return `${semver.major(lastImageVersion)}.${semver.minor(lastImageVersion)}.${semver.patch(lastImageVersion) + 1}`;
 }
@@ -74,13 +67,10 @@ function updateManifest(commitHash, forceMajorBump = false) {
     const appVersion = getAppVersion();
     const imageVersion = determineImageVersion(manifest, appVersion, forceMajorBump);
     const lastCommitHash = manifest.latest.commitHash;
-    
     // Generate GitHub comparison URL if we have a previous commit
     const comparisonUrl = lastCommitHash ? getGitHubComparisonUrl(lastCommitHash, commitHash) : null;
-
     // Move current latest to history
     manifest.history.push({ ...manifest.latest });
-
     // Update latest
     manifest.latest = {
         imageVersion,
@@ -89,7 +79,6 @@ function updateManifest(commitHash, forceMajorBump = false) {
         releaseDate: new Date().toISOString(),
         comparisonUrl
     };
-
     writeManifest(manifest);
     console.log(`Updated manifest with image version ${imageVersion} for app version ${appVersion}`);
     if (comparisonUrl) {
