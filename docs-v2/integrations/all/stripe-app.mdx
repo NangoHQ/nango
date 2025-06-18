@@ -6,50 +6,123 @@ sidebarTitle: Stripe App
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/stripe-app/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/stripe-app/PreBuiltUseCases.mdx"
+import CommonScopes from "/snippets/stripe-app/common-scopes.mdx"
+import UsefulLinks from "/snippets/stripe-app/useful-links.mdx"
 
 <Overview />
 <PreBuiltTooling />
 <PreBuiltUseCases />
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Pre-Requisites        | Status | Comment                                                                                                                                                                                             |
+| --------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Paid dev account**  | ✅      | You must have an activated Stripe account (submit business info). No charges required, but activation is mandatory.                                                                                 |
+| **Paid test account** | ✅      | Stripe does not require or support a paid **test** account. Sandbox accounts are available by default in every account.                                                                                       |
+| **Partnership**       | ✅      | Not required to develop or publish apps, but Stripe may offer [partnership](https://docs.stripe.com/partners#:~:text=To%20become%20a%20Stripe%20partner,the%20Stripe%20Partner%20Ecosystem%20Agreement.) options for higher visibility.                                                                                            |
+| **App review**        | ❌      | Required if you want to publish the app publicly on the Stripe App Marketplace. Stripe will review your app before approval.                                                                        |
+| **Security audit**    | ✅     | Not strictly required, but apps must follow Stripe’s [security best practices](https://stripe.com/docs/security). A formal audit may be needed depending on your app’s access level and data usage. |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Stripe account">
+    If you don't already have one, sign up for a [Stripe account](https://dashboard.stripe.com/register).
+  </Step>
+  <Step title="Install Stripe CLI">
+    1. If you haven't already, install the [Stripe CLI](https://docs.stripe.com/stripe-cli#install).
+    2. Log in using your Stripe account:  
+       ```shell
+       stripe login
+       ```
+  </Step>
+
+  <Step title="Install the Stripe Apps CLI plugin">
+    1. Run the following command to install the Stripe Apps plugin:  
+       ```shell
+       stripe plugin install apps
+       ```
+    2. Verify the plugin version is 1.5.12 or newer:  
+        ```shell
+        stripe apps -v
+        ```
+  </Step>
+
+  <Step title="Create your Stripe App">
+    1. Create a new app project using the CLI:  
+       ```shell
+       stripe apps create my-stripe-app
+       ```
+    2. This creates a local project folder with a manifest and app code.
+  </Step>
+
+  <Step title="Edit the app manifest">
+    Open the **stripe-app.json** file and update these fields:
+    - **stripe_api_access_type**: Set to **oauth**
+    - **distribution_type**: Set to **public**
+    - **allowed_redirect_uris**: Add your redirect URI as **https://api.nango.dev/oauth/callback**. Example:
+    ```json
+    {
+      "id": "com.example.my-app",
+      "version": "0.0.1",
+      "name": "My Stripe App",
+      "icon": "./icon.png",
+      "permissions": [],
+      "stripe_api_access_type": "oauth",
+      "distribution_type": "public",
+      "allowed_redirect_uris": [
+        "https://api.nango.dev/oauth/callback"
+      ]
+    }
+    ```
+  </Step>
+
+  <Step title="Add required permissions and UI (optional)">
+    1. Add [permissions](https://docs.stripe.com/stripe-apps/reference/permissions) your app requires to access Stripe resources in the manifest (e.g., **read_only**, **customers:read**, etc.).
+    ```json
+    "permissions": [
+        {
+            "permission": "customer_read",
+            "purpose": "Receive access to the customer’s phone number"
+        }
+    ]
+  ```
+    2. Optionally add a **settings view** or other UI extensions if your app has a user-facing configuration.
+  </Step>
+  <Step title="Upload your app to Stripe (requires live account)">
+    1. Ensure you're logged into a fully activated (non-sandbox) Stripe account.
+    2. Upload your app to Stripe:  
+       ```shell
+       stripe apps upload
+       ```
+  </Step>
+
+<Step title="Publish your app">
+    - Submit your app for review when you're ready to publish it to the Stripe App Marketplace.
+    - When submitting an OAuth app, you must provide a Marketplace install URL. This URL should point to a page that initiates onboarding and installation, and clearly uses the OAuth install links found in the Settings tab of your app.
+    <Note>The public OAuth install links from the Settings tab are different from those in the External test tab and must be used for review and production installs. Even though these links are inactive until the app is published, the Stripe App Review team can still use them to install and test your app.</Note>
+</Step>
+
+<Step title="Obtain your Client ID and Client Secret">
+  1. Go to your app’s <strong>Settings</strong> tab in the Stripe Dashboard.
+  2. Locate the <strong>Live mode link</strong> under the <strong>Install link</strong> section. The **Client ID** is included as a query parameter in this URL (e.g., client_id=...).
+  3. To obtain your <strong>Client Secret</strong>, go to the <strong>API Keys</strong> page in the Stripe Dashboard and copy your <strong>Secret key</strong> (starts with <code>sk_live_...</code>).
+  Save these credentials securely as you'll need them when configuring your integration in Nango.
+</Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
-
-
-## Useful links
-
--   [How to register an Application](https://stripe.com/docs/stripe-apps)
--   [OAuth-related docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth)
--   [List of OAuth scopes](https://stripe.com/docs/stripe-apps/reference/permissions)
+<UsefulLinks />
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
 
-## Connection configuration in Nango for external test apps
-
-- If you are using the "External Test" version of your app, Stripe requires you to use a temporary id to identify your application. See the [docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth#install-app) for more information.
-
-- In this case, you must use the `stripe-app-sandbox` integration in Nango, and add the temporary ID to the `appDomain` field in the connection params.
-
-```js
-nango.auth('stripe-app-sandbox', '<CONNECTION-ID>', {params: {appDomain: '<stripe-app-domain>'}});
-```
+<CommonScopes />
 
 ## API gotchas
-
-- Stripe app does not return an `expire_at` or `expire_in` value during the exchange of a code for an access token. However, according to the [docs](https://docs.stripe.com/stripe-apps/api-authentication/oauth#refresh-access-token), access tokens expire in one hour, while refresh tokens expire in one year
+- The Stripe App is your live production integration, available for installation by real Stripe users. Use this when you're ready to launch your app in a production environment.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
