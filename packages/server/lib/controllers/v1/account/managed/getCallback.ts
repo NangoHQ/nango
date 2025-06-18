@@ -118,7 +118,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         }
 
         if (isNewTeam) {
-            const resCreate = await billing.createCustomer(account, user);
+            const resCreate = await billing.upsertCustomer(account, user);
             if (resCreate.isErr()) {
                 report(resCreate.error);
             }

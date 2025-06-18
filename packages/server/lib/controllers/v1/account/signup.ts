@@ -110,7 +110,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     if (!token) {
-        const resCreate = await billing.createCustomer(account, user);
+        const resCreate = await billing.upsertCustomer(account, user);
         if (resCreate.isErr()) {
             report(resCreate.error);
         }

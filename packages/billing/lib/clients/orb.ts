@@ -28,8 +28,16 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async createCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
         try {
+            const exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
+            if (exists) {
+                await this.orbSDK.customers.update(exists.id, {
+                    name: team.name
+                });
+                return Ok({ id: exists.id, portalUrl: exists.portal_url });
+            }
+
             const customer = await this.orbSDK.customers.create({
                 external_customer_id: String(team.id),
                 currency: 'USD',
@@ -38,7 +46,7 @@ export class OrbClient implements BillingClient {
             });
             return Ok({ id: customer.id, portalUrl: customer.portal_url });
         } catch (err) {
-            return Err(new Error('failed_to_create_customer', { cause: err }));
+            return Err(new Error('failed_to_upsert_customer', { cause: err }));
         }
     }
 

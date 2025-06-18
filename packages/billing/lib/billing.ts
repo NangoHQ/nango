@@ -91,9 +91,10 @@ export class Billing {
         return Ok(undefined);
     }
 
-    async createCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
-        return await this.client.createCustomer(team, user);
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        return await this.client.upsertCustomer(team, user);
     }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         return await this.client.getCustomer(accountId);
     }
