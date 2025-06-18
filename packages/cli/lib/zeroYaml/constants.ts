@@ -10,13 +10,13 @@ export const npmPackageRegex = /^[^./\s]/;
 export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
 
 export const tsconfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.CommonJS,
+    module: ts.ModuleKind.Node16,
     target: ts.ScriptTarget.ESNext,
     strict: true,
     esModuleInterop: true,
     skipLibCheck: true,
     forceConsistentCasingInFileNames: true,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
+    moduleResolution: ts.ModuleResolutionKind.Node16,
     allowUnusedLabels: false,
     allowUnreachableCode: false,
     exactOptionalPropertyTypes: true,
@@ -35,7 +35,7 @@ export const tsconfig: ts.CompilerOptions = {
 };
 export const tsconfigString: Record<string, any> = {
     ...tsconfig,
-    module: 'commonjs',
+    module: 'node16',
     target: 'esnext',
     importsNotUsedAsValues: 'remove',
     jsx: 'react',
