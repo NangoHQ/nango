@@ -13,13 +13,16 @@ exports[`legacySyncModelsToJsonSchema > should handle all primitive types and ba
           "type": "string",
         },
         "numberArray": {
-          "$ref": "#/definitions/number[] ",
+          "items": {
+            "type": "number",
+          },
+          "type": "array",
         },
         "numberField": {
           "type": "number",
         },
         "optionalString": {
-          "$ref": "#/definitions/string ",
+          "type": "string",
         },
         "stringArray": {
           "items": {
