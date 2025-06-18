@@ -39,6 +39,9 @@ jobs:
                   echo "installing dependencies"
                   npm install -w scripts --ignore-scripts
 
+            # This step will update the manifest with the new version based on the changes to the version in package.json
+            # When there are no breaking changes, this is all that's necessary.
+            # A check is performed later on to see if the deployment was successful - if not, the major version will be bumped.
             - name: Run version script
               id: version-script
               run: |
@@ -292,6 +295,9 @@ jobs:
                   fetch-depth: 1
                   token: ${{ secrets.GITHUB_TOKEN }}
 
+            # The workflow will only get to this step under two conditions:
+            # 1. The test deployment was successful and no breaking changes were identified
+            # 2. The test deployment failed and the user approved the release - if this is the case, we need to bump the major version
             - name: Bump major version if needed
               id: bump-major
               if: needs.test-deployment.outputs.status == 'failure'
@@ -321,8 +327,6 @@ jobs:
                   else
                     echo "Would tag as: nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
-                  echo "Would tag as: nangohq/nango:managed-latest"
-                  echo "Would push both tags"
 
             - name: Retag and push final image
               if: ${{ !env.ACT }}
