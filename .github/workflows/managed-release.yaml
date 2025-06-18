@@ -104,18 +104,17 @@ jobs:
                     --namespace nango \
                     --create-namespace \
                     --set shared.namespace=nango \
-                    --set shared.tag=fad962aa974d496bd1fdbb00652ef3945864c061 \
+                    --set shared.tag=${{ needs.manage-versions.outputs.commit_hash }} \ 
                     --set shared.encryptionEnabled=true \
                     --set shared.NANGO_SERVER_URL="http://localhost:3003" \
                     --set shared.NANGO_CALLBACK_URL="http://localhost:3003/oauth/callback" \
                     --set shared.NANGO_LOGS_ENABLED=false \
                     --set server.useLoadBalancer=false \
-                    --set image.tag=${{ needs.manage-versions.outputs.commit_hash }} \
                     --set elasticsearch.enabled=false \
                     --set postgresql.auth.postgresPassword=nango123 \
                     --wait=false &
 
-                  # Give some time for the deployment to start
+                  # Give some time for the deployment to star
                   sleep 10
 
                   # Debug: Check Helm release status
