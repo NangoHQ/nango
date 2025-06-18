@@ -19,13 +19,30 @@ function getAppVersion() {
     return packageJson.version;
 }
 
-function getChangesSinceLastRelease(lastCommitHash) {
+function getGitHubComparisonUrl(lastCommitHash, currentCommitHash) {
     try {
-        const changes = execSync(`git log ${lastCommitHash}..HEAD --pretty=format:"%s"`).toString().split('\n');
-        return changes.filter((change) => change.trim() !== '');
+        // Get the remote URL to determine the GitHub repository
+        const remoteUrl = execSync('git remote get-url origin').toString().trim();
+        
+        // Extract owner and repo from various remote URL formats
+        let owner, repo;
+        if (remoteUrl.includes('github.com')) {
+            // Handle both SSH and HTTPS formats
+            const match = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
+            if (match) {
+                owner = match[1];
+                repo = match[2];
+            }
+        }
+        
+        if (owner && repo) {
+            return `https://github.com/${owner}/${repo}/compare/${lastCommitHash}...${currentCommitHash}`;
+        }
+        
+        return null;
     } catch (err) {
-        console.error('Error getting changes:', err);
-        return [];
+        console.warn('Could not generate GitHub comparison URL:', err.message);
+        return null;
     }
 }
 
@@ -56,7 +73,10 @@ function updateManifest(commitHash, forceMajorBump = false) {
     const manifest = readManifest();
     const appVersion = getAppVersion();
     const imageVersion = determineImageVersion(manifest, appVersion, forceMajorBump);
-    const changes = getChangesSinceLastRelease(manifest.latest.commitHash);
+    const lastCommitHash = manifest.latest.commitHash;
+    
+    // Generate GitHub comparison URL if we have a previous commit
+    const comparisonUrl = lastCommitHash ? getGitHubComparisonUrl(lastCommitHash, commitHash) : null;
 
     // Move current latest to history
     manifest.history.push({ ...manifest.latest });
@@ -67,11 +87,14 @@ function updateManifest(commitHash, forceMajorBump = false) {
         appVersion,
         commitHash,
         releaseDate: new Date().toISOString(),
-        changes
+        comparisonUrl
     };
 
     writeManifest(manifest);
     console.log(`Updated manifest with image version ${imageVersion} for app version ${appVersion}`);
+    if (comparisonUrl) {
+        console.log(`Changes: ${comparisonUrl}`);
+    }
 }
 
 // If running directly
