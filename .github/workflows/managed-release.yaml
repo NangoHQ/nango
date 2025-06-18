@@ -103,21 +103,16 @@ jobs:
 
                   # Install Nango using Helm in background
                   echo "Installing Helm chart..."
-                  helm upgrade --install nango nangohq/nango \
-                    --namespace nango \
-                    --create-namespace \
-                    --set shared.namespace=nango \
-                    --set shared.tag=${{ needs.manage-versions.outputs.commit_hash }} \ 
-                    --set shared.encryptionEnabled=true \
-                    --set shared.NANGO_SERVER_URL="http://localhost:3003" \
-                    --set shared.NANGO_CALLBACK_URL="http://localhost:3003/oauth/callback" \
-                    --set shared.NANGO_LOGS_ENABLED=false \
-                    --set server.useLoadBalancer=false \
-                    --set elasticsearch.enabled=false \
-                    --set postgresql.auth.postgresPassword=nango123 \
-                    --wait=false &
+                  echo "commit_hash: ${{ inputs.commit_hash }}"
 
-                  # Give some time for the deployment to star
+                  # Debug: Show the exact command
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
+                  echo "Executing: $HELM_CMD"
+
+                  # Execute the command
+                  eval $HELM_CMD &
+
+                  # Give some time for the deployment to start
                   sleep 10
 
                   # Debug: Check Helm release status
