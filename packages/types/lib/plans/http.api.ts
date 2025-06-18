@@ -19,7 +19,7 @@ export interface PlanDefinition {
     title: string;
     description: string;
     canUpgrade: boolean;
-    canDowngrade: false;
+    canDowngrade: boolean;
     cta?: string;
     hidden?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;

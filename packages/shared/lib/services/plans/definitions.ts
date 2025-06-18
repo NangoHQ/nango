@@ -23,7 +23,7 @@ export const plansList: PlanDefinition[] = [
         title: 'YC Plan',
         description: 'For our friends at YC.',
         canUpgrade: true,
-        canDowngrade: false,
+        canDowngrade: true,
         cta: 'Contact Us',
         hidden: true,
         flags: {
@@ -37,11 +37,27 @@ export const plansList: PlanDefinition[] = [
         }
     },
     {
+        code: 'starter_v2',
+        title: 'Starter',
+        description: 'Pay-as-you-go integrations.',
+        canUpgrade: true,
+        canDowngrade: true,
+        flags: {
+            api_rate_limit_size: 'l',
+            connection_with_scripts_max: null,
+            environments_max: 3,
+            has_otel: false,
+            has_sync_variants: true,
+            name: 'starter_v2',
+            sync_frequency_secs_min: 30
+        }
+    },
+    {
         code: 'growth',
         title: 'Growth',
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
-        canDowngrade: false,
+        canDowngrade: true,
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -94,7 +110,7 @@ export const plansList: PlanDefinition[] = [
         title: 'Starter',
         description: 'Tailored to your scale.',
         canUpgrade: false,
-        canDowngrade: false,
+        canDowngrade: true,
         hidden: true,
         flags: {
             api_rate_limit_size: 'l',
@@ -111,7 +127,7 @@ export const plansList: PlanDefinition[] = [
         title: 'Scale',
         description: 'Tailored to your scale.',
         canUpgrade: false,
-        canDowngrade: false,
+        canDowngrade: true,
         hidden: true,
         flags: {
             api_rate_limit_size: 'l',

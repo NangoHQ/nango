@@ -5,6 +5,10 @@ export interface DBPlan extends Timestamps {
     account_id: number;
     name: string;
 
+    // Stripe
+    stripe_customer_id: string | null;
+    stripe_payment_id: string | null;
+
     // Trial
     // Remove all values when you upgrade a customer
     trial_start_at: Date | null;

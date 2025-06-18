@@ -60,6 +60,7 @@
         "redis": "4.6.13",
         "semver": "7.6.3",
         "simple-oauth2": "5.1.0",
+        "stripe": "18.2.1",
         "ua-parser-js": "2.0.2",
         "uuid": "9.0.0",
         "ws": "8.18.2",

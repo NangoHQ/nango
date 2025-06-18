@@ -65,6 +65,9 @@ import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js'
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
+import { getStripePaymentMethods } from './controllers/v1/stripe/getPaymentMethods.js';
+import { postStripeCollectPayment } from './controllers/v1/stripe/postCollectPayment.js';
+import { postStripWebhooks } from './controllers/v1/stripe/postWebhooks.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -104,7 +107,14 @@ web.use('/', jsonContentTypeMiddleware);
 
 // --- Body
 const bodyLimit = '1mb';
-web.use(express.json({ limit: bodyLimit }));
+web.use(
+    express.json({
+        limit: bodyLimit,
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString(); // For stripe
+        }
+    })
+);
 web.use(bodyParser.raw({ limit: bodyLimit }));
 web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
@@ -199,6 +209,10 @@ web.route('/logs/messages').post(webAuth, searchMessages);
 web.route('/logs/filters').post(webAuth, searchFilters);
 web.route('/logs/operations/:operationId').get(webAuth, getOperation);
 web.route('/logs/insights').post(webAuth, postInsights);
+
+web.route('/stripe/collect').post(webAuth, postStripeCollectPayment);
+web.route('/stripe/payment_methods').get(webAuth, getStripePaymentMethods);
+web.route('/stripe/webhooks').post(postStripWebhooks);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

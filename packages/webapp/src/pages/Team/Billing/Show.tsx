@@ -1,15 +1,19 @@
 import { IconExternalLink } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { PaymentMethod } from './components/PaymentMethod';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetPlans, useApiGetUsage } from '../../../hooks/usePlan';
+import { useStripePaymentMethods } from '../../../hooks/useStripe';
+import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
@@ -19,6 +23,7 @@ import type { GetUsage, PlanDefinition } from '@nangohq/types';
 interface PlanDefinitionList {
     plan: PlanDefinition;
     active: boolean;
+    canPick: boolean;
     isDowngrade?: boolean;
     isUpgrade?: boolean;
 }
@@ -29,6 +34,7 @@ export const TeamBilling: React.FC = () => {
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
     const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
+    const { data: paymentMethods } = useStripePaymentMethods(env);
 
     const plans = useMemo<PlanDefinitionList[]>(() => {
         if (!currentPlan || !plansList) {
@@ -37,8 +43,10 @@ export const TeamBilling: React.FC = () => {
 
         // No self downgrade or old plan
         if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
-            return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true }];
+            return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true, canPick: false }];
         }
+
+        const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
         const list: PlanDefinitionList[] = [];
         let isAboveActive = false;
@@ -48,13 +56,26 @@ export const TeamBilling: React.FC = () => {
                 continue;
             }
 
-            list.push({ plan, active: same, isDowngrade: !isAboveActive, isUpgrade: isAboveActive });
+            list.push({
+                plan,
+                active: same,
+                canPick: !isAboveActive ? curr.canDowngrade : isAboveActive ? curr.canUpgrade : false,
+                isDowngrade: !isAboveActive,
+                isUpgrade: isAboveActive
+            });
             if (same) {
                 isAboveActive = true;
             }
         }
         return list;
     }, [currentPlan, plansList]);
+
+    const card = useMemo<string | null>(() => {
+        if (!paymentMethods || !paymentMethods.data || paymentMethods.data.length <= 0 || !paymentMethods.data[0]) {
+            return null;
+        }
+        return paymentMethods.data[0];
+    }, [paymentMethods]);
 
     if (loading) {
         return (
@@ -94,11 +115,19 @@ export const TeamBilling: React.FC = () => {
                         <UsageTable data={usage} isLoading={usageIsLoading} />
                     </div>
                 )}
+
+                <div className="flex flex-col gap-2.5 h-20">
+                    <h2 className="text-grayscale-10 uppercase text-sm">Payment Methods</h2>
+
+                    <PaymentMethod />
+                </div>
+
                 <div className="flex flex-col gap-2.5">
                     <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
+
                     <div className="grid grid-cols-3 gap-4">
                         {plans.map((def) => {
-                            return <PlanCard key={def.plan.code} env={env} def={def} />;
+                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={card !== null} />;
                         })}
                     </div>
 
@@ -171,30 +200,60 @@ const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: b
     );
 };
 
-export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ def }) => {
-    const Comp = def.active ? 'div' : Link;
+export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boolean }> = ({ def, hasPaymentMethod }) => {
+    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+
+    const onClick = () => {
+        if (!hasPaymentMethod) {
+            toast({ title: 'Please, add a payment method first', variant: 'error' });
+            return;
+        }
+
+        setOpen(true);
+    };
+
     return (
-        <Comp
-            className={cn(
-                'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
-                def.active && 'bg-grayscale-1 border-grayscale-7'
-            )}
-            target="_blank"
-            to={def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : 'https://nango.dev/demo'}
-            // to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
-            // onClick={onClickPlan}
-        >
-            <div className="flex flex-col gap-2.5">
-                <header className="flex gap-3 items-center">
-                    <div className="capitalize">{def.plan.title}</div>
-                    {def.active && <div className="bg-success-4 h-1.5 w-1.5 rounded-full"></div>}
-                </header>
-                <div className="text-sm text-grayscale-10">{def.plan.description}</div>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <div
+                className={cn(
+                    'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
+                    def.active && 'bg-grayscale-1 border-grayscale-7'
+                )}
+                // to={def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : 'https://nango.dev/demo'}
+                // to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
+                // onClick={onClickPlan}
+            >
+                <div className="flex flex-col gap-2.5">
+                    <header className="flex gap-3 items-center">
+                        <div className="capitalize">{def.plan.title}</div>
+                        {def.active && <div className="bg-success-4 h-1.5 w-1.5 rounded-full"></div>}
+                    </header>
+                    <div className="text-sm text-grayscale-10">{def.plan.description}</div>
+                </div>
+                <footer>
+                    {!def.active && def.isUpgrade && (
+                        <Button variant={'primary'} onClick={onClick}>
+                            {def.plan.cta ? def.plan.cta : 'Upgrade plan'}
+                        </Button>
+                    )}
+                    {!def.active && def.isDowngrade && (
+                        <>
+                            {def.canPick ? (
+                                <Button variant={'primary'} onClick={onClick}>
+                                    Downgrade
+                                </Button>
+                            ) : (
+                                <Button variant={'primary'}>Contact us to downgrade</Button>
+                            )}
+                        </>
+                    )}
+                </footer>
             </div>
-            <footer>
-                {!def.active && def.isUpgrade && <Button variant={'primary'}>{def.plan.cta ? def.plan.cta : 'Upgrade plan'}</Button>}
-                {!def.active && def.isDowngrade && <Button variant={'primary'}>Contact us to downgrade</Button>}
-            </footer>
-        </Comp>
+
+            <DialogContent className="w-[550px] max-h-[800px]">
+                <DialogTitle>Upgrade plan</DialogTitle>
+            </DialogContent>
+        </Dialog>
     );
 };
