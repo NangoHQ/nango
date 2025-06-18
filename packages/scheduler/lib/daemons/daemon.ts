@@ -41,13 +41,8 @@ export abstract class SchedulerDaemon {
             }
             this.status = 'running';
             while (!this.abortSignal.aborted) {
-                await tracer.trace(`scheduler.${this.name.toLowerCase()}.run`, async (span) => {
-                    try {
-                        await this.run();
-                    } catch (err) {
-                        span?.setTag('error', err);
-                        throw err;
-                    }
+                await tracer.trace(`scheduler.${this.name.toLowerCase()}.run`, async () => {
+                    await this.run();
                 });
                 await setTimeout(this.tickIntervalMs);
             }
