@@ -9742,11 +9742,13 @@ stripe-app-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/stripe-app-sandbox/connect
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The domain of your Stripe app
+            description: The unique identifier Stripe assigns to your app instance
+            doc_section: '#step-1-finding-your-app-domain'
 
 supabase:
     display_name: Supabase
