@@ -49,38 +49,34 @@ export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, re
     logger.info('[stripe-hook]', event.type);
 
     switch (event.type) {
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-        case 'customer.subscription.deleted': {
-            console.error('not possible', event.type);
-            res.status(200).send({ success: false });
-            break;
-        }
-
         case 'setup_intent.succeeded': {
-            console.log('setup', event);
             const data = event.data.object;
             if (typeof data.customer !== 'string') {
                 report(new Error('strip_webhook_missing_customer'));
                 res.status(400).send({ error: { code: 'invalid_body', message: 'missing customer in data' } });
-                return;
+                break;
             }
 
             const resPlan = await getPlanBy(db.knex, { stripe_customer_id: data.customer });
             if (resPlan.isErr()) {
                 report(new Error('strip_webhook_missing_plan'));
                 res.status(400).send({ error: { code: 'invalid_body', message: 'missing plan' } });
-                return;
+                break;
             }
 
-            await updatePlan(db.knex, { id: resPlan.value.id, stripe_payment_id: event.data.object.payment_method as string });
+            const plan = resPlan.value;
+            const updated = await updatePlan(db.knex, { id: plan.id, stripe_payment_id: data.payment_method as string });
+            if (updated.isErr()) {
+                report('Failed to update plan from stripe', { plan, data });
+                break;
+            }
 
             res.status(200).send({ success: false });
             break;
         }
 
         default:
-            res.status(200).send({ success: false });
             break;
     }
+    res.status(200).send({ success: false });
 });

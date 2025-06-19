@@ -1,5 +1,6 @@
-import { serializeError } from 'serialize-error';
 import * as Sentry from '@sentry/node';
+import { serializeError } from 'serialize-error';
+
 import { getLogger } from './logger.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -33,7 +34,7 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
 }
 
 const logger = getLogger('[err]');
-export function report(err: unknown, extra?: Record<string, string | number | null | undefined>) {
+export function report(err: unknown, extra?: Record<string, unknown>) {
     logger.error(err as any, extra);
 
     Sentry.withScope((scope) => {

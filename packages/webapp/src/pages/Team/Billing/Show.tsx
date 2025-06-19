@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { PaymentMethod } from './components/PaymentMethod';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../../components/ui/Dialog';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
@@ -23,7 +23,6 @@ import type { GetUsage, PlanDefinition } from '@nangohq/types';
 interface PlanDefinitionList {
     plan: PlanDefinition;
     active: boolean;
-    canPick: boolean;
     isDowngrade?: boolean;
     isUpgrade?: boolean;
 }
@@ -36,17 +35,16 @@ export const TeamBilling: React.FC = () => {
     const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
 
-    const plans = useMemo<PlanDefinitionList[]>(() => {
+    const list = useMemo<null | [PlanDefinitionList[], PlanDefinition]>(() => {
         if (!currentPlan || !plansList) {
-            return [];
-        }
-
-        // No self downgrade or old plan
-        if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
-            return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true, canPick: false }];
+            return null;
         }
 
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
+        // No self downgrade or old plan
+        if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
+            return [[{ plan: curr, active: true, canPick: false }], curr];
+        }
 
         const list: PlanDefinitionList[] = [];
         let isAboveActive = false;
@@ -59,7 +57,6 @@ export const TeamBilling: React.FC = () => {
             list.push({
                 plan,
                 active: same,
-                canPick: !isAboveActive ? curr.canDowngrade : isAboveActive ? curr.canUpgrade : false,
                 isDowngrade: !isAboveActive,
                 isUpgrade: isAboveActive
             });
@@ -67,7 +64,7 @@ export const TeamBilling: React.FC = () => {
                 isAboveActive = true;
             }
         }
-        return list;
+        return [list, curr];
     }, [currentPlan, plansList]);
 
     const card = useMemo<string | null>(() => {
@@ -126,8 +123,8 @@ export const TeamBilling: React.FC = () => {
                     <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
 
                     <div className="grid grid-cols-3 gap-4">
-                        {plans.map((def) => {
-                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={card !== null} />;
+                        {list?.[0].map((def) => {
+                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={card !== null} currentPlan={list[1]} />;
                         })}
                     </div>
 
@@ -200,11 +197,20 @@ const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: b
     );
 };
 
-export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boolean }> = ({ def, hasPaymentMethod }) => {
+export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boolean; currentPlan: PlanDefinition }> = ({
+    def,
+    hasPaymentMethod,
+    currentPlan
+}) => {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
 
     const onClick = () => {
+        if (!def.plan.canUpgrade && !def.plan.canDowngrade) {
+            window.open('mailto:upgrade@nango.dev', '_blank');
+            return;
+        }
+
         if (!hasPaymentMethod) {
             toast({ title: 'Please, add a payment method first', variant: 'error' });
             return;
@@ -220,9 +226,6 @@ export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boo
                     'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
                     def.active && 'bg-grayscale-1 border-grayscale-7'
                 )}
-                // to={def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : 'https://nango.dev/demo'}
-                // to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
-                // onClick={onClickPlan}
             >
                 <div className="flex flex-col gap-2.5">
                     <header className="flex gap-3 items-center">
@@ -239,7 +242,7 @@ export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boo
                     )}
                     {!def.active && def.isDowngrade && (
                         <>
-                            {def.canPick ? (
+                            {currentPlan.canDowngrade ? (
                                 <Button variant={'primary'} onClick={onClick}>
                                     Downgrade
                                 </Button>
@@ -252,7 +255,23 @@ export const PlanCard: React.FC<{ def: PlanDefinitionList; hasPaymentMethod: boo
             </div>
 
             <DialogContent className="w-[550px] max-h-[800px]">
-                <DialogTitle>Upgrade plan</DialogTitle>
+                <DialogTitle>{def.isDowngrade ? 'Downgrade' : 'Upgrade'} plan</DialogTitle>
+                <DialogDescription className="text-white">
+                    {def.isUpgrade ? (
+                        <>
+                            {def.plan.title} plan cost has a base price of ${def.plan.basePrice} /month. After {def.isDowngrade ? 'downgrading' : 'upgrading'},
+                            an amount of ${def.plan.basePrice} will be added to this month&apos;s invoice and your credit card will be charged immediately.
+                        </>
+                    ) : (
+                        <>Downgrading TODO</>
+                    )}
+                </DialogDescription>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant={'secondary'}>Cancel</Button>
+                    </DialogClose>
+                    <Button variant={'primary'}>{def.isDowngrade ? 'Downgrade' : 'Upgrade'}</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

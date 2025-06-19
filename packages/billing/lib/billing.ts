@@ -95,6 +95,10 @@ export class Billing {
         return await this.client.upsertCustomer(team, user);
     }
 
+    async linkStripeToCustomer(teamId: string, customerId: string): Promise<Result<void>> {
+        return await this.client.linkStripeToCustomer(teamId, customerId);
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         return await this.client.getCustomer(accountId);
     }

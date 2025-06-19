@@ -42,6 +42,7 @@ export const plansList: PlanDefinition[] = [
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
         canDowngrade: true,
+        basePrice: 50,
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -53,11 +54,12 @@ export const plansList: PlanDefinition[] = [
         }
     },
     {
-        code: 'growth',
+        code: 'growth_v2',
         title: 'Growth',
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
         canDowngrade: true,
+        basePrice: 500,
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -136,6 +138,22 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'scale',
+            sync_frequency_secs_min: 30
+        }
+    },
+    {
+        code: 'growth',
+        title: 'Growth',
+        description: 'Pay-as-you-go integrations.',
+        canUpgrade: true,
+        canDowngrade: true,
+        flags: {
+            api_rate_limit_size: 'l',
+            connection_with_scripts_max: null,
+            environments_max: 3,
+            has_otel: false,
+            has_sync_variants: true,
+            name: 'growth',
             sync_frequency_secs_min: 30
         }
     }

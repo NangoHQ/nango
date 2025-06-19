@@ -56,6 +56,19 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async linkStripeToCustomer(teamId: string, customerId: string): Promise<Result<void>> {
+        try {
+            await this.orbSDK.customers.updateByExternalId(teamId, {
+                payment_provider: 'stripe_invoice',
+                payment_provider_id: customerId
+            });
+            return Ok(undefined);
+        } catch (err) {
+            console.error(err);
+            return Err(new Error('failed_to_link_customer', { cause: err }));
+        }
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         try {
             const customer = await this.orbSDK.customers.fetchByExternalId(String(accountId));

@@ -1,8 +1,9 @@
 import Stripe from 'stripe';
 
+import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
-import { basePublicUrl, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { basePublicUrl, report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -51,7 +52,19 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
             }
         });
 
-        await updatePlan(db.knex, { id: plan.id, stripe_customer_id: customer.id });
+        const update = await updatePlan(db.knex, { id: plan.id, stripe_customer_id: customer.id });
+        if (update.isErr()) {
+            report('Failed to update plan', { plan, customer });
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
+
+        const link = await billing.linkStripeToCustomer(String(plan.account_id), customer.id);
+        if (link.isErr()) {
+            report('Failed to link orb to stripe', { plan, customer });
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
         stripeCustomerId = customer.id;
     }
 
