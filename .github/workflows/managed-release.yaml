@@ -335,8 +335,8 @@ jobs:
                       docker push nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   else
                       echo "Test deployment successful, using original versions"
-                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
-                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
+                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   fi
 
             - name: Commit and create PR for version changes
