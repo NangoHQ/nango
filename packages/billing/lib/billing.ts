@@ -11,6 +11,7 @@ import type {
     BillingCustomer,
     BillingIngestEvent,
     BillingMetric,
+    BillingPlan,
     BillingSubscription,
     BillingUsageMetric,
     DBTeam,
@@ -95,6 +96,10 @@ export class Billing {
         return await this.client.upsertCustomer(team, user);
     }
 
+    async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
+        return await this.client.linkStripeToCustomer(teamId, customerId);
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         return await this.client.getCustomer(accountId);
     }
@@ -105,6 +110,18 @@ export class Billing {
 
     async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
         return await this.client.getUsage(subscriptionId, period);
+    }
+
+    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+        return await this.client.upgrade(opts);
+    }
+
+    async getPlanById(planId: string): Promise<Result<BillingPlan>> {
+        return await this.client.getPlanById(planId);
+    }
+
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true> {
+        return this.client.verifyWebhookSignature(body, headers, secret);
     }
 
     // Note: Events are sent immediately

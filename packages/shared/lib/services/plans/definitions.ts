@@ -7,6 +7,8 @@ export const plansList: PlanDefinition[] = [
         description: 'API authorization only.',
         canUpgrade: true,
         canDowngrade: false,
+        orbId: 'free',
+        basePrice: 0,
         flags: {
             api_rate_limit_size: 'm',
             connection_with_scripts_max: 50,
@@ -23,9 +25,10 @@ export const plansList: PlanDefinition[] = [
         title: 'YC Plan',
         description: 'For our friends at YC.',
         canUpgrade: true,
-        canDowngrade: false,
+        canDowngrade: true,
         cta: 'Contact Us',
         hidden: true,
+        orbId: 'yc',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -37,11 +40,31 @@ export const plansList: PlanDefinition[] = [
         }
     },
     {
+        code: 'starter',
+        title: 'Starter',
+        description: 'Pay-as-you-go integrations.',
+        canUpgrade: true,
+        canDowngrade: true,
+        basePrice: 50,
+        orbId: 'starter',
+        flags: {
+            api_rate_limit_size: 'l',
+            connection_with_scripts_max: null,
+            environments_max: 3,
+            has_otel: false,
+            has_sync_variants: true,
+            name: 'starter',
+            sync_frequency_secs_min: 30
+        }
+    },
+    {
         code: 'growth',
         title: 'Growth',
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
-        canDowngrade: false,
+        canDowngrade: true,
+        basePrice: 500,
+        orbId: 'growth',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -59,6 +82,7 @@ export const plansList: PlanDefinition[] = [
         canUpgrade: false,
         canDowngrade: false,
         cta: 'Contact Us',
+        orbId: 'enterprise',
         flags: {
             api_rate_limit_size: '2xl',
             connection_with_scripts_max: null,
@@ -77,24 +101,25 @@ export const plansList: PlanDefinition[] = [
         canDowngrade: false,
         cta: 'Contact Us',
         hidden: true,
+        orbId: 'internal',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
             environments_max: 3,
             has_otel: false,
             has_sync_variants: false,
-            name: 'yc',
+            name: 'internal',
             sync_frequency_secs_min: 30
         }
     },
 
     // Old plans
     {
-        code: 'starter',
-        title: 'Starter',
+        code: 'starter_legacy',
+        title: 'Starter (legacy)',
         description: 'Tailored to your scale.',
         canUpgrade: false,
-        canDowngrade: false,
+        canDowngrade: true,
         hidden: true,
         flags: {
             api_rate_limit_size: 'l',
@@ -107,11 +132,11 @@ export const plansList: PlanDefinition[] = [
         }
     },
     {
-        code: 'scale',
-        title: 'Scale',
+        code: 'scale_legacy',
+        title: 'Scale (legacy)',
         description: 'Tailored to your scale.',
         canUpgrade: false,
-        canDowngrade: false,
+        canDowngrade: true,
         hidden: true,
         flags: {
             api_rate_limit_size: 'l',
@@ -120,6 +145,23 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'scale',
+            sync_frequency_secs_min: 30
+        }
+    },
+    {
+        code: 'growth_legacy',
+        title: 'Growth (legacy)',
+        description: 'Pay-as-you-go integrations.',
+        canUpgrade: true,
+        canDowngrade: true,
+        hidden: true,
+        flags: {
+            api_rate_limit_size: 'l',
+            connection_with_scripts_max: null,
+            environments_max: 3,
+            has_otel: false,
+            has_sync_variants: true,
+            name: 'growth',
             sync_frequency_secs_min: 30
         }
     }

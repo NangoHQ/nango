@@ -19,7 +19,9 @@ export interface PlanDefinition {
     title: string;
     description: string;
     canUpgrade: boolean;
-    canDowngrade: false;
+    canDowngrade: boolean;
+    orbId?: string;
+    basePrice?: number;
     cta?: string;
     hidden?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
@@ -34,6 +36,15 @@ export type GetPlans = Endpoint<{
     };
 }>;
 
+export type GetPlan = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/current';
+    Querystring: { env: string };
+    Success: {
+        data: ApiPlan;
+    };
+}>;
+
 export type GetUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/usage';
@@ -44,5 +55,15 @@ export type GetUsage = Endpoint<{
             current: BillingUsageMetric[];
             previous: BillingUsageMetric[];
         };
+    };
+}>;
+
+export type PostPlanChange = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/plans/change';
+    Querystring: { env: string };
+    Body: { orbId: string; immediate: boolean };
+    Success: {
+        data: true;
     };
 }>;
