@@ -5804,7 +5804,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.2
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5821,7 +5821,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.2
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -5930,11 +5930,13 @@ integrations:
                     audio_url: string
                     video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
@@ -5965,7 +5967,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.2
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5982,7 +5984,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.2
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -6091,11 +6093,13 @@ integrations:
                     audio_url: string
                     video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
