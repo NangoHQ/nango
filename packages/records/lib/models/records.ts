@@ -673,34 +673,50 @@ export async function markPreviousGenerationRecordsAsDeleted({
     connectionId,
     model,
     syncId,
-    generation
+    generation,
+    batchSize = 5000
 }: {
     connectionId: number;
     model: string;
     syncId: string;
     generation: number;
+    batchSize?: number;
 }): Promise<string[]> {
     const now = db.fn.now(6);
-    let res: string[] = [];
     return db.transaction(async (trx) => {
-        res = (await trx
-            .from<FormattedRecord>(RECORDS_TABLE)
-            .where({
-                connection_id: connectionId,
-                model,
-                sync_id: syncId,
-                deleted_at: null
-            })
-            .where('sync_job_id', '<', generation)
-            .update({
-                deleted_at: now,
-                updated_at: now,
-                sync_job_id: generation
-            })
-            .returning('id')) as unknown as string[];
+        const deletedIds: string[] = [];
+        let hasMore = true;
+        while (hasMore) {
+            const res = await trx
+                .from<FormattedRecord>(RECORDS_TABLE)
+                .whereIn('id', function (sub) {
+                    sub.select('id')
+                        .from(RECORDS_TABLE)
+                        .where({
+                            connection_id: connectionId,
+                            model,
+                            sync_id: syncId,
+                            deleted_at: null
+                        })
+                        .where('sync_job_id', '<', generation)
+                        .limit(batchSize);
+                })
+                .update({
+                    deleted_at: now,
+                    updated_at: now,
+                    sync_job_id: generation
+                })
+                .returning('external_id');
+
+            if (res.length < batchSize) {
+                hasMore = false;
+            }
+
+            deletedIds.push(...res.map((r) => r.external_id));
+        }
 
         // update records count
-        const count = res.length;
+        const count = deletedIds.length;
         if (count > 0) {
             await trx(RECORD_COUNTS_TABLE)
                 .where({
@@ -711,7 +727,7 @@ export async function markPreviousGenerationRecordsAsDeleted({
                     count: trx.raw('GREATEST(0, count - ?)', [count])
                 });
         }
-        return res;
+        return deletedIds;
     });
 }
 
