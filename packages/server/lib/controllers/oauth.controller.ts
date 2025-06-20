@@ -21,7 +21,9 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager
+    providerClientManager,
+    getConnectionMetadataFromWebhookResponse,
+    extractValueByPath
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -229,7 +231,7 @@ class OAuthController {
                 return;
             }
 
-            if (provider.auth_mode === 'OAUTH2') {
+            if (provider.auth_mode === 'OAUTH2' && provider.installation !== 'outbound') {
                 await this.oauth2Request({
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
@@ -684,6 +686,185 @@ class OAuthController {
         }
     }
 
+    public async oauth2OutboundRequest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+        const { environment, account, connectSession } = res.locals;
+        const { providerConfigKey } = req.params;
+        const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        let connectionId = receivedConnectionId || connectionService.generateConnectionId();
+        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        const query = req.query;
+        const isConnectSession = res.locals['authType'] === 'connectSession';
+
+        if (query['installation'] !== 'outbound') {
+            errorManager.errRes(res, 'missing_client_id');
+
+            return;
+        }
+
+        if (isConnectSession && receivedConnectionId) {
+            errorRestrictConnectionId(res);
+            return;
+        }
+
+        let logCtx: LogContext | undefined;
+
+        try {
+            logCtx =
+                isConnectSession && connectSession.operationId
+                    ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                    : await logContextGetter.create(
+                          {
+                              operation: { type: 'auth', action: 'create_connection' },
+                              meta: { authType: 'oauth2-oubound', connectSession: endUserToMeta(res.locals.endUser) },
+                              expiresAt: defaultOperationExpiration.auth()
+                          },
+                          { account, environment }
+                      );
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_connection');
+
+                return;
+            }
+
+            if (!isConnectSession) {
+                const hmac = req.query['hmac'] as string | undefined;
+
+                const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+                if (!checked) {
+                    return;
+                }
+            }
+
+            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+            if (!config) {
+                void logCtx.error('Unknown provider config');
+                await logCtx.failed();
+
+                errorManager.errRes(res, 'unknown_provider_config');
+
+                return;
+            }
+
+            const provider = getProvider(config.provider);
+            if (!provider) {
+                void logCtx.error('Unknown provider');
+                await logCtx.failed();
+                res.status(404).send({ error: { code: 'unknown_provider_template' } });
+                return;
+            }
+
+            if (provider.auth_mode !== 'OAUTH2') {
+                void logCtx.error('Provider does not support OAuth2 Outbound Installation creation', { provider: config.provider });
+                await logCtx.failed();
+
+                errorManager.errRes(res, 'invalid_auth_mode');
+
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
+                return;
+            }
+
+            if (isConnectSession) {
+                // Reconnect mechanism
+                if (connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(connectSession.connectionId);
+                    if (!connection) {
+                        void logCtx.error('Invalid connection');
+                        await logCtx.failed();
+                        res.status(400).send({ error: { code: 'invalid_connection' } });
+                        return;
+                    }
+                    connectionId = connection?.connection_id;
+                }
+            }
+
+            await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
+            const updatedConnectionConfig: ConnectionConfig = {
+                ...connectionConfig,
+                pending: true,
+                pendingLog: logCtx.id
+            };
+
+            const [updatedConnection] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey,
+                parsedRawCredentials: { type: 'OAUTH2' } as any,
+                connectionConfig: updatedConnectionConfig,
+                environmentId: environment.id
+            });
+            if (!updatedConnection) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return;
+            }
+
+            if (isConnectSession) {
+                await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            }
+
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+            void logCtx.info('OAuth2 Outbound Installation creation was successful');
+            await logCtx.success();
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2',
+                    operation: updatedConnection.operation,
+                    endUser: isConnectSession ? res.locals['endUser'] : undefined
+                },
+                account,
+                config,
+                logContextGetter
+            );
+
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+
+            res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
+                    },
+                    operation: 'unknown'
+                },
+                account
+            );
+            if (logCtx) {
+                void logCtx.error('Error during OAuth2 Outbound Installation credentials creation', { error: err });
+                await logCtx.failed();
+            }
+
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
+                environmentId: environment.id,
+                metadata: {
+                    providerConfigKey,
+                    connectionId: receivedConnectionId
+                }
+            });
+
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+
+            next(err);
+        }
+    }
+
     private async appRequest(
         provider: Provider,
         providerConfig: ProviderConfig,
@@ -959,13 +1140,107 @@ class OAuthController {
             config.oauth_scopes = session.connectionConfig['oauth_scopes'];
         }
 
-        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, session.connectionConfig));
+        return this.handleTokenExchangeAndConnectionCreation(
+            provider,
+            config,
+            session,
+            authorizationCode,
+            installationId,
+            res,
+            environment,
+            account,
+            logCtx,
+            callbackMetadata,
+            undefined
+        );
+    }
 
+    public async oauth2WebhookInstallation(
+        provider: ProviderOAuth2,
+        config: ProviderConfig,
+        session: OAuthSession,
+        webhookPayload: Record<string, any>,
+        environment: DBEnvironment,
+        account: DBTeam,
+        logCtx: LogContext
+    ) {
+        const authCodeParam = provider.authorization_code_param_in_webhook || 'code';
+        const installationIdParam = provider.installation_id_param_in_webhook || 'installation_id';
+
+        const authorizationCode = extractValueByPath(webhookPayload, authCodeParam);
+        const installationId = extractValueByPath(webhookPayload, installationIdParam);
+
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const webhookMetadata = getConnectionMetadataFromWebhookResponse(webhookPayload, provider);
+
+        if (!authorizationCode) {
+            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            void logCtx.error(error.message, {
+                scopes: config.oauth_scopes,
+                basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                tokenParams: provider.token_params as string
+            });
+            await logCtx.failed();
+
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
+                    auth_mode: provider.auth_mode,
+                    error: {
+                        type: 'invalid_webhook',
+                        description: error.message
+                    },
+                    operation: 'unknown'
+                },
+                account,
+                config
+            );
+        }
+        return this.handleTokenExchangeAndConnectionCreation(
+            provider,
+            config,
+            session,
+            authorizationCode,
+            installationId,
+            null,
+            environment,
+            account,
+            logCtx,
+            undefined,
+            webhookMetadata
+        );
+    }
+
+    private async handleTokenExchangeAndConnectionCreation(
+        provider: ProviderOAuth2 | ProviderCustom,
+        config: ProviderConfig,
+        session: OAuthSession,
+        authorizationCode: string,
+        installationId: string | undefined,
+        res: Response | null,
+        environment: DBEnvironment,
+        account: DBTeam,
+        logCtx: LogContext,
+        callbackMetadata?: Record<string, string>,
+        webhookMetadata?: Record<string, string>
+    ) {
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const channel = session.webSocketClientId;
+
+        let connectionConfig: ConnectionConfig = {
+            ...webhookMetadata,
+            ...session.connectionConfig
+        };
+        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
         let additionalTokenParams: Record<string, string | undefined> = {};
         if (provider.token_params !== undefined) {
             // We need to remove grant_type, simpleOAuth2 handles that for us
             const deepCopy = JSON.parse(JSON.stringify(provider.token_params));
-            additionalTokenParams = interpolateObjectValues(deepCopy, session.connectionConfig);
+            additionalTokenParams = interpolateObjectValues(deepCopy, connectionConfig);
         }
 
         // We always implement PKCE, no matter whether the server requires it or not,
@@ -995,9 +1270,7 @@ class OAuthController {
             });
 
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
-
-            const interpolatedTokenUrl = makeUrl(tokenUrl, session.connectionConfig, provider.token_url_skip_encode);
-
+            const interpolatedTokenUrl = makeUrl(tokenUrl, connectionConfig, provider.token_url_skip_encode);
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
@@ -1048,18 +1321,21 @@ class OAuthController {
                     config
                 );
 
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
+                if (res) {
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
+                }
                 return;
             }
 
-            let connectionConfig: ConnectionConfig = {
+            connectionConfig = {
                 ...tokenMetadata,
                 ...callbackMetadata,
+                ...webhookMetadata,
                 ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
                     if (session.connectionConfig[key] !== '') {
                         acc[key] = session.connectionConfig[key];
-                    } else if (key in tokenMetadata || key in callbackMetadata) {
-                        acc[key] = tokenMetadata[key] || callbackMetadata[key];
+                    } else if (key in tokenMetadata || key in (callbackMetadata || {})) {
+                        acc[key] = tokenMetadata[key] || (callbackMetadata || {})[key];
                     } else {
                         acc[key] = '';
                     }
@@ -1137,7 +1413,9 @@ class OAuthController {
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
                 await logCtx.failed();
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                if (res) {
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                }
                 return;
             }
 
@@ -1151,7 +1429,9 @@ class OAuthController {
                 if (connectSessionRes.isErr()) {
                     void logCtx.error('Failed to get session');
                     await logCtx.failed();
-                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
                     return;
                 }
 
@@ -1218,7 +1498,9 @@ class OAuthController {
                 if (createRes.isErr()) {
                     void logCtx.error('Failed to create credentials');
                     await logCtx.failed();
-                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
+                    }
                     return;
                 }
             }
@@ -1227,7 +1509,9 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-            await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+            if (res) {
+                await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+            }
             return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -1263,7 +1547,9 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            if (res) {
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
         }
     }
 

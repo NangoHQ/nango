@@ -164,16 +164,20 @@ export default class Nango {
         // -----------
         if (
             options &&
-            'credentials' in options &&
-            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
-                !('oauth_client_id_override' in options.credentials) ||
-                !('oauth_client_secret_override' in options.credentials)) &&
-            Object.keys(options.credentials).length > 0
+            (('installation' in options && options.installation === 'outbound') ||
+                ('credentials' in options &&
+                    (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                        !('oauth_client_id_override' in options.credentials) ||
+                        !('oauth_client_secret_override' in options.credentials)) &&
+                    Object.keys(options.credentials).length > 0))
         ) {
             const credentials = options.credentials;
+            if (!credentials) {
+                throw new AuthError('Credentials are required for custom auth', 'missingCredentials');
+            }
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
-            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig, options.installation);
         }
 
         // -----------
@@ -461,7 +465,8 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string | null,
         connectionConfigWithCredentials: ConnectionConfig,
-        connectionConfig?: ConnectionConfig
+        connectionConfig?: ConnectionConfig,
+        installation?: string
     ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials;
 
@@ -538,6 +543,13 @@ export default class Nango {
                 credentials: credentials as unknown as OAuth2ClientCredentials
             });
         }
+        if (installation === 'outbound') {
+            return await this.triggerAuth({
+                authUrl:
+                    this.hostBaseUrl +
+                    `/oauth2-outbound/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig, installation)}`
+            });
+        }
 
         return Promise.reject(new Error('Something went wrong with the authorization'));
     }
@@ -548,7 +560,7 @@ export default class Nango {
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns The generated query string
      */
-    private toQueryString(connectionId: string | null, connectionConfig?: ConnectionConfig): string {
+    private toQueryString(connectionId: string | null, connectionConfig?: ConnectionConfig, installation?: string): string {
         const query: string[] = [];
 
         if (connectionId) {
@@ -563,6 +575,9 @@ export default class Nango {
             query.push(`connect_session_token=${this.connectSessionToken}`);
         }
 
+        if (installation) {
+            query.push(`installation=${installation}`);
+        }
         if (connectionConfig) {
             for (const param in connectionConfig.params) {
                 const val = connectionConfig.params[param];

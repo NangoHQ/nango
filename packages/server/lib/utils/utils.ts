@@ -143,7 +143,8 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
                 ![
                     ...(provider.token_response_metadata || []),
                     ...(provider.redirect_uri_metadata || []),
-                    ...(provider.connection_configuration || [])
+                    ...(provider.connection_configuration || []),
+                    ...(provider.webhook_response_metadata || [])
                 ].includes(cleanParamName(param))
         );
         const proxyVerificationMatches = [
