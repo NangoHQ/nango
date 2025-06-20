@@ -34,7 +34,8 @@ export type CompileErrorType =
     | 'nango_invalid_export_constant'
     | 'failed_to_build_unknown'
     | 'method_need_await'
-    | 'retryon_need_retries';
+    | 'retryon_need_retries'
+    | 'disallowed_import';
 
 export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
 
