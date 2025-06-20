@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.61.3] - 2025-06-20
+
+### Added
+
+- Add token revocation script for pre connection deletion (#4059) by @viictoo
+- *(integrations)* Add Trafft integration with documentation (#4190) by @viictoo
+- *(integrations)* Update Instantly documentation and add connection guide (#4194) by @viictoo
+- *(billing)* Don't bill first month of MAR for connection (#4192) by @kaposke
+- *(docs)* Add securityScheme to OpenAPI spec (#4200) by @kaposke
+- *(ukg-pro)* Ext-758 Updated auth and documentation for ukg-pro (#4205) by @ChoqueCastroLD
+- *(persist)* Add tracing in auth middleware (#4206) by @TBonnin
+- *(logs)* Add more error logs during oauth2 flow (#4195) by @hassan254-prog
+- *(release)* Managed release process for self-hosted images (#4210) by @rossmcewan
+- Added max width to ukg-pro form and fixed mint json sage-hr (#4213) by @ChoqueCastroLD
+- Add upload/download actions to share data across jobs (#4222) by @rossmcewan
+
+### Changed
+
+- Zero yaml migration (#4191) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/27cfef157c734920b68b341f225ddf4037702573 by Hassan_Wari. Commit message: feat(gong): improve gong scripts  (#347) by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/61945f659fdfa0f4aaacbfaf494b0016839d25c8 by Victor Lang'at by @github-actions[bot]
+- Clean up clickup, zoho and freshbook setup docs (#4182) by @viictoo
+- *(scheduler)* Migrate from workers to in-process execution (#4193) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7b57d93425d7d968ddfcfccaf5c34b8b87dd9cc4 by Victor Lang'at by @github-actions[bot]
+- *(orchestrator)* Move abort task logic to scheduler (#4196) by @TBonnin
+- Zeroyaml feedback, scripts credentials feedback (#4198) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ad38b1ee64f7ae3487f61fd3a23574c87617dcdf by Samuel Bodin by @github-actions[bot]
+- *(orchestrator)* Tasks events via pg LISTEN/NOTIFY (#4201) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ffdb7379ea98fd8c54689aabb037212863324d4d by Hassan_Wari by @github-actions[bot]
+- Setup guide for stripe app and stripe app sandbox (#4204) by @hassan254-prog
+- Clarify refresh webhook docs (#4208) by @mintlify[bot]
+- *(orch)* More tracing and prevent cleaning/expiring race condition (#4207) by @TBonnin
+- *(runner)* Remove input/output validation (#4216) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/966f69623fd232a5212b0d2b441816b2b03a9390 by Hassan_Wari by @github-actions[bot]
+
+### Fixed
+
+- Use nango.dev domain to send email (#4144) by @TBonnin
+- *(file)* Correctly zip from s3 (#4188) by @bodinsamuel
+- *(shared)* Remove explicit setting of AWS credentials (#4189) by @rossmcewan
+- *(proxy)* Fix build proxy headers (#4187) by @hassan254-prog
+- *(pagination)* Fix link pagination type (#4199) by @hassan254-prog
+- *(api)* Create billing customer on account creation (#4203) by @bodinsamuel
+- *(cli)* Tsconfig correct options, dev mode parallel error display (#4211) by @bodinsamuel
+- Helm command was failing (#4214) by @rossmcewan
+- Docker credentials secret names were incorrect (#4218) by @rossmcewan
+- *(cli)* Catch bad import earlier  (#4223) by @bodinsamuel
+
 ## [v0.61.2] - 2025-06-12
 
 ### Fixed
@@ -4172,6 +4220,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3
 [v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
 [v0.61.1]: https://github.com/NangoHQ/nango/compare/v0.61.0..v0.61.1
 [v0.61.0]: https://github.com/NangoHQ/nango/compare/v0.60.5..v0.61.0
