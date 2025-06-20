@@ -18,6 +18,7 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
     return JSON.stringify(serializeError(err), ['name', 'message', ...(opts?.stack ? ['stack', 'cause'] : [])], opts?.pretty ? 2 : undefined);
 }
 
+let sentry = false;
 export function initSentry({ dsn, hash, applicationName }: { dsn: string | undefined; hash?: string | undefined; applicationName: string }) {
     Sentry.init({
         dsn: dsn || '',
@@ -29,12 +30,18 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
         maxBreadcrumbs: 10
     });
     if (dsn) {
+        sentry = true;
         logger.info('Sentry configured');
     }
 }
 
-const logger = getLogger('[err]');
+const logger = getLogger('err');
 export function report(err: unknown, extra?: Record<string, unknown>) {
+    if (!sentry) {
+        logger.error(stringifyError(err, { stack: true, pretty: true }), extra);
+        return;
+    }
+
     logger.error(err as any, extra);
 
     Sentry.withScope((scope) => {

@@ -5,10 +5,13 @@ import type { DBUser } from '../user/db';
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
     upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
-    linkStripeToCustomer(teamId: string, customerId: string): Promise<Result<void>>;
+    linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
+    upgrade: (opts: { subscriptionId: string; planExternalId: string; immediate: boolean }) => Promise<Result<void>>;
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
+    getPlanById(planId: string): Promise<Result<BillingPlan>>;
 }
 
 export interface BillingCustomer {
@@ -24,6 +27,11 @@ export interface BillingUsageMetric {
     id: string;
     name: string;
     quantity: number;
+}
+
+export interface BillingPlan {
+    id: string;
+    external_plan_id: string;
 }
 
 export interface BillingIngestEvent {

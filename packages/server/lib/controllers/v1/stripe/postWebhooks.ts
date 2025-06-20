@@ -18,7 +18,7 @@ const logger = getLogger('Server.Stripe');
  * Forward
  * stripe listen --load-from-webhooks-api --forward-to localhost:3003
  */
-export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, res) => {
+export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, res) => {
     if (!envs.STRIPE_SECRET_KEY || !envs.STRIPE_WEBHOOKS_SECRET) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'feature disabled' } });
         return;
@@ -78,5 +78,5 @@ export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, re
         default:
             break;
     }
-    res.status(200).send({ success: false });
+    res.status(200).send({ success: true });
 });

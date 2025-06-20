@@ -67,6 +67,21 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
     }
 }
 
+export async function updatePlanByTeam(
+    db: Knex,
+    { account_id, ...data }: Pick<DBPlan, 'account_id'> & Partial<Omit<DBPlan, 'id' | 'account_id'>>
+): Promise<Result<boolean>> {
+    try {
+        await db
+            .from<DBPlan>('plans')
+            .where('account_id', account_id)
+            .update({ ...data, updated_at: new Date() });
+        return Ok(true);
+    } catch (err) {
+        return Err(new Error('failed_to_update_plan', { cause: err }));
+    }
+}
+
 export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
     return await updatePlan(db, {
         id: plan.id,

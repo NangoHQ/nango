@@ -62,12 +62,15 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
+import { getPlanCurrent } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/postCollectPayment.js';
-import { postStripWebhooks } from './controllers/v1/stripe/postWebhooks.js';
+import { postStripeWebhooks } from './controllers/v1/stripe/postWebhooks.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -152,8 +155,10 @@ web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/current').get(webAuth, getPlanCurrent);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
+web.route('/plans/change').post(webAuth, postPlanChange);
 
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
@@ -212,7 +217,9 @@ web.route('/logs/insights').post(webAuth, postInsights);
 
 web.route('/stripe/collect').post(webAuth, postStripeCollectPayment);
 web.route('/stripe/payment_methods').get(webAuth, getStripePaymentMethods);
-web.route('/stripe/webhooks').post(postStripWebhooks);
+web.route('/stripe/webhooks').post(postStripeWebhooks);
+
+web.route('/orb/webhooks').post(postOrbWebhooks);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

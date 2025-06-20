@@ -59,7 +59,7 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
             return;
         }
 
-        const link = await billing.linkStripeToCustomer(String(plan.account_id), customer.id);
+        const link = await billing.linkStripeToCustomer(plan.account_id, customer.id);
         if (link.isErr()) {
             report('Failed to link orb to stripe', { plan, customer });
             res.status(500).send({ error: { code: 'server_error' } });
