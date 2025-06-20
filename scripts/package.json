@@ -8,7 +8,8 @@
         "figures": "6.1.0",
         "git-cliff": "2.8.0",
         "js-yaml": "4.1.0",
-        "zx": "8.5.4",
-        "webflow-api": "3.0.1"
+        "semver": "^7.7.2",
+        "webflow-api": "3.0.1",
+        "zx": "8.5.4"
     }
 }
