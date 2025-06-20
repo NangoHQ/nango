@@ -76,7 +76,6 @@ export interface BaseProvider {
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
     webhook_response_metadata?: string[];
-    installation_id_param_in_webhook?: string;
     authorization_code_param_in_webhook?: string;
     docs: string;
     docs_connect?: string;

@@ -1165,11 +1165,8 @@ class OAuthController {
         logCtx: LogContext
     ) {
         const authCodeParam = provider.authorization_code_param_in_webhook || 'code';
-        const installationIdParam = provider.installation_id_param_in_webhook || 'installation_id';
 
         const authorizationCode = extractValueByPath(webhookPayload, authCodeParam);
-        const installationId = extractValueByPath(webhookPayload, installationIdParam);
-
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const webhookMetadata = getConnectionMetadataFromWebhookResponse(webhookPayload, provider);
@@ -1204,7 +1201,7 @@ class OAuthController {
             config,
             session,
             authorizationCode,
-            installationId,
+            undefined,
             null,
             environment,
             account,

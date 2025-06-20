@@ -8982,7 +8982,6 @@ sentry-oauth:
     webhook_routing_script: sentryOauthWebhookRouting
     post_connection_script: sentryOauthPostConnection
     authorization_code_param_in_webhook: data.installation.code
-    installation_id_param_in_webhook: installation.uuid
     webhook_response_metadata:
         - installation.uuid
     proxy:
@@ -9006,6 +9005,12 @@ sentry-oauth:
             type: string
             title: User ID
             description: The unique identifier of the user who will accept and install the public integration
+            doc_section: '#step-2-finding-your-user-id'
+        installation.uuid:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sedna:
     display_name: Sedna (OAuth)
