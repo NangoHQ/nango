@@ -50,6 +50,12 @@ jobs:
                   echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
                   echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
 
+            - name: Upload manifest artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: managed-manifest.json
+
     test-deployment:
         needs: manage-versions
         runs-on: ubuntu-latest
@@ -290,6 +296,12 @@ jobs:
                   fetch-depth: 1
                   token: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Download manifest artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: .
+
             # The workflow will only get to this step under two conditions:
             # 1. The test deployment was successful and no breaking changes were identified
             # 2. The test deployment failed and the user approved the release - if this is the case, we need to bump the major version
@@ -363,6 +375,7 @@ jobs:
                   echo "Running in act - would create PR:"
                   echo "Would create branch: version-update-$(date +%Y%m%d-%H%M%S)"
                   echo "Would commit changes to managed-manifest.json"
+                  cat managed-manifest.json
                   echo "Would create PR with title: Update version in manifest"
                   echo "Would create PR with body: This PR updates the version in the manifest. Please review and merge to ensure the next release uses the correct version."
 
