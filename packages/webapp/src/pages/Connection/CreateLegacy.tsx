@@ -246,12 +246,14 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ...credentialsState
             };
         }
+        const shouldIncludeUserScope = authMode !== 'NONE' && !integration?.meta.installation;
         const connectionConfig = {
-            user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
+            ...(shouldIncludeUserScope && { user_scope: selectedScopes || [] }),
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
-            credentials
+            credentials,
+            ...(integration?.meta.installation && { installation: integration?.meta.installation })
         };
         const getConnection =
             authMode === 'NONE'
@@ -361,6 +363,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
             if (!hasAnyValue) {
                 connectionConfigParamsStr = '';
             }
+        }
+
+        let installationStr = '';
+        if (integration.meta.installation) {
+            installationStr = "installation: 'outbound'";
         }
 
         if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
@@ -566,6 +573,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
         const connectionConfigStr =
+            !installationStr &&
             !connectionConfigParamsStr &&
             !authorizationParamsStr &&
             !userScopesStr &&
@@ -582,6 +590,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ? ''
                 : ', { ' +
                   [
+                      installationStr,
                       connectionConfigParamsStr,
                       authorizationParamsStr,
                       hmacKeyStr,

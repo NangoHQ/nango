@@ -16,6 +16,7 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     custom?: Record<string, string> | undefined | null;
     missing_fields: string[];
     display_name: string | null;
+    installation?: 'outbound';
     forward_webhooks: boolean;
 }
 

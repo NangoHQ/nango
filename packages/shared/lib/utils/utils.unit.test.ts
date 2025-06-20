@@ -173,6 +173,17 @@ describe('interpolateString', () => {
         const expected = Buffer.from('john:doe123').toString('base64');
         expect(output).toBe(expected);
     });
+    it('should resolve nested keys', () => {
+        const nestedReplacers = {
+            installation: {
+                uuid: 'abc-123-xyz'
+            }
+        };
+
+        const input = 'Installation ID: ${installation.uuid}';
+        const output = utils.interpolateString(input, nestedReplacers);
+        expect(output).toBe('Installation ID: abc-123-xyz');
+    });
 });
 
 describe('interpolateStringFromObject', () => {

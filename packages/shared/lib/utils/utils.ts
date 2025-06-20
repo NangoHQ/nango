@@ -167,6 +167,10 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
     return interpolated;
 }
 function resolveKey(key: string, replacers: Record<string, any>): any {
+    if (key in replacers) {
+        return replacers[key];
+    }
+
     const keys = key.split('.');
     let value = replacers;
 
@@ -326,16 +330,12 @@ export function encodeParameters(params: Record<string, any>): Record<string, st
     return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(String(value))]));
 }
 
-/**
- * A helper function to extract the additional connection metadata returned from the Provider in the token response.
- * It can parse booleans or strings only
- */
-export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
-    if (!params || !provider.token_response_metadata) {
+function getConnectionMetadata(params: any, provider: Provider, metadataField: 'webhook_response_metadata' | 'token_response_metadata'): Record<string, any> {
+    if (!params || !provider[metadataField]) {
         return {};
     }
 
-    const whitelistedKeys = provider.token_response_metadata;
+    const whitelistedKeys = provider[metadataField];
 
     const getValueFromDotNotation = (obj: any, key: string): any => {
         return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
@@ -364,6 +364,22 @@ export function getConnectionMetadataFromTokenResponse(params: any, provider: Pr
     const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
 
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
+}
+
+/**
+ * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ * It can parse booleans or strings only
+ */
+export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
+    return getConnectionMetadata(params, provider, 'token_response_metadata');
+}
+
+/**
+ * A helper function to extract the additional connection metadata returned from the Provider in the webhook response.
+ * It can parse booleans or strings only
+ */
+export function getConnectionMetadataFromWebhookResponse(params: any, provider: Provider): Record<string, any> {
+    return getConnectionMetadata(params, provider, 'webhook_response_metadata');
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
