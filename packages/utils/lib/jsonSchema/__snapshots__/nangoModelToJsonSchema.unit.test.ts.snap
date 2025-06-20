@@ -326,6 +326,65 @@ exports[`nangoModelsToJsonSchema > should handle nested model references 1`] = `
 }
 `;
 
+exports[`nangoModelsToJsonSchema > should handle nested objects 1`] = `
+{
+  "definitions": {
+    "LinearTeamBase": {
+      "properties": {
+        "id": {
+          "type": "string",
+        },
+        "name": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "id",
+        "name",
+      ],
+      "type": "object",
+    },
+    "TeamsPaginatedResponse": {
+      "properties": {
+        "pageInfo": {
+          "properties": {
+            "endCursor": {
+              "oneOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+            },
+            "hasNextPage": {
+              "type": "boolean",
+            },
+          },
+          "required": [
+            "hasNextPage",
+            "endCursor",
+          ],
+          "type": "object",
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/LinearTeamBase",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "teams",
+        "pageInfo",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`nangoModelsToJsonSchema > should handle unions with primitives and models 1`] = `
 {
   "definitions": {

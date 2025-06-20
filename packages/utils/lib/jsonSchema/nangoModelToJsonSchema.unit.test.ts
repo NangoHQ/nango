@@ -229,4 +229,62 @@ describe('nangoModelsToJsonSchema', () => {
         const result = nangoModelsToJsonSchema(models);
         expect(result).toMatchSnapshot();
     });
+
+    it('should handle nested objects', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'LinearTeamBase',
+                fields: [
+                    { name: 'id', value: 'string', optional: false },
+                    { name: 'name', value: 'string', optional: false }
+                ]
+            },
+            {
+                name: 'TeamsPaginatedResponse',
+                fields: [
+                    {
+                        name: 'teams',
+                        array: true,
+                        model: true,
+                        value: 'LinearTeamBase',
+                        optional: false
+                    },
+                    {
+                        name: 'pageInfo',
+                        optional: false,
+                        value: [
+                            {
+                                name: 'hasNextPage',
+                                array: false,
+                                value: 'boolean',
+                                optional: false
+                            },
+                            {
+                                name: 'endCursor',
+                                union: true,
+                                value: [
+                                    {
+                                        name: '0',
+                                        array: false,
+                                        value: 'string',
+                                        optional: false
+                                    },
+                                    {
+                                        name: '1',
+                                        array: false,
+                                        value: null,
+                                        optional: false
+                                    }
+                                ],
+                                optional: false
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
 });
