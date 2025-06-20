@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const exampleFolder = path.join(__dirname, '../../example');
 export const npmPackageRegex = /^[^./\s]/;
-export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
+export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];?/gm;
 
 export const tsconfig: ts.CompilerOptions = {
     module: ts.ModuleKind.Node16,
@@ -41,3 +41,5 @@ export const tsconfigString: Record<string, any> = {
     jsx: 'react',
     moduleResolution: 'node16'
 };
+
+export const allowedPackages = ['url', 'crypto', 'node:crypto', 'nango', 'zod', 'unzipper', 'soap', 'botbuilder'];
