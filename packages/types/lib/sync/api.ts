@@ -36,6 +36,21 @@ export type PostSyncVariant = Endpoint<{
     Success: { id: string; name: string; variant: string };
 }>;
 
+export type UpdateConnectionFrequency = Endpoint<{
+    Method: 'PUT';
+    Path: '/api/v1/sync/update-connection-frequency';
+    Querystring: { env: string };
+    Body: {
+        connection_id: string;
+        provider_config_key: string;
+        name: string;
+        variant: string;
+        frequency: string | null;
+    };
+    Error: ApiError<'unknown_provider_config'> | ApiError<'unknown_connection'>;
+    Success: { data: { frequency: string } };
+}>;
+
 export type DeleteSyncVariant = Endpoint<{
     Method: 'DELETE';
     Path: '/sync/:name/variant/:variant';
