@@ -706,6 +706,12 @@ export async function markPreviousGenerationRecordsAsDeleted({
                     updated_at: now,
                     sync_job_id: generation
                 })
+                // records table is partitioned by connection_id and model
+                // to avoid table scan, we must always filter by connection_id and model
+                .where({
+                    connection_id: connectionId,
+                    model
+                })
                 .returning('external_id');
 
             if (res.length < batchSize) {
