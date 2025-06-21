@@ -8608,6 +8608,39 @@ sage-hr:
             suffix: .sage.hr
             prefix: https://
 
+sage-people:
+    display_name: Sage People
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /services/apexrest/spapi/v4/employees
+    docs: https://docs.nango.dev/integrations/all/sage-people
+    docs_connect: https://docs.nango.dev/integrations/all/sage-people/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Sage People service
+            doc_section: '#step-1-create-an-api-user-with-correct-permissions'
+            example: apikey****************************
+            pattern: '^[a-zA-Z0-9.]+$'
+    connection_config:
+        domain:
+            type: string
+            title: Sage People Service Domain
+            description: The domain of your Sage People service
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: domain.com
+            prefix: https://
+
 sage-intacct-oauth:
     display_name: Sage Intacct (OAuth)
     categories:
