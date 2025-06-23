@@ -47,7 +47,6 @@ import type {
     PostPublicTrigger,
     PostSyncVariant,
     SignatureCredentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials
@@ -412,7 +411,6 @@ export class Nango {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
-        | TableauCredentials
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials

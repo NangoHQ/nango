@@ -74,7 +74,7 @@ export function dirname(thisFile?: string) {
     return path.dirname(fileURLToPath(thisFile || import.meta.url));
 }
 
-export function parseTokenExpirationDate(expirationDate: any): Date {
+export function parseTokenExpirationDate(expirationDate: any): Date | undefined {
     if (expirationDate instanceof Date) {
         return expirationDate;
     }
@@ -84,8 +84,25 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
         return new Date(expirationDate * 1000);
     }
 
+    // Check for "D+:HH:MM" format (e.g., "177:05:38")(tableau expire in value)
+    if (typeof expirationDate === 'string' && /^\d+:\d{2}:\d{2}$/.test(expirationDate)) {
+        return parseDayHourMinuteDuration(expirationDate);
+    }
+
     // ISO 8601 string
     return new Date(expirationDate);
+}
+
+function parseDayHourMinuteDuration(timeStr: string): Date | undefined {
+    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
+    const [days, hours, minutes] = timeStr.split(':').map(Number);
+
+    if (days && hours && minutes) {
+        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + milliseconds);
+    }
+
+    return undefined;
 }
 
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
