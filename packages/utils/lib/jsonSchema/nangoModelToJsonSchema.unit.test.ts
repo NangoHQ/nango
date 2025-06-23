@@ -287,4 +287,51 @@ describe('nangoModelsToJsonSchema', () => {
         const result = nangoModelsToJsonSchema(models);
         expect(result).toMatchSnapshot();
     });
+
+    it('should handle arrays of nested models', () => {
+        /**
+         * This originates from the following nango.yaml model:
+         *
+         * ModelWithNestedModelArray:
+         *   nestedModels:
+         *     - firstName: string
+         *       lastName: string
+         *
+         *  It's supposed to mean: an array of an object with a firstName and lastName field.
+         */
+        const models: NangoModel[] = [
+            {
+                name: 'ModelWithNestedModelArray',
+                fields: [
+                    {
+                        name: 'nestedModels',
+                        array: true, // We will identify this case by: It's an array with the first object named '0'
+                        value: [
+                            {
+                                name: '0',
+                                value: [
+                                    {
+                                        name: 'firstName',
+                                        value: 'string',
+                                        tsType: true,
+                                        optional: false
+                                    },
+                                    {
+                                        name: 'lastName',
+                                        value: 'string',
+                                        tsType: true,
+                                        optional: false
+                                    }
+                                ]
+                            }
+                        ],
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
 });

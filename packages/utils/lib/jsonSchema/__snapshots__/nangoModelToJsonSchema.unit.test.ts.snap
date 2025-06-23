@@ -54,6 +54,39 @@ exports[`nangoModelsToJsonSchema > should handle all primitive types and basic f
 }
 `;
 
+exports[`nangoModelsToJsonSchema > should handle arrays of nested models 1`] = `
+{
+  "definitions": {
+    "ModelWithNestedModelArray": {
+      "properties": {
+        "nestedModels": {
+          "items": {
+            "properties": {
+              "firstName": {
+                "type": "string",
+              },
+              "lastName": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "firstName",
+              "lastName",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "nestedModels",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`nangoModelsToJsonSchema > should handle circular model references 1`] = `
 {
   "definitions": {

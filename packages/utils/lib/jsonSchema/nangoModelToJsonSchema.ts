@@ -68,6 +68,11 @@ function nangoFieldToJsonSchema(field: NangoModelField): JSONSchema7 {
         const required: string[] = [];
 
         for (const subField of field.value) {
+            // It's an array of this field type
+            if (subField.name === '0') {
+                return nangoFieldToJsonSchema(subField);
+            }
+
             properties[subField.name] = nangoFieldToJsonSchema(subField);
             if (!subField.optional) {
                 required.push(subField.name);
