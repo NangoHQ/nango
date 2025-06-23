@@ -2,6 +2,7 @@ import { IconCheck } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
+import { StripeForm } from './PaymentMethod';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../../../components/ui/Dialog';
 import { Button } from '../../../../components/ui/button/Button';
 import { apiGetCurrentPlan, apiPostPlanChange } from '../../../../hooks/usePlan';
@@ -28,11 +29,6 @@ export const PlanCard: React.FC<{
     const onClick = () => {
         if (!def.plan.canUpgrade && !def.plan.canDowngrade) {
             window.open('mailto:upgrade@nango.dev', '_blank');
-            return;
-        }
-
-        if (!hasPaymentMethod) {
-            toast({ title: 'Please, add a payment method first', variant: 'error' });
             return;
         }
 
@@ -181,74 +177,82 @@ export const PlanCard: React.FC<{
                     )}
                 </footer>
             </div>
+            {!hasPaymentMethod ? (
+                <DialogContent className="w-[550px] max-h-[800px]">
+                    <DialogTitle>Add a payment method first</DialogTitle>
+                    <StripeForm onSuccess={() => {}} />
+                </DialogContent>
+            ) : (
+                <DialogContent className="w-[550px] max-h-[800px]">
+                    <DialogTitle>
+                        Confirm {def.isDowngrade ? 'Downgrade' : 'Upgrade'} to {def.plan.title}
+                    </DialogTitle>
+                    <DialogDescription className="text-white">
+                        {def.isUpgrade ? (
+                            <>
+                                The {def.plan.title} plan includes a ${def.plan.basePrice} monthly base fee, plus additional usage-based charges. You&apos;ll be
+                                charged a pro-rated base fee for the current month when you upgrade. Going forward, you&apos;ll be billed monthly for your usage
+                                and the next month&apos;s base fee.
+                            </>
+                        ) : (
+                            <>
+                                Your {def.plan.title} subscription will end at the end of this month and won’t renew. Any remaining usage will be billed after
+                                the month ends.
+                            </>
+                        )}
 
-            <DialogContent className="w-[550px] max-h-[800px]">
-                <DialogTitle>
-                    Confirm {def.isDowngrade ? 'Downgrade' : 'Upgrade'} to {def.plan.title}
-                </DialogTitle>
-                <DialogDescription className="text-white">
-                    {def.isUpgrade ? (
-                        <>
-                            The {def.plan.title} plan includes a ${def.plan.basePrice} monthly base fee, plus additional usage-based charges. You&apos;ll be
-                            charged a pro-rated base fee for the current month when you upgrade. Going forward, you&apos;ll be billed monthly for your usage and
-                            the next month&apos;s base fee.
-                        </>
-                    ) : (
-                        <>
-                            Your {def.plan.title} subscription will end at the end of this month and won’t renew. Any remaining usage will be billed after the
-                            month ends.
-                        </>
-                    )}
-
-                    {def.isUpgrade && (
-                        <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
-                            <div className="flex items-center justify-between gap-2 py-3">
-                                <span>New plan</span>
-                                <span className="text-grayscale-13">{def.plan.title}</span>
+                        {def.isUpgrade && (
+                            <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
+                                <div className="flex items-center justify-between gap-2 py-3">
+                                    <span>New plan</span>
+                                    <span className="text-grayscale-13">{def.plan.title}</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2 py-3">
+                                    <span>Plan monthly price</span>
+                                    <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
+                                    <div>Charged today</div>
+                                    <div className="text-grayscale-13">${def.plan.basePrice} (immediate)</div>
+                                </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2 py-3">
-                                <span>Plan monthly price</span>
-                                <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
+                        )}
+                        {def.isDowngrade && (
+                            <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
+                                <div className="flex items-center justify-between gap-2 py-3">
+                                    <span>New plan</span>
+                                    <span className="text-grayscale-13">{def.plan.title}</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2 py-3">
+                                    <span>Plan monthly price</span>
+                                    <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
+                                    <div>Charged today</div>
+                                    <div className="text-grayscale-13">$0</div>
+                                </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
-                                <div>Charged today</div>
-                                <div className="text-grayscale-13">${def.plan.basePrice} (immediate)</div>
-                            </div>
-                        </div>
-                    )}
-                    {def.isDowngrade && (
-                        <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
-                            <div className="flex items-center justify-between gap-2 py-3">
-                                <span>New plan</span>
-                                <span className="text-grayscale-13">{def.plan.title}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2 py-3">
-                                <span>Plan monthly price</span>
-                                <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
-                                <div>Charged today</div>
-                                <div className="text-grayscale-13">$0</div>
-                            </div>
-                        </div>
-                    )}
-                    {longWait && <div className="text-right text-xs text-grayscale-500">{def.isDowngrade ? 'Downgrading...' : 'Payment processing...'}</div>}
-                </DialogDescription>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant={'secondary'}>Cancel</Button>
-                    </DialogClose>
-                    {def.isDowngrade ? (
-                        <Button variant={'primary'} onClick={onDowngrade} isLoading={loading}>
-                            Downgrade
-                        </Button>
-                    ) : (
-                        <Button variant={'primary'} onClick={onUpgrade} isLoading={loading}>
-                            Upgrade
-                        </Button>
-                    )}
-                </DialogFooter>
-            </DialogContent>
+                        )}
+                        {longWait && (
+                            <div className="text-right text-xs text-grayscale-500">{def.isDowngrade ? 'Downgrading...' : 'Payment processing...'}</div>
+                        )}
+                    </DialogDescription>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant={'secondary'}>Cancel</Button>
+                        </DialogClose>
+                        {def.isDowngrade ? (
+                            <Button variant={'primary'} onClick={onDowngrade} isLoading={loading}>
+                                Downgrade
+                            </Button>
+                        ) : (
+                            <Button variant={'primary'} onClick={onUpgrade} isLoading={loading}>
+                                Upgrade
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            )}
         </Dialog>
     );
 };

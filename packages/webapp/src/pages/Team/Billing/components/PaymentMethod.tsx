@@ -1,7 +1,8 @@
-import { AddressElement, CheckoutProvider, PaymentElement, useCheckout } from '@stripe/react-stripe-js';
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { IconCreditCard, IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
+import { useMount } from 'react-use';
 
 import { ConfirmModal } from '../../../../components/ConfirmModal';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog';
@@ -12,6 +13,7 @@ import { useToast } from '../../../../hooks/useToast';
 import { queryClient, useStore } from '../../../../store';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
+import type { StripeElementsOptions } from '@stripe/stripe-js';
 
 const stripePromise = loadStripe('pk_test_51MVv8QEqOjlnWXac73bmtaUlg8BLCGGmliw6pmRg02AXF6j2AUhpkVYOUOnJdtpmTD1Lz6P2C6B5jmLRh4J4ayfN000S3OQSAX');
 
@@ -92,16 +94,11 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
 };
 
 const CreditCardButton: React.FC = () => {
-    const env = useStore((state) => state.env);
-
-    const fetchClientSecret = useCallback(async () => {
-        // Create a Checkout Session
-        return ((await apiPostStripeCollectPayment(env)).json as PostStripeCollectPayment['Success']).data.secret;
-    }, []);
+    const [open, setOpen] = useState(false);
 
     return (
         <div className="h-20">
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <Button size={'sm'}>
                         <IconCreditCard /> Add payment method
@@ -110,42 +107,70 @@ const CreditCardButton: React.FC = () => {
 
                 <DialogContent className="w-[550px] min-h-[510px]">
                     <DialogTitle>Add payment method</DialogTitle>
-
-                    <CheckoutProvider
-                        stripe={stripePromise}
-                        options={{
-                            fetchClientSecret,
-                            elementsOptions: {
-                                loader: 'always',
-                                appearance: {
-                                    labels: 'floating',
-                                    variables: {
-                                        colorPrimary: '#fff',
-                                        borderRadius: '4px',
-                                        colorTextPlaceholder: '#737473',
-                                        colorTextSecondary: '#737473',
-                                        colorBackground: '#262626',
-                                        colorText: '#fff',
-                                        focusBoxShadow: 'transparent',
-                                        fontFamily: 'Inter, system-ui, sans-serif',
-                                        fontSizeSm: '11px',
-                                        fontSizeBase: '12px',
-                                        spacingUnit: '3px'
-                                    }
-                                }
-                            }
-                        }}
-                    >
-                        <CreditCardForm />
-                    </CheckoutProvider>
+                    <StripeForm onSuccess={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
         </div>
     );
 };
 
-const CreditCardForm: React.FC = () => {
-    const checkout = useCheckout();
+export const StripeForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
+    const env = useStore((state) => state.env);
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+    useMount(async () => {
+        const secret = ((await apiPostStripeCollectPayment(env)).json as PostStripeCollectPayment['Success']).data.secret;
+        setClientSecret(secret);
+    });
+
+    const elementsOptions = useMemo<StripeElementsOptions>(
+        () => ({
+            loader: 'always',
+            appearance: {
+                labels: 'floating',
+                variables: {
+                    colorPrimary: '#fff',
+                    borderRadius: '4px',
+                    colorTextPlaceholder: '#737473',
+                    colorTextSecondary: '#737473',
+                    colorBackground: '#262626',
+                    colorText: '#fff',
+                    focusBoxShadow: 'transparent',
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    fontSizeSm: '11px',
+                    fontSizeBase: '12px',
+                    spacingUnit: '3px'
+                }
+            }
+        }),
+        []
+    );
+
+    if (!clientSecret) {
+        return (
+            <div className="flex flex-col gap-4">
+                <Skeleton className="w-full h-8" />
+                <Skeleton className="w-full h-8" />
+            </div>
+        );
+    }
+
+    return (
+        <Elements
+            stripe={stripePromise}
+            options={{
+                ...elementsOptions,
+                clientSecret: clientSecret as any
+            }}
+        >
+            <CreditCardForm onSuccess={onSuccess} />
+        </Elements>
+    );
+};
+
+export const CreditCardForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
+    const stripe = useStripe();
+    const elements = useElements();
     const { toast } = useToast();
 
     const [loading, setLoading] = useState(false);
@@ -156,9 +181,26 @@ const CreditCardForm: React.FC = () => {
 
         setLoading(true);
 
-        const confirmResult = await checkout.confirm();
-        if (confirmResult.type === 'error') {
-            toast({ title: confirmResult.error.message, variant: 'error' });
+        if (!stripe || !elements) {
+            toast({ title: 'Stripe not loaded', variant: 'error' });
+            setLoading(false);
+            return;
+        }
+
+        const result = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                // No return_url to avoid redirect
+            },
+            redirect: 'if_required'
+        });
+
+        if (result.error) {
+            toast({ title: result.error.message, variant: 'error' });
+        } else {
+            toast({ title: 'Payment method added', variant: 'success' });
+            await queryClient.invalidateQueries({ queryKey: ['stripe'] });
+            onSuccess();
         }
 
         setLoading(false);

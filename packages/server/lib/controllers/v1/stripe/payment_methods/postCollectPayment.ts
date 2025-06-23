@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
-import { basePublicUrl, report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -32,8 +32,6 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(isNotEmpty.error) } });
         return;
     }
-
-    const billingUrl = `${basePublicUrl}/prod/team/billing`;
 
     const stripe = new Stripe(envs.STRIPE_SECRET_KEY, {
         apiVersion: '2025-05-28.basil',
@@ -68,26 +66,16 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
         stripeCustomerId = customer.id;
     }
 
-    const options: Stripe.Checkout.SessionCreateParams = {
-        return_url: `${billingUrl}?session_id={CHECKOUT_SESSION_ID}`,
-        ui_mode: 'custom',
-        mode: 'setup',
-        billing_address_collection: 'auto',
-        client_reference_id: String(account.uuid),
-        tax_id_collection: { enabled: true },
-        currency: 'usd',
+    // Replace Checkout Session with SetupIntent
+    const setupIntent = await stripe.setupIntents.create({
         customer: stripeCustomerId,
-        metadata: { accountUuid: account.uuid },
-        setup_intent_data: {
-            metadata: { accountUuid: account.uuid }
-        },
-        customer_update: { name: 'auto', address: 'auto' }
-    };
-    const stripeSession = await stripe.checkout.sessions.create(options);
+        usage: 'off_session',
+        metadata: { accountUuid: account.uuid }
+    });
 
     res.status(200).send({
         data: {
-            secret: stripeSession.client_secret!
+            secret: setupIntent.client_secret!
         }
     });
 });
