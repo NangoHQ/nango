@@ -35,7 +35,8 @@ export function formatDateToShortUSFormat(dateString: string): string {
         second: '2-digit',
         month: 'short',
         day: '2-digit',
-        hour12: false
+        hour12: false,
+        year: 'numeric'
     };
 
     const formattedDate = date.toLocaleString('en-US', options);
@@ -44,8 +45,10 @@ export function formatDateToShortUSFormat(dateString: string): string {
         return '-';
     }
 
+    console.log('formattedDate', formattedDate);
+
     const parts = formattedDate.split(', ');
-    return `${parts[1]}, ${parts[0]}`;
+    return `${parts[2]}, ${parts[0]}, ${parts[1]}`;
 }
 
 export function formatDateToUSFormat(dateString?: string): string {
