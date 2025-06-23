@@ -105,7 +105,10 @@ function parseDayHourMinuteDuration(timeStr: string): Date | undefined {
     return undefined;
 }
 
-export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
+export function isTokenExpired(expireDate: Date | undefined, bufferInSeconds: number): boolean {
+    if (!expireDate) {
+        throw new Error('expireDate is required');
+    }
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
     return dateDiffMs < bufferInSeconds * 1000;
