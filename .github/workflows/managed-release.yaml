@@ -353,6 +353,8 @@ jobs:
 
             - name: Commit and create PR for version changes
               if: ${{ !env.ACT }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   # Create a new branch and commit changes
                   BRANCH_NAME="version-update-$(date +%Y%m%d-%H%M%S)"
