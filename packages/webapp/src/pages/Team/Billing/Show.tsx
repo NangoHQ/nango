@@ -133,11 +133,19 @@ export const TeamBilling: React.FC = () => {
                             Your {list?.activePlan.title} subscription will switch to Starter at the end of the month.
                         </Info>
                     )}
-                    <div className="grid grid-cols-4 gap-4 mt-6">
-                        {list?.list.map((def) => {
-                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={list.activePlan} />;
-                        })}
-                    </div>
+                    {list?.activePlan.hidden ? (
+                        <div>
+                            <a href="https://nango.dev/support">
+                                <Button>Contact us to change your plan</Button>
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-4 gap-4 mt-6">
+                            {list?.list.map((def) => {
+                                return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={list.activePlan} />;
+                            })}
+                        </div>
+                    )}
 
                     <div className="flex text-white text-sm">
                         <Link to="https://nango.dev/pricing" target="_blank" className="flex gap-2">

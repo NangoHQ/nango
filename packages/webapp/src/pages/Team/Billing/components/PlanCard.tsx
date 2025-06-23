@@ -153,6 +153,7 @@ export const PlanCard: React.FC<{
                                         <IconCheck stroke={1} className={cn(def.active && 'text-success-4')} />
                                         {feature.title}
                                     </div>
+                                    {feature.sub && <div className="text-grayscale-10 ml-8">{feature.sub}</div>}
                                 </div>
                             );
                         })}
@@ -201,7 +202,7 @@ export const PlanCard: React.FC<{
                             </>
                         )}
 
-                        {def.isUpgrade && (
+                        {/* {def.isUpgrade && (
                             <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
                                 <div className="flex items-center justify-between gap-2 py-3">
                                     <span>New plan</span>
@@ -232,7 +233,7 @@ export const PlanCard: React.FC<{
                                     <div className="text-grayscale-13">$0</div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                         {longWait && (
                             <div className="text-right text-xs text-grayscale-500">{def.isDowngrade ? 'Downgrading...' : 'Payment processing...'}</div>
                         )}
