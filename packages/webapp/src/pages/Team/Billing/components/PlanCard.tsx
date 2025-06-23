@@ -189,8 +189,9 @@ export const PlanCard: React.FC<{
                 <DialogDescription className="text-white">
                     {def.isUpgrade ? (
                         <>
-                            {def.plan.title} plan has a base price of ${def.plan.basePrice}/month. After {def.isDowngrade ? 'downgrading' : 'upgrading'}, an
-                            amount of ${def.plan.basePrice} will be added to this month&apos;s invoice and your credit card will be charged immediately.
+                            The {def.plan.title} plan includes a ${def.plan.basePrice} monthly base fee, plus additional usage-based charges. You&apos;ll be
+                            charged a pro-rated base fee for the current month when you upgrade. Going forward, you&apos;ll be billed monthly for your usage and
+                            the next month&apos;s base fee.
                         </>
                     ) : (
                         <>

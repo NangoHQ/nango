@@ -12,6 +12,9 @@ const logger = getLogger('Server.Orb');
 
 /**
  * Orb is sending webhooks when subscription changes or else
+ *
+ * Forward locally with:
+ * lt --port 3003
  */
 export const postOrbWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, res) => {
     if (!envs.ORB_API_KEY || !envs.ORB_WEBHOOKS_SECRET) {

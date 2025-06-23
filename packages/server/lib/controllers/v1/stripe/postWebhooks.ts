@@ -15,7 +15,7 @@ const logger = getLogger('Server.Stripe');
  * Stripe is sending webhook on checkout and subscription created.
  * Without this we can't link a payment to an account in our backend
  *
- * Forward
+ * Forward locally with:
  * stripe listen --load-from-webhooks-api --forward-to localhost:3003
  */
 export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, res) => {

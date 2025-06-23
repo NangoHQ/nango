@@ -57,7 +57,7 @@ export const TeamBilling: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList]);
 
-    const card = useMemo<boolean>(() => {
+    const hasPaymentMethod = useMemo<boolean>(() => {
         if (!paymentMethods || !paymentMethods.data || paymentMethods.data.length <= 0) {
             return false;
         }
@@ -131,7 +131,7 @@ export const TeamBilling: React.FC = () => {
                     )}
                     <div className="grid grid-cols-4 gap-4 mt-6">
                         {list?.list.map((def) => {
-                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={card !== null} activePlan={list.activePlan} />;
+                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={list.activePlan} />;
                         })}
                     </div>
 
