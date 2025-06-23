@@ -1,10 +1,18 @@
 {
-    "latest": {
-        "imageVersion": "1.0.0",
-        "appVersion": "0.61.2",
-        "commitHash": "",
-        "releaseDate": "",
-        "comparisonUrl": null
-    },
-    "history": []
+  "latest": {
+    "imageVersion": "1.0.1",
+    "appVersion": "0.61.3",
+    "commitHash": "2f0b305ecaad85cd2e4baea7513e584a7464bdf8",
+    "releaseDate": "2025-06-23T08:22:27.865Z",
+    "comparisonUrl": null
+  },
+  "history": [
+    {
+      "imageVersion": "1.0.0",
+      "appVersion": "0.61.2",
+      "commitHash": "",
+      "releaseDate": "",
+      "comparisonUrl": null
+    }
+  ]
 }
