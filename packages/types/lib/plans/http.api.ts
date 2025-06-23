@@ -25,6 +25,11 @@ export interface PlanDefinition {
     cta?: string;
     hidden?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
+    display?: {
+        featuresHeading?: string;
+        features: { title: string; sub?: string }[];
+        sub?: string;
+    };
 }
 
 export type GetPlans = Endpoint<{

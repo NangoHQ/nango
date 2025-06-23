@@ -5,8 +5,8 @@ import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
 import { basePublicUrl, report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../env.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { envs } from '../../../../env.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 

@@ -2,8 +2,8 @@ import Stripe from 'stripe';
 
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../env.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { envs } from '../../../../env.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { GetStripePaymentMethods } from '@nangohq/types';
 
@@ -44,7 +44,10 @@ export const getStripePaymentMethods = asyncWrapper<GetStripePaymentMethods>(asy
 
     res.status(200).send({
         data: list.data.map((p) => {
-            return p.card!.last4;
+            return {
+                id: p.id,
+                last4: p.card!.last4
+            };
         })
     });
 });

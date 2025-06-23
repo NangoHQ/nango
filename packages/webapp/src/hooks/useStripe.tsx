@@ -23,8 +23,19 @@ export function useStripePaymentMethods(env: string) {
 }
 
 export async function apiPostStripeCollectPayment(env: string) {
-    const res = await apiFetch(`/api/v1/stripe/collect?env=${env}`, {
+    const res = await apiFetch(`/api/v1/stripe/payment_methods?env=${env}`, {
         method: 'POST'
+    });
+
+    return {
+        res,
+        json: (await res.json()) as PostStripeCollectPayment['Reply']
+    };
+}
+
+export async function apiDeleteStripePayment(env: string, paymentId: string) {
+    const res = await apiFetch(`/api/v1/stripe/payment_methods?env=${env}&payment_id=${paymentId}`, {
+        method: 'DELETE'
     });
 
     return {

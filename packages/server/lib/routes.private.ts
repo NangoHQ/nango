@@ -68,8 +68,9 @@ import { getPlanCurrent } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
-import { getStripePaymentMethods } from './controllers/v1/stripe/getPaymentMethods.js';
-import { postStripeCollectPayment } from './controllers/v1/stripe/postCollectPayment.js';
+import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
+import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
+import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
 import { postStripeWebhooks } from './controllers/v1/stripe/postWebhooks.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
@@ -215,8 +216,9 @@ web.route('/logs/filters').post(webAuth, searchFilters);
 web.route('/logs/operations/:operationId').get(webAuth, getOperation);
 web.route('/logs/insights').post(webAuth, postInsights);
 
-web.route('/stripe/collect').post(webAuth, postStripeCollectPayment);
 web.route('/stripe/payment_methods').get(webAuth, getStripePaymentMethods);
+web.route('/stripe/payment_methods').post(webAuth, postStripeCollectPayment);
+web.route('/stripe/payment_methods').delete(webAuth, deleteStripePaymentMethod);
 web.route('/stripe/webhooks').post(postStripeWebhooks);
 
 web.route('/orb/webhooks').post(postOrbWebhooks);
