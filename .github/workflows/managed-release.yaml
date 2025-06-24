@@ -222,7 +222,7 @@ jobs:
               uses: trstringer/manual-approval@v1
               with:
                   secret: ${{ github.TOKEN }}
-                  approvers: ${{ secrets.RELEASE_APPROVERS }}
+                  approvers: ${{ vars.RELEASE_APPROVERS }}
                   minimum-approvals: 1
                   issue-title: 'Deployment Review: Managed Nango v${{ needs.manage-versions.outputs.app_version }}'
                   issue-body: |
@@ -289,12 +289,18 @@ jobs:
               with:
                   node-version: '22'
 
+            - uses: actions/create-github-app-token@v2
+              id: create_github_app_token
+              with:
+                  app-id: ${{ secrets.GH_APP_PUSHER_ID }}
+                  private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+
             - name: Checkout code
               uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  ref: 'master'
                   fetch-depth: 1
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ steps.create_github_app_token.outputs.token }}
 
             - name: Download manifest artifact
               uses: actions/download-artifact@v4
@@ -347,37 +353,28 @@ jobs:
                       docker push nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   else
                       echo "Test deployment successful, using original versions"
-                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
-                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
+                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   fi
 
             - name: Commit and create PR for version changes
               if: ${{ !env.ACT }}
+              env:
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
-                  # Create a new branch and commit changes
-                  BRANCH_NAME="version-update-$(date +%Y%m%d-%H%M%S)"
-                  git checkout -b $BRANCH_NAME
                   git config --global user.name "GitHub Actions"
                   git config --global user.email "actions@github.com"
                   git add managed-manifest.json
                   git commit -m "chore: update version in manifest"
-                  git push origin $BRANCH_NAME
-
-                  # Create PR
-                  gh pr create \
-                    --title "Update version in manifest" \
-                    --body "This PR updates the version in the manifest. Please review and merge to ensure the next release uses the correct version." \
-                    --base main
+                  git push origin master
 
             - name: Log PR creation (act)
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would create PR:"
-                  echo "Would create branch: version-update-$(date +%Y%m%d-%H%M%S)"
                   echo "Would commit changes to managed-manifest.json"
                   cat managed-manifest.json
-                  echo "Would create PR with title: Update version in manifest"
-                  echo "Would create PR with body: This PR updates the version in the manifest. Please review and merge to ensure the next release uses the correct version."
+                  echo "Would push changes to master"
 
             - name: Cleanup kind cluster
               if: always()
