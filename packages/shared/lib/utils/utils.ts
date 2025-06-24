@@ -84,22 +84,39 @@ export function parseTokenExpirationDate(expirationDate: any): Date | undefined 
         return new Date(expirationDate * 1000);
     }
 
-    // Check for "D+:HH:MM" format (e.g., "177:05:38")(tableau expire in value)
-    if (typeof expirationDate === 'string' && /^\d+:\d{2}:\d{2}$/.test(expirationDate)) {
-        return parseDayHourMinuteDuration(expirationDate);
+    if (typeof expirationDate === 'string') {
+        // ISO 8601 string
+        const date = new Date(expirationDate);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+
+        // Check for "D+:HH:MM" format (e.g., "177:05:38")(tableau expire in value)
+        if (/^\d+:\d{2}:\d{2}$/.test(expirationDate)) {
+            return parseDayHourMinuteDuration(expirationDate);
+        }
     }
 
-    // ISO 8601 string
-    return new Date(expirationDate);
+    return undefined;
 }
 
 function parseDayHourMinuteDuration(timeStr: string): Date | undefined {
     // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
-    const [days, hours, minutes] = timeStr.split(':').map(Number);
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) return undefined;
 
-    if (days && hours && minutes) {
-        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
-        return new Date(Date.now() + milliseconds);
+    const [daysStr, hoursStr, minutesStr] = parts;
+    const days = Number(daysStr);
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+
+    const isValidDayCount = (n: number) => !isNaN(n) && n >= 0;
+    const isValidHourValue = (n: number) => !isNaN(n) && n >= 0 && n < 24;
+    const isValidMinuteValue = (n: number) => !isNaN(n) && n >= 0 && n < 60;
+
+    if (isValidDayCount(days) && isValidHourValue(hours) && isValidMinuteValue(minutes)) {
+        const totalMilliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + totalMilliseconds);
     }
 
     return undefined;
