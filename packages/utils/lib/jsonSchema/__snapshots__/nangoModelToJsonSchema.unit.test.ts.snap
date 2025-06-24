@@ -265,6 +265,42 @@ exports[`nangoModelsToJsonSchema > should handle complex arrays with nested stru
 }
 `;
 
+exports[`nangoModelsToJsonSchema > should handle dynamic fields 1`] = `
+{
+  "definitions": {
+    "DynamicFields": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/Field",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "fields",
+      ],
+      "type": "object",
+    },
+    "Field": {
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/Field",
+          },
+          {
+            "type": "string",
+          },
+        ],
+      },
+      "properties": {},
+      "required": [],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`nangoModelsToJsonSchema > should handle empty models array 1`] = `
 {
   "definitions": {},

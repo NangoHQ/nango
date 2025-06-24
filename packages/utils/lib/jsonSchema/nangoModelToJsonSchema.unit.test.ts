@@ -334,4 +334,31 @@ describe('nangoModelsToJsonSchema', () => {
         const result = nangoModelsToJsonSchema(models);
         expect(result).toMatchSnapshot();
     });
+
+    it('should handle dynamic fields', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'DynamicFields',
+                fields: [{ name: 'fields', array: true, model: true, value: 'Field', optional: false }]
+            },
+            {
+                name: 'Field',
+                fields: [
+                    {
+                        name: '__string',
+                        union: true,
+                        value: [
+                            { name: '0', array: false, model: true, value: 'Field', optional: false },
+                            { name: '1', array: false, value: 'string', tsType: true, optional: false }
+                        ],
+                        dynamic: true,
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
 });
