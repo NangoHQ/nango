@@ -7,16 +7,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const exampleFolder = path.join(__dirname, '../../example');
 export const npmPackageRegex = /^[^./\s]/;
-export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];/gm;
+export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];?/gm;
 
 export const tsconfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.CommonJS,
+    module: ts.ModuleKind.Node16,
     target: ts.ScriptTarget.ESNext,
     strict: true,
     esModuleInterop: true,
     skipLibCheck: true,
     forceConsistentCasingInFileNames: true,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
+    moduleResolution: ts.ModuleResolutionKind.Node16,
     allowUnusedLabels: false,
     allowUnreachableCode: false,
     exactOptionalPropertyTypes: true,
@@ -35,9 +35,11 @@ export const tsconfig: ts.CompilerOptions = {
 };
 export const tsconfigString: Record<string, any> = {
     ...tsconfig,
-    module: 'commonjs',
+    module: 'node16',
     target: 'esnext',
     importsNotUsedAsValues: 'remove',
     jsx: 'react',
     moduleResolution: 'node16'
 };
+
+export const allowedPackages = ['url', 'node:url', 'crypto', 'node:crypto', 'nango', 'zod', 'unzipper', 'soap', 'botbuilder'];

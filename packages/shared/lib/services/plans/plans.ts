@@ -75,7 +75,7 @@ export async function updatePlanByTeam(
         await db
             .from<DBPlan>('plans')
             .where('account_id', account_id)
-            .update({ ...data, updated_at: new Date() });
+            .update({ ...data, updated_at: db.fn.now() });
         return Ok(true);
     } catch (err) {
         return Err(new Error('failed_to_update_plan', { cause: err }));

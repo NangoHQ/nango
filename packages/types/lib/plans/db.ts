@@ -67,4 +67,10 @@ export interface DBPlan extends Timestamps {
      * @default "m"
      */
     api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
+
+    /**
+     * Enable or disable machine auto idling
+     * @default true
+     */
+    auto_idle: boolean;
 }

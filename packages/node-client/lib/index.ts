@@ -1078,6 +1078,18 @@ export class Nango {
     }
 
     /**
+     * Sends a PUT request using the proxy based on the provided configuration
+     * @param config - The configuration object for the PUT request
+     * @returns A promise that resolves with the response from the PUT request
+     */
+    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PUT'
+        });
+    }
+
+    /**
      * Sends a PATCH request using the proxy based on the provided configuration
      * @param config - The configuration object for the PATCH request
      * @returns A promise that resolves with the response from the PATCH request
