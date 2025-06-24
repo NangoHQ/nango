@@ -54,6 +54,39 @@ exports[`nangoModelsToJsonSchema > should handle all primitive types and basic f
 }
 `;
 
+exports[`nangoModelsToJsonSchema > should handle arrays of nested models 1`] = `
+{
+  "definitions": {
+    "ModelWithNestedModelArray": {
+      "properties": {
+        "nestedModels": {
+          "items": {
+            "properties": {
+              "firstName": {
+                "type": "string",
+              },
+              "lastName": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "firstName",
+              "lastName",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "nestedModels",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`nangoModelsToJsonSchema > should handle circular model references 1`] = `
 {
   "definitions": {
@@ -319,6 +352,65 @@ exports[`nangoModelsToJsonSchema > should handle nested model references 1`] = `
       "required": [
         "name",
         "primaryAddress",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
+exports[`nangoModelsToJsonSchema > should handle nested objects 1`] = `
+{
+  "definitions": {
+    "LinearTeamBase": {
+      "properties": {
+        "id": {
+          "type": "string",
+        },
+        "name": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "id",
+        "name",
+      ],
+      "type": "object",
+    },
+    "TeamsPaginatedResponse": {
+      "properties": {
+        "pageInfo": {
+          "properties": {
+            "endCursor": {
+              "oneOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+            },
+            "hasNextPage": {
+              "type": "boolean",
+            },
+          },
+          "required": [
+            "hasNextPage",
+            "endCursor",
+          ],
+          "type": "object",
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/LinearTeamBase",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "teams",
+        "pageInfo",
       ],
       "type": "object",
     },
