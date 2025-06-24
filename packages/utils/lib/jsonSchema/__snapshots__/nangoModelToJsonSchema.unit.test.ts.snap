@@ -34,10 +34,8 @@ exports[`nangoModelsToJsonSchema > should handle all primitive types and basic f
           "type": "string",
         },
         "unknownType": {
-          "additionalProperties": {
-            "type": "string",
-          },
-          "type": "object",
+          "const": "uuid",
+          "type": "string",
         },
       },
       "required": [
@@ -268,6 +266,40 @@ exports[`nangoModelsToJsonSchema > should handle complex arrays with nested stru
 exports[`nangoModelsToJsonSchema > should handle empty models array 1`] = `
 {
   "definitions": {},
+}
+`;
+
+exports[`nangoModelsToJsonSchema > should handle literals 1`] = `
+{
+  "definitions": {
+    "Literals": {
+      "properties": {
+        "lie": {
+          "const": false,
+          "type": "boolean",
+        },
+        "literalString": {
+          "const": "nango",
+          "type": "string",
+        },
+        "someSpecificNumber": {
+          "const": 1,
+          "type": "number",
+        },
+        "truth": {
+          "const": true,
+          "type": "boolean",
+        },
+      },
+      "required": [
+        "literalString",
+        "truth",
+        "lie",
+        "someSpecificNumber",
+      ],
+      "type": "object",
+    },
+  },
 }
 `;
 

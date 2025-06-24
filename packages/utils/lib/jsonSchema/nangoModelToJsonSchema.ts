@@ -90,10 +90,32 @@ function nangoFieldToJsonSchema(field: NangoModelField): JSONSchema7 {
         return { type: 'null' };
     }
 
-    if (typeof field.value === 'string' && primitiveTypeMap[field.value]) {
-        return primitiveTypeMap[field.value] as JSONSchema7;
+    if (typeof field.value === 'string') {
+        if (field.tsType && primitiveTypeMap[field.value]) {
+            return primitiveTypeMap[field.value] as JSONSchema7;
+        }
+
+        return {
+            type: 'string',
+            const: field.value
+        };
     }
 
+    if (typeof field.value === 'boolean') {
+        return {
+            type: 'boolean',
+            const: field.value
+        };
+    }
+
+    if (typeof field.value === 'number') {
+        return {
+            type: 'number',
+            const: field.value
+        };
+    }
+
+    // Fallback to Record<string, string>
     return {
         type: 'object',
         additionalProperties: {
@@ -106,5 +128,7 @@ const primitiveTypeMap: Record<string, JSONSchema7> = {
     number: { type: 'number' },
     boolean: { type: 'boolean' },
     string: { type: 'string' },
+    char: { type: 'string' },
+    varchar: { type: 'string' },
     date: { type: 'string', format: 'date-time' }
 };
