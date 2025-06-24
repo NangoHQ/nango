@@ -71,12 +71,12 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
                 break;
             }
 
-            res.status(200).send({ success: false });
+            res.status(200).send({ success: true });
             break;
         }
 
         default:
+            res.status(200).send({ success: false });
             break;
     }
-    res.status(200).send({ success: true });
 });
