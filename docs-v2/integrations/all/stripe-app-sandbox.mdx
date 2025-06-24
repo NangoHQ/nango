@@ -103,8 +103,10 @@ import PreBuiltUseCases from "/snippets/generated/stripe-app-sandbox/PreBuiltUse
   1. Go to your app's details page in the Stripe Dashboard.
   2. Open the <strong>External test</strong> tab.
   3. Click <strong>Get started</strong> if you haven’t already configured the external test OAuth setup.
-  4. After setup, Stripe will generate OAuth installation links in the **Test OAuth** section. Your <strong>Client ID</strong> will be included in these URLs as a query parameter (e.g., <code>client_id=...</code>).
+  4. After setup, Stripe will generate OAuth installation links in the **Test OAuth** section. Your <strong>Client ID</strong> will be included in the **Sandbox link** as a query parameter (e.g., <code>client_id=...</code>).
   5. To obtain your <strong>Client Secret</strong>, go to the <strong>API Keys</strong> page in the Stripe Dashboard and copy your <strong>Secret key</strong> (starts with <code>sk_test_...</code>).
+
+  ⚠️ Make sure that your <strong>client_id</strong> and <strong>secret key</strong> come from the same Stripe sandbox account and environment. Mixing keys from different environments or accounts will result in authorization errors like <em>"Authorization code provided does not belong to you."</em>
   Save these credentials securely as you'll need them when configuring your integration in Nango.
 </Step>
 
