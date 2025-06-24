@@ -62,6 +62,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
@@ -199,6 +200,8 @@ web.route('/logs/messages').post(webAuth, searchMessages);
 web.route('/logs/filters').post(webAuth, searchFilters);
 web.route('/logs/operations/:operationId').get(webAuth, getOperation);
 web.route('/logs/insights').post(webAuth, postInsights);
+
+web.route('/orb/webhooks').post(postOrbWebhooks);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {
