@@ -86,6 +86,13 @@ function nangoFieldToJsonSchema(field: NangoModelField): JSONSchema7 {
         };
     }
 
+    if (field.value === 'any[]') {
+        return {
+            type: 'array',
+            items: {} // Matching CLI behavior for this...
+        };
+    }
+
     if (field.value === null) {
         return { type: 'null' };
     }

@@ -525,8 +525,8 @@ exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
     "SpecialCases": {
       "properties": {
         "array": {
-          "const": "any[]",
-          "type": "string",
+          "items": {},
+          "type": "array",
         },
         "bigint": {
           "type": "number",
