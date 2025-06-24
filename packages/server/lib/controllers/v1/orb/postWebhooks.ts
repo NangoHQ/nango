@@ -1,14 +1,12 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, plansList, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostOrbWebhooks, Result } from '@nangohq/types';
-
-const logger = getLogger('Server.Orb');
 
 /**
  * Orb is sending webhooks when subscription changes or else
@@ -35,7 +33,6 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
         return;
     }
 
-    logger.info('orb webhooks', req.body);
     res.status(200).send({ success: true });
 });
 
