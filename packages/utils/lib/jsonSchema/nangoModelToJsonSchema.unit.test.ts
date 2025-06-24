@@ -369,7 +369,16 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Literals',
                 fields: [
-                    { name: 'literalString', value: 'nango', optional: false },
+                    { name: 'stringLiteral', value: 'nango', optional: false },
+                    {
+                        name: 'stringLiteralUnion',
+                        union: true,
+                        value: [
+                            { name: '0', array: false, value: 'nango', optional: false },
+                            { name: '1', array: false, value: 'mongo', optional: false }
+                        ],
+                        optional: false
+                    },
                     {
                         name: 'truth',
                         value: true,
@@ -381,8 +390,69 @@ describe('nangoModelsToJsonSchema', () => {
                         optional: false
                     },
                     {
-                        name: 'someSpecificNumber',
+                        name: 'numberLiteral',
                         value: 1,
+                        optional: false
+                    },
+                    {
+                        name: 'numberLiteralUnion',
+                        union: true,
+                        value: [
+                            {
+                                name: '0',
+                                array: false,
+                                value: 1,
+                                tsType: true,
+                                optional: false
+                            },
+                            {
+                                name: '1',
+                                array: false,
+                                value: 2,
+                                tsType: true,
+                                optional: false
+                            },
+                            {
+                                name: '2',
+                                array: false,
+                                value: 3,
+                                tsType: true,
+                                optional: false
+                            }
+                        ],
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle special cases', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'SpecialCases',
+                fields: [
+                    { name: 'nullValue', value: null, tsType: true, optional: false },
+                    {
+                        name: 'undefinedValue',
+                        value: 'undefined',
+                        tsType: true,
+                        optional: false
+                    },
+                    {
+                        name: 'bigint',
+                        value: 'bigint',
+                        tsType: true,
+                        optional: false
+                    },
+                    {
+                        name: 'array',
+                        value: 'any[]',
+                        tsType: true,
+                        array: false, // Intentionally not an array (that's how nango.yaml gets converted)
                         optional: false
                     }
                 ]
