@@ -27,7 +27,7 @@ export function defaultCallback() {
     return globalEnv.apiUrl + '/oauth/callback';
 }
 
-export function formatDateToShortUSFormat(dateString: string): string {
+export function formatDateToPreciseUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         hour: '2-digit',
@@ -44,9 +44,6 @@ export function formatDateToShortUSFormat(dateString: string): string {
     if (formattedDate === 'Invalid Date') {
         return '-';
     }
-
-    console.log('formattedDate', formattedDate);
-
     const parts = formattedDate.split(', ');
     return `${parts[2]}, ${parts[0]}, ${parts[1]}`;
 }
