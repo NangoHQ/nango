@@ -227,6 +227,10 @@ export const ENVS = z.object({
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
+    // Stripe
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOKS_SECRET: z.string().optional(),
+
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
