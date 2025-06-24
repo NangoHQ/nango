@@ -15,7 +15,8 @@ export default defineConfig({
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
             NANGO_LOGS_ENABLED: 'true',
             FLAG_PLAN_ENABLED: 'true',
-            ORCHESTRATOR_SERVICE_URL: 'http://orchestrator'
+            ORCHESTRATOR_SERVICE_URL: 'http://orchestrator',
+            RUNNER_NODE_ID: '1'
         },
         fileParallelism: false,
         pool: 'forks',
