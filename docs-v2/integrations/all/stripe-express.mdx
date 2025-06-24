@@ -8,22 +8,53 @@ import PreBuiltTooling from "/snippets/generated/stripe-express/PreBuiltTooling.
 import PreBuiltUseCases from "/snippets/generated/stripe-express/PreBuiltUseCases.mdx"
 
 <Overview />
+
+**Note**
+- Want to integrate with existing Stripe accounts? Use the [Stripe App](/integrations/all/stripe-app) instead.
+- Stripe Connect is intended for use with [Stripe’s Connect product](https://stripe.com/connect) and **does not** provide access to existing Stripe accounts via the REST API.
+- ⚠️ OAuth for Express accounts is deprecated and not supported for new Connect platforms. Use the [Accounts API with Express onboarding](https://docs.stripe.com/connect/express-accounts) instead. Contact [Stripe support](https://support.stripe.com/) if you need access for an existing platform.
+
 <PreBuiltTooling />
 <PreBuiltUseCases />
 
 ## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Pre-Requisites    | Status         | Comment                                                                                            |
+| ----------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| Paid dev account  | ✅ Not required | Stripe offers free self service sign up [here](https://dashboard.stripe.com/register).               |
+| Paid test account | ✅ Not required | Test mode is free and includes full access to API and Connect features.                            |
+| Partnership       | ✅ Not required | Optional — typically relevant for large-scale or high-volume platforms.                            |
+| App review        | ✅ Not required | Not required for **Express** using the Accounts API. |
+| Security audit    | ✅ Not required     | Not required for Express. May be required for **Custom** accounts based on use case.               |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+ <Step title="Create a Stripe account">
+    If you don't already have one, sign up for a [Stripe account](https://dashboard.stripe.com/register).
+  </Step>
+  <Step title="Enable Express Accounts">
+    1. Go to your [Platform settings](https://dashboard.stripe.com/account/applications/settings).
+    2. Enable onboarding Express accounts with OAuth in the OAuth settings.
+  </Step>
+
+  <Step title="Configure OAuth for Express">
+    Navigate to [Connect OAuth settings](https://dashboard.stripe.com/settings/connect/onboarding-options/oauth):
+    - Add your **Redirect URI(s)**:  
+      `https://api.nango.dev/oauth/callback`
+    - Copy your **Client ID** for integration
+  </Step>
+
+  <Step title="Get your Client Secret">
+    Navigate to the [Stripe API Keys page](https://dashboard.stripe.com/apikeys) to retrieve your **Secret key**. This acts as your **Client Secret** for the integration.
+
+    **Note**: Remember to switch to your **live secret key** in production.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -32,12 +63,19 @@ _No setup guide yet._
 
 ## Useful links
 
--   [How to register an Application](https://dashboard.stripe.com/account/applications/settings)
--   [OAuth-related docs](https://stripe.com/docs/connect/oauth-express-accounts)
--   [List of OAuth scopes](https://stripe.com/docs/connect/oauth-reference#:~:text=if%20not%20provided.-,scope,-Optional)
+| Topic     | Links                                                                                 |
+| --------- | ------------------------------------------------------------------------------------- |
+| General   | [Stripe Connect overview](https://stripe.com/connect)                                 |
+|           | [Create a Stripe account](https://dashboard.stripe.com/register)                      |
+| Developer | [Accounts API (Express onboarding)](https://docs.stripe.com/connect/express-accounts) |
+|           | [Testing Stripe Connect](https://docs.stripe.com/connect/testing)                     |
+|           | [Connect Dashboard](https://dashboard.stripe.com/settings/connect)                    |
+
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-express.mdx)</Note>
 
 ## API gotchas
+
+_No reported gotchas yet_
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-express.mdx)</Note>

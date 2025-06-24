@@ -9694,7 +9694,7 @@ strava-web:
     docs: https://docs.nango.dev/integrations/all/strava-web
 
 stripe:
-    display_name: Stripe
+    display_name: Stripe Connect
     categories:
         - payment
     auth_mode: OAUTH2
