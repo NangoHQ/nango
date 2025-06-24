@@ -62,7 +62,7 @@ export class MaxLifetimeAgent extends Agent {
         }
 
         // https://nodejs.org/docs/latest/api/http.html#agentkeepsocketalivesocket
-        // @ts-expect-error - @types/node does not define kkeepSocketAlive
+        // @ts-expect-error - @types/node does not define keepSocketAlive
         return super.keepSocketAlive(socket);
     }
 
