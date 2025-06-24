@@ -281,21 +281,18 @@ exports[`nangoModelsToJsonSchema > should handle dynamic fields 1`] = `
       "type": "object",
     },
     "Field": {
-      "properties": {
-        "__string": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/Field",
-            },
-            {
-              "type": "string",
-            },
-          ],
-        },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/Field",
+          },
+          {
+            "type": "string",
+          },
+        ],
       },
-      "required": [
-        "__string",
-      ],
+      "properties": {},
+      "required": [],
       "type": "object",
     },
   },

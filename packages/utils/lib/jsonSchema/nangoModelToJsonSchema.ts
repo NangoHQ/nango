@@ -17,8 +17,14 @@ export function nangoModelsToJsonSchema(models: NangoModel[]): JSONSchema7 {
 function nangoModelToJsonSchema(model: NangoModel): JSONSchema7 {
     const properties: Record<string, JSONSchema7> = {};
     const required: string[] = [];
+    let dynamicField: NangoModelField | null = null;
 
     for (const field of model.fields || []) {
+        if (field.dynamic && field.name === '__string') {
+            dynamicField = field;
+            continue;
+        }
+
         const fieldSchema = nangoFieldToJsonSchema(field);
         properties[field.name] = fieldSchema;
 
@@ -30,7 +36,8 @@ function nangoModelToJsonSchema(model: NangoModel): JSONSchema7 {
     return {
         type: 'object',
         properties,
-        required
+        required,
+        ...(dynamicField && { additionalProperties: nangoFieldToJsonSchema(dynamicField) })
     };
 }
 
