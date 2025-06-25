@@ -1,10 +1,10 @@
-import Stripe from 'stripe';
 import { z } from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { getStripe } from '../../../../utils/stripe.js';
 
 import type { DeleteStripePayment } from '@nangohq/types';
 
@@ -34,12 +34,7 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
 
     const query: DeleteStripePayment['Querystring'] = valQuery.data;
 
-    const stripe = new Stripe(envs.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-05-28.basil',
-        typescript: true,
-        telemetry: false
-    });
-
+    const stripe = getStripe();
     await stripe.paymentMethods.detach(query.payment_id);
 
     res.status(200).send({

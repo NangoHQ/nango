@@ -1,13 +1,13 @@
-import Stripe from 'stripe';
-
 import db from '@nangohq/database';
 import { getPlanBy, updatePlan } from '@nangohq/shared';
 import { getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getStripe } from '../../../utils/stripe.js';
 
 import type { PostStripeWebhooks } from '@nangohq/types';
+import type Stripe from 'stripe';
 
 const logger = getLogger('Server.Stripe');
 
@@ -31,11 +31,7 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
         return;
     }
 
-    const stripe = new Stripe(envs.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-05-28.basil',
-        typescript: true,
-        telemetry: false
-    });
+    const stripe = getStripe();
 
     let event: Stripe.Event;
     try {

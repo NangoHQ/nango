@@ -17,8 +17,14 @@ export function nangoModelsToJsonSchema(models: NangoModel[]): JSONSchema7 {
 function nangoModelToJsonSchema(model: NangoModel): JSONSchema7 {
     const properties: Record<string, JSONSchema7> = {};
     const required: string[] = [];
+    let dynamicField: NangoModelField | null = null;
 
-    for (const field of model.fields) {
+    for (const field of model.fields || []) {
+        if (field.dynamic && field.name === '__string') {
+            dynamicField = field;
+            continue;
+        }
+
         const fieldSchema = nangoFieldToJsonSchema(field);
         properties[field.name] = fieldSchema;
 
@@ -30,7 +36,8 @@ function nangoModelToJsonSchema(model: NangoModel): JSONSchema7 {
     return {
         type: 'object',
         properties,
-        required
+        required,
+        ...(dynamicField && { additionalProperties: nangoFieldToJsonSchema(dynamicField) })
     };
 }
 
@@ -61,6 +68,33 @@ function nangoFieldToJsonSchema(field: NangoModelField): JSONSchema7 {
         return {
             oneOf: field.value.map((v) => nangoFieldToJsonSchema(v))
         };
+    }
+
+    if (Array.isArray(field.value)) {
+        const properties: Record<string, JSONSchema7> = {};
+        const required: string[] = [];
+
+        for (const subField of field.value) {
+            // It's an array of this field type
+            if (subField.name === '0') {
+                return nangoFieldToJsonSchema(subField);
+            }
+
+            properties[subField.name] = nangoFieldToJsonSchema(subField);
+            if (!subField.optional) {
+                required.push(subField.name);
+            }
+        }
+
+        return {
+            type: 'object',
+            properties,
+            ...(required.length > 0 && { required })
+        };
+    }
+
+    if (field.value === null) {
+        return { type: 'null' };
     }
 
     if (typeof field.value === 'string' && primitiveTypeMap[field.value]) {

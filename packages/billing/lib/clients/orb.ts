@@ -64,7 +64,6 @@ export class OrbClient implements BillingClient {
             });
             return Ok(undefined);
         } catch (err) {
-            console.error(err);
             return Err(new Error('failed_to_link_customer', { cause: err }));
         }
     }
