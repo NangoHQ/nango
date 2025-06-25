@@ -8498,6 +8498,30 @@ rippling-shop-app:
             description: ''
             automated: true
 
+roam-scim:
+    display_name: Roam (SCIM API)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ro.am/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/Users
+    docs: https://docs.nango.dev/integrations/all/roam-scim
+    docs_connect: https://docs.nango.dev/integrations/all/roam-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Roam organization settings.
+            doc_section: '#step-1-generating-your-scim-api-token'
+
 rock-gym-pro:
     display_name: Rock Gym Pro
     categories:

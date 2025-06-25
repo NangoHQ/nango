@@ -1,0 +1,40 @@
+---
+title: Roam SCIM - How do I link my account?
+sidebarTitle: Roam SCIM
+---
+
+# Overview
+
+To authenticate with Roam SCIM, you need one key piece of information:
+1. **SCIM API Token** - A token generated from your Roam organization settings to authenticate SCIM requests.
+
+This guide will walk you through the steps to generate and use this token to connect your Roam account.
+
+---
+
+### Prerequisites:
+
+- You must have an Roam account.
+- You must have a verified domain for your organization.
+- The logged-in user **must** have the necessary admin privileges to generate the SCIM API token.
+
+---
+
+## Step 1: Finding Your SCIM API Key (token)
+
+1. Log in to your Roam account and navigate to **Settings > Roam Administration**.
+2. Select the **Technical Setup** tab.
+3. In the **Automatic User Provisioning (SCIM)** section, click **Enable SCIM**.
+4. Click **Copy** to copy the generated Bearer token to your clipboard.
+
+**Important**: Copy and store your API Token securely.
+
+---
+
+## Step 2: Connect Your Roam Account
+
+To authenticate using your API credentials, navigate to the Roam authentication form.
+Enter your credentials as follows:
+- API Key: Your API Key
+
+Click "Connect" to complete the authentication.
