@@ -173,7 +173,7 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const endpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
 
     const fullEndpoint = interpolateIfNeeded(
-        `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
+        `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${mapProxyBaseUrlInterpolationFormat(endpoint)}`,
         connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
     );
 
