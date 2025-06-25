@@ -77,73 +77,77 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
     switch (body.type) {
         case 'subscription.started':
         case 'subscription.plan_changed': {
-            const planExternalId = body.subscription.plan.external_plan_id;
-            const exists = plansList.find((p) => p.orbId === planExternalId);
-            if (!exists) {
-                return Err('Received a plan not linked to the plansList');
-            }
+            return await db.knex.transaction(async (trx) => {
+                const planExternalId = body.subscription.plan.external_plan_id;
+                const exists = plansList.find((p) => p.orbId === planExternalId);
+                if (!exists) {
+                    return Err('Received a plan not linked to the plansList');
+                }
 
-            const teamId = body.subscription.customer.external_customer_id;
-            if (!teamId) {
-                return Err('Received a customer without external id');
-            }
+                const teamId = body.subscription.customer.external_customer_id;
+                if (!teamId) {
+                    return Err('Received a customer without external id');
+                }
 
-            const team = await accountService.getAccountById(parseInt(teamId, 10));
-            if (!team) {
-                return Err('Failed to find team');
-            }
+                const team = await accountService.getAccountById(trx, parseInt(teamId, 10));
+                if (!team) {
+                    return Err('Failed to find team');
+                }
 
-            const updated = await updatePlanByTeam(db.knex, {
-                account_id: team.id,
-                name: planExternalId,
-                trial_start_at: null,
-                trial_end_at: null,
-                trial_end_notified_at: null,
-                trial_extension_count: 0,
-                trial_expired: null,
-                orb_subscription_id: body.subscription.id,
-                orb_future_plan: null,
-                orb_future_plan_at: null,
-                ...exists.flags
+                const updated = await updatePlanByTeam(trx, {
+                    account_id: team.id,
+                    name: planExternalId,
+                    trial_start_at: null,
+                    trial_end_at: null,
+                    trial_end_notified_at: null,
+                    trial_extension_count: 0,
+                    trial_expired: null,
+                    orb_subscription_id: body.subscription.id,
+                    orb_future_plan: null,
+                    orb_future_plan_at: null,
+                    ...exists.flags
+                });
+                if (updated.isErr()) {
+                    return Err('Failed to updated plan');
+                }
+
+                return Ok(undefined);
             });
-            if (updated.isErr()) {
-                return Err('Failed to updated plan');
-            }
-
-            return Ok(undefined);
         }
 
         case 'subscription.plan_change_scheduled': {
-            const planId = body.properties.new_plan_id;
-            if (!planId) {
-                return Err('Received an empty future plan');
-            }
+            return await db.knex.transaction(async (trx) => {
+                const planId = body.properties.new_plan_id;
+                if (!planId) {
+                    return Err('Received an empty future plan');
+                }
 
-            const resNewPlan = await billing.getPlanById(planId);
-            if (resNewPlan.isErr()) {
-                return Err(resNewPlan.error);
-            }
+                const resNewPlan = await billing.getPlanById(planId);
+                if (resNewPlan.isErr()) {
+                    return Err(resNewPlan.error);
+                }
 
-            const teamId = body.subscription.customer.external_customer_id;
-            if (!teamId) {
-                return Err('Received a customer without external id');
-            }
+                const teamId = body.subscription.customer.external_customer_id;
+                if (!teamId) {
+                    return Err('Received a customer without external id');
+                }
 
-            const team = await accountService.getAccountById(parseInt(teamId, 10));
-            if (!team) {
-                return Err('Failed to find team');
-            }
+                const team = await accountService.getAccountById(trx, parseInt(teamId, 10));
+                if (!team) {
+                    return Err('Failed to find team');
+                }
 
-            const updated = await updatePlanByTeam(db.knex, {
-                account_id: team.id,
-                orb_future_plan: resNewPlan.value.external_plan_id,
-                orb_future_plan_at: new Date(body.properties.change_date)
+                const updated = await updatePlanByTeam(trx, {
+                    account_id: team.id,
+                    orb_future_plan: resNewPlan.value.external_plan_id,
+                    orb_future_plan_at: new Date(body.properties.change_date)
+                });
+                if (updated.isErr()) {
+                    return Err('Failed to updated plan');
+                }
+
+                return Ok(undefined);
             });
-            if (updated.isErr()) {
-                return Err('Failed to updated plan');
-            }
-
-            return Ok(undefined);
         }
 
         default:

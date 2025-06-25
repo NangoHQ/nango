@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import passport from 'passport';
 
-import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
 import accountController from './controllers/account.controller.js';
@@ -201,7 +201,9 @@ web.route('/logs/filters').post(webAuth, searchFilters);
 web.route('/logs/operations/:operationId').get(webAuth, getOperation);
 web.route('/logs/insights').post(webAuth, postInsights);
 
-web.route('/orb/webhooks').post(postOrbWebhooks);
+if (flagHasUsage) {
+    web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
+}
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {
