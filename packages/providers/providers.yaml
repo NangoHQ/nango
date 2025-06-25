@@ -156,8 +156,8 @@ adp:
     categories:
         - hr
     proxy:
-        base_url: https://localhost:8443
-    token_url: https://localhost:8443
+        base_url: https://api.adp.com
+    token_url: https://accounts.adp.com/auth/oauth/v2/token
     token_params:
         grant_type: client_credentials
     require_client_certificate: true
