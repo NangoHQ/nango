@@ -1,14 +1,15 @@
 import { z } from 'zod';
 
+import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, getLogger, nanoid } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { InviteAccountState } from './postSignup.js';
-import type { DBInvitation, GetManagedCallback } from '@nangohq/types';
+import type { DBInvitation, DBTeam, GetManagedCallback } from '@nangohq/types';
 
 const logger = getLogger('Server.AuthManaged');
 
@@ -60,8 +61,10 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         }
     }
 
+    let isNewTeam = true;
     let user = await userService.getUserByEmail(authorizedUser.email);
     if (!user) {
+        let account: DBTeam;
         // Create organization and user name
         let name =
             authorizedUser.firstName || authorizedUser.lastName
@@ -71,48 +74,59 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             name = nanoid();
         }
 
-        let accountId: number | null = null;
-
         if (organizationId) {
             // in this case we have a pre registered organization with WorkOS
             // let's make sure it exists in our system
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const account = await accountService.getOrCreateAccount(organization.name);
-            if (!account) {
+            const resAccount = await accountService.getOrCreateAccount(organization.name);
+            if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
             }
 
-            accountId = account.id;
+            account = resAccount;
 
             if (!invitation) {
                 // We are not coming from an invitation but we could have one anyway
-                await expirePreviousInvitations({ accountId, email: authorizedUser.email, trx: db.knex });
+                await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
             }
         } else if (invitation) {
             // Invited but not in a custom WorkOS org
-            accountId = invitation.account_id;
+            isNewTeam = false;
+            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else {
             // Regular signup
-            const account = await accountService.createAccount(`${name}'s Team`);
-            if (!account) {
+            const resAccount = await accountService.createAccount(`${name}'s Team`);
+            if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
             }
-            accountId = account.id;
+            account = resAccount;
         }
 
         // Create a user
         user = await userService.createUser({
             email: authorizedUser.email,
             name,
-            account_id: accountId,
+            account_id: account.id,
             email_verified: true
         });
         if (!user) {
             res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
             return;
+        }
+
+        if (isNewTeam && flagHasUsage) {
+            const resCreate = await billing.upsertCustomer(account, user);
+            if (resCreate.isErr()) {
+                report(resCreate.error);
+            } else {
+                const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
+                if (resUpdate.isErr()) {
+                    report(resUpdate.error);
+                }
+            }
         }
     }
 

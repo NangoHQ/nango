@@ -3,8 +3,10 @@ import util from 'util';
 
 import { z } from 'zod';
 
-import { acceptInvitation, accountService, getInvitation, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
+import { acceptInvitation, accountService, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -74,7 +76,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        account = await accountService.getAccountById(validToken.account_id);
+        account = await accountService.getAccountById(db.knex, validToken.account_id);
         if (!account) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
@@ -106,6 +108,18 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
+    }
+
+    if (!token && flagHasUsage) {
+        const resCreate = await billing.upsertCustomer(account, user);
+        if (resCreate.isErr()) {
+            report(resCreate.error);
+        } else {
+            const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
+            if (resUpdate.isErr()) {
+                report(resUpdate.error);
+            }
+        }
     }
 
     // Ask for email validation if not coming from an invitation

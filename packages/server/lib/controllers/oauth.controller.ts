@@ -37,7 +37,8 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject
+    missesInterpolationParamInObject,
+    stringifyEnrichedError
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -909,9 +910,14 @@ class OAuthController {
         if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
             void logCtx.error(error.message, {
-                scopes: config.oauth_scopes,
-                basicAuthEnabled: provider.token_request_auth_method === 'basic',
-                tokenParams: provider.token_params as string
+                config: {
+                    scopes: config.oauth_scopes,
+                    basicAuthEnabled: provider.token_request_auth_method === 'basic',
+                    tokenParams: provider.token_params as string
+                },
+                response: {
+                    ...(req.query && { queryParams: req.query })
+                }
             });
             await logCtx.failed();
 
@@ -1230,7 +1236,7 @@ class OAuthController {
             await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
             return;
         } catch (err) {
-            const prettyError = stringifyError(err, { pretty: true });
+            const prettyError = stringifyEnrichedError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,

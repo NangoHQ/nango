@@ -5421,7 +5421,7 @@ integrations:
         actions:
             repositories:
                 description: List all repositories accessible to this Github App
-                version: 1.0.0
+                version: 1.0.1
                 output: RepoResponse
                 endpoint:
                     method: GET
@@ -5474,7 +5474,7 @@ integrations:
                 created_at: string
                 default_branch: string
                 deployments_url: string
-                description: string
+                description: string | null
                 disabled: boolean
                 downloads_url: string
                 events_url: string
@@ -5503,9 +5503,9 @@ integrations:
                 issues_url: string
                 keys_url: string
                 labels_url: string
-                language: string
+                language: string | null
                 languages_url: string
-                license: string | null
+                license: GithubLicense | null
                 merges_url: string
                 milestones_url: string
                 mirror_url: string | null
@@ -5533,6 +5533,7 @@ integrations:
                     subscriptions_url: string
                     type: string
                     url: string
+                    user_view_type?: string
                 permissions:
                     admin: boolean
                     maintain: boolean
@@ -5593,11 +5594,18 @@ integrations:
                 labels: string[]
                 reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
                 latestComment: GithubComment
+            GithubLicense:
+                key: string
+                name: string
+                url: string | null
+                spdx_id: string
+                node_id: string
+                html_url?: string | null
     github-app-oauth:
         actions:
             repositories:
                 description: List all repositories accessible to this Github App
-                version: 1.0.0
+                version: 1.0.1
                 output: RepoResponse
                 endpoint:
                     method: GET
@@ -5650,7 +5658,7 @@ integrations:
                 created_at: string
                 default_branch: string
                 deployments_url: string
-                description: string
+                description: string | null
                 disabled: boolean
                 downloads_url: string
                 events_url: string
@@ -5679,9 +5687,9 @@ integrations:
                 issues_url: string
                 keys_url: string
                 labels_url: string
-                language: string
+                language: string | null
                 languages_url: string
-                license: string | null
+                license: GithubLicense | null
                 merges_url: string
                 milestones_url: string
                 mirror_url: string | null
@@ -5709,6 +5717,7 @@ integrations:
                     subscriptions_url: string
                     type: string
                     url: string
+                    user_view_type?: string
                 permissions:
                     admin: boolean
                     maintain: boolean
@@ -5769,6 +5778,13 @@ integrations:
                 labels: string[]
                 reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
                 latestComment: GithubComment
+            GithubLicense:
+                key: string
+                name: string
+                url: string | null
+                spdx_id: string
+                node_id: string
+                html_url?: string | null
     gong:
         syncs:
             users:
@@ -5788,7 +5804,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.2
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5805,7 +5821,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.2
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -5914,11 +5930,13 @@ integrations:
                     audio_url: string
                     video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
@@ -5949,7 +5967,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.2
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5966,7 +5984,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.2
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -6075,11 +6093,13 @@ integrations:
                     audio_url: string
                     video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
@@ -20676,7 +20696,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /articles
-                version: 1.0.1
+                version: 1.0.2
                 scopes:
                     - hc:read
             categories:
@@ -20686,6 +20706,7 @@ integrations:
                 output: Category
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /categories
@@ -20699,6 +20720,7 @@ integrations:
                 output: Section
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /sections
@@ -20711,6 +20733,7 @@ integrations:
                     Fetches a list of admin or agent users from Zendesk
                 output: User
                 sync_type: full
+                version: 1.0.1
                 track_deletes: true
                 endpoint:
                     method: GET
@@ -20724,6 +20747,7 @@ integrations:
                     method: GET
                     path: /all-articles
                 description: Fetch all help center articles metadata
+                version: 1.0.1
                 scopes:
                     - hc:read
             fetch-article:
