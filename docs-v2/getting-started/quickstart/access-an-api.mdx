@@ -1,0 +1,89 @@
+---
+title: 'Quickstart (1/2): Access an API'
+sidebarTitle: '(1/2) Access an API' 
+description: '⏱️ 5-15mins to complete'
+---
+
+<Steps>
+  <Step title="Create an integration">
+    Sign up for a Nango account (free, no credit card):
+    [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
+
+    Go to the [Integrations](https://app.nango.dev/dev/integrations) tab, click  _Configure New Integration_ and select the API to integrate with.
+
+    APIs have different ways to authorize requests: OAuth, API key, Basic, custom. Nango abstracts away the difficulties of working with each one.
+
+    <Accordion title="⚠️ Required for OAuth APIs">
+        OAuth APIs require you to register your OAuth application on their developer portal.
+
+        When registering, the API provider will prompt you for the `Callback URL`. Use the URL displayed in the Nango integration settings. Remember to register the required scopes in the Nango integration settings and, if necessary, with the API provider.
+
+        Collect your OAuth app's `Client ID` and `Client Secret` from the API portal and input them in your Nango integration settings.
+    </Accordion>
+
+    <Tip>
+        Each API has a dedicated Nango documentation page with useful links, gotchas, etc.
+    </Tip>
+  </Step>
+  <Step title="Authorize your external account">
+    If you don't have one already, create a test account for the external system you want to integrate with.
+
+    On the Nango [Connections](https://app.nango.dev/dev/connections) tab, click _Add Test Connection_ to test the authorization flow. Pick an integration, click _Authorize_ and enter your test account credentials to authorize the API.
+
+    Once authorized, go to the [Connections](https://app.nango.dev/dev/connections) tab to see the newly created connection. The "Authorization" sub-tab contains the credentials necessary to consume the external API. These credentials are securely stored and automatically refreshed by Nango.
+  </Step>
+  <Step title="Access the external API">
+    Let's make an API request to the external API. 
+
+    You will need to copy/paste the following values in the code snippet below: 
+    - **Nango secret key** from your [Environment Settings](https://app.nango.dev/dev/environment-settings)
+    - **Integration ID** from your [Integrations](https://app.nango.dev/dev/integrations)
+    - **Connection ID** from your [Connections](https://app.nango.dev/dev/connections)
+    <Tabs>
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/external-endpoint',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<INTEGRATION-ID>',
+            data: { "key": "value" }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+        <Tab title="cURL">
+
+        ```bash
+        curl -X POST -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        -H 'Provider-Config-Key: <INTEGRATION-ID>' \
+        -H 'Connection-Id: <CONNECTION-ID>' \
+        -d '{"key: "value"}' \
+        'https://api.nango.dev/proxy/<API-ENDPOINT>'
+        ```
+
+        </Tab>
+    </Tabs>
+
+    <Tip>
+        Alternatively, you can fetch credentials from Nango on-the-fly and make API requests without using Nango as a proxy ([Node SDK](/reference/sdks/node#get-a-connection-with-credentials) / [API](/reference/api/connection/get))
+    </Tip>
+
+        
+  </Step>
+</Steps>
+
+Congrats 🎉 You can now make authorized requests to the external API! Inspect the [Logs](https://app.nango.dev/dev/logs) tab in Nango for details on the requests you made. 
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
