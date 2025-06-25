@@ -2428,7 +2428,6 @@ components:
                             'APP',
                             'NONE',
                             'TBA',
-                            'TABLEAU',
                             'JWT',
                             'BILL',
                             'TWO_STEP',
@@ -2786,7 +2785,6 @@ components:
                 - $ref: '#/components/schemas/UnauthCredentials'
                 - $ref: '#/components/schemas/CustomCredentials'
                 - $ref: '#/components/schemas/TbaCredentials'
-                - $ref: '#/components/schemas/TableauCredentials'
                 - $ref: '#/components/schemas/BillCredentials'
                 - $ref: '#/components/schemas/TwoStepCredentials'
                 - $ref: '#/components/schemas/SignatureCredentials'
@@ -3033,32 +3031,6 @@ components:
                 - type
                 - username
                 - password
-        TableauCredentials:
-            type: object
-            title: Tableau
-            additionalProperties: false
-            properties:
-                content_url:
-                    type: string
-                expires_at:
-                    type: string
-                    format: date-time
-                pat_name:
-                    type: string
-                pat_secret:
-                    type: string
-                raw:
-                    type: object
-                token:
-                    type: string
-                type:
-                    type: string
-                    enum: [TABLEAU]
-            required:
-                - pat_name
-                - pat_secret
-                - raw
-                - type
         TbaCredentials:
             type: object
             title: TBA

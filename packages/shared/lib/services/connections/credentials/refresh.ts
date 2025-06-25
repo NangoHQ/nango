@@ -93,7 +93,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             case 'OAUTH2':
             case 'APP':
             case 'OAUTH2_CC':
-            case 'TABLEAU':
             case 'JWT':
             case 'BILL':
             case 'TWO_STEP':
