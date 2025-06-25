@@ -7,12 +7,13 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
 
+import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 class AccountService {
-    async getAccountById(id: number): Promise<DBTeam | null> {
+    async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
-            const result = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
+            const result = await trx.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
             return result || null;
         } catch (err) {
             errorManager.report(err, {
