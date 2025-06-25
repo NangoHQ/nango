@@ -341,7 +341,22 @@ describe('nangoModelsToJsonSchema', () => {
         const models: NangoModel[] = [
             {
                 name: 'DynamicFields',
-                fields: [{ name: 'fields', array: true, model: true, value: 'Field', optional: false }]
+                fields: [
+                    { name: 'fields', array: true, model: true, value: 'Field', optional: false },
+                    {
+                        name: 'submodel',
+                        value: [
+                            {
+                                name: '__string',
+                                value: 'string',
+                                optional: false,
+                                tsType: true,
+                                dynamic: true
+                            }
+                        ],
+                        optional: true
+                    }
+                ]
             },
             {
                 name: 'Field',
@@ -453,6 +468,12 @@ describe('nangoModelsToJsonSchema', () => {
                         value: 'any[]',
                         tsType: true,
                         array: false, // Intentionally not an array (that's how nango.yaml gets converted)
+                        optional: false
+                    },
+                    {
+                        name: 'anyObject',
+                        value: 'Record<string, any>',
+                        tsType: true,
                         optional: false
                     }
                 ]
