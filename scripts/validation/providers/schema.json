@@ -521,6 +521,9 @@
                         }
                     ]
                 },
+                "require_client_certificate": {
+                    "type": "boolean"
+                },
                 "token_url_skip_encode": {
                     "type": "array",
                     "items": {
