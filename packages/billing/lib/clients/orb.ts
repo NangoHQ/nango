@@ -80,7 +80,7 @@ export class OrbClient implements BillingClient {
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
-            return Ok(subs.data.length > 0 ? { id: subs.data[0]!.id } : null);
+            return Ok(subs.data.length > 0 ? { id: subs.data[0]!.id, pendingChangeId: subs.data[0]?.pending_subscription_change?.id } : null);
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
         }
@@ -120,17 +120,51 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string }>> {
+        try {
+            const pendingUpgrade = await this.orbSDK.subscriptions.schedulePlanChange(
+                opts.subscriptionId,
+                {
+                    change_option: 'immediate', // It will be immediate after first payment
+                    auto_collection: true,
+                    external_plan_id: opts.planExternalId
+                },
+                { headers: { 'Create-Pending-Subscription-Change': 'true' } }
+            );
+            return Ok({ pendingChangeId: pendingUpgrade.pending_subscription_change!.id });
+        } catch (err) {
+            return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+        }
+    }
+
+    async downgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
         try {
             await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
-                change_option: opts.immediate ? 'immediate' : 'end_of_subscription_term',
-                billing_cycle_alignment: 'plan_change_date',
+                change_option: 'end_of_subscription_term',
                 auto_collection: true,
                 external_plan_id: opts.planExternalId
             });
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+        }
+    }
+
+    async applyPendingChanges(opts: { pendingChangeId: string }): Promise<Result<void>> {
+        try {
+            await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId);
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_cancel_pending_changes', { cause: err }));
+        }
+    }
+
+    async cancelPendingChanges(opts: { pendingChangeId: string }): Promise<Result<void>> {
+        try {
+            await this.orbSDK.subscriptionChanges.cancel(opts.pendingChangeId);
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_cancel_pending_changes', { cause: err }));
         }
     }
 

@@ -1,5 +1,4 @@
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import { IconCreditCard, IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useMount } from 'react-use';
@@ -11,11 +10,10 @@ import { Button } from '../../../../components/ui/button/Button';
 import { apiDeleteStripePayment, apiPostStripeCollectPayment, useStripePaymentMethods } from '../../../../hooks/useStripe';
 import { useToast } from '../../../../hooks/useToast';
 import { queryClient, useStore } from '../../../../store';
+import { stripePromise } from '../../../../utils/stripe';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 import type { StripeElementsOptions } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe('pk_test_51MVv8QEqOjlnWXac73bmtaUlg8BLCGGmliw6pmRg02AXF6j2AUhpkVYOUOnJdtpmTD1Lz6P2C6B5jmLRh4J4ayfN000S3OQSAX');
 
 export const PaymentMethods: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -59,7 +57,7 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
             toast({ title: created.json.error.message || 'Failed to delete payment', variant: 'error' });
         } else {
             await queryClient.invalidateQueries({ queryKey: ['stripe', 'payment_methods'] });
-            toast({ title: 'Payment method deleted', variant: 'success' });
+            toast({ title: 'Payment method deleted', variant: 'success', duration: 5000 });
         }
         setLoading(false);
     }, [id]);

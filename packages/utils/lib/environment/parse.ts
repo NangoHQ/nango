@@ -229,6 +229,7 @@ export const ENVS = z.object({
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe
+    PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
 

@@ -8,6 +8,7 @@ import { Button } from '../../../../components/ui/button/Button';
 import { apiGetCurrentPlan, apiPostPlanChange } from '../../../../hooks/usePlan';
 import { useToast } from '../../../../hooks/useToast';
 import { queryClient, useStore } from '../../../../store';
+import { stripePromise } from '../../../../utils/stripe';
 import { cn } from '../../../../utils/utils';
 
 import type { PlanDefinitionList } from '../types';
@@ -41,11 +42,25 @@ export const PlanCard: React.FC<{
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, immediate: true });
+        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, isUpgrade: true });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
             return;
+        }
+
+        if ('paymentIntent' in res.json.data) {
+            res.json.data.paymentIntent;
+            const stripe = await stripePromise;
+            const result = await stripe!.confirmCardPayment(res.json.data.paymentIntent.client_secret);
+
+            if (result.error) {
+                console.error({ error: result.error });
+                toast({ title: 'An error occurred while validating your payment', variant: 'error' });
+                return;
+            } else if (result.paymentIntent.status === 'succeeded') {
+                console.log('payment success', result);
+            }
         }
 
         refInterval.current = setInterval(async () => {
@@ -79,7 +94,7 @@ export const PlanCard: React.FC<{
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, immediate: false });
+        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, isUpgrade: false });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to downgrade, an error occurred', variant: 'error' });

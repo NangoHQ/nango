@@ -71,8 +71,8 @@ export type PostPlanChange = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };
-    Body: { orbId: string; immediate: boolean };
+    Body: { orbId: string; isUpgrade: boolean };
     Success: {
-        data: true;
+        data: { success: true } | { paymentIntent: any };
     };
 }>;
