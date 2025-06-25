@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import passport from 'passport';
 
-import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
 import accountController from './controllers/account.controller.js';
@@ -62,6 +62,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
@@ -199,6 +200,10 @@ web.route('/logs/messages').post(webAuth, searchMessages);
 web.route('/logs/filters').post(webAuth, searchFilters);
 web.route('/logs/operations/:operationId').get(webAuth, getOperation);
 web.route('/logs/insights').post(webAuth, postInsights);
+
+if (flagHasUsage) {
+    web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
+}
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

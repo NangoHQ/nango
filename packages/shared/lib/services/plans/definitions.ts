@@ -7,6 +7,7 @@ export const plansList: PlanDefinition[] = [
         description: 'API authorization only.',
         canUpgrade: true,
         canDowngrade: false,
+        orbId: 'free',
         flags: {
             api_rate_limit_size: 'm',
             connection_with_scripts_max: 50,
@@ -26,6 +27,7 @@ export const plansList: PlanDefinition[] = [
         canDowngrade: false,
         cta: 'Contact Us',
         hidden: true,
+        orbId: 'yc',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -42,6 +44,7 @@ export const plansList: PlanDefinition[] = [
         description: 'Pay-as-you-go integrations.',
         canUpgrade: true,
         canDowngrade: false,
+        orbId: 'growth',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,
@@ -59,6 +62,7 @@ export const plansList: PlanDefinition[] = [
         canUpgrade: false,
         canDowngrade: false,
         cta: 'Contact Us',
+        orbId: 'enterprise',
         flags: {
             api_rate_limit_size: '2xl',
             connection_with_scripts_max: null,
@@ -77,6 +81,7 @@ export const plansList: PlanDefinition[] = [
         canDowngrade: false,
         cta: 'Contact Us',
         hidden: true,
+        orbId: 'internal',
         flags: {
             api_rate_limit_size: 'l',
             connection_with_scripts_max: null,

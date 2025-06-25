@@ -137,6 +137,7 @@ export const ENVS = z.object({
     FLAG_PLAN_ENABLED: bool,
     FLAG_USAGE_ENABLED: bool,
     ORB_API_KEY: z.string().optional(),
+    ORB_WEBHOOKS_SECRET: z.string().optional(),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
