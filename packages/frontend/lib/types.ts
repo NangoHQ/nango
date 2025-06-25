@@ -32,7 +32,6 @@ export interface ConnectionConfig {
         | ApiKeyCredentials
         | AppStoreCredentials
         | TBACredentials
-        | TableauCredentials
         | JwtCredentials
         | TwoStepCredentials
         | OAuth2ClientCredentials
@@ -65,12 +64,6 @@ export interface TBACredentials {
     token_secret: string;
     oauth_client_id_override?: string;
     oauth_client_secret_override?: string;
-}
-
-export interface TableauCredentials {
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
 }
 
 export interface JwtCredentials {

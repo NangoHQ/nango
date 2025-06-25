@@ -160,10 +160,6 @@ export interface ProviderAppleAppStore extends BaseProvider {
     token_url: string;
 }
 
-export interface ProviderTableau extends BaseProvider {
-    auth_mode: 'TABLEAU';
-}
-
 export interface ProviderBill extends BaseProvider {
     auth_mode: 'BILL';
 }
@@ -216,7 +212,6 @@ export type Provider =
     | ProviderTwoStep
     | ProviderSignature
     | ProviderApiKey
-    | ProviderTableau
     | ProviderBill
     | ProviderGithubApp
     | ProviderAppleAppStore

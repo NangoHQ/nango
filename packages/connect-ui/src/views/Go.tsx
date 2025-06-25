@@ -39,11 +39,6 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         client_id: z.string().min(1),
         client_secret: z.string().min(1)
     }),
-    TABLEAU: z.object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().min(1)
-    }),
     JWT: z.object({
         // JWT is custom every time
     }),

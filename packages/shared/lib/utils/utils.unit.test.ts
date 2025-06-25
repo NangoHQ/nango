@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, vi } from 'vitest';
 import * as utils from './utils.js';
 import type { Provider } from '@nangohq/types';
 
@@ -234,5 +234,52 @@ describe('interpolateStringFromObject', () => {
         const output = utils.interpolateStringFromObject(input, context);
         const expected = Buffer.from('XYZ-987:abc.def.ghi').toString('base64');
         expect(output).toBe(`Authorization: ${expected}`);
+    });
+});
+
+describe('parseTokenExpirationDate', () => {
+    it('should return the same Date instance if input is already a Date', () => {
+        const now = new Date();
+        expect(utils.parseTokenExpirationDate(now)).toBe(now);
+    });
+
+    it('should convert a UNIX timestamp (in seconds) to a Date', () => {
+        const unixSeconds = 1719240000;
+        const expected = new Date(unixSeconds * 1000);
+        expect(utils.parseTokenExpirationDate(unixSeconds)?.getTime()).toBe(expected.getTime());
+    });
+
+    it('should parse a valid ISO 8601 string', () => {
+        const isoString = '2025-06-24T12:34:56.000Z';
+        const expected = new Date(isoString);
+        expect(utils.parseTokenExpirationDate(isoString)?.toISOString()).toBe(expected.toISOString());
+    });
+
+    it('should parse Tableau-style "D+:HH:MM" duration string', () => {
+        const baseTime = new Date('2025-01-01T00:00:00Z').getTime();
+        vi.setSystemTime(baseTime);
+
+        const input = '1:01:30';
+        const result = utils.parseTokenExpirationDate(input);
+        const expected = new Date(baseTime + ((1 * 24 + 1) * 60 + 30) * 60 * 1000);
+        expect(result?.getTime()).toBe(expected.getTime());
+
+        vi.useRealTimers();
+    });
+
+    it('should return undefined for invalid date strings', () => {
+        expect(utils.parseTokenExpirationDate('not-a-date')).toBeUndefined();
+    });
+
+    it('should return undefined for invalid "D+:HH:MM" formats', () => {
+        expect(utils.parseTokenExpirationDate('1:99:99')).toBeUndefined();
+        expect(utils.parseTokenExpirationDate('abc')).toBeUndefined();
+        expect(utils.parseTokenExpirationDate('12:30')).toBeUndefined();
+    });
+
+    it('should return undefined for unsupported types', () => {
+        expect(utils.parseTokenExpirationDate(null)).toBeUndefined();
+        expect(utils.parseTokenExpirationDate(undefined)).toBeUndefined();
+        expect(utils.parseTokenExpirationDate({})).toBeUndefined();
     });
 });

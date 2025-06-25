@@ -74,7 +74,7 @@ export function dirname(thisFile?: string) {
     return path.dirname(fileURLToPath(thisFile || import.meta.url));
 }
 
-export function parseTokenExpirationDate(expirationDate: any): Date {
+export function parseTokenExpirationDate(expirationDate: any): Date | undefined {
     if (expirationDate instanceof Date) {
         return expirationDate;
     }
@@ -84,11 +84,48 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
         return new Date(expirationDate * 1000);
     }
 
-    // ISO 8601 string
-    return new Date(expirationDate);
+    if (typeof expirationDate === 'string') {
+        // ISO 8601 string
+        const date = new Date(expirationDate);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+
+        // Check for "D+:HH:MM" format (e.g., "177:05:38")(tableau expire in value)
+        if (/^\d+:\d{2}:\d{2}$/.test(expirationDate)) {
+            return parseDayHourMinuteDuration(expirationDate);
+        }
+    }
+
+    return undefined;
 }
 
-export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
+function parseDayHourMinuteDuration(timeStr: string): Date | undefined {
+    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) return undefined;
+
+    const [daysStr, hoursStr, minutesStr] = parts;
+    const days = Number(daysStr);
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+
+    const isValidDayCount = (n: number) => !isNaN(n) && n >= 0;
+    const isValidHourValue = (n: number) => !isNaN(n) && n >= 0 && n < 24;
+    const isValidMinuteValue = (n: number) => !isNaN(n) && n >= 0 && n < 60;
+
+    if (isValidDayCount(days) && isValidHourValue(hours) && isValidMinuteValue(minutes)) {
+        const totalMilliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+        return new Date(Date.now() + totalMilliseconds);
+    }
+
+    return undefined;
+}
+
+export function isTokenExpired(expireDate: Date | undefined, bufferInSeconds: number): boolean {
+    if (!expireDate) {
+        throw new Error('expireDate is required');
+    }
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
     return dateDiffMs < bufferInSeconds * 1000;
