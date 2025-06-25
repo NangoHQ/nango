@@ -229,4 +229,136 @@ describe('nangoModelsToJsonSchema', () => {
         const result = nangoModelsToJsonSchema(models);
         expect(result).toMatchSnapshot();
     });
+
+    it('should handle nested objects', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'LinearTeamBase',
+                fields: [
+                    { name: 'id', value: 'string', optional: false },
+                    { name: 'name', value: 'string', optional: false }
+                ]
+            },
+            {
+                name: 'TeamsPaginatedResponse',
+                fields: [
+                    {
+                        name: 'teams',
+                        array: true,
+                        model: true,
+                        value: 'LinearTeamBase',
+                        optional: false
+                    },
+                    {
+                        name: 'pageInfo',
+                        optional: false,
+                        value: [
+                            {
+                                name: 'hasNextPage',
+                                array: false,
+                                value: 'boolean',
+                                optional: false
+                            },
+                            {
+                                name: 'endCursor',
+                                union: true,
+                                value: [
+                                    {
+                                        name: '0',
+                                        array: false,
+                                        value: 'string',
+                                        optional: false
+                                    },
+                                    {
+                                        name: '1',
+                                        array: false,
+                                        value: null,
+                                        optional: false
+                                    }
+                                ],
+                                optional: false
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle arrays of nested models', () => {
+        /**
+         * This originates from the following nango.yaml model:
+         *
+         * ModelWithNestedModelArray:
+         *   nestedModels:
+         *     - firstName: string
+         *       lastName: string
+         *
+         *  It's supposed to mean: an array of an object with a firstName and lastName field.
+         */
+        const models: NangoModel[] = [
+            {
+                name: 'ModelWithNestedModelArray',
+                fields: [
+                    {
+                        name: 'nestedModels',
+                        array: true, // We will identify this case by: It's an array with the first object named '0'
+                        value: [
+                            {
+                                name: '0',
+                                value: [
+                                    {
+                                        name: 'firstName',
+                                        value: 'string',
+                                        tsType: true,
+                                        optional: false
+                                    },
+                                    {
+                                        name: 'lastName',
+                                        value: 'string',
+                                        tsType: true,
+                                        optional: false
+                                    }
+                                ]
+                            }
+                        ],
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle dynamic fields', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'DynamicFields',
+                fields: [{ name: 'fields', array: true, model: true, value: 'Field', optional: false }]
+            },
+            {
+                name: 'Field',
+                fields: [
+                    {
+                        name: '__string',
+                        union: true,
+                        value: [
+                            { name: '0', array: false, model: true, value: 'Field', optional: false },
+                            { name: '1', array: false, value: 'string', tsType: true, optional: false }
+                        ],
+                        dynamic: true,
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
 });
