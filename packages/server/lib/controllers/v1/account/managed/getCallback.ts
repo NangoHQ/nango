@@ -94,7 +94,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         } else if (invitation) {
             // Invited but not in a custom WorkOS org
             isNewTeam = false;
-            account = (await accountService.getAccountById(invitation.account_id))!;
+            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else {
             // Regular signup
             const resAccount = await accountService.createAccount(`${name}'s Team`);

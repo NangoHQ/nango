@@ -28,7 +28,8 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
             }
 
             const duration = getRunTime(new Date(row.original.startedAt).toISOString(), new Date(row.original.endedAt).toISOString());
-            return <div className="font-code text-s">{duration}</div>;
+            const displayDuration = duration.split(' ')[0];
+            return <div className="font-code text-s">{displayDuration}</div>;
         }
     },
     {

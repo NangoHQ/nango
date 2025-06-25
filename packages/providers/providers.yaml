@@ -9836,27 +9836,67 @@ tapclicks:
     docs_connect: https://docs.nango.dev/integrations/all/tapclicks/connect
 
 tableau:
-    display_name: Tableau
+    display_name: Tableau (PAT)
     categories:
         - analytics
-    auth_mode: TABLEAU
-    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}/auth/signin
     proxy:
         headers:
             accept: application/json
             content-type: application/json
-        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+            x-tableau-auth: ${accessToken}
+        base_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}
+    token_params:
+        credentials:
+            personalAccessTokenName: ${credentials.pat}
+            personalAccessTokenSecret: ${credentials.secret}
+            site:
+                contentUrl: ${credentials.contentUrl}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: credentials.token
+        token_expiration: credentials.estimatedTimeToExpiration
+        token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/tableau
-    connection_config:
-        myServer:
+    docs_connect: https://docs.nango.dev/integrations/all/tableau/connect
+    credentials:
+        pat:
             type: string
-            title: Domain
+            title: Personal Access Token
+            description: Your Personal Access Token
+            doc_section: '#step-2-generating-your-personal-access-token'
+        secret:
+            type: string
+            title: Personal Access Token Secret
+            description: Your Personal Access Token Secret
+            secret: true
+            doc_section: '#step-2-generating-your-personal-access-token'
+        contentUrl:
+            type: string
+            title: Content Url
+            optional: true
+            example: test-eaec4a3fe2
+            doc_section: '#step-5-finding-your-content-url'
+            description: Your content URL
+    connection_config:
+        hostname:
+            type: string
+            title: HostName
             description: The domain of your Tableau instance
             format: hostname
+            order: 1
+            example: dub01.online.tableau.com
+            doc_section: '#step-3-finding-your-hostname'
             prefix: https://
         version:
             type: string
             title: API Version
+            order: 2
+            example: '3.26'
+            doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
 
 teamtailor:

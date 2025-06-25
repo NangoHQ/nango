@@ -91,22 +91,6 @@ export type PostPublicTbaAuthorization = Endpoint<{
     Success: ConnectionResponse;
 }>;
 
-export type PostPublicTableauAuthorization = Endpoint<{
-    Method: 'POST';
-    Body: {
-        pat_name: string;
-        pat_secret: string;
-        content_url?: string | undefined;
-    };
-    Querystring: ConnectionQueryString;
-    Params: {
-        providerConfigKey: string;
-    };
-    Path: '/auth/tableau/:providerConfigKey';
-    Error: AuthErrors;
-    Success: ConnectionResponse;
-}>;
-
 export type PostPublicJwtAuthorization = Endpoint<{
     Method: 'POST';
     Body: Record<string, any>;
