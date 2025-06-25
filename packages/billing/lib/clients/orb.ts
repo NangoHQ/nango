@@ -64,7 +64,6 @@ export class OrbClient implements BillingClient {
             });
             return Ok(undefined);
         } catch (err) {
-            console.error(err);
             return Err(new Error('failed_to_link_customer', { cause: err }));
         }
     }
@@ -151,7 +150,7 @@ export class OrbClient implements BillingClient {
 
             return Ok({ id: plan.id, external_plan_id: plan.external_plan_id! });
         } catch (err) {
-            return Err(new Error('failed_to_verify_signature', { cause: err }));
+            return Err(new Error('failed_to_get_plan_by_id', { cause: err }));
         }
     }
 }

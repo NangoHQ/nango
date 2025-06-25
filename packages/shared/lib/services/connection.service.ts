@@ -11,7 +11,6 @@ import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
-import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
@@ -71,10 +70,8 @@ import type {
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
-    ProviderTableau,
     ProviderTwoStep,
     SignatureCredentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials
 } from '@nangohq/types';
@@ -170,15 +167,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials:
-            | TwoStepCredentials
-            | TableauCredentials
-            | TbaCredentials
-            | JwtCredentials
-            | ApiKeyCredentials
-            | BasicApiCredentials
-            | BillCredentials
-            | SignatureCredentials;
+        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -1285,7 +1274,6 @@ class ConnectionService {
             | OAuth2ClientCredentials
             | AppCredentials
             | AppStoreCredentials
-            | TableauCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
@@ -1349,21 +1337,6 @@ class ConnectionService {
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config
             });
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
-        } else if (provider.auth_mode === 'TABLEAU') {
-            const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
-            const create = await tableauClient.createCredentials({
-                provider: provider as ProviderTableau,
-                patName: pat_name,
-                patSecret: pat_secret,
-                contentUrl: content_url,
-                connectionConfig: connection.connection_config
-            });
-
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }

@@ -1,5 +1,3 @@
-import Stripe from 'stripe';
-
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
@@ -7,6 +5,7 @@ import { report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 
@@ -33,11 +32,7 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
         return;
     }
 
-    const stripe = new Stripe(envs.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-05-28.basil',
-        typescript: true,
-        telemetry: false
-    });
+    const stripe = getStripe();
 
     // We absolutely need a customer_id but to avoid spamming stripe when users create their account
     // We only do it lazily there

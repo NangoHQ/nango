@@ -1,9 +1,8 @@
-import Stripe from 'stripe';
-
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { getStripe } from '../../../../utils/stripe.js';
 
 import type { GetStripePaymentMethods } from '@nangohq/types';
 
@@ -35,11 +34,7 @@ export const getStripePaymentMethods = asyncWrapper<GetStripePaymentMethods>(asy
         return;
     }
 
-    const stripe = new Stripe(envs.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-05-28.basil',
-        typescript: true,
-        telemetry: false
-    });
+    const stripe = getStripe();
     const list = await stripe.paymentMethods.list({ customer: plan.stripe_customer_id });
 
     res.status(200).send({

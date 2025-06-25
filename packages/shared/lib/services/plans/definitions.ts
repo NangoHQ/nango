@@ -86,7 +86,6 @@ export const plansList: PlanDefinition[] = [
         description: 'For growing teams.',
         canUpgrade: true,
         canDowngrade: true,
-        basePrice: 500,
         orbId: 'growth',
         flags: {
             api_rate_limit_size: 'l',

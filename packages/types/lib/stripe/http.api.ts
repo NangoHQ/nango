@@ -9,7 +9,7 @@ export type PostStripeCollectPayment = Endpoint<{
 }>;
 
 export type GetStripePaymentMethods = Endpoint<{
-    Method: 'POST';
+    Method: 'GET';
     Path: '/api/v1/stripe/payment_methods';
     Success: {
         data: { id: string; last4: string }[];

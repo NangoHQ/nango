@@ -18,7 +18,6 @@ import type {
     PostPublicBillAuthorization,
     PostPublicJwtAuthorization,
     PostPublicSignatureAuthorization,
-    PostPublicTableauAuthorization,
     PostPublicTbaAuthorization,
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
@@ -79,7 +78,6 @@ export type PublicApiEndpoints =
     | PostDeployConfirmation
     | PostPublicTrigger
     | PostPublicTbaAuthorization
-    | PostPublicTableauAuthorization
     | PostPublicJwtAuthorization
     | PostPublicUnauthenticatedAuthorization
     | PostPublicApiKeyAuthorization
