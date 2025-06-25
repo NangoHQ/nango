@@ -58,6 +58,7 @@ export function isLocallyInstalled(packageName: string, debug = false) {
                     printDebug(`Ignoring npx cache directory: ${dir} while trying to find if nango is locally installed.`);
                 }
             } else if (fs.existsSync(packageJsonPath)) {
+                console.info(`isLocallyInstalled - content of package.json at ${packageJsonPath}: ${fs.readFileSync(packageJsonPath, 'utf8')}`);
                 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) as PackageJson;
 
                 const dependencies = packageJson.dependencies || {};

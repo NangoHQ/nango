@@ -284,7 +284,7 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
 }
 
 export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll('/', '_').replaceAll('.js', '.cjs');
+    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replaceAll('.js', '.cjs');
 }
 
 /**

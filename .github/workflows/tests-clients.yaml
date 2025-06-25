@@ -17,11 +17,7 @@ jobs:
             - name: Set OS Matrix
               id: set-os-matrix
               run: |
-                  if [[ '${{ github.ref }}' == 'refs/heads/master' ]]; then
-                    echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
-                  else
-                    echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
-                  fi
+                  echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
     tests:
         needs: compute-matrix
         strategy:

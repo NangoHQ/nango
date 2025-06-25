@@ -58,6 +58,7 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
 export function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {
     const filePath = path.join(fullPath, '.nango', 'schema.json');
     try {
+        console.info(`loadSchemaJson - ${filePath}: ${fs.readFileSync(filePath).toString()}`);
         return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
     } catch (err) {
         console.error(chalk.red(`Error loading ${filePath}`), err);
