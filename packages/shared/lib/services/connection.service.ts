@@ -603,7 +603,15 @@ class ConnectionService {
         config: ConnectionConfig
     ): Promise<ConnectionConfig> {
         const existingConfig = await this.getConnectionConfig(connection);
-        const newConfig = { ...existingConfig, ...config };
+        let newConfig = { ...existingConfig, ...config };
+
+        Object.keys(config).forEach((key) => {
+            if (config[key] === undefined) {
+                const { [key]: _, ...rest } = newConfig;
+                newConfig = rest;
+            }
+        });
+
         await this.replaceConnectionConfig(connection, newConfig);
 
         return newConfig;

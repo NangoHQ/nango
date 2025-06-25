@@ -103,7 +103,7 @@ it('Should extract metadata from token response based on provider', () => {
         }
     };
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({
         'incoming_webhook.url': 'https://hooks.slack.com',
         ok: true,
@@ -130,7 +130,7 @@ it('Should extract metadata from token response based on template and if it does
         }
     };
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({});
 });
 
@@ -144,7 +144,7 @@ it('Should not extract metadata from an empty token response', () => {
 
     const params = {};
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({});
 });
 

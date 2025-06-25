@@ -13,7 +13,7 @@ import {
     environmentService,
     errorManager,
     getConnectionConfig,
-    getConnectionMetadataFromTokenResponse,
+    getConnectionMetadata,
     getProvider,
     hmacService,
     interpolateObjectValues,
@@ -22,7 +22,6 @@ import {
     makeUrl,
     oauth2Client,
     providerClientManager,
-    getConnectionMetadataFromWebhookResponse,
     extractValueByPath
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
@@ -1175,7 +1174,7 @@ class OAuthController {
         const authorizationCode = extractValueByPath(webhookPayload, authCodeParam);
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const webhookMetadata = getConnectionMetadataFromWebhookResponse(webhookPayload, provider);
+        const webhookMetadata = getConnectionMetadata(webhookPayload, provider, 'webhook_response_metadata');
 
         if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
@@ -1298,7 +1297,7 @@ class OAuthController {
 
             void logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
 
-            const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, provider);
+            const tokenMetadata = getConnectionMetadata(rawCredentials, provider, 'token_response_metadata');
 
             let parsedRawCredentials: OAuth2Credentials;
 

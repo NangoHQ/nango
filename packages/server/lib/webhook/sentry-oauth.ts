@@ -38,13 +38,21 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
         }
     }
 
-    const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
-    return Ok({
-        content: { status: 'success' },
-        statusCode: 200,
-        connectionIds: response?.connectionIds || [],
-        toForward: body
-    });
+    try {
+        const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds: response?.connectionIds || [],
+            toForward: body
+        });
+    } catch (err) {
+        logger.error('Failed to execute script for webhooks', err);
+        return Ok({
+            content: { status: 'skipped due to internal error' },
+            statusCode: 500
+        });
+    }
 };
 
 async function handleCreateWebhook(
