@@ -745,6 +745,151 @@ describe('Records service', () => {
             expect(allRecordsLength).toBe(numOfRecords);
         });
     });
+
+    describe('markPreviousGenerationRecordsAsDeleted', () => {
+        it('should mark records from previous generations as deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            // Insert records with different generations
+            const recordsGen1 = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            const recordsGen2 = [
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' }
+            ];
+            const recordsGen3 = [{ id: '5', name: 'Alice Doe' }];
+
+            await upsertRecords({ records: recordsGen1, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            await upsertRecords({ records: recordsGen2, connectionId, environmentId, model, syncId, syncJobId: 2 });
+            await upsertRecords({ records: recordsGen3, connectionId, environmentId, model, syncId, syncJobId: 3 });
+
+            // Mark previous generations (1 and 2) as deleted
+            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
+                connectionId,
+                model,
+                syncId,
+                generation: 3
+            });
+
+            expect(deletedIds).toHaveLength(4);
+            expect(deletedIds).toEqual(expect.arrayContaining(['1', '2', '3', '4']));
+
+            // Check that the records are marked as deleted
+            const deleted = await db
+                .select<FormattedRecord[]>('*')
+                .from(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model })
+                .whereNotNull('deleted_at');
+            deleted.forEach((r) => {
+                expect(r.sync_job_id).toBe(3);
+                expect(r.deleted_at).not.toBeNull();
+            });
+        });
+
+        it('should not mark already deleted records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            // Insert and then soft delete some records
+            const rec1 = { id: '1', name: 'John Doe' };
+            const rec2 = { id: '2', name: 'Jane Doe' };
+            await upsertRecords({ records: [rec1, rec2], connectionId, environmentId, model, syncId, syncJobId: 1 });
+            await upsertRecords({ records: [rec1], connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
+
+            // Mark previous generation as deleted
+            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
+                connectionId,
+                model,
+                syncId,
+                generation: 3
+            });
+
+            // Only the non-deleted record should be marked as deleted
+            expect(deletedIds).toEqual(['2']);
+        });
+
+        it('should only affect records with matching connectionId, model, and syncId', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const targetRecords = [{ id: '1', name: 'Target Record' }];
+            await upsertRecords({ records: targetRecords, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const otherSyncId = uuid.v4();
+            const otherRecords = [{ id: '2', name: 'Other Record' }];
+            await upsertRecords({ records: otherRecords, connectionId, environmentId, model, syncId: otherSyncId, syncJobId: 1 });
+
+            const otherModel = rnd.string();
+            const otherModelRecords = [{ id: '3', name: 'Other Model Record' }];
+            await upsertRecords({ records: otherModelRecords, connectionId, environmentId, model: otherModel, syncId, syncJobId: 1 });
+
+            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
+                connectionId,
+                model,
+                syncId,
+                generation: 2
+            });
+            expect(deletedIds).toEqual(['1']);
+        });
+
+        it('should process records in batches', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const count = 10;
+
+            const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
+                connectionId,
+                model,
+                syncId,
+                generation: 2,
+                batchSize: 3 // small batch size
+            });
+            expect(deletedIds).toHaveLength(count);
+        });
+
+        it('should update record counts correctly', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const initialCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(initialCounts[model]?.count).toBe(3);
+
+            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
+                connectionId,
+                model,
+                syncId,
+                generation: 2
+            });
+            expect(deletedIds).toHaveLength(3);
+
+            const finalCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalCounts[model]?.count).toBe(0);
+        });
+    });
 });
 
 async function upsertNRecords(n: number): Promise<{ connectionId: number; model: string; syncId: string; result: UpsertSummary }> {

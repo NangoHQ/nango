@@ -50,6 +50,12 @@ jobs:
                   echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
                   echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
 
+            - name: Upload manifest artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: managed-manifest.json
+
     test-deployment:
         needs: manage-versions
         runs-on: ubuntu-latest
@@ -103,21 +109,16 @@ jobs:
 
                   # Install Nango using Helm in background
                   echo "Installing Helm chart..."
-                  helm upgrade --install nango nangohq/nango \
-                    --namespace nango \
-                    --create-namespace \
-                    --set shared.namespace=nango \
-                    --set shared.tag=${{ needs.manage-versions.outputs.commit_hash }} \ 
-                    --set shared.encryptionEnabled=true \
-                    --set shared.NANGO_SERVER_URL="http://localhost:3003" \
-                    --set shared.NANGO_CALLBACK_URL="http://localhost:3003/oauth/callback" \
-                    --set shared.NANGO_LOGS_ENABLED=false \
-                    --set server.useLoadBalancer=false \
-                    --set elasticsearch.enabled=false \
-                    --set postgresql.auth.postgresPassword=nango123 \
-                    --wait=false &
+                  echo "commit_hash: ${{ inputs.commit_hash }}"
 
-                  # Give some time for the deployment to star
+                  # Debug: Show the exact command
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
+                  echo "Executing: $HELM_CMD"
+
+                  # Execute the command
+                  eval $HELM_CMD &
+
+                  # Give some time for the deployment to start
                   sleep 10
 
                   # Debug: Check Helm release status
@@ -221,7 +222,7 @@ jobs:
               uses: trstringer/manual-approval@v1
               with:
                   secret: ${{ github.TOKEN }}
-                  approvers: ${{ secrets.RELEASE_APPROVERS }}
+                  approvers: ${{ vars.RELEASE_APPROVERS }}
                   minimum-approvals: 1
                   issue-title: 'Deployment Review: Managed Nango v${{ needs.manage-versions.outputs.app_version }}'
                   issue-body: |
@@ -288,12 +289,24 @@ jobs:
               with:
                   node-version: '22'
 
+            - uses: actions/create-github-app-token@v2
+              id: create_github_app_token
+              with:
+                  app-id: ${{ secrets.GH_APP_PUSHER_ID }}
+                  private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+
             - name: Checkout code
               uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  ref: 'master'
                   fetch-depth: 1
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ steps.create_github_app_token.outputs.token }}
+
+            - name: Download manifest artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: .
 
             # The workflow will only get to this step under two conditions:
             # 1. The test deployment was successful and no breaking changes were identified
@@ -314,8 +327,8 @@ jobs:
               if: ${{ !env.ACT }}
               uses: docker/login-action@v3
               with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
 
             - name: Log Docker operations (act)
               if: ${{ env.ACT }}
@@ -340,36 +353,28 @@ jobs:
                       docker push nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   else
                       echo "Test deployment successful, using original versions"
-                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
-                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}
+                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
                   fi
 
             - name: Commit and create PR for version changes
               if: ${{ !env.ACT }}
+              env:
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
-                  # Create a new branch and commit changes
-                  BRANCH_NAME="version-update-$(date +%Y%m%d-%H%M%S)"
-                  git checkout -b $BRANCH_NAME
                   git config --global user.name "GitHub Actions"
                   git config --global user.email "actions@github.com"
                   git add managed-manifest.json
                   git commit -m "chore: update version in manifest"
-                  git push origin $BRANCH_NAME
-
-                  # Create PR
-                  gh pr create \
-                    --title "Update version in manifest" \
-                    --body "This PR updates the version in the manifest. Please review and merge to ensure the next release uses the correct version." \
-                    --base main
+                  git push origin master
 
             - name: Log PR creation (act)
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would create PR:"
-                  echo "Would create branch: version-update-$(date +%Y%m%d-%H%M%S)"
                   echo "Would commit changes to managed-manifest.json"
-                  echo "Would create PR with title: Update version in manifest"
-                  echo "Would create PR with body: This PR updates the version in the manifest. Please review and merge to ensure the next release uses the correct version."
+                  cat managed-manifest.json
+                  echo "Would push changes to master"
 
             - name: Cleanup kind cluster
               if: always()

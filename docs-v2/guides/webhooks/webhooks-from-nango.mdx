@@ -1,24 +1,26 @@
 ---
-title: 'Webhooks from Nango'
-sidebarTitle: 'Webhooks from Nango'
-description: 'Information about webhooks from Nango.'
+title: "Webhooks from Nango"
+sidebarTitle: "Webhooks from Nango"
+description: "Information about webhooks from Nango."
 ---
 
 # Overview
 
 Nango sends webhook notifications to your backend in different cases:
+
 - **Sync webhook**: new data from syncs is available ([guide](/guides/syncs/use-a-sync#listen-for-webhooks-from-nango))
 - **Authorization webhook**: an authorization flow completes ([guide](/guides/api-authorization/authorize-in-your-app-default-ui#3-listen-for-webhoooks-and-save-the-connection-id-backend))
 - **External API webhook forwarding**: an external API webhook is forwarded to your app ([guide](/guides/webhooks/webhooks-from-apis#forward-external-webhooks-to-your-app))
 
 # Configuring Nango webhooks
 
-To subscribe to Nango webhooks: 
+To subscribe to Nango webhooks:
+
 1. Set up a `POST` endpoint in your app to receive the Nango webhooks
 2. Input the endpoint's URL in your _Environment Settings_, under _Webhook URLs_
 
 <Frame>
-  <img src="/images/nango-webhook-settings.png" />
+  ![](/images/nango-webhook-settings.png)
 </Frame>
 
 You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
@@ -28,18 +30,19 @@ The webhook settings also let you enable or disable the various types of webhook
 # Types of Nango webhooks
 
 <Warning>
-New Nango webhook types are added regularly, without considering this a breaking change. Your webhook handling logic should gracefully support receiving new types of webhooks by simply ignoring them.
+  New Nango webhook types are added regularly, without considering this a breaking change. Your webhook handling logic should gracefully support receiving new types of webhooks by simply ignoring them.
 </Warning>
 
-Webhooks from Nango are POST requests. Nango sends multiple types of webhooks to your backend. All webhook types are sent to the same URL(s) configured in your _Environment Settings_. 
+Webhooks from Nango are POST requests. Nango sends multiple types of webhooks to your backend. All webhook types are sent to the same URL(s) configured in your _Environment Settings_.
 
 Webhook type definitions can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/webhooks/api.ts).
 
 ### Auth webhooks
 
-New connection webhooks have `"type": "auth"` and `"operation": "creation"`. They are sent after a connection has been successfully created. 
+New connection webhooks have `"type": "auth"` and `"operation": "creation"`. They are sent after a connection has been successfully created.
 
-Payload received following a connection creation: 
+Payload received following a connection creation:
+
 ```json
 {
     "type": "auth",
@@ -58,19 +61,21 @@ Payload received following a connection creation:
 ```
 
 <Warning>
-Processing webhooks with `"type": "auth"` and `"operation": "creation"` is **necessary**. After a connection is created, these webhooks give you the generated connection ID which lets you access the connection later on. 
+  Processing webhooks with `"type": "auth"` and `"operation": "creation"` is **necessary**. After a connection is created, these webhooks give you the generated connection ID which lets you access the connection later on.
 
-Use the values of `endUser.endUserId` (and optionally `endUser.organizationId`) to reconcile and save the connection ID with the user/org who initiated the connection.
+  Use the values of `endUser.endUserId` (and optionally `endUser.organizationId`) to reconcile and save the connection ID with the user/org who initiated the connection.
 </Warning>
 
 All `authMode` values can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/auth/api.ts). The `authMode` value depends on the `provider` value.
 
-All `operation` values are: 
+All `operation` values are:
+
 - `creation`: a new connection has been created
 - `override`: a connection has been re-authorized
-- `refresh`: an OAuth connection's access token has been refreshed
+- `refresh`: an OAuth connection's access token has failed to refresh
 
-Payload received following a refresh token error: 
+Payload received following a refresh token error:
+
 ```json
 {
     "type": "auth",
@@ -92,16 +97,16 @@ Payload received following a refresh token error:
 }
 ```
 
-
 <Note>
-Webhooks are only sent for certain connection creation errors. For example, during the OAuth flow, some errors are reported locally in the OAuth modal by the external API. Since Nango does not receive these errors, it cannot trigger a webhook for them.
+  Webhooks are only sent for certain connection creation errors. For example, during the OAuth flow, some errors are reported locally in the OAuth modal by the external API. Since Nango does not receive these errors, it cannot trigger a webhook for them.
 </Note>
 
 ### Sync webhooks
 
 Sync webhooks are sent when a [sync](/guides/syncs/overview) execution finishes, whether successful or not.
 
-Payload received following a successful sync execution: 
+Payload received following a successful sync execution:
+
 ```json
 {
     "type": "sync",
@@ -120,7 +125,8 @@ Payload received following a successful sync execution:
 }
 ```
 
-By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
+By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be:
+
 ```json
 {
     "added": 0,
@@ -130,11 +136,13 @@ By default, Nango sends a webhook even if no modified data was detected in the l
 ```
 
 The `syncType` possible values are:
+
 - `INITIAL`: for the very first execution of a sync.
 - `INCREMENTAL`: for subsequent executions  of a sync.
 - `WEBHOOK`: when an external API webhooks triggers the execution of the sync's `onWebhookPayloadReceived` function.
 
-Payload received following a failed sync execution: 
+Payload received following a failed sync execution:
+
 ```json
 {
     "type": "sync",
@@ -172,130 +180,106 @@ It's a SHA-256 hash generated using the secret key found in the _Environment Set
 The webhook signature can be generated with the following code:
 
 <Tabs>
-
-<Tab title="Node SDK">
-
-```typescript
-async (req, res) => {
-    const signature = req.headers['x-nango-signature'];
-    const isValid = nango.verifyWebhookSignature(signature, req.body);
-}
-```
-</Tab>
-
-<Tab title="Javascript/Typescript">
-
-```typescript
-import crypto from 'crypto';
-
-const secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-const signature = `${secretKeyDev}${JSON.stringify(payload)}`;
-const hash = crypto.createHash('sha256').update(signature).digest('hex');
-```
-
-</Tab>
-
-<Tab title="Python">
-
-```python
-import hashlib
-
-secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-signature = secret_key_dev + request.body.decode("utf-8")
-hash = hashlib.sha256(signature.encode("utf-8")).hexdigest()
-```
-
-</Tab>
-
-<Tab title="Java">
-
-```java
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import javax.xml.bind.DatatypeConverter;
-
-public class Main {
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        String secretKeyDev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-        String payloadString = // convert payload to JSON string
-        String signature = secretKeyDev + payloadString;
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(signature.getBytes("UTF-8"));
-        String hash = DatatypeConverter.printHexBinary(hashBytes).toLowerCase();
+  <Tab title="Node SDK">
+    ```typescript
+    async (req, res) => {
+        const signature = req.headers['x-nango-signature'];
+        const isValid = nango.verifyWebhookSignature(signature, req.body);
     }
-}
-```
-
-</Tab>
-
-<Tab title="Ruby">
-
-```ruby
-require 'json'
-require 'digest'
-
-secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-signature = "#{secret_key_dev}#{payload.to_json}"
-hash = Digest::SHA256.hexdigest(signature)
-```
-
-</Tab>
-
-<Tab title="Go">
-
-```go
-package main
-
-import (
-    "crypto/sha256"
-    "encoding/hex"
-    "encoding/json"
-)
-
-func main() {
-    secretKeyDev := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    payloadString, _ := json.Marshal(payload) // Handle error in real code
-    signature := secretKeyDev + string(payloadString)
-
-    hash := sha256.Sum256([]byte(signature))
-    hexHash := hex.EncodeToString(hash[:])
-}
-```
-
-</Tab>
-
-<Tab title="Rust">
-
-```rust
-use sha2::{Sha256, Digest};
-use serde_json::json; // Assuming use of serde_json for JSON serialization
-
-let secret_key_dev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-let signature = format!("{}{}", secret_key_dev, serde_json::to_string(&payload).unwrap());
-let mut hasher = Sha256::new();
-hasher.update(signature.as_bytes());
-let hash = format!("{:x}", hasher.finalize());
-```
-
-</Tab>
-
-<Tab title="PHP">
-
-```php
-<?php
-$secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-$signature = $secretKeyDev . json_encode($payload);
-$hash = hash('sha256', $signature);
-?>
-```
-
-</Tab>
-
+    ```
+  </Tab>
+  <Tab title="Javascript/Typescript">
+    ```typescript
+    import crypto from 'crypto';
+    
+    const secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    const signature = `${secretKeyDev}${JSON.stringify(payload)}`;
+    const hash = crypto.createHash('sha256').update(signature).digest('hex');
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```python
+    import hashlib
+    
+    secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    signature = secret_key_dev + request.body.decode("utf-8")
+    hash = hashlib.sha256(signature.encode("utf-8")).hexdigest()
+    ```
+  </Tab>
+  <Tab title="Java">
+    ```java
+    import java.security.MessageDigest;
+    import java.security.NoSuchAlgorithmException;
+    import javax.xml.bind.DatatypeConverter;
+    
+    public class Main {
+        public static void main(String[] args) throws NoSuchAlgorithmException {
+            String secretKeyDev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+            String payloadString = // convert payload to JSON string
+            String signature = secretKeyDev + payloadString;
+    
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(signature.getBytes("UTF-8"));
+            String hash = DatatypeConverter.printHexBinary(hashBytes).toLowerCase();
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="Ruby">
+    ```ruby
+    require 'json'
+    require 'digest'
+    
+    secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    signature = "#{secret_key_dev}#{payload.to_json}"
+    hash = Digest::SHA256.hexdigest(signature)
+    ```
+  </Tab>
+  <Tab title="Go">
+    ```go
+    package main
+    
+    import (
+        "crypto/sha256"
+        "encoding/hex"
+        "encoding/json"
+    )
+    
+    func main() {
+        secretKeyDev := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        payloadString, _ := json.Marshal(payload) // Handle error in real code
+        signature := secretKeyDev + string(payloadString)
+    
+        hash := sha256.Sum256([]byte(signature))
+        hexHash := hex.EncodeToString(hash[:])
+    }
+    ```
+  </Tab>
+  <Tab title="Rust">
+    ```rust
+    use sha2::{Sha256, Digest};
+    use serde_json::json; // Assuming use of serde_json for JSON serialization
+    
+    let secret_key_dev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+    let signature = format!("{}{}", secret_key_dev, serde_json::to_string(&payload).unwrap());
+    let mut hasher = Sha256::new();
+    hasher.update(signature.as_bytes());
+    let hash = format!("{:x}", hasher.finalize());
+    ```
+  </Tab>
+  <Tab title="PHP">
+    ```php
+    <?php
+    $secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    $signature = $secretKeyDev . json_encode($payload);
+    $hash = hash('sha256', $signature);
+    ?>
+    ```
+  </Tab>
 </Tabs>
 
 Only accept a webhook if the `X-Nango-Signature` header value matches the webhook signature.
 
 <Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>

@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger.js';
 import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
+import tracer from 'dd-trace';
 
 export abstract class SchedulerDaemon {
     private name: string;
@@ -40,7 +41,9 @@ export abstract class SchedulerDaemon {
             }
             this.status = 'running';
             while (!this.abortSignal.aborted) {
-                await this.run();
+                await tracer.trace(`scheduler.${this.name.toLowerCase()}.run`, async () => {
+                    await this.run();
+                });
                 await setTimeout(this.tickIntervalMs);
             }
         } catch (err) {

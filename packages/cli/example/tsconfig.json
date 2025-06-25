@@ -4,7 +4,7 @@
     "include": ["index.ts", "**/*.ts"],
     "exclude": ["node_modules", "dist", "build", ".nango"],
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "target": "esnext",
         "strict": true,
         "esModuleInterop": true,

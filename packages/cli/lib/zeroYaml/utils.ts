@@ -10,7 +10,7 @@ export async function syncTsConfig({ fullPath }: { fullPath: string }) {
     await fs.promises.writeFile(path.join(fullPath, 'tsconfig.json'), await fs.promises.readFile(path.join(exampleFolder, 'tsconfig.json')));
 }
 
-export function fileErrorToText({ filePath, msg, line, character }: { filePath: string; msg: string; line?: number; character?: number }) {
+export function fileErrorToText({ filePath, msg, line, character }: { filePath: string; msg: string; line?: number | undefined; character?: number }) {
     return `${chalk.red('err')} - ${chalk.blue(filePath)}${line ? chalk.yellow(`:${line + 1}${character ? `:${character + 1}` : ''}`) : ''} \r\n  ${msg}\r\n`;
 }
 
@@ -34,7 +34,8 @@ export type CompileErrorType =
     | 'nango_invalid_export_constant'
     | 'failed_to_build_unknown'
     | 'method_need_await'
-    | 'retryon_need_retries';
+    | 'retryon_need_retries'
+    | 'disallowed_import';
 
 export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
 
