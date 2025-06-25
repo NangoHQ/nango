@@ -24,7 +24,6 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'BASIC':
         case 'API_KEY':
         case 'APP_STORE':
-        case 'TABLEAU':
         case 'NONE':
         case 'OAUTH2_CC':
         case 'BILL':
