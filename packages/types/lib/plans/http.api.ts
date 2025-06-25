@@ -20,6 +20,11 @@ export interface PlanDefinition {
     description: string;
     canUpgrade: boolean;
     canDowngrade: false;
+    /**
+     * OrbId is the custom external_plan_id that we can setup
+     * It's handy because you can set the same id in staging and prod
+     */
+    orbId?: string;
     cta?: string;
     hidden?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;

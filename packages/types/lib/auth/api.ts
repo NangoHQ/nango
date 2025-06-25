@@ -9,7 +9,6 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
-    Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
@@ -151,15 +150,6 @@ export interface BillCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface TableauCredentials extends CredentialsCommon {
-    type: AuthModes['Tableau'];
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
-    token?: string;
-    expires_at?: Date | undefined;
-}
-
 export interface JwtCredentials {
     type: AuthModes['Jwt'];
     [key: string]: any;
@@ -196,7 +186,6 @@ export type RefreshableCredentials =
     | AppCredentials
     | AppStoreCredentials
     | OAuth2ClientCredentials
-    | TableauCredentials
     | JwtCredentials
     | TwoStepCredentials
     | BillCredentials
@@ -213,7 +202,6 @@ export type AllAuthCredentials =
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
-    | TableauCredentials
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials

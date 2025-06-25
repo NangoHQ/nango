@@ -1,11 +1,15 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetInvite } from '@nangohq/types';
-import { accountService, getInvitation, userService } from '@nangohq/shared';
 import { z } from 'zod';
-import { userToAPI } from '../../../formatters/user.js';
-import { teamToApi } from '../../../formatters/team.js';
+
+import db from '@nangohq/database';
+import { accountService, getInvitation, userService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { invitationToApi } from '../../../formatters/invitation.js';
+import { teamToApi } from '../../../formatters/team.js';
+import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { GetInvite } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -41,7 +45,7 @@ export const getInvite = asyncWrapper<GetInvite>(async (req, res) => {
         return;
     }
 
-    const newTeam = await accountService.getAccountById(invitation.account_id);
+    const newTeam = await accountService.getAccountById(db.knex, invitation.account_id);
     if (!newTeam) {
         res.status(400).send({ error: { code: 'server_error', message: 'Failed to find new team' } });
         return;

@@ -10,11 +10,11 @@ export async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<v
         // update sync_config_id in syncs table to point to active sync config
         await trx.raw(
             `
-            UPDATE nango._nango_syncs
+            UPDATE _nango_syncs
             SET sync_config_id = (
                 SELECT active_config.id
-                FROM nango._nango_sync_configs as old_config
-                JOIN nango._nango_sync_configs as active_config
+                FROM _nango_sync_configs as old_config
+                JOIN _nango_sync_configs as active_config
                     ON old_config.sync_name = active_config.sync_name
                     AND old_config.nango_config_id = active_config.nango_config_id
                     AND old_config.environment_id = active_config.environment_id

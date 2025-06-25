@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, getLogger, nanoid, report } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -94,7 +94,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         } else if (invitation) {
             // Invited but not in a custom WorkOS org
             isNewTeam = false;
-            account = (await accountService.getAccountById(invitation.account_id))!;
+            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else {
             // Regular signup
             const resAccount = await accountService.createAccount(`${name}'s Team`);
@@ -117,10 +117,15 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             return;
         }
 
-        if (isNewTeam) {
+        if (isNewTeam && flagHasUsage) {
             const resCreate = await billing.upsertCustomer(account, user);
             if (resCreate.isErr()) {
                 report(resCreate.error);
+            } else {
+                const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
+                if (resUpdate.isErr()) {
+                    report(resUpdate.error);
+                }
             }
         }
     }
