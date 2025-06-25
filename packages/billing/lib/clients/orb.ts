@@ -56,6 +56,18 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
+        try {
+            await this.orbSDK.customers.updateByExternalId(String(teamId), {
+                payment_provider: 'stripe_invoice',
+                payment_provider_id: customerId
+            });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_link_customer', { cause: err }));
+        }
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         try {
             const customer = await this.orbSDK.customers.fetchByExternalId(String(accountId));
@@ -105,6 +117,40 @@ export class OrbClient implements BillingClient {
             );
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+        try {
+            await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
+                change_option: opts.immediate ? 'immediate' : 'end_of_subscription_term',
+                billing_cycle_alignment: 'plan_change_date',
+                auto_collection: true,
+                external_plan_id: opts.planExternalId
+            });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+        }
+    }
+
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true> {
+        try {
+            this.orbSDK.webhooks.verifySignature(body, headers as any, secret);
+
+            return Ok(true);
+        } catch (err) {
+            return Err(new Error('failed_to_verify_signature', { cause: err }));
+        }
+    }
+
+    async getPlanById(planId: string): Promise<Result<{ id: string; external_plan_id: string }>> {
+        try {
+            const plan = await this.orbSDK.plans.fetch(planId);
+
+            return Ok({ id: plan.id, external_plan_id: plan.external_plan_id! });
+        } catch (err) {
+            return Err(new Error('failed_to_get_plan_by_id', { cause: err }));
         }
     }
 }

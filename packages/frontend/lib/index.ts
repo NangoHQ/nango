@@ -20,7 +20,6 @@ import type {
     OAuthCredentialsOverride,
     SignatureCredentials,
     TBACredentials,
-    TableauCredentials,
     TwoStepCredentials
 } from './types';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
@@ -297,7 +296,6 @@ export default class Nango {
             | ApiKeyCredentials
             | AppStoreCredentials
             | TBACredentials
-            | TableauCredentials
             | JwtCredentials
             | OAuth2ClientCredentials
             | BillCredentials
@@ -382,19 +380,6 @@ export default class Nango {
             return { params: tbaCredentials } as unknown as ConnectionConfig;
         }
 
-        if ('pat_name' in credentials && 'pat_secret' in credentials) {
-            const tableauCredentials: TableauCredentials = {
-                pat_name: credentials.pat_name,
-                pat_secret: credentials.pat_secret
-            };
-
-            if ('content_url' in credentials) {
-                tableauCredentials['content_url'] = credentials.content_url;
-            }
-
-            return { params: tableauCredentials } as unknown as ConnectionConfig;
-        }
-
         if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
             const BillCredentials: BillCredentials = {
                 username: credentials.username,
@@ -425,7 +410,6 @@ export default class Nango {
             | BasicApiCredentials
             | AppStoreCredentials
             | TBACredentials
-            | TableauCredentials
             | JwtCredentials
             | BillCredentials
             | OAuth2ClientCredentials
@@ -522,13 +506,6 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/tba/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as TBACredentials
-            });
-        }
-
-        if ('pat_name' in credentials && 'pat_secret' in credentials) {
-            return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as TableauCredentials
             });
         }
 
