@@ -88,6 +88,7 @@ export interface BaseProvider {
     credentials?: Record<string, SimplifiedJSONSchema>;
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
+    require_client_certificate?: boolean;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {

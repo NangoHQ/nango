@@ -156,12 +156,30 @@ adp:
     categories:
         - hr
     proxy:
-        base_url: https://api.adp.com
-    token_url: https://accounts.adp.com/auth/oauth/v2/token
+        base_url: https://localhost:8443
+    token_url: https://localhost:8443
     token_params:
         grant_type: client_credentials
+    require_client_certificate: true
     docs: https://docs.nango.dev/integrations/all/adp
     docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+    credentials:
+        client_certificate:
+            type: string
+            title: Client Public Certificate
+            description: The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
+            example: '-----BEGIN CERTIFICATE-----\\nMIIDdzCCAl+gAwIBAgIEUzZrZDANBgkqhkiG9w0BAQsFADBv\\n...\\n-----END CERTIFICATE-----'
+            pattern: '^-----BEGIN CERTIFICATE-----\s*([A-Za-z0-9+/=\s]+)\s*-----END CERTIFICATE-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
+        client_private_key:
+            type: string
+            title: Client Private Key
+            description: The private key (in PEM format) associated with the client certificate,
+            example: '-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
 adyen:
     display_name: Adyen

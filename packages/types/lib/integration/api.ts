@@ -99,6 +99,7 @@ export type ApiIntegrationList = ApiIntegration & {
         connectionConfigParams?: string[];
         credentialParams?: string[];
         displayName: string;
+        requireClientCertificate?: boolean;
     };
 };
 

@@ -1,11 +1,12 @@
 import * as crypto from 'node:crypto';
+import https from 'https';
 
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat, formatPem } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -13,7 +14,8 @@ import type {
     ConnectionForProxy,
     HTTP_METHOD,
     InternalProxyConfiguration,
-    UserProvidedProxyConfiguration
+    UserProvidedProxyConfiguration,
+    OAuth2ClientCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosRequestConfig } from 'axios';
@@ -26,7 +28,8 @@ type ProxyErrorCode =
     | 'unsupported_provider'
     | 'invalid_query_params'
     | 'unknown_error'
-    | 'failed_to_get_connection';
+    | 'failed_to_get_connection'
+    | 'invalid_certificate_or_key_format';
 
 export interface RetryReason {
     retry: boolean;
@@ -69,6 +72,45 @@ export function getAxiosConfiguration({
 
     if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
         axiosConfig.decompress = true;
+    }
+
+    if (proxyConfig.provider.require_client_certificate) {
+        const { client_certificate, client_private_key } = connection.credentials as OAuth2ClientCredentials;
+
+        let agent: https.Agent | undefined;
+
+        if (client_certificate && client_private_key) {
+            try {
+                const cert = formatPem(client_certificate, 'CERTIFICATE');
+                const key = formatPem(client_private_key, 'PRIVATE KEY');
+
+                if (
+                    !/^-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----\n?$/.test(cert) ||
+                    !/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----\n?$/.test(key)
+                ) {
+                    throw new ProxyError(
+                        'invalid_certificate_or_key_format',
+                        'Certificate and private key must be in PEM format with proper BEGIN/END boundaries'
+                    );
+                }
+
+                agent = new https.Agent({
+                    cert,
+                    key,
+                    rejectUnauthorized: false
+                });
+            } catch (err: any) {
+                throw new ProxyError(
+                    'invalid_certificate_or_key_format',
+                    `Certificate and private key must be in PEM format with proper BEGIN/END boundaries: ${err}`
+                );
+            }
+        }
+
+        if (agent) {
+            axiosConfig.httpAgent = agent;
+            axiosConfig.httpsAgent = agent;
+        }
     }
 
     return axiosConfig;

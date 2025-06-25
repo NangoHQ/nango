@@ -1,6 +1,7 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
 import { v4 as uuidv4 } from 'uuid';
+import { Agent } from 'undici';
 
 import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
@@ -29,7 +30,8 @@ import {
     interpolateString,
     parseTokenExpirationDate,
     stripCredential,
-    stripStepResponse
+    stripStepResponse,
+    formatPem
 } from '../utils/utils.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -999,13 +1001,17 @@ class ConnectionService {
         client_id,
         client_secret,
         connectionConfig,
-        logCtx
+        logCtx,
+        client_certificate,
+        client_private_key
     }: {
         provider: ProviderOAuth2;
         client_id: string;
         client_secret: string;
         connectionConfig: ConnectionConfig;
         logCtx: LogContextStateless;
+        client_certificate?: string | undefined;
+        client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
@@ -1049,12 +1055,35 @@ class ConnectionService {
             }
         }
 
+        let agent: Agent | undefined;
+
+        if (client_certificate && client_private_key) {
+            try {
+                const cert = formatPem(client_certificate, 'CERTIFICATE');
+                const key = formatPem(client_private_key, 'PRIVATE KEY');
+
+                if (
+                    !/^-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----\n?$/.test(cert) ||
+                    !/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----\n?$/.test(key)
+                ) {
+                    throw new NangoError('invalid_certificate_or_key_format');
+                }
+
+                agent = new Agent({
+                    connect: { cert, key, rejectUnauthorized: false }
+                });
+            } catch (err) {
+                throw new NangoError('invalid_certificate_or_key_format', { err });
+            }
+        }
+
         const fetchRes = await loggedFetch<Record<string, any>>(
             {
                 url,
                 method: 'POST',
                 headers,
-                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString()
+                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                agent
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret] }
         );
@@ -1067,6 +1096,8 @@ class ConnectionService {
 
         parsedCreds.client_id = client_id;
         parsedCreds.client_secret = client_secret;
+        parsedCreds.client_certificate = client_certificate;
+        parsedCreds.client_private_key = client_private_key;
 
         return { success: true, error: null, response: parsedCreds };
     }
@@ -1298,7 +1329,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
-            const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
+            const { client_id, client_secret, client_certificate, client_private_key } = connection.credentials as OAuth2ClientCredentials;
             const {
                 success,
                 error,
@@ -1308,7 +1339,9 @@ class ConnectionService {
                 client_id,
                 client_secret,
                 connectionConfig: connection.connection_config,
-                logCtx
+                logCtx,
+                client_certificate,
+                client_private_key
             });
 
             if (!success || !credentials) {

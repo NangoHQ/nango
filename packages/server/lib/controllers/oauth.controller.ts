@@ -297,7 +297,7 @@ class OAuthController {
             return;
         }
 
-        const { client_id, client_secret }: Record<string, string> = body;
+        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string> = body;
 
         if (isConnectSession && receivedConnectionId) {
             errorRestrictConnectionId(res);
@@ -407,7 +407,9 @@ class OAuthController {
                 client_id,
                 client_secret,
                 connectionConfig,
-                logCtx
+                logCtx,
+                client_certificate,
+                client_private_key
             });
 
             if (!success || !credentials) {
