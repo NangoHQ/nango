@@ -464,6 +464,12 @@ describe('nangoModelsToJsonSchema', () => {
                         optional: false
                     },
                     {
+                        name: 'any',
+                        value: 'any',
+                        tsType: true,
+                        optional: false
+                    },
+                    {
                         name: 'array',
                         value: 'any[]',
                         tsType: true,

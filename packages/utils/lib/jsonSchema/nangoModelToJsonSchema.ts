@@ -152,5 +152,6 @@ const tsTypeMap: Record<string, JSONSchema7> = {
     string: { type: 'string' },
     date: { type: 'string', format: 'date-time' },
     undefined: { type: 'null' }, // There's no json schema mapping for this.
+    any: {},
     'Record<string, any>': { type: 'object' }
 };

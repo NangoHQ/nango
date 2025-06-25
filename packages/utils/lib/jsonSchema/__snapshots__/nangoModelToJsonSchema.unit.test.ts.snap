@@ -523,6 +523,7 @@ exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
   "definitions": {
     "SpecialCases": {
       "properties": {
+        "any": {},
         "anyObject": {
           "type": "object",
         },
@@ -544,6 +545,7 @@ exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
         "nullValue",
         "undefinedValue",
         "bigint",
+        "any",
         "array",
         "anyObject",
       ],
