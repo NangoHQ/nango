@@ -11,7 +11,13 @@ export interface BillingClient {
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string }>>;
     downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
-    applyPendingChanges: (opts: { pendingChangeId: string; amount: number }) => Promise<Result<void>>;
+    applyPendingChanges: (opts: {
+        pendingChangeId: string;
+        /**
+         * format: dollar.cent = 0.00
+         */
+        amount: string;
+    }) => Promise<Result<void>>;
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
     getPlanById(planId: string): Promise<Result<BillingPlan>>;

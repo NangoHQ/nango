@@ -1,12 +1,14 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, plansList, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok, report } from '@nangohq/utils';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostOrbWebhooks, Result } from '@nangohq/types';
+
+const logger = getLogger('Server.Orb');
 
 /**
  * Orb is sending webhooks when subscription changes or else
@@ -74,6 +76,8 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
 type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
+    logger.info('Received', body.type);
+
     switch (body.type) {
         case 'subscription.started':
         case 'subscription.plan_changed': {
@@ -93,6 +97,8 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 if (!team) {
                     return Err('Failed to find team');
                 }
+
+                logger.info(`Sub started for team "${team.id}"`);
 
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
@@ -137,6 +143,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to find team');
                 }
 
+                logger.info(`Sub scheduled for team "${team.id}"`);
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
                     orb_future_plan: resNewPlan.value.external_plan_id,

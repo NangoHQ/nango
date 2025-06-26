@@ -1,4 +1,4 @@
-# Testing Billing, Usage and Plans
+# How to test and use Billing, Usage and Plans
 
 ## Setup
 
@@ -49,7 +49,8 @@ PUBLIC_STRIPE_KEY=
 
 ## Testing UI
 
-- Forward Orb webhooks, You'll need to add/update an entry in Orb UI
+- Forward Orb webhooks.
+  /!\ You'll need to add/update an entry in Orb UI
 
 ```sh
 lt --port 3003
@@ -60,3 +61,5 @@ lt --port 3003
 ```sh
 stripe listen --load-from-webhooks-api --forward-to localhost:3003
 ```
+
+- Go to ui <http://localhost:3003/dev>

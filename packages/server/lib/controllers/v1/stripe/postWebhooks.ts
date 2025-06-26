@@ -43,7 +43,7 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
         return;
     }
 
-    logger.info('[stripe-hook]', event.type);
+    logger.info('Received', event.type);
     const handled = await handleWebhook(event);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
@@ -68,6 +68,8 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err(resPlan.error);
             }
 
+            logger.info(`Payment method collected for account ${resPlan.value.account_id}`);
+
             const plan = resPlan.value;
             const updated = await updatePlan(db.knex, { id: plan.id, stripe_payment_id: data.payment_method as string });
             if (updated.isErr()) {
@@ -88,6 +90,8 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }
+
+            logger.info(`Payment method removed for account ${resPlan.value.account_id}`);
 
             const plan = resPlan.value;
             if (plan.stripe_payment_id && plan.stripe_payment_id === event.data.object.id) {
@@ -114,7 +118,7 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err(resPlan.error);
             }
 
-            logger.info(`Payment received for account ${resPlan.value.account_id} ${data.amount}$`);
+            logger.info(`Payment received for account ${resPlan.value.account_id} ${data.amount / 100}$`);
 
             // We want to continue our plan upgrade
             const resSub = await billing.getSubscription(resPlan.value.account_id);
@@ -128,7 +132,7 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
 
             const resApply = await billing.client.applyPendingChanges({
                 pendingChangeId: sub.pendingChangeId,
-                amount: data.amount
+                amount: (data.amount / 100).toFixed(2)
             });
             if (resApply.isErr()) {
                 return Err(resApply.error);
@@ -151,6 +155,8 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }
+
+            logger.info(`Payment failed for account ${resPlan.value.account_id} ${data.amount / 100}$`);
 
             // We want to cancel our plan upgrade
             const resSub = await billing.getSubscription(resPlan.value.account_id);

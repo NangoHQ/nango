@@ -250,7 +250,7 @@ export const PlanCard: React.FC<{
                             </div>
                         )} */}
                         {longWait && (
-                            <div className="text-right text-xs text-grayscale-500">{def.isDowngrade ? 'Downgrading...' : 'Payment processing...'}</div>
+                            <div className="text-right text-xs text-grayscale-500 mt-2">{def.isDowngrade ? 'Downgrading...' : 'Payment is processing...'}</div>
                         )}
                     </DialogDescription>
                     <DialogFooter>
