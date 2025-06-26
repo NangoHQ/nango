@@ -524,7 +524,7 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl:
                     this.hostBaseUrl +
-                    `/oauth2-outbound/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig, installation)}`
+                    `/auth/oauth-outbound/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig, installation)}`
             });
         }
 

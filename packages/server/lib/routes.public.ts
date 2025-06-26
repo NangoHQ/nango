@@ -16,6 +16,7 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
 import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
@@ -128,7 +129,7 @@ publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthC
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
 publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-publicAPI.route('/oauth2-outbound/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2OutboundRequest.bind(oauthController));
+publicAPI.route('/auth/oauth-outbound/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicOauthOutboundAuthorization);
 publicAPI.use('/api-auth', jsonContentTypeMiddleware);
 publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
