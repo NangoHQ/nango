@@ -8,77 +8,93 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "anyoneCanAddSelf": {
           "type": "boolean",
         },
-        "attachments.0": {
+        "attachments": {
           "properties": {
-            "fileId": {
-              "type": "string",
-            },
-            "fileUrl": {
-              "type": "string",
-            },
-            "iconLink": {
-              "type": "string",
-            },
-            "mimeType": {
-              "type": "string",
-            },
-            "title": {
-              "type": "string",
+            "0": {
+              "properties": {
+                "fileId": {
+                  "type": "string",
+                },
+                "fileUrl": {
+                  "type": "string",
+                },
+                "iconLink": {
+                  "type": "string",
+                },
+                "mimeType": {
+                  "type": "string",
+                },
+                "title": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "title",
+                "fileId",
+                "fileUrl",
+                "iconLink",
+                "mimeType",
+              ],
+              "type": "object",
             },
           },
           "required": [
-            "title",
-            "fileId",
-            "fileUrl",
-            "iconLink",
-            "mimeType",
+            "0",
           ],
           "type": "object",
         },
-        "attendees.0": {
+        "attendees": {
           "properties": {
-            "additionalGuests": {
-              "type": "integer",
-            },
-            "comment": {
-              "type": "string",
-            },
-            "displayName": {
-              "type": "string",
-            },
-            "email": {
-              "type": "string",
-            },
-            "id": {
-              "type": "string",
-            },
-            "optional": {
-              "type": "boolean",
-            },
-            "organizer": {
-              "type": "boolean",
-            },
-            "resource": {
-              "type": "boolean",
-            },
-            "responseStatus": {
-              "type": "string",
-            },
-            "self": {
-              "type": "boolean",
+            "0": {
+              "properties": {
+                "additionalGuests": {
+                  "type": "integer",
+                },
+                "comment": {
+                  "type": "string",
+                },
+                "displayName": {
+                  "type": "string",
+                },
+                "email": {
+                  "type": "string",
+                },
+                "id": {
+                  "type": "string",
+                },
+                "optional": {
+                  "type": "boolean",
+                },
+                "organizer": {
+                  "type": "boolean",
+                },
+                "resource": {
+                  "type": "boolean",
+                },
+                "responseStatus": {
+                  "type": "string",
+                },
+                "self": {
+                  "type": "boolean",
+                },
+              },
+              "required": [
+                "id",
+                "self",
+                "email",
+                "comment",
+                "optional",
+                "resource",
+                "organizer",
+                "displayName",
+                "responseStatus",
+                "additionalGuests",
+              ],
+              "type": "object",
             },
           },
           "required": [
-            "id",
-            "self",
-            "email",
-            "comment",
-            "optional",
-            "resource",
-            "organizer",
-            "displayName",
-            "responseStatus",
-            "additionalGuests",
+            "0",
           ],
           "type": "object",
         },
@@ -88,146 +104,180 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "colorId": {
           "type": "string",
         },
-        "conferenceData.conferenceId": {
-          "type": "string",
-        },
-        "conferenceData.conferenceSolution": {
+        "conferenceData": {
           "properties": {
-            "iconUri": {
+            "conferenceId": {
               "type": "string",
             },
-            "key": {
+            "conferenceSolution": {
               "properties": {
-                "type": {
+                "iconUri": {
+                  "type": "string",
+                },
+                "key": {
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "type",
+                  ],
+                  "type": "object",
+                },
+                "name": {
                   "type": "string",
                 },
               },
               "required": [
-                "type",
+                "key",
+                "name",
+                "iconUri",
               ],
               "type": "object",
             },
-            "name": {
+            "createRequest": {
+              "properties": {
+                "conferenceSolutionKey": {
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "type",
+                  ],
+                  "type": "object",
+                },
+                "requestId": {
+                  "type": "string",
+                },
+                "status": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "statusCode",
+                  ],
+                  "type": "object",
+                },
+              },
+              "required": [
+                "status",
+                "requestId",
+                "conferenceSolutionKey",
+              ],
+              "type": "object",
+            },
+            "entryPoints": {
+              "items": {
+                "properties": {
+                  "accessCode": {
+                    "type": "string",
+                  },
+                  "entryPointType": {
+                    "type": "string",
+                  },
+                  "label": {
+                    "type": "string",
+                  },
+                  "meetingCode": {
+                    "type": "string",
+                  },
+                  "passcode": {
+                    "type": "string",
+                  },
+                  "password": {
+                    "type": "string",
+                  },
+                  "pin": {
+                    "type": "string",
+                  },
+                  "uri": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "pin",
+                  "uri",
+                  "label",
+                  "passcode",
+                  "password",
+                  "accessCode",
+                  "meetingCode",
+                  "entryPointType",
+                ],
+                "type": "object",
+              },
+              "type": "array",
+            },
+            "notes": {
+              "type": "string",
+            },
+            "signature": {
               "type": "string",
             },
           },
           "required": [
-            "key",
-            "name",
-            "iconUri",
+            "createRequest",
+            "entryPoints",
+            "conferenceSolution",
+            "conferenceId",
+            "signature",
+            "notes",
           ],
           "type": "object",
-        },
-        "conferenceData.createRequest": {
-          "properties": {
-            "conferenceSolutionKey": {
-              "properties": {
-                "type": {
-                  "type": "string",
-                },
-              },
-              "required": [
-                "type",
-              ],
-              "type": "object",
-            },
-            "requestId": {
-              "type": "string",
-            },
-            "status": {
-              "properties": {
-                "statusCode": {
-                  "type": "string",
-                },
-              },
-              "required": [
-                "statusCode",
-              ],
-              "type": "object",
-            },
-          },
-          "required": [
-            "status",
-            "requestId",
-            "conferenceSolutionKey",
-          ],
-          "type": "object",
-        },
-        "conferenceData.entryPoints": {
-          "items": {
-            "properties": {
-              "accessCode": {
-                "type": "string",
-              },
-              "entryPointType": {
-                "type": "string",
-              },
-              "label": {
-                "type": "string",
-              },
-              "meetingCode": {
-                "type": "string",
-              },
-              "passcode": {
-                "type": "string",
-              },
-              "password": {
-                "type": "string",
-              },
-              "pin": {
-                "type": "string",
-              },
-              "uri": {
-                "type": "string",
-              },
-            },
-            "required": [
-              "pin",
-              "uri",
-              "label",
-              "passcode",
-              "password",
-              "accessCode",
-              "meetingCode",
-              "entryPointType",
-            ],
-            "type": "object",
-          },
-          "type": "array",
-        },
-        "conferenceData.notes": {
-          "type": "string",
-        },
-        "conferenceData.signature": {
-          "type": "string",
         },
         "created": {
           "type": "string",
         },
-        "creator.displayName": {
-          "type": "string",
-        },
-        "creator.email": {
-          "type": "string",
-        },
-        "creator.id": {
-          "type": "string",
-        },
-        "creator.self": {
-          "type": "boolean",
+        "creator": {
+          "properties": {
+            "displayName": {
+              "type": "string",
+            },
+            "email": {
+              "type": "string",
+            },
+            "id": {
+              "type": "string",
+            },
+            "self": {
+              "type": "boolean",
+            },
+          },
+          "required": [
+            "id",
+            "email",
+            "displayName",
+            "self",
+          ],
+          "type": "object",
         },
         "description": {
           "type": "string",
         },
-        "end.date": {
-          "format": "date-time",
-          "type": "string",
-        },
-        "end.string": {
-          "type": "string",
-        },
-        "end.timeZone": {
-          "type": "string",
+        "end": {
+          "properties": {
+            "date": {
+              "format": "date-time",
+              "type": "string",
+            },
+            "string": {
+              "type": "string",
+            },
+            "timeZone": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "date",
+            "string",
+            "timeZone",
+          ],
+          "type": "object",
         },
         "endTimeUnspecified": {
           "type": "boolean",
@@ -238,59 +288,83 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "eventType": {
           "type": "string",
         },
-        "extendedProperties.private": {
+        "extendedProperties": {
           "properties": {
-            "key": {
-              "type": "string",
+            "private": {
+              "properties": {
+                "key": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "key",
+              ],
+              "type": "object",
+            },
+            "shared": {
+              "properties": {
+                "key": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "key",
+              ],
+              "type": "object",
             },
           },
           "required": [
-            "key",
+            "private",
+            "shared",
           ],
           "type": "object",
         },
-        "extendedProperties.shared": {
+        "gadget": {
           "properties": {
-            "key": {
+            "display": {
               "type": "string",
+            },
+            "height": {
+              "type": "integer",
+            },
+            "iconLink": {
+              "type": "string",
+            },
+            "link": {
+              "type": "string",
+            },
+            "preferences": {
+              "properties": {
+                "key": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "key",
+              ],
+              "type": "object",
+            },
+            "title": {
+              "type": "string",
+            },
+            "type": {
+              "type": "string",
+            },
+            "width": {
+              "type": "integer",
             },
           },
           "required": [
-            "key",
+            "type",
+            "title",
+            "link",
+            "iconLink",
+            "width",
+            "height",
+            "display",
+            "preferences",
           ],
           "type": "object",
-        },
-        "gadget.display": {
-          "type": "string",
-        },
-        "gadget.height": {
-          "type": "integer",
-        },
-        "gadget.iconLink": {
-          "type": "string",
-        },
-        "gadget.link": {
-          "type": "string",
-        },
-        "gadget.preferences": {
-          "properties": {
-            "key": {
-              "type": "string",
-            },
-          },
-          "required": [
-            "key",
-          ],
-          "type": "object",
-        },
-        "gadget.title": {
-          "type": "string",
-        },
-        "gadget.type": {
-          "type": "string",
-        },
-        "gadget.width": {
-          "type": "integer",
         },
         "guestsCanInviteOthers": {
           "type": "boolean",
@@ -322,76 +396,133 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "locked": {
           "type": "boolean",
         },
-        "organizer.displayName": {
-          "type": "string",
+        "organizer": {
+          "properties": {
+            "displayName": {
+              "type": "string",
+            },
+            "email": {
+              "type": "string",
+            },
+            "id": {
+              "type": "string",
+            },
+            "self": {
+              "type": "boolean",
+            },
+          },
+          "required": [
+            "id",
+            "email",
+            "displayName",
+            "self",
+          ],
+          "type": "object",
         },
-        "organizer.email": {
-          "type": "string",
-        },
-        "organizer.id": {
-          "type": "string",
-        },
-        "organizer.self": {
-          "type": "boolean",
-        },
-        "originalStartTime.date": {
-          "format": "date-time",
-          "type": "string",
-        },
-        "originalStartTime.dateTime": {
-          "type": "string",
-        },
-        "originalStartTime.timeZone": {
-          "type": "string",
+        "originalStartTime": {
+          "properties": {
+            "date": {
+              "format": "date-time",
+              "type": "string",
+            },
+            "dateTime": {
+              "type": "string",
+            },
+            "timeZone": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "date",
+            "dateTime",
+            "timeZone",
+          ],
+          "type": "object",
         },
         "privateCopy": {
           "type": "boolean",
         },
-        "recurrence.0": {
-          "type": "string",
+        "recurrence": {
+          "properties": {
+            "0": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "0",
+          ],
+          "type": "object",
         },
         "recurringEventId": {
           "type": "string",
         },
-        "reminders.overrides": {
-          "items": {
-            "properties": {
-              "method": {
-                "type": "string",
+        "reminders": {
+          "properties": {
+            "overrides": {
+              "items": {
+                "properties": {
+                  "method": {
+                    "type": "string",
+                  },
+                  "minutes": {
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "method",
+                  "minutes",
+                ],
+                "type": "object",
               },
-              "minutes": {
-                "type": "integer",
-              },
+              "type": "array",
             },
-            "required": [
-              "method",
-              "minutes",
-            ],
-            "type": "object",
+            "useDefault": {
+              "type": "boolean",
+            },
           },
-          "type": "array",
-        },
-        "reminders.useDefault": {
-          "type": "boolean",
+          "required": [
+            "useDefault",
+            "overrides",
+          ],
+          "type": "object",
         },
         "sequence": {
           "type": "integer",
         },
-        "source.title": {
-          "type": "string",
+        "source": {
+          "properties": {
+            "title": {
+              "type": "string",
+            },
+            "url": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "url",
+            "title",
+          ],
+          "type": "object",
         },
-        "source.url": {
-          "type": "string",
-        },
-        "start.date": {
-          "format": "date-time",
-          "type": "string",
-        },
-        "start.dateTime": {
-          "type": "string",
-        },
-        "start.timeZone": {
-          "type": "string",
+        "start": {
+          "properties": {
+            "date": {
+              "format": "date-time",
+              "type": "string",
+            },
+            "dateTime": {
+              "type": "string",
+            },
+            "timeZone": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "date",
+            "dateTime",
+            "timeZone",
+          ],
+          "type": "object",
         },
         "status": {
           "type": "string",
@@ -408,49 +539,60 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "visibility": {
           "type": "string",
         },
-        "workingLocationProperties.customLocation": {
+        "workingLocationProperties": {
           "properties": {
-            "label": {
+            "customLocation": {
+              "properties": {
+                "label": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "label",
+              ],
+              "type": "object",
+            },
+            "homeOffice": {
+              "type": "string",
+            },
+            "officeLocation": {
+              "properties": {
+                "buildingId": {
+                  "type": "string",
+                },
+                "deskId": {
+                  "type": "string",
+                },
+                "floorId": {
+                  "type": "string",
+                },
+                "floorSectionId": {
+                  "type": "string",
+                },
+                "label": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "label",
+                "deskId",
+                "floorId",
+                "buildingId",
+                "floorSectionId",
+              ],
+              "type": "object",
+            },
+            "type": {
               "type": "string",
             },
           },
           "required": [
-            "label",
+            "type",
+            "homeOffice",
+            "customLocation",
+            "officeLocation",
           ],
           "type": "object",
-        },
-        "workingLocationProperties.homeOffice": {
-          "type": "string",
-        },
-        "workingLocationProperties.officeLocation": {
-          "properties": {
-            "buildingId": {
-              "type": "string",
-            },
-            "deskId": {
-              "type": "string",
-            },
-            "floorId": {
-              "type": "string",
-            },
-            "floorSectionId": {
-              "type": "string",
-            },
-            "label": {
-              "type": "string",
-            },
-          },
-          "required": [
-            "label",
-            "deskId",
-            "floorId",
-            "buildingId",
-            "floorSectionId",
-          ],
-          "type": "object",
-        },
-        "workingLocationProperties.type": {
-          "type": "string",
         },
       },
       "required": [
@@ -465,64 +607,64 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         "description",
         "location",
         "colorId",
-        "creator.id",
-        "creator.email",
-        "creator.displayName",
-        "creator.self",
-        "organizer.id",
-        "organizer.email",
-        "organizer.displayName",
-        "organizer.self",
-        "start.date",
-        "start.dateTime",
-        "start.timeZone",
-        "end.date",
-        "end.string",
-        "end.timeZone",
+        "creator",
+        "creator",
+        "creator",
+        "creator",
+        "organizer",
+        "organizer",
+        "organizer",
+        "organizer",
+        "start",
+        "start",
+        "start",
+        "end",
+        "end",
+        "end",
         "endTimeUnspecified",
-        "recurrence.0",
+        "recurrence",
         "recurringEventId",
-        "originalStartTime.date",
-        "originalStartTime.dateTime",
-        "originalStartTime.timeZone",
+        "originalStartTime",
+        "originalStartTime",
+        "originalStartTime",
         "transparency",
         "visibility",
         "iCalUID",
         "sequence",
-        "attendees.0",
+        "attendees",
         "attendeesOmitted",
-        "extendedProperties.private",
-        "extendedProperties.shared",
+        "extendedProperties",
+        "extendedProperties",
         "hangoutLink",
-        "conferenceData.createRequest",
-        "conferenceData.entryPoints",
-        "conferenceData.conferenceSolution",
-        "conferenceData.conferenceId",
-        "conferenceData.signature",
-        "conferenceData.notes",
-        "gadget.type",
-        "gadget.title",
-        "gadget.link",
-        "gadget.iconLink",
-        "gadget.width",
-        "gadget.height",
-        "gadget.display",
-        "gadget.preferences",
+        "conferenceData",
+        "conferenceData",
+        "conferenceData",
+        "conferenceData",
+        "conferenceData",
+        "conferenceData",
+        "gadget",
+        "gadget",
+        "gadget",
+        "gadget",
+        "gadget",
+        "gadget",
+        "gadget",
+        "gadget",
         "anyoneCanAddSelf",
         "guestsCanInviteOthers",
         "guestsCanModify",
         "guestsCanSeeOtherGuests",
         "privateCopy",
         "locked",
-        "reminders.useDefault",
-        "reminders.overrides",
-        "source.url",
-        "source.title",
-        "workingLocationProperties.type",
-        "workingLocationProperties.homeOffice",
-        "workingLocationProperties.customLocation",
-        "workingLocationProperties.officeLocation",
-        "attachments.0",
+        "reminders",
+        "reminders",
+        "source",
+        "source",
+        "workingLocationProperties",
+        "workingLocationProperties",
+        "workingLocationProperties",
+        "workingLocationProperties",
+        "attachments",
         "eventType",
       ],
       "type": "object",

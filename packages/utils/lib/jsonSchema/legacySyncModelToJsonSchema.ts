@@ -14,22 +14,49 @@ export function legacySyncModelsToJsonSchema(models: LegacySyncModelSchema[]): J
 }
 
 function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: LegacySyncModelSchema[]): JSONSchema7 {
-    const properties: Record<string, JSONSchema7> = {};
+    const properties = new Map<string, JSONSchema7>();
     const required: string[] = [];
+
     const fields = Array.isArray(model.fields) ? model.fields : [];
+
     for (const field of fields) {
         // Optional fields end with '?' or '| undefined'
         const isOptional = /\?$/.test(field.name) || (typeof field.type === 'string' && /\|\s*undefined$/.test(field.type));
+        // Remove the optional marker.
         const cleanName = field.name.replace(/\?$/, '');
-        properties[cleanName] = legacySyncFieldToJsonSchema(field, allModels);
+
+        const nameChunks = cleanName.split('.');
+        // Handling nested fields represented by a dot in the name.
+        if (nameChunks.length > 1) {
+            const parentName = nameChunks.shift()!;
+            const rest = nameChunks.join('.');
+
+            // We call this function recusively, but without the parent name. Then we merge resulting object schemas.
+            const schema = legacySyncModelToJsonSchema({ name: '', fields: [{ ...field, name: rest }] }, allModels);
+
+            if (properties.has(parentName)) {
+                properties.set(parentName, mergeObjects(properties.get(parentName)!, schema));
+            } else {
+                properties.set(parentName, schema);
+            }
+
+            if (!isOptional) {
+                required.push(parentName);
+            }
+
+            continue;
+        }
+
+        properties.set(cleanName, legacySyncFieldToJsonSchema(field, allModels));
+
         if (!isOptional) {
             required.push(cleanName);
         }
-        continue;
     }
+
     return {
         type: 'object',
-        properties,
+        properties: Object.fromEntries(properties),
         required
     };
 }
@@ -123,4 +150,17 @@ function objectToFields(object: Record<string, string>): LegacySyncModelSchema['
         fields.push({ name: key, type: value });
     }
     return fields;
+}
+
+function mergeObjects(a: JSONSchema7, b: JSONSchema7): JSONSchema7 {
+    // If this happens it's invalid anyway.
+    if (a.type !== 'object' || b.type !== 'object') {
+        return a;
+    }
+
+    return {
+        ...a,
+        properties: { ...a.properties, ...b.properties },
+        required: [...(a.required || []), ...(b.required || [])]
+    };
 }
