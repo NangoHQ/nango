@@ -17,8 +17,7 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: false,
             connections_max: 1000,
             name: 'free',
-            sync_frequency_secs_min: 3600,
-            auto_idle: true
+            sync_frequency_secs_min: 3600
         },
         display: {
             features: [
@@ -50,8 +49,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'yc',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         }
     },
     {
@@ -69,8 +67,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'starter',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         },
         display: {
             featuresHeading: 'Everything in Free, plus:',
@@ -97,8 +94,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'growth',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         },
         display: {
             featuresHeading: 'Everything in Starter, plus:',
@@ -128,8 +124,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: true,
             has_sync_variants: true,
             name: 'enterprise',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         },
         display: {
             features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -151,8 +146,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: false,
             name: 'internal',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         }
     },
 
@@ -171,8 +165,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'starter',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         }
     },
     {
@@ -189,8 +182,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'scale',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         }
     },
     {
@@ -207,8 +199,7 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'growth',
-            sync_frequency_secs_min: 30,
-            auto_idle: false
+            sync_frequency_secs_min: 30
         }
     }
 ];
