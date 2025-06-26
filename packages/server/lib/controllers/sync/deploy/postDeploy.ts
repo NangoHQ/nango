@@ -67,7 +67,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         orchestrator
     });
 
-    if (plan && !plan.trial_end_at && plan.name === 'free') {
+    if (plan && !plan.trial_end_at && plan.auto_idle) {
         await startTrial(db.knex, plan);
         productTracking.track({ name: 'account:trial:started', team: account });
     }

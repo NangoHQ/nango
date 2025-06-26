@@ -18839,7 +18839,7 @@ integrations:
                     - channels:read
                     - channels:join
             messages:
-                version: 1.0.3
+                version: 1.0.4
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &
