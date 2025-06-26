@@ -15,7 +15,7 @@ export function legacySyncModelsToJsonSchema(models: LegacySyncModelSchema[]): J
 
 function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: LegacySyncModelSchema[]): JSONSchema7 {
     const properties = new Map<string, JSONSchema7>();
-    const required: string[] = [];
+    const required = new Set<string>();
 
     const fields = Array.isArray(model.fields) ? model.fields : [];
 
@@ -41,7 +41,7 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
             }
 
             if (!isOptional) {
-                required.push(parentName);
+                required.add(parentName);
             }
 
             continue;
@@ -50,14 +50,14 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
         properties.set(cleanName, legacySyncFieldToJsonSchema(field, allModels));
 
         if (!isOptional) {
-            required.push(cleanName);
+            required.add(cleanName);
         }
     }
 
     return {
         type: 'object',
         properties: Object.fromEntries(properties),
-        required
+        required: Array.from(required)
     };
 }
 

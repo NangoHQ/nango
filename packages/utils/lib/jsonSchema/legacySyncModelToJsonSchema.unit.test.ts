@@ -154,56 +154,52 @@ describe('legacySyncModelsToJsonSchema', () => {
         expect(result).toMatchSnapshot();
     });
 
+    it('should handle inline objects', () => {
+        const models: LegacySyncModelSchema[] = [
+            {
+                name: 'InlineObject',
+                fields: [
+                    { name: 'string', type: 'string' },
+                    { name: 'object', type: { string: 'string', number: 'number' } }
+                ]
+            } as LegacySyncModelSchema
+        ];
+
+        const result = legacySyncModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle nested fields separated by dots', () => {
+        const models: LegacySyncModelSchema[] = [
+            {
+                name: 'NestedFields',
+                fields: [
+                    { name: 'string', type: 'string' },
+                    { name: 'nested.string', type: 'string' },
+                    { name: 'nested.number', type: 'number' },
+                    { name: 'nested.object.string', type: 'string' },
+                    { name: 'nested.object.number', type: 'number' },
+                    {
+                        name: 'nested.object.inlineObject',
+                        type: {
+                            string: 'string',
+                            number: 'number'
+                        }
+                    }
+                ]
+            } as LegacySyncModelSchema
+        ];
+        const result = legacySyncModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
     describe('real-world examples', () => {
         it('GoogleCalendarEvent', () => {
             const models: LegacySyncModelSchema[] = [
                 {
                     name: 'GoogleCalendarEvent',
                     fields: [
-                        {
-                            name: 'kind',
-                            type: 'string'
-                        },
-                        {
-                            name: 'etag',
-                            type: 'string'
-                        },
-                        {
-                            name: 'id',
-                            type: 'string'
-                        },
-                        {
-                            name: 'status',
-                            type: 'string'
-                        },
-                        {
-                            name: 'htmlLink',
-                            type: 'string'
-                        },
-                        {
-                            name: 'created',
-                            type: 'string'
-                        },
-                        {
-                            name: 'updated',
-                            type: 'string'
-                        },
-                        {
-                            name: 'summary',
-                            type: 'string'
-                        },
-                        {
-                            name: 'description',
-                            type: 'string'
-                        },
-                        {
-                            name: 'location',
-                            type: 'string'
-                        },
-                        {
-                            name: 'colorId',
-                            type: 'string'
-                        },
+                        // Reduced to special cases
                         {
                             name: 'creator.id',
                             type: 'string'
@@ -285,22 +281,6 @@ describe('legacySyncModelsToJsonSchema', () => {
                             type: 'string'
                         },
                         {
-                            name: 'transparency',
-                            type: 'string'
-                        },
-                        {
-                            name: 'visibility',
-                            type: 'string'
-                        },
-                        {
-                            name: 'iCalUID',
-                            type: 'string'
-                        },
-                        {
-                            name: 'sequence',
-                            type: 'integer'
-                        },
-                        {
                             name: 'attendees.0',
                             type: {
                                 id: 'string',
@@ -316,10 +296,6 @@ describe('legacySyncModelsToJsonSchema', () => {
                             }
                         },
                         {
-                            name: 'attendeesOmitted',
-                            type: 'boolean'
-                        },
-                        {
                             name: 'extendedProperties.private',
                             type: {
                                 key: 'string'
@@ -330,10 +306,6 @@ describe('legacySyncModelsToJsonSchema', () => {
                             type: {
                                 key: 'string'
                             }
-                        },
-                        {
-                            name: 'hangoutLink',
-                            type: 'string'
                         },
                         {
                             name: 'conferenceData.createRequest',
@@ -372,79 +344,12 @@ describe('legacySyncModelsToJsonSchema', () => {
                                 iconUri: 'string'
                             }
                         },
-                        {
-                            name: 'conferenceData.conferenceId',
-                            type: 'string'
-                        },
-                        {
-                            name: 'conferenceData.signature',
-                            type: 'string'
-                        },
-                        {
-                            name: 'conferenceData.notes',
-                            type: 'string'
-                        },
-                        {
-                            name: 'gadget.type',
-                            type: 'string'
-                        },
-                        {
-                            name: 'gadget.title',
-                            type: 'string'
-                        },
-                        {
-                            name: 'gadget.link',
-                            type: 'string'
-                        },
-                        {
-                            name: 'gadget.iconLink',
-                            type: 'string'
-                        },
-                        {
-                            name: 'gadget.width',
-                            type: 'integer'
-                        },
-                        {
-                            name: 'gadget.height',
-                            type: 'integer'
-                        },
-                        {
-                            name: 'gadget.display',
-                            type: 'string'
-                        },
+
                         {
                             name: 'gadget.preferences',
                             type: {
                                 key: 'string'
                             }
-                        },
-                        {
-                            name: 'anyoneCanAddSelf',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'guestsCanInviteOthers',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'guestsCanModify',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'guestsCanSeeOtherGuests',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'privateCopy',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'locked',
-                            type: 'boolean'
-                        },
-                        {
-                            name: 'reminders.useDefault',
-                            type: 'boolean'
                         },
                         {
                             name: 'reminders.overrides',
@@ -502,7 +407,7 @@ describe('legacySyncModelsToJsonSchema', () => {
                             type: 'string'
                         }
                     ]
-                }
+                } as LegacySyncModelSchema
             ];
 
             const result = legacySyncModelsToJsonSchema(models);

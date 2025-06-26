@@ -5,9 +5,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
   "definitions": {
     "GoogleCalendarEvent": {
       "properties": {
-        "anyoneCanAddSelf": {
-          "type": "boolean",
-        },
         "attachments": {
           "properties": {
             "0": {
@@ -98,17 +95,8 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
           ],
           "type": "object",
         },
-        "attendeesOmitted": {
-          "type": "boolean",
-        },
-        "colorId": {
-          "type": "string",
-        },
         "conferenceData": {
           "properties": {
-            "conferenceId": {
-              "type": "string",
-            },
             "conferenceSolution": {
               "properties": {
                 "iconUri": {
@@ -213,25 +201,13 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
               },
               "type": "array",
             },
-            "notes": {
-              "type": "string",
-            },
-            "signature": {
-              "type": "string",
-            },
           },
           "required": [
             "createRequest",
             "entryPoints",
             "conferenceSolution",
-            "conferenceId",
-            "signature",
-            "notes",
           ],
           "type": "object",
-        },
-        "created": {
-          "type": "string",
         },
         "creator": {
           "properties": {
@@ -256,9 +232,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
           ],
           "type": "object",
         },
-        "description": {
-          "type": "string",
-        },
         "end": {
           "properties": {
             "date": {
@@ -281,9 +254,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         },
         "endTimeUnspecified": {
           "type": "boolean",
-        },
-        "etag": {
-          "type": "string",
         },
         "eventType": {
           "type": "string",
@@ -321,18 +291,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         },
         "gadget": {
           "properties": {
-            "display": {
-              "type": "string",
-            },
-            "height": {
-              "type": "integer",
-            },
-            "iconLink": {
-              "type": "string",
-            },
-            "link": {
-              "type": "string",
-            },
             "preferences": {
               "properties": {
                 "key": {
@@ -344,57 +302,11 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
               ],
               "type": "object",
             },
-            "title": {
-              "type": "string",
-            },
-            "type": {
-              "type": "string",
-            },
-            "width": {
-              "type": "integer",
-            },
           },
           "required": [
-            "type",
-            "title",
-            "link",
-            "iconLink",
-            "width",
-            "height",
-            "display",
             "preferences",
           ],
           "type": "object",
-        },
-        "guestsCanInviteOthers": {
-          "type": "boolean",
-        },
-        "guestsCanModify": {
-          "type": "boolean",
-        },
-        "guestsCanSeeOtherGuests": {
-          "type": "boolean",
-        },
-        "hangoutLink": {
-          "type": "string",
-        },
-        "htmlLink": {
-          "type": "string",
-        },
-        "iCalUID": {
-          "type": "string",
-        },
-        "id": {
-          "type": "string",
-        },
-        "kind": {
-          "type": "string",
-        },
-        "location": {
-          "type": "string",
-        },
-        "locked": {
-          "type": "boolean",
         },
         "organizer": {
           "properties": {
@@ -439,9 +351,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
           ],
           "type": "object",
         },
-        "privateCopy": {
-          "type": "boolean",
-        },
         "recurrence": {
           "properties": {
             "0": {
@@ -476,18 +385,11 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
               },
               "type": "array",
             },
-            "useDefault": {
-              "type": "boolean",
-            },
           },
           "required": [
-            "useDefault",
             "overrides",
           ],
           "type": "object",
-        },
-        "sequence": {
-          "type": "integer",
         },
         "source": {
           "properties": {
@@ -523,21 +425,6 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
             "timeZone",
           ],
           "type": "object",
-        },
-        "status": {
-          "type": "string",
-        },
-        "summary": {
-          "type": "string",
-        },
-        "transparency": {
-          "type": "string",
-        },
-        "updated": {
-          "type": "string",
-        },
-        "visibility": {
-          "type": "string",
         },
         "workingLocationProperties": {
           "properties": {
@@ -596,73 +483,20 @@ exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEven
         },
       },
       "required": [
-        "kind",
-        "etag",
-        "id",
-        "status",
-        "htmlLink",
-        "created",
-        "updated",
-        "summary",
-        "description",
-        "location",
-        "colorId",
         "creator",
-        "creator",
-        "creator",
-        "creator",
-        "organizer",
-        "organizer",
-        "organizer",
         "organizer",
         "start",
-        "start",
-        "start",
-        "end",
-        "end",
         "end",
         "endTimeUnspecified",
         "recurrence",
         "recurringEventId",
         "originalStartTime",
-        "originalStartTime",
-        "originalStartTime",
-        "transparency",
-        "visibility",
-        "iCalUID",
-        "sequence",
         "attendees",
-        "attendeesOmitted",
         "extendedProperties",
-        "extendedProperties",
-        "hangoutLink",
-        "conferenceData",
-        "conferenceData",
-        "conferenceData",
-        "conferenceData",
-        "conferenceData",
         "conferenceData",
         "gadget",
-        "gadget",
-        "gadget",
-        "gadget",
-        "gadget",
-        "gadget",
-        "gadget",
-        "gadget",
-        "anyoneCanAddSelf",
-        "guestsCanInviteOthers",
-        "guestsCanModify",
-        "guestsCanSeeOtherGuests",
-        "privateCopy",
-        "locked",
-        "reminders",
         "reminders",
         "source",
-        "source",
-        "workingLocationProperties",
-        "workingLocationProperties",
-        "workingLocationProperties",
         "workingLocationProperties",
         "attachments",
         "eventType",
@@ -843,12 +677,106 @@ exports[`legacySyncModelsToJsonSchema > should handle empty models array 1`] = `
 }
 `;
 
+exports[`legacySyncModelsToJsonSchema > should handle inline objects 1`] = `
+{
+  "definitions": {
+    "InlineObject": {
+      "properties": {
+        "object": {
+          "properties": {
+            "number": {
+              "type": "number",
+            },
+            "string": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "string",
+            "number",
+          ],
+          "type": "object",
+        },
+        "string": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "string",
+        "object",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`legacySyncModelsToJsonSchema > should handle model with no fields 1`] = `
 {
   "definitions": {
     "EmptyModel": {
       "properties": {},
       "required": [],
+      "type": "object",
+    },
+  },
+}
+`;
+
+exports[`legacySyncModelsToJsonSchema > should handle nested fields separated by dots 1`] = `
+{
+  "definitions": {
+    "NestedFields": {
+      "properties": {
+        "nested": {
+          "properties": {
+            "number": {
+              "type": "number",
+            },
+            "object": {
+              "properties": {
+                "inlineObject": {
+                  "properties": {
+                    "number": {
+                      "type": "number",
+                    },
+                    "string": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "string",
+                    "number",
+                  ],
+                  "type": "object",
+                },
+              },
+              "required": [
+                "inlineObject",
+              ],
+              "type": "object",
+            },
+            "string": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "string",
+            "number",
+            "object",
+            "object",
+            "object",
+          ],
+          "type": "object",
+        },
+        "string": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "string",
+        "nested",
+      ],
       "type": "object",
     },
   },
