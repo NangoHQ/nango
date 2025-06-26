@@ -29,7 +29,7 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
     const handled = await handleWebhook(req.body as Webhooks);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
-        res.status(500).send({ success: false });
+        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
         return;
     }
 

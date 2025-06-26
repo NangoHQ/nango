@@ -150,9 +150,11 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string }): Promise<Result<void>> {
+    async applyPendingChanges(opts: { pendingChangeId: string; amount: number }): Promise<Result<void>> {
         try {
-            await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId);
+            await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
+                previously_collected_amount: String(opts.amount)
+            });
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_cancel_pending_changes', { cause: err }));
