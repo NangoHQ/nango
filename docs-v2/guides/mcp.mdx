@@ -1,8 +1,21 @@
 ---
-title: 'MCP'
-sidebarTitle: 'MCP'
-description: 'Your Nango actions as tools for LLMs, via an MCP server.'
+title: 'MCP & AI tools'
+sidebarTitle: 'MCP & AI tools'
+description: 'Connect agents to external APIs with Nango, with or without an MCP server.'
 ---
+
+# MCP demo
+
+<div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+    <iframe
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        src="https://www.youtube.com/embed/80W3AZMM9KY?modestbranding=1&rel=0&autohide=1"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+    ></iframe>
+</div>
 
 ## Who should use this
 
@@ -152,3 +165,9 @@ Nango MCP servers leverage Nango's mature action infrastructure. For details, ch
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip> 
+
+## Tool calling without MCP
+
+Many AI apps use custom tools rather than MCP servers. Nango's make it easier to expose tools consuming external APIs. 
+
+For this, Nango exposes an endpoint to introspect available actions ([reference](/reference/api/scripts/config)) as well as an endpoint to trigger actions ([reference](/reference/api/action/trigger)).
