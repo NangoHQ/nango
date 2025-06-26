@@ -522,9 +522,7 @@ export default class Nango {
         }
         if (installation === 'outbound') {
             return await this.triggerAuth({
-                authUrl:
-                    this.hostBaseUrl +
-                    `/auth/oauth-outbound/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig, installation)}`
+                authUrl: this.hostBaseUrl + `/auth/oauth-outbound/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`
             });
         }
 
@@ -537,7 +535,7 @@ export default class Nango {
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns The generated query string
      */
-    private toQueryString(connectionId: string | null, connectionConfig?: ConnectionConfig, installation?: string): string {
+    private toQueryString(connectionId: string | null, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
         if (connectionId) {
@@ -552,9 +550,6 @@ export default class Nango {
             query.push(`connect_session_token=${this.connectSessionToken}`);
         }
 
-        if (installation) {
-            query.push(`installation=${installation}`);
-        }
         if (connectionConfig) {
             for (const param in connectionConfig.params) {
                 const val = connectionConfig.params[param];

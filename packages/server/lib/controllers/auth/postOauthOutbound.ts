@@ -29,7 +29,6 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         hmac: z.string().optional(),
-        installation: z.literal('outbound'),
         params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
