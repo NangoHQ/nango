@@ -26,7 +26,8 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
             if (!row.original.durationMs) {
                 return 'n/a';
             }
-            return <div className="font-code text-s">{millisecondsToRuntime(row.original.durationMs)}</div>;
+            const displayDuration = millisecondsToRuntime(row.original.durationMs).split(' ')[0];
+            return <div className="font-code text-s">{displayDuration}</div>;
         }
     },
     {
