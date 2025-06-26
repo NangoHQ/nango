@@ -5472,6 +5472,8 @@ jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
+    default_scopes:
+        - offline_access
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
@@ -8498,6 +8500,32 @@ rippling-shop-app:
             description: ''
             automated: true
 
+roam-scim:
+    display_name: Roam (SCIM API)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ro.am/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/Users
+    docs: https://docs.nango.dev/integrations/all/roam-scim
+    docs_connect: https://docs.nango.dev/integrations/all/roam-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Roam organization settings.
+            example: rmk-uu9zt58h-EYHyLJ3ay4Mc-wuWQTOk-Y2yY-gZlW7Ys8AdVXBRZks_SGrCyZ09_IDvX9ikahdxushGYKcT77Fjw
+            pattern: '^rmk-[A-Za-z0-9_-]{86}$'
+            doc_section: '#step-1-generating-your-scim-api-token'
+
 rock-gym-pro:
     display_name: Rock Gym Pro
     categories:
@@ -9694,7 +9722,7 @@ strava-web:
     docs: https://docs.nango.dev/integrations/all/strava-web
 
 stripe:
-    display_name: Stripe
+    display_name: Stripe Connect
     categories:
         - payment
     auth_mode: OAUTH2
@@ -9812,27 +9840,67 @@ tapclicks:
     docs_connect: https://docs.nango.dev/integrations/all/tapclicks/connect
 
 tableau:
-    display_name: Tableau
+    display_name: Tableau (PAT)
     categories:
         - analytics
-    auth_mode: TABLEAU
-    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}/auth/signin
     proxy:
         headers:
             accept: application/json
             content-type: application/json
-        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+            x-tableau-auth: ${accessToken}
+        base_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}
+    token_params:
+        credentials:
+            personalAccessTokenName: ${credentials.pat}
+            personalAccessTokenSecret: ${credentials.secret}
+            site:
+                contentUrl: ${credentials.contentUrl}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: credentials.token
+        token_expiration: credentials.estimatedTimeToExpiration
+        token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/tableau
-    connection_config:
-        myServer:
+    docs_connect: https://docs.nango.dev/integrations/all/tableau/connect
+    credentials:
+        pat:
             type: string
-            title: Domain
+            title: Personal Access Token
+            description: Your Personal Access Token
+            doc_section: '#step-2-generating-your-personal-access-token'
+        secret:
+            type: string
+            title: Personal Access Token Secret
+            description: Your Personal Access Token Secret
+            secret: true
+            doc_section: '#step-2-generating-your-personal-access-token'
+        contentUrl:
+            type: string
+            title: Content Url
+            optional: true
+            example: test-eaec4a3fe2
+            doc_section: '#step-5-finding-your-content-url'
+            description: Your content URL
+    connection_config:
+        hostname:
+            type: string
+            title: HostName
             description: The domain of your Tableau instance
             format: hostname
+            order: 1
+            example: dub01.online.tableau.com
+            doc_section: '#step-3-finding-your-hostname'
             prefix: https://
         version:
             type: string
             title: API Version
+            order: 2
+            example: '3.26'
+            doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
 
 teamtailor:
