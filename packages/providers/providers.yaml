@@ -10565,10 +10565,6 @@ ukg-pro:
         headers:
             content-type: application/json
             us-customer-api-key: ${connectionConfig.customerApiKey}
-        verification:
-            method: GET
-            endpoints:
-                - /configuration/v1/earnings
     docs: https://docs.nango.dev/integrations/all/ukg-pro
     docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
     credentials:
