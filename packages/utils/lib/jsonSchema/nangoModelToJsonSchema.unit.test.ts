@@ -10,14 +10,14 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'AllPrimitiveTypes',
                 fields: [
-                    { name: 'stringField', value: 'string', optional: false },
-                    { name: 'numberField', value: 'number', optional: false },
-                    { name: 'booleanField', value: 'boolean', optional: false },
-                    { name: 'dateField', value: 'date', optional: false },
-                    { name: 'optionalString', value: 'string', optional: true },
-                    { name: 'unknownType', value: 'uuid', optional: false }, // Should default to string record
-                    { name: 'stringArray', value: 'string', array: true, optional: false },
-                    { name: 'numberArray', value: 'number', array: true, optional: true }
+                    { name: 'stringField', value: 'string', tsType: true, optional: false },
+                    { name: 'numberField', value: 'number', tsType: true, optional: false },
+                    { name: 'booleanField', value: 'boolean', tsType: true, optional: false },
+                    { name: 'dateField', value: 'date', tsType: true, optional: false },
+                    { name: 'optionalString', value: 'string', tsType: true, optional: true },
+                    { name: 'unknownType', value: 'uuid', tsType: true, optional: false }, // Should default to string record
+                    { name: 'stringArray', value: 'string', tsType: true, array: true, optional: false },
+                    { name: 'numberArray', value: 'number', tsType: true, array: true, optional: true }
                 ]
             }
         ];
@@ -31,16 +31,16 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Address',
                 fields: [
-                    { name: 'street', value: 'string', optional: false },
-                    { name: 'city', value: 'string', optional: false },
-                    { name: 'zipCode', value: 'string', optional: true }
+                    { name: 'street', value: 'string', tsType: true, optional: false },
+                    { name: 'city', value: 'string', tsType: true, optional: false },
+                    { name: 'zipCode', value: 'string', tsType: true, optional: true }
                 ]
             },
             {
                 name: 'Country',
                 fields: [
-                    { name: 'code', value: 'string', optional: false },
-                    { name: 'name', value: 'string', optional: false }
+                    { name: 'code', value: 'string', tsType: true, optional: false },
+                    { name: 'name', value: 'string', tsType: true, optional: false }
                 ]
             },
             {
@@ -53,7 +53,7 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'User',
                 fields: [
-                    { name: 'name', value: 'string', optional: false },
+                    { name: 'name', value: 'string', tsType: true, optional: false },
                     { name: 'primaryAddress', value: 'DetailedAddress', model: true, optional: false },
                     { name: 'addresses', value: 'Address', model: true, array: true, optional: true }
                 ]
@@ -69,8 +69,8 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Category',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
-                    { name: 'name', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
+                    { name: 'name', value: 'string', tsType: true, optional: false },
                     { name: 'parentCategory', value: 'Category', model: true, optional: true },
                     { name: 'subcategories', value: 'Category', model: true, array: true, optional: true }
                 ]
@@ -78,8 +78,8 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Post',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
-                    { name: 'title', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
+                    { name: 'title', value: 'string', tsType: true, optional: false },
                     { name: 'author', value: 'User', model: true, optional: false },
                     { name: 'comments', value: 'Comment', model: true, array: true, optional: true }
                 ]
@@ -87,8 +87,8 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Comment',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
-                    { name: 'content', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
+                    { name: 'content', value: 'string', tsType: true, optional: false },
                     { name: 'author', value: 'User', model: true, optional: false },
                     { name: 'post', value: 'Post', model: true, optional: false },
                     { name: 'replies', value: 'Comment', model: true, array: true, optional: true }
@@ -97,8 +97,8 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'User',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
-                    { name: 'username', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
+                    { name: 'username', value: 'string', tsType: true, optional: false },
                     { name: 'posts', value: 'Post', model: true, array: true, optional: true },
                     { name: 'comments', value: 'Comment', model: true, array: true, optional: true }
                 ]
@@ -114,36 +114,36 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Person',
                 fields: [
-                    { name: 'name', value: 'string', optional: false },
-                    { name: 'age', value: 'number', optional: false }
+                    { name: 'name', value: 'string', tsType: true, optional: false },
+                    { name: 'age', value: 'number', tsType: true, optional: false }
                 ]
             },
             {
                 name: 'Company',
                 fields: [
-                    { name: 'companyName', value: 'string', optional: false },
-                    { name: 'employees', value: 'number', optional: false }
+                    { name: 'companyName', value: 'string', tsType: true, optional: false },
+                    { name: 'employees', value: 'number', tsType: true, optional: false }
                 ]
             },
             {
                 name: 'Tag',
                 fields: [
-                    { name: 'label', value: 'string', optional: false },
-                    { name: 'color', value: 'string', optional: true }
+                    { name: 'label', value: 'string', tsType: true, optional: false },
+                    { name: 'color', value: 'string', tsType: true, optional: true }
                 ]
             },
             {
                 name: 'FlexibleEntity',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
                     // Union of primitive types
                     {
                         name: 'primitiveUnion',
                         union: true,
                         value: [
-                            { name: 'string_option', value: 'string' },
-                            { name: 'number_option', value: 'number' },
-                            { name: 'boolean_option', value: 'boolean' }
+                            { name: 'string_option', value: 'string', tsType: true },
+                            { name: 'number_option', value: 'number', tsType: true },
+                            { name: 'boolean_option', value: 'boolean', tsType: true }
                         ],
                         optional: false
                     },
@@ -162,7 +162,7 @@ describe('nangoModelsToJsonSchema', () => {
                         name: 'mixedUnion',
                         union: true,
                         value: [
-                            { name: 'string_option', value: 'string' },
+                            { name: 'string_option', value: 'string', tsType: true },
                             { name: 'tags_array_option', value: 'Tag', model: true, array: true }
                         ],
                         optional: true
@@ -180,17 +180,17 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'Metadata',
                 fields: [
-                    { name: 'key', value: 'string', optional: false },
-                    { name: 'value', value: 'string', optional: false }
+                    { name: 'key', value: 'string', tsType: true, optional: false },
+                    { name: 'value', value: 'string', tsType: true, optional: false }
                 ]
             },
             {
                 name: 'ArrayShowcase',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
+                    { name: 'id', value: 'string', tsType: true, optional: false },
                     // Array of primitives
-                    { name: 'tags', value: 'string', array: true, optional: false },
-                    { name: 'scores', value: 'number', array: true, optional: true },
+                    { name: 'tags', value: 'string', array: true, tsType: true, optional: false },
+                    { name: 'scores', value: 'number', array: true, tsType: true, optional: true },
                     // Array of models
                     { name: 'metadata', value: 'Metadata', model: true, array: true, optional: false },
                     // Array with union types
@@ -199,7 +199,7 @@ describe('nangoModelsToJsonSchema', () => {
                         array: true,
                         union: true,
                         value: [
-                            { name: 'string_option', value: 'string' },
+                            { name: 'string_option', value: 'string', tsType: true },
                             { name: 'metadata_option', value: 'Metadata', model: true }
                         ],
                         optional: true
@@ -235,8 +235,8 @@ describe('nangoModelsToJsonSchema', () => {
             {
                 name: 'LinearTeamBase',
                 fields: [
-                    { name: 'id', value: 'string', optional: false },
-                    { name: 'name', value: 'string', optional: false }
+                    { name: 'id', value: 'string', tsType: true, optional: false },
+                    { name: 'name', value: 'string', tsType: true, optional: false }
                 ]
             },
             {
@@ -257,6 +257,7 @@ describe('nangoModelsToJsonSchema', () => {
                                 name: 'hasNextPage',
                                 array: false,
                                 value: 'boolean',
+                                tsType: true,
                                 optional: false
                             },
                             {
@@ -267,6 +268,7 @@ describe('nangoModelsToJsonSchema', () => {
                                         name: '0',
                                         array: false,
                                         value: 'string',
+                                        tsType: true,
                                         optional: false
                                     },
                                     {
@@ -325,6 +327,132 @@ describe('nangoModelsToJsonSchema', () => {
                                 ]
                             }
                         ],
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle dynamic fields', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'DynamicFields',
+                fields: [{ name: 'fields', array: true, model: true, value: 'Field', optional: false }]
+            },
+            {
+                name: 'Field',
+                fields: [
+                    {
+                        name: '__string',
+                        union: true,
+                        value: [
+                            { name: '0', array: false, model: true, value: 'Field', optional: false },
+                            { name: '1', array: false, value: 'string', tsType: true, optional: false }
+                        ],
+                        dynamic: true,
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle literals', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'Literals',
+                fields: [
+                    { name: 'stringLiteral', value: 'nango', optional: false },
+                    {
+                        name: 'stringLiteralUnion',
+                        union: true,
+                        value: [
+                            { name: '0', array: false, value: 'nango', optional: false },
+                            { name: '1', array: false, value: 'mongo', optional: false }
+                        ],
+                        optional: false
+                    },
+                    {
+                        name: 'truth',
+                        value: true,
+                        optional: false
+                    },
+                    {
+                        name: 'lie',
+                        value: false,
+                        optional: false
+                    },
+                    {
+                        name: 'numberLiteral',
+                        value: 1,
+                        optional: false
+                    },
+                    {
+                        name: 'numberLiteralUnion',
+                        union: true,
+                        value: [
+                            {
+                                name: '0',
+                                array: false,
+                                value: 1,
+                                tsType: true,
+                                optional: false
+                            },
+                            {
+                                name: '1',
+                                array: false,
+                                value: 2,
+                                tsType: true,
+                                optional: false
+                            },
+                            {
+                                name: '2',
+                                array: false,
+                                value: 3,
+                                tsType: true,
+                                optional: false
+                            }
+                        ],
+                        optional: false
+                    }
+                ]
+            }
+        ];
+
+        const result = nangoModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
+    it('should handle special cases', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'SpecialCases',
+                fields: [
+                    { name: 'nullValue', value: null, tsType: true, optional: false },
+                    {
+                        name: 'undefinedValue',
+                        value: 'undefined',
+                        tsType: true,
+                        optional: false
+                    },
+                    {
+                        name: 'bigint',
+                        value: 'bigint',
+                        tsType: true,
+                        optional: false
+                    },
+                    {
+                        name: 'array',
+                        value: 'any[]',
+                        tsType: true,
+                        array: false, // Intentionally not an array (that's how nango.yaml gets converted)
                         optional: false
                     }
                 ]

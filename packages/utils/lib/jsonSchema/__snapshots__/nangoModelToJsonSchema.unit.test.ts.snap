@@ -34,10 +34,8 @@ exports[`nangoModelsToJsonSchema > should handle all primitive types and basic f
           "type": "string",
         },
         "unknownType": {
-          "additionalProperties": {
-            "type": "string",
-          },
-          "type": "object",
+          "const": "uuid",
+          "type": "string",
         },
       },
       "required": [
@@ -265,9 +263,109 @@ exports[`nangoModelsToJsonSchema > should handle complex arrays with nested stru
 }
 `;
 
+exports[`nangoModelsToJsonSchema > should handle dynamic fields 1`] = `
+{
+  "definitions": {
+    "DynamicFields": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/Field",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "fields",
+      ],
+      "type": "object",
+    },
+    "Field": {
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/Field",
+          },
+          {
+            "type": "string",
+          },
+        ],
+      },
+      "properties": {},
+      "required": [],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`nangoModelsToJsonSchema > should handle empty models array 1`] = `
 {
   "definitions": {},
+}
+`;
+
+exports[`nangoModelsToJsonSchema > should handle literals 1`] = `
+{
+  "definitions": {
+    "Literals": {
+      "properties": {
+        "lie": {
+          "const": false,
+          "type": "boolean",
+        },
+        "numberLiteral": {
+          "const": 1,
+          "type": "number",
+        },
+        "numberLiteralUnion": {
+          "oneOf": [
+            {
+              "const": 1,
+              "type": "number",
+            },
+            {
+              "const": 2,
+              "type": "number",
+            },
+            {
+              "const": 3,
+              "type": "number",
+            },
+          ],
+        },
+        "stringLiteral": {
+          "const": "nango",
+          "type": "string",
+        },
+        "stringLiteralUnion": {
+          "oneOf": [
+            {
+              "const": "nango",
+              "type": "string",
+            },
+            {
+              "const": "mongo",
+              "type": "string",
+            },
+          ],
+        },
+        "truth": {
+          "const": true,
+          "type": "boolean",
+        },
+      },
+      "required": [
+        "stringLiteral",
+        "stringLiteralUnion",
+        "truth",
+        "lie",
+        "numberLiteral",
+        "numberLiteralUnion",
+      ],
+      "type": "object",
+    },
+  },
 }
 `;
 
@@ -411,6 +509,37 @@ exports[`nangoModelsToJsonSchema > should handle nested objects 1`] = `
       "required": [
         "teams",
         "pageInfo",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
+exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
+{
+  "definitions": {
+    "SpecialCases": {
+      "properties": {
+        "array": {
+          "items": {},
+          "type": "array",
+        },
+        "bigint": {
+          "type": "number",
+        },
+        "nullValue": {
+          "type": "null",
+        },
+        "undefinedValue": {
+          "type": "null",
+        },
+      },
+      "required": [
+        "nullValue",
+        "undefinedValue",
+        "bigint",
+        "array",
       ],
       "type": "object",
     },

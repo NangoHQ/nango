@@ -152,13 +152,19 @@
             "group": "Getting Started",
             "pages": [
                 "getting-started/intro-to-nango",
-                "getting-started/quickstart",
-                "guides/ai-use-cases"
+                {
+                    "group": "Quickstart",
+                    "pages": [
+                        "getting-started/quickstart/access-an-api",
+                        "getting-started/quickstart/embed-in-your-app"
+                    ]
+                }
             ]
         },
         {
-            "group": "Guides",
+            "group": "Advanced Guides & Resources",
             "pages": [
+                "getting-started/sample-app",
                 {
                     "group": "API authorization",
                     "pages": [
@@ -627,6 +633,7 @@
                 "integrations/all/ring-central-sandbox",
                 "integrations/all/rippling",
                 "integrations/all/rippling-shop-app",
+                "integrations/all/roam-scim",
                 "integrations/all/rock-gym-pro",
                 "integrations/all/rootly",
                 "integrations/all/sage",
