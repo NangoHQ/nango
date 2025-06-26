@@ -60,19 +60,35 @@ function legacySyncTypeToJsonSchema(typeStr: string, allModels: LegacySyncModelS
             items: legacySyncTypeToJsonSchema(itemType, allModels)
         };
     }
+
     // Primitive types
     if (legacyPrimitiveTypeMap[typeStr]) {
         return legacyPrimitiveTypeMap[typeStr];
     }
-    // All other types are treated as references
-    return { $ref: `#/definitions/${typeStr}` };
+
+    if (allModels.find((m) => m.name === typeStr)) {
+        return { $ref: `#/definitions/${typeStr}` };
+    }
+
+    return { type: 'string', const: typeStr };
 }
 
 const legacyPrimitiveTypeMap: Record<string, JSONSchema7> = {
     integer: { type: 'integer' },
+    int: { type: 'integer' },
+    float: { type: 'number' },
     number: { type: 'number' },
     boolean: { type: 'boolean' },
+    bool: { type: 'boolean' },
+    true: { type: 'boolean', const: true },
+    false: { type: 'boolean', const: false },
     string: { type: 'string' },
+    char: { type: 'string' },
+    varchar: { type: 'string' },
     date: { type: 'string', format: 'date-time' },
-    null: { type: 'null' }
+    null: { type: 'null' },
+    undefined: { type: 'null' },
+    any: {},
+    object: { type: 'object' },
+    array: { type: 'array', items: {} }
 };

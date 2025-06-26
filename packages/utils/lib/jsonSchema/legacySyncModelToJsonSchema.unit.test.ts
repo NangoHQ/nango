@@ -11,13 +11,27 @@ describe('legacySyncModelsToJsonSchema', () => {
                 name: 'AllPrimitiveTypes',
                 fields: [
                     { name: 'stringField', type: 'string' },
+                    { name: 'charField', type: 'char' },
+                    { name: 'varcharField', type: 'varchar' },
                     { name: 'numberField', type: 'number' },
+                    { name: 'floatField', type: 'float' },
+                    { name: 'intField', type: 'int' },
+                    { name: 'integerField', type: 'integer' },
                     { name: 'booleanField', type: 'boolean' },
+                    { name: 'boolField', type: 'bool' },
+                    { name: 'trueField', type: 'true' },
+                    { name: 'falseField', type: 'false' },
                     { name: 'dateField', type: 'date' },
+                    { name: 'undefinedField', type: 'undefined' },
+                    { name: 'nullField', type: 'null' },
+                    { name: 'anyField', type: 'any' },
+                    { name: 'objectField', type: 'object' },
+                    { name: 'arrayField', type: 'array' },
                     { name: 'optionalString', type: 'string | undefined' },
                     { name: 'unknownType', type: 'uuid' }, // Should default to string
                     { name: 'stringArray', type: 'string[]' },
-                    { name: 'numberArray', type: 'number[] | undefined' }
+                    { name: 'numberArray', type: 'number[] | undefined' },
+                    { name: 'literalUnion', type: 'red | blue' }
                 ]
             }
         ];
@@ -110,7 +124,7 @@ describe('legacySyncModelsToJsonSchema', () => {
         expect(result).toMatchSnapshot();
     });
 
-    it('should still reference a non-existent model', () => {
+    it('should not reference a non-existent model', () => {
         const models: LegacySyncModelSchema[] = [
             {
                 name: 'HasMissingRef',

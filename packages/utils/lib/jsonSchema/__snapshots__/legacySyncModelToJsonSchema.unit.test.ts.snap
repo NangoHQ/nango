@@ -5,12 +5,51 @@ exports[`legacySyncModelsToJsonSchema > should handle all primitive types and ba
   "definitions": {
     "AllPrimitiveTypes": {
       "properties": {
+        "anyField": {},
+        "arrayField": {
+          "items": {},
+          "type": "array",
+        },
+        "boolField": {
+          "type": "boolean",
+        },
         "booleanField": {
           "type": "boolean",
+        },
+        "charField": {
+          "type": "string",
         },
         "dateField": {
           "format": "date-time",
           "type": "string",
+        },
+        "falseField": {
+          "const": false,
+          "type": "boolean",
+        },
+        "floatField": {
+          "type": "number",
+        },
+        "intField": {
+          "type": "integer",
+        },
+        "integerField": {
+          "type": "integer",
+        },
+        "literalUnion": {
+          "oneOf": [
+            {
+              "const": "red",
+              "type": "string",
+            },
+            {
+              "const": "blue",
+              "type": "string",
+            },
+          ],
+        },
+        "nullField": {
+          "type": "null",
         },
         "numberArray": {
           "items": {
@@ -20,6 +59,9 @@ exports[`legacySyncModelsToJsonSchema > should handle all primitive types and ba
         },
         "numberField": {
           "type": "number",
+        },
+        "objectField": {
+          "type": "object",
         },
         "optionalString": {
           "type": "string",
@@ -33,17 +75,42 @@ exports[`legacySyncModelsToJsonSchema > should handle all primitive types and ba
         "stringField": {
           "type": "string",
         },
+        "trueField": {
+          "const": true,
+          "type": "boolean",
+        },
+        "undefinedField": {
+          "type": "null",
+        },
         "unknownType": {
-          "$ref": "#/definitions/uuid",
+          "const": "uuid",
+          "type": "string",
+        },
+        "varcharField": {
+          "type": "string",
         },
       },
       "required": [
         "stringField",
+        "charField",
+        "varcharField",
         "numberField",
+        "floatField",
+        "intField",
+        "integerField",
         "booleanField",
+        "boolField",
+        "trueField",
+        "falseField",
         "dateField",
+        "undefinedField",
+        "nullField",
+        "anyField",
+        "objectField",
+        "arrayField",
         "unknownType",
         "stringArray",
+        "literalUnion",
       ],
       "type": "object",
     },
@@ -208,10 +275,12 @@ exports[`legacySyncModelsToJsonSchema > should handle unions and optionals 1`] =
         "status": {
           "oneOf": [
             {
-              "$ref": "#/definitions/active",
+              "const": "active",
+              "type": "string",
             },
             {
-              "$ref": "#/definitions/canceled",
+              "const": "canceled",
+              "type": "string",
             },
           ],
         },
@@ -247,7 +316,8 @@ exports[`legacySyncModelsToJsonSchema > should still reference a non-existent mo
           "type": "string",
         },
         "missing": {
-          "$ref": "#/definitions/NonExistentModel",
+          "const": "NonExistentModel",
+          "type": "string",
         },
       },
       "required": [
