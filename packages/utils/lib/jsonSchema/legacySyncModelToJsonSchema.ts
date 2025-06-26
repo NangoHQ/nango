@@ -19,12 +19,13 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
     const fields = Array.isArray(model.fields) ? model.fields : [];
     for (const field of fields) {
         // Optional fields end with '?' or '| undefined'
-        const isOptional = /\?$/.test(field.name) || /\|\s*undefined$/.test(field.type);
+        const isOptional = /\?$/.test(field.name) || (typeof field.type === 'string' && /\|\s*undefined$/.test(field.type));
         const cleanName = field.name.replace(/\?$/, '');
         properties[cleanName] = legacySyncFieldToJsonSchema(field, allModels);
         if (!isOptional) {
             required.push(cleanName);
         }
+        continue;
     }
     return {
         type: 'object',
@@ -34,6 +35,29 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
 }
 
 function legacySyncFieldToJsonSchema(field: { name: string; type: string }, allModels: LegacySyncModelSchema[]): JSONSchema7 {
+    // While our typescript definition defines this as a string, we have many legacy models in the database
+    // where this is an object or array describing submodels.
+    if (typeof field.type !== 'string') {
+        if (Array.isArray(field.type)) {
+            if ((field.type as unknown[]).length > 1) {
+                return {
+                    type: 'array',
+                    items: {
+                        oneOf: (field.type as unknown[]).map((t) =>
+                            legacySyncModelToJsonSchema({ name: '', fields: objectToFields(t as Record<string, string>) }, allModels)
+                        )
+                    }
+                };
+            }
+            return {
+                type: 'array',
+                items: legacySyncModelToJsonSchema({ name: '', fields: objectToFields(field.type[0] as Record<string, string>) }, allModels)
+            };
+        }
+
+        return legacySyncModelToJsonSchema({ name: '', fields: objectToFields(field.type as Record<string, string>) }, allModels);
+    }
+
     let typeStr = field.type?.trim() ?? '';
     // Handle optional
     typeStr = typeStr.replace(/\|\s*undefined$/, '').trim();
@@ -92,3 +116,11 @@ const legacyPrimitiveTypeMap: Record<string, JSONSchema7> = {
     object: { type: 'object' },
     array: { type: 'array', items: {} }
 };
+
+function objectToFields(object: Record<string, string>): LegacySyncModelSchema['fields'] {
+    const fields: LegacySyncModelSchema['fields'] = [];
+    for (const [key, value] of Object.entries(object)) {
+        fields.push({ name: key, type: value });
+    }
+    return fields;
+}

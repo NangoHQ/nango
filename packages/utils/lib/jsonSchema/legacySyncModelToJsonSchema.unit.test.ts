@@ -85,6 +85,22 @@ describe('legacySyncModelsToJsonSchema', () => {
         expect(result).toMatchSnapshot();
     });
 
+    it('should handle optionals from name', () => {
+        const models: LegacySyncModelSchema[] = [
+            {
+                name: 'Model',
+                fields: [
+                    { name: 'requiredString', type: 'string' },
+                    { name: 'requiredNumber', type: 'number' },
+                    { name: 'optionalString?', type: 'string' },
+                    { name: 'optionalNumber?', type: 'number' }
+                ]
+            }
+        ];
+        const result = legacySyncModelsToJsonSchema(models);
+        expect(result).toMatchSnapshot();
+    });
+
     it('should handle arrays of models and primitives', () => {
         const models: LegacySyncModelSchema[] = [
             {
@@ -136,5 +152,361 @@ describe('legacySyncModelsToJsonSchema', () => {
         ];
         const result = legacySyncModelsToJsonSchema(models);
         expect(result).toMatchSnapshot();
+    });
+
+    describe('real-world examples', () => {
+        it('GoogleCalendarEvent', () => {
+            const models: LegacySyncModelSchema[] = [
+                {
+                    name: 'GoogleCalendarEvent',
+                    fields: [
+                        {
+                            name: 'kind',
+                            type: 'string'
+                        },
+                        {
+                            name: 'etag',
+                            type: 'string'
+                        },
+                        {
+                            name: 'id',
+                            type: 'string'
+                        },
+                        {
+                            name: 'status',
+                            type: 'string'
+                        },
+                        {
+                            name: 'htmlLink',
+                            type: 'string'
+                        },
+                        {
+                            name: 'created',
+                            type: 'string'
+                        },
+                        {
+                            name: 'updated',
+                            type: 'string'
+                        },
+                        {
+                            name: 'summary',
+                            type: 'string'
+                        },
+                        {
+                            name: 'description',
+                            type: 'string'
+                        },
+                        {
+                            name: 'location',
+                            type: 'string'
+                        },
+                        {
+                            name: 'colorId',
+                            type: 'string'
+                        },
+                        {
+                            name: 'creator.id',
+                            type: 'string'
+                        },
+                        {
+                            name: 'creator.email',
+                            type: 'string'
+                        },
+                        {
+                            name: 'creator.displayName',
+                            type: 'string'
+                        },
+                        {
+                            name: 'creator.self',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'organizer.id',
+                            type: 'string'
+                        },
+                        {
+                            name: 'organizer.email',
+                            type: 'string'
+                        },
+                        {
+                            name: 'organizer.displayName',
+                            type: 'string'
+                        },
+                        {
+                            name: 'organizer.self',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'start.date',
+                            type: 'date'
+                        },
+                        {
+                            name: 'start.dateTime',
+                            type: 'string'
+                        },
+                        {
+                            name: 'start.timeZone',
+                            type: 'string'
+                        },
+                        {
+                            name: 'end.date',
+                            type: 'date'
+                        },
+                        {
+                            name: 'end.string',
+                            type: 'string'
+                        },
+                        {
+                            name: 'end.timeZone',
+                            type: 'string'
+                        },
+                        {
+                            name: 'endTimeUnspecified',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'recurrence.0',
+                            type: 'string'
+                        },
+                        {
+                            name: 'recurringEventId',
+                            type: 'string'
+                        },
+                        {
+                            name: 'originalStartTime.date',
+                            type: 'date'
+                        },
+                        {
+                            name: 'originalStartTime.dateTime',
+                            type: 'string'
+                        },
+                        {
+                            name: 'originalStartTime.timeZone',
+                            type: 'string'
+                        },
+                        {
+                            name: 'transparency',
+                            type: 'string'
+                        },
+                        {
+                            name: 'visibility',
+                            type: 'string'
+                        },
+                        {
+                            name: 'iCalUID',
+                            type: 'string'
+                        },
+                        {
+                            name: 'sequence',
+                            type: 'integer'
+                        },
+                        {
+                            name: 'attendees.0',
+                            type: {
+                                id: 'string',
+                                self: 'boolean',
+                                email: 'string',
+                                comment: 'string',
+                                optional: 'boolean',
+                                resource: 'boolean',
+                                organizer: 'boolean',
+                                displayName: 'string',
+                                responseStatus: 'string',
+                                additionalGuests: 'integer'
+                            }
+                        },
+                        {
+                            name: 'attendeesOmitted',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'extendedProperties.private',
+                            type: {
+                                key: 'string'
+                            }
+                        },
+                        {
+                            name: 'extendedProperties.shared',
+                            type: {
+                                key: 'string'
+                            }
+                        },
+                        {
+                            name: 'hangoutLink',
+                            type: 'string'
+                        },
+                        {
+                            name: 'conferenceData.createRequest',
+                            type: {
+                                status: {
+                                    statusCode: 'string'
+                                },
+                                requestId: 'string',
+                                conferenceSolutionKey: {
+                                    type: 'string'
+                                }
+                            }
+                        },
+                        {
+                            name: 'conferenceData.entryPoints',
+                            type: [
+                                {
+                                    pin: 'string',
+                                    uri: 'string',
+                                    label: 'string',
+                                    passcode: 'string',
+                                    password: 'string',
+                                    accessCode: 'string',
+                                    meetingCode: 'string',
+                                    entryPointType: 'string'
+                                }
+                            ]
+                        },
+                        {
+                            name: 'conferenceData.conferenceSolution',
+                            type: {
+                                key: {
+                                    type: 'string'
+                                },
+                                name: 'string',
+                                iconUri: 'string'
+                            }
+                        },
+                        {
+                            name: 'conferenceData.conferenceId',
+                            type: 'string'
+                        },
+                        {
+                            name: 'conferenceData.signature',
+                            type: 'string'
+                        },
+                        {
+                            name: 'conferenceData.notes',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.type',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.title',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.link',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.iconLink',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.width',
+                            type: 'integer'
+                        },
+                        {
+                            name: 'gadget.height',
+                            type: 'integer'
+                        },
+                        {
+                            name: 'gadget.display',
+                            type: 'string'
+                        },
+                        {
+                            name: 'gadget.preferences',
+                            type: {
+                                key: 'string'
+                            }
+                        },
+                        {
+                            name: 'anyoneCanAddSelf',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'guestsCanInviteOthers',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'guestsCanModify',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'guestsCanSeeOtherGuests',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'privateCopy',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'locked',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'reminders.useDefault',
+                            type: 'boolean'
+                        },
+                        {
+                            name: 'reminders.overrides',
+                            type: [
+                                {
+                                    method: 'string',
+                                    minutes: 'integer'
+                                }
+                            ]
+                        },
+                        {
+                            name: 'source.url',
+                            type: 'string'
+                        },
+                        {
+                            name: 'source.title',
+                            type: 'string'
+                        },
+                        {
+                            name: 'workingLocationProperties.type',
+                            type: 'string'
+                        },
+                        {
+                            name: 'workingLocationProperties.homeOffice',
+                            type: 'string'
+                        },
+                        {
+                            name: 'workingLocationProperties.customLocation',
+                            type: {
+                                label: 'string'
+                            }
+                        },
+                        {
+                            name: 'workingLocationProperties.officeLocation',
+                            type: {
+                                label: 'string',
+                                deskId: 'string',
+                                floorId: 'string',
+                                buildingId: 'string',
+                                floorSectionId: 'string'
+                            }
+                        },
+                        {
+                            name: 'attachments.0',
+                            type: {
+                                title: 'string',
+                                fileId: 'string',
+                                fileUrl: 'string',
+                                iconLink: 'string',
+                                mimeType: 'string'
+                            }
+                        },
+                        {
+                            name: 'eventType',
+                            type: 'string'
+                        }
+                    ]
+                }
+            ];
+
+            const result = legacySyncModelsToJsonSchema(models);
+            expect(result).toMatchSnapshot();
+        });
     });
 });

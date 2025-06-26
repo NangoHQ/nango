@@ -1,5 +1,536 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEvent 1`] = `
+{
+  "definitions": {
+    "GoogleCalendarEvent": {
+      "properties": {
+        "anyoneCanAddSelf": {
+          "type": "boolean",
+        },
+        "attachments.0": {
+          "properties": {
+            "fileId": {
+              "type": "string",
+            },
+            "fileUrl": {
+              "type": "string",
+            },
+            "iconLink": {
+              "type": "string",
+            },
+            "mimeType": {
+              "type": "string",
+            },
+            "title": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "title",
+            "fileId",
+            "fileUrl",
+            "iconLink",
+            "mimeType",
+          ],
+          "type": "object",
+        },
+        "attendees.0": {
+          "properties": {
+            "additionalGuests": {
+              "type": "integer",
+            },
+            "comment": {
+              "type": "string",
+            },
+            "displayName": {
+              "type": "string",
+            },
+            "email": {
+              "type": "string",
+            },
+            "id": {
+              "type": "string",
+            },
+            "optional": {
+              "type": "boolean",
+            },
+            "organizer": {
+              "type": "boolean",
+            },
+            "resource": {
+              "type": "boolean",
+            },
+            "responseStatus": {
+              "type": "string",
+            },
+            "self": {
+              "type": "boolean",
+            },
+          },
+          "required": [
+            "id",
+            "self",
+            "email",
+            "comment",
+            "optional",
+            "resource",
+            "organizer",
+            "displayName",
+            "responseStatus",
+            "additionalGuests",
+          ],
+          "type": "object",
+        },
+        "attendeesOmitted": {
+          "type": "boolean",
+        },
+        "colorId": {
+          "type": "string",
+        },
+        "conferenceData.conferenceId": {
+          "type": "string",
+        },
+        "conferenceData.conferenceSolution": {
+          "properties": {
+            "iconUri": {
+              "type": "string",
+            },
+            "key": {
+              "properties": {
+                "type": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "type",
+              ],
+              "type": "object",
+            },
+            "name": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "key",
+            "name",
+            "iconUri",
+          ],
+          "type": "object",
+        },
+        "conferenceData.createRequest": {
+          "properties": {
+            "conferenceSolutionKey": {
+              "properties": {
+                "type": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "type",
+              ],
+              "type": "object",
+            },
+            "requestId": {
+              "type": "string",
+            },
+            "status": {
+              "properties": {
+                "statusCode": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "statusCode",
+              ],
+              "type": "object",
+            },
+          },
+          "required": [
+            "status",
+            "requestId",
+            "conferenceSolutionKey",
+          ],
+          "type": "object",
+        },
+        "conferenceData.entryPoints": {
+          "items": {
+            "properties": {
+              "accessCode": {
+                "type": "string",
+              },
+              "entryPointType": {
+                "type": "string",
+              },
+              "label": {
+                "type": "string",
+              },
+              "meetingCode": {
+                "type": "string",
+              },
+              "passcode": {
+                "type": "string",
+              },
+              "password": {
+                "type": "string",
+              },
+              "pin": {
+                "type": "string",
+              },
+              "uri": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "pin",
+              "uri",
+              "label",
+              "passcode",
+              "password",
+              "accessCode",
+              "meetingCode",
+              "entryPointType",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+        "conferenceData.notes": {
+          "type": "string",
+        },
+        "conferenceData.signature": {
+          "type": "string",
+        },
+        "created": {
+          "type": "string",
+        },
+        "creator.displayName": {
+          "type": "string",
+        },
+        "creator.email": {
+          "type": "string",
+        },
+        "creator.id": {
+          "type": "string",
+        },
+        "creator.self": {
+          "type": "boolean",
+        },
+        "description": {
+          "type": "string",
+        },
+        "end.date": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "end.string": {
+          "type": "string",
+        },
+        "end.timeZone": {
+          "type": "string",
+        },
+        "endTimeUnspecified": {
+          "type": "boolean",
+        },
+        "etag": {
+          "type": "string",
+        },
+        "eventType": {
+          "type": "string",
+        },
+        "extendedProperties.private": {
+          "properties": {
+            "key": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "key",
+          ],
+          "type": "object",
+        },
+        "extendedProperties.shared": {
+          "properties": {
+            "key": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "key",
+          ],
+          "type": "object",
+        },
+        "gadget.display": {
+          "type": "string",
+        },
+        "gadget.height": {
+          "type": "integer",
+        },
+        "gadget.iconLink": {
+          "type": "string",
+        },
+        "gadget.link": {
+          "type": "string",
+        },
+        "gadget.preferences": {
+          "properties": {
+            "key": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "key",
+          ],
+          "type": "object",
+        },
+        "gadget.title": {
+          "type": "string",
+        },
+        "gadget.type": {
+          "type": "string",
+        },
+        "gadget.width": {
+          "type": "integer",
+        },
+        "guestsCanInviteOthers": {
+          "type": "boolean",
+        },
+        "guestsCanModify": {
+          "type": "boolean",
+        },
+        "guestsCanSeeOtherGuests": {
+          "type": "boolean",
+        },
+        "hangoutLink": {
+          "type": "string",
+        },
+        "htmlLink": {
+          "type": "string",
+        },
+        "iCalUID": {
+          "type": "string",
+        },
+        "id": {
+          "type": "string",
+        },
+        "kind": {
+          "type": "string",
+        },
+        "location": {
+          "type": "string",
+        },
+        "locked": {
+          "type": "boolean",
+        },
+        "organizer.displayName": {
+          "type": "string",
+        },
+        "organizer.email": {
+          "type": "string",
+        },
+        "organizer.id": {
+          "type": "string",
+        },
+        "organizer.self": {
+          "type": "boolean",
+        },
+        "originalStartTime.date": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "originalStartTime.dateTime": {
+          "type": "string",
+        },
+        "originalStartTime.timeZone": {
+          "type": "string",
+        },
+        "privateCopy": {
+          "type": "boolean",
+        },
+        "recurrence.0": {
+          "type": "string",
+        },
+        "recurringEventId": {
+          "type": "string",
+        },
+        "reminders.overrides": {
+          "items": {
+            "properties": {
+              "method": {
+                "type": "string",
+              },
+              "minutes": {
+                "type": "integer",
+              },
+            },
+            "required": [
+              "method",
+              "minutes",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+        "reminders.useDefault": {
+          "type": "boolean",
+        },
+        "sequence": {
+          "type": "integer",
+        },
+        "source.title": {
+          "type": "string",
+        },
+        "source.url": {
+          "type": "string",
+        },
+        "start.date": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "start.dateTime": {
+          "type": "string",
+        },
+        "start.timeZone": {
+          "type": "string",
+        },
+        "status": {
+          "type": "string",
+        },
+        "summary": {
+          "type": "string",
+        },
+        "transparency": {
+          "type": "string",
+        },
+        "updated": {
+          "type": "string",
+        },
+        "visibility": {
+          "type": "string",
+        },
+        "workingLocationProperties.customLocation": {
+          "properties": {
+            "label": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "label",
+          ],
+          "type": "object",
+        },
+        "workingLocationProperties.homeOffice": {
+          "type": "string",
+        },
+        "workingLocationProperties.officeLocation": {
+          "properties": {
+            "buildingId": {
+              "type": "string",
+            },
+            "deskId": {
+              "type": "string",
+            },
+            "floorId": {
+              "type": "string",
+            },
+            "floorSectionId": {
+              "type": "string",
+            },
+            "label": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "label",
+            "deskId",
+            "floorId",
+            "buildingId",
+            "floorSectionId",
+          ],
+          "type": "object",
+        },
+        "workingLocationProperties.type": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "kind",
+        "etag",
+        "id",
+        "status",
+        "htmlLink",
+        "created",
+        "updated",
+        "summary",
+        "description",
+        "location",
+        "colorId",
+        "creator.id",
+        "creator.email",
+        "creator.displayName",
+        "creator.self",
+        "organizer.id",
+        "organizer.email",
+        "organizer.displayName",
+        "organizer.self",
+        "start.date",
+        "start.dateTime",
+        "start.timeZone",
+        "end.date",
+        "end.string",
+        "end.timeZone",
+        "endTimeUnspecified",
+        "recurrence.0",
+        "recurringEventId",
+        "originalStartTime.date",
+        "originalStartTime.dateTime",
+        "originalStartTime.timeZone",
+        "transparency",
+        "visibility",
+        "iCalUID",
+        "sequence",
+        "attendees.0",
+        "attendeesOmitted",
+        "extendedProperties.private",
+        "extendedProperties.shared",
+        "hangoutLink",
+        "conferenceData.createRequest",
+        "conferenceData.entryPoints",
+        "conferenceData.conferenceSolution",
+        "conferenceData.conferenceId",
+        "conferenceData.signature",
+        "conferenceData.notes",
+        "gadget.type",
+        "gadget.title",
+        "gadget.link",
+        "gadget.iconLink",
+        "gadget.width",
+        "gadget.height",
+        "gadget.display",
+        "gadget.preferences",
+        "anyoneCanAddSelf",
+        "guestsCanInviteOthers",
+        "guestsCanModify",
+        "guestsCanSeeOtherGuests",
+        "privateCopy",
+        "locked",
+        "reminders.useDefault",
+        "reminders.overrides",
+        "source.url",
+        "source.title",
+        "workingLocationProperties.type",
+        "workingLocationProperties.homeOffice",
+        "workingLocationProperties.customLocation",
+        "workingLocationProperties.officeLocation",
+        "attachments.0",
+        "eventType",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`legacySyncModelsToJsonSchema > should handle all primitive types and basic features 1`] = `
 {
   "definitions": {
@@ -182,6 +713,34 @@ exports[`legacySyncModelsToJsonSchema > should handle model with no fields 1`] =
 }
 `;
 
+exports[`legacySyncModelsToJsonSchema > should handle optionals from name 1`] = `
+{
+  "definitions": {
+    "Model": {
+      "properties": {
+        "optionalNumber": {
+          "type": "number",
+        },
+        "optionalString": {
+          "type": "string",
+        },
+        "requiredNumber": {
+          "type": "number",
+        },
+        "requiredString": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "requiredString",
+        "requiredNumber",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`legacySyncModelsToJsonSchema > should handle references to other models 1`] = `
 {
   "definitions": {
@@ -307,7 +866,7 @@ exports[`legacySyncModelsToJsonSchema > should handle unions and optionals 1`] =
 }
 `;
 
-exports[`legacySyncModelsToJsonSchema > should still reference a non-existent model 1`] = `
+exports[`legacySyncModelsToJsonSchema > should not reference a non-existent model 1`] = `
 {
   "definitions": {
     "HasMissingRef": {
