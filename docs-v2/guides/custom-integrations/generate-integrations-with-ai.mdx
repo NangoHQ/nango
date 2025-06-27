@@ -1,17 +1,30 @@
 ---
-title: 'Build a new integration with AI'
-sidebarTitle: 'Build with AI'
-description: 'Guide on how to best use AI to build custom integrations in Nango.'
+title: 'Generate integrations with AI'
+sidebarTitle: 'Generate integrations with AI'
+description: 'Guide on how to best use AI to build custom integrations fast.'
 ---
 
-Building custom integrations for Nango is significantly faster and more efficient when using AI-powered development tools. This guide shows you how to leverage Cursor with agent mode or Claude Code to build high-quality integrations quickly.
+Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage Cursor or Claude Code to build high-quality integrations quickly.
 
-## Overview of Recommended Tools
+## Demo video: generate integrations with Cursor
+
+<div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+    <iframe
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        src="https://www.youtube.com/embed/qOxdNcFLukc?modestbranding=1&rel=0&autohide=1"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+    ></iframe>
+</div>
+
+## Overview of recommended tools
 
 We recommend using one of these AI-powered development environments:
 
-- **Cursor with Agent Mode**
-- **Claude Code**: Anthropic's official CLI tool
+- **Cursor** with Agent Mode
+- **Claude Code** (Anthropic's official CLI tool)
 
 Both tools understand Nango's architecture and can help you build integrations following best practices.
 
@@ -24,15 +37,15 @@ Before starting, ensure you have:
 3. **Provider configured**: The provider should already be configured in your [Nango dashboard](https://app.nango.dev/dev/integrations)
 4. **Test connection**: At least one working test connection for the provider you're integrating
 
-## Step-by-Step Process
+## Step-by-step process
 
-### 1. Set Up Your Development Environment
+### 1. Set up your development environment
 
 First, make sure your Nango project is properly initialized:
 
 ```bash
 # If you don't have a nango-integrations folder yet
-nango init
+nango init --ai cursor
 
 # Navigate to your integrations directory
 cd nango-integrations
@@ -42,7 +55,7 @@ cd nango-integrations
 # Get your dev secret from: https://app.nango.dev/dev/environment-settings
 ```
 
-### 2. Craft Effective Prompts
+### 2. Craft effective prompts
 
 When working with your AI assistant, provide clear, specific prompts:
 
@@ -68,7 +81,7 @@ I need to build a Nango custom [SYNC/ACTION] for [PROVIDER_NAME] called [INTEGRA
 Please implement this step by step and use `nango dryrun <integration-name> <connection-id> --validation [--input '{...}']` to test.
 ```
 
-### 3. Key Prompt Tips
+### 3. Key prompt tips
 
 - **Be specific about the provider and integration name** - this helps the AI understand the context
 - **Specify sync vs action** - clearly state whether you're building a sync (continuous data synchronization) or action (one-time operation)
@@ -88,7 +101,7 @@ Work with your AI assistant iteratively:
 5. Add pagination if needed
 6. Final testing and cleanup
 
-## Common Pitfalls and Checklist
+## Common pitfalls and checklist
 
 When using AI to build integrations, watch out for these common issues:
 
@@ -109,7 +122,7 @@ When using AI to build integrations, watch out for these common issues:
 - **Problem**: Basic or missing error handling for API failures or missing data
 - **Solution**: Request comprehensive error handling for common API error scenarios
 
-### ✅ Quality Checklist
+### ✅ Quality checklist
 
 Before finalizing your integration, verify:
 
@@ -122,7 +135,7 @@ Before finalizing your integration, verify:
 - [ ] Data models match the expected schema
 - [ ] `nango dryrun` passes successfully and without errors
 
-## When to Restart with Fresh Context
+## When to restart with fresh context
 
 Consider starting with a fresh AI context when:
 
@@ -130,9 +143,11 @@ Consider starting with a fresh AI context when:
 - Multiple failed attempts have cluttered the context
 - The AI starts suggesting irrelevant or incorrect solutions
 
-**Tip**: Save working code snippets before restarting, so you can quickly provide context to the fresh session.
+<Tip>
+Save working code snippets before restarting, so you can quickly provide context to the fresh session.
+</Tip>
 
-## Best Practices for AI-Assisted Development
+## Best practices for AI-assisted development
 
 1. **Start simple**: Begin with basic functionality and iterate
 2. **Test frequently**: Ensure the agent is running `nango dryrun` after each significant change
