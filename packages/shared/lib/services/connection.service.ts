@@ -598,6 +598,19 @@ class ConnectionService {
         return newConfig;
     }
 
+    public async unsetConnectionConfigAttributes(
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
+        keys: string[]
+    ): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+
+        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keys.includes(key)));
+
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
     public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)

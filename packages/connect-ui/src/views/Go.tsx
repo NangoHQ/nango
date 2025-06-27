@@ -220,7 +220,7 @@ export const Go: React.FC = () => {
                 if (provider.auth_mode === 'NONE') {
                     res = await nango.create(integration.unique_key, { ...values });
                 } else if (
-                    provider.auth_mode === 'OAUTH2' ||
+                    (provider.auth_mode === 'OAUTH2' && !provider.installation) ||
                     provider.auth_mode === 'OAUTH1' ||
                     provider.auth_mode === 'CUSTOM' ||
                     provider.auth_mode === 'APP'
@@ -233,7 +233,8 @@ export const Go: React.FC = () => {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow
+                        detectClosedAuthWindow,
+                        ...(provider.installation && { installation: provider.installation })
                     });
                 }
                 setResult(res);

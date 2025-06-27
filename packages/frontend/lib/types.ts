@@ -25,6 +25,7 @@ export interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
+    installation?: 'outbound';
     credentials?:
         | OAuthCredentialsOverride
         | BasicApiCredentials

@@ -79,7 +79,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                     />
                 </InfoBloc>
 
-                {template.auth_mode !== 'TBA' && (
+                {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                     <InfoBloc title="Scopes">
                         <TagsInput id="scopes" name="scopes" type="text" defaultValue={scopes} onScopeChange={setScopes} minLength={1} />
                     </InfoBloc>

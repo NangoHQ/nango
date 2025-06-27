@@ -43,3 +43,30 @@ export interface AirtableWebhookReference {
     };
     timestamp: string;
 }
+
+export interface SentryOauthWebhookResponse {
+    action: string;
+    installation: {
+        uuid: string;
+    };
+    data: {
+        installation: {
+            app: {
+                uuid: string;
+                slug: string;
+            };
+            organization: {
+                slug: string;
+                id: number;
+            };
+            uuid: string;
+            status: string;
+            code: string;
+        };
+    };
+    actor: {
+        type: string;
+        id: number;
+        name: string;
+    };
+}
