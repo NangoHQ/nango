@@ -1,7 +1,7 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../api';
-import type { DBTeam } from './db';
-import type { DBInvitation } from '../invitations/db';
-import type { ApiUser } from '../user/api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
+import type { DBTeam } from './db.js';
+import type { DBInvitation } from '../invitations/db.js';
+import type { ApiUser } from '../user/api.js';
 import type { Merge } from 'type-fest';
 
 export type GetTeam = Endpoint<{

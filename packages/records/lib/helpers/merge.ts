@@ -1,5 +1,6 @@
 import deepmerge from '@fastify/deepmerge';
-import type { UnencryptedRecordData } from '../types';
+
+import type { UnencryptedRecordData } from '../types.js';
 
 const merge = deepmerge({
     // define algorithm for merging arrays - merges each item in the array

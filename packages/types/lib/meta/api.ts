@@ -1,5 +1,5 @@
-import type { ApiError, Endpoint } from '../api';
-import type { DBEnvironment } from '../environment/db';
+import type { ApiError, Endpoint } from '../api.js';
+import type { DBEnvironment } from '../environment/db.js';
 
 export type GetMeta = Endpoint<{
     Method: 'GET';

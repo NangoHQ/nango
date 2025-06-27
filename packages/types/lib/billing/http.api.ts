@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api';
+import type { Endpoint } from '../api.js';
 
 export type PostOrbWebhooks = Endpoint<{
     Method: 'POST';

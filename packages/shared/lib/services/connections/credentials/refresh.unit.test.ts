@@ -4,7 +4,7 @@ import { shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
 import { REFRESH_MARGIN_S } from '../utils.js';
 
-import type { Config } from '../../../models';
+import type { Config } from '../../../models/index.js';
 import type { ProviderOAuth2 } from '@nangohq/types';
 
 describe('shouldRefreshCredentials', () => {

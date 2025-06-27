@@ -1,5 +1,5 @@
-import type { ApiError, Endpoint } from '../api';
-import type { ApiUser } from '../user/api';
+import type { ApiError, Endpoint } from '../api.js';
+import type { ApiUser } from '../user/api.js';
 
 export type PostSignup = Endpoint<{
     Method: 'POST';

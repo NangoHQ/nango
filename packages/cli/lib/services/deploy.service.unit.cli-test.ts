@@ -2,9 +2,9 @@ import fs from 'node:fs';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { compileAllFiles } from './compile.service';
+import { compileAllFiles } from './compile.service.js';
 import { parse } from './config.service.js';
-import deployService from './deploy.service';
+import deployService from './deploy.service.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory, removeVersion } from '../tests/helpers.js';
 
 describe('package', () => {

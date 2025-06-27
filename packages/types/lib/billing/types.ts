@@ -1,6 +1,6 @@
-import type { Result } from '../result';
-import type { DBTeam } from '../team/db';
-import type { DBUser } from '../user/db';
+import type { Result } from '../result.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;

@@ -10,7 +10,7 @@ const ignoredKeys = ['httpAgent', 'httpsAgent', 'trace', '_sessionCache', 'stack
  * Safely stringify an object (mostly handle circular ref and known problematic keys)
  */
 export function stringifyObject(value: any): string {
-    return safeStringify.stableStringify(
+    return safeStringify.default.stableStringify(
         value,
         (key, value) => {
             if (value instanceof Buffer) {

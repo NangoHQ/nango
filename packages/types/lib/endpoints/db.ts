@@ -1,6 +1,6 @@
+import type { Timestamps } from '../db.js';
+import type { HTTP_METHOD } from '../nangoYaml/index.js';
 import type { SetOptional } from 'type-fest';
-import type { Timestamps } from '../db';
-import type { HTTP_METHOD } from '../nangoYaml';
 
 export interface DBSyncEndpoint extends Timestamps {
     id: number;

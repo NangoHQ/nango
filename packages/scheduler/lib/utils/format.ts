@@ -1,4 +1,4 @@
-import type { Task } from '../types';
+import type { Task } from '../types.js';
 
 export function stringifyTask(task: Task): string {
     // remove payload and output from the stringified task

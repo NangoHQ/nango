@@ -1,4 +1,4 @@
-import type { InternalNango as Nango } from '../../internal-nango';
+import type { InternalNango as Nango } from '../../internal-nango.js';
 import type { OAuth2ClientCredentials } from '@nangohq/types';
 
 export default async function execute(nango: Nango) {

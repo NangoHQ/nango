@@ -1,9 +1,9 @@
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import type { RequestLocals } from './express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { ApiError, IntegrationConfig } from '@nangohq/types';
-
 import type { Response } from 'express';
-import type { RequestLocals } from './express';
-import { zodErrorToHTTP } from '@nangohq/utils';
 
 export async function isIntegrationAllowed({
     config,

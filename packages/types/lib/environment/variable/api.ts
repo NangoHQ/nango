@@ -1,5 +1,5 @@
-import type { Endpoint } from '../../api';
-import type { DBEnvironmentVariable } from '../db';
+import type { Endpoint } from '../../api.js';
+import type { DBEnvironmentVariable } from '../db.js';
 
 export type ApiEnvironmentVariable = Pick<DBEnvironmentVariable, 'name' | 'value'>;
 export type PostEnvironmentVariables = Endpoint<{

@@ -1,4 +1,4 @@
-import type { OnEventType } from '../scripts/on-events/api';
+import type { OnEventType } from '../scripts/on-events/api.js';
 
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';

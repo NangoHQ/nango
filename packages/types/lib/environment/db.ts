@@ -1,4 +1,4 @@
-import type { Timestamps, TimestampsAndDeletedCorrect } from '../db';
+import type { Timestamps, TimestampsAndDeletedCorrect } from '../db.js';
 
 export interface DBEnvironmentVariable extends Timestamps {
     id: number;

@@ -1,6 +1,6 @@
-import type { Endpoint } from '../api';
-import type { ApiInvitation, ApiTeam } from '../team/api';
-import type { ApiUser } from '../user/api';
+import type { Endpoint } from '../api.js';
+import type { ApiInvitation, ApiTeam } from '../team/api.js';
+import type { ApiUser } from '../user/api.js';
 
 export type PostInvite = Endpoint<{
     Method: 'POST';

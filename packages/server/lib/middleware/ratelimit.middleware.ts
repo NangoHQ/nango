@@ -6,7 +6,7 @@ import { createClient } from 'redis';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
-import type { RequestLocals } from '../utils/express';
+import type { RequestLocals } from '../utils/express.js';
 import type { DBPlan } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';

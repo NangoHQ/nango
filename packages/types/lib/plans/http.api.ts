@@ -1,7 +1,7 @@
-import type { BillingCustomer, BillingUsageMetric } from '../billing/types';
-import type { ReplaceInObject } from '../utils';
+import type { BillingCustomer, BillingUsageMetric } from '../billing/types.js';
+import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
-import type { Endpoint } from '../api';
+import type { Endpoint } from '../api.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 

@@ -1,9 +1,11 @@
-import type { InternalNango as Nango } from '../../internal-nango';
-import type { OAuth2Credentials } from '@nangohq/types';
-import jwt from 'jsonwebtoken';
 import { isAxiosError } from 'axios';
-import { getLogger } from '@nangohq/utils';
+import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+
+import { getLogger } from '@nangohq/utils';
+
+import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { OAuth2Credentials } from '@nangohq/types';
 
 const logger = getLogger('post-connection:xero');
 

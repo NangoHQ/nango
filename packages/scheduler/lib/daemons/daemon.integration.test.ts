@@ -1,8 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
-import { getTestDbClient } from '../db/helpers.test';
-import type knex from 'knex';
 import { setTimeout } from 'node:timers/promises';
+
+import { describe, expect, it, vi } from 'vitest';
+
 import { SchedulerDaemon } from './daemon.js';
+import { getTestDbClient } from '../db/helpers.test.js';
+
+import type knex from 'knex';
 
 const db = getTestDbClient().db;
 

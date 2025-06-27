@@ -1,6 +1,8 @@
-import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types';
 import { Encryption } from '@nangohq/utils';
+
 import { envs } from '../env.js';
+
+import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types.js';
 
 function getEncryption(): Encryption {
     const encryptionKey = envs.NANGO_ENCRYPTION_KEY;

@@ -1,6 +1,7 @@
-import type { OAuth2Credentials } from '@nangohq/types';
-import type { InternalNango } from '../../internal-nango';
 import { AxiosError, isAxiosError } from 'axios';
+
+import type { InternalNango } from '../../internal-nango.js';
+import type { OAuth2Credentials } from '@nangohq/types';
 
 export default async function execute(nango: InternalNango) {
     try {

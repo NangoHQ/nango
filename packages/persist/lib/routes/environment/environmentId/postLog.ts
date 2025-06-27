@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { validateRequest } from '@nangohq/utils';
 
-import type { AuthLocals } from '../../../middleware/auth.middleware';
+import type { AuthLocals } from '../../../middleware/auth.middleware.js';
 import type { MessageRowInsert, PostLog } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 

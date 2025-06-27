@@ -74,7 +74,7 @@ async function fetchData(nango) {
   await nango.log("Fetching contacts...");
 }
 ",
-      "ts": "import type { NangoSync } from '../../models';
+      "ts": "import type { NangoSync } from '../../models.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     await nango.log('Fetching contacts...');
@@ -148,7 +148,7 @@ async function runAction(nango) {
   await nango.log("Creating contact...");
 }
 ",
-      "ts": "import type { NangoAction } from '../../models';
+      "ts": "import type { NangoAction } from '../../models.js';
 
 export default async function runAction(nango: NangoAction): Promise<void> {
     await nango.log('Creating contact...');
@@ -207,7 +207,7 @@ async function fetchData(nango) {
   await nango.log("Fetching issues...");
 }
 ",
-      "ts": "import type { NangoSync } from '../../models';
+      "ts": "import type { NangoSync } from '../../models.js';
 
 export default async function fetchData(nango: NangoSync): Promise<void> {
     await nango.log('Fetching issues...');
@@ -281,7 +281,7 @@ async function runAction(nango) {
   await nango.log("Creating issue...");
 }
 ",
-      "ts": "import type { NangoAction } from '../../models';
+      "ts": "import type { NangoAction } from '../../models.js';
 
 export default async function runAction(nango: NangoAction): Promise<void> {
     await nango.log('Creating issue...');

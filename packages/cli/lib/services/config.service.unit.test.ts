@@ -1,8 +1,10 @@
 import path from 'node:path';
+
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parse, validateYaml } from './config.service';
+
+import { parse, validateYaml } from './config.service.js';
 import { CLIError } from '../utils/errors.js';
 
 function cleanLog(log: any) {

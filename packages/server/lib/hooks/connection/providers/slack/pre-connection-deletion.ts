@@ -1,6 +1,7 @@
-import type { OAuth2Credentials } from '@nangohq/types';
 import axios, { isAxiosError } from 'axios';
-import type { InternalNango } from '../../internal-nango';
+
+import type { InternalNango } from '../../internal-nango.js';
+import type { OAuth2Credentials } from '@nangohq/types';
 
 interface SlackRevokeResponse {
     ok: boolean;

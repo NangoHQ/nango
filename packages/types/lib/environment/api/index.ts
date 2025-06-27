@@ -1,7 +1,7 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../../api';
-import type { ApiPlan } from '../../plans/http.api';
-import type { DBEnvironment, DBExternalWebhook } from '../db';
-import type { ApiEnvironmentVariable } from '../variable/api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
+import type { ApiPlan } from '../../plans/http.api.js';
+import type { DBEnvironment, DBExternalWebhook } from '../db.js';
+import type { ApiEnvironmentVariable } from '../variable/api.js';
 import type { Merge } from 'type-fest';
 
 export type ApiEnvironment = Omit<

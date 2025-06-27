@@ -1,7 +1,7 @@
+import type { ApiError, Endpoint } from '../api.js';
+import type { RunnerOutputError } from '../runner/index.js';
+import type { NangoProps } from '../runner/sdk.js';
 import type { JsonValue } from 'type-fest';
-import type { ApiError, Endpoint } from '../api';
-import type { RunnerOutputError } from '../runner';
-import type { NangoProps } from '../runner/sdk';
 
 export type PostHeartbeat = Endpoint<{
     Method: 'POST';
