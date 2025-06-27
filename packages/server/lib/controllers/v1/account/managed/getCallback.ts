@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
 import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { linkOrbCustomer } from '../../../../utils/linkOrb.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam, GetManagedCallback } from '@nangohq/types';
@@ -118,14 +118,9 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         }
 
         if (isNewTeam && flagHasUsage) {
-            const resCreate = await billing.upsertCustomer(account, user);
-            if (resCreate.isErr()) {
-                report(resCreate.error);
-            } else {
-                const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
-                if (resUpdate.isErr()) {
-                    report(resUpdate.error);
-                }
+            const res = await linkOrbCustomer(account, user);
+            if (res.isErr()) {
+                report(res.error);
             }
         }
     }
