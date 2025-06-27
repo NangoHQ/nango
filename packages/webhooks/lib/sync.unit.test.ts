@@ -27,7 +27,8 @@ const providerConfig: IntegrationConfig = {
     environment_id: 1,
     missing_fields: [],
     created_at: new Date(),
-    updated_at: new Date()
+    updated_at: new Date(),
+    forward_webhooks: true
 };
 
 const syncConfig: DBSyncConfig = {

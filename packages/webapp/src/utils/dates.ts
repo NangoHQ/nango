@@ -14,7 +14,7 @@ export interface PeriodPreset {
 
 export function parsePeriod(input: string, dateTimeFormat: string, example: string): { period: Period | null; error: string | null } {
     // Validate input format
-    const dateFormatRegex = /^[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2} - [A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2}$/;
+    const dateFormatRegex = /^[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2}:\d{2} - [A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2}:\d{2}$/;
     if (!dateFormatRegex.test(input)) {
         return { period: null, error: `Invalid format. Example: ${example}` };
     }

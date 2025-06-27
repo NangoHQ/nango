@@ -5244,6 +5244,7 @@ hubspot:
     connection_configuration:
         - portalId
     post_connection_script: hubspotPostConnection
+    pre_connection_deletion_script: hubspotPreConnectionDeletion
     webhook_routing_script: hubspotWebhookRouting
     proxy:
         retry:
@@ -5323,12 +5324,18 @@ instantly:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.instantly.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/instantly
+    docs_connect: https://docs.nango.dev/integrations/all/instantly/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Instantly account
+            pattern: '^[A-Za-z0-9._=-]+$'
+            example: ZTQ****************************************QQ==
+            doc_section: '#step-1-generate-an-api-key'
 
 instagram:
     display_name: Instagram
@@ -5359,6 +5366,7 @@ intercom:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
+    pre_connection_deletion_script: intercomPreConnectionDeletion
 
 intuit:
     display_name: Intuit
@@ -5464,6 +5472,8 @@ jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
+    default_scopes:
+        - offline_access
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
@@ -5636,6 +5646,36 @@ jobadder:
             endpoints:
                 - /v2/users/current
     docs: https://docs.nango.dev/integrations/all/jobadder
+
+jobvite:
+    display_name: Jobvite
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.jobvite.com/api
+        headers:
+            x-jvi-api: ${apiKey}
+            x-jvi-sc: ${connectionConfig.secretKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/candidate
+    docs: https://docs.nango.dev/integrations/all/jobvite
+    docs_connect: https://docs.nango.dev/integrations/all/jobvite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Jobvite account
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
+    connection_config:
+        secretKey:
+            type: string
+            title: Secret Key
+            description: The secret key for your Jobvite account
+            secret: true
+            doc_section: '#step-1-getting-your-api-key-and-secret-key'
 
 jotform:
     display_name: Jotform
@@ -7916,7 +7956,7 @@ precisefp:
     token_url: https://app.precisefp.com/oauth/token
     authorization_params:
         response_type: code
-        scope: "*"
+        scope: '*'
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -8047,7 +8087,6 @@ quickbooks-sandbox:
             pattern: '^\d{16}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
-
 
 ragieai:
     display_name: Ragie AI
@@ -8426,6 +8465,7 @@ rippling:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
+            user-agent: Node.js/20.12.2 (linux; x64)
         base_url: https://rest.ripplingapis.com
     docs: https://docs.nango.dev/integrations/all/rippling
     docs_connect: https://docs.nango.dev/integrations/all/rippling/connect
@@ -8459,6 +8499,32 @@ rippling-shop-app:
             title: ''
             description: ''
             automated: true
+
+roam-scim:
+    display_name: Roam (SCIM API)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ro.am/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/Users
+    docs: https://docs.nango.dev/integrations/all/roam-scim
+    docs_connect: https://docs.nango.dev/integrations/all/roam-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Roam organization settings.
+            example: rmk-uu9zt58h-EYHyLJ3ay4Mc-wuWQTOk-Y2yY-gZlW7Ys8AdVXBRZks_SGrCyZ09_IDvX9ikahdxushGYKcT77Fjw
+            pattern: '^rmk-[A-Za-z0-9_-]{86}$'
+            doc_section: '#step-1-generating-your-scim-api-token'
 
 rock-gym-pro:
     display_name: Rock Gym Pro
@@ -8536,6 +8602,39 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-hr:
+    display_name: Sage HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.sage.hr
+        headers:
+            x-auth-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/employees
+    docs: https://docs.nango.dev/integrations/all/sage-hr
+    docs_connect: https://docs.nango.dev/integrations/all/sage-hr/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Sage HR account
+            doc_section: '#step-1-enabling-api-access'
+            example: apikey****************************
+            pattern: '^[a-zA-Z0-9.]+$'
+    connection_config:
+        subdomain:
+            type: string
+            title: Sage HR Subdomain
+            description: The subdomain of your Sage HR account
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: subdomain
+            suffix: .sage.hr
+            prefix: https://
 
 sage-intacct-oauth:
     display_name: Sage Intacct (OAuth)
@@ -9292,6 +9391,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
+    pre_connection_deletion_script: slackPreConnectionDeletion
     docs: https://docs.nango.dev/integrations/all/slack
 
 smartlead-ai:
@@ -9622,7 +9722,7 @@ strava-web:
     docs: https://docs.nango.dev/integrations/all/strava-web
 
 stripe:
-    display_name: Stripe
+    display_name: Stripe Connect
     categories:
         - payment
     auth_mode: OAUTH2
@@ -9670,11 +9770,13 @@ stripe-app-sandbox:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/stripe-app-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/stripe-app-sandbox/connect
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The domain of your Stripe app
+            description: The unique identifier Stripe assigns to your app instance
+            doc_section: '#step-1-finding-your-app-domain'
 
 supabase:
     display_name: Supabase
@@ -9738,27 +9840,67 @@ tapclicks:
     docs_connect: https://docs.nango.dev/integrations/all/tapclicks/connect
 
 tableau:
-    display_name: Tableau
+    display_name: Tableau (PAT)
     categories:
         - analytics
-    auth_mode: TABLEAU
-    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}/auth/signin
     proxy:
         headers:
             accept: application/json
             content-type: application/json
-        base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
+            x-tableau-auth: ${accessToken}
+        base_url: https://${connectionConfig.hostname}/api/${connectionConfig.version}
+    token_params:
+        credentials:
+            personalAccessTokenName: ${credentials.pat}
+            personalAccessTokenSecret: ${credentials.secret}
+            site:
+                contentUrl: ${credentials.contentUrl}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: credentials.token
+        token_expiration: credentials.estimatedTimeToExpiration
+        token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/tableau
-    connection_config:
-        myServer:
+    docs_connect: https://docs.nango.dev/integrations/all/tableau/connect
+    credentials:
+        pat:
             type: string
-            title: Domain
+            title: Personal Access Token
+            description: Your Personal Access Token
+            doc_section: '#step-2-generating-your-personal-access-token'
+        secret:
+            type: string
+            title: Personal Access Token Secret
+            description: Your Personal Access Token Secret
+            secret: true
+            doc_section: '#step-2-generating-your-personal-access-token'
+        contentUrl:
+            type: string
+            title: Content Url
+            optional: true
+            example: test-eaec4a3fe2
+            doc_section: '#step-5-finding-your-content-url'
+            description: Your content URL
+    connection_config:
+        hostname:
+            type: string
+            title: HostName
             description: The domain of your Tableau instance
             format: hostname
+            order: 1
+            example: dub01.online.tableau.com
+            doc_section: '#step-3-finding-your-hostname'
             prefix: https://
         version:
             type: string
             title: API Version
+            order: 2
+            example: '3.26'
+            doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
 
 teamtailor:
@@ -9965,6 +10107,29 @@ trakstar-hire:
             description: ''
             default_value: ''
             hidden: true
+
+trafft:
+    display_name: Trafft
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.admin.trafft.com/api/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.admin.trafft.com/api
+    docs: https://docs.nango.dev/integrations/all/trafft
+    docs_connect: https://docs.nango.dev/integrations/all/trafft/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Trafft instance
+            example: subdomain
+            format: hostname
+            prefix: https://
+            suffix: .admin.trafft.com
+            doc_section: '#step-1-access-api-settings'
 
 tremendous:
     display_name: Tremendous
@@ -10390,6 +10555,84 @@ ukg-pro-wfm:
             example: wfm
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
+ukg-pro:
+    display_name: UKG Pro
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            content-type: application/json
+            us-customer-api-key: ${connectionConfig.customerApiKey}
+    docs: https://docs.nango.dev/integrations/all/ukg-pro
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
+    credentials:
+        username:
+            type: string
+            title: Service Account Username
+            description: The username for your UKG Pro service account
+            doc_section: '#step-2-creating-a-web-service-account'
+        password:
+            type: string
+            title: Service Account Password
+            description: The password generated for your UKG Pro service account
+            doc_section: '#step-2-creating-a-web-service-account'
+            secret: true
+    connection_config:
+        customerApiKey:
+            type: string
+            order: 2
+            title: Customer API Key
+            description: Your UKG Pro Customer API Key found in Service Account Administration
+            doc_section: '#step-1-finding-your-customer-api-key'
+            secret: true
+        hostname:
+            type: string
+            order: 1
+            title: Hostname
+            description: The tenant URL of your UKG Pro instance
+            format: hostname
+            example: servicet.ultipro.com
+            prefix: https://
+            doc_section: '#step-3-finding-your-hostname'
+
+ukg-ready:
+    display_name: UKG Ready
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/api/v2/client/tokens
+    token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        audience: https://${connectionConfig.hostname}/api
+        realm: ${connectionConfig.tenantName}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://docs.nango.dev/integrations/all/ukg-ready
+    docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Ready instance
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The tenant name of your UKG Ready instance
+            example: wfm
+            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 unanet:
     display_name: Unanet
     categories:

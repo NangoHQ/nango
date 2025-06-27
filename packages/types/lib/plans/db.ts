@@ -5,6 +5,16 @@ export interface DBPlan extends Timestamps {
     account_id: number;
     name: string;
 
+    // Stripe
+    stripe_customer_id: string | null;
+    stripe_payment_id: string | null;
+
+    // Orb
+    orb_customer_id: string | null;
+    orb_subscription_id: string | null;
+    orb_future_plan: string | null;
+    orb_future_plan_at: Date | null;
+
     // Trial
     // Remove all values when you upgrade a customer
     trial_start_at: Date | null;
@@ -57,4 +67,10 @@ export interface DBPlan extends Timestamps {
      * @default "m"
      */
     api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
+
+    /**
+     * Enable or disable machine auto idling
+     * @default true
+     */
+    auto_idle: boolean;
 }

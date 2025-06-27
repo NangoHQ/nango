@@ -80,6 +80,7 @@ export interface BaseProvider {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    pre_connection_deletion_script?: string;
     credentials_verification_script?: string;
     categories?: string[];
     connection_configuration?: string[];
@@ -156,10 +157,6 @@ export interface ProviderAppleAppStore extends BaseProvider {
     token_url: string;
 }
 
-export interface ProviderTableau extends BaseProvider {
-    auth_mode: 'TABLEAU';
-}
-
 export interface ProviderBill extends BaseProvider {
     auth_mode: 'BILL';
 }
@@ -212,7 +209,6 @@ export type Provider =
     | ProviderTwoStep
     | ProviderSignature
     | ProviderApiKey
-    | ProviderTableau
     | ProviderBill
     | ProviderGithubApp
     | ProviderAppleAppStore

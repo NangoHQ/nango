@@ -43,6 +43,7 @@ export class ProxyError extends Error {
 }
 
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
+const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
 export function getAxiosConfiguration({
     proxyConfig,
@@ -234,10 +235,6 @@ export function buildProxyHeaders({
             headers['authorization'] = `Bearer ${connection.credentials.token}`;
             break;
         }
-        case 'TABLEAU': {
-            headers['x-tableau-auth'] = `${connection.credentials.token}`;
-            break;
-        }
         case 'TBA': {
             const credentials = connection.credentials;
             const consumerKey: string = credentials.config_override['client_id'] || connection.connection_config['oauth_client_id'];
@@ -318,7 +315,13 @@ export function buildProxyHeaders({
     }
 
     if (config.headers) {
-        // Headers set in scripts should override the default ones
+        // Headers set in scripts should override the default ones except for special headers like 'user-agent'
+        for (const key of providedHeaders) {
+            if (headers[key]) {
+                config.headers[key] = headers[key];
+            }
+        }
+
         headers = { ...headers, ...config.headers };
     }
 

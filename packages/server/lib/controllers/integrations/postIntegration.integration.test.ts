@@ -78,7 +78,8 @@ describe(`POST ${endpoint}`, () => {
                 logo: 'http://localhost:3003/images/template-logos/algolia.svg',
                 provider: 'algolia',
                 unique_key: 'foobar',
-                updated_at: expect.toBeIsoDate()
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
             }
         });
     });

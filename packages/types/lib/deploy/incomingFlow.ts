@@ -1,6 +1,6 @@
-import type { Merge } from 'type-fest';
 import type { NangoModel, NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 import type { OnEventType } from '../scripts/on-events/api';
+import type { Merge } from 'type-fest';
 
 export interface IncomingScriptFiles {
     js: string;
@@ -31,11 +31,28 @@ export interface LegacySyncModelSchema {
     }[];
 }
 
-// TODO: split into action | sync type
-export interface PreBuiltFlowConfig {
-    type: ScriptTypeLiteral;
+export interface PreBuiltAction {
+    type: 'action';
     models: string[];
-    runs: string | null;
+    attributes?: object | undefined;
+    metadata?: NangoConfigMetadata | undefined;
+    model_schema: string | NangoModel[];
+    providerConfigKey: string;
+    provider: string;
+    is_public: boolean;
+    public_route: string;
+    name: string;
+    syncName?: string; // legacy
+    nango_config_id?: number;
+    fileBody?: IncomingScriptFiles;
+    endpoints: NangoSyncEndpointV2[];
+    input?: NangoModel | LegacySyncModelSchema | undefined;
+    version?: string | null;
+}
+export interface PreBuiltSync {
+    type: 'sync';
+    models: string[];
+    runs: string;
     auto_start?: boolean | undefined;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
@@ -53,6 +70,7 @@ export interface PreBuiltFlowConfig {
     input?: NangoModel | LegacySyncModelSchema | undefined;
     version?: string | null;
 }
+export type PreBuiltFlowConfig = PreBuiltAction | PreBuiltSync;
 
 // TODO: split into action | sync type
 export interface CLIDeployFlowConfig {

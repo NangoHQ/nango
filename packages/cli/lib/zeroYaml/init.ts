@@ -1,7 +1,6 @@
 import { exec } from 'node:child_process';
 import fs from 'node:fs';
-import path, { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { promisify } from 'node:util';
 
 import chalk from 'chalk';
@@ -9,9 +8,8 @@ import ora from 'ora';
 
 import { printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { compileAll } from './compile.js';
+import { exampleFolder } from './constants.js';
 
 const execAsync = promisify(exec);
 
@@ -36,12 +34,12 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
     // Copy example folder
     {
         const spinner = ora({ text: 'Copy example' }).start();
-        const exampleFolderPath = path.join(__dirname, '..', '..', 'example');
         try {
             printDebug(`Copy example folder`, debug);
 
             await fs.promises.mkdir(absolutePath, { recursive: true });
-            await copyRecursive(exampleFolderPath, absolutePath);
+            await copyRecursive(exampleFolder, absolutePath);
+            await fs.promises.rename(path.join(absolutePath, '.env.example'), path.join(absolutePath, '.env'));
             spinner.succeed();
         } catch (err) {
             spinner.fail();
@@ -79,8 +77,10 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
 
     // TODO: add compileAll
     {
-        const spinner = ora({ text: 'Initial compilation' }).start();
-        spinner.succeed();
+        const res = await compileAll({ fullPath: absolutePath, debug });
+        if (res.isErr()) {
+            return false;
+        }
     }
 
     return true;

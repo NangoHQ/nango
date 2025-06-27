@@ -23,6 +23,7 @@
         "fast-safe-stringify": "2.1.1",
         "http-proxy-agent": "7.0.2",
         "https-proxy-agent": "7.0.4",
+        "json-schema": "0.4.0",
         "nanoid": "5.0.9",
         "serialize-error": "11.0.3",
         "truncate-json": "3.0.0",

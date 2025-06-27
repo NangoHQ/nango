@@ -1,7 +1,7 @@
 import { IconChevronRight } from '@tabler/icons-react';
 
 import { Tag } from '../../../components/ui/label/Tag';
-import { formatDateToLogFormat } from '../../../utils/utils';
+import { formatDateToLogFormat, millisecondsToRuntime } from '../../../utils/utils';
 import { LevelTag } from '../components/LevelTag';
 
 import type { SearchMessagesData } from '@nangohq/types';
@@ -16,6 +16,18 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
         size: 180,
         cell: ({ row }) => {
             return <div className="font-code text-s">{formatDateToLogFormat(row.original.createdAt)}</div>;
+        }
+    },
+    {
+        accessorKey: 'duration',
+        header: 'Duration',
+        size: 100,
+        cell: ({ row }) => {
+            if (!row.original.durationMs) {
+                return 'n/a';
+            }
+            const displayDuration = millisecondsToRuntime(row.original.durationMs).split(' ')[0];
+            return <div className="font-code text-s">{displayDuration}</div>;
         }
     },
     {

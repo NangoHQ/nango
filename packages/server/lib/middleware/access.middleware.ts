@@ -6,7 +6,6 @@ import db from '@nangohq/database';
 import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
 import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import { envs } from '../env.js';
 import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as connectSessionService from '../services/connectSession.service.js';
@@ -91,19 +90,6 @@ export class AccessMiddleware {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
         }
-    }
-
-    /**
-     * Inherit secretKeyAuth
-     */
-    adminKeyAuth(_: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        if (res.locals['account']?.uuid !== NANGO_ADMIN_UUID) {
-            res.status(401).send({ error: { code: 'unauthorized' } });
-            return;
-        }
-
-        res.locals['authType'] = 'adminKey';
-        next();
     }
 
     private async validatePublicKey(publicKey: string): Promise<
@@ -503,7 +489,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        const account = await accountService.getAccountById(user.account_id);
+        const account = await accountService.getAccountById(db.knex, user.account_id);
         if (!account) {
             res.status(401).send({ error: { code: 'unknown_account' } });
             return;

@@ -47,7 +47,6 @@ import type {
     PostPublicTrigger,
     PostSyncVariant,
     SignatureCredentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials
@@ -412,7 +411,6 @@ export class Nango {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
-        | TableauCredentials
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
@@ -1074,6 +1072,18 @@ export class Nango {
         return this.proxy({
             ...config,
             method: 'POST'
+        });
+    }
+
+    /**
+     * Sends a PUT request using the proxy based on the provided configuration
+     * @param config - The configuration object for the PUT request
+     * @returns A promise that resolves with the response from the PUT request
+     */
+    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PUT'
         });
     }
 

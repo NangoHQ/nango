@@ -57,6 +57,13 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
                     event: script.event
                 };
             }),
+            updatedOnEventScripts: diff.updated.map((script) => {
+                return {
+                    providerConfigKey: script.providerConfigKey,
+                    name: script.name,
+                    event: script.event
+                };
+            }),
             deletedOnEventScripts: diff.deleted.map((script) => {
                 return {
                     providerConfigKey: script.providerConfigKey,
@@ -69,6 +76,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         result = {
             ...syncAndActionDifferences,
             newOnEventScripts: [],
+            updatedOnEventScripts: [],
             deletedOnEventScripts: []
         };
     }
