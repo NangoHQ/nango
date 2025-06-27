@@ -600,12 +600,11 @@ class ConnectionService {
 
     public async unsetConnectionConfigAttributes(
         connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
-        keys: string | string[]
+        keys: string[]
     ): Promise<ConnectionConfig> {
-        const keysToRemove = Array.isArray(keys) ? keys : [keys];
         const existingConfig = await this.getConnectionConfig(connection);
 
-        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keysToRemove.includes(key)));
+        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keys.includes(key)));
 
         await this.replaceConnectionConfig(connection, newConfig);
 

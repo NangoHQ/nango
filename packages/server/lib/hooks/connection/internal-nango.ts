@@ -6,7 +6,7 @@ export interface InternalNango {
     getConnection: () => Promise<DBConnectionDecrypted>;
     proxy: <T = any>({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
-    unsetConnectionConfigAttributes: (keys: string | string[]) => Promise<ConnectionConfig>;
+    unsetConnectionConfigAttributes: (...keys: string[]) => Promise<ConnectionConfig>;
 }
 
 export function getInternalNango(connection: DBConnectionDecrypted, providerName: string): InternalNango {
@@ -46,7 +46,7 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
         updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
             return connectionService.updateConnectionConfig(connection, connectionConfig);
         },
-        unsetConnectionConfigAttributes: (keys: string | string[]) => {
+        unsetConnectionConfigAttributes: (...keys: string[]) => {
             return connectionService.unsetConnectionConfigAttributes(connection, keys);
         }
     };
