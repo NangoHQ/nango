@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { NangoError, seeders } from '@nangohq/shared';
 
-import configController from './config.controller';
+import configController from './config.controller.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { ConnectSession, DBEnvironment, DBTeam, DBUser, EndUser } from '@nangohq/types';

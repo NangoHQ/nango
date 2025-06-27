@@ -2,7 +2,7 @@ import { HTTPSnippet } from 'httpsnippet-lite';
 
 import { modelToString } from './scripts';
 
-import type { NangoSyncModel } from '../types';
+import type { NangoSyncModel } from '../types.js';
 import type { NangoModel, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { TargetId } from 'httpsnippet-lite';
 
