@@ -79,15 +79,7 @@ import PreBuiltUseCases from "/snippets/generated/shopify/PreBuiltUseCases.mdx"
 
 ## Connection configuration in Nango
 
-Shopify requires a user specific subdomain to run OAuth.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('shopify', '<CONNECTION-ID>', {params: {subdomain: '<shopify-subdomain>'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- Shopify requires a user specific subdomain to run OAuth.
 
 ## API gotchas
 

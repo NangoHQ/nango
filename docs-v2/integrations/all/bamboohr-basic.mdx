@@ -40,27 +40,10 @@ _No setup guide yet._
 
 ## Connection configuration in Nango
 
-BambooHR requires a user specific subdomain to authenticate
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
-        credentials: {
-            username: '<END-USER-API-KEY>',
-            password: 'x'
-        },
-        params: {
-            subdomain: '<bamboohr-subdomain>'
-        }
-    })
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- BambooHR requires a user specific subdomain to authenticate
 
 ## API gotchas
 
-- When creating a connection, you need to add the subdomain as a params argument, for example: `nango.auth('bamhoo-hr', '1', {params: {subdomain: '<your-subdomain>'}})`.
 - Authenticating via API key: BambooHR gives only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username and use `x` for the password. See BambooHR [documentation](https://documentation.bamboohr.com/docs#section-authentication)
 
 

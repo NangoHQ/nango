@@ -41,15 +41,7 @@ _No setup guide yet._
 
 ## Connection configuration in Nango
 
-Netsuite requires a user specific account id to run OAuth.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('netsuite', '<CONNECTION-ID>', {params: {accountId: '<netsuite-account-id>'}});
-```
-
-For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- Netsuite requires a user specific account id to run OAuth.
 
 ## API gotchas
 
@@ -92,15 +84,3 @@ To avoid this we recommend using the machine to machine flow which is called the
 value you received from Netsuite called "**Client ID**" and for the "**OAuth Client Secret**" value paste in the value you received
 from Netsuite called "**Client Secret**". For "**Token ID**" & "**Token Secret**" paste in the values you received from Netsuite
 from the access token step. The account ID value can be found from your [Netsuite URL instance](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1498754928.html)
--   If done programmatically using the Nango frontend sdk:
-```js
-nango.auth('netsuite-tba', connectionId, {
-  params: { accountId: ACCOUNT_ID },
-  credentials: {
-    token_id: TOKEN_ID,
-    token_secret: TOKEN_SECRET,
-    oauth_client_id_override: CLIENT_ID,
-    oauth_client_secret_override: CLIENT_SECRET,
-  }
-})
-```

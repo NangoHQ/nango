@@ -39,22 +39,7 @@ _No setup guide yet._
 
 ## Connection configuration in Nango
 
-Freshdesk requires a user specific subdomain for the API requests.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('freshdesk', '<CONNECTION-ID>', {
-    params: {
-        subdomain: '<freshdesk-subdomain>'
-    },
-    credentials: {
-            username: '<API-KEY>',
-            password: 'x' // freshdesk asks you to leave "x" here
-    }});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- Freshdesk requires a user specific subdomain for the API requests.
 
 ## API gotchas
 

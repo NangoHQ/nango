@@ -37,15 +37,7 @@ Chargebee provides REST APIs and webhook to interact with their data. Only the R
 
 ## Connection configuration in Nango
 
-Chargebee requires a user specific subdomain for the API base URL.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('chargebee', '<CONNECTION-ID>', {params: {subdomain: '<chargebee-subdomain>'}});
-```
-
-For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+- Chargebee requires a user specific subdomain for the API base URL.
 
 ## API gotchas
 
