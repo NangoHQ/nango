@@ -22,12 +22,15 @@ import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { IconClockPause, IconClockPlay, IconRefresh, IconX } from '@tabler/icons-react';
+import { IconClockPause, IconClockPlay, IconRefresh, IconX, IconPencil } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import { apiRunSyncCommand } from '../../../hooks/useSyncs';
+import { Input } from '../../../components/ui/input/Input';
+import { frequencyRegex } from '../../../utils/validation';
+import { apiUpdateSyncConnectionFrequency } from '../../../hooks/useConnections';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null; showSyncVariant: boolean }> = ({
     sync,
@@ -47,6 +50,13 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
     const [deleteRecords, setDeleteRecords] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
+
+    // Frequency
+    const [openFrequency, setOpenFrequency] = useState(false);
+    const [selectedFrequency, setSelectedFrequency] = useState(sync.frequency);
+    const [isSavingFrequency, setIsSavingFrequency] = useState(false);
+    const [frequencyError, setFrequencyError] = useState<string | null>(null);
+    const isSaveFrequencyDisabled = frequencyError !== null || selectedFrequency === sync.frequency;
 
     const confirmTrigger = async () => {
         if (!sync || !provider) {
@@ -141,6 +151,52 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
         resetLoaders();
     };
 
+    const onFrequencyChange = (value: string) => {
+        setSelectedFrequency(value);
+
+        const reg = value.match(frequencyRegex);
+        if (!reg || !reg.groups) {
+            setFrequencyError('Format should be "every (number) (unit)", e.g: "every 1 hour", "every 20 days"');
+            return;
+        }
+
+        const unit = reg.groups['unit'];
+        const amount = parseInt(reg.groups['amount'], 10);
+
+        if (unit.startsWith('s') && (amount < 30 || !amount)) {
+            setFrequencyError('The minimum frequency is 30 seconds');
+            return;
+        }
+
+        setFrequencyError(null);
+    };
+
+    const saveFrequency = async () => {
+        if (isSaveFrequencyDisabled) {
+            return;
+        }
+
+        setIsSavingFrequency(true);
+
+        const response = await apiUpdateSyncConnectionFrequency(env, {
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            name: sync.name,
+            variant: sync.variant,
+            frequency: selectedFrequency
+        });
+
+        if ('error' in response.json) {
+            toast({ title: response.json.error?.message || 'An unexpected error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Updated successfully', variant: 'success' });
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
+        }
+
+        setIsSavingFrequency(false);
+        setOpenFrequency(false);
+    };
+
     return (
         <Table.Row className="text-white">
             <Table.Cell bordered>
@@ -173,7 +229,52 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                 )}
                 {!sync.latest_sync && <Tag variant={'gray'}>NEVER RUN</Tag>}
             </Table.Cell>
-            <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
+            <Table.Cell bordered>
+                <div className="flex items-center justify-end gap-2">
+                    <div className="capitalize">{formatFrequency(sync.frequency)}</div>
+                    <Dialog
+                        open={openFrequency}
+                        onOpenChange={(v) => {
+                            if (v) {
+                                onFrequencyChange(sync.frequency);
+                                setFrequencyError(null);
+                            }
+                            setOpenFrequency(v);
+                        }}
+                    >
+                        <DialogTrigger asChild>
+                            <Button variant="icon" size="xs">
+                                <IconPencil stroke={1} size={18} />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="pointer-events-auto">
+                            <DialogTitle>Edit sync frequency</DialogTitle>
+                            <DialogDescription>
+                                This change only affects this connection. Increasing the sync frequency may increase API usage and billing.
+                            </DialogDescription>
+                            <div className="flex flex-col gap-2">
+                                <Input
+                                    variant="black"
+                                    value={selectedFrequency}
+                                    autoFocus
+                                    onChange={(e) => onFrequencyChange(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && saveFrequency()}
+                                />
+                                {frequencyError && <div className="text-sm text-red-base">{frequencyError}</div>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="secondary">Cancel</Button>
+                                </DialogClose>
+                                <Button variant="primary" isLoading={isSavingFrequency} disabled={isSaveFrequencyDisabled} onClick={saveFrequency}>
+                                    Save
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </Table.Cell>
+
             <Table.Cell bordered>
                 <SimpleTooltip tooltipContent={JSON.stringify(sync.record_count, null, 2)}>
                     {formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0))}
