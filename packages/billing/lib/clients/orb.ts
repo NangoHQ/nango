@@ -77,6 +77,19 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.create({
+                external_customer_id: String(team.id),
+                external_plan_id: planExternalId,
+                start_date: team.created_at.toISOString()
+            });
+            return Ok({ id: subscription.id });
+        } catch (err) {
+            return Err(new Error('failed_to_create_subscription', { cause: err }));
+        }
+    }
+
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
