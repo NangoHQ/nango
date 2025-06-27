@@ -592,14 +592,20 @@ class ConnectionService {
         config: ConnectionConfig
     ): Promise<ConnectionConfig> {
         const existingConfig = await this.getConnectionConfig(connection);
-        let newConfig = { ...existingConfig, ...config };
+        const newConfig = { ...existingConfig, ...config };
+        await this.replaceConnectionConfig(connection, newConfig);
 
-        Object.keys(config).forEach((key) => {
-            if (config[key] === undefined) {
-                const { [key]: _, ...rest } = newConfig;
-                newConfig = rest;
-            }
-        });
+        return newConfig;
+    }
+
+    public async unsetConnectionConfigAttributes(
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
+        keys: string | string[]
+    ): Promise<ConnectionConfig> {
+        const keysToRemove = Array.isArray(keys) ? keys : [keys];
+        const existingConfig = await this.getConnectionConfig(connection);
+
+        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keysToRemove.includes(key)));
 
         await this.replaceConnectionConfig(connection, newConfig);
 

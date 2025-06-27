@@ -26,8 +26,6 @@ export default async function execute(nango: Nango) {
     const { connection_config } = connection;
 
     if ('pending' in connection_config) {
-        await nango.updateConnectionConfig({
-            pending: undefined
-        });
+        await nango.unsetConnectionConfigAttributes(['pending']);
     }
 }
