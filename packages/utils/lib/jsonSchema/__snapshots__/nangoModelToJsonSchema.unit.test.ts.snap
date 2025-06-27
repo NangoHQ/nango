@@ -274,6 +274,12 @@ exports[`nangoModelsToJsonSchema > should handle dynamic fields 1`] = `
           },
           "type": "array",
         },
+        "submodel": {
+          "additionalProperties": {
+            "type": "string",
+          },
+          "type": "object",
+        },
       },
       "required": [
         "fields",
@@ -291,8 +297,6 @@ exports[`nangoModelsToJsonSchema > should handle dynamic fields 1`] = `
           },
         ],
       },
-      "properties": {},
-      "required": [],
       "type": "object",
     },
   },
@@ -373,8 +377,6 @@ exports[`nangoModelsToJsonSchema > should handle model with no fields 1`] = `
 {
   "definitions": {
     "EmptyModel": {
-      "properties": {},
-      "required": [],
       "type": "object",
     },
   },
@@ -521,6 +523,10 @@ exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
   "definitions": {
     "SpecialCases": {
       "properties": {
+        "any": {},
+        "anyObject": {
+          "type": "object",
+        },
         "array": {
           "items": {},
           "type": "array",
@@ -539,7 +545,9 @@ exports[`nangoModelsToJsonSchema > should handle special cases 1`] = `
         "nullValue",
         "undefinedValue",
         "bigint",
+        "any",
         "array",
+        "anyObject",
       ],
       "type": "object",
     },
