@@ -248,10 +248,11 @@ class ProviderClient {
             const response = await axios.post(tokenUrl, body);
 
             if (response.status === 201 && response.data) {
-                const { token, refreshToken, ...rest } = response.data;
+                const { token, refreshToken, expiresAt, ...rest } = response.data;
 
                 return {
                     ...rest,
+                    expires_at: expiresAt,
                     access_token: token,
                     refresh_token: refreshToken
                 };
@@ -275,10 +276,11 @@ class ProviderClient {
             const response = await axios.post(refreshTokenUrl, body);
 
             if (response.status === 201 && response.data) {
-                const { token, refreshToken, ...rest } = response.data;
+                const { token, refreshToken, expiresAt, ...rest } = response.data;
 
                 return {
                     ...rest,
+                    expires_at: expiresAt,
                     access_token: token,
                     refresh_token: refreshToken
                 };
