@@ -235,10 +235,6 @@ export function buildProxyHeaders({
             headers['authorization'] = `Bearer ${connection.credentials.token}`;
             break;
         }
-        case 'TABLEAU': {
-            headers['x-tableau-auth'] = `${connection.credentials.token}`;
-            break;
-        }
         case 'TBA': {
             const credentials = connection.credentials;
             const consumerKey: string = credentials.config_override['client_id'] || connection.connection_config['oauth_client_id'];

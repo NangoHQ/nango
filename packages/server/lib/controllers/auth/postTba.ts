@@ -257,7 +257,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             account
         );
         if (logCtx) {
-            void logCtx.error('Error during Tableau credentials creation', { error: err });
+            void logCtx.error('Error during TBA credentials creation', { error: err });
             await logCtx.failed();
         }
 

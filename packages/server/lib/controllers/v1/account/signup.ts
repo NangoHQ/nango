@@ -76,7 +76,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        account = await accountService.getAccountById(validToken.account_id);
+        account = await accountService.getAccountById(db.knex, validToken.account_id);
         if (!account) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
