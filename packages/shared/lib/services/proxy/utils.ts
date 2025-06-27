@@ -77,8 +77,6 @@ export function getAxiosConfiguration({
     if (proxyConfig.provider.require_client_certificate) {
         const { client_certificate, client_private_key } = connection.credentials as OAuth2ClientCredentials;
 
-        let agent: https.Agent | undefined;
-
         if (client_certificate && client_private_key) {
             try {
                 const cert = formatPem(client_certificate, 'CERTIFICATE');
@@ -94,22 +92,20 @@ export function getAxiosConfiguration({
                     );
                 }
 
-                agent = new https.Agent({
+                const agent = new https.Agent({
                     cert,
                     key,
                     rejectUnauthorized: false
                 });
+
+                axiosConfig.httpAgent = agent;
+                axiosConfig.httpsAgent = agent;
             } catch (err: any) {
                 throw new ProxyError(
                     'invalid_certificate_or_key_format',
                     `Certificate and private key must be in PEM format with proper BEGIN/END boundaries: ${err}`
                 );
             }
-        }
-
-        if (agent) {
-            axiosConfig.httpAgent = agent;
-            axiosConfig.httpsAgent = agent;
         }
     }
 
