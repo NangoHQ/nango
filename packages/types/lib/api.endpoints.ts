@@ -8,9 +8,9 @@ import type {
     PostSignin,
     PostSignup,
     PutResetPassword
-} from './account/api';
-import type { GetAsyncActionResult } from './action/api';
-import type { EndpointMethod } from './api';
+} from './account/api.js';
+import type { GetAsyncActionResult } from './action/api.js';
+import type { EndpointMethod } from './api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
@@ -22,7 +22,7 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization,
     PostPublicOauthOutboundAuthorization
-} from './auth/http.api';
+} from './auth/http.api.js';
 import type {
     DeleteConnectSession,
     GetConnectSession,
@@ -30,7 +30,7 @@ import type {
     PostInternalConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
-} from './connect/api';
+} from './connect/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -39,13 +39,13 @@ import type {
     GetPublicConnection,
     GetPublicConnections,
     PostConnectionRefresh
-} from './connection/api/get';
-import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
-import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api';
-import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api';
-import type { PatchWebhook } from './environment/api/webhook';
-import type { PostEnvironmentVariables } from './environment/variable/api';
-import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
+} from './connection/api/get.js';
+import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
+import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
+import type { PatchWebhook } from './environment/api/webhook.js';
+import type { PostEnvironmentVariables } from './environment/variable/api.js';
+import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -58,19 +58,19 @@ import type {
     PatchPublicIntegration,
     PostIntegration,
     PostPublicIntegration
-} from './integration/api';
-import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api';
-import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
-import type { GetMeta } from './meta/api';
-import type { PatchOnboarding } from './onboarding/api';
-import type { PostPlanExtendTrial } from './plans/http.api';
-import type { GetPublicProvider, GetPublicProviders } from './providers/api';
-import type { GetPublicRecords } from './record/api';
-import type { GetPublicScriptsConfig } from './scripts/http.api';
-import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api';
-import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
-import type { GetUser, PatchUser } from './user/api';
-import type { PostPublicWebhook } from './webhooks/http.api';
+} from './integration/api.js';
+import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
+import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
+import type { GetMeta } from './meta/api.js';
+import type { PatchOnboarding } from './onboarding/api.js';
+import type { PostPlanExtendTrial } from './plans/http.api.js';
+import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
+import type { GetPublicRecords } from './record/api.js';
+import type { GetPublicScriptsConfig } from './scripts/http.api.js';
+import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
+import type { GetUser, PatchUser } from './user/api.js';
+import type { PostPublicWebhook } from './webhooks/http.api.js';
 
 export type PublicApiEndpoints =
     | SetMetadata

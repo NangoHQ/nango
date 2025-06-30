@@ -4,7 +4,7 @@
 import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
 
-import type { ConnectUIProps } from './connectUI';
+import type { ConnectUIProps } from './connectUI.js';
 import type {
     ApiKeyCredentials,
     AppStoreCredentials,
@@ -21,10 +21,10 @@ import type {
     SignatureCredentials,
     TBACredentials,
     TwoStepCredentials
-} from './types';
+} from './types.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
-export type * from './types';
+export type * from './types.js';
 export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';

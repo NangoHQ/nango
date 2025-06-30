@@ -1,5 +1,5 @@
-import type { ScriptTypeLiteral } from '../nangoYaml';
-import type { LegacySyncModelSchema } from './incomingFlow';
+import type { LegacySyncModelSchema } from './incomingFlow.js';
+import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 // TODO split by type
 // and fix id being optional

@@ -1,5 +1,5 @@
-import type { ApiError, Endpoint } from '../api';
-import type { ScriptTypeLiteral } from '../nangoYaml';
+import type { ApiError, Endpoint } from '../api.js';
+import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 export type PutUpgradePreBuiltFlow = Endpoint<{
     Method: 'PUT';
