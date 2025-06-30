@@ -20169,6 +20169,21 @@ integrations:
                 scopes:
                     - accounting.journals.read
                 version: 1.0.1
+            organisation:
+                description: |
+                    Fetches organisation details in Xero.
+                runs: every hour
+                output: Organisation
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /organisation
+                    group: Organisation
+                scopes:
+                    - accounting.settings
+                    - accounting.settings.read
+                version: 1.0.0
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -20650,6 +20665,65 @@ integrations:
                 tax_amount: number
                 line_amount: number
                 tracking: TrackingCategory[] | null
+            Organisation:
+                id: string
+                apiKey?: string
+                name: string
+                legalName: string
+                paysTax: boolean
+                version: string
+                organisationType: string
+                baseCurrency: string
+                countryCode: string
+                isDemoCompany: boolean
+                organisationStatus: string
+                registrationNumber?: string
+                employerIdentificationNumber?: string
+                taxNumber?: string
+                financialYearEndDay?: number
+                financialYearEndMonth?: number
+                salesTaxBasis?: string
+                salesTaxPeriod?: string
+                defaultSalesTax?: string
+                defaultPurchasesTax?: string
+                periodLockDate?: string
+                endOfYearLockDate?: string
+                createdDateUTC?: string
+                timezone?: string
+                organisationEntityType?: string
+                shortCode?: string
+                edition?: string
+                class?: string
+                lineOfBusiness?: string
+                addresses?: Address[]
+                phones?: Phone[]
+                externalLinks?: ExternalLink[]
+                paymentTerms?: PaymentTerms
+            Address:
+                addressType?: string
+                addressLine1?: string
+                addressLine2?: string
+                addressLine3?: string
+                addressLine4?: string
+                city?: string
+                region?: string
+                postalCode?: string
+                country?: string
+                attentionTo?: string
+            Phone:
+                phoneType?: string
+                phoneNumber?: string
+                phoneAreaCode?: string
+                phoneCountryCode?: string
+            ExternalLink:
+                linkType?: string
+                url?: string
+            PaymentTerms:
+                bills?: PaymentTermDetails
+                sales?: PaymentTermDetails
+            PaymentTermDetails:
+                day?: number
+                type?: string
     zendesk:
         syncs:
             tickets:
