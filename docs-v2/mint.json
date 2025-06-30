@@ -314,6 +314,7 @@
                 "integrations/all/avalara-sandbox",
                 "integrations/all/aws",
                 "integrations/all/aws-iam",
+                "integrations/all/aws-scim",
                 "integrations/all/azure-devops",
                 "integrations/all/bamboohr",
                 "integrations/all/bamboohr-basic",

@@ -1039,6 +1039,42 @@ aws-iam:
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
 
+aws-scim:
+    display_name: AWS (SCIM)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.scimUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /Users
+    docs: https://docs.nango.dev/integrations/all/aws-scim
+    docs_connect: https://docs.nango.dev/integrations/all/aws-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM Access Token
+            description: The SCIM Access Token generated from your AWS IAM Identity Center
+            example: 878374852-dea1-47d5-9ae0-4d00a0bdbb13:ff7d4f04-7385-4add-befe-a9ed18341d0d:l6uepDQrHfNOiOYXZ7HYZL8hlvsYHSG7Cnx104tkRLmDbO8l/p5GxLv6Id5BCLicmjeKvhrlqrPvL6VMcAnJS6oitQrz3ZiZr18rnybzyISRlyjxktYtIK1R80YJXBH6U7NSvwGsu5gDbUZDGlCDeh+FFhL8tmUuHytvxuhz3jNhsh&8X9xiLBg=:ICn/+PhEST+8/pizxTmoA0DW9JcQTL4EVRh0z6DpJwQ4vFQ+iwAxNjh16SHdUovAJyMjT+TPDwI8gN63DLE+9EV+lcV+i2H/OTDE4x7L18WRz3ndMf/4dY98mJ41qRYBgh63Pi8PdXkAex2l8HJLMkzjjPirN+8DCBfPVKK+z/nCc04RXWIz6XOmqwgB1sV5jwfAxPhuV6vqgVosoSngSw7Y2Zon70PiI5UbTTZffF6QWFU7i9b3dgMMDAH6f9vm11EB6YpJt/XC74L1pDvKXiSzhel7b7dYzGvrXK0rN29cnjn0o58VYCOgk9c05p/nRsEaSs2Y/v7BqgxXUvI+Aw==
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[A-Za-z0-9+/]+=*:[A-Za-z0-9+/]+=*$'
+            doc_section: '#step-1-generating-your-scim-api-token'
+    connection_config:
+        scimUrl:
+            type: string
+            title: SCIM Endpoint
+            description: The SCIM Endpoint mentioned in the AWS IAM Identity Center
+            example: 'https://scim.ap-south-1.amazonaws.com/lSweb811432-ac8a-4a86-8332-f29hha4f5650/scim/v2'
+            format: uri
+            pattern: '^https://.*\/.*\/scim\/v2$'
+            order: 1
+            doc_section: '#step-1-generating-your-scim-api-token'
+
 azure-devops:
     display_name: Azure DevOps
     categories:
