@@ -1469,8 +1469,6 @@ class ConnectionService {
      * Note:
      * a billable connection is a connection that is not deleted and has not been deleted during the month
      * connections are pro-rated based on the number of seconds they were existing in the month
-     *
-     * This method only returns returns data for paying customer
      */
     async billableConnections(referenceDate: Date): Promise<
         Result<
@@ -1576,6 +1574,56 @@ class ConnectionService {
 
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
+    }
+
+    async trackExecution(id: number): Promise<Result<void>> {
+        try {
+            await db.knex.from('_nango_connections').where({ id, deleted_at: null }).update({ last_execution_at: db.knex.fn.now() });
+            return Ok(undefined);
+        } catch (err: unknown) {
+            return Err(new NangoError('failed_to_track_execution', { id, error: err }));
+        }
+    }
+
+    /**
+     * Note:
+     * Some plan are billed per active connections in prod environment
+     * A connection is considered active if it has at least one script execution during the month
+     */
+    async billableActiveConnections(referenceDate: Date): Promise<
+        Result<
+            {
+                accountId: number;
+                count: number;
+                year: number;
+                month: number;
+            }[],
+            NangoError
+        >
+    > {
+        const year = referenceDate.getUTCFullYear();
+        const month = referenceDate.getUTCMonth();
+
+        const start = new Date(Date.UTC(year, month, 1));
+        const end = new Date(Date.UTC(year, month + 1, 1));
+
+        const res = await db.readOnly
+            .select('e.account_id as accountId')
+            .count('c.id as count')
+            .select(db.readOnly.raw(`${year} as year`))
+            .select(db.readOnly.raw(`${month + 1} as month`)) // js months are 0-based
+            .from('_nango_connections as c')
+            .join('_nango_environments as e', 'c.environment_id', 'e.id')
+            .where('c.last_execution_at', '>=', start)
+            .where('c.last_execution_at', '<', end)
+            .where('e.name', 'prod') // only consider prod environment
+            .groupBy('e.account_id')
+            .havingRaw('count(c.id) > 0');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new NangoError('failed_to_get_billable_active_connections'));
     }
 }
 
