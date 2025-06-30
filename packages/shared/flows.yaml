@@ -14038,6 +14038,7 @@ integrations:
                 runs: every hour
                 output: OutlookCalendar
                 sync_type: full
+                version: 1.0.0
                 endpoint:
                     method: GET
                     path: /calendars
