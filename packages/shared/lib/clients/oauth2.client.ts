@@ -37,11 +37,21 @@ export function getSimpleOAuth2ClientConfig(
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
     const tokenUrl = makeUrl(templateTokenUrl, connectionConfig, provider.token_url_skip_encode);
-    const authorizeUrl = makeUrl(provider.authorization_url!, connectionConfig, provider.authorization_url_skip_encode);
 
     const headers = { 'User-Agent': 'Nango' };
 
     const authConfig = provider as ProviderOAuth2;
+
+    const authSection: any = {
+        tokenHost: tokenUrl.origin,
+        tokenPath: tokenUrl.pathname
+    };
+
+    if (provider.authorization_url) {
+        const authorizeUrl = makeUrl(provider.authorization_url, connectionConfig, provider.authorization_url_skip_encode);
+        authSection.authorizeHost = authorizeUrl.origin;
+        authSection.authorizePath = authorizeUrl.pathname;
+    }
 
     return {
         client: {
@@ -53,12 +63,7 @@ export function getSimpleOAuth2ClientConfig(
             // @ts-expect-error agents are not specified in the types, but are available as an option
             agents: agentConfig
         },
-        auth: {
-            tokenHost: tokenUrl.origin,
-            tokenPath: tokenUrl.pathname,
-            authorizeHost: authorizeUrl.origin,
-            authorizePath: authorizeUrl.pathname
-        },
+        auth: authSection,
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format || 'form',

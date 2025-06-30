@@ -20,7 +20,8 @@ import type {
     PostPublicSignatureAuthorization,
     PostPublicTbaAuthorization,
     PostPublicTwoStepAuthorization,
-    PostPublicUnauthenticatedAuthorization
+    PostPublicUnauthenticatedAuthorization,
+    PostPublicOauthOutboundAuthorization
 } from './auth/http.api';
 import type {
     DeleteConnectSession,
@@ -107,7 +108,8 @@ export type PublicApiEndpoints =
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
     | PatchPublicIntegration
-    | GetAsyncActionResult;
+    | GetAsyncActionResult
+    | PostPublicOauthOutboundAuthorization;
 
 export type PrivateApiEndpoints =
     | PostSignup
