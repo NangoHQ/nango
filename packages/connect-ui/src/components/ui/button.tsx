@@ -12,7 +12,7 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: 'bg-neutral-900 text-neutral-50 hover:bg-neutral-900/90 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/90',
+                default: 'bg-primary text-neutral-50 hover:bg-primary dark:bg-primary dark:text-neutral-900 dark:hover:bg-primary-hover',
                 transparent: 'text-dark-500 dark:hover:bg-neutral-50/90 focus:text-dark-800 hover:text-dark-800'
             },
             size: {

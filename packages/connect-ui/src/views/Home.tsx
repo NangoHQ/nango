@@ -11,6 +11,7 @@ import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
 
 import type { ConnectUIEventToken } from '@nangohq/frontend';
+import { updateTheme } from '@/lib/theme';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -60,6 +61,10 @@ export const Home: React.FC = () => {
 
     useEffect(() => {
         if (data) {
+            if (data.data.connectui_settings?.primary_color) {
+                updateTheme({ primary: data.data.connectui_settings.primary_color });
+            }
+
             setSession(data.data);
             void navigate({ to: '/integrations' });
         }

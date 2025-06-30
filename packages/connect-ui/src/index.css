@@ -5,6 +5,12 @@
 @layer base {
     :root {
         --radius: 0.5rem;
+
+        --primary: #000000;
+    }
+
+    .dark {
+        --primary: #ffffff;
     }
 }
 

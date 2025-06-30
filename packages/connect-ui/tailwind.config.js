@@ -16,6 +16,9 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             colors: {
+                primary: 'var(--primary)',
+                'primary-hover': 'color-mix(in srgb, var(--primary) 85%, black)',
+
                 // ---
                 // From Figma
                 'green-light': '#EDFBD8',

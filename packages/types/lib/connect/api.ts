@@ -28,6 +28,11 @@ export interface ConnectSessionInput {
               display_name?: string | undefined;
           }
         | undefined;
+    connectui_settings?:
+        | {
+              primary_color?: string | undefined;
+          }
+        | undefined;
 }
 export type ConnectSessionOutput = ConnectSessionInput & {
     isReconnecting?: boolean;

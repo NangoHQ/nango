@@ -4,6 +4,7 @@ import * as seeders from './seeders/index.js';
 import accountService from './services/account.service.js';
 import configService from './services/config.service.js';
 import connectionService from './services/connection.service.js';
+import * as connectUISettingsService from './services/connect-ui-settings.service.js';
 import environmentService from './services/environment.service.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
 import localFileService from './services/file/local.service.js';
@@ -73,5 +74,6 @@ export {
     seeders,
     syncCommandToOperation,
     syncManager,
-    userService
+    userService,
+    connectUISettingsService
 };

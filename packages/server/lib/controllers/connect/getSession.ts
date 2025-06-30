@@ -5,6 +5,7 @@ import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/ut
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetConnectSession } from '@nangohq/types';
+import { connectUISettingsService } from '@nangohq/shared';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -73,8 +74,16 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
             ])
         );
     }
+
     if (connectSession.connectionId) {
         response.data.isReconnecting = true;
+    }
+
+    const connectUISettings = await connectUISettingsService.getConnectUISettings(db.knex, environment.id);
+    if (connectUISettings) {
+        response.data.connectui_settings = {
+            primary_color: connectUISettings.primary_color
+        };
     }
 
     res.status(200).send(response);
