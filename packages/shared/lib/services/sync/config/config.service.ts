@@ -653,7 +653,7 @@ export function increment(input: number | string): number | string {
 }
 
 export async function getPublicConfig(environment_id: number): Promise<DBSyncConfig[]> {
-    return schema()
+    return db.knex
         .from<DBSyncConfig>(TABLE)
         .select(`${TABLE}.*`, '_nango_configs.provider', '_nango_configs.unique_key')
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')

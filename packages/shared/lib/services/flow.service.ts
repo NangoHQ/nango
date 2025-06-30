@@ -4,25 +4,24 @@ import path from 'path';
 import yaml from 'js-yaml';
 
 import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
-import { stringifyError } from '@nangohq/utils';
+import { filterJsonSchemaForModels, report, stringifyError } from '@nangohq/utils';
 
-import { errorManager } from '../index.js';
-import { dirname } from '../utils/utils.js';
-import { getPublicConfig } from './sync/config/config.service.js';
+import flowsJson from '../../flows.zero.json' with { type: 'json' };
 
-import type { FlowsYaml, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
+import type { FlowsYaml, FlowsZeroJson, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
 
 class FlowService {
+    flowsJson: FlowsZeroJson = flowsJson as FlowsZeroJson;
     flowsRaw: FlowsYaml | undefined;
     flowsStandard: StandardNangoConfig[] | undefined;
 
-    public getAllAvailableFlows(): FlowsYaml {
+    public getFlowsYaml(): FlowsYaml {
         if (this.flowsRaw) {
             return this.flowsRaw;
         }
 
         try {
-            const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
+            const flowPath = path.join(import.meta.dirname, '../../flows.yaml');
             this.flowsRaw = yaml.load(fs.readFileSync(flowPath).toString()) as FlowsYaml;
 
             if (this.flowsRaw === undefined || !('integrations' in this.flowsRaw) || Object.keys(this.flowsRaw.integrations).length <= 0) {
@@ -31,8 +30,8 @@ class FlowService {
 
             return this.flowsRaw;
         } catch (err) {
-            errorManager.report(`failed_to_find_flows, ${stringifyError(err)}`);
-            return {} as FlowsYaml;
+            report('failed_to_find_flows', { error: stringifyError(err) });
+            throw err;
         }
     }
 
@@ -41,7 +40,7 @@ class FlowService {
             return this.flowsStandard;
         }
 
-        const config = this.getAllAvailableFlows();
+        const config = this.getFlowsYaml();
         const { integrations: allIntegrations } = config;
 
         const standardConfig: StandardNangoConfig[] = [];
@@ -121,6 +120,78 @@ class FlowService {
 
         this.flowsStandard = standardConfig;
 
+        for (const integration of this.flowsJson) {
+            const std: StandardNangoConfig = {
+                providerConfigKey: integration.providerConfigKey,
+                actions: [],
+                syncs: [],
+                [`on-events`]: []
+            };
+
+            for (const item of integration.syncs) {
+                const jsonSchema = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
+                if (jsonSchema.isErr()) {
+                    throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchema.error });
+                }
+
+                std.syncs.push({
+                    name: item.name,
+                    type: item.type,
+                    returns: item.output || [],
+                    description: item.description,
+                    track_deletes: item.track_deletes,
+                    auto_start: item.auto_start,
+                    sync_type: item.sync_type,
+                    attributes: {},
+                    scopes: item.scopes,
+                    version: item.version || null,
+                    is_public: true,
+                    pre_built: true,
+                    endpoints: item.endpoints,
+                    input: item.input ? { name: item.input, fields: [] } : undefined,
+                    runs: item.runs,
+                    enabled: false,
+                    models: item.usedModels.map((name) => {
+                        return { name, fields: [] };
+                    }),
+                    last_deployed: null,
+                    webhookSubscriptions: [],
+                    json_schema: jsonSchema.value,
+                    metadata: { description: item.description, scopes: item.scopes }
+                });
+            }
+            for (const item of integration.actions) {
+                const jsonSchema = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
+                if (jsonSchema.isErr()) {
+                    throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchema.error });
+                }
+
+                std.actions.push({
+                    name: item.name,
+                    type: item.type,
+                    returns: item.output || [],
+                    description: item.description,
+                    runs: '',
+                    scopes: item.scopes,
+                    version: item.version || null,
+                    is_public: true,
+                    pre_built: true,
+                    endpoints: item.endpoint ? [item.endpoint] : [],
+                    input: item.input ? { name: item.input, fields: [] } : undefined,
+                    enabled: false,
+                    models: item.usedModels.map((name) => {
+                        return { name, fields: [] };
+                    }),
+                    last_deployed: null,
+                    webhookSubscriptions: [],
+                    json_schema: jsonSchema.value,
+                    metadata: { description: item.description, scopes: item.scopes }
+                });
+            }
+
+            standardConfig.push(std);
+        }
+
         return standardConfig;
     }
 
@@ -181,10 +252,6 @@ class FlowService {
         }
 
         return null;
-    }
-
-    public async getAddedPublicFlows(environmentId: number) {
-        return getPublicConfig(environmentId);
     }
 }
 
