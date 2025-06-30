@@ -10,6 +10,9 @@ exports.up = async function (knex) {
         table.string('primary_color').nullable();
         table.timestamps(true, true);
 
+        table.boolean('deleted').defaultTo(false);
+        table.dateTime('deleted_at').defaultTo(null);
+
         table.foreign('environment_id').references('id').inTable('_nango_environments').onDelete('CASCADE');
     });
 };
