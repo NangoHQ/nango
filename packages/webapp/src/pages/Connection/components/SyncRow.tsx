@@ -1,32 +1,35 @@
+import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
+import { PopoverContent } from '@radix-ui/react-popover';
+import { IconClockPause, IconClockPlay, IconRefresh, IconX } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { mutate } from 'swr';
+
+import { SimpleTooltip } from '../../../components/SimpleTooltip';
+import { Checkbox } from '../../../components/ui/Checkbox';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select';
 import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
-import { Link } from 'react-router-dom';
-import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import {
+    formatDateToUSFormat,
     formatFrequency,
+    formatQuantity,
     getRunTime,
     parseLatestSyncResult,
-    formatDateToUSFormat,
     interpretNextRun,
-    formatQuantity,
     truncateMiddle
 } from '../../../utils/utils';
 import { getLogsUrl } from '../../../utils/logs';
-import { UserFacingSyncCommand } from '../../../types';
-import type { RunSyncCommand, SyncResponse } from '../../../types';
+import { UserFacingSyncCommand } from '../../../types.js';
+
+import type { RunSyncCommand, SyncResponse } from '../../../types.js';
 import { useStore } from '../../../store';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+
 import type { ApiConnectionFull } from '@nangohq/types';
 import { Button, ButtonLink } from '../../../components/ui/button/Button';
-import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
-import { PopoverContent } from '@radix-ui/react-popover';
-import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { IconClockPause, IconClockPlay, IconRefresh, IconX } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
-import { mutate } from 'swr';
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '../../../components/ui/Select';
-import { Checkbox } from '../../../components/ui/Checkbox';
 import { apiRunSyncCommand } from '../../../hooks/useSyncs';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null; showSyncVariant: boolean }> = ({

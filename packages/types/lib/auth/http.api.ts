@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '../api';
+import type { ApiError, Endpoint } from '../api.js';
 
 export type ConnectionQueryString = {
     connection_id?: string | undefined;
@@ -91,22 +91,6 @@ export type PostPublicTbaAuthorization = Endpoint<{
     Success: ConnectionResponse;
 }>;
 
-export type PostPublicTableauAuthorization = Endpoint<{
-    Method: 'POST';
-    Body: {
-        pat_name: string;
-        pat_secret: string;
-        content_url?: string | undefined;
-    };
-    Querystring: ConnectionQueryString;
-    Params: {
-        providerConfigKey: string;
-    };
-    Path: '/auth/tableau/:providerConfigKey';
-    Error: AuthErrors;
-    Success: ConnectionResponse;
-}>;
-
 export type PostPublicJwtAuthorization = Endpoint<{
     Method: 'POST';
     Body: Record<string, any>;
@@ -170,6 +154,21 @@ export type PostPublicSignatureAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/signature-based/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponse;
+}>;
+
+export type PostPublicOauthOutboundAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        username: string;
+        password: string;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/oauth-outbound/:providerConfigKey';
     Error: AuthErrors;
     Success: ConnectionResponse;
 }>;

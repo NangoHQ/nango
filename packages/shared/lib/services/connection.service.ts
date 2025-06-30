@@ -11,7 +11,6 @@ import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
-import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
@@ -71,10 +70,8 @@ import type {
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
-    ProviderTableau,
     ProviderTwoStep,
     SignatureCredentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials
 } from '@nangohq/types';
@@ -170,15 +167,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials:
-            | TwoStepCredentials
-            | TableauCredentials
-            | TbaCredentials
-            | JwtCredentials
-            | ApiKeyCredentials
-            | BasicApiCredentials
-            | BillCredentials
-            | SignatureCredentials;
+        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -604,6 +593,19 @@ class ConnectionService {
     ): Promise<ConnectionConfig> {
         const existingConfig = await this.getConnectionConfig(connection);
         const newConfig = { ...existingConfig, ...config };
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
+    public async unsetConnectionConfigAttributes(
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
+        keys: string[]
+    ): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+
+        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keys.includes(key)));
+
         await this.replaceConnectionConfig(connection, newConfig);
 
         return newConfig;
@@ -1285,7 +1287,6 @@ class ConnectionService {
             | OAuth2ClientCredentials
             | AppCredentials
             | AppStoreCredentials
-            | TableauCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
@@ -1349,21 +1350,6 @@ class ConnectionService {
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config
             });
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
-        } else if (provider.auth_mode === 'TABLEAU') {
-            const { pat_name, pat_secret, content_url } = connection.credentials as TableauCredentials;
-            const create = await tableauClient.createCredentials({
-                provider: provider as ProviderTableau,
-                patName: pat_name,
-                patSecret: pat_secret,
-                contentUrl: content_url,
-                connectionConfig: connection.connection_config
-            });
-
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }
@@ -1483,8 +1469,6 @@ class ConnectionService {
      * Note:
      * a billable connection is a connection that is not deleted and has not been deleted during the month
      * connections are pro-rated based on the number of seconds they were existing in the month
-     *
-     * This method only returns returns data for paying customer
      */
     async billableConnections(referenceDate: Date): Promise<
         Result<
@@ -1590,6 +1574,56 @@ class ConnectionService {
 
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
+    }
+
+    async trackExecution(id: number): Promise<Result<void>> {
+        try {
+            await db.knex.from('_nango_connections').where({ id, deleted_at: null }).update({ last_execution_at: db.knex.fn.now() });
+            return Ok(undefined);
+        } catch (err: unknown) {
+            return Err(new NangoError('failed_to_track_execution', { id, error: err }));
+        }
+    }
+
+    /**
+     * Note:
+     * Some plan are billed per active connections in prod environment
+     * A connection is considered active if it has at least one script execution during the month
+     */
+    async billableActiveConnections(referenceDate: Date): Promise<
+        Result<
+            {
+                accountId: number;
+                count: number;
+                year: number;
+                month: number;
+            }[],
+            NangoError
+        >
+    > {
+        const year = referenceDate.getUTCFullYear();
+        const month = referenceDate.getUTCMonth();
+
+        const start = new Date(Date.UTC(year, month, 1));
+        const end = new Date(Date.UTC(year, month + 1, 1));
+
+        const res = await db.readOnly
+            .select('e.account_id as accountId')
+            .count('c.id as count')
+            .select(db.readOnly.raw(`${year} as year`))
+            .select(db.readOnly.raw(`${month + 1} as month`)) // js months are 0-based
+            .from('_nango_connections as c')
+            .join('_nango_environments as e', 'c.environment_id', 'e.id')
+            .where('c.last_execution_at', '>=', start)
+            .where('c.last_execution_at', '<', end)
+            .where('e.name', 'prod') // only consider prod environment
+            .groupBy('e.account_id')
+            .havingRaw('count(c.id) > 0');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new NangoError('failed_to_get_billable_active_connections'));
     }
 }
 

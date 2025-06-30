@@ -39,11 +39,6 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         client_id: z.string().min(1),
         client_secret: z.string().min(1)
     }),
-    TABLEAU: z.object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().min(1)
-    }),
     JWT: z.object({
         // JWT is custom every time
     }),
@@ -225,7 +220,7 @@ export const Go: React.FC = () => {
                 if (provider.auth_mode === 'NONE') {
                     res = await nango.create(integration.unique_key, { ...values });
                 } else if (
-                    provider.auth_mode === 'OAUTH2' ||
+                    (provider.auth_mode === 'OAUTH2' && !provider.installation) ||
                     provider.auth_mode === 'OAUTH1' ||
                     provider.auth_mode === 'CUSTOM' ||
                     provider.auth_mode === 'APP'
@@ -238,7 +233,8 @@ export const Go: React.FC = () => {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow
+                        detectClosedAuthWindow,
+                        ...(provider.installation && { installation: provider.installation })
                     });
                 }
                 setResult(res);

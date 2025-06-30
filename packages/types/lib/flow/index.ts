@@ -1,5 +1,5 @@
-import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
-import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow.js';
+import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { JSONSchema7 } from 'json-schema';
 
 // TODO: Split by type

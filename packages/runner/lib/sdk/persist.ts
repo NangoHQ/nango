@@ -1,5 +1,6 @@
-import https from 'node:https';
-
+import type { RequestOptions } from 'node:https';
+import { Agent } from 'node:https';
+import type { Socket } from 'net';
 import axios, { AxiosError, isAxiosError } from 'axios';
 
 import { getUserAgent } from '@nangohq/node';
@@ -19,6 +20,57 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { envs } from '../env.js';
+
+export class MaxLifetimeAgent extends Agent {
+    private readonly maxSocketLifetime: number;
+    private readonly socketsCreatedAt: Map<Socket, number>;
+
+    constructor(options: { maxSocketLifetimeMs: number }) {
+        const lifetime = options.maxSocketLifetimeMs;
+
+        super({
+            keepAlive: true,
+            timeout: lifetime
+        });
+
+        this.maxSocketLifetime = lifetime;
+        this.socketsCreatedAt = new Map<Socket, number>();
+    }
+
+    public createConnection(options: RequestOptions, callback: (err: Error | null, socket: Socket) => void): Socket {
+        // https://nodejs.org/docs/latest/api/http.html#agentcreateconnectionoptions-callback
+        // @ts-expect-error - @types/node does not define createConnection
+        const socket = super.createConnection(options, callback);
+
+        this.socketsCreatedAt.set(socket, Date.now());
+        socket.once('close', () => {
+            this.socketsCreatedAt.delete(socket);
+        });
+
+        return socket;
+    }
+
+    public keepSocketAlive(socket: Socket): boolean {
+        const birthTime = this.socketsCreatedAt.get(socket);
+
+        if (birthTime) {
+            const age = Date.now() - birthTime;
+            if (age >= this.maxSocketLifetime) {
+                return false;
+            }
+        }
+
+        // https://nodejs.org/docs/latest/api/http.html#agentkeepsocketalivesocket
+        // @ts-expect-error - @types/node does not define keepSocketAlive
+        return super.keepSocketAlive(socket);
+    }
+
+    public override destroy(): void {
+        super.destroy();
+        this.socketsCreatedAt.clear();
+    }
+}
 
 export class PersistClient {
     private httpClient: AxiosInstance;
@@ -28,7 +80,7 @@ export class PersistClient {
         this.secretKey = secretKey;
         this.httpClient = axios.create({
             baseURL: getPersistAPIUrl(),
-            httpsAgent: new https.Agent({ keepAlive: true }),
+            httpsAgent: new MaxLifetimeAgent({ maxSocketLifetimeMs: envs.RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS }),
             headers: {
                 'User-Agent': getUserAgent('sdk')
             },

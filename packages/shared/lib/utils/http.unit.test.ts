@@ -4,7 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 
 import { loggedFetch } from './http.js';
 
-import type { BufferTransport } from '@nangohq/logs/lib/transport';
+import type { BufferTransport } from '@nangohq/logs';
 
 describe('loggedFetch', () => {
     it('should get and log success', async () => {

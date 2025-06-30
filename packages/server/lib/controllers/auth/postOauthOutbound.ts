@@ -1,61 +1,45 @@
 import { z } from 'zod';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import db from '@nangohq/database';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
+    getConnectionConfig,
+    getProvider,
     configService,
     connectionService,
     errorManager,
-    getConnectionConfig,
-    getProvider,
     linkConnection,
-    tableauClient
+    ErrorSourceEnum,
+    LogActionEnum
 } from '@nangohq/shared';
-import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
-
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
-import type { LogContext } from '@nangohq/logs';
-import type { PostPublicTableauAuthorization, ProviderTableau } from '@nangohq/types';
-import type { NextFunction } from 'express';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 
-const bodyValidation = z
-    .object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().optional()
-    })
-    .strict();
+import db from '@nangohq/database';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { stringifyError, zodErrorToHTTP, metrics } from '@nangohq/utils';
+
+import type { LogContext } from '@nangohq/logs';
+import type { NextFunction } from 'express';
+import type { ConnectionConfig, PostPublicOauthOutboundAuthorization } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        hmac: z.string().optional(),
+        params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
 
-const paramValidation = z
+const paramsValidation = z
     .object({
         providerConfigKey: providerConfigKeySchema
     })
     .strict();
 
-export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuthorization>(async (req, res, next: NextFunction) => {
-    const val = bodyValidation.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({
-            error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
-        });
-        return;
-    }
-
+export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauthOutboundAuthorization>(async (req, res, next: NextFunction) => {
     const queryStringVal = queryStringValidation.safeParse(req.query);
     if (!queryStringVal.success) {
         res.status(400).send({
@@ -64,18 +48,15 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         return;
     }
 
-    const paramVal = paramValidation.safeParse(req.params);
-    if (!paramVal.success) {
-        res.status(400).send({
-            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramVal.error) }
-        });
+    const paramsVal = paramsValidation.safeParse(req.params);
+    if (!paramsVal.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: paramsVal.error.errors } });
         return;
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
-    const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
+    const { providerConfigKey }: PostPublicOauthOutboundAuthorization['Params'] = paramsVal.data;
+    const queryString: PostPublicOauthOutboundAuthorization['Querystring'] = queryStringVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -89,13 +70,13 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     let logCtx: LogContext | undefined;
 
     try {
-        const logCtx =
+        logCtx =
             isConnectSession && connectSession.operationId
                 ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'tableau', connectSession: endUserToMeta(res.locals.endUser) },
+                          meta: { authType: 'oauth2-outbound', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -124,8 +105,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        if (provider.auth_mode !== 'TABLEAU') {
-            void logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
+        if (provider.auth_mode !== 'OAUTH2') {
+            void logCtx.error('Provider does not support OAuth2 Outbound Installation creation', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -135,7 +116,6 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        // Reconnect mechanism
         if (isConnectSession && connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(connectSession.connectionId);
             if (!connection) {
@@ -144,49 +124,45 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const credentialsRes = await tableauClient.createCredentials({
-            provider: provider as ProviderTableau,
-            patName,
-            patSecret,
-            connectionConfig,
-            contentUrl
-        });
-        if (credentialsRes.isErr()) {
-            report(credentialsRes.error);
-            void logCtx.error('Error during Tableau credentials creation', { error: credentialsRes.error });
-            await logCtx.failed();
-            return;
-        }
+        const updatedConnectionConfig: ConnectionConfig = {
+            ...connectionConfig,
+            pending: true,
+            pendingLog: logCtx.id
+        };
 
-        const credentials = credentialsRes.value;
-
-        const [updatedConnection] = await connectionService.upsertAuthConnection({
+        const [updatedConnection] = await connectionService.upsertConnection({
             connectionId,
             providerConfigKey,
-            credentials,
-            connectionConfig,
-            metadata: {},
-            config,
-            environment
+            parsedRawCredentials: { type: 'OAUTH2' } as any,
+            connectionConfig: updatedConnectionConfig,
+            environmentId: environment.id
         });
+
         if (!updatedConnection) {
-            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
             void logCtx.error('Failed to create connection');
             await logCtx.failed();
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create connection' } });
             return;
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await linkConnection(db.knex, {
+                endUserId: connectSession.endUserId,
+                connection: updatedConnection.connection
+            });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        void logCtx.info('Tableau credentials creation was successful');
+        await logCtx.enrichOperation({
+            connectionId: updatedConnection.connection.id,
+            connectionName: updatedConnection.connection.connection_id
+        });
+
+        void logCtx.info('OAuth2 Outbound Installation creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
@@ -194,7 +170,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 connection: updatedConnection.connection,
                 environment,
                 account,
-                auth_mode: 'TABLEAU',
+                auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
@@ -209,22 +185,23 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailedHook(
-            {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'TABLEAU',
-                error: {
-                    type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
-                },
-                operation: 'unknown'
-            },
-            account
-        );
         if (logCtx) {
-            void logCtx.error('Error during Tableau credentials creation', { error: err });
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during OAuth2 outbound install: ${prettyError}`
+                    },
+                    operation: 'unknown'
+                },
+                account
+            );
+
+            void logCtx.error('Error during OAuth2 Outbound Installation credentials creation', { error: err });
             await logCtx.failed();
         }
 
@@ -235,7 +212,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TABLEAU' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
 
         next(err);
     }

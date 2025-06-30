@@ -260,7 +260,7 @@ class SyncController {
                         idempotencyKey: logCtx.id,
                         environmentId: connection.environment_id,
                         providerConfigKey,
-                        connectionId,
+                        connectionId: connection.id,
                         actionName: action_name
                     });
                 }
