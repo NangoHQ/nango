@@ -103,7 +103,7 @@ it('Should extract metadata from token response based on provider', () => {
         }
     };
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({
         'incoming_webhook.url': 'https://hooks.slack.com',
         ok: true,
@@ -130,7 +130,7 @@ it('Should extract metadata from token response based on template and if it does
         }
     };
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({});
 });
 
@@ -144,7 +144,7 @@ it('Should not extract metadata from an empty token response', () => {
 
     const params = {};
 
-    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    const result = utils.getConnectionMetadata(params, provider, 'token_response_metadata');
     expect(result).toEqual({});
 });
 
@@ -172,6 +172,17 @@ describe('interpolateString', () => {
         const output = utils.interpolateString(input, replacers);
         const expected = Buffer.from('john:doe123').toString('base64');
         expect(output).toBe(expected);
+    });
+    it('should resolve nested keys', () => {
+        const nestedReplacers = {
+            installation: {
+                uuid: 'abc-123-xyz'
+            }
+        };
+
+        const input = 'Installation ID: ${installation.uuid}';
+        const output = utils.interpolateString(input, nestedReplacers);
+        expect(output).toBe('Installation ID: abc-123-xyz');
     });
 });
 

@@ -157,3 +157,18 @@ export type PostPublicSignatureAuthorization = Endpoint<{
     Error: AuthErrors;
     Success: ConnectionResponse;
 }>;
+
+export type PostPublicOauthOutboundAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        username: string;
+        password: string;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/oauth-outbound/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponse;
+}>;
