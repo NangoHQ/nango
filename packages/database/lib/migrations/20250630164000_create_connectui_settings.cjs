@@ -13,6 +13,7 @@ exports.up = async function (knex) {
         table.boolean('deleted').defaultTo(false);
         table.dateTime('deleted_at').defaultTo(null);
 
+        table.unique(['environment_id']);
         table.foreign('environment_id').references('id').inTable('_nango_environments').onDelete('CASCADE');
     });
 };

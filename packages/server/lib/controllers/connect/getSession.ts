@@ -79,7 +79,7 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         response.data.isReconnecting = true;
     }
 
-    const connectUISettings = await connectUISettingsService.getConnectUISettings(db.knex, environment.id);
+    const connectUISettings = await connectUISettingsService.getConnectUISettings(environment.id);
     if (connectUISettings) {
         response.data.connectui_settings = {
             primary_color: connectUISettings.primary_color
