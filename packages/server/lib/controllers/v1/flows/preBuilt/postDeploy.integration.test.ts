@@ -42,7 +42,7 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    it.only('should deploy a template', async () => {
+    it('should deploy a template', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { env } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable', 'airtable');
@@ -57,14 +57,14 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { id: expect.any(Number) } });
 
         const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
-        expect(sync).toStrictEqual({
+        expect(sync).toStrictEqual<typeof sync>({
             sync_name: 'tables',
             type: 'sync',
             models: ['Table'],
             active: true,
             attributes: {},
             auto_start: true,
-            created_at: expect.toBeIsoDateTimezone(),
+            created_at: expect.any(Date),
             deleted: false,
             deleted_at: null,
             enabled: true,
@@ -134,7 +134,7 @@ describe(`POST ${endpoint}`, () => {
             sdk_version: expect.any(String),
             sync_type: 'full',
             track_deletes: true,
-            updated_at: expect.toBeIsoDateTimezone(),
+            updated_at: expect.any(Date),
             version: '1.0.0',
             webhook_subscriptions: null
         });
