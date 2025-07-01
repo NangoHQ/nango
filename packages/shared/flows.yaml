@@ -20170,7 +20170,7 @@ integrations:
                 scopes:
                     - accounting.journals.read
                 version: 1.0.1
-            organisation:
+            organisations:
                 description: |
                     Fetches organisation details in Xero.
                 runs: every hour
@@ -20179,8 +20179,8 @@ integrations:
                 track_deletes: true
                 endpoint:
                     method: GET
-                    path: /organisation
-                    group: Organisation
+                    path: /organisations
+                    group: Organisations
                 scopes:
                     - accounting.settings
                     - accounting.settings.read
