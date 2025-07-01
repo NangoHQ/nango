@@ -5,7 +5,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -169,13 +169,14 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         apiBase = splitApiBase[index]?.trim();
     }
 
-    const base = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const endpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
+    const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
 
-    const fullEndpoint = interpolateIfNeeded(
-        `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
-        connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
-    );
+    const baseFormatted = interpolateProxyUrlParts(normalizedBase);
+    const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
+
+    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
 
     let url = new URL(fullEndpoint);
     if (config.params) {
