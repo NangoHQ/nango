@@ -150,7 +150,7 @@ export type NangoSyncEndpointOld = Partial<Record<HTTP_METHOD, string | undefine
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
-    group?: string | undefined;
+    group?: string | null | undefined;
 }
 
 // --- Flows Yaml is a modified nango.yaml

@@ -137,7 +137,8 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     reconcile: false,
-                    singleDeployMode: false
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-yaml'
                 }
             });
 
@@ -165,7 +166,7 @@ describe(`POST ${endpoint}`, () => {
                             auto_start: false,
                             description: 'a',
                             enabled: true,
-                            endpoints: [{ method: 'GET', path: '/path' }],
+                            endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: {
                                 fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
                                 name: 'Input'
