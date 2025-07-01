@@ -172,7 +172,7 @@ export default class Nango {
         ) {
             const credentials = options.credentials;
             if (!credentials) {
-                throw new AuthError('Credentials are required for custom auth', 'missingCredentials');
+                throw new AuthError('Credentials are required for custom auth', 'missing_credentials');
             }
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
