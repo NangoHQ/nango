@@ -9,7 +9,7 @@ import {
     connectionService,
     errorManager,
     getConnectionConfig,
-    getConnectionMetadataFromTokenResponse,
+    getConnectionMetadata,
     getProvider,
     linkConnection
 } from '@nangohq/shared';
@@ -158,7 +158,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
-        const tokenMetadata = getConnectionMetadataFromTokenResponse(credentials.raw, provider);
+        const tokenMetadata = getConnectionMetadata(credentials.raw, provider, 'token_response_metadata');
 
         connectionConfig = {
             ...connectionConfig,

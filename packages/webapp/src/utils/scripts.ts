@@ -1,6 +1,7 @@
-import type { NangoModel, NangoModelField } from '@nangohq/types';
 import stringifyObject from 'stringify-object';
-import type { NangoSyncModel } from '../types';
+
+import type { NangoSyncModel } from '../types.js';
+import type { NangoModel, NangoModelField } from '@nangohq/types';
 
 export function isNewModel(model: NangoSyncModel | NangoModel): model is NangoModel {
     return 'fields' in model && model.fields.length > 0 && 'value' in model.fields[0];

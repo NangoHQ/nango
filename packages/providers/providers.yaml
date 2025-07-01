@@ -8518,6 +8518,32 @@ rippling-shop-app:
             description: ''
             automated: true
 
+roam-scim:
+    display_name: Roam (SCIM API)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ro.am/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/Users
+    docs: https://docs.nango.dev/integrations/all/roam-scim
+    docs_connect: https://docs.nango.dev/integrations/all/roam-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Roam organization settings.
+            example: rmk-uu9zt58h-EYHyLJ3ay4Mc-wuWQTOk-Y2yY-gZlW7Ys8AdVXBRZks_SGrCyZ09_IDvX9ikahdxushGYKcT77Fjw
+            pattern: '^rmk-[A-Za-z0-9_-]{86}$'
+            doc_section: '#step-1-generating-your-scim-api-token'
+
 rock-gym-pro:
     display_name: Rock Gym Pro
     categories:
@@ -8990,6 +9016,47 @@ sentry:
             example: sntryu_795225***************b9864a*********************
             pattern: '^sntryu_[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-sentry-auth-token'
+
+sentry-oauth:
+    display_name: Sentry (Public Integrations)
+    installation: outbound
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    token_url: https://sentry.io/api/0/sentry-app-installations/${connectionConfig.installation.uuid}/authorizations/
+    webhook_routing_script: sentryOauthWebhookRouting
+    post_connection_script: sentryOauthPostConnection
+    authorization_code_param_in_webhook: data.installation.code
+    webhook_response_metadata:
+        - installation.uuid
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        connection_config:
+            actor: ${connectionConfig.actor}
+    docs: https://docs.nango.dev/integrations/all/sentry-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/sentry-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname of your Sentry account
+            example: us.sentry.io
+            format: hostname
+            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+        actor:
+            type: string
+            title: User ID
+            description: The unique identifier of the user who will accept and install the public integration
+            doc_section: '#step-2-finding-your-user-id'
+        installation.uuid:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sedna:
     display_name: Sedna (OAuth)
@@ -10557,10 +10624,6 @@ ukg-pro:
         headers:
             content-type: application/json
             us-customer-api-key: ${connectionConfig.customerApiKey}
-        verification:
-            method: GET
-            endpoints:
-                - /configuration/v1/earnings
     docs: https://docs.nango.dev/integrations/all/ukg-pro
     docs_connect: https://docs.nango.dev/integrations/all/ukg-pro/connect
     credentials:

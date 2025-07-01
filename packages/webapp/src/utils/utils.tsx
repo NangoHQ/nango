@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 
 import { globalEnv } from './env';
 
-import type { SyncResult } from '../types';
+import type { SyncResult } from '../types.js';
 import type { ClassValue } from 'clsx';
 
 const customTwMerge = extendTailwindMerge({

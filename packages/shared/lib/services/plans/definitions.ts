@@ -10,13 +10,14 @@ export const plansList: PlanDefinition[] = [
         orbId: 'free',
         flags: {
             api_rate_limit_size: 'm',
-            connection_with_scripts_max: 50,
+            connection_with_scripts_max: null,
             environments_max: 2,
             has_otel: false,
             has_sync_variants: false,
-            connections_max: 1000,
+            connections_max: 10,
             name: 'free',
-            sync_frequency_secs_min: 3600
+            sync_frequency_secs_min: 3600,
+            auto_idle: true
         }
     },
     {
@@ -35,7 +36,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'yc',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     },
     {
@@ -52,7 +54,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'growth',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     },
     {
@@ -70,7 +73,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: true,
             has_sync_variants: true,
             name: 'enterprise',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     },
     {
@@ -89,7 +93,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: false,
             name: 'yc',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     },
 
@@ -108,7 +113,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'starter',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     },
     {
@@ -125,7 +131,8 @@ export const plansList: PlanDefinition[] = [
             has_otel: false,
             has_sync_variants: true,
             name: 'scale',
-            sync_frequency_secs_min: 30
+            sync_frequency_secs_min: 30,
+            auto_idle: false
         }
     }
 ];

@@ -4,7 +4,7 @@
 import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
 
-import type { ConnectUIProps } from './connectUI';
+import type { ConnectUIProps } from './connectUI.js';
 import type {
     ApiKeyCredentials,
     AppStoreCredentials,
@@ -21,10 +21,10 @@ import type {
     SignatureCredentials,
     TBACredentials,
     TwoStepCredentials
-} from './types';
+} from './types.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
-export type * from './types';
+export type * from './types.js';
 export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';
@@ -163,16 +163,20 @@ export default class Nango {
         // -----------
         if (
             options &&
-            'credentials' in options &&
-            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
-                !('oauth_client_id_override' in options.credentials) ||
-                !('oauth_client_secret_override' in options.credentials)) &&
-            Object.keys(options.credentials).length > 0
+            (('installation' in options && options.installation === 'outbound') ||
+                ('credentials' in options &&
+                    (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                        !('oauth_client_id_override' in options.credentials) ||
+                        !('oauth_client_secret_override' in options.credentials)) &&
+                    Object.keys(options.credentials).length > 0))
         ) {
             const credentials = options.credentials;
+            if (!credentials) {
+                throw new AuthError('Credentials are required for custom auth', 'missingCredentials');
+            }
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
-            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig, options.installation);
         }
 
         // -----------
@@ -447,7 +451,8 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string | null,
         connectionConfigWithCredentials: ConnectionConfig,
-        connectionConfig?: ConnectionConfig
+        connectionConfig?: ConnectionConfig,
+        installation?: string
     ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials;
 
@@ -515,6 +520,11 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as OAuth2ClientCredentials
+            });
+        }
+        if (installation === 'outbound') {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/oauth-outbound/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`
             });
         }
 

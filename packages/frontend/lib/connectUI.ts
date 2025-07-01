@@ -1,4 +1,4 @@
-import type { ConnectUIEvent, ConnectUIEventToken } from './types';
+import type { ConnectUIEvent, ConnectUIEventToken } from './types.js';
 import type { MaybePromise } from '@nangohq/types';
 
 export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
