@@ -361,7 +361,9 @@ export default class Nango {
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
-                client_secret: credentials.client_secret
+                client_secret: credentials.client_secret,
+                client_certificate: credentials.client_certificate,
+                client_private_key: credentials.client_private_key
             };
 
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
