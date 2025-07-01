@@ -6,7 +6,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, interpolateProxyUrlParts, formatPem } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {

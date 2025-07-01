@@ -9021,8 +9021,8 @@ sentry-oauth:
     display_name: Sentry (Public Integrations)
     installation: outbound
     categories:
-        - productivity
-        - ticketing
+        - dev-tools
+        - analytics
     auth_mode: OAUTH2
     token_url: https://sentry.io/api/0/sentry-app-installations/${connectionConfig.installation.uuid}/authorizations/
     webhook_routing_script: sentryOauthWebhookRouting
