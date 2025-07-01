@@ -3663,6 +3663,25 @@ facebook:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
 
+fathom:
+    display_name: Fathom
+    categories:
+        - communication
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fathom.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/fathom
+    docs_connect: https://docs.nango.dev/integrations/all/fathom/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Fathom account
+            secret: true
+
 figjam:
     display_name: FigJam
     categories:

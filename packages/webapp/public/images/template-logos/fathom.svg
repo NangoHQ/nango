@@ -1,0 +1,14 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 50.4 56" style="enable-background:new 0 0 50.4 56;" xml:space="preserve">
+ <style type="text/css">
+  .st0{fill:#00BEFF;}
+	.st1{opacity:0.5;fill:#00BEFF;enable-background:new    ;}
+ </style>
+ <g>
+  <path class="st0" d="M39.9,32.5L3.5,12.6C0.1,10.6-1,6.7,1,3.3c2-3.1,6.2-4.2,9.5-2.5l36.4,19.9c3.4,2,4.5,5.9,2.5,9.2
+		C47.8,33.3,43.3,34.4,39.9,32.5z M23.1,44.5L3.8,33.9c-3.4-2-4.5-5.9-2.5-9.2c2-3.1,6.2-4.2,9.5-2.5l19.3,10.7
+		c3.4,2,4.5,5.9,2.5,9.2C30.7,45.1,26.5,46.2,23.1,44.5L23.1,44.5z">
+  </path>
+  <path class="st1" d="M0.1,49V28.3c0-3.9,3.1-7,7-7s7,3.1,7,7V49c0,3.9-3.1,7-7,7S0.1,52.9,0.1,49z">
+  </path>
+ </g>
+</svg>
