@@ -73,4 +73,16 @@ export interface DBPlan extends Timestamps {
      * @default true
      */
     auto_idle: boolean;
+
+    /**
+     * Ability to customize the Connect UI colors
+     * @default false
+     */
+    connectui_colors_customization: boolean;
+
+    /**
+     * Ability to enable or disable the Nango watermark on Connect UI
+     * @default false
+     */
+    connectui_disable_watermark: boolean;
 }

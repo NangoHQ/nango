@@ -11,9 +11,15 @@ export function upsertConnectUISettings(environmentId: number, input: CreateConn
         .knex('connectui_settings')
         .insert({
             environment_id: environmentId,
-            primary_color: input.primaryColor
+            nango_watermark: input.nangoWatermark,
+            color_primary: input.colors?.primary,
+            color_on_primary: input.colors?.onPrimary,
+            color_background: input.colors?.background,
+            color_surface: input.colors?.surface,
+            color_text: input.colors?.text,
+            color_text_muted: input.colors?.textMuted
         })
         .onConflict('environment_id')
-        .merge(['primary_color'])
+        .merge(['nango_watermark', 'color_primary', 'color_on_primary', 'color_background', 'color_surface', 'color_text', 'color_text_muted'])
         .returning('*') as unknown as Promise<DBConnectUISettings | null>;
 }

@@ -80,6 +80,8 @@ import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
 import type { Request, RequestHandler, Response } from 'express';
+import { getConnectUISettings } from './controllers/connect-ui-settings/getConnectUISettings.js';
+import { postConnectUISettings } from './controllers/connect-ui-settings/postConnectUISettings.js';
 
 let webAuth: RequestHandler[] = flagHasAuth
     ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
@@ -169,6 +171,9 @@ web.route('/environment/rotate-key').post(webAuth, environmentController.rotateK
 web.route('/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
 web.route('/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+
+web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
+web.route('/connect-ui-settings').post(webAuth, postConnectUISettings);
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
 

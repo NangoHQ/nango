@@ -82,7 +82,15 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     const connectUISettings = await connectUISettingsService.getConnectUISettings(environment.id);
     if (connectUISettings) {
         response.data.connectui_settings = {
-            primary_color: connectUISettings.primary_color
+            nangoWatermark: connectUISettings.nango_watermark,
+            colors: {
+                primary: connectUISettings.color_primary,
+                onPrimary: connectUISettings.color_on_primary,
+                background: connectUISettings.color_background,
+                surface: connectUISettings.color_surface,
+                text: connectUISettings.color_text,
+                textMuted: connectUISettings.color_text_muted
+            }
         };
     }
 

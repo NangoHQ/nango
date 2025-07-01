@@ -16,8 +16,12 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             colors: {
-                primary: 'var(--primary)',
-                'primary-hover': 'color-mix(in srgb, var(--primary) 85%, black)',
+                primary: 'var(--color-primary)',
+                'on-primary': 'var(--color-on-primary)',
+                background: 'var(--color-background)',
+                surface: 'var(--color-surface)',
+                text: 'var(--color-text)',
+                'text-muted': 'var(--color-text-muted)',
 
                 // ---
                 // From Figma

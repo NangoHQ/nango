@@ -61,8 +61,8 @@ export const Home: React.FC = () => {
 
     useEffect(() => {
         if (data) {
-            if (data.data.connectui_settings?.primary_color) {
-                updateTheme({ primary: data.data.connectui_settings.primary_color });
+            if (data.data.connectui_settings?.colors) {
+                updateTheme(data.data.connectui_settings.colors);
             }
 
             setSession(data.data);

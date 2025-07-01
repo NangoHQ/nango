@@ -279,8 +279,8 @@ export const Go: React.FC = () => {
                 <div></div>
                 <div className="flex flex-col items-center gap-5">
                     <IconCircleCheckFilled className="text-green-base" size={44} />
-                    <h2 className="text-xl font-semibold">{t('go.success')}</h2>
-                    <p className="text-dark-500">{t('go.successMessage', { provider: provider.name })}</p>
+                    <h2 className="text-xl text-text font-semibold">{t('go.success')}</h2>
+                    <p className="text-text-muted">{t('go.successMessage', { provider: provider.name })}</p>
                 </div>
                 <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                     {t('common.finish')}
@@ -294,9 +294,9 @@ export const Go: React.FC = () => {
             <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
                 <div></div>
                 <div className="flex flex-col items-center gap-5">
-                    <IconExclamationCircleFilled className="text-dark-800" size={44} />
-                    <h2 className="text-xl font-semibold">{t('go.connectionFailed')}</h2>
-                    {error ? <p className="text-dark-500 text-center w-[80%]">{error}</p> : <p>{t('go.tryAgain')}</p>}
+                    <IconExclamationCircleFilled className="text-text" size={44} />
+                    <h2 className="text-xl text-text font-semibold">{t('go.connectionFailed')}</h2>
+                    {error ? <p className="text-text-muted text-center w-[80%]">{error}</p> : <p>{t('go.tryAgain')}</p>}
                 </div>
                 <Button
                     className="w-full"
@@ -334,7 +334,7 @@ export const Go: React.FC = () => {
                     <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                         <img src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-xl text-dark-800">{t('go.linkAccount', { provider: provider.display_name })}</h1>
+                    <h1 className="font-semibold text-xl text-text">{t('go.linkAccount', { provider: provider.display_name })}</h1>
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
@@ -367,7 +367,7 @@ export const Go: React.FC = () => {
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
-                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-dark-500">optional</span>
+                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
                                                                 )}
                                                                 {definition?.doc_section && (
                                                                     <Link
@@ -405,7 +405,7 @@ export const Go: React.FC = () => {
                         {shouldAutoTrigger && (
                             <>
                                 <div></div>
-                                <div className="text-sm text-dark-500 w-full text-center -mt-20">
+                                <div className="text-sm text-text-muted w-full text-center -mt-20">
                                     {/* visual centering */}
                                     {t('go.willConnect', { provider: provider.display_name })}
                                     {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
@@ -430,7 +430,7 @@ export const Go: React.FC = () => {
                                 </div>
                             )}
                             {provider.docs_connect && (
-                                <p className="text-dark-500 text-center">
+                                <p className="text-text-muted text-center">
                                     {t('common.needHelp')}{' '}
                                     <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect} onClick={() => telemetry('click:doc')}>
                                         {t('common.viewGuide')}

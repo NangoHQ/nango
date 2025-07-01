@@ -63,7 +63,6 @@ import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
-import { postConnectUISettings } from './controllers/connect-ui-settings/postConnectUISettings.js';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -233,9 +232,6 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessions
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
-
-publicAPI.use('/connect-ui-settings', jsonContentTypeMiddleware);
-publicAPI.route('/connect-ui-settings').post(apiAuth, postConnectUISettings);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));

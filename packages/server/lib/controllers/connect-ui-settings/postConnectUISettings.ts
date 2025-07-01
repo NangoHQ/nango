@@ -3,8 +3,16 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { connectUISettingsService } from '@nangohq/shared';
 
 export const postConnectUISettings = asyncWrapper<PostConnectUISettings>(async (req, res) => {
-    const { environment } = res.locals;
+    const { environment, plan } = res.locals;
     const input: PostConnectUISettings['Body'] = req.body;
+
+    if (!plan?.connectui_disable_watermark) {
+        input.nangoWatermark = true;
+    }
+
+    if (!plan?.connectui_colors_customization) {
+        input.colors = undefined;
+    }
 
     await connectUISettingsService.upsertConnectUISettings(environment.id, input);
 

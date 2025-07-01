@@ -6,11 +6,17 @@
     :root {
         --radius: 0.5rem;
 
-        --primary: #000000;
+        --color-primary: #000000;
+        --color-on-primary: #ffffff;
+        --color-background: #ffffff;
+        --color-surface: #f4f4f5;
+        --color-text: #000000;
+        --color-text-muted: #a9acb3;
     }
 
     .dark {
         --primary: #ffffff;
+        --on-primary: #000000;
     }
 }
 

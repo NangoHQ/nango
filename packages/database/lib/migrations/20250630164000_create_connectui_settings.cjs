@@ -7,7 +7,13 @@ exports.up = async function (knex) {
     await knex.schema.createTable('connectui_settings', (table) => {
         table.increments('id').primary();
         table.integer('environment_id').unsigned().notNullable();
-        table.string('primary_color').nullable();
+        table.boolean('nango_watermark').defaultTo(true);
+        table.string('color_primary').nullable();
+        table.string('color_on_primary').nullable();
+        table.string('color_background').nullable();
+        table.string('color_surface').nullable();
+        table.string('color_text').nullable();
+        table.string('color_text_muted').nullable();
         table.timestamps(true, true);
 
         table.boolean('deleted').defaultTo(false);

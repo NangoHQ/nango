@@ -30,7 +30,17 @@ export interface ConnectSessionInput {
         | undefined;
     connectui_settings?:
         | {
-              primary_color?: string | undefined;
+              nangoWatermark: boolean;
+              colors?:
+                  | {
+                        primary?: string | undefined;
+                        onPrimary?: string | undefined;
+                        background?: string | undefined;
+                        surface?: string | undefined;
+                        text?: string | undefined;
+                        textMuted?: string | undefined;
+                    }
+                  | undefined;
           }
         | undefined;
 }
