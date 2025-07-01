@@ -45,6 +45,7 @@ class FlowService {
 
         const standardConfig: StandardNangoConfig[] = [];
 
+        // Legacy Yaml
         for (const providerConfigKey in allIntegrations) {
             const flow = allIntegrations[providerConfigKey];
             if (!flow) {
@@ -86,7 +87,9 @@ class FlowService {
                         last_deployed: null,
                         webhookSubscriptions: [],
                         json_schema: null,
-                        metadata: { description: item.description, scopes: item.scopes }
+                        metadata: { description: item.description, scopes: item.scopes },
+                        sdk_version: null,
+                        is_zero_yaml: false
                     });
                 } else {
                     std.syncs.push({
@@ -110,7 +113,9 @@ class FlowService {
                         last_deployed: null,
                         webhookSubscriptions: [],
                         json_schema: null,
-                        metadata: { description: item.description, scopes: item.scopes }
+                        metadata: { description: item.description, scopes: item.scopes },
+                        sdk_version: null,
+                        is_zero_yaml: false
                     });
                 }
             }
@@ -120,6 +125,7 @@ class FlowService {
 
         this.flowsStandard = standardConfig;
 
+        // Zero Yaml
         for (const integration of this.flowsJson) {
             const std: StandardNangoConfig = {
                 providerConfigKey: integration.providerConfigKey,
@@ -157,7 +163,9 @@ class FlowService {
                     last_deployed: null,
                     webhookSubscriptions: [],
                     json_schema: jsonSchema.value,
-                    metadata: { description: item.description, scopes: item.scopes }
+                    metadata: { description: item.description, scopes: item.scopes },
+                    sdk_version: `${integration.sdkVersion}-zero`,
+                    is_zero_yaml: true
                 });
             }
             for (const item of integration.actions) {
@@ -185,11 +193,20 @@ class FlowService {
                     last_deployed: null,
                     webhookSubscriptions: [],
                     json_schema: jsonSchema.value,
-                    metadata: { description: item.description, scopes: item.scopes }
+                    metadata: { description: item.description, scopes: item.scopes },
+                    sdk_version: `${integration.sdkVersion}-zero`,
+                    is_zero_yaml: true
                 });
             }
 
-            standardConfig.push(std);
+            // Replace the flow if it already exists
+            // During migration we will keep both yaml and zero available but we don't want to have duplicates
+            const pos = this.flowsStandard.findIndex((flow) => flow.providerConfigKey === integration.providerConfigKey);
+            if (pos !== -1) {
+                this.flowsStandard[pos] = std;
+            } else {
+                this.flowsStandard.push(std);
+            }
         }
 
         return standardConfig;

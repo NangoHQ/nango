@@ -50,7 +50,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             models: syncConfig.model_schema || [],
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
-            json_schema: syncConfig.models_json_schema || null
+            json_schema: syncConfig.models_json_schema || null,
+            sdk_version: syncConfig.sdk_version,
+            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false
         };
 
         if (syncConfig.type === 'sync') {
