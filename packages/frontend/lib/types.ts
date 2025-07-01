@@ -74,6 +74,8 @@ export interface JwtCredentials {
 export interface OAuth2ClientCredentials {
     client_id: string;
     client_secret: string;
+    client_certificate?: string;
+    client_private_key?: string;
 }
 
 export interface BillCredentials {

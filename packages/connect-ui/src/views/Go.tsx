@@ -37,7 +37,9 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     OAUTH2: z.object({}),
     OAUTH2_CC: z.object({
         client_id: z.string().min(1),
-        client_secret: z.string().min(1)
+        client_secret: z.string().min(1),
+        client_certificate: z.string().min(1).optional(),
+        client_private_key: z.string().min(1).optional()
     }),
     JWT: z.object({
         // JWT is custom every time
@@ -73,6 +75,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
     'credentials.client_id': { secret: false, title: 'Client ID', example: 'Your Client ID' },
     'credentials.client_secret': { secret: true, title: 'Client Secret', example: 'Your Client Secret' },
+    'credentials.client_certificate': { secret: true, title: 'Client Certificate', example: 'Your Client Certificate' },
+    'credentials.client_private_key': { secret: true, title: 'Private Key', example: 'Your Private Key' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
@@ -123,6 +127,9 @@ export const Go: React.FC = () => {
 
         // Base credentials are usually the first in the list so we start here
         for (const name of Object.keys(baseForm.shape)) {
+            if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
+                continue;
+            }
             order += 1;
             orderedFields[`credentials.${name}`] = order;
         }

@@ -417,3 +417,30 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
     return new URL(interpolatedUrl);
 }
+
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+    if (!pem || typeof pem !== 'string') {
+        throw new Error('Invalid PEM input: must be a non-empty string');
+    }
+
+    const normalized = pem
+        .replace(/\r\n/g, '\n')
+        .replace(/^\s+|\s+$/g, '')
+        .replace(/-----(BEGIN|END) [^-]+-----/g, '')
+        .replace(/\s+/g, '');
+
+    if (!normalized) {
+        throw new Error('PEM content is empty after normalization');
+    }
+
+    if (!/^[a-zA-Z0-9+/=]+$/.test(normalized)) {
+        throw new Error('PEM contains invalid characters (must be base64)');
+    }
+
+    const chunked = normalized.match(/.{1,64}/g);
+    if (!chunked) {
+        throw new Error('Failed to chunk PEM content');
+    }
+
+    return `-----BEGIN ${type}-----\n${chunked.join('\n')}\n-----END ${type}-----\n`;
+}
