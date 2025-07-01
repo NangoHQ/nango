@@ -3628,8 +3628,9 @@ integrations:
                 output: ConfluenceSpace
                 description: |
                     Fetches a list of spaces from confluence
-                version: 1.0.0
+                version: 1.0.1
                 sync_type: full
+                track_deletes: true
                 scopes: read:space:confluence
                 endpoint:
                     method: GET
@@ -3640,11 +3641,12 @@ integrations:
                 description: |
                     Fetches a list of pages from confluence
                 sync_type: full
+                track_deletes: true
                 scopes: read:page:confluence
                 endpoint:
                     method: GET
                     path: /pages
-                version: 1.0.1
+                version: 1.0.2
         models:
             ConfluenceSpace:
                 id: string
@@ -3672,12 +3674,11 @@ integrations:
                     number: number
                     minorEdit: boolean
                     authorId: string
-                body?:
-                    storage?: Storage | undefined
-                    atlas_doc_format?: string | undefined
+                body:
+                    storage: Storage
             Storage:
-                value?: string | undefined
-                representation?: string | undefined
+                value: string
+                representation: storage
     databricks-workspace:
         actions:
             list-warehouses:
