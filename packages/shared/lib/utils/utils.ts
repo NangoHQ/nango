@@ -334,9 +334,9 @@ export function connectionCopyWithParsedConnectionConfig(connection: Pick<DBConn
     return connectionCopy;
 }
 
-export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
+export function interpolateProxyUrlParts(proxyUrlPart: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace(/connectionConfig/g, 'connection_config') : baseUrl;
+    return proxyUrlPart ? proxyUrlPart.replace(/connectionConfig/g, 'connection_config') : proxyUrlPart;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
