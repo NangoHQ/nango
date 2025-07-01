@@ -1,5 +1,8 @@
 export { default as githubAppOauthPostConnection } from './providers/github-app-oauth/post-connection.js';
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
+export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
+export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';
+export { default as slackPreConnectionDeletion } from './providers/slack/pre-connection-deletion.js';
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
@@ -19,3 +22,4 @@ export { default as bitdefenderCredentialsVerification } from './providers/bitde
 export { default as ripplingShopAppPostConnection } from './providers/rippling-shop-app/post-connection.js';
 export { default as azureDevopsCredentialsVerification } from './providers/azure-devops/credentials-verification.js';
 export { default as apolloCredentialsVerification } from './providers/apollo/credentials-verification.js';
+export { default as sentryOauthPostConnection } from './providers/sentry-oauth/post-connection.js';

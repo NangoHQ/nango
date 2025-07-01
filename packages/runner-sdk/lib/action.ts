@@ -26,7 +26,6 @@ import type {
     PostPublicTrigger,
     SetMetadata,
     SignatureCredentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials,
@@ -176,7 +175,6 @@ export abstract class NangoActionBase<
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
-        | TableauCredentials
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials

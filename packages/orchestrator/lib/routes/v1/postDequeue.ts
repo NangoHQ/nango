@@ -6,6 +6,7 @@ import type { Scheduler, Task } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type EventEmitter from 'node:events';
+import { taskEvents } from '../../events.js';
 
 const path = '/v1/dequeue';
 const method = 'POST';
@@ -48,7 +49,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
         const { groupKey, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
-        const eventId = `task:created:${groupKey}`;
+        const eventId = taskEvents.taskCreated(groupKey);
         const groupKeyPrefix = `${groupKey}*`; // Dequeuing all tasks with the same group key prefix
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
@@ -61,7 +62,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
                 respond(res);
             }
         };
-        const onTaskStarted = (_t: Task) => {
+        const onTaskStarted = () => {
             cleanupAndRespond(async (res) => {
                 const getTasks = await scheduler.dequeue({ groupKey: groupKeyPrefix, limit });
                 if (getTasks.isErr()) {

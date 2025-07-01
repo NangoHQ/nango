@@ -23,25 +23,25 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
-        "@trpc/client": "^10.45.1",
-        "@trpc/server": "^10.45.1",
+        "@trpc/client": "10.45.1",
+        "@trpc/server": "10.45.1",
         "axios": "1.9.0",
         "botbuilder": "4.23.2",
         "connect-timeout": "1.9.0",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
-        "soap": "1.1.11",
+        "soap": "1.1.12",
         "superjson": "2.2.1",
         "undici": "6.21.2",
-        "unzipper": "^0.12.3",
+        "unzipper": "0.12.3",
         "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@nangohq/database": "file:../database",
         "@types/connect-timeout": "0.0.39",
-        "@types/unzipper": "^0.10.10",
-        "typescript": "5.7.3",
+        "@types/unzipper": "0.10.10",
+        "typescript": "5.8.3",
         "vitest": "3.1.2"
     }
 }

@@ -40,7 +40,6 @@ import type {
     RecordLastAction,
     RecordMetadata,
     StandardNangoConfig,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials,
@@ -74,7 +73,6 @@ export type {
     OAuth1Token,
     OAuth2ClientCredentials,
     OAuth2Credentials,
-    TableauCredentials,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials

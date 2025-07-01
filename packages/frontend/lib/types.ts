@@ -25,13 +25,13 @@ export interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
+    installation?: 'outbound';
     credentials?:
         | OAuthCredentialsOverride
         | BasicApiCredentials
         | ApiKeyCredentials
         | AppStoreCredentials
         | TBACredentials
-        | TableauCredentials
         | JwtCredentials
         | TwoStepCredentials
         | OAuth2ClientCredentials
@@ -66,12 +66,6 @@ export interface TBACredentials {
     oauth_client_secret_override?: string;
 }
 
-export interface TableauCredentials {
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
-}
-
 export interface JwtCredentials {
     type?: 'JWT';
     [key: string]: any;
@@ -91,6 +85,7 @@ export interface BillCredentials {
 
 export interface TwoStepCredentials {
     type: 'TWO_STEP';
+    [key: string]: any;
 }
 
 export interface SignatureCredentials {

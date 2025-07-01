@@ -22,6 +22,7 @@ export enum Types {
 
     LOGS_LOG = 'nango.logs.log',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
+    MONTHLY_ACTIVE_RECORDS_COUNT = 'nango.monthly.active.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
@@ -34,6 +35,8 @@ export enum Types {
 
     POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
     POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
+    PRE_CONNECTION_DELETION_SUCCESS = 'nango.preConnectionDeletion.success',
+    PRE_CONNECTION_DELETION_FAILURE = 'nango.preConnectionDeletion.failure',
 
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
@@ -48,8 +51,6 @@ export enum Types {
     REFRESH_CONNECTIONS_UNKNOWN = 'nango.server.refreshConnections.unknown',
 
     RUNNER_SDK = 'nango.runner.sdk',
-    RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',
-    RUNNER_INVALID_ACTION_OUTPUT = 'nango.runner.invalidActionOutput',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
 
     SYNC_EXECUTION = 'nango.jobs.syncExecution',

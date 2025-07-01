@@ -13,6 +13,7 @@ export const providerConfigKeySchema = z
     .regex(/^[a-zA-Z0-9~:.@ _-]+$/) // For legacy reason (some people are using special characters)
     .max(255);
 export const integrationDisplayNameSchema = z.string().min(1).max(255).optional();
+export const integrationForwardWebhooksSchema = z.boolean().optional();
 export const scriptNameSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)

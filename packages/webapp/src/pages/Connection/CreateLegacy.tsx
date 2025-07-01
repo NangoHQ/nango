@@ -55,9 +55,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [oAuthClientId, setOAuthClientId] = useState('');
     const [tokenId, setTokenId] = useState('');
     const [tokenSecret, setTokenSecret] = useState('');
-    const [patName, setpatName] = useState('');
-    const [patSecret, setpatSecret] = useState('');
-    const [contentUrl, setContentUrl] = useState('');
     const [organizationId, setOrganizationId] = useState('');
     const [devKey, setDevKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
@@ -203,14 +200,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
 
-        if (authMode === 'TABLEAU') {
-            credentials = {
-                pat_name: patName,
-                pat_secret: patSecret,
-                content_url: contentUrl
-            };
-        }
-
         if (authMode === 'JWT') {
             if (integration?.provider.includes('ghost-admin')) {
                 const privateKeyFormat = /^([^:]+):([^:]+)$/;
@@ -246,12 +235,14 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ...credentialsState
             };
         }
+        const shouldIncludeUserScope = authMode !== 'NONE' && !integration?.meta.installation;
         const connectionConfig = {
-            user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
+            ...(shouldIncludeUserScope && { user_scope: selectedScopes || [] }),
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
-            credentials
+            credentials,
+            ...(integration?.meta.installation && { installation: integration?.meta.installation })
         };
         const getConnection =
             authMode === 'NONE'
@@ -363,6 +354,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
 
+        let installationStr = '';
+        if (integration.meta.installation) {
+            installationStr = "installation: 'outbound'";
+        }
+
         if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
             if (connectionConfigParamsStr) {
                 connectionConfigParamsStr += ', ';
@@ -469,19 +465,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
 
-        let tableauCredentialsString = '';
-        if (integration.meta.authMode === 'TABLEAU') {
-            if (patName && patSecret && contentUrl) {
-                tableauCredentialsString = `
-    credentials: {
-        pat_name: '${patName}',
-        pat_secret: '${patSecret}',
-        content_url: '${contentUrl}'
-    }
-  `;
-            }
-        }
-
         let jwtCredentialsString = '';
 
         if (integration.meta.authMode === 'JWT') {
@@ -566,6 +549,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
         const connectionConfigStr =
+            !installationStr &&
             !connectionConfigParamsStr &&
             !authorizationParamsStr &&
             !userScopesStr &&
@@ -574,7 +558,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             !appStoreAuthString &&
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
-            !tableauCredentialsString &&
             !jwtCredentialsString &&
             !tbaCredentialsString &&
             !billCredentialsString &&
@@ -582,6 +565,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ? ''
                 : ', { ' +
                   [
+                      installationStr,
                       connectionConfigParamsStr,
                       authorizationParamsStr,
                       hmacKeyStr,
@@ -590,7 +574,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
                       appStoreAuthString,
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
-                      tableauCredentialsString,
                       jwtCredentialsString,
                       tbaCredentialsString,
                       billCredentialsString,
@@ -835,52 +818,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             placeholder="Token secret"
                                             optionalValue={tokenSecret}
                                             setOptionalValue={setTokenSecret}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {integration?.meta.authMode === 'TABLEAU' && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="pat_name" className="text-text-light-gray block text-sm font-semibold">
-                                            PAT Name
-                                        </label>
-                                    </div>
-                                    <div className="mt-1">
-                                        <SecretInput
-                                            copy={true}
-                                            id="pat_name"
-                                            name="pat_name"
-                                            placeholder="PAT Name"
-                                            optionalValue={patName}
-                                            setOptionalValue={setpatName}
-                                        />
-                                    </div>
-                                    <div className="mt-4">
-                                        <label htmlFor="pat_secret" className="text-text-light-gray block text-sm font-semibold">
-                                            PAT Secret
-                                        </label>
-                                        <SecretInput
-                                            copy={true}
-                                            id="pat_secret"
-                                            name="pat_secret"
-                                            placeholder="PAT Secret"
-                                            optionalValue={patSecret}
-                                            setOptionalValue={setpatSecret}
-                                        />
-                                    </div>
-                                    <div className="mt-4">
-                                        <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
-                                            Content Url
-                                        </label>
-                                        <SecretInput
-                                            copy={true}
-                                            id="content_url"
-                                            name="content_url"
-                                            placeholder="Content Url"
-                                            value={contentUrl}
-                                            setOptionalValue={setContentUrl}
                                         />
                                     </div>
                                 </div>

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import addErrors from 'ajv-errors';
 import chalk from 'chalk';
 
@@ -93,6 +93,7 @@ export function validateAndOutput(yaml: any): boolean {
  */
 export function validateYaml(yaml: any): ValidationMessage[] {
     const ajv = new Ajv({ allErrors: true });
+    // @ts-expect-error types are wrong
     addErrors(ajv);
 
     if (!yaml || !('integrations' in yaml)) {

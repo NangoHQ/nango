@@ -12,7 +12,7 @@ import { apiRefreshConnection } from '../../hooks/useConnections';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { getLogsUrl } from '../../utils/logs';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { formatDateToPreciseUSFormat } from '../../utils/utils';
 
 import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
 import type React from 'react';
@@ -110,7 +110,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 {connection.created_at && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Creation Date</span>
-                        <span className="text-white">{formatDateToShortUSFormat(connection.created_at.toString())}</span>
+                        <span className="text-white">{formatDateToPreciseUSFormat(connection.created_at.toString())}</span>
                     </div>
                 )}
                 <div className="flex flex-col">
@@ -126,7 +126,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 {'expires_at' in connection.credentials && connection.credentials.expires_at && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
-                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at as unknown as string)}</span>
+                        <span className="text-white">{formatDateToPreciseUSFormat(connection.credentials.expires_at as unknown as string)}</span>
                     </div>
                 )}
             </div>
@@ -220,24 +220,6 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                             </div>
                         ];
                     })}
-                </div>
-            )}
-            {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">PAT NAME</span>
-                    <SecretInput disabled defaultValue={connection.credentials.pat_name} copy={true} />
-                </div>
-            )}
-            {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_secret && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">PAT SECRET</span>
-                    <SecretInput disabled defaultValue={connection.credentials.pat_secret} copy={true} />
-                </div>
-            )}
-            {connection.credentials.type === 'TABLEAU' && connection.credentials.content_url && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">CONTENT URL</span>
-                    <SecretInput disabled defaultValue={connection.credentials.content_url} copy={true} />
                 </div>
             )}
             {connection.credentials && 'token' in connection.credentials && (

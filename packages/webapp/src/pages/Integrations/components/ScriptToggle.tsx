@@ -72,7 +72,7 @@ export const ScriptToggle: React.FC<{
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
             setOpen(false);
 
-            if (plan?.name === 'free' && !plan.trial_end_at) {
+            if (plan && plan.auto_idle && !plan.trial_end_at) {
                 await mutateEnv();
             }
         }

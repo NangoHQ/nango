@@ -213,6 +213,11 @@ class SyncController {
                 return;
             }
 
+            if (!syncConfig.enabled) {
+                res.status(404).json({ error: { code: 'disabled_resource', message: 'The action is disabled' } });
+                return;
+            }
+
             span.setTag('nango.actionName', action_name)
                 .setTag('nango.connectionId', connectionId)
                 .setTag('nango.environmentId', environmentId)
@@ -255,7 +260,7 @@ class SyncController {
                         idempotencyKey: logCtx.id,
                         environmentId: connection.environment_id,
                         providerConfigKey,
-                        connectionId,
+                        connectionId: connection.id,
                         actionName: action_name
                     });
                 }
@@ -466,6 +471,11 @@ class SyncController {
             const syncConfig = await getSyncConfigRaw({ environmentId: config.environment_id, config_id: config.id!, name: sync_name, isAction: false });
             if (!syncConfig) {
                 res.status(404).json({ error: { code: 'not_found' } });
+                return;
+            }
+
+            if (!syncConfig.enabled) {
+                res.status(404).json({ error: { code: 'disabled_resource', message: 'The sync is disabled' } });
                 return;
             }
 

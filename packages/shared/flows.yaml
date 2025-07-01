@@ -3628,8 +3628,9 @@ integrations:
                 output: ConfluenceSpace
                 description: |
                     Fetches a list of spaces from confluence
-                version: 1.0.0
+                version: 1.0.1
                 sync_type: full
+                track_deletes: true
                 scopes: read:space:confluence
                 endpoint:
                     method: GET
@@ -3640,11 +3641,12 @@ integrations:
                 description: |
                     Fetches a list of pages from confluence
                 sync_type: full
+                track_deletes: true
                 scopes: read:page:confluence
                 endpoint:
                     method: GET
                     path: /pages
-                version: 1.0.1
+                version: 1.0.2
         models:
             ConfluenceSpace:
                 id: string
@@ -3672,12 +3674,11 @@ integrations:
                     number: number
                     minorEdit: boolean
                     authorId: string
-                body?:
-                    storage?: Storage | undefined
-                    atlas_doc_format?: string | undefined
+                body:
+                    storage: Storage
             Storage:
-                value?: string | undefined
-                representation?: string | undefined
+                value: string
+                representation: storage
     databricks-workspace:
         actions:
             list-warehouses:
@@ -5421,7 +5422,7 @@ integrations:
         actions:
             repositories:
                 description: List all repositories accessible to this Github App
-                version: 1.0.0
+                version: 1.0.1
                 output: RepoResponse
                 endpoint:
                     method: GET
@@ -5474,7 +5475,7 @@ integrations:
                 created_at: string
                 default_branch: string
                 deployments_url: string
-                description: string
+                description: string | null
                 disabled: boolean
                 downloads_url: string
                 events_url: string
@@ -5503,9 +5504,9 @@ integrations:
                 issues_url: string
                 keys_url: string
                 labels_url: string
-                language: string
+                language: string | null
                 languages_url: string
-                license: string | null
+                license: GithubLicense | null
                 merges_url: string
                 milestones_url: string
                 mirror_url: string | null
@@ -5533,6 +5534,7 @@ integrations:
                     subscriptions_url: string
                     type: string
                     url: string
+                    user_view_type?: string
                 permissions:
                     admin: boolean
                     maintain: boolean
@@ -5593,11 +5595,18 @@ integrations:
                 labels: string[]
                 reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
                 latestComment: GithubComment
+            GithubLicense:
+                key: string
+                name: string
+                url: string | null
+                spdx_id: string
+                node_id: string
+                html_url?: string | null
     github-app-oauth:
         actions:
             repositories:
                 description: List all repositories accessible to this Github App
-                version: 1.0.0
+                version: 1.0.1
                 output: RepoResponse
                 endpoint:
                     method: GET
@@ -5650,7 +5659,7 @@ integrations:
                 created_at: string
                 default_branch: string
                 deployments_url: string
-                description: string
+                description: string | null
                 disabled: boolean
                 downloads_url: string
                 events_url: string
@@ -5679,9 +5688,9 @@ integrations:
                 issues_url: string
                 keys_url: string
                 labels_url: string
-                language: string
+                language: string | null
                 languages_url: string
-                license: string | null
+                license: GithubLicense | null
                 merges_url: string
                 milestones_url: string
                 mirror_url: string | null
@@ -5709,6 +5718,7 @@ integrations:
                     subscriptions_url: string
                     type: string
                     url: string
+                    user_view_type?: string
                 permissions:
                     admin: boolean
                     maintain: boolean
@@ -5769,12 +5779,19 @@ integrations:
                 labels: string[]
                 reviewDecision: APPROVED | CHANGES_REQUESTED | REVIEW_REQUIRED
                 latestComment: GithubComment
+            GithubLicense:
+                key: string
+                name: string
+                url: string | null
+                spdx_id: string
+                node_id: string
+                html_url?: string | null
     gong:
         syncs:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.0
+                version: 1.0.3
                 endpoint:
                     method: GET
                     path: /users
@@ -5788,7 +5805,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.0
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5805,7 +5822,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.0
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -5818,7 +5835,7 @@ integrations:
             fetch-call-transcripts:
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.0
+                version: 1.0.1
                 input: GongCallTranscriptInput
                 output: GongCallTranscriptOutput
                 endpoint:
@@ -5833,17 +5850,18 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+                title: string | null
             GongCallTranscriptInput:
                 from?: string | undefined
                 to?: string | undefined
                 workspace_id?: string | undefined
-                call_id: string[]
+                call_id?: string[] | undefined
                 cursor?: string | undefined
             GongCallTranscript:
                 call_id: string
                 transcript:
                     - speaker_id: string
-                      topic: string
+                      topic: string | null
                       sentences:
                           - start: number
                             end: number
@@ -5851,6 +5869,15 @@ integrations:
             GongCallTranscriptOutput:
                 next_cursor?: string | undefined
                 transcript: GongCallTranscript[]
+            GongCallContext:
+                system: string | null
+                objects?: GongCallContextObject | undefined
+            GongCallContextObject:
+                object_type: string | null
+                object_id: string | null
+                fields:
+                    - name: string
+                      value: string
             GongCallOutput:
                 id: string
                 url: string
@@ -5863,27 +5890,20 @@ integrations:
                 media: string
                 language: string
                 workspace_id: string
-                purpose: string
+                purpose: string | null
                 meeting_url: string
                 is_private: boolean
-                calendar_event_id: string
-                context:
-                    system: Salesforce | HubSpot | MicrosoftDynamic | Generic
-                    objects:
-                        object_type: string
-                        object_id: string
-                        fields:
-                            - name: string
-                              value: string
+                calendar_event_id: string | null
+                context?: GongCallContext | undefined
                 parties:
                     - id: string
-                      email_address: string
-                      name: string
-                      title: string
-                      user_id: string
-                      speaker_id: string
+                      email_address?: string | undefined
+                      name?: string | undefined
+                      title?: string | undefined
+                      user_id?: string | undefined
+                      speaker_id: string | null
                       affiliation: Internal | External | Unknown
-                      methods: Invitee | Attendee
+                      methods: string[]
                 interaction:
                     speakers:
                         - id: string
@@ -5909,20 +5929,22 @@ integrations:
                           during_call: boolean
                 media_urls:
                     audio_url: string
-                    video_url: string
+                    video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
                 id: string
                 transcript:
                     - speaker_id: string
-                      topic: string
+                      topic: string | null
                       sentences:
                           - start: number
                             end: number
@@ -5932,7 +5954,7 @@ integrations:
             users:
                 description: |
                     Fetches the list of gong users
-                version: 1.0.0
+                version: 1.0.3
                 endpoint:
                     method: GET
                     path: /users
@@ -5946,7 +5968,7 @@ integrations:
                 runs: every 1h
                 description: |
                     Fetches a list of calls from Gong
-                version: 1.0.0
+                version: 1.0.3
                 output: GongCallOutput
                 input: GongConnectionMetadata
                 sync_type: incremental
@@ -5963,7 +5985,7 @@ integrations:
                 sync_type: incremental
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.0
+                version: 1.0.3
                 input: GongCallTranscriptMetadata
                 output: GongCallTranscriptSyncOutput
                 endpoint:
@@ -5976,7 +5998,7 @@ integrations:
             fetch-call-transcripts:
                 description: |
                     Fetches a list of call transcripts from Gong
-                version: 1.0.0
+                version: 1.0.1
                 input: GongCallTranscriptInput
                 output: GongCallTranscriptOutput
                 endpoint:
@@ -5991,17 +6013,18 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+                title: string | null
             GongCallTranscriptInput:
                 from?: string | undefined
                 to?: string | undefined
                 workspace_id?: string | undefined
-                call_id: string[]
+                call_id?: string[] | undefined
                 cursor?: string | undefined
             GongCallTranscript:
                 call_id: string
                 transcript:
                     - speaker_id: string
-                      topic: string
+                      topic: string | null
                       sentences:
                           - start: number
                             end: number
@@ -6009,6 +6032,15 @@ integrations:
             GongCallTranscriptOutput:
                 next_cursor?: string | undefined
                 transcript: GongCallTranscript[]
+            GongCallContext:
+                system: string | null
+                objects?: GongCallContextObject | undefined
+            GongCallContextObject:
+                object_type: string | null
+                object_id: string | null
+                fields:
+                    - name: string
+                      value: string
             GongCallOutput:
                 id: string
                 url: string
@@ -6021,27 +6053,20 @@ integrations:
                 media: string
                 language: string
                 workspace_id: string
-                purpose: string
+                purpose: string | null
                 meeting_url: string
                 is_private: boolean
-                calendar_event_id: string
-                context:
-                    system: Salesforce | HubSpot | MicrosoftDynamic | Generic
-                    objects:
-                        object_type: string
-                        object_id: string
-                        fields:
-                            - name: string
-                              value: string
+                calendar_event_id: string | null
+                context?: GongCallContext | undefined
                 parties:
                     - id: string
-                      email_address: string
-                      name: string
-                      title: string
-                      user_id: string
-                      speaker_id: string
+                      email_address?: string | undefined
+                      name?: string | undefined
+                      title?: string | undefined
+                      user_id?: string | undefined
+                      speaker_id: string | null
                       affiliation: Internal | External | Unknown
-                      methods: Invitee | Attendee
+                      methods: string[]
                 interaction:
                     speakers:
                         - id: string
@@ -6067,20 +6092,22 @@ integrations:
                           during_call: boolean
                 media_urls:
                     audio_url: string
-                    video_url: string
+                    video_url?: string | undefined
             GongConnectionMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
             ActionResponseError:
                 message: string
             GongCallTranscriptMetadata:
-                backfillPeriodMs: number
+                backfillPeriodMs?: number
+                lastSyncBackfillPeriod?: number
                 callIds?: string[]
                 workspaceId?: string
             GongCallTranscriptSyncOutput:
                 id: string
                 transcript:
                     - speaker_id: string
-                      topic: string
+                      topic: string | null
                       sentences:
                           - start: number
                             end: number
@@ -13787,6 +13814,7 @@ integrations:
                 runs: every hour
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 scopes:
                     - Files.Read
                     - Files.Read.All
@@ -13990,12 +14018,16 @@ integrations:
                     path: /emails
                 version: 1.1.2
             events:
-                description: |
-                    Sync calendar events on the primary calendar going back one month and
-                    save the entire object as specified by the Outlook Calendar API
+                description: >
+                    Sync calendar events on the primary calendar going back as specified
+                    in the metadata `backfillPeriodMs`, or fallback to 1 month if not
+                    provided.
                 runs: every 5 minutes
+                input: OptionalBackfillSetting
                 output: OutlookCalendarEvent
-                sync_type: incremental
+                sync_type: full
+                track_deletes: true
+                version: 1.0.0
                 endpoint:
                     method: GET
                     path: /events
@@ -14007,6 +14039,7 @@ integrations:
                 runs: every hour
                 output: OutlookCalendar
                 sync_type: full
+                version: 1.0.0
                 endpoint:
                     method: GET
                     path: /calendars
@@ -14073,54 +14106,33 @@ integrations:
                 owner: EmailAddress
             OutlookCalendarEvent:
                 id: string
-                allowNewTimeProposals?: boolean
                 attendees: Attendee[]
-                body?:
-                    content?: string
-                    contentType?: text | html
+                body:
+                    content: string
+                    contentType: text | html
                 bodyPreview: string
-                categories?: string[]
-                changeKey?: string
-                createdDateTime?: string
                 end:
                     dateTime: string
                     timeZone: string
-                hasAttachments?: boolean
-                hideAttendees?: boolean
-                iCalUId?: string
                 importance: low | normal | high
                 isAllDay: boolean
                 isCancelled: boolean
-                isDraft?: boolean
-                isOnlineMeeting?: boolean
                 isOrganizer: boolean
-                isReminderOn?: boolean
-                lastModifiedDateTime?: string
                 location: Location
-                locations?: Location[]
                 onlineMeeting: OnlineMeetingInfo | null
-                onlineMeetingProvider?: string
-                onlineMeetingUrl?: string
+                onlineMeetingProvider: string
                 organizer:
                     emailAddress: EmailAddress
-                originalEndTimeZone?: string
-                originalStart?: string
-                originalStartTimeZone?: string
-                recurrence?: PatternedRecurrence | null
-                reminderMinutesBeforeStart?: number
+                recurrence: PatternedRecurrence | null
                 responseRequested: boolean
                 responseStatus:
                     response: string
                     time: string
                 sensitivity: normal | personal | private | confidential
-                seriesMasterId?: string
-                showAs?: free | tentative | busy | oof | workingElsewhere | unknown
                 start:
                     dateTime: string
                     timeZone: string
                 subject: string
-                transactionId?: string
-                type?: singleInstance | occurrence | exception | seriesMaster
                 webLink: string
             Location:
                 address?:
@@ -14145,28 +14157,21 @@ integrations:
                 uniqueId?: string
                 uniqueIdType?: string
             OnlineMeetingInfo:
-                conferenceId: string
-                joinUrl: string
+                conferenceId?: string | undefined
+                joinUrl?: string | undefined
                 phones:
                     - number: string
                       type: >-
                           home | business | mobile | other | assistant | homeFax |
                           businessFax | otherFax | pager | radio
-                quickDial: string
+                quickDial?: string | undefined
                 tollFreeNumbers: string[]
-                tollNumber: string
+                tollNumber?: string | undefined
             PatternedRecurrence:
                 pattern:
                     dayOfMonth?: number
-                    daysOfWeek?:
-                        - sunday
-                        - monday
-                        - tuesday
-                        - wednesday
-                        - thursday
-                        - friday
-                        - saturday
-                    firstDayOfWeek: sunday | monday | tuesday | wednesday | thursday | friday | saturday
+                    daysOfWeek?: string[]
+                    firstDayOfWeek?: string
                     index?: first | second | third | fourth | last
                     interval: number
                     month?: number
@@ -14185,7 +14190,9 @@ integrations:
                     start: TimeSlot
                     end: TimeSlot
                 status:
-                    response: none | accepted | declined | tentative
+                    response: >-
+                        none | organizer | tentativelyAccepted | accepted | declined |
+                        notResponded
                     sentDateTime: string
                 type: required | optional | resource
             TimeSlot:
@@ -14597,7 +14604,6 @@ integrations:
                 currency: string
             BillingSubscriptionObject:
                 id: string | null
-            IndividualCustomer: PennylaneIndividualCustomer
             UpdateIndividualCustomer:
                 id: string
                 customer: PennylaneIndividualCustomer
@@ -18813,7 +18819,7 @@ integrations:
                     - channels:read
                     - channels:join
             messages:
-                version: 1.0.2
+                version: 1.0.4
                 runs: every hour
                 description: |
                     Syncs Slack messages, thread replies and reactions from messages &
@@ -20107,7 +20113,7 @@ integrations:
                     group: Accounts
                 scopes:
                     - accounting.settings
-                version: 1.0.3
+                version: 1.0.5
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
@@ -20164,6 +20170,21 @@ integrations:
                 scopes:
                     - accounting.journals.read
                 version: 1.0.1
+            organisation:
+                description: |
+                    Fetches organisation details in Xero.
+                runs: every hour
+                output: Organisation
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /organisation
+                    group: Organisation
+                scopes:
+                    - accounting.settings
+                    - accounting.settings.read
+                version: 1.0.0
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -20378,6 +20399,7 @@ integrations:
                 bank_account_type: string
                 reporting_code: string
                 reporting_code_name: string
+                currency_code?: string
             Item:
                 id: string
                 item_code: string | null
@@ -20644,6 +20666,65 @@ integrations:
                 tax_amount: number
                 line_amount: number
                 tracking: TrackingCategory[] | null
+            Organisation:
+                id: string
+                apiKey?: string
+                name: string
+                legalName: string
+                paysTax: boolean
+                version: string
+                organisationType: string
+                baseCurrency: string
+                countryCode: string
+                isDemoCompany: boolean
+                organisationStatus: string
+                registrationNumber?: string
+                employerIdentificationNumber?: string
+                taxNumber?: string
+                financialYearEndDay?: number
+                financialYearEndMonth?: number
+                salesTaxBasis?: string
+                salesTaxPeriod?: string
+                defaultSalesTax?: string
+                defaultPurchasesTax?: string
+                periodLockDate?: string
+                endOfYearLockDate?: string
+                createdDateUTC?: string
+                timezone?: string
+                organisationEntityType?: string
+                shortCode?: string
+                edition?: string
+                class?: string
+                lineOfBusiness?: string
+                addresses?: Address[]
+                phones?: Phone[]
+                externalLinks?: ExternalLink[]
+                paymentTerms?: PaymentTerms
+            Address:
+                addressType?: string
+                addressLine1?: string
+                addressLine2?: string
+                addressLine3?: string
+                addressLine4?: string
+                city?: string
+                region?: string
+                postalCode?: string
+                country?: string
+                attentionTo?: string
+            Phone:
+                phoneType?: string
+                phoneNumber?: string
+                phoneAreaCode?: string
+                phoneCountryCode?: string
+            ExternalLink:
+                linkType?: string
+                url?: string
+            PaymentTerms:
+                bills?: PaymentTermDetails
+                sales?: PaymentTermDetails
+            PaymentTermDetails:
+                day?: number
+                type?: string
     zendesk:
         syncs:
             tickets:
@@ -20669,7 +20750,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /articles
-                version: 1.0.1
+                version: 1.0.2
                 scopes:
                     - hc:read
             categories:
@@ -20679,6 +20760,7 @@ integrations:
                 output: Category
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /categories
@@ -20692,6 +20774,7 @@ integrations:
                 output: Section
                 sync_type: full
                 track_deletes: true
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /sections
@@ -20704,6 +20787,7 @@ integrations:
                     Fetches a list of admin or agent users from Zendesk
                 output: User
                 sync_type: full
+                version: 1.0.1
                 track_deletes: true
                 endpoint:
                     method: GET
@@ -20717,6 +20801,7 @@ integrations:
                     method: GET
                     path: /all-articles
                 description: Fetch all help center articles metadata
+                version: 1.0.1
                 scopes:
                     - hc:read
             fetch-article:

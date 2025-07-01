@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Ok, env } from '@nangohq/utils';
+import { Err, Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
 
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -8,6 +8,7 @@ import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
 import connectionService from '../../connection.service.js';
+import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
@@ -30,9 +31,7 @@ import type {
     NangoSyncConfig,
     NangoSyncEndpointV2,
     OnEventScriptsByProvider,
-    PreBuiltFlowConfig,
-    SyncDeploymentResult,
-    SyncTypeLiteral
+    SyncDeploymentResult
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
@@ -100,7 +99,11 @@ export async function deploy({
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
     if (nangoYamlBody) {
-        await remoteFileService.upload(nangoYamlBody, `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`, environment.id);
+        await remoteFileService.upload({
+            content: nangoYamlBody,
+            destinationPath: `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
+            destinationLocalPath: nangoConfigFile
+        });
     }
 
     const deployResults: SyncDeploymentResult[] = [];
@@ -243,29 +246,33 @@ export async function upgradePreBuilt({
 
     const { sync_name: name, is_public, type } = syncConfig;
     const { unique_key: provider_config_key, provider } = config;
+    const remoteBasePath = `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}`;
 
-    const file_location = await remoteFileService.copy(
-        `${provider}/dist`,
-        `${name}-${provider}.js`,
-        `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}/${name}-v${flow.version}.js`,
-        environment.id,
-        `${name}-${provider_config_key}.js`
-    );
+    void logCtx.info(`Upgrading ${syncConfig.sync_name} to version ${flow.version}`);
 
+    const file_location = await remoteFileService.copy({
+        sourcePath: `${provider}/dist/${name}-${provider}.js`,
+        destinationPath: `${remoteBasePath}/${name}-v${flow.version}.js`,
+        destinationLocalPath: `dist/${name}-${provider_config_key}.js`
+    });
     if (!file_location) {
         void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
         await logCtx.failed();
 
-        throw new NangoError('file_upload_error');
+        return Err(new NangoError('file_upload_error'));
     }
 
-    await remoteFileService.copy(
-        provider,
-        `${type}s/${name}.ts`,
-        `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}/${name}.ts`,
-        environment.id,
-        `${name}.ts`
-    );
+    const copy = await remoteFileService.copy({
+        sourcePath: `${provider}/${type}s/${name}.ts`,
+        destinationPath: `${remoteBasePath}/${name}.ts`,
+        destinationLocalPath: `${provider_config_key}/${type}s/${name}.ts`
+    });
+    if (!copy) {
+        void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
+        await logCtx.failed();
+
+        return Err(new NangoError('file_upload_error'));
+    }
 
     const now = new Date();
 
@@ -332,286 +339,6 @@ export async function upgradePreBuilt({
     }
 }
 
-export async function deployPreBuilt({
-    environment,
-    account,
-    configs,
-    logContextGetter,
-    orchestrator
-}: {
-    environment: DBEnvironment;
-    account: DBTeam;
-    configs: PreBuiltFlowConfig[];
-    logContextGetter: LogContextGetter;
-    orchestrator: Orchestrator;
-}): Promise<ServiceResponse<SyncConfigResult | null>> {
-    const [firstConfig] = configs;
-    if (!firstConfig || !firstConfig.public_route) {
-        return { success: false, error: new NangoError('no_config'), response: null };
-    }
-
-    const providerConfigKeys = [];
-
-    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
-
-    const idsToMarkAsInactive = [];
-    const insertData: DBSyncConfigInsert[] = [];
-    let nango_config_id: number;
-    let provider_config_key: string;
-
-    // this is a public template so copy it from the public location
-    // We might not want to do this as it just overrides the root nango.yaml
-    // which means we overwrite any custom nango.yaml that the user has
-    await remoteFileService.copy(
-        firstConfig.public_route,
-        nangoConfigFile,
-        `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-        environment.id,
-        nangoConfigFile
-    );
-
-    const flowReturnData: SyncDeploymentResult[] = [];
-
-    for (const config of configs) {
-        if (!config.providerConfigKey) {
-            // TODO: this is a critical bug if there are multiple integration with the same provider
-            const providerLookup = await configService.getConfigIdByProvider(config.provider, environment.id);
-            if (!providerLookup) {
-                const error = new NangoError('provider_not_on_account');
-
-                return { success: false, error, response: null };
-            }
-            ({ id: nango_config_id, unique_key: provider_config_key } = providerLookup);
-        } else {
-            const providerConfig = await configService.getProviderConfig(config.providerConfigKey, environment.id);
-
-            if (!providerConfig) {
-                const error = new NangoError('unknown_provider_config', { providerConfigKey: config.providerConfigKey });
-
-                return { success: false, error, response: null };
-            }
-            provider_config_key = config.providerConfigKey;
-            nango_config_id = providerConfig.id as number;
-        }
-
-        providerConfigKeys.push(provider_config_key);
-
-        const { type, models, auto_start, runs, model_schema: model_schema_string, is_public, attributes = {}, metadata = {} } = config;
-        let { input } = config;
-        const sync_name = config.name || config.syncName;
-
-        if (type === 'sync' && !runs) {
-            const error = new NangoError('missing_required_fields_on_deploy');
-
-            return { success: false, error, response: null };
-        }
-
-        if (!sync_name || !nango_config_id) {
-            const error = new NangoError('missing_required_fields_on_deploy');
-
-            return { success: false, error, response: null };
-        }
-
-        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment.id, sync_name, provider_config_key);
-        let bumpedVersion = '';
-
-        if (previousSyncAndActionConfig) {
-            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
-
-            if (runs) {
-                const syncs = await getSyncsByProviderConfigKey({
-                    environmentId: environment.id,
-                    providerConfigKey: provider_config_key,
-                    filter: [{ syncName: sync_name, syncVariant: 'base' }]
-                });
-                for (const sync of syncs) {
-                    const interval = sync.frequency || runs;
-                    const res = await orchestrator.updateSyncFrequency({
-                        syncId: sync.id,
-                        interval,
-                        syncName: sync_name,
-                        environmentId: environment.id,
-                        logCtx
-                    });
-                    if (res.isErr()) {
-                        const error = new NangoError('error_updating_sync_schedule_frequency', {
-                            syncId: sync.id,
-                            environmentId: environment.id,
-                            interval
-                        });
-                        return { success: false, error, response: null };
-                    }
-                }
-            }
-        }
-
-        const version = config.version || bumpedVersion || '0.0.1';
-
-        const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
-        let file_location: string | null = null;
-        if (is_public) {
-            file_location = await remoteFileService.copy(
-                `${config.public_route}/dist`,
-                `${sync_name}-${config.provider}.js`,
-                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-                environment.id,
-                `${sync_name}-${provider_config_key}.js`
-            );
-        } else {
-            file_location = await remoteFileService.upload(
-                jsFile as string,
-                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-                environment.id
-            );
-        }
-
-        if (!file_location) {
-            void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: sync_name, version });
-            await logCtx.failed();
-
-            throw new NangoError('file_upload_error');
-        }
-
-        const flowJsonSchema: JSONSchema7 = {
-            definitions: {}
-        };
-
-        const flowModels = Array.isArray(models) ? models : [models];
-
-        if (is_public) {
-            await remoteFileService.copy(
-                config.public_route,
-                `${type}s/${sync_name}.ts`,
-                `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
-                environment.id,
-                `${sync_name}.ts`
-            );
-            // fetch the json schema so we have type checking
-            const jsonSchema = await remoteFileService.getPublicTemplateJsonSchemaFile(firstConfig.public_route, environment.id);
-
-            if (jsonSchema) {
-                const parsedJsonSchema = JSON.parse(jsonSchema);
-                for (const model of flowModels) {
-                    const schema = parsedJsonSchema.definitions![model];
-                    if (!schema) {
-                        const error = new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model}"`);
-
-                        return { success: false, error, response: null };
-                    }
-                    flowJsonSchema.definitions![model] = schema;
-                }
-            }
-        } else {
-            if (typeof config.fileBody === 'object' && config.fileBody.ts) {
-                await remoteFileService.upload(
-                    config.fileBody.ts,
-                    `${env}/account/${account.id}/environment/${environment.id}/config/${nango_config_id}/${sync_name}.ts`,
-                    environment.id
-                );
-            }
-        }
-
-        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, nango_config_id, sync_name);
-
-        if (oldConfigs.length > 0) {
-            const ids = oldConfigs.map((oldConfig: DBSyncConfig) => oldConfig.id);
-            idsToMarkAsInactive.push(...ids);
-        }
-
-        const created_at = new Date();
-
-        const model_schema = typeof model_schema_string === 'string' ? JSON.parse(model_schema_string) : model_schema_string;
-
-        if (input && Object.keys(input).length === 0) {
-            input = undefined;
-        }
-
-        if (input && typeof input !== 'string' && input.name) {
-            model_schema.push(input);
-        }
-
-        const flowData: DBSyncConfigInsert = {
-            created_at,
-            sync_name,
-            nango_config_id,
-            file_location,
-            version,
-            models: flowModels,
-            active: true,
-            runs,
-            input: (input && typeof input !== 'string' ? String(input.name) : input) || null,
-            model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
-            environment_id: environment.id,
-            deleted: false,
-            track_deletes: config.track_deletes,
-            type,
-            auto_start: auto_start === false ? false : true,
-            attributes,
-            metadata,
-            pre_built: true,
-            is_public,
-            enabled: true,
-            webhook_subscriptions: null,
-            models_json_schema: flowJsonSchema,
-            sdk_version: null, // TODO: fill this somehow
-            updated_at: new Date(),
-            sync_type: 'sync_type' in config ? (config.sync_type as SyncTypeLiteral) : null
-        };
-
-        insertData.push(flowData);
-
-        flowReturnData.push({
-            ...config,
-            providerConfigKey: provider_config_key,
-            ...flowData,
-            last_deployed: created_at,
-            input: typeof input !== 'string' ? (input as SyncModelSchema) : String(input),
-            models: model_schema
-        });
-    }
-
-    try {
-        const syncConfigs = await db.knex.from<DBSyncConfig>(TABLE).insert(insertData).returning('*');
-
-        flowReturnData.forEach((flow, index) => {
-            const row = syncConfigs[index];
-            if (row) {
-                flow.id = row.id;
-            }
-        });
-
-        const endpoints: DBSyncEndpointCreate[] = [];
-        for (const [index, row] of syncConfigs.entries()) {
-            const flow = configs[index];
-            if (!flow) {
-                continue;
-            }
-
-            endpoints.push(...endpointToSyncEndpoint(flow, row.id));
-        }
-
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-        }
-
-        for (const id of idsToMarkAsInactive) {
-            await switchActiveSyncConfig(id);
-        }
-
-        const names = configs.map((config) => config.name || config.syncName);
-
-        void logCtx.info('Successfully deployed', { nameOfType, configs: names });
-        await logCtx.success();
-
-        return { success: true, error: null, response: { result: flowReturnData, logCtx } };
-    } catch (err) {
-        void logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: err });
-        await logCtx.failed();
-
-        throw new NangoError('error_creating_sync_config');
-    }
-}
-
 async function compileDeployInfo({
     flow,
     jsonSchema,
@@ -658,7 +385,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, false);
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
@@ -696,18 +423,18 @@ async function compileDeployInfo({
     const idsToMarkAsInactive: number[] = [];
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
-    const file_location = (await remoteFileService.upload(
-        jsFile,
-        `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-        environment_id
-    )) as string;
+    const file_location = (await remoteFileService.upload({
+        content: jsFile,
+        destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
+        destinationLocalPath: `${syncName}-${providerConfigKey}.js`
+    })) as string;
 
     if (typeof fileBody === 'object' && fileBody.ts) {
-        await remoteFileService.upload(
-            fileBody.ts,
-            `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            environment_id
-        );
+        await remoteFileService.upload({
+            content: fileBody.ts,
+            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
+            destinationLocalPath: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+        });
     }
 
     if (!file_location) {
@@ -739,38 +466,14 @@ async function compileDeployInfo({
         plan
     });
 
-    // Only store relevant JSON schema
-    const flowJsonSchema: JSONSchema7 = {
-        definitions: {}
-    };
+    let models_json_schema: JSONSchema7 | null = null;
     if (jsonSchema) {
-        for (const model of model_schema) {
-            const schema = jsonSchema.definitions![model.name];
-            if (!schema) {
-                return {
-                    success: false,
-                    error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model.name}"`),
-                    response: null
-                };
-            }
-
-            flowJsonSchema.definitions![model.name] = schema;
-            const models = findModelInModelSchema(model.fields);
-
-            // Fields that may contain other Model
-            for (const modelName of models) {
-                const schema = jsonSchema.definitions![modelName];
-                if (!schema) {
-                    return {
-                        success: false,
-                        error: new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${modelName}"`),
-                        response: null
-                    };
-                }
-
-                flowJsonSchema.definitions![modelName] = schema;
-            }
+        const allModels = [...models, flow.input].filter(Boolean) as string[];
+        const result = filterJsonSchemaForModels(jsonSchema, allModels);
+        if (result.isErr()) {
+            return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }
+        models_json_schema = result.value;
     }
 
     return {
@@ -799,55 +502,13 @@ async function compileDeployInfo({
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
-                models_json_schema: jsonSchema ? flowJsonSchema : null,
+                models_json_schema,
                 sdk_version: sdkVersion || null,
                 created_at: new Date(),
                 updated_at: new Date()
             }
         }
     };
-}
-
-async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<void> {
-    await db.knex.transaction(async (trx) => {
-        // mark sync config as inactive
-        await trx.from<DBSyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
-
-        // update sync_config_id in syncs table to point to active sync config
-        await trx.raw(
-            `
-            UPDATE nango._nango_syncs
-            SET sync_config_id = (
-                SELECT active_config.id
-                FROM nango._nango_sync_configs as old_config
-                JOIN nango._nango_sync_configs as active_config
-                    ON old_config.sync_name = active_config.sync_name
-                    AND old_config.nango_config_id = active_config.nango_config_id
-                    AND old_config.environment_id = active_config.environment_id
-                WHERE old_config.id = ?
-                    AND active_config.active = true
-            )
-            WHERE sync_config_id = ?`,
-            [oldSyncConfigId, oldSyncConfigId]
-        );
-    });
-}
-
-function findModelInModelSchema(fields: NangoModel['fields']) {
-    const models = new Set<string>();
-    for (const field of fields) {
-        if (field.model) {
-            models.add(field.value as string);
-        }
-        if (Array.isArray(field.value)) {
-            const res = findModelInModelSchema(field.value);
-            if (res.size > 0) {
-                res.forEach((name) => models.add(name));
-            }
-        }
-    }
-
-    return models;
 }
 
 function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints' | 'models'>, sync_config_id: number) {

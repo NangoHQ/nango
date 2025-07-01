@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-import type { Endpoint } from '../api';
-import type { PickFromUnion } from '../utils';
-import type { MessageRow, OperationList, OperationRow, OperationState } from './messages';
+import type { Endpoint } from '../api.js';
+import type { PickFromUnion } from '../utils.js';
+import type { MessageRow, OperationList, OperationRow, OperationState } from './messages.js';
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
 export type ConcatOperationList = Concat<OperationList>;

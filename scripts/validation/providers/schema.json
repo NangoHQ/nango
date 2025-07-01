@@ -14,6 +14,10 @@
                 "display_name": {
                     "type": "string"
                 },
+                "installation": {
+                    "type": "string",
+                    "enum": ["outbound"]
+                },
                 "alternate_access_token_response_path": {
                     "type": "string"
                 },
@@ -107,6 +111,9 @@
                 "authorization_code_param_in_callback": {
                     "type": "string"
                 },
+                "authorization_code_param_in_webhook": {
+                    "type": "string"
+                },
                 "body_format": {
                     "type": "string"
                 },
@@ -172,6 +179,9 @@
                     "type": "string"
                 },
                 "post_connection_script": {
+                    "type": "string"
+                },
+                "pre_connection_deletion_script": {
                     "type": "string"
                 },
                 "proxy": {
@@ -530,6 +540,12 @@
                 "webhook_routing_script": {
                     "type": "string"
                 },
+                "webhook_response_metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "authorization_url_fragment": {
                     "type": "string"
                 },
@@ -537,7 +553,7 @@
                     "type": "object",
                     "additionalProperties": false,
                     "patternProperties": {
-                        "^[a-zA-Z_]+$": {
+                        "^[a-zA-Z_.]+$": {
                             "type": "object",
                             "additionalProperties": false,
                             "required": ["type", "title", "description"],

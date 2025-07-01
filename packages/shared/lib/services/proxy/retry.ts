@@ -1,11 +1,11 @@
 import { isAxiosError } from 'axios';
+import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
-import type { RetryReason } from './utils';
+import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
-import get from 'lodash-es/get.js';
 
 /**
  * Determine if we can retry or not based on the error we are receiving
@@ -181,10 +181,11 @@ function parseRetryValue({
     if (type === 'at') {
         const currentEpochTime = Math.floor(Date.now() / 1000);
         let retryAtEpoch: number;
-
         const numericValue = Number(rawValue);
         if (!isNaN(numericValue)) {
-            retryAtEpoch = numericValue;
+            const dateFromValue = new Date(numericValue);
+            const isMs = dateFromValue.getFullYear() > 1971;
+            retryAtEpoch = isMs ? Math.floor(numericValue / 1000) : numericValue;
         } else {
             const dateValue = new Date(rawValue).getTime();
             if (isNaN(dateValue)) {

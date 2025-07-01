@@ -1,0 +1,383 @@
+name: '[Release] Managed Nango Release'
+
+on:
+    workflow_dispatch:
+        inputs:
+            commit_hash:
+                description: 'Commit hash to release'
+                required: true
+                type: string
+
+permissions:
+    contents: write
+    issues: write
+    pull-requests: write
+
+jobs:
+    manage-versions:
+        runs-on: ubuntu-latest
+        outputs:
+            image_version: ${{ steps.version-script.outputs.image_version }}
+            app_version: ${{ steps.version-script.outputs.app_version }}
+            commit_hash: ${{ inputs.commit_hash }}
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+
+            - name: Get versions
+              id: versions
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.commit_hash }}
+                  fetch-depth: 1
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install dependencies
+              run: |
+                  echo "installing dependencies"
+                  npm install -w scripts --ignore-scripts
+
+            # This step will update the manifest with the new version based on the changes to the version in package.json
+            # When there are no breaking changes, this is all that's necessary.
+            # A check is performed later on to see if the deployment was successful - if not, the major version will be bumped.
+            - name: Run version script
+              id: version-script
+              run: |
+                  echo "running version script"
+                  node scripts/manage-managed-release.mjs ${{ inputs.commit_hash }}
+                  echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                  echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+
+            - name: Upload manifest artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: managed-manifest.json
+
+    test-deployment:
+        needs: manage-versions
+        runs-on: ubuntu-latest
+        outputs:
+            status: ${{ steps.cluster-state.outputs.status }}
+        steps:
+            - name: Setup kind
+              uses: helm/kind-action@v1
+              with:
+                  version: 'v0.20.0'
+                  install_only: true
+
+            - name: Install Helm
+              uses: azure/setup-helm@v3
+              with:
+                  version: 'v3.12.3'
+
+            - name: Deploy to sandbox
+              run: |
+                  echo "commit_hash: ${{ needs.manage-versions.outputs.commit_hash }}"
+                  # Create a new kind cluster for testing
+                  kind create cluster --name nango-test
+
+                  # Create namespace and secrets
+                  kubectl create namespace nango
+
+                  # Create secrets file
+                  cat <<EOF > nango-secrets.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: nango-secrets
+                    namespace: nango
+                  type: Opaque
+                  data:
+                    postgres-password: bmFuZ28xMjM=
+                    encryption-key: bUJVcm5WQ2xUdmJkTXlwMjNwWTRkNXJiaE56VENZN1JWWjY5OE9zVm9raz0=
+                    mailgun-api-key: eW91ci1tYWlsZ3VuLWtleS1oZXJl
+                  EOF
+
+                  # Apply secrets
+                  kubectl apply -f nango-secrets.yaml
+
+                  # Add the Nango Helm repository
+                  helm repo add nangohq https://nangohq.github.io/nango-helm-charts
+                  helm repo update
+
+                  # Debug: Show available charts
+                  echo "Available charts in nangohq repo:"
+                  helm search repo nangohq
+
+                  # Install Nango using Helm in background
+                  echo "Installing Helm chart..."
+                  echo "commit_hash: ${{ inputs.commit_hash }}"
+
+                  # Debug: Show the exact command
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
+                  echo "Executing: $HELM_CMD"
+
+                  # Execute the command
+                  eval $HELM_CMD &
+
+                  # Give some time for the deployment to start
+                  sleep 10
+
+                  # Debug: Check Helm release status
+                  echo "Checking Helm release status..."
+                  helm list -n nango
+                  helm status nango -n nango
+
+                  # Poll for deployment status
+                  DEPLOYMENT_RUNNING=false
+                  for i in {1..30}; do
+                    echo "Checking deployment status (attempt $i/30)..."
+                    if kubectl get pods -n nango | grep -q "Running"; then
+                      echo "Deployment is running"
+                      DEPLOYMENT_RUNNING=true
+                      break
+                    fi
+                    sleep 10
+                  done
+
+                  if [ "$DEPLOYMENT_RUNNING" = "false" ]; then
+                    echo "Deployment failed to start in time"
+                    echo "status=failure" >> $GITHUB_OUTPUT
+                    echo "message=Deployment failed to start in time" >> $GITHUB_OUTPUT
+                  else
+                    echo "status=success" >> $GITHUB_OUTPUT
+                    echo "message=Deployment started successfully" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Check cluster state
+              id: cluster-state
+              run: |
+                  echo "Waiting for pods to be ready..."
+                  MAX_ATTEMPTS=30
+                  STABLE_CHECKS=3  # Number of consecutive successful checks required
+                  stable_count=0
+                  final_status="failure"
+                  final_message="Timed out waiting for pods to be stable"
+
+                  for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+                      echo "Checking pod status (attempt $i/$MAX_ATTEMPTS)..."
+                      sleep 5  # Add delay between checks
+                      
+                      # Get pod status
+                      POD_STATUS=$(kubectl get pods -n nango -o wide)
+                      echo "$POD_STATUS"
+                      
+                      # Check if any pods are not running
+                      if echo "$POD_STATUS" | grep -v "Running" | grep -v "Completed" | grep -v "STATUS" > /dev/null; then
+                          echo "Some pods are still pending or unknown"
+                          stable_count=0
+                          continue
+                      fi
+                      
+                      # If we get here, all pods are running
+                      stable_count=$((stable_count + 1))
+                      if [ $stable_count -ge $STABLE_CHECKS ]; then
+                          echo "All pods are stable and in Running state"
+                          final_status="success"
+                          final_message="All pods are running successfully"
+                          break
+                      fi
+                      
+                      echo "Pods are running, but waiting for stability ($stable_count/$STABLE_CHECKS)..."
+                  done
+
+                  echo "status=$final_status" >> $GITHUB_OUTPUT
+                  echo "message=$final_message" >> $GITHUB_OUTPUT
+                  echo "pod_status<<EOF" >> $GITHUB_OUTPUT
+                  echo "$POD_STATUS" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Run integration tests
+              id: tests
+              if: steps.cluster-state.outputs.status == 'success'
+              run: |
+                  # Add your integration test commands here
+                  # This should verify the deployment and test critical functionality
+                  echo "Running integration tests..."
+                  echo "status=success" >> $GITHUB_OUTPUT
+                  echo "message=Integration tests passed" >> $GITHUB_OUTPUT
+
+            - name: Get pod logs for failed deployment
+              if: needs.test-deployment.outputs.status == 'failure'
+              id: pod-logs
+              run: |
+                  echo "Getting logs for non-Running pods..."
+                  LOGS=""
+                  for pod in $(kubectl get pods -n nango -o jsonpath='{.items[*].metadata.name}'); do
+                    status=$(kubectl get pod $pod -n nango -o jsonpath='{.status.phase}')
+                    if [ "$status" != "Running" ]; then
+                      LOGS+="\n\nPod: $pod (Status: $status)\n"
+                      LOGS+="$(kubectl logs -p $pod -n nango --tail=10 2>/dev/null || echo 'No logs available')"
+                    fi
+                  done
+                  echo "pod_logs<<EOF" >> $GITHUB_OUTPUT
+                  echo "$LOGS" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Wait for approval on failure
+              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT
+              uses: trstringer/manual-approval@v1
+              with:
+                  secret: ${{ github.TOKEN }}
+                  approvers: ${{ vars.RELEASE_APPROVERS }}
+                  minimum-approvals: 1
+                  issue-title: 'Deployment Review: Managed Nango v${{ needs.manage-versions.outputs.app_version }}'
+                  issue-body: |
+                      Deployment or tests have failed for Managed Nango v${{ needs.manage-versions.outputs.app_version }}. Please review and indicate the required action.
+
+                      ## Release Details
+                      - Image Version: ${{ needs.manage-versions.outputs.image_version }}
+                      - App Version: ${{ needs.manage-versions.outputs.app_version }}
+                      - Commit: ${{ inputs.commit_hash }}
+
+                      ## Deployment Status
+                      ${{ steps.cluster-state.outputs.message }}
+
+                      ## Pod Status
+                      ```
+                      ${{ steps.cluster-state.outputs.pod_status }}
+                      ```
+
+                      ## Pod Logs
+                      ```
+                      ${{ steps.pod-logs.outputs.pod_logs }}
+                      ```
+
+                      ## Required Action
+                      Please respond with one of the following:
+                      - `approve` - Issues are expected and require a major version bump due to breaking changes
+                      - `deny` - Do not proceed with release (e.g., if issues are unrelated to the release)
+
+            - name: Log approval details (act)
+              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && env.ACT
+              run: |
+                  echo "Running in act - would create approval issue with:"
+                  echo "Title: Deployment Review: Managed Nango v${{ needs.manage-versions.outputs.app_version }}"
+                  echo
+                  echo "Details:"
+                  echo "- Image Version: ${{ needs.manage-versions.outputs.image_version }}"
+                  echo "- App Version: ${{ needs.manage-versions.outputs.app_version }}"
+                  echo "- Commit Hash: ${{ needs.manage-versions.outputs.commit_hash }}"
+                  echo "- Deployment Status: ${{ steps.cluster-state.outputs.message }}"
+                  echo
+                  echo "Pod Status:"
+                  echo "${{ steps.cluster-state.outputs.pod_status }}"
+                  echo
+                  echo "Pod Logs:"
+                  echo "${{ steps.pod-logs.outputs.pod_logs }}"
+                  echo
+                  echo "Would wait for approval with options:"
+                  echo "- approve - Issues are expected and require a major version bump due to breaking changes"
+                  echo "- deny - Do not proceed with release (e.g., if issues are unrelated to the release)"
+
+            - name: Cleanup kind cluster
+              if: always()
+              run: |
+                  echo "Cleaning up kind cluster..."
+                  kind delete cluster --name nango-test || true
+
+    finalize-release:
+        needs: [manage-versions, test-deployment]
+        if: success()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+
+            - uses: actions/create-github-app-token@v2
+              id: create_github_app_token
+              with:
+                  app-id: ${{ secrets.GH_APP_PUSHER_ID }}
+                  private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: 'master'
+                  fetch-depth: 1
+                  token: ${{ steps.create_github_app_token.outputs.token }}
+
+            - name: Download manifest artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: managed-manifest
+                  path: .
+
+            # The workflow will only get to this step under two conditions:
+            # 1. The test deployment was successful and no breaking changes were identified
+            # 2. The test deployment failed and the user approved the release - if this is the case, we need to bump the major version
+            - name: Bump major version if needed
+              id: bump-major
+              if: needs.test-deployment.outputs.status == 'failure'
+              run: |
+                  echo "Test deployment failed, bumping major version..."
+                  npm install -w scripts --ignore-scripts
+                  node scripts/manage-managed-release.mjs ${{ needs.manage-versions.outputs.commit_hash }} --bump-major
+
+                  # Get new versions
+                  echo "image_version=$(node -p "require('./managed-manifest.json').latest.imageVersion")" >> $GITHUB_OUTPUT
+                  echo "app_version=$(node -p "require('./managed-manifest.json').latest.appVersion")" >> $GITHUB_OUTPUT
+
+            - name: Login to Docker Hub
+              if: ${{ !env.ACT }}
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Log Docker operations (act)
+              if: ${{ env.ACT }}
+              run: |
+                  echo "Running in act - would perform Docker operations:"
+                  echo "Would pull: nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}"
+                  if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
+                    echo "Would tag as: nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                  else
+                    echo "Would tag as: nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                  fi
+
+            - name: Retag and push final image
+              if: ${{ !env.ACT }}
+              run: |
+                  echo "Pulling image..."
+                  docker pull nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}
+
+                  if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
+                      echo "Test deployment failed, using bumped major version"
+                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      docker push nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                  else
+                      echo "Test deployment successful, using original versions"
+                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                  fi
+
+            - name: Commit and create PR for version changes
+              if: ${{ !env.ACT }}
+              env:
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
+              run: |
+                  git config --global user.name "GitHub Actions"
+                  git config --global user.email "actions@github.com"
+                  git add managed-manifest.json
+                  git commit -m "chore: update version in manifest"
+                  git push origin master
+
+            - name: Log PR creation (act)
+              if: ${{ env.ACT }}
+              run: |
+                  echo "Running in act - would create PR:"
+                  echo "Would commit changes to managed-manifest.json"
+                  cat managed-manifest.json
+                  echo "Would push changes to master"
+
+            - name: Cleanup kind cluster
+              if: always()
+              run: |
+                  echo "Cleaning up kind cluster..."
+                  kind delete cluster --name nango-test || true

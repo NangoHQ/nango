@@ -58,7 +58,6 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
     }
 
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
-
     res.status(200).send({
         data: {
             integration: integrationToApi(integration),

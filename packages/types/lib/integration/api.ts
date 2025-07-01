@@ -1,11 +1,14 @@
-import type { ApiTimestamps, Endpoint } from '../api';
-import type { IntegrationConfig } from './db';
-import type { AuthModeType, AuthModes } from '../auth/api';
-import type { NangoSyncConfig } from '../flow';
-import type { Provider } from '../providers/provider';
+import type { ApiTimestamps, Endpoint } from '../api.js';
+import type { IntegrationConfig } from './db.js';
+import type { AuthModeType, AuthModes } from '../auth/api.js';
+import type { NangoSyncConfig } from '../flow/index.js';
+import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
-export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name'>, ApiTimestamps> & {
+export type ApiPublicIntegration = Merge<
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    ApiTimestamps
+> & {
     logo: string;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
@@ -41,6 +44,7 @@ export type PostPublicIntegration = Endpoint<{
         unique_key: string;
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
+        forward_webhooks?: boolean | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -63,6 +67,7 @@ export type PatchPublicIntegration = Endpoint<{
         unique_key?: string | undefined;
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
+        forward_webhooks?: boolean | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -94,6 +99,7 @@ export type ApiIntegrationList = ApiIntegration & {
         connectionConfigParams?: string[];
         credentialParams?: string[];
         displayName: string;
+        installation?: 'outbound';
     };
 };
 
@@ -139,7 +145,7 @@ export type PatchIntegration = Endpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Body:
-        | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined }
+        | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
               clientId: string;
