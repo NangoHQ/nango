@@ -1,9 +1,9 @@
 export type AuthErrorType =
-    | 'missingAuthToken'
+    | 'missing_auth_token'
     | 'blocked_by_browser'
-    | 'invalidHostUrl'
-    | 'missingCredentials'
-    | 'windowClosed'
+    | 'invalid_host_url'
+    | 'missing_credentials'
+    | 'window_closed'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'resource_capped';
