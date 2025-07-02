@@ -67,6 +67,7 @@ export async function compileAllFiles({
         return { success: false, failedFiles: [] };
     }
 
+    console.info(chalk.blue(`compileAllFiles - tsconfig.dev.json content at ${path.join(getNangoRootPath(), 'tsconfig.dev.json')}: ${tsconfig}`));
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
         skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -132,6 +133,7 @@ export async function compileSingleFile({
     debug: boolean;
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
+    console.info(chalk.blue(`compileSingleFile: tsconfig.dev.json content at ${path.join(getNangoRootPath(), 'tsconfig.dev.json')}: ${resolvedTsconfig}`));
 
     const cachedParser = parsed ? () => parsed : getCachedParser({ fullPath, debug });
 
