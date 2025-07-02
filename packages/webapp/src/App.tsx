@@ -41,6 +41,7 @@ import { SentryRoutes } from './utils/sentry';
 import { useSignout } from './utils/user';
 
 import 'react-toastify/dist/ReactToastify.css';
+import ConnectUISettings from './pages/ConnectUISettings/Show';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -111,6 +112,7 @@ const App = () => {
                             <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsShow />} />
+                            <Route path="/:env/connect-ui" element={<ConnectUISettings />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                             <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />

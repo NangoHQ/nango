@@ -9,6 +9,7 @@ import {
     IconLogout,
     IconLogs,
     IconRocket,
+    IconSocial,
     IconUserCircle,
     IconUsersGroup,
     IconX
@@ -40,7 +41,8 @@ export enum LeftNavBarItems {
     TeamBilling,
     UserSettings,
     GettingStarted,
-    Logs
+    Logs,
+    ConnectUI
 }
 
 export interface LeftNavBarProps {
@@ -91,6 +93,12 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         list.push({ name: 'Integrations', icon: IconApps, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: IconCirclesRelation, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: IconLogs, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
+        list.push({
+            name: 'Connect UI',
+            icon: IconSocial,
+            value: LeftNavBarItems.ConnectUI,
+            link: `/${env}/connect-ui`
+        });
         list.push({
             name: 'Environment Settings',
             icon: IconAdjustmentsHorizontal,
