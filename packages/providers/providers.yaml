@@ -8917,6 +8917,7 @@ sap-success-factors:
         client_id: ${credentials.apiKey}
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
         assertion: ${credentials.assertion}
+        new_token: true
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
