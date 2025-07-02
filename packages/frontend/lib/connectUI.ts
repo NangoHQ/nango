@@ -46,6 +46,8 @@ export class ConnectUI {
     private onEvent;
     private detectClosedAuthWindow?: boolean | undefined;
     private lang?: string | undefined;
+    private container: HTMLElement | null = null;
+    private isEmbedded = false;
 
     constructor({
         sessionToken,
@@ -64,7 +66,7 @@ export class ConnectUI {
     }
 
     /**
-     * Open UI in an iframe and listen to events
+     * Open UI in an iframe and listen to events (fullscreen mode)
      */
     open() {
         console.log('Opening connect ui');
@@ -80,24 +82,88 @@ export class ConnectUI {
         }
 
         // Create an iframe that will contain the ConnectUI on top of existing UI
-        const iframe = document.createElement('iframe');
-        iframe.src = baseURL.href;
-        iframe.id = 'connect-ui';
-        iframe.style.position = 'fixed';
-        iframe.style.zIndex = '9999';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '100vw';
-        iframe.style.height = '100vh';
-        iframe.style.backgroundColor = 'transparent';
+        const iframe = this.createIframe('fullscreen');
 
         this.iframe = iframe;
+        this.isEmbedded = false;
         document.body.append(iframe);
 
         document.body.style.overflow = 'hidden';
 
+        this.setupEventListeners();
+    }
+
+    /**
+     * Embed UI in an iframe within a specific container element
+     */
+    embed(container: HTMLElement) {
+        console.log('Embedding connect ui');
+        const baseURL = new URL(this.baseURL);
+        if (this.apiURL) {
+            baseURL.searchParams.append('apiURL', this.apiURL);
+        }
+        if (this.detectClosedAuthWindow) {
+            baseURL.searchParams.append('detectClosedAuthWindow', String(this.detectClosedAuthWindow));
+        }
+        if (this.lang) {
+            baseURL.searchParams.append('lang', this.lang);
+        }
+
+        // Create an iframe that will contain the ConnectUI within the container
+        const iframe = this.createIframe('embedded');
+
+        this.iframe = iframe;
+        this.container = container;
+        this.isEmbedded = true;
+        container.appendChild(iframe);
+
+        this.setupEventListeners();
+    }
+
+    createIframe(mode: 'fullscreen' | 'embedded' = 'fullscreen') {
+        const baseURL = new URL(this.baseURL);
+        if (this.apiURL) {
+            baseURL.searchParams.append('apiURL', this.apiURL);
+        }
+        if (this.detectClosedAuthWindow) {
+            baseURL.searchParams.append('detectClosedAuthWindow', String(this.detectClosedAuthWindow));
+        }
+        if (this.lang) {
+            baseURL.searchParams.append('lang', this.lang);
+        }
+        if (mode === 'embedded') {
+            baseURL.searchParams.append('embedded', 'true');
+        }
+
+        // Create an iframe that will contain the ConnectUI
+        const iframe = document.createElement('iframe');
+        iframe.src = baseURL.href;
+        iframe.id = 'connect-ui';
+        iframe.style.backgroundColor = 'transparent';
+        iframe.style.border = 'none';
+
+        if (mode === 'fullscreen') {
+            // Fullscreen mode - covers the entire viewport
+            iframe.style.position = 'fixed';
+            iframe.style.zIndex = '9999';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '100vw';
+            iframe.style.height = '100vh';
+        } else {
+            // Embedded mode - fits within the container
+            iframe.style.position = 'relative';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.minHeight = '400px';
+        }
+
+        return iframe;
+    }
+
+    private setupEventListeners() {
         // Listen to event sent from ConnectUI
         this.listener = (event) => {
             if (event.origin !== this.baseURL) {
@@ -152,10 +218,14 @@ export class ConnectUI {
             window.removeEventListener('message', this.listener);
         }
         if (this.iframe) {
-            document.body.removeChild(this.iframe);
+            if (this.isEmbedded && this.container) {
+                this.container.removeChild(this.iframe);
+            } else {
+                document.body.removeChild(this.iframe);
+                document.body.style.overflow = '';
+            }
             this.iframe = null;
-
-            document.body.style.overflow = '';
+            this.container = null;
         }
     }
 

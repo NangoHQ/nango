@@ -13,11 +13,6 @@
         --color-text: #000000;
         --color-text-muted: #a9acb3;
     }
-
-    .dark {
-        --primary: #ffffff;
-        --on-primary: #000000;
-    }
 }
 
 body {

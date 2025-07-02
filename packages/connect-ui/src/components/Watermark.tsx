@@ -1,5 +1,5 @@
 import { useGlobal } from '@/lib/store';
-import { IconLock } from '@tabler/icons-react';
+import NangoLogoSVG from '@/svg/logo.svg?react';
 
 export const Watermark: React.FC = () => {
     const { session } = useGlobal();
@@ -9,14 +9,11 @@ export const Watermark: React.FC = () => {
     }
 
     return (
-        <div className="relative bottom-5 flex justify-center items-center text-text-muted text-xs">
-            <IconLock size={14} />
-            <span>
-                Secured by{' '}
-                <a className="underline" href="https://nango.dev" rel="noopener noreferrer" target="_blank">
-                    Nango
-                </a>
-            </span>
-        </div>
+        <span className="flex flex-row justify-center items-center text-text text-xs">
+            Secured by{' '}
+            <a href="https://nango.dev" rel="noopener noreferrer" target="_blank">
+                <NangoLogoSVG className="h-4 w-auto ml-1.5" />
+            </a>
+        </span>
     );
 };

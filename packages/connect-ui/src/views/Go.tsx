@@ -21,6 +21,7 @@ import { cn, jsonSchemaToZod } from '@/lib/utils';
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
 import type { Resolver } from 'react-hook-form';
+import { Watermark } from '@/components/Watermark';
 
 const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     API_KEY: z.object({
@@ -82,7 +83,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
+    const { isEmbedded, provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
+
     const nango = useNango();
     const { t } = useI18n();
 
@@ -326,18 +328,20 @@ export const Go: React.FC = () => {
                     ) : (
                         <div></div>
                     )}
-                    <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX stroke={1} />
-                    </Button>
+                    {!isEmbedded && (
+                        <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
+                            <IconX stroke={1} />
+                        </Button>
+                    )}
                 </div>
                 <div className="flex flex-col gap-5 items-center pt-10">
-                    <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
+                    <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card shadow-surface p-2.5 group-hover:bg-dark-100">
                         <img src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-xl text-text">{t('go.linkAccount', { provider: provider.display_name })}</h1>
                 </div>
             </header>
-            <main className="h-full overflow-auto p-10 pt-1">
+            <main className="h-full overflow-auto p-10 pb-0 pt-1">
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full animate-in" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
@@ -453,6 +457,9 @@ export const Go: React.FC = () => {
                     </form>
                 </Form>
             </main>
+            <footer className="my-5">
+                <Watermark />
+            </footer>
         </>
     );
 };

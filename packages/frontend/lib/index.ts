@@ -289,6 +289,15 @@ export default class Nango {
     }
 
     /**
+     * Embed managed Connect UI in a specific container element
+     */
+    public embedConnectUI(container: HTMLElement, params: ConnectUIProps) {
+        const connect = new ConnectUI({ sessionToken: this.connectSessionToken, ...params });
+        connect.embed(container);
+        return connect;
+    }
+
+    /**
      * Converts the provided credentials to a Connection configuration object
      * @param credentials - The credentials to convert
      * @returns The connection configuration object

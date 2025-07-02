@@ -15,11 +15,14 @@ import { updateTheme } from '@/lib/theme';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow } = useGlobal();
+    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded } = useGlobal();
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
+
+    // Check if we're in embedded mode
+    const isEmbedded = useSearchParam('embedded') === 'true';
 
     useEffect(() => {
         // Listen to parent
@@ -69,6 +72,10 @@ export const Home: React.FC = () => {
             void navigate({ to: '/integrations' });
         }
     }, [data]);
+
+    useEffect(() => {
+        setIsEmbedded(isEmbedded);
+    }, [isEmbedded]);
 
     if (error) {
         return <ErrorFallback error={error} />;

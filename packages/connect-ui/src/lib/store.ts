@@ -13,6 +13,7 @@ interface State {
     nango: Nango | null;
     apiURL: string;
     detectClosedAuthWindow: boolean;
+    isEmbedded: boolean;
     setApiURL: (value: string) => void;
     setDetectClosedAuthWindow: (value: boolean) => void;
     setSessionToken: (value: string) => void;
@@ -21,6 +22,7 @@ interface State {
     setIsDirty: (value: boolean) => void;
     setIsSingleIntegration: (value: boolean) => void;
     set: (provider: GetPublicProvider['Success']['data'], integration: GetPublicIntegration['Success']['data']) => void;
+    setIsEmbedded: (value: boolean) => void;
     reset: () => void;
 }
 
@@ -34,6 +36,7 @@ export const useGlobal = create<State>((set) => ({
     nango: null,
     apiURL: 'https://api.nango.dev',
     detectClosedAuthWindow: false,
+    isEmbedded: false,
     setApiURL: (value) => set({ apiURL: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
@@ -41,6 +44,7 @@ export const useGlobal = create<State>((set) => ({
     setNango: (value) => set({ nango: value }),
     setIsDirty: (value) => set({ isDirty: value }),
     setIsSingleIntegration: (value) => set({ isSingleIntegration: value }),
+    setIsEmbedded: (value) => set({ isEmbedded: value }),
     set: (provider, integration) => {
         set({ provider, integration });
     },

@@ -17,6 +17,7 @@ import { telemetry } from '@/lib/telemetry';
 import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
 
 import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
+import { Watermark } from '@/components/Watermark';
 
 export const IntegrationsList: React.FC = () => {
     return (
@@ -96,9 +97,11 @@ const Integrations: React.FC = () => {
         <>
             <header className="relative m-10">
                 <div className="absolute top-0 left-0 w-full flex justify-end">
-                    <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX stroke={1} />
-                    </Button>
+                    {!store.isEmbedded && (
+                        <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
+                            <IconX stroke={1} />
+                        </Button>
+                    )}
                 </div>
                 <div className="flex flex-col gap-5 text-center pt-10">
                     <h1 className="font-semibold text-xl text-text">{t('integrationsList.title')}</h1>
@@ -112,6 +115,9 @@ const Integrations: React.FC = () => {
                     })}
                 </div>
             </main>
+            <footer className="my-5">
+                <Watermark />
+            </footer>
         </>
     );
 };
@@ -170,7 +176,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
             onClick={onClick}
         >
             <div className="flex gap-3 items-center">
-                <div className="w-[50px] h-[50px] bg-background transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-surface">
+                <div className="w-[50px] h-[50px] bg-background transition-colors rounded-xl shadow-card shadow-surface p-2.5 group-hover:bg-surface">
                     <img src={integration.logo} />
                 </div>
                 <div className="text-text">{integration.display_name}</div>

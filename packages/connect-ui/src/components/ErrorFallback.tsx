@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { APIError } from '@/lib/api';
 import { triggerClose } from '@/lib/events';
 import { telemetry } from '@/lib/telemetry';
+import { useGlobal } from '@/lib/store';
 
 const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
     if (error instanceof APIError) {
@@ -16,6 +17,8 @@ const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
 };
 
 export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
+    const { isEmbedded } = useGlobal();
+
     useMount(() => {
         telemetry('view:unknown_error');
     });
@@ -23,9 +26,11 @@ export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
         <div className="relative h-full w-full">
             <div className="absolute z-10 top right-0">
                 <header className="self-end p-10">
-                    <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX stroke={1} />
-                    </Button>
+                    {!isEmbedded && (
+                        <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose('click:close')}>
+                            <IconX stroke={1} />
+                        </Button>
+                    )}
                 </header>
             </div>
             <div className="relative h-full flex flex-col justify-center">
