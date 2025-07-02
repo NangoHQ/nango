@@ -9,7 +9,7 @@ export const Watermark: React.FC = () => {
     }
 
     return (
-        <div className="w-full flex justify-center items-center mb-6 gap-1 text-text-muted text-xs">
+        <div className="relative bottom-5 flex justify-center items-center text-text-muted text-xs">
             <IconLock size={14} />
             <span>
                 Secured by{' '}

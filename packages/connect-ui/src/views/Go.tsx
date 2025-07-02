@@ -341,7 +341,7 @@ export const Go: React.FC = () => {
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full animate-in" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
-                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-surface')}>
                                 {orderedFields.map(([name]) => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params', string];
 
@@ -363,14 +363,15 @@ export const Go: React.FC = () => {
                                                     <FormItem className={cn(isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null)}>
                                                         <div>
                                                             <div className="flex gap-2 items-center pb-1">
-                                                                <FormLabel className="leading-5">
+                                                                <FormLabel className="leading-5 text-text">
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
-                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
+                                                                    <span className="bg-surface rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
                                                                 )}
                                                                 {definition?.doc_section && (
                                                                     <Link
+                                                                        className="text-text-muted"
                                                                         target="_blank"
                                                                         to={`${provider.docs_connect}${definition.doc_section}`}
                                                                         onClick={() => telemetry('click:doc_section')}
@@ -379,7 +380,9 @@ export const Go: React.FC = () => {
                                                                     </Link>
                                                                 )}
                                                             </div>
-                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                                            {definition?.description && (
+                                                                <FormDescription className="text-text-muted">{definition.description}</FormDescription>
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <FormControl>
@@ -432,7 +435,7 @@ export const Go: React.FC = () => {
                             {provider.docs_connect && (
                                 <p className="text-text-muted text-center">
                                     {t('common.needHelp')}{' '}
-                                    <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect} onClick={() => telemetry('click:doc')}>
+                                    <Link className="underline text-text" target="_blank" to={provider.docs_connect} onClick={() => telemetry('click:doc')}>
                                         {t('common.viewGuide')}
                                     </Link>
                                 </p>

@@ -26,12 +26,12 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 ref.current?.focus();
             }}
         >
-            {prefix && <div className="h-10 px-2 pr-0.5 leading-10 text-dark-400">{prefix}</div>}
+            {prefix && <div className="h-10 px-2 pr-0.5 leading-10 text-text-muted">{prefix}</div>}
             <input
                 ref={ref}
                 className={cn(
                     'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-light-gray disabled:cursor-not-allowed',
-                    'text-sm px-3 py-[10px] placeholder-gray-400',
+                    'text-sm text-text px-3 py-[10px] placeholder-text-muted',
                     (fluid || suffix) && 'grow-0 [field-sizing:content] w-auto',
                     prefix && 'pl-0.5',
                     suffix && 'pr-0.5',
@@ -40,7 +40,7 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 type={type}
                 {...props}
             />
-            {suffix && <div className="h-10 px-2 pl-0.5 leading-10 text-dark-400">{suffix}</div>}
+            {suffix && <div className="h-10 px-2 pl-0.5 leading-10 text-text-muted">{suffix}</div>}
         </div>
     );
 });
