@@ -12,9 +12,11 @@ import { database } from '@nangohq/database';
 import { userService } from '@nangohq/shared';
 import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 
+import type { StoreFactory } from 'connect-session-knex';
 import type express from 'express';
 
-const KnexSessionStore = connectSessionKnex(session);
+// @ts-expect-error types are wrong
+const KnexSessionStore = connectSessionKnex(session) as StoreFactory;
 
 const sessionStore = new KnexSessionStore({
     knex: database.knex,

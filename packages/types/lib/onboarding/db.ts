@@ -1,4 +1,4 @@
-import type { Timestamps } from '../db';
+import type { Timestamps } from '../db.js';
 
 /**
  * Onboarding row in database

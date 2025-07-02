@@ -160,8 +160,26 @@ adp:
     token_url: https://accounts.adp.com/auth/oauth/v2/token
     token_params:
         grant_type: client_credentials
+    require_client_certificate: true
     docs: https://docs.nango.dev/integrations/all/adp
     docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+    credentials:
+        client_certificate:
+            type: string
+            title: Client Public Certificate
+            description: The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
+            example: '-----BEGIN CERTIFICATE-----\\nMIIDdzCCAl+gAwIBAgIEUzZrZDANBgkqhkiG9w0BAQsFADBv\\n...\\n-----END CERTIFICATE-----'
+            pattern: '^-----BEGIN CERTIFICATE-----\s*([A-Za-z0-9+/=\s]+)\s*-----END CERTIFICATE-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
+        client_private_key:
+            type: string
+            title: Client Private Key
+            description: The private key (in PEM format) associated with the client certificate,
+            example: '-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
 adyen:
     display_name: Adyen
@@ -8998,6 +9016,47 @@ sentry:
             example: sntryu_795225***************b9864a*********************
             pattern: '^sntryu_[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-sentry-auth-token'
+
+sentry-oauth:
+    display_name: Sentry (Public Integrations)
+    installation: outbound
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: OAUTH2
+    token_url: https://sentry.io/api/0/sentry-app-installations/${connectionConfig.installation.uuid}/authorizations/
+    webhook_routing_script: sentryOauthWebhookRouting
+    post_connection_script: sentryOauthPostConnection
+    authorization_code_param_in_webhook: data.installation.code
+    webhook_response_metadata:
+        - installation.uuid
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        connection_config:
+            actor: ${connectionConfig.actor}
+    docs: https://docs.nango.dev/integrations/all/sentry-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/sentry-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname of your Sentry account
+            example: us.sentry.io
+            format: hostname
+            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+        actor:
+            type: string
+            title: User ID
+            description: The unique identifier of the user who will accept and install the public integration
+            doc_section: '#step-2-finding-your-user-id'
+        installation.uuid:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sedna:
     display_name: Sedna (OAuth)

@@ -11,4 +11,5 @@ export { default as unauthenticatedWebhookRouting } from './unauthenticated-webh
 export { default as airtableWebhookRouting } from './airtable-webhook-routing.js';
 export { default as calendlyWebhookRouting } from './calendly-webhook-routing.js';
 export { default as xeroWebhookRouting } from './xero-webhook-routing.js';
+export { default as sentryOauthWebhookRouting } from './sentry-oauth.js';
 export type * from './types.js';
