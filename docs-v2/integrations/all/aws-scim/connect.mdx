@@ -1,0 +1,55 @@
+---
+title: AWS (SCIM) - How do I link my account?
+sidebarTitle: AWS (SCIM)
+---
+
+# Overview
+
+To authenticate with AWS SCIM, you need two key pieces of information:
+1. **SCIM API Token** - A token generated from your AWS IAM Identity Center to authenticate SCIM requests.
+2. **SCIM Endpoint** - The base domain for SCIM API requests.
+
+This guide will walk you through the steps to generate and use this token to connect your AWS account.
+
+---
+
+### Prerequisites:
+
+- You must have an AWS account.
+- SCIM is supported only for IAM Identity Center users and not for IAM users.
+- The logged-in user must have the necessary admin privileges to generate the SCIM API token in IAM Identity Provider.
+
+---
+
+## Step 1: Configure the external identity Provider
+
+1. Log into your AWS account
+2. Go to **IAM Identity Center > Settings**
+3. In the **Identity Source** tab, click on **Actions > Change identity source**
+4. Choose **External identity provider** as your identity source
+5. On the next screen, configure the external identity provider
+6. Review and save the changes
+
+<img src="/integrations/all/aws-scim/change-idp.png" />
+<img src="/integrations/all/aws-scim/choose-idp.png" />
+<img src="/integrations/all/aws-scim/configure-idp.png" />
+
+
+## Step 2: Setting up Automatic Provisioning
+
+1. Once you've setup SAML, you'll see an **Automatic Provisioning** card on Settings page
+3. Click on **Enable** in the left sidebar to enable SCIM
+5. The SCIM configuration will be shown, copy the **SCIM Endpoint** and **Access Token** to connect to AWS.
+
+<img src="/integrations/all/aws-scim/enable-automatic-provisioning.png" />
+<img src="/integrations/all/aws-scim/setup-scim.png" />
+
+**Important**: Copy and store your Access Token securely.
+
+## Step 3: Connect Your AWS Account
+
+To authenticate using your Access Token, navigate to the AWS (SCIM) authentication form in Nango and enter the SCIM endpoint and Access Token.
+
+<img src="/integrations/all/aws-scim/form.png" />
+
+Click "Connect" to complete the authentication.

@@ -1,0 +1,52 @@
+---
+
+title: AWS (SCIM)
+sidebarTitle: AWS (SCIM)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/aws-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/aws-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-scim.mdx)</Note>
+
+## Useful links
+
+-   [Provision users using SCIM](https://docs.aws.amazon.com/singlesignon/latest/userguide/provision-automatically.html)
+-   [IAM Identity Center SCIM Docs](https://docs.aws.amazon.com/singlesignon/latest/developerguide/what-is-scim.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-scim.mdx)</Note>
+
+## API gotchas
+
+- You need to configure an External Identity Provider in IAM Identity Center and set up SAML to be able to use SCIM
+- AWS (SCIM) uses `API_KEY` auth mode with `Authorization: Bearer ${apiKey}` in the request header to access different endpoints.
+- To establish a new connection in Nango, you need to provide the `SCIM Endpoint` from the AWS Identity Center
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-scim.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to AWS (SCIM)" icon="link" href="/integrations/all/aws-scim/connect" horizontal>
+  Guide to connect to AWS (SCIM) using Nango Connect UI.
+</Card>
