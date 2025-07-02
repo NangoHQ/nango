@@ -3673,6 +3673,10 @@ fathom:
         base_url: https://api.fathom.ai
         headers:
             x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /external/v1/teams
     docs: https://docs.nango.dev/integrations/all/fathom
     docs_connect: https://docs.nango.dev/integrations/all/fathom/connect
     credentials:
@@ -3680,7 +3684,6 @@ fathom:
             type: string
             title: API Key
             description: The API key for your Fathom account
-            secret: true
 
 figjam:
     display_name: FigJam
