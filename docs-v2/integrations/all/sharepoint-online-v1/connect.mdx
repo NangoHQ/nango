@@ -70,7 +70,7 @@ openssl pkcs12 -export -out certificate.pem -inkey private.key -in certificate.c
 <img src="/integrations/all/sharepoint-online-v1/upload_cert.png" />
 - After uploading, the **thumbprint** and certificate details will appear in the portal.
 8. Now that your certificate is registered with Microsoft, you need to generate a JWT **Client Assertion** using the private key and the certificate's thumbprint. You can use the code from the following script to generate the JWT.
-```
+```js
 import { readFileSync } from 'fs';
 import { execSync } from 'child_process';
 import jwt from 'jsonwebtoken';

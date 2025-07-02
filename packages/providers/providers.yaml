@@ -8909,6 +8909,7 @@ sap-success-factors:
     display_name: SAP SuccessFactors
     categories:
         - hr
+    body_format: form
     auth_mode: TWO_STEP
     token_url: https://${connectionConfig.apiServer}/oauth/token
     token_params:
