@@ -3,7 +3,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import PaginationService from './paginate.service';
+import PaginationService from './paginate.service.js';
 
 import type { CursorPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 

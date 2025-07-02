@@ -1,6 +1,8 @@
 import useSWR from 'swr';
+
 import { apiFetch, swrFetcher } from '../utils/api';
-import type { RunSyncCommand, SyncResponse } from '../types';
+
+import type { RunSyncCommand, SyncResponse } from '../types.js';
 
 export function useSyncs(queries: { env: string; connection_id: string; provider_config_key: string }) {
     const { data, error, mutate } = useSWR<SyncResponse[]>(

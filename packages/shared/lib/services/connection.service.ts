@@ -1,6 +1,7 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
 import { v4 as uuidv4 } from 'uuid';
+import { Agent } from 'undici';
 
 import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
@@ -28,7 +29,8 @@ import {
     interpolateString,
     parseTokenExpirationDate,
     stripCredential,
-    stripStepResponse
+    stripStepResponse,
+    formatPem
 } from '../utils/utils.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -598,6 +600,19 @@ class ConnectionService {
         return newConfig;
     }
 
+    public async unsetConnectionConfigAttributes(
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
+        keys: string[]
+    ): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+
+        const newConfig = Object.fromEntries(Object.entries(existingConfig).filter(([key]) => !keys.includes(key)));
+
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
     public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
@@ -988,13 +1003,17 @@ class ConnectionService {
         client_id,
         client_secret,
         connectionConfig,
-        logCtx
+        logCtx,
+        client_certificate,
+        client_private_key
     }: {
         provider: ProviderOAuth2;
         client_id: string;
         client_secret: string;
         connectionConfig: ConnectionConfig;
         logCtx: LogContextStateless;
+        client_certificate?: string | undefined;
+        client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
@@ -1038,12 +1057,35 @@ class ConnectionService {
             }
         }
 
+        let agent: Agent | undefined;
+
+        if (client_certificate && client_private_key) {
+            try {
+                const cert = formatPem(client_certificate, 'CERTIFICATE');
+                const key = formatPem(client_private_key, 'PRIVATE KEY');
+
+                if (
+                    !/^-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----\n?$/.test(cert) ||
+                    !/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----\n?$/.test(key)
+                ) {
+                    throw new NangoError('invalid_certificate_or_key_format');
+                }
+
+                agent = new Agent({
+                    connect: { cert, key, rejectUnauthorized: false }
+                });
+            } catch (err) {
+                throw new NangoError('invalid_certificate_or_key_format', { err });
+            }
+        }
+
         const fetchRes = await loggedFetch<Record<string, any>>(
             {
                 url,
                 method: 'POST',
                 headers,
-                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString()
+                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                agent
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret] }
         );
@@ -1056,6 +1098,8 @@ class ConnectionService {
 
         parsedCreds.client_id = client_id;
         parsedCreds.client_secret = client_secret;
+        parsedCreds.client_certificate = client_certificate;
+        parsedCreds.client_private_key = client_private_key;
 
         return { success: true, error: null, response: parsedCreds };
     }
@@ -1286,7 +1330,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
-            const { client_id, client_secret } = connection.credentials as OAuth2ClientCredentials;
+            const { client_id, client_secret, client_certificate, client_private_key } = connection.credentials as OAuth2ClientCredentials;
             const {
                 success,
                 error,
@@ -1296,7 +1340,9 @@ class ConnectionService {
                 client_id,
                 client_secret,
                 connectionConfig: connection.connection_config,
-                logCtx
+                logCtx,
+                client_certificate,
+                client_private_key
             });
 
             if (!success || !credentials) {
@@ -1456,8 +1502,6 @@ class ConnectionService {
      * Note:
      * a billable connection is a connection that is not deleted and has not been deleted during the month
      * connections are pro-rated based on the number of seconds they were existing in the month
-     *
-     * This method only returns returns data for paying customer
      */
     async billableConnections(referenceDate: Date): Promise<
         Result<
@@ -1563,6 +1607,56 @@ class ConnectionService {
 
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
+    }
+
+    async trackExecution(id: number): Promise<Result<void>> {
+        try {
+            await db.knex.from('_nango_connections').where({ id, deleted_at: null }).update({ last_execution_at: db.knex.fn.now() });
+            return Ok(undefined);
+        } catch (err: unknown) {
+            return Err(new NangoError('failed_to_track_execution', { id, error: err }));
+        }
+    }
+
+    /**
+     * Note:
+     * Some plan are billed per active connections in prod environment
+     * A connection is considered active if it has at least one script execution during the month
+     */
+    async billableActiveConnections(referenceDate: Date): Promise<
+        Result<
+            {
+                accountId: number;
+                count: number;
+                year: number;
+                month: number;
+            }[],
+            NangoError
+        >
+    > {
+        const year = referenceDate.getUTCFullYear();
+        const month = referenceDate.getUTCMonth();
+
+        const start = new Date(Date.UTC(year, month, 1));
+        const end = new Date(Date.UTC(year, month + 1, 1));
+
+        const res = await db.readOnly
+            .select('e.account_id as accountId')
+            .count('c.id as count')
+            .select(db.readOnly.raw(`${year} as year`))
+            .select(db.readOnly.raw(`${month + 1} as month`)) // js months are 0-based
+            .from('_nango_connections as c')
+            .join('_nango_environments as e', 'c.environment_id', 'e.id')
+            .where('c.last_execution_at', '>=', start)
+            .where('c.last_execution_at', '<', end)
+            .where('e.name', 'prod') // only consider prod environment
+            .groupBy('e.account_id')
+            .havingRaw('count(c.id) > 0');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new NangoError('failed_to_get_billable_active_connections'));
     }
 }
 

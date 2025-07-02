@@ -1,6 +1,6 @@
 import { Ok } from '@nangohq/utils';
 
-import type { NodeProvider } from './node_provider';
+import type { NodeProvider } from './node_provider.js';
 
 export const noopNodeProvider: NodeProvider = {
     defaultNodeConfig: {

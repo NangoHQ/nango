@@ -1,5 +1,5 @@
+import type { ApolloAuthenticationResponse } from './types.js';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
-import type { ApolloAuthenticationResponse } from './types';
 
 export default async function execute(nango: Nango) {
     const { provider_config_key } = nango.getConnection();
