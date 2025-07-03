@@ -41,15 +41,6 @@ _No setup guide yet._
 ## Connection configuration in Nango
 
 - Battlenet uses different domain extensions for different regions.
-
-- You need to pass the domain extension to use to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('battlenet', '<CONNECTION-ID>', {params: {extension: 'com.cn'}});
-```
-
-- For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
-
 - When creating a new connection, please provide your `apiDomain`. The API domain for Battle.net varies by `region`. For regions outside of China, the domain follows the format `{region}.api.blizzard.com`, where `{region}` can be `us`, `eu`, `kr`, or `tw`. For China, the API domain is `gateway.battlenet.com.cn`.
 ## API gotchas
 
