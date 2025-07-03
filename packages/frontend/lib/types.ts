@@ -1,4 +1,4 @@
-import type { ConnectionResponseSuccess, ConnectionResponseSuccessWithSignature } from '@nangohq/types';
+import type { ConnectionResponseSuccess } from '@nangohq/types';
 
 export type AuthErrorType =
     | 'missing_auth_token'
@@ -10,7 +10,7 @@ export type AuthErrorType =
     | 'missing_connect_session_token'
     | 'resource_capped';
 
-export type AuthResult = ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+export type AuthResult = ConnectionResponseSuccess;
 
 export type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed

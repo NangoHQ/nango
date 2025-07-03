@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
-import { createPrivateKey } from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -18,7 +17,7 @@ import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { connectionResponseWithSignature, errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -181,7 +180,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, privateKey, keyForSignature: environment.secret_key }));
+        res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

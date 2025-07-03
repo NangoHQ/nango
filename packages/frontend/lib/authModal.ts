@@ -126,23 +126,12 @@ export class AuthorizationModal {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
-                if ('signature' in data && 'signed_payload' in data) {
-                    successHandler({
-                        providerConfigKey: data.provider_config_key,
-                        connectionId: data.connection_id,
-                        isPending: data.is_pending,
-                        privateKey: data.private_key,
-                        signature: data.signature,
-                        signedPayload: data.signed_payload
-                    });
-                } else {
-                    successHandler({
-                        providerConfigKey: data.provider_config_key,
-                        connectionId: data.connection_id,
-                        isPending: data.is_pending,
-                        privateKey: data.private_key
-                    });
-                }
+                successHandler({
+                    providerConfigKey: data.provider_config_key,
+                    connectionId: data.connection_id,
+                    isPending: data.is_pending,
+                    privateKey: data.private_key
+                });
 
                 this.swClient.close();
                 break;

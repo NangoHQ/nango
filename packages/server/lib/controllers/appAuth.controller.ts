@@ -189,9 +189,7 @@ class AppAuthController {
                 res,
                 wsClientId,
                 providerConfigKey,
-                connectionId,
-                privateKey,
-                keyForSignature: connectSession ? res.locals['token'] : undefined
+                connectionId
             });
             return;
         } catch (err) {

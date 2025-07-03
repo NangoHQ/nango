@@ -18,16 +18,8 @@ export interface ConnectionResponseSuccess {
     isPending?: boolean;
     privateKey?: string | undefined;
 }
-export type ConnectionResponseSuccessWithSignature = ConnectionResponseSuccess & {
-    signature: string;
-    signedPayload: ConnectionResponseSuccess;
-};
 
-export type WebSocketConnectionMessage =
-    | WebSocketConnectionAck
-    | WebSocketConnectionError
-    | WebSocketConnectionResponseSuccess
-    | WebSocketConnectionResponseSuccessWithSignature;
+export type WebSocketConnectionMessage = WebSocketConnectionAck | WebSocketConnectionError | WebSocketConnectionResponseSuccess;
 export interface WebSocketConnectionAck {
     message_type: 'connection_ack';
     ws_client_id: string;
@@ -46,10 +38,6 @@ export interface WebSocketConnectionResponseSuccess {
     is_pending: boolean;
     private_key?: string | undefined;
 }
-export type WebSocketConnectionResponseSuccessWithSignature = WebSocketConnectionResponseSuccess & {
-    signature: string;
-    signed_payload: ConnectionResponseSuccess;
-};
 
 type AuthErrors =
     | ApiError<'invalid_body'>
@@ -73,7 +61,7 @@ export type PostPublicApiKeyAuthorization = Endpoint<{
     };
     Path: '/api-auth/api-key/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicAppStoreAuthorization = Endpoint<{
@@ -90,7 +78,7 @@ export type PostPublicAppStoreAuthorization = Endpoint<{
     };
     Path: '/app-store-auth/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicBasicAuthorization = Endpoint<{
@@ -105,7 +93,7 @@ export type PostPublicBasicAuthorization = Endpoint<{
     };
     Path: '/api-auth/basic/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicTbaAuthorization = Endpoint<{
@@ -122,7 +110,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
     };
     Path: '/auth/tba/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicJwtAuthorization = Endpoint<{
@@ -134,7 +122,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
     };
     Path: '/auth/jwt/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
@@ -145,7 +133,7 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     };
     Path: '/auth/unauthenticated/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicBillAuthorization = Endpoint<{
@@ -162,7 +150,7 @@ export type PostPublicBillAuthorization = Endpoint<{
     };
     Path: '/auth/bill/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicTwoStepAuthorization = Endpoint<{
@@ -174,7 +162,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
     };
     Path: '/auth/two-step/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicSignatureAuthorization = Endpoint<{
@@ -189,7 +177,7 @@ export type PostPublicSignatureAuthorization = Endpoint<{
     };
     Path: '/auth/signature-based/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;
 
 export type PostPublicOauthOutboundAuthorization = Endpoint<{
@@ -204,5 +192,5 @@ export type PostPublicOauthOutboundAuthorization = Endpoint<{
     };
     Path: '/auth/oauth-outbound/:providerConfigKey';
     Error: AuthErrors;
-    Success: ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature;
+    Success: ConnectionResponseSuccess;
 }>;

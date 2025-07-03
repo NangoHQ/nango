@@ -1,5 +1,3 @@
-import crypto from 'node:crypto';
-
 import { createClient } from 'redis';
 import * as uuid from 'uuid';
 
@@ -9,13 +7,7 @@ import { getLogger } from '@nangohq/utils';
 import { authHtml } from '../utils/html.js';
 
 import type { WSErr } from '../utils/web-socket-error.js';
-import type {
-    ConnectionResponseSuccess,
-    WebSocketConnectionAck,
-    WebSocketConnectionError,
-    WebSocketConnectionResponseSuccess,
-    WebSocketConnectionResponseSuccessWithSignature
-} from '@nangohq/types';
+import type { WebSocketConnectionAck, WebSocketConnectionError, WebSocketConnectionResponseSuccess } from '@nangohq/types';
 import type { Response } from 'express';
 import type { RedisClientType } from 'redis';
 import type { WebSocket } from 'ws';
@@ -219,16 +211,12 @@ export class Publisher {
         wsClientId,
         providerConfigKey,
         connectionId,
-        privateKey,
-        keyForSignature,
         isPending = false
     }: {
         res: Response;
         wsClientId: WebSocketClientId | undefined;
         providerConfigKey: string;
         connectionId: string;
-        privateKey?: string | undefined;
-        keyForSignature?: string | undefined;
         isPending?: boolean;
     }) {
         if (!wsClientId) {
@@ -240,44 +228,15 @@ export class Publisher {
             message_type: 'success',
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
-            private_key: privateKey,
             is_pending: isPending
         };
 
-        // Signature only exists for connect sessions because the others are created with public keys
-        if (!keyForSignature) {
-            const published = await this.publish(wsClientId, JSON.stringify(payload));
-            if (published) {
-                await this.unsubscribe(wsClientId);
-            }
-            authHtml({ res });
-            return;
-        }
-
-        // We keep the same payload as the others auth method for simplicity
-        const signedPayload: ConnectionResponseSuccess = {
-            providerConfigKey: providerConfigKey,
-            connectionId: connectionId,
-            privateKey: privateKey,
-            isPending: isPending
-        };
-
-        const payloadString = JSON.stringify(signedPayload);
-        const signature = crypto.createHmac('sha256', keyForSignature).update(payloadString).digest('hex');
-
-        // We send the payload and the signature to the client so that the client can verify the payload
-        // This is a security measure to prevent the client from tampering with the payload
-        // We put the signed data into it's own payload because for some languages removing the signature will modify the payload in a way that will break the signature verification
-        const data = JSON.stringify({
-            ...payload,
-            signature,
-            signed_payload: signedPayload
-        } satisfies WebSocketConnectionResponseSuccessWithSignature);
-        const published = await this.publish(wsClientId, data);
+        const published = await this.publish(wsClientId, JSON.stringify(payload));
         if (published) {
             await this.unsubscribe(wsClientId);
         }
         authHtml({ res });
+        return;
     }
 }
 

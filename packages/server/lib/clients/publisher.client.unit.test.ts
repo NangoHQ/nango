@@ -122,9 +122,7 @@ describe('Publisher', () => {
             res,
             wsClientId,
             providerConfigKey: 'provider-key',
-            connectionId: 'connection-id',
-            privateKey: 'private-key',
-            keyForSignature: 'key-for-signature'
+            connectionId: 'connection-id'
         });
 
         expect(ws.send).toHaveBeenCalledWith(

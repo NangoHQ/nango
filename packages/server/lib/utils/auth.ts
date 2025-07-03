@@ -1,10 +1,8 @@
-import crypto from 'node:crypto';
-
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import type { RequestLocals } from './express.js';
 import type { LogContext } from '@nangohq/logs';
-import type { ApiError, ConnectionResponseSuccess, ConnectionResponseSuccessWithSignature, IntegrationConfig } from '@nangohq/types';
+import type { ApiError, IntegrationConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function isIntegrationAllowed({
@@ -40,39 +38,4 @@ export function errorRestrictConnectionId(res: Response<ApiError<'invalid_query_
             })
         }
     });
-}
-
-export function connectionResponseWithSignature({
-    connectionId,
-    providerConfigKey,
-    privateKey,
-    keyForSignature
-}: {
-    connectionId: string;
-    providerConfigKey: string;
-    privateKey?: string | undefined;
-    keyForSignature?: string | undefined;
-}): ConnectionResponseSuccess | ConnectionResponseSuccessWithSignature {
-    const payload: ConnectionResponseSuccess = {
-        connectionId,
-        providerConfigKey,
-        privateKey
-    };
-
-    // Signature only exists for connect sessions because the others are created with public keys
-    if (!keyForSignature) {
-        return payload;
-    }
-
-    const payloadString = JSON.stringify(payload);
-    const signature = crypto.createHmac('sha256', keyForSignature).update(payloadString).digest('hex');
-
-    // We send the payload and the signature to the client so that the client can verify the payload
-    // This is a security measure to prevent the client from tampering with the payload
-    // We put the signed data into it's own payload because for some languages removing the signature will modify the payload in a way that will break the signature verification
-    return {
-        ...payload,
-        signature,
-        signedPayload: payload
-    } satisfies ConnectionResponseSuccessWithSignature;
 }
