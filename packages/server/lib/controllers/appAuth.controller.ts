@@ -185,7 +185,14 @@ class AppAuthController {
             void logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();
 
-            await publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            await publisher.notifySuccess({
+                res,
+                wsClientId,
+                providerConfigKey,
+                connectionId,
+                privateKey,
+                keyForSignature: connectSession ? res.locals['token'] : undefined
+            });
             return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });

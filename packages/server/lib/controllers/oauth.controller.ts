@@ -1335,7 +1335,15 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
             if (res) {
-                await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+                await publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId,
+                    privateKey,
+                    keyForSignature: environment.secret_key,
+                    isPending: pending
+                });
             }
             return;
         } catch (err) {
@@ -1497,7 +1505,13 @@ class OAuthController {
 
                 metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-                return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+                return publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId,
+                    keyForSignature: connectSession ? res.locals['token'] : undefined
+                });
             })
             .catch(async (err: unknown) => {
                 errorManager.report(err, {

@@ -17,7 +17,7 @@ import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils'
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { connectionResponseWithSignature, errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -203,7 +203,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
+        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, privateKey, keyForSignature: environment.secret_key }));
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
