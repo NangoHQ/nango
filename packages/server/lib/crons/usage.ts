@@ -32,6 +32,7 @@ export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.exportUsage', async () => {
         logger.info(`Starting`);
         await billing.exportBillableConnections();
+        await billing.exportActiveConnections();
         await observability.exportConnectionsMetrics();
         await observability.exportRecordsMetrics();
         logger.info(`✅ done`);
@@ -95,6 +96,29 @@ const billing = {
             } catch (err) {
                 span.setTag('error', err);
                 report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
+            }
+        });
+    },
+    exportActiveConnections: async (): Promise<void> => {
+        await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.active.connections', async (span) => {
+            try {
+                const now = new Date();
+                const res = await connectionService.billableActiveConnections(now);
+                if (res.isErr()) {
+                    throw res.error;
+                }
+
+                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
+                    return { type: 'billable_active_connections', value: count, properties: { accountId, timestamp: now } };
+                });
+
+                const sendRes = usageBilling.addAll(events);
+                if (sendRes.isErr()) {
+                    throw sendRes.error;
+                }
+            } catch (err) {
+                span.setTag('error', err);
+                report(new Error('cron_failed_to_export_billable_active_connections', { cause: err }));
             }
         });
     }

@@ -1,11 +1,11 @@
 import { isAxiosError } from 'axios';
+import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
-import type { RetryReason } from './utils';
+import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
-import get from 'lodash-es/get.js';
 
 /**
  * Determine if we can retry or not based on the error we are receiving

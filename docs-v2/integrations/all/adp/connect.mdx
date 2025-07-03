@@ -8,6 +8,8 @@ sidebarTitle: ADP
 To authenticate with ADP, you need:
 1. **Client ID** - A unique identifier for your client.
 2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
+3. **Client Public Certificate** - The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
+4. **Client Private Key** - The private key (in PEM format) associated with the client certificate, used for stablishing a secure TLS connection. 
 
 This guide will walk you through obtaining these credentials within ADP.
 
@@ -28,11 +30,97 @@ This guide will walk you through obtaining these credentials within ADP.
 8. Click on the name of the app you just registered above.
 9. Click on the **Credentials** tab to view your app's **Client ID** and **Client Secret**.
 
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2: Generating the Private Key and Certificate Signing Request
 
-Once you have both the **Client ID** and **Client Secret**:
+- To authenticate with ADP APIs using Mutual TLS (mTLS), you'll need to generate a **private key** and a **Certificate Signing Request (CSR)**. This allows ADP to issue a signed certificate used for secure communication.
+
+Follow the steps below to complete this process:
+
+1. Install OpenSSL
+
+- **Windows**: Download and install OpenSSL Light from [http://slproweb.com/products/Win32OpenSSL.html](http://slproweb.com/products/Win32OpenSSL.html)
+- **Mac**: OpenSSL is already included on macOS. You can skip to step 3 and use **Terminal**.
+
+2. Open a Command Prompt and Navigate to OpenSSL
+
+Open `cmd.exe` and navigate to the OpenSSL binary directory:
+
+```bash
+# For 32-bit version
+cd "C:\Program Files (x86)\OpenSSL-Win32\bin"
+
+# For 64-bit version
+cd "C:\Program Files\OpenSSL-Win64\bin"
+```
+
+3. Generate the Private Key
+
+Run the following command to generate a 2048-bit RSA private key:
+
+```bash
+openssl genrsa -out companyname_auth.key 2048
+```
+
+This creates a file named `companyname_auth.key`, your private key. Keep it safe and **do not share** this file.
+
+4. Generate the Certificate Signing Request (CSR)
+
+Using the private key, generate the CSR by running the following command:
+
+```bash
+openssl req -new -key companyname_auth.key -out companyname_auth.csr
+```
+
+When prompted:
+- Leave the **Country**, **State**, **Locality**, and **Challenge Password** fields **blank**
+- Use the correct **Organization Name** that matches your ADP registration
+- Set the **Common Name** as your company name followed by `MutualSSL` (e.g., `ExampleCorpMutualSSL`)
+- **Avoid using special characters** in any of the fields
+
+This generates `companyname_auth.csr`, which you'll submit to ADP.
+
+5. Next you will need to submit the CSR to ADP. Open the **[ADP Certificate Signing Tool](https://developers.adp.com)** (no login required)
+6. Select **"Authentication and Transaction Signing"** for the certificate type
+7. Paste the full contents of your `.csr` file, including the header and footer:
+
+```
+-----BEGIN CERTIFICATE REQUEST-----
+...
+-----END CERTIFICATE REQUEST-----
+```
+
+8. Provide your:
+   - Technical contact's **email address**, **name**, and a **group email** (for renewal notifications)
+   - **Company name**
+   - **ADP client ID**  
+     _(If you're using ADP Workforce Now, your client ID is the portion after the `@` in your ADP login.)_
+
+9. Receive and Save the Signed Certificate
+
+Once approved, ADP will return a signed certificate. Save it as:
+
+```
+companyname_auth.pem
+```
+
+Place this file in the same directory where you created the `.key` and `.csr`.
+
+---
+
+✅ Files You'll Use for Mutual TLS Authentication
+
+For API authentication with ADP, you'll need the following two files:
+
+- `**companyname_auth.key**` — the **Client Private Key** 
+- `**companyname_auth.pem**` — the **Client Public Certificate**
+
+Make sure both files are stored securely and access is restricted to authorized systems and personnel.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, **Client Public Certificate** and **Client Private Key**:
 1. Open the form where you need to authenticate with ADP.
-2. Enter your **Client ID** and **Client Secret** in their respective fields.
+2. Enter your credentials in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 

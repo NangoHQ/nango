@@ -1,6 +1,6 @@
-import type { Result } from '../result';
-import type { DBTeam } from '../team/db';
-import type { DBUser } from '../user/db';
+import type { Result } from '../result.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
@@ -36,7 +36,7 @@ export interface BillingPlan {
 }
 
 export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions';
+    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections';
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;
