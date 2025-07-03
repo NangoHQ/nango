@@ -8,6 +8,7 @@ export interface BillingClient {
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string; immediate: boolean }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
