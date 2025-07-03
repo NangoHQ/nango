@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Link } from 'react-router-dom';
 
 import Nango from '@nangohq/frontend';
 
@@ -236,100 +237,108 @@ const ConnectUISettings: React.FC = () => {
                 <title>Connect UI Settings - Nango</title>
             </Helmet>
             <div className="flex flex-row gap-4">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-6">
                     <h2 className="text-3xl font-semibold text-white flex gap-4 items-center">Connect UI Settings</h2>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-md">
                             <div className="space-y-6">
-                                <div className="pb-6 border-b border-gray-700">
+                                <div className="pb-6 border-b border-gray-700 space-y-4">
+                                    <div className="flex flex-col gap-1">
+                                        <h3 className="text-xl font-semibold text-white">Watermark</h3>
+                                        <p className="text-sm text-gray-500">Display &ldquo;Secured by Nango&rdquo; on the Connect UI.</p>
+                                    </div>
                                     <Tooltip delayDuration={0}>
                                         {!canDisableWatermark && (
                                             <TooltipContent>
                                                 <div className="space-y-2">
                                                     <p className="text-sm text-gray-300">
-                                                        Disabling the watermark is only available on paid plans.{' '}
-                                                        <a href="/team/billing" className="text-sm font-bold underline">
-                                                            Manage plan
-                                                        </a>
+                                                        Only available on paid plans.{' '}
+                                                        <Link to={`/${env}/team/billing`} className="text-sm font-bold underline">
+                                                            Manage plan.
+                                                        </Link>
                                                     </p>
                                                 </div>
                                             </TooltipContent>
                                         )}
                                         <TooltipTrigger asChild>
-                                            <FormField
-                                                control={form.control}
-                                                name="nangoWatermark"
-                                                render={({ field }) => (
-                                                    <div className="flex items-center space-x-3">
-                                                        <Checkbox disabled={!canDisableWatermark} checked={field.value} onCheckedChange={field.onChange} />
-                                                        <div className="space-y-1">
-                                                            <label
-                                                                htmlFor="nangoWatermark"
-                                                                className={`text-sm font-medium ${canDisableWatermark ? 'text-gray-300' : 'text-gray-500'}`}
-                                                            >
-                                                                Show Nango Watermark
-                                                            </label>
+                                            <div>
+                                                <FormField
+                                                    control={form.control}
+                                                    name="nangoWatermark"
+                                                    render={({ field }) => (
+                                                        <div className="flex items-center space-x-3">
+                                                            <Checkbox disabled={!canDisableWatermark} checked={field.value} onCheckedChange={field.onChange} />
+                                                            <div className="space-y-1">
+                                                                <label
+                                                                    htmlFor="nangoWatermark"
+                                                                    className={`text-sm font-medium ${canDisableWatermark ? 'text-gray-300' : 'text-gray-500'}`}
+                                                                >
+                                                                    Show Nango Watermark
+                                                                </label>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                            />
+                                                    )}
+                                                />
+                                            </div>
                                         </TooltipTrigger>
                                     </Tooltip>
                                 </div>
-
-                                {colorFields.map(({ key, label, description, defaultColor }) => (
-                                    <FormField
-                                        key={key}
-                                        control={form.control}
-                                        name={`colors.${key}`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className={`block text-sm font-medium mb-2 text-gray-300`}>{label}</FormLabel>
-                                                <Tooltip delayDuration={0}>
-                                                    {!canCustomizeColors && (
-                                                        <TooltipContent>
-                                                            <div className="space-y-2">
-                                                                <p className="text-sm text-gray-300">
-                                                                    Customizing colors is only available on the Growth plan.{' '}
-                                                                    <a href="/team/billing" className="text-sm font-bold underline">
-                                                                        Manage plan
-                                                                    </a>
-                                                                </p>
-                                                            </div>
-                                                        </TooltipContent>
-                                                    )}
-                                                    <TooltipTrigger asChild>
-                                                        <div className="flex gap-3 items-center">
-                                                            <div
-                                                                className="w-10 h-10 rounded border border-gray-600 flex-shrink-0"
-                                                                style={{
-                                                                    backgroundColor: form.watch(`colors.${key}`) || defaultColor
-                                                                }}
-                                                                title={form.watch(`colors.${key}`) || defaultColor}
-                                                            />
-                                                            <FormControl className="flex-1">
-                                                                <Input
-                                                                    type="text"
-                                                                    placeholder={defaultColor}
-                                                                    variant="black"
-                                                                    className={`w-full ${form.getFieldState(field.name).error ? 'border-red-500' : ''}`}
-                                                                    disabled={!canCustomizeColors}
-                                                                    {...field}
+                                <div className="space-y-6">
+                                    <div className="flex flex-col gap-1">
+                                        <h3 className="text-xl font-semibold text-white">Theme</h3>
+                                        <p className="text-sm text-gray-500">Customize the colors of the Connect UI to match your brand.</p>
+                                    </div>
+                                    {colorFields.map(({ key, label, description, defaultColor }) => (
+                                        <FormField
+                                            key={key}
+                                            control={form.control}
+                                            name={`colors.${key}`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className={`block text-sm font-medium mb-2 text-gray-300`}>{label}</FormLabel>
+                                                    <Tooltip delayDuration={0}>
+                                                        {!canCustomizeColors && (
+                                                            <TooltipContent>
+                                                                <div className="space-y-2">
+                                                                    <p className="text-sm text-gray-300">
+                                                                        Customizing colors is only available on the Growth plan.{' '}
+                                                                        <Link to={`/${env}/team/billing`} className="text-sm font-bold underline">
+                                                                            Manage plan
+                                                                        </Link>
+                                                                    </p>
+                                                                </div>
+                                                            </TooltipContent>
+                                                        )}
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex gap-3 items-center">
+                                                                <div
+                                                                    className="w-10 h-10 rounded border border-gray-600 flex-shrink-0"
+                                                                    style={{
+                                                                        backgroundColor: form.watch(`colors.${key}`) || defaultColor
+                                                                    }}
+                                                                    title={form.watch(`colors.${key}`) || defaultColor}
                                                                 />
-                                                            </FormControl>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <FormDescription className="text-gray-500">{description}</FormDescription>
-                                                    <FormMessage className="text-red-500" />
-                                                </Tooltip>
-                                            </FormItem>
-                                        )}
-                                    />
-                                ))}
-                            </div>
-
-                            <div className="pt-6 border-t border-gray-700">
-                                <Button type="submit" isLoading={isSaving} disabled={!hasChanges()} className="w-full md:w-auto">
+                                                                <FormControl className="flex-1">
+                                                                    <Input
+                                                                        type="text"
+                                                                        placeholder={defaultColor}
+                                                                        variant="black"
+                                                                        className={`w-full ${form.getFieldState(field.name).error ? 'border-red-500' : ''}`}
+                                                                        disabled={!canCustomizeColors}
+                                                                        {...field}
+                                                                    />
+                                                                </FormControl>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <FormDescription className="text-gray-500">{description}</FormDescription>
+                                                        <FormMessage className="text-red-500" />
+                                                    </Tooltip>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    ))}
+                                </div>
+                                <Button type="submit" isLoading={isSaving} disabled={!hasChanges()} className="w-full ml-auto md:w-auto">
                                     Save Settings
                                 </Button>
                             </div>
