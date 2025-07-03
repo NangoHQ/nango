@@ -2,7 +2,7 @@ import { billing } from '@nangohq/billing';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkOrbCustomer, linkOrbFreeSubscription } from '../../../../utils/linkOrb.js';
+import { linkOrbCustomer, linkOrbFreeSubscription } from '../../../../utils/orb.js';
 
 import type { GetUsage } from '@nangohq/types';
 

@@ -6,7 +6,7 @@ import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkOrbCustomer } from '../../../../utils/linkOrb.js';
+import { linkOrbCustomer } from '../../../../utils/orb.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam, GetManagedCallback } from '@nangohq/types';
