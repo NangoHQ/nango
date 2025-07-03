@@ -1,6 +1,7 @@
+import { Err, Ok } from '@nangohq/utils';
+
 import type { Knex } from '@nangohq/database';
 import type { ConnectSessionInput, DBConnection, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser } from '@nangohq/types';
-import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
@@ -94,6 +95,7 @@ export async function getEndUser(
                 ? { end_user_id: props.endUserId, environment_id: props.environmentId, account_id: props.accountId }
                 : { id: props.id, environment_id: props.environmentId, account_id: props.accountId }
         )
+        .forUpdate()
         .first();
     if (!endUser) {
         return Err(
