@@ -12,11 +12,11 @@ import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
-import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
 import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
@@ -68,6 +68,7 @@ const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddlew
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const authForConnection: RequestHandler[] = [authMiddleware.secretKeyOrConnectionApiKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
@@ -106,7 +107,7 @@ const publicAPICorsHandler = cors({
     maxAge: 600,
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
     allowedHeaders:
-        'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id, Sentry-Trace, Baggage',
+        'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id, Sentry-Trace, Baggage, Base-Url-Override',
     origin: '*'
 });
 const publicAPITelemetryCors = cors({
@@ -234,6 +235,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(authForConnection, syncController.actionOrModel.bind(syncController));
 
-publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(authForConnection, upload.any(), proxyController.routeCall.bind(proxyController));

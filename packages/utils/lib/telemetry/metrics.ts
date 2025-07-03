@@ -10,6 +10,7 @@ export enum Types {
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY = 'nango.auth.getEnvByConnectSessionOrSecretKey',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY = 'nango.auth.getEnvByConnectSessionOrPublicKey',
+    AUTH_GET_ENV_BY_SECRET_KEY_OR_CONNECTION_API_KEY = 'nango.auth.getEnvBySecretKeyOrConnectionApiKey',
     AUTH_SESSION = 'nango.auth.session',
     GET_CONNECTION = 'nango.server.getConnection',
     JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',

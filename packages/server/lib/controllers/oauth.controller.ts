@@ -4,6 +4,7 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { createPrivateKey } from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -12,6 +13,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +23,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -789,7 +790,7 @@ class OAuthController {
         });
 
         // All worked, let's redirect the user to the authorization page
-        return res.redirect(redirectUrl);
+        res.redirect(redirectUrl);
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
@@ -1326,6 +1327,27 @@ class OAuthController {
                     }
                     return;
                 }
+            }
+
+            // create a private key for the connection
+            let privateKey: string | undefined;
+            if (connectSession) {
+                const resPrivateKey = await createPrivateKey(db.knex, {
+                    displayName: '',
+                    accountId: account.id,
+                    environmentId: environment.id,
+                    entityType: 'connection',
+                    entityId: updatedConnection.connection.id
+                });
+                if (resPrivateKey.isErr()) {
+                    void logCtx.error('Failed to create private key');
+                    await logCtx.failed();
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create private key'));
+                    }
+                    return;
+                }
+                privateKey = resPrivateKey.value[0];
             }
 
             await logCtx.success();
