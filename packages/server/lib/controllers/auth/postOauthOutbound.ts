@@ -1,29 +1,29 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
+import db from '@nangohq/database';
+import { createPrivateKey } from '@nangohq/keystore';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    getConnectionConfig,
-    getProvider,
+    ErrorSourceEnum,
+    LogActionEnum,
     configService,
     connectionService,
     errorManager,
-    linkConnection,
-    ErrorSourceEnum,
-    LogActionEnum
+    getConnectionConfig,
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { connectionResponseWithSignature, errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-
-import db from '@nangohq/database';
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { stringifyError, zodErrorToHTTP, metrics } from '@nangohq/utils';
-
 import type { LogContext } from '@nangohq/logs';
-import type { NextFunction } from 'express';
 import type { ConnectionConfig, PostPublicOauthOutboundAuthorization } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
 const queryStringValidation = z
     .object({
@@ -181,7 +181,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey, connectionId });
+        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, privateKey, keyForSignature: environment.secret_key }));
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

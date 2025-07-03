@@ -22,7 +22,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { connectionResponseWithSignature, errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -207,7 +207,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey, connectionId });
+        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, privateKey, keyForSignature: environment.secret_key }));
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

@@ -1,19 +1,26 @@
-import type { WebSocket } from 'ws';
-import type { RedisClientType } from 'redis';
-import * as uuid from 'uuid';
+import crypto from 'node:crypto';
+
 import { createClient } from 'redis';
-import { getLogger } from '@nangohq/utils';
-import type { WSErr } from '../utils/web-socket-error.js';
+import * as uuid from 'uuid';
+
 import { getRedisUrl } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
+
 import { authHtml } from '../utils/html.js';
 
-const logger = getLogger('Server.Publisher');
+import type { WSErr } from '../utils/web-socket-error.js';
+import type {
+    ConnectionResponseSuccess,
+    WebSocketConnectionAck,
+    WebSocketConnectionError,
+    WebSocketConnectionResponseSuccess,
+    WebSocketConnectionResponseSuccessWithSignature
+} from '@nangohq/types';
+import type { Response } from 'express';
+import type { RedisClientType } from 'redis';
+import type { WebSocket } from 'ws';
 
-const enum MessageType {
-    ConnectionAck = 'connection_ack',
-    Error = 'error',
-    Success = 'success'
-}
+const logger = getLogger('Server.Publisher');
 
 export type WebSocketClientId = string;
 
@@ -111,7 +118,7 @@ class WebSocketPublisher {
 
     public subscribe(ws: WebSocket, wsClientId: string): WebSocketClientId {
         this.wsClients.set(wsClientId, ws);
-        ws.send(JSON.stringify({ message_type: MessageType.ConnectionAck, ws_client_id: wsClientId }));
+        ws.send(JSON.stringify({ message_type: 'connection_ack', ws_client_id: wsClientId } satisfies WebSocketConnectionAck));
         return wsClientId;
     }
 
@@ -193,12 +200,12 @@ export class Publisher {
         logger.debug(`OAuth flow error for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${wsErr.type} - ${wsErr.message}`);
         if (wsClientId) {
             const data = JSON.stringify({
-                message_type: MessageType.Error,
+                message_type: 'error',
                 provider_config_key: providerConfigKey,
                 connection_id: connectionId,
                 error_type: wsErr.type,
                 error_desc: wsErr.message
-            });
+            } satisfies WebSocketConnectionError);
             const published = await this.publish(wsClientId, data);
             if (published) {
                 await this.unsubscribe(wsClientId);
@@ -207,18 +214,68 @@ export class Publisher {
         authHtml({ res, error: wsErr.message });
     }
 
-    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
-        if (wsClientId) {
-            const data = JSON.stringify({
-                message_type: MessageType.Success,
-                provider_config_key: providerConfigKey,
-                connection_id: connectionId,
-                is_pending: isPending
-            });
-            const published = await this.publish(wsClientId, data);
+    public async notifySuccess({
+        res,
+        wsClientId,
+        providerConfigKey,
+        connectionId,
+        privateKey,
+        keyForSignature,
+        isPending = false
+    }: {
+        res: Response;
+        wsClientId: WebSocketClientId | undefined;
+        providerConfigKey: string;
+        connectionId: string;
+        privateKey?: string | undefined;
+        keyForSignature?: string | undefined;
+        isPending?: boolean;
+    }) {
+        if (!wsClientId) {
+            authHtml({ res });
+            return;
+        }
+
+        const payload: WebSocketConnectionResponseSuccess = {
+            message_type: 'success',
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId,
+            private_key: privateKey,
+            is_pending: isPending
+        };
+
+        // Signature only exists for connect sessions because the others are created with public keys
+        if (!keyForSignature) {
+            const published = await this.publish(wsClientId, JSON.stringify(payload));
             if (published) {
                 await this.unsubscribe(wsClientId);
             }
+            authHtml({ res });
+            return;
+        }
+
+        // We keep the same payload as the others auth method for simplicity
+        const signedPayload: ConnectionResponseSuccess = {
+            providerConfigKey: providerConfigKey,
+            connectionId: connectionId,
+            privateKey: privateKey,
+            isPending: isPending
+        };
+
+        const payloadString = JSON.stringify(signedPayload);
+        const signature = crypto.createHmac('sha256', keyForSignature).update(payloadString).digest('hex');
+
+        // We send the payload and the signature to the client so that the client can verify the payload
+        // This is a security measure to prevent the client from tampering with the payload
+        // We put the signed data into it's own payload because for some languages removing the signature will modify the payload in a way that will break the signature verification
+        const data = JSON.stringify({
+            ...payload,
+            signature,
+            signed_payload: signedPayload
+        } satisfies WebSocketConnectionResponseSuccessWithSignature);
+        const published = await this.publish(wsClientId, data);
+        if (published) {
+            await this.unsubscribe(wsClientId);
         }
         authHtml({ res });
     }
