@@ -108,6 +108,8 @@ export interface OAuth2ClientCredentials extends CredentialsCommon {
 
     client_id: string;
     client_secret: string;
+    client_certificate?: string | undefined;
+    client_private_key?: string | undefined;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {

@@ -35,6 +35,7 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
                 creationDate: integration.created_at.toISOString(),
                 missingFieldsCount: integration.missing_fields.length,
                 displayName: provider.display_name,
+                ...(provider.require_client_certificate && { requireClientCertificate: provider.require_client_certificate }),
                 ...(provider.installation && { installation: provider.installation })
             }
         };

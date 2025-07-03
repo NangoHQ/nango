@@ -99,7 +99,7 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch {
-            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalid_host_url');
         }
     }
 
@@ -172,7 +172,7 @@ export default class Nango {
         ) {
             const credentials = options.credentials;
             if (!credentials) {
-                throw new AuthError('Credentials are required for custom auth', 'missingCredentials');
+                throw new AuthError('Credentials are required for custom auth', 'missing_credentials');
             }
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
@@ -215,7 +215,7 @@ export default class Nango {
             try {
                 url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
             } catch {
-                errorHandler('invalidHostUrl', 'Invalid URL provided for the Nango host.');
+                errorHandler('invalid_host_url', 'Invalid URL provided for the Nango host.');
                 return;
             }
 
@@ -244,7 +244,7 @@ export default class Nango {
                     this.win.close();
 
                     this.win = null;
-                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
+                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'window_closed'));
                 }
             }, 500);
         }).finally(() => {
@@ -361,7 +361,9 @@ export default class Nango {
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
-                client_secret: credentials.client_secret
+                client_secret: credentials.client_secret,
+                client_certificate: credentials.client_certificate,
+                client_private_key: credentials.client_private_key
             };
 
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
@@ -455,7 +457,7 @@ export default class Nango {
         const { params: credentials } = connectionConfigWithCredentials;
 
         if (!credentials) {
-            throw new AuthError('You must specify credentials.', 'missingCredentials');
+            throw new AuthError('You must specify credentials.', 'missing_credentials');
         }
 
         if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
@@ -603,7 +605,7 @@ export default class Nango {
      */
     private ensureCredentials() {
         if (!this.publicKey && !this.connectSessionToken) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missing_auth_token');
         }
     }
 }
