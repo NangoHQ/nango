@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
+import { createPrivateKey } from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -72,7 +73,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { issuerId, privateKey, privateKeyId, scope }: PostPublicAppStoreAuthorization['Body'] = val.data;
+    const { issuerId, privateKeyId, scope }: PostPublicAppStoreAuthorization['Body'] = val.data;
     const queryString: PostPublicAppStoreAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicAppStoreAuthorization['Params'] = paramsVal.data;
     // const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -156,7 +157,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         const credentialsRes = await appleAppStoreClient.createCredentials({
             provider: provider as ProviderAppleAppStore,
             connectionConfig,
-            private_key: privateKey
+            private_key: val.data.privateKey
         });
         if (credentialsRes.isErr()) {
             report(credentialsRes.error);
@@ -181,6 +182,25 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
 
         if (isConnectSession) {
             await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+        }
+
+        // create a private key for the connection
+        let privateKey: string | undefined;
+        if (isConnectSession) {
+            const resPrivateKey = await createPrivateKey(db.knex, {
+                displayName: '',
+                accountId: account.id,
+                environmentId: environment.id,
+                entityType: 'connection',
+                entityId: updatedConnection.connection.id
+            });
+            if (resPrivateKey.isErr()) {
+                void logCtx.error('Failed to create private key');
+                await logCtx.failed();
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create private key' } });
+                return;
+            }
+            privateKey = resPrivateKey.value[0];
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

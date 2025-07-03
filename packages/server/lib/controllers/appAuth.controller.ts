@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import { createPrivateKey } from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, linkConnection } from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
@@ -181,6 +182,27 @@ class AppAuthController {
                 logContextGetter,
                 undefined
             );
+
+            // create a private key for the connection
+            let privateKey: string | undefined;
+            if (connectSession) {
+                const resPrivateKey = await createPrivateKey(db.knex, {
+                    displayName: '',
+                    accountId: account.id,
+                    environmentId: environment.id,
+                    entityType: 'connection',
+                    entityId: updatedConnection.connection.id
+                });
+                if (resPrivateKey.isErr()) {
+                    void logCtx.error('Failed to create private key');
+                    await logCtx.failed();
+                    if (res) {
+                        await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create private key'));
+                    }
+                    return;
+                }
+                privateKey = resPrivateKey.value[0];
+            }
 
             void logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();

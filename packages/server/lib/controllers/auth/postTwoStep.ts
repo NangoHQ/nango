@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
+import { createPrivateKey } from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -184,6 +185,25 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         if (isConnectSession) {
             await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+        }
+
+        // create a private key for the connection
+        let privateKey: string | undefined;
+        if (isConnectSession) {
+            const resPrivateKey = await createPrivateKey(db.knex, {
+                displayName: '',
+                accountId: account.id,
+                environmentId: environment.id,
+                entityType: 'connection',
+                entityId: updatedConnection.connection.id
+            });
+            if (resPrivateKey.isErr()) {
+                void logCtx.error('Failed to create private key');
+                await logCtx.failed();
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create private key' } });
+                return;
+            }
+            privateKey = resPrivateKey.value[0];
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

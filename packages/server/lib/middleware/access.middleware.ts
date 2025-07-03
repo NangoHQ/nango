@@ -3,7 +3,8 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { getPrivateKey } from '@nangohq/keystore';
+import { ErrorSourceEnum, LogActionEnum, accountService, connectionService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
 import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -19,6 +20,7 @@ const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
+const connectionApiKeyRegex = /^nango_connection_[a-f0-9]{64}$/;
 
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
@@ -370,6 +372,90 @@ export class AccessMiddleware {
             return errorManager.errRes(res, 'unknown_account');
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    /**
+     * Only used for endpoints that can be safely accessed by a connection (in the frontend for example)
+     * e.g: proxy, v1, records.
+     */
+    async secretKeyOrConnectionApiKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('secretKeyOrConnectionApiKeyAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+
+            if (!token) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const isConnectionApiKey = connectionApiKeyRegex.test(token);
+
+            if (isConnectionApiKey) {
+                const exists = await getPrivateKey(db.knex, token);
+                if (exists.isErr()) {
+                    res.status(401).send({ error: { code: 'invalid_connection_api_key' } });
+                    return;
+                }
+
+                const connection = await connectionService.getConnectionById(exists.value.entityId);
+                if (!connection) {
+                    res.status(401).send({ error: { code: 'unknown_connection' } });
+                    return;
+                }
+
+                const result = await environmentService.getAccountAndEnvironment({ environmentId: connection.environment_id });
+                if (!result) {
+                    res.status(401).send({ error: { code: 'unknown_account' } });
+                    return;
+                }
+
+                let plan: DBPlan | null = null;
+                if (flagHasPlan) {
+                    const planRes = await getPlan(db.knex, { accountId: result.account.id });
+                    if (planRes.isErr()) {
+                        res.status(401).send({ error: { code: 'plan_not_found' } });
+                        return;
+                    }
+                    plan = planRes.value;
+                }
+
+                res.locals['authType'] = 'connectionApiKey';
+                res.locals['account'] = result.account;
+                res.locals['environment'] = result.environment;
+                res.locals['plan'] = plan;
+            } else {
+                const secretKeyResult = await this.validateSecretKey(token);
+                if (secretKeyResult.isErr()) {
+                    errorManager.errRes(res, secretKeyResult.error.message);
+                    return;
+                }
+
+                res.locals['authType'] = 'secretKey';
+                res.locals['account'] = secretKeyResult.value.account;
+                res.locals['environment'] = secretKeyResult.value.environment;
+                res.locals['plan'] = secretKeyResult.value.plan;
+            }
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_secret_key_or_connection_api_key ${stringifyError(err)}`);
+            span.setTag('error', err);
+            return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_OR_CONNECTION_API_KEY, Date.now() - start);
             span.finish();
         }
     }
