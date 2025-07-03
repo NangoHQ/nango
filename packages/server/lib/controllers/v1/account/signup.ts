@@ -3,15 +3,15 @@ import util from 'util';
 
 import { z } from 'zod';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { DBTeam, PostSignup } from '@nangohq/types';
+import { linkOrbCustomer, linkOrbFreeSubscription } from '../../../utils/orb.js';
 
 export const passwordSchema = z
     .string()
@@ -111,13 +111,13 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     if (!token && flagHasUsage) {
-        const resCreate = await billing.upsertCustomer(account, user);
-        if (resCreate.isErr()) {
-            report(resCreate.error);
+        const linkOrbCustomerRes = await linkOrbCustomer(account, user);
+        if (linkOrbCustomerRes.isErr()) {
+            report(linkOrbCustomerRes.error);
         } else {
-            const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
-            if (resUpdate.isErr()) {
-                report(resUpdate.error);
+            const linkOrbSubscriptionRes = await linkOrbFreeSubscription(account);
+            if (linkOrbSubscriptionRes.isErr()) {
+                report(linkOrbSubscriptionRes.error);
             }
         }
     }
