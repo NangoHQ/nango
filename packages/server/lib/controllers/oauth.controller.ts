@@ -12,6 +12,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +22,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -1340,7 +1340,6 @@ class OAuthController {
                     wsClientId: channel,
                     providerConfigKey,
                     connectionId,
-                    privateKey,
                     keyForSignature: environment.secret_key,
                     isPending: pending
                 });

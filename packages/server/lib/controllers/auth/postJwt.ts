@@ -207,7 +207,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, privateKey, keyForSignature: environment.secret_key }));
+        res.status(200).send(connectionResponseWithSignature({ connectionId, providerConfigKey, keyForSignature: environment.secret_key }));
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
