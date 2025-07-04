@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer } from '../../../utils/tests.js';
+
 import { nanoid } from '@nangohq/utils';
+
+import { isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
 let api: Awaited<ReturnType<typeof runServer>>;

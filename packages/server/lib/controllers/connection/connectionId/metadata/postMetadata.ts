@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiError, SetMetadata, MetadataBody } from '@nangohq/types';
-import { connectionService } from '@nangohq/shared';
+
 import db from '@nangohq/database';
+import { connectionService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { ApiError, MetadataBody, SetMetadata } from '@nangohq/types';
 
 const validation = z
     .object({

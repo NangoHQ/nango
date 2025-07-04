@@ -1,6 +1,7 @@
+import { ProxyRequest, connectionService, getProxyConfiguration } from '@nangohq/shared';
+
+import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
-import { connectionService, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, UserProvidedProxyConfiguration, Provider } from '@nangohq/types';
 
 export interface InternalNango {
     getConnection: () => Promise<DBConnectionDecrypted>;

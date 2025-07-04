@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, refreshOrTestCredentials } from '@nangohq/shared';
-import { Err, metrics, Ok, zodErrorToHTTP } from '@nangohq/utils';
+import { Err, Ok, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';

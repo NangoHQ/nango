@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
+
 import { seeders } from '@nangohq/shared';
+
+import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
