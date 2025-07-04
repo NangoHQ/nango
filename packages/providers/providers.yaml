@@ -821,6 +821,28 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
 
+atlassian-admin:
+    display_name: Atlassian Cloud Admin
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at: 'x-ratelimit-reset'
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/atlassian-admin
+    docs_connect: https://docs.nango.dev/integrations/all/atlassian-admin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlassian account
+            example: ATCTT3xFfGN0_a1B2-c3D4_E5F6-G7H8I9JKLMNOPQRSTUVWXYZ1234567890=DEADBEEF
+            pattern: '^ATCTT3xFfGN0[\w\-]+=[A-Z0-9]{8}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 attio:
     display_name: Attio
     categories:

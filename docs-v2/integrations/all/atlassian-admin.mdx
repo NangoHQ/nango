@@ -1,0 +1,65 @@
+---
+title: Atlassian Cloud Admin
+sidebarTitle: Atlassian Cloud Admin
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/atlassian-admin/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/atlassian-admin/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Atlassian developer account](https://developer.atlassian.com/). |
+| Paid test account | ✅ Not required | Free Atlassian Cloud instance can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## Useful links
+
+| Topic| Link                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| General   | [Atlassian Website](https://atlassian.com/)                                                                                 |
+|Developer | [Authentication Reference](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#auth)                                          |
+|               | [How to Generate an Admin API Key](https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/) |
+|               | [Atlassian Admin API Key Scopes](https://developer.atlassian.com/cloud/admin/scopes/#available-scopes)                                   |
+|               | [REST API Documentation](https://developer.atlassian.com/cloud/admin/rest-apis/)                                               |
+|               | [API Rate Limits](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#rate%20limits)                                          |
+
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
+
+## Common Scopes
+
+| Scope                        | Description       |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `read:atlassian-admin-user`         | Read user information                                                      |
+| `read:atlassian-admin-work`         | Read Atlassian Admin work items (issues, projects, etc.)                   |
+| `write:atlassian-admin-work`        | Create and update Atlassian Admin work items                               |
+| `read:classification-levels:admin`  | Get all classification levels and specific level by org ID                 |
+| `write:classification-levels:admin` | Create, edit, publish, archive, restore, and reorder classification levels |
+| `read:tokens:admin`                 | Retrieve API keys and tokens in the organization                           |
+
+## API gotchas
+
+_None yet, add yours!_
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
+
+<Card title="Connect to atlassian-admin" icon="link" href="/integrations/all/atlassian-admin/connect" horizontal>
+  Guide to connect to Atlassian Cloud Admin using Nango Connect.
+</Card>
