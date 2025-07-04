@@ -556,7 +556,7 @@ export default class Nango {
             for (const param in connectionConfig.params) {
                 const val = connectionConfig.params[param];
                 if (typeof val === 'string') {
-                    query.push(`params[${param}]=${val}`);
+                    query.push(`params[${encodeURIComponent(param)}]=${encodeURIComponent(val)}`);
                 }
             }
 
