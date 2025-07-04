@@ -12,6 +12,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +22,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -1335,7 +1335,13 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
             if (res) {
-                await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+                await publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId,
+                    isPending: pending
+                });
             }
             return;
         } catch (err) {
@@ -1497,7 +1503,12 @@ class OAuthController {
 
                 metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-                return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+                return publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId
+                });
             })
             .catch(async (err: unknown) => {
                 errorManager.report(err, {

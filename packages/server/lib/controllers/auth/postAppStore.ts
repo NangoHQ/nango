@@ -203,7 +203,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
+        res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

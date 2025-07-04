@@ -161,7 +161,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey, connectionId });
+        res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
