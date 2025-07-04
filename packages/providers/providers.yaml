@@ -8967,6 +8967,7 @@ sap-success-factors:
     display_name: SAP SuccessFactors
     categories:
         - hr
+    body_format: form
     auth_mode: TWO_STEP
     token_url: https://${connectionConfig.apiServer}/oauth/token
     token_params:
@@ -8974,6 +8975,7 @@ sap-success-factors:
         client_id: ${credentials.apiKey}
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
         assertion: ${credentials.assertion}
+        new_token: true
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
@@ -8989,7 +8991,7 @@ sap-success-factors:
             type: string
             title: API Server
             description: The API Server to connect to your SAP SuccessFactors account
-            pattern: '^[a-z0-9.-]+$'
+            format: hostname
             example: api41preview.sapsf.com
             prefix: https://
             doc_section: '#step-1-finding-your-api-server'
@@ -9008,6 +9010,8 @@ sap-success-factors:
             title: API Key
             description: The API key for your SAP SuccessFactors account
             secret: true
+            example: YzA4MTVhMTQzZTUzMjc3NTk0ZDY2Nzc1ZmVkOA
+            pattern: ^[A-Za-z0-9+/]{32,44}={0,2}$
             doc_section: '#step-3-generating-your-api-key'
         assertion:
             type: string
