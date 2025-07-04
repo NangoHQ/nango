@@ -16,7 +16,6 @@ export interface ConnectionResponseSuccess {
     providerConfigKey: string;
     connectionId: string;
     isPending?: boolean;
-    privateKey?: string | undefined;
 }
 
 export type WebSocketConnectionMessage = WebSocketConnectionAck | WebSocketConnectionError | WebSocketConnectionResponseSuccess;

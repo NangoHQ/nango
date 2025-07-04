@@ -113,34 +113,4 @@ describe('Publisher', () => {
         expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + error
         expect(publisher1.unsubscribe).toHaveBeenCalledTimes(1);
     });
-
-    it('should send the private key and signature', async () => {
-        const res = mockRes({ status: 200 });
-
-        await publisher1.subscribe(ws, wsClientId);
-        await publisher1.notifySuccess({
-            res,
-            wsClientId,
-            providerConfigKey: 'provider-key',
-            connectionId: 'connection-id'
-        });
-
-        expect(ws.send).toHaveBeenCalledWith(
-            JSON.stringify({
-                message_type: 'success',
-                provider_config_key: 'provider-key',
-                connection_id: 'connection-id',
-                private_key: 'private-key',
-                is_pending: false,
-                signature: 'd7183868ee0e5acad9d54b04d46bbf7898a20990c6cb9caf0bb9cbf69f9bda2a',
-                signed_payload: {
-                    message_type: 'success',
-                    provider_config_key: 'provider-key',
-                    connection_id: 'connection-id',
-                    private_key: 'private-key',
-                    is_pending: false
-                }
-            })
-        );
-    });
 });

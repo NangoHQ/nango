@@ -129,8 +129,7 @@ export class AuthorizationModal {
                 successHandler({
                     providerConfigKey: data.provider_config_key,
                     connectionId: data.connection_id,
-                    isPending: data.is_pending,
-                    privateKey: data.private_key
+                    isPending: data.is_pending
                 });
 
                 this.swClient.close();

@@ -236,7 +236,6 @@ export class Publisher {
             await this.unsubscribe(wsClientId);
         }
         authHtml({ res });
-        return;
     }
 }
 
