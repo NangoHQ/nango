@@ -74,7 +74,7 @@ import readlineSync from 'readline-sync';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const getUserInput = () => {
-  const clientId = readlineSync.question('Enter your SuccessFactors API Key: ');
+  const clientId = readlineSync.question('Enter your SuccessFactors client ID: ');
   const hostname = readlineSync.question('Enter your SuccessFactors hostname (e.g., hcm68sales.successfactors.com): ');
   const companyId = readlineSync.question('Enter your company ID (e.g., SFCPART001523): ');
   
@@ -119,12 +119,10 @@ const createSamlOptions = (config, certData) => {
       api_key: config.clientId,
       use_username: isUsingUsername ? 'true' : 'false',
       use_email: 'false',
-      external_user: 'true',
+      external_user: 'false',
       ...(isUsingUsername ? {} : { user_id: config.userId })
     },
-    nameIdentifier: isUsingUsername
-      ? `${config.username}#DIV#${config.companyId}`
-      : config.userId,
+    nameIdentifier: config.username,
     sessionIndex: crypto.randomUUID(),
     recipient: `https://${config.hostname}/oauth/token`
   };
