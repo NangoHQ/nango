@@ -12,11 +12,11 @@ import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
-import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
 import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';

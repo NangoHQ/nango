@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';

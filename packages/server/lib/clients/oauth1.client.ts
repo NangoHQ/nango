@@ -1,4 +1,5 @@
 import oAuth1 from 'oauth';
+
 import type { IntegrationConfig, Provider, ProviderOAuth1 } from '@nangohq/types';
 
 interface OAuth1RequestTokenResult {

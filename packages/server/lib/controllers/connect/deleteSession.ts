@@ -1,8 +1,10 @@
-import type { DeleteConnectSession } from '@nangohq/types';
 import db from '@nangohq/database';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import * as connectSessionService from '../../services/connectSession.service.js';
-import { requireEmptyQuery, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { DeleteConnectSession } from '@nangohq/types';
 
 export const deleteConnectSession = asyncWrapper<DeleteConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);

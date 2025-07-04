@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { redactHeaders } from './http.js';
 
 describe('redactHeaders', () => {

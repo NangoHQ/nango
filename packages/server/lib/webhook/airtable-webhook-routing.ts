@@ -1,6 +1,6 @@
 import { Ok } from '@nangohq/utils';
 
-import type { WebhookHandler, AirtableWebhookReference } from './types.js';
+import type { AirtableWebhookReference, WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 
 const route: WebhookHandler<AirtableWebhookReference> = async (nango, integration, _headers, body, _rawBody, logContextGetter: LogContextGetter) => {

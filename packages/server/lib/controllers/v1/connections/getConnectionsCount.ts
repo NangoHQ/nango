@@ -1,9 +1,12 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { GetConnectionsCount } from '@nangohq/types';
-import { envSchema } from '../../../helpers/validation.js';
+
 import { connectionService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import { envSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { GetConnectionsCount } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({

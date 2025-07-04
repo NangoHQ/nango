@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { NangoError } from '@nangohq/shared';
-import { getLogger, Ok, Err } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';

@@ -12,6 +12,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +22,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -791,7 +791,7 @@ class OAuthController {
         });
 
         // All worked, let's redirect the user to the authorization page
-        return res.redirect(redirectUrl);
+        res.redirect(redirectUrl);
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {

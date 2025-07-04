@@ -1,4 +1,5 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { retry } from './retry.js';
 
 describe('retry', () => {

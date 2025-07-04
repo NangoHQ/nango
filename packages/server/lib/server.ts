@@ -7,6 +7,7 @@ import express from 'express';
 import * as cron from 'node-cron';
 import { WebSocketServer } from 'ws';
 
+import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
@@ -27,7 +28,6 @@ import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
-import { billing } from '@nangohq/billing';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');

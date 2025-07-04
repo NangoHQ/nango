@@ -1,20 +1,23 @@
-import type { Span } from 'dd-trace';
-import type { AxiosError, AxiosResponse } from 'axios';
-import type { Config } from '@nangohq/shared';
-import { getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import tracer from 'dd-trace';
+
+import { ProxyRequest, getProvider, getProxyConfiguration } from '@nangohq/shared';
+
 import * as verificationscriptHandlers from './index.js';
+
+import type { Config } from '@nangohq/shared';
 import type {
-    InternalProxyConfiguration,
     ApiKeyCredentials,
     BasicApiCredentials,
-    TbaCredentials,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    InternalProxyConfiguration,
     JwtCredentials,
     SignatureCredentials,
-    UserProvidedProxyConfiguration,
-    DBConnectionDecrypted,
-    ConnectionConfig
+    TbaCredentials,
+    UserProvidedProxyConfiguration
 } from '@nangohq/types';
-import tracer from 'dd-trace';
+import type { AxiosError, AxiosResponse } from 'axios';
+import type { Span } from 'dd-trace';
 
 type VerificationScriptHandler = (internalNango: InternalNango) => Promise<void>;
 

@@ -1,5 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
+import { describe, expect, it } from 'vitest';
+
+import { getAdditionalAuthorizationParams, parseConnectionConfigParamsFromTemplate } from './utils.js';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {

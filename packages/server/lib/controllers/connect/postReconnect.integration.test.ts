@@ -1,8 +1,10 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/tests.js';
-import { linkConnection, seeders } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
+import { linkConnection, seeders } from '@nangohq/shared';
+
 import { getConnectSessionByToken } from '../../services/connectSession.service.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

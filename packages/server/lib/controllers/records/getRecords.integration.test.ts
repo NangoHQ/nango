@@ -1,8 +1,9 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import { format, migrate as migrateRecords, records } from '@nangohq/records';
+import { seeders } from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/records';
 let api: Awaited<ReturnType<typeof runServer>>;

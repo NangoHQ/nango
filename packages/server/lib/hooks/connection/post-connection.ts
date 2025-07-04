@@ -1,10 +1,12 @@
 import { connectionService, getProvider } from '@nangohq/shared';
-import * as postConnectionHandlers from './index.js';
-import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
-import type { RecentlyCreatedConnection } from '@nangohq/types';
+
+import * as postConnectionHandlers from './index.js';
+import { getHandler, getInternalNango } from './internal-nango.js';
+
 import type { InternalNango } from './internal-nango.js';
-import { getInternalNango, getHandler } from './internal-nango.js';
+import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
+import type { RecentlyCreatedConnection } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;

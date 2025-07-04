@@ -1,7 +1,9 @@
+import { OtlpSpan, defaultOperationExpiration } from '@nangohq/logs';
 import { onEventScriptService } from '@nangohq/shared';
-import type { LogContextGetter } from '@nangohq/logs';
-import { defaultOperationExpiration, OtlpSpan } from '@nangohq/logs';
+
 import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { LogContextGetter } from '@nangohq/logs';
 import type { RecentlyCreatedConnection } from '@nangohq/types';
 
 export async function postConnectionCreation(

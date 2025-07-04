@@ -1,8 +1,8 @@
-import type { LogContext } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';
 
+import type { LogContext } from '@nangohq/logs';
 import type { AsyncActionResponse, DBEnvironment, DBExternalWebhook, NangoAsyncActionWebhookBody } from '@nangohq/types';
 
 export const sendAsyncActionWebhook = async ({

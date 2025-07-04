@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
 import { transformToOpenAIFunctions } from './getScriptsConfig.js';
-import type { StandardNangoConfig, NangoSyncConfig, NangoModel, NangoModelField } from '@nangohq/types';
+
+import type { NangoModel, NangoModelField, NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
 
 describe('transformToOpenAIFunctions', () => {
     it('should transform syncs to OpenAI function format with empty parameters', () => {

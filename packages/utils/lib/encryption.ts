@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import type { CipherGCMTypes } from 'crypto';
 
 export class Encryption {

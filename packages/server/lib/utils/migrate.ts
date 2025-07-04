@@ -3,6 +3,7 @@ import { getLogger } from '@nangohq/utils';
 const logger = getLogger('Server');
 
 import { encryptionManager } from '@nangohq/shared';
+
 import type { KnexDatabase } from '@nangohq/database';
 
 export default async function migrate(db: KnexDatabase): Promise<void> {

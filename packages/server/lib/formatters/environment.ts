@@ -1,4 +1,5 @@
 import { getGlobalOAuthCallbackUrl } from '@nangohq/shared';
+
 import type { ApiEnvironment, DBEnvironment } from '@nangohq/types';
 
 export function environmentToApi({

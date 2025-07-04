@@ -1,9 +1,13 @@
 import { URL } from 'url';
+
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { externalWebhookService, getApiUrl } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 
 const urlValidation = z
     .string()

@@ -1,7 +1,9 @@
-import type { GetUser } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { GetUser } from '@nangohq/types';
 
 export const getUser = asyncWrapper<GetUser, never>((req, res) => {
     const emptyQuery = requireEmptyQuery(req);

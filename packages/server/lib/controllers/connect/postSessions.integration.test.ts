@@ -1,9 +1,12 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/tests.js';
-import { seeders } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
-import type { DBEnvironment } from '@nangohq/types';
+import { seeders } from '@nangohq/shared';
 import * as endUserService from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+
+import type { DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

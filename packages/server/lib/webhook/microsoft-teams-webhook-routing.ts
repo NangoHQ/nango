@@ -1,4 +1,5 @@
 import { Ok } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 

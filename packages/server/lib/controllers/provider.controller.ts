@@ -1,6 +1,7 @@
-import type { NextFunction, Request, Response } from 'express';
 import { getProvider, getProviders } from '@nangohq/shared';
+
 import type { RequestLocals } from '../utils/express.js';
+import type { NextFunction, Request, Response } from 'express';
 
 class ProviderController {
     /**

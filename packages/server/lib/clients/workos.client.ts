@@ -1,4 +1,5 @@
 import { WorkOS } from '@workos-inc/node';
+
 import { NangoError } from '@nangohq/shared';
 
 let workOs: WorkOS | null = null;
