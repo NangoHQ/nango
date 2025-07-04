@@ -15,21 +15,26 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
-let client: S3Client | null = null;
-let useS3 = !isLocal && !isTest;
-let region = process.env['AWS_REGION'] as string;
-
-if (isEnterprise) {
-    useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
-    region = region ?? 'us-west-2';
-}
-client = new S3Client({
-    region
-});
-
 class RemoteFileService {
+    private client: S3Client;
+    private useS3: boolean;
+
     bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
     publicRoute = 'integration-templates';
+    publicZeroYamlRoute = 'templates-zero';
+
+    constructor() {
+        const region = process.env['AWS_REGION'] ?? 'us-west-2';
+        if (isEnterprise) {
+            this.useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+        } else {
+            this.useS3 = !isLocal && !isTest;
+        }
+
+        this.client = new S3Client({
+            region
+        });
+    }
 
     async upload({
         content,
@@ -40,17 +45,17 @@ class RemoteFileService {
         destinationPath: string;
         destinationLocalPath: string;
     }): Promise<string | null> {
-        if (isEnterprise && !useS3) {
+        if (isEnterprise && !this.useS3) {
             localFileService.putIntegrationFile({ filePath: destinationLocalPath, fileContent: content });
 
             return '_LOCAL_FILE_';
         }
-        if (!useS3) {
+        if (!this.useS3) {
             return '_LOCAL_FILE_';
         }
 
         try {
-            await client?.send(
+            await this.client.send(
                 new PutObjectCommand({
                     Bucket: this.bucket,
                     Key: destinationPath,
@@ -66,14 +71,6 @@ class RemoteFileService {
         }
     }
 
-    public getRemoteFileLocationForPublicTemplate(integrationName: string, fileName: string): string {
-        return `${this.publicRoute}/${integrationName}/dist/${fileName}.js`;
-    }
-
-    public async getPublicFlowFile(filePath: string): Promise<string | null> {
-        return await this.getFile(filePath);
-    }
-
     /**
      * Copy
      * @desc copy an existing public integration file to user's location in s3,
@@ -82,10 +79,12 @@ class RemoteFileService {
     async copy({
         sourcePath,
         destinationPath,
-        destinationLocalPath
+        destinationLocalPath,
+        isZeroYaml
     }: {
         sourcePath: string;
         destinationPath: string;
+        isZeroYaml: boolean;
         /**
          * sic
          * Destination when not uploading to S3
@@ -94,10 +93,10 @@ class RemoteFileService {
          */
         destinationLocalPath: string;
     }): Promise<string | null> {
-        const s3FilePath = `${this.publicRoute}/${sourcePath}`;
+        const s3FilePath = `${isZeroYaml ? this.publicZeroYamlRoute : this.publicRoute}/${sourcePath}`;
         try {
             if (isCloud) {
-                await client?.send(
+                await this.client.send(
                     new CopyObjectCommand({
                         Bucket: this.bucket,
                         Key: destinationPath,
@@ -130,8 +129,8 @@ class RemoteFileService {
                 Bucket: this.bucket,
                 Key: fileName
             });
-            client
-                ?.send(getObjectCommand)
+            this.client
+                .send(getObjectCommand)
                 .then((response: GetObjectCommandOutput) => {
                     if (response.Body && response.Body instanceof Readable) {
                         const responseDataChunks: Buffer[] = [];
@@ -158,7 +157,7 @@ class RemoteFileService {
                 Key: fileName
             });
 
-            const response = await client?.send(getObjectCommand);
+            const response = await this.client.send(getObjectCommand);
 
             if (response?.Body && response.Body instanceof Readable) {
                 return { success: true, error: null, response: response.Body };
@@ -172,7 +171,7 @@ class RemoteFileService {
     }
 
     async deleteFiles(fileNames: string[]): Promise<void> {
-        if (!isCloud && !useS3) {
+        if (!isCloud && !this.useS3) {
             return;
         }
 
@@ -183,7 +182,7 @@ class RemoteFileService {
             }
         });
 
-        await client?.send(deleteObjectsCommand);
+        await this.client.send(deleteObjectsCommand);
     }
 
     async zipAndSendPublicFiles({
@@ -232,7 +231,7 @@ class RemoteFileService {
         providerConfigKey: string;
         syncConfig: DBSyncConfig;
     }): Promise<void> {
-        if (!isCloud && !useS3) {
+        if (!isCloud && !this.useS3) {
             return localFileService.zipAndSendFiles({ res, scriptName, providerConfigKey, syncConfig });
         } else {
             const files: { name: string; content: Readable }[] = [];

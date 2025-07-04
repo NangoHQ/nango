@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
 import { transformToOpenAIFunctions } from './getScriptsConfig.js';
-import type { StandardNangoConfig, NangoSyncConfig, NangoModel, NangoModelField } from '@nangohq/types';
+
+import type { NangoModel, NangoModelField, NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
 
 describe('transformToOpenAIFunctions', () => {
     it('should transform syncs to OpenAI function format with empty parameters', () => {
@@ -19,7 +21,9 @@ describe('transformToOpenAIFunctions', () => {
                             type: 'object',
                             properties: {},
                             required: []
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 actions: [],
@@ -82,7 +86,9 @@ describe('transformToOpenAIFunctions', () => {
                                     required: ['eventId']
                                 }
                             }
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 'on-events': []

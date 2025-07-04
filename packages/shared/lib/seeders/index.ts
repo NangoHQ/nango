@@ -9,3 +9,4 @@ export * from './sync-job.seeder.js';
 export * from './sync.seeder.js';
 export * from './user.seeder.js';
 export * from './plan.seeder.js';
+export * from './syncConfig.seeder.js';

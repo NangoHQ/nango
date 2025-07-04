@@ -43,8 +43,8 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     const { environment, account, plan, user } = res.locals;
     const environmentId = environment.id;
 
-    const config = await configService.getIdByProviderConfigKey(environmentId, body.providerConfigKey);
-    if (!config) {
+    const integration = await configService.getProviderConfig(body.providerConfigKey, environmentId);
+    if (!integration) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
         return;
     }
@@ -74,16 +74,18 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
 
     const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });
     if (!flow) {
-        res.status(400).send({ error: { code: 'unknown_flow' } });
+        res.status(400).send({ error: { code: 'invalid_body', message: 'No template exists for this provider and script name' } });
         return;
     }
 
+    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
     const resDeploy = await deployTemplate({
         environment,
-        account,
+        team: account,
         template: flow,
+        integration,
         deployInfo: { integrationId: body.providerConfigKey, provider: body.provider },
-        logContextGetter
+        logCtx
     });
     if (resDeploy.isErr()) {
         res.status(503).send({ error: { code: 'failed_to_deploy', errors: [resDeploy.error] } });

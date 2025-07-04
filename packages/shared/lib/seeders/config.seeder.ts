@@ -1,7 +1,8 @@
 import configService from '../services/config.service.js';
+import { getProvider } from '../services/providers.js';
+
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { DBEnvironment, IntegrationConfig } from '@nangohq/types';
-import { getProvider } from '../services/providers.js';
 
 export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
     const googleProvider = getProvider('google');
@@ -73,4 +74,23 @@ export async function createConfigSeed(
         throw new Error('failed to created to provider config');
     }
     return created;
+}
+
+export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationConfig {
+    return {
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted: false,
+        deleted_at: null,
+        forward_webhooks: true,
+        oauth_client_id: null,
+        oauth_client_secret: null,
+        oauth_scopes: null,
+        missing_fields: [],
+        display_name: 'test',
+        unique_key: 'test',
+        provider: 'test',
+        environment_id: 1,
+        ...data
+    };
 }

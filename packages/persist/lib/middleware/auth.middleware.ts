@@ -1,7 +1,8 @@
+import tracer from 'dd-trace';
+
 import db from '@nangohq/database';
 import { environmentService, getPlan } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
-import tracer from 'dd-trace';
 
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';

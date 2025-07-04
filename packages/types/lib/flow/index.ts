@@ -27,6 +27,8 @@ export interface NangoSyncConfig {
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
     upgrade_version?: string;
+    is_zero_yaml: boolean;
+    sdk_version: string | null;
 }
 
 export interface StandardNangoConfig {
