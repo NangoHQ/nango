@@ -14027,7 +14027,7 @@ integrations:
                 output: OutlookCalendarEvent
                 sync_type: full
                 track_deletes: true
-                version: 1.0.0
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /events
