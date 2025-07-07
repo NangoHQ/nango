@@ -70,7 +70,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
 
             endUser = endUserRes.value;
         } else {
-            const endUserRes = await getEndUser(trx, { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! });
+            const endUserRes = await getEndUser(
+                trx,
+                { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! },
+                { forUpdate: true }
+            );
             if (endUserRes.isErr()) {
                 return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
             }
