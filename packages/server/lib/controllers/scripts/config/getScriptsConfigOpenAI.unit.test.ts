@@ -21,7 +21,9 @@ describe('transformToOpenAIFunctions', () => {
                             type: 'object',
                             properties: {},
                             required: []
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 actions: [],
@@ -84,7 +86,9 @@ describe('transformToOpenAIFunctions', () => {
                                     required: ['eventId']
                                 }
                             }
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 'on-events': []

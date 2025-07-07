@@ -137,7 +137,8 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     reconcile: false,
-                    singleDeployMode: false
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-yaml'
                 }
             });
 
@@ -152,7 +153,7 @@ describe(`POST ${endpoint}`, () => {
             // Check that everything was inserted in DB
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toHaveLength(1);
-            expect(syncConfigs).toStrictEqual([
+            expect(syncConfigs).toStrictEqual<typeof syncConfigs>([
                 {
                     actions: [],
                     'on-events': [],
@@ -170,6 +171,8 @@ describe(`POST ${endpoint}`, () => {
                                 fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
                                 name: 'Input'
                             },
+                            is_zero_yaml: false,
+                            sdk_version: expect.any(String),
                             is_public: false,
                             last_deployed: expect.toBeIsoDate(),
                             models: [
