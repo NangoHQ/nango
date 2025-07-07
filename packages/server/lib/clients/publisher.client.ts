@@ -7,16 +7,12 @@ import { getLogger } from '@nangohq/utils';
 import { authHtml } from '../utils/html.js';
 
 import type { WSErr } from '../utils/web-socket-error.js';
+import type { WebSocketConnectionAck, WebSocketConnectionError, WebSocketConnectionResponseSuccess } from '@nangohq/types';
+import type { Response } from 'express';
 import type { RedisClientType } from 'redis';
 import type { WebSocket } from 'ws';
 
 const logger = getLogger('Server.Publisher');
-
-const enum MessageType {
-    ConnectionAck = 'connection_ack',
-    Error = 'error',
-    Success = 'success'
-}
 
 export type WebSocketClientId = string;
 
@@ -114,7 +110,7 @@ class WebSocketPublisher {
 
     public subscribe(ws: WebSocket, wsClientId: string): WebSocketClientId {
         this.wsClients.set(wsClientId, ws);
-        ws.send(JSON.stringify({ message_type: MessageType.ConnectionAck, ws_client_id: wsClientId }));
+        ws.send(JSON.stringify({ message_type: 'connection_ack', ws_client_id: wsClientId } satisfies WebSocketConnectionAck));
         return wsClientId;
     }
 
@@ -196,12 +192,12 @@ export class Publisher {
         logger.debug(`OAuth flow error for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${wsErr.type} - ${wsErr.message}`);
         if (wsClientId) {
             const data = JSON.stringify({
-                message_type: MessageType.Error,
+                message_type: 'error',
                 provider_config_key: providerConfigKey,
                 connection_id: connectionId,
                 error_type: wsErr.type,
                 error_desc: wsErr.message
-            });
+            } satisfies WebSocketConnectionError);
             const published = await this.publish(wsClientId, data);
             if (published) {
                 await this.unsubscribe(wsClientId);
@@ -210,18 +206,34 @@ export class Publisher {
         authHtml({ res, error: wsErr.message });
     }
 
-    public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
-        if (wsClientId) {
-            const data = JSON.stringify({
-                message_type: MessageType.Success,
-                provider_config_key: providerConfigKey,
-                connection_id: connectionId,
-                is_pending: isPending
-            });
-            const published = await this.publish(wsClientId, data);
-            if (published) {
-                await this.unsubscribe(wsClientId);
-            }
+    public async notifySuccess({
+        res,
+        wsClientId,
+        providerConfigKey,
+        connectionId,
+        isPending = false
+    }: {
+        res: Response;
+        wsClientId: WebSocketClientId | undefined;
+        providerConfigKey: string;
+        connectionId: string;
+        isPending?: boolean;
+    }) {
+        if (!wsClientId) {
+            authHtml({ res });
+            return;
+        }
+
+        const payload: WebSocketConnectionResponseSuccess = {
+            message_type: 'success',
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId,
+            is_pending: isPending
+        };
+
+        const published = await this.publish(wsClientId, JSON.stringify(payload));
+        if (published) {
+            await this.unsubscribe(wsClientId);
         }
         authHtml({ res });
     }
