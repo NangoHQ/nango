@@ -1,17 +1,17 @@
 import tracer from 'dd-trace';
 
 import { NangoError, externalWebhookService, getProvider } from '@nangohq/shared';
-import type { Result } from '@nangohq/utils';
-import { getLogger, Err } from '@nangohq/utils';
+import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
 import { internalNango } from './internal-nango.js';
 
-import type { WebhookResponse, WebhookHandlersMap } from './types.js';
+import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.Manager');
 

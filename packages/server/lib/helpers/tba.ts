@@ -1,8 +1,10 @@
 import axios from 'axios';
-import type { OAuthSession } from '@nangohq/shared';
-import type { Provider, IntegrationConfig as ProviderConfig } from '@nangohq/types';
+
 import { interpolateStringFromObject } from '@nangohq/shared';
-import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
+import { SIGNATURE_METHOD, generateBaseString, generateSignature, getTbaMetaParams, percentEncode } from '@nangohq/utils';
+
+import type { OAuthSession } from '@nangohq/shared';
+import type { IntegrationConfig as ProviderConfig, Provider } from '@nangohq/types';
 
 export async function makeAccessTokenRequest({
     provider,

@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
-import { connectionIdSchema, modelSchema, variantSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import type { GetPublicRecords } from '@nangohq/types';
-import { connectionService, trackFetch } from '@nangohq/shared';
+
 import { records } from '@nangohq/records';
+import { connectionService, trackFetch } from '@nangohq/shared';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { GetPublicRecords } from '@nangohq/types';
 
 export const validationQuery = z
     .object({
