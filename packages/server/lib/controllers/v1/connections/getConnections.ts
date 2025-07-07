@@ -1,10 +1,13 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { GetConnections } from '@nangohq/types';
-import { envSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+
 import { connectionService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
+import { envSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { GetConnections } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({

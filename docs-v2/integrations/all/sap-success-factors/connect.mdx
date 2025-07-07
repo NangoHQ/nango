@@ -7,10 +7,10 @@ sidebarTitle: SAP SuccessFactors
 # Overview
 
 To authenticate with SAP SuccessFactors, you need:
-1. **API Server** - The base URL of the SAP SuccessFactors OData API.
+1. **API Server** - The base URL of your SAP SuccessFactors OData API instance.
 2. **Company ID** - Your company's unique identifier in SAP SuccessFactors.
 3. **API Key** - The API Key generated during the OAuth client application registration process in SAP SuccessFactors. 
-4. **SAML Assertion** - A Base64-encoded XML document generated using the private key of the X.509 certificate.
+4. **SAML Assertion** -A Base64-encoded XML document that contains security statements about a subject (typically a user). It is digitally signed using the private key associated with an X.509 certificate to ensure authenticity and integrity.
 
 This guide will walk you through obtaining these credentials within SAP SuccessFactors.
 
@@ -32,47 +32,118 @@ This guide will walk you through obtaining these credentials within SAP SuccessF
 <img src="/integrations/all/sap-success-factors/company_id.png" />
 
 #### Step 3: Generating your API Key
-1. In your **Admin Center**, go to Tools, and search **Manage OAuth2 Client Applications** (If your page looks different, search for **Manage OAuth2Client Applications** in the search tool on your homepage).
+1. In your **Admin Center**, go to Tools, and search **Manage OAuth2 Client Applications** (If your page looks different, search for **Manage OAuth2 Client Applications** in the search tool on your homepage).
 <img src="/integrations/all/sap-success-factors/search.png" />
 2. Click **Register Client Application**.
 <img src="/integrations/all/sap-success-factors/register.png" />
 3. Fill out **Application Name** & **Application URL** (what actually goes in these fields is not important, except that the URL has to begin with **https://**). You can also have a look at this [guide](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/d599f15995d348a1b45ba5603e2aba9b/6b3c741483de47b290d075d798163bc1.html#procedure) on how to fill this form.
-4. Click **Register** to save your registration.
-5. You’ve successfully registered your client application for OAuth2 authentication. An **API key** is generated and assigned to your application. You can view the **API key** by clicking **View** on the registered application list.
+4. Run the following command to generate a 2048-bit RSA private key and a Certificate Signing Request (CSR):
+```
+openssl req -new -newkey rsa:2048 -nodes -keyout private.pem -out request.csr
+```
+- You will be prompted to enter information such as country, organization, and Common Name (CN).   
+6. Use the private key to create a self-signed public certificate valid for 10 years:
+```
+openssl req -new -x509 -key private.pem -out cert.pem -days 3650
+```
+7. Open the `cert.pem` file in a text editor, copy its entire contents (excluding the -----BEGIN CERTIFICATE----- and -----END CERTIFICATE----- lines), and paste it into the **X.509 Certificate** field in the SuccessFactors form.
+<img src="/integrations/all/sap-success-factors/manage_oauth_application.png" />
+8. Finally, click **Register** to complete your registration.
+9. You’ve successfully registered your client application for OAuth2 authentication. An **API key** is generated and assigned to your application. You can view the **API key** by clicking **View** on the registered application list.
 
 #### Step 4: Generating your SAML Assertion
 - You can use a corporate IdP, for example, **SAP Identity Authentication Services**, or a third-party IdP.
-- You can also use the example code attached to [3031657](https://sap.github.io/SapMachine/#download) to generate SAML assertions for your application. This sample code provides a SAML generator tool that processes the input information offline and generates a **SAML assertion** without having to expose your **private key** to the Internet. For this example we will use a **Windows setup** to generate the SAML assertion.
-1. Download the file from [Downloading Apache Maven](https://maven.apache.org/download.cgi) and unzip it to your local drive. In the example below, the folder has been extracted to the C drive:
-2. At your computer: Click on **File Explorer > This PC (right button) > Properties > Advanced System Settings > Environment Variables**.
-3. At **System Variables**, ensure **JAVA_HOME** variable is set and points to the path of your JDK installation.
-<img src="/integrations/all/sap-success-factors/env.png" />
-4. At User Variables, click on new and set the path of the **bin** folder (from your JDK installation folders) to the variable **PATH** as shown below:
-5. Go to Command Prompt and execute the command below:**echo %JAVA_HOME%**
-- If it prints the folder path of the JDK installation, it means the installation was successful.
-<img src="/integrations/all/sap-success-factors/validate_jdk.png" />
-6. Open the Command Prompt and execute the command below:**mvn -v**
-- This means Maven installation is successful. Now we are good to proceed with generating SAML assertion using SAP provided offline tool.
-<img src="/integrations/all/sap-success-factors/validate_mvn.png" />
-7. Go to attachment section of this KBA and download the zip file.
-8. Extract folder from zip file to your local drive.
-9. Go to the folder and open **SAMLAssertion.properties** file.
-<img src="/integrations/all/sap-success-factors/folder.png" />
-<img src="/integrations/all/sap-success-factors/file.png" />
-10. Fill the data there;
-- **tokenUrl**: your API server endpoint from guide page [List of SAP SuccessFactors API Servers](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/d599f15995d348a1b45ba5603e2aba9b/af2b8d5437494b12be88fe374eba75b6.html) followed by **/oauth/token**.
-- **clientId**: API Key which you received while registering the client in SF.
-- **userId**: the userId of the API user. If you use this field, you shouldn't use the **userName** field, leaving it blank.
-- **userName**: the username of the API user. If you use this field, you shouldn't use the **userId** field, leaving it blank.
-- **privateKey**: X.509 private key.
-- **expireInMinutes**: SAML assertions usually expires in 5-10 minutes. Anyway, here you should set it according your business requirements.
-<img src="/integrations/all/sap-success-factors/notepad.png" />
-11. Save the file and close.
-12. Open a new Command Prompt window and go to the directory where folder was extracted.
-13. Execute the command below: **mvn compile exec:java -Dexec.args="SAMLAssertion.properties"**.
-<img src="/integrations/all/sap-success-factors/execute_saml.png" />
-14. Once completed, it would generate **SAML Assertion**. Copy this and store it securely in your local drive.
-<img src="/integrations/all/sap-success-factors/generated_saml.png" />
+- You can also use the example code attached to [3031657](https://sap.github.io/SapMachine/#download) to generate **SAML Assertion** for your application. 
+- You can also opt for this simple script prepared by us to generate your **SAML Assertion** locally. 
+
+1. Now that your certificate is registered with SuccessFactors, you can generate a **SAML Assertion** using the private key and the certificate you just created from [step 3](#step-3%3A-generating-your-api-key) above. From the same folder where your `private.pem` and `cert.pem` files were generated and registered, you can now use the following script to generate the SAML assertion.
+- To generate your SAML assertion, you’ll need to provide the following values:
+- **API Key** – This is your API Key obtained during application registration.
+- **Hostname**– Your SuccessFactors API server (e.g., hcm68sales.successfactors.com).
+- **Company ID** – The company identifier used in your SuccessFactors environment (e.g., SFCPART001523).
+- **Username or User ID** – Depending on your integration setup, provide either your SuccessFactors username or user ID.
+
+```js
+import { readFileSync } from 'fs';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { Saml20 } from 'saml';
+import crypto from 'crypto';
+import readlineSync from 'readline-sync';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const getUserInput = () => {
+  const clientId = readlineSync.question('Enter your SuccessFactors client ID: ');
+  const hostname = readlineSync.question('Enter your SuccessFactors hostname (e.g., hcm68sales.successfactors.com): ');
+  const companyId = readlineSync.question('Enter your company ID (e.g., SFCPART001523): ');
+  
+  const username = readlineSync.question('Enter your SuccessFactors username (leave blank to use userId): ');
+  let userId = '';
+  if (!username) {
+    userId = readlineSync.question('Enter your SuccessFactors userId: ');
+  }
+
+  return {
+    clientId,
+    hostname,
+    companyId,
+    username,
+    userId
+  };
+};
+
+const readCertificateFiles = () => {
+  try {
+    return {
+      cert: readFileSync(`cert.pem`, 'utf8'),
+      privateKey: readFileSync(`private.pem`, 'utf8')
+    };
+  } catch (error) {
+    console.error('Error reading certificate files:', error.message);
+    console.log('Please ensure both public.pem and private.pem exist');
+    process.exit(1);
+  }
+};
+
+const createSamlOptions = (config, certData) => {
+  const isUsingUsername = !!config.username;
+
+  return {
+    cert: certData.cert,
+    key: certData.privateKey,
+    issuer: 'www.successfactors.com',
+    lifetimeInSeconds: 315360000,
+    audiences: 'www.successfactors.com',
+    attributes: {
+      api_key: config.clientId,
+      use_username: isUsingUsername ? 'true' : 'false',
+      use_email: 'false',
+      external_user: 'false',
+      ...(isUsingUsername ? {} : { user_id: config.userId })
+    },
+    nameIdentifier: config.username,
+    sessionIndex: crypto.randomUUID(),
+    recipient: `https://${config.hostname}/oauth/token`
+  };
+};
+
+const generateSamlAssertion = () => {
+  const config = getUserInput();
+  const certData = readCertificateFiles();
+  const options = createSamlOptions(config, certData);
+
+  const rawAssertion = Saml20.create(options);
+  const assertion = Buffer.from(rawAssertion).toString('base64');
+
+  console.log('\n✅ SAML client assertion');
+  console.log(assertion);
+};
+
+generateSamlAssertion();
+```
+- Run the script from the same folder where your certificate files are located, and provide the required details as described above. A SAML Assertion will then be generated.
+
 #### Step 5: Enter credentials in the Connect UI
 
 Once you have both the above keys:

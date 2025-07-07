@@ -1,11 +1,14 @@
-import type { WebSocket } from 'ws';
-import type { RedisClientType } from 'redis';
-import * as uuid from 'uuid';
 import { createClient } from 'redis';
-import { getLogger } from '@nangohq/utils';
-import type { WSErr } from '../utils/web-socket-error.js';
+import * as uuid from 'uuid';
+
 import { getRedisUrl } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
+
 import { authHtml } from '../utils/html.js';
+
+import type { WSErr } from '../utils/web-socket-error.js';
+import type { RedisClientType } from 'redis';
+import type { WebSocket } from 'ws';
 
 const logger = getLogger('Server.Publisher');
 

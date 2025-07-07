@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { logContextGetter } from '@nangohq/logs';
 import { configService, flowService, getSyncConfigById, upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
-import { flowConfig } from '../../../sync/deploy/validation.js';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { flowConfig } from '../../../sync/deploy/validation.js';
+
+import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 const validation = z
     .object({

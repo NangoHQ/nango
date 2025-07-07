@@ -1,5 +1,7 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { parseHeaders } from './proxy.controller.js';
+
 import type { Request } from 'express';
 
 describe('Proxy Controller Construct URL Tests', () => {
