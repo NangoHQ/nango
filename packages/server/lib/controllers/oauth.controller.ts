@@ -12,6 +12,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +22,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -298,7 +298,7 @@ class OAuthController {
             return;
         }
 
-        const { client_id, client_secret }: Record<string, string> = body;
+        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string> = body;
 
         if (isConnectSession && receivedConnectionId) {
             errorRestrictConnectionId(res);
@@ -408,7 +408,9 @@ class OAuthController {
                 client_id,
                 client_secret,
                 connectionConfig,
-                logCtx
+                logCtx,
+                client_certificate,
+                client_private_key
             });
 
             if (!success || !credentials) {
@@ -789,7 +791,7 @@ class OAuthController {
         });
 
         // All worked, let's redirect the user to the authorization page
-        return res.redirect(redirectUrl);
+        res.redirect(redirectUrl);
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {

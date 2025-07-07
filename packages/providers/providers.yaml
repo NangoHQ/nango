@@ -160,8 +160,26 @@ adp:
     token_url: https://accounts.adp.com/auth/oauth/v2/token
     token_params:
         grant_type: client_credentials
+    require_client_certificate: true
     docs: https://docs.nango.dev/integrations/all/adp
     docs_connect: https://docs.nango.dev/integrations/all/adp/connect
+    credentials:
+        client_certificate:
+            type: string
+            title: Client Public Certificate
+            description: The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
+            example: '-----BEGIN CERTIFICATE-----\\nMIIDdzCCAl+gAwIBAgIEUzZrZDANBgkqhkiG9w0BAQsFADBv\\n...\\n-----END CERTIFICATE-----'
+            pattern: '^-----BEGIN CERTIFICATE-----\s*([A-Za-z0-9+/=\s]+)\s*-----END CERTIFICATE-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
+        client_private_key:
+            type: string
+            title: Client Private Key
+            description: The private key (in PEM format) associated with the client certificate,
+            example: '-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
+            secret: true
+            doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
 adyen:
     display_name: Adyen
@@ -803,6 +821,28 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://docs.nango.dev/integrations/all/atlassian
 
+atlassian-admin:
+    display_name: Atlassian Cloud Admin
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at: 'x-ratelimit-reset'
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/atlassian-admin
+    docs_connect: https://docs.nango.dev/integrations/all/atlassian-admin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlassian account
+            example: ATCTT3xFfGN0_a1B2-c3D4_E5F6-G7H8I9JKLMNOPQRSTUVWXYZ1234567890=DEADBEEF
+            pattern: '^ATCTT3xFfGN0[\w\-]+=[A-Z0-9]{8}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 attio:
     display_name: Attio
     categories:
@@ -1038,6 +1078,42 @@ aws-iam:
             example: us-east-1
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
+
+aws-scim:
+    display_name: AWS (SCIM)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.scimEndpoint}
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /Users
+    docs: https://docs.nango.dev/integrations/all/aws-scim
+    docs_connect: https://docs.nango.dev/integrations/all/aws-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM Access Token
+            description: The SCIM Access Token generated from your AWS IAM Identity Center
+            example: 878374852-dea1-47d5-9ae0-4d00a0bdbb13:ff7d4f04-7385-4add-befe-a9ed18341d0d:l6uepDQrHfNOiOYXZ7HYZL8hlvsYHSG7Cnx104tkRLmDbO8l/p5GxLv6Id5BCLicmjeKvhrlqrPvL6VMcAnJS6oitQrz3ZiZr18rnybzyISRlyjxktYtIK1R80YJXBH6U7NSvwGsu5gDbUZDGlCDeh+FFhL8tmUuHytvxuhz3jNhsh&8X9xiLBg=:ICn/+PhEST+8/pizxTmoA0DW9JcQTL4EVRh0z6DpJwQ4vFQ+iwAxNjh16SHdUovAJyMjT+TPDwI8gN63DLE+9EV+lcV+i2H/OTDE4x7L18WRz3ndMf/4dY98mJ41qRYBgh63Pi8PdXkAex2l8HJLMkzjjPirN+8DCBfPVKK+z/nCc04RXWIz6XOmqwgB1sV5jwfAxPhuV6vqgVosoSngSw7Y2Zon70PiI5UbTTZffF6QWFU7i9b3dgMMDAH6f9vm11EB6YpJt/XC74L1pDvKXiSzhel7b7dYzGvrXK0rN29cnjn0o58VYCOgk9c05p/nRsEaSs2Y/v7BqgxXUvI+Aw==
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[A-Za-z0-9+/]+=*:[A-Za-z0-9+/]+=*$'
+            doc_section: '#step-2-setting-up-automatic-provisioning'
+    connection_config:
+        scimEndpoint:
+            type: string
+            title: SCIM Endpoint
+            description: The SCIM Endpoint mentioned in the AWS IAM Identity Center
+            example: 'https://scim.ap-south-1.amazonaws.com/lSweb811432-ac8a-4a86-8332-f29hha4f5650/scim/v2'
+            format: uri
+            pattern: '^https://.*\/.*\/scim\/v2$'
+            order: 1
+            doc_section: '#step-2-setting-up-automatic-provisioning'
 
 azure-devops:
     display_name: Azure DevOps
@@ -3644,6 +3720,28 @@ facebook:
     proxy:
         base_url: https://graph.facebook.com
     docs: https://docs.nango.dev/integrations/all/facebook
+
+fathom:
+    display_name: Fathom
+    categories:
+        - communication
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fathom.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /external/v1/teams
+    docs: https://docs.nango.dev/integrations/all/fathom
+    docs_connect: https://docs.nango.dev/integrations/all/fathom/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Fathom account
 
 figjam:
     display_name: FigJam
@@ -8869,6 +8967,7 @@ sap-success-factors:
     display_name: SAP SuccessFactors
     categories:
         - hr
+    body_format: form
     auth_mode: TWO_STEP
     token_url: https://${connectionConfig.apiServer}/oauth/token
     token_params:
@@ -8876,6 +8975,7 @@ sap-success-factors:
         client_id: ${credentials.apiKey}
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
         assertion: ${credentials.assertion}
+        new_token: true
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
@@ -8891,7 +8991,7 @@ sap-success-factors:
             type: string
             title: API Server
             description: The API Server to connect to your SAP SuccessFactors account
-            pattern: '^[a-z0-9.-]+$'
+            format: hostname
             example: api41preview.sapsf.com
             prefix: https://
             doc_section: '#step-1-finding-your-api-server'
@@ -8910,6 +9010,8 @@ sap-success-factors:
             title: API Key
             description: The API key for your SAP SuccessFactors account
             secret: true
+            example: YzA4MTVhMTQzZTUzMjc3NTk0ZDY2Nzc1ZmVkOA
+            pattern: ^[A-Za-z0-9+/]{32,44}={0,2}$
             doc_section: '#step-3-generating-your-api-key'
         assertion:
             type: string
@@ -9003,8 +9105,8 @@ sentry-oauth:
     display_name: Sentry (Public Integrations)
     installation: outbound
     categories:
-        - productivity
-        - ticketing
+        - dev-tools
+        - analytics
     auth_mode: OAUTH2
     token_url: https://sentry.io/api/0/sentry-app-installations/${connectionConfig.installation.uuid}/authorizations/
     webhook_routing_script: sentryOauthWebhookRouting

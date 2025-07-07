@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.62.0] - 2025-07-01
+
+### Added
+
+- Legacy model to json schema conversion (#4217) by @kaposke
+- *(node-client)* Add PUT method support for API consistency (#4232) by @yksolanki9
+- *(db)* Add fields in plans for self-serve billing (#4227) by @bodinsamuel
+- *(plans)* Add auto_idle flag (#4234) by @bodinsamuel
+- *(webapp)* Show year in connection dates (#4240) by @kaposke
+- *(api)* Add endpoints for stripe (#4244) by @bodinsamuel
+- *(integrations)* Remove tableau as an auth mode replace with two_step (#4233) by @hassan254-prog
+- *(jira-provider)* Add offline_access as a default scope (#4253) by @khaliqgant
+- *(provider)* Added Roam scim integration (#4250) by @yksolanki9
+- *(integrations)* Remove validation endpoint for ukg pro (#4263) by @hassan254-prog
+- Add guide about how to best use AI to create custom integrations (#4163) by @TBonnin
+- Add last_execution_at column to connection table (#4266) by @TBonnin
+- Add 'count of active connections' billing metric (#4267) by @TBonnin
+- *(integrations)* Add support for sentry public integration (#4225) by @hassan254-prog
+- Add primary key to _nango_oauth_sessions (#4273) by @rossmcewan
+- Add primary key to oauth_sessions without unique index (#4275) by @rossmcewan
+- *(integrations)* Support mTLS for secure API requests with certificate/key pair (#4258) by @hassan254-prog
+- *(frontend)* Match sdk error types casing (#4057) by @hassan254-prog
+
+### Changed
+
+- Move json-schema converters to utils (#4229) by @kaposke
+- Update version in manifest by @actions-user
+- Rename stripe to stripe connect adding setup guide (#4241) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a2c16668f471d3c1ddcd036f264ba0312878bd14 by Hassan_Wari by @github-actions[bot]
+- *(docs)* Update enterprise self-hosting docs to match announcement (#4256) by @rossmcewan
+- Clarify how to edit user/org data on connect session (#4215) by @mintlify[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2a4cef859bcdc41de1318f526a88f5995aa5d9cc by Victor Lang'at by @github-actions[bot]
+- Focus getting starter on auth & proxy (#4251) by @bastienbeurier
+- Add MCP demo video to docs (#4261) by @bastienbeurier
+- Use modern tsconfig, node16 and nodenext (#4271) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6568c2893369d35ed79329bc8b263bd4e139d87e by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9e7ba791c3762bc725c5951ea0b09b71b8b4ecba by Khaliq by @github-actions[bot]
+- Remove nango auth reference (#4269) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3165515ca221d72a4c44dd3fe68b88af5114cdee by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7919a3f9f5b835d7f183443fabae7d62fd9d47c3 by Hassan_Wari by @github-actions[bot]
+
+### Fixed
+
+- Commit hash added to success path tag (#4224) by @rossmcewan
+- GH_TOKEN required to interact with  CLI tool (#4226) by @rossmcewan
+- *(records)* Paginate markPreviousGenerationRecordsAsDeleted (#4230) by @TBonnin
+- Always filter partitioned records table by connection/model by @TBonnin
+- *(plans)* New types, store customer_id at creation (#4228) by @bodinsamuel
+- *(release)* Git push to master instead of PR (#4235) by @rossmcewan
+- *(db)* Remove some schema leftover (#4236) by @bodinsamuel
+- *(auth)* Handle csp in auth callback html (#4219) by @bodinsamuel
+- *(runner)* Implement MaxLifetimeAgent for persist client socket management (#4239) by @TBonnin
+- Handle nested inline models in nangoModelToJsonSchema (#4238) by @kaposke
+- Handle dynamic models in NangoModel to json-schema converter (#4245) by @kaposke
+- Do not send external facing connection id inside billing events (#4243) by @TBonnin
+- *(billing)* Listen to orb webhooks (#4242) by @bodinsamuel
+- *(webapp)* Only show first unit of time in grid (#4249) by @rossmcewan
+- Handle special types in json schema converter (#4246) by @kaposke
+- *(docs)* Fix netsuite link (#4255) by @khaliqgant
+- *(plan)* Use auto_idle flag (#4248) by @bodinsamuel
+- *(plan)* Modify free plan (#4260) by @bodinsamuel
+- More json schema cases (#4257) by @kaposke
+- *(es)* Disable refresh on operation creation (#4262) by @bodinsamuel
+- Improve LegacyModel to Json Schema conversion (#4265) by @kaposke
+- *(figma)* Fix Figma SCIM integration credential verification failure (#4252) by @yksolanki9
+
 ## [v0.61.3] - 2025-06-20
 
 ### Added
@@ -4220,6 +4286,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0
 [v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3
 [v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
 [v0.61.1]: https://github.com/NangoHQ/nango/compare/v0.61.0..v0.61.1

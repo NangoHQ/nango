@@ -1,10 +1,13 @@
-import type { PostPublicConnectTelemetry } from '@nangohq/types';
-import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { logContextGetter } from '@nangohq/logs';
-import { providerConfigKeySchema } from '../../helpers/validation.js';
 import { UAParser } from 'ua-parser-js';
+import { z } from 'zod';
+
+import { logContextGetter } from '@nangohq/logs';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 export const bodySchema = z
     .object({
