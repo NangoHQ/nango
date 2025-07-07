@@ -90,7 +90,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
     /**
      * The connection's metadata of the action.
      *
-     * @default z.never();
+     * @default z.void();
      * @example
      * ```ts
      * metadata: z.object({
@@ -228,7 +228,7 @@ export interface CreateActionProps<TInput extends Zod.ZodTypeAny, TOutput extend
     /**
      * The connection's metadata of the action.
      *
-     * @default z.never();
+     * @default z.void();
      *
      * @example
      * ```ts
