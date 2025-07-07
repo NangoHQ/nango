@@ -306,6 +306,7 @@
                 "integrations/all/ashby",
                 "integrations/all/atlas-so",
                 "integrations/all/atlassian",
+                "integrations/all/atlassian-admin",
                 "integrations/all/attio",
                 "integrations/all/auth0",
                 "integrations/all/auth0-cc",
