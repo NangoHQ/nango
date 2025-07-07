@@ -1,7 +1,10 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import { userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { GetEmailByUuid } from '@nangohq/types';
 
 const validation = z

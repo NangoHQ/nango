@@ -1,9 +1,11 @@
-import { configService, onEventScriptService, getProvider } from '@nangohq/shared';
-import type { LogContextGetter } from '@nangohq/logs';
 import { defaultOperationExpiration } from '@nangohq/logs';
+import { configService, getProvider, onEventScriptService } from '@nangohq/shared';
+
 import { getOrchestrator } from '../../../utils/utils.js';
 import preConnectionExecute from '../pre-connection.js';
-import type { DBTeam, DBEnvironment, DBConnection, DBConnectionDecrypted } from '@nangohq/types';
+
+import type { LogContextGetter } from '@nangohq/logs';
+import type { DBConnection, DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
 
 export async function preConnectionDeletion({
     team,
