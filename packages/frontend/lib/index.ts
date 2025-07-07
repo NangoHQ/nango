@@ -22,7 +22,6 @@ import type {
     TBACredentials,
     TwoStepCredentials
 } from './types.js';
-import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
 export type * from './types.js';
 export * from './connectUI.js';
@@ -132,7 +131,7 @@ export default class Nango {
             authUrl: url
         });
 
-        return res as PostPublicUnauthenticatedAuthorization['Success'];
+        return res;
     }
 
     /**
@@ -191,9 +190,8 @@ export default class Nango {
         const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
         return new Promise<AuthResult>((resolve, reject) => {
-            const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
-                resolve({ providerConfigKey: providerConfigKey, connectionId: connectionId, isPending });
-                return;
+            const successHandler = (authResult: AuthResult) => {
+                resolve(authResult);
             };
 
             const errorHandler: ErrorHandler = (errorType, errorDesc) => {
