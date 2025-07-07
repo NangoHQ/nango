@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Nango, all rights reserved.
+ * Copyright (c) 2025 Nango, all rights reserved.
  */
 import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
@@ -10,7 +10,7 @@ import type {
     AppStoreCredentials,
     AuthErrorType,
     AuthOptions,
-    AuthResult,
+    AuthSuccess,
     BasicApiCredentials,
     BillCredentials,
     ConnectionConfig,
@@ -109,13 +109,13 @@ export default class Nango {
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns A promise that resolves with the authentication result
      */
-    public async create(providerConfigKey: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
+    public async create(providerConfigKey: string, connectionConfig?: ConnectionConfig): Promise<AuthSuccess>;
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthSuccess>;
     public async create(
         providerConfigKey: string,
         connectionIdOrConnectionConfig?: string | ConnectionConfig,
         moreConnectionConfig?: ConnectionConfig
-    ): Promise<AuthResult> {
+    ): Promise<AuthSuccess> {
         this.ensureCredentials();
 
         let connectionId: string | null = null;
@@ -141,9 +141,9 @@ export default class Nango {
      * @param options - Optional. Additional options for authorization
      * @returns A promise that resolves with the authorization result
      */
-    public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
-    public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
-    public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+    public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthSuccess>;
+    public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthSuccess>;
+    public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthSuccess> {
         this.ensureCredentials();
 
         let connectionId: string | null = null;
@@ -189,9 +189,9 @@ export default class Nango {
         //
         const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
-        return new Promise<AuthResult>((resolve, reject) => {
-            const successHandler = (authResult: AuthResult) => {
-                resolve(authResult);
+        return new Promise<AuthSuccess>((resolve, reject) => {
+            const successHandler = (authSuccess: AuthSuccess) => {
+                resolve(authSuccess);
             };
 
             const errorHandler: ErrorHandler = (errorType, errorDesc) => {
@@ -250,7 +250,7 @@ export default class Nango {
         });
     }
 
-    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult> {
+    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthSuccess> {
         if (!this.connectSessionToken) {
             throw new AuthError('Reconnect requires a session token', 'missing_connect_session_token');
         }
@@ -420,7 +420,7 @@ export default class Nango {
             | TwoStepCredentials
             | SignatureCredentials
             | undefined;
-    }): Promise<AuthResult> {
+    }): Promise<AuthSuccess> {
         const res = await fetch(authUrl, {
             method: 'POST',
             headers: {
@@ -451,7 +451,7 @@ export default class Nango {
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig?: ConnectionConfig,
         installation?: string
-    ): Promise<AuthResult> {
+    ): Promise<AuthSuccess> {
         const { params: credentials } = connectionConfigWithCredentials;
 
         if (!credentials) {

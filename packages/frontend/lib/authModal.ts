@@ -1,4 +1,4 @@
-import type { AuthErrorType, AuthResult, ErrorHandler } from './types.js';
+import type { AuthErrorType, AuthSuccess, ErrorHandler } from './types.js';
 import type { WebSocketConnectionMessage } from '@nangohq/types';
 
 const debugLogPrefix = '[nango]';
@@ -74,7 +74,7 @@ export class AuthorizationModal {
         baseUrl: URL;
         debug: boolean;
         webSocketUrl: string;
-        successHandler: (authResult: AuthResult) => void;
+        successHandler: (authSuccess: AuthSuccess) => void;
         errorHandler: ErrorHandler;
     }) {
         this.baseURL = baseUrl;
@@ -100,7 +100,7 @@ export class AuthorizationModal {
      * @param message - The message event containing data from the server
      * @param successHandler - The success handler function to be called when a success message is received
      */
-    handleMessage(message: MessageEvent, successHandler: (authResult: AuthResult) => void) {
+    handleMessage(message: MessageEvent, successHandler: (authSuccess: AuthSuccess) => void) {
         const data = JSON.parse(message.data) as WebSocketConnectionMessage;
 
         switch (data.message_type) {

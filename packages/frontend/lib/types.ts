@@ -11,6 +11,7 @@ export type AuthErrorType =
     | 'resource_capped';
 
 export type AuthResult = ConnectionResponseSuccess;
+export type AuthSuccess = AuthResult; // alias for backward compatibility
 
 export type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
