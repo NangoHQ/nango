@@ -1,5 +1,6 @@
-import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
+
+import type { Result } from '@nangohq/utils';
 
 interface Item<T> {
     item: T;

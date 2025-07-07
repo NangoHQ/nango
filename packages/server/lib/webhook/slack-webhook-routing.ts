@@ -1,6 +1,7 @@
+import { Ok } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import { Ok } from '@nangohq/utils';
 
 const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
     // slack sometimes sends the payload as a form encoded string, so we need to parse it

@@ -1,13 +1,16 @@
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import type { Request } from 'express';
+import { fileURLToPath } from 'node:url';
+
 import { serializeError } from 'serialize-error';
+
+import { getFeatureFlagsClient } from '@nangohq/kvstore';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
 import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok } from '@nangohq/utils';
-import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
-import { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import { getFeatureFlagsClient } from '@nangohq/kvstore';
+import type { Request } from 'express';
 
 const BINARY_CONTENT_TYPES = [
     'image/png',
@@ -225,7 +228,7 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | P
  * This can be used to convert the keys of a Json to snake case
  * @param payload This the json we want to convert from a camelCase a snake_case
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
 export function convertJsonKeysToSnakeCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;
@@ -242,7 +245,7 @@ export function convertJsonKeysToSnakeCase<TReturn>(payload: Record<string, any>
  *
  * @param payload The json we want to convert its keys to camelCase
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
 export function convertJsonKeysToCamelCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;

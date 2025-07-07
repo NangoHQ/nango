@@ -194,8 +194,6 @@ web.route('/user/password').put(webAuth, userController.editPassword.bind(userCo
 
 web.route('/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
-web.route('/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
-web.route('/flows').get(webAuth, flowController.getFlows.bind(syncController));
 web.route('/flows/pre-built/deploy').post(webAuth, postPreBuiltDeploy);
 web.route('/flows/pre-built/upgrade').put(webAuth, putUpgradePreBuilt);
 web.route('/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));

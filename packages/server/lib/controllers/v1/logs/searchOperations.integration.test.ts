@@ -1,6 +1,8 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
