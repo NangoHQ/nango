@@ -263,15 +263,15 @@ async function createPackage({
         return Err(new Error('No scripts to deploy'));
     }
 
-    const jsonSchema = loadSchemaJson({ fullPath });
-    if (!jsonSchema) {
+    const jsonSchemaResult = loadSchemaJson({ fullPath });
+    if (!jsonSchemaResult.schema) {
         return Err(new Error('Failed to load schema.json'));
     }
 
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema,
+        jsonSchema: jsonSchemaResult.schema,
         singleDeployMode
     });
 }

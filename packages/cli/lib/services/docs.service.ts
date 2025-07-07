@@ -1,11 +1,12 @@
 import { promises as fs } from 'node:fs';
+import chalk from 'chalk';
+import path from 'node:path';
 
 import { printDebug } from '../utils.js';
 import { loadSchemaJson } from './model.service.js';
 
 import type { NangoYamlParsed, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
-import type { JSONSchema7Definition } from 'json-schema';
-import path from 'node:path';
+import type { JSONSchema7Definition, JSONSchema7 } from 'json-schema';
 
 type NangoSyncOrAction = ParsedNangoSync | ParsedNangoAction;
 
@@ -36,12 +37,12 @@ export async function generate({
     }
 
     await fs.mkdir(writePath, { recursive: true });
+    const getSchema = createSchemaResolver(absolutePath);
     const integrations = parsed.integrations;
     for (const config of integrations) {
         const integration = config.providerConfigKey;
 
-        const integrationSchemaPath = path.join(absolutePath, integration);
-        const jsonSchema = loadSchemaJson({ fullPath: integrationSchemaPath });
+        const jsonSchema = getSchema(integration);
         if (!jsonSchema) {
             return false;
         }
@@ -78,6 +79,30 @@ export async function generate({
     }
 
     return true;
+}
+
+function createSchemaResolver(absolutePath: string): (integration: string) => JSONSchema7 | null {
+    const globalResult = loadSchemaJson({ fullPath: absolutePath, suppressErrors: true });
+
+    return (integration: string) => {
+        const integrationPath = path.join(absolutePath, integration);
+        const integrationResult = loadSchemaJson({ fullPath: integrationPath, suppressErrors: true });
+        if (integrationResult.schema) {
+            return integrationResult.schema;
+        }
+        if (globalResult.schema) {
+            return globalResult.schema;
+        }
+
+        if (integrationResult.error) {
+            console.error(chalk.red(`Error loading ${integrationPath}`), integrationResult.error);
+        }
+        if (globalResult.error) {
+            console.error(chalk.red(`Error loading ${absolutePath}`), globalResult.error);
+        }
+
+        return null;
+    };
 }
 
 async function directoryExists(path: string): Promise<boolean> {

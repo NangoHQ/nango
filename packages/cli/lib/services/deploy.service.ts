@@ -546,12 +546,12 @@ class DeployService {
             }
         }
 
-        const jsonSchema = loadSchemaJson({ fullPath });
-        if (!jsonSchema) {
+        const jsonSchemaResult = loadSchemaJson({ fullPath });
+        if (!jsonSchemaResult.schema) {
             return null;
         }
 
-        return { flowConfigs: postData, onEventScriptsByProvider, jsonSchema };
+        return { flowConfigs: postData, onEventScriptsByProvider, jsonSchema: jsonSchemaResult.schema };
     }
 }
 
