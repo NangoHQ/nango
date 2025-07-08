@@ -115,7 +115,7 @@ export const TeamBilling: React.FC = () => {
                 )}
 
                 <div className="flex flex-col gap-5">
-                    <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
+                    <h2 className="text-grayscale-10 uppercase text-sm">Plans</h2>
 
                     {list?.activePlan && list.activePlan.hidden && (
                         <div className="text-white text-s flex items-center font-semibold">

@@ -117,7 +117,7 @@ export const plansList: PlanDefinition[] = [
     {
         code: 'enterprise',
         title: 'Enterprise',
-        description: 'For custom needs..',
+        description: 'For custom needs.',
         canUpgrade: false,
         canDowngrade: false,
         cta: 'Contact Us',

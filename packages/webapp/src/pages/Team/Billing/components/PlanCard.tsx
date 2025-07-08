@@ -206,9 +206,8 @@ export const PlanCard: React.FC<{
                     <DialogDescription className="text-white">
                         {def.isUpgrade ? (
                             <>
-                                The {def.plan.title} plan includes a ${def.plan.basePrice} monthly base fee, plus additional usage-based charges. You&apos;ll be
-                                charged a pro-rated base fee for the current month when you upgrade. Going forward, you&apos;ll be billed monthly for your usage
-                                and the next month&apos;s base fee.
+                                The {def.plan.title} plan includes a ${def.plan.basePrice} monthly base fee, plus additional usage-based charges. When you
+                                upgrade, you&apos;ll be charged a prorated base fee for the current month.
                             </>
                         ) : (
                             <>
