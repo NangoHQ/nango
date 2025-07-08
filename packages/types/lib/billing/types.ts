@@ -31,6 +31,7 @@ export interface BillingCustomer {
 export interface BillingSubscription {
     id: string;
     pendingChangeId?: string | undefined;
+    planExternalId: string;
 }
 
 export interface BillingUsageMetric {

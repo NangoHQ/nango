@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { getPlanBy, updatePlan } from '@nangohq/shared';
+import { accountService, getPlanBy, productTracking, updatePlan } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -118,13 +118,15 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err(resPlan.error);
             }
 
-            logger.info(`Payment received for account ${resPlan.value.account_id} ${data.amount / 100}$`);
+            const plan = resPlan.value;
+            logger.info(`Payment received for account ${plan.account_id} ${data.amount / 100}$`);
 
             // We want to continue our plan upgrade
-            const resSub = await billing.getSubscription(resPlan.value.account_id);
+            const resSub = await billing.getSubscription(plan.account_id);
             if (resSub.isErr()) {
                 return Err(resSub.error);
             }
+
             const sub = resSub.value;
             if (!sub || !sub.pendingChangeId) {
                 return Err("team doesn't not have a subscription or pending changes");
@@ -136,6 +138,11 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
             });
             if (resApply.isErr()) {
                 return Err(resApply.error);
+            }
+
+            const team = await accountService.getAccountById(db.knex, plan.account_id);
+            if (team) {
+                productTracking.track({ name: 'account:billing:upgraded', team, eventProperties: { previousPlan: plan.name, newPlan: sub.planExternalId } });
             }
 
             return Ok(undefined);

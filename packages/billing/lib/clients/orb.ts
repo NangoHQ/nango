@@ -80,7 +80,16 @@ export class OrbClient implements BillingClient {
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
-            return Ok(subs.data.length > 0 ? { id: subs.data[0]!.id, pendingChangeId: subs.data[0]?.pending_subscription_change?.id } : null);
+            if (subs.data.length === 0) {
+                return Ok(null);
+            }
+
+            const sub = subs.data[0]!;
+            return Ok({
+                id: sub.id,
+                pendingChangeId: sub.pending_subscription_change?.id,
+                planExternalId: sub.plan?.external_plan_id || ''
+            });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
         }
