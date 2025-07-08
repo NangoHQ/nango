@@ -125,7 +125,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 productTracking.track({
                     name: 'account:billing:plan_changed',
                     team,
-                    eventProperties: { previousPlan: currPlan.value.name, newPlan: planExternalId }
+                    eventProperties: { previousPlan: currPlan.value.name, newPlan: planExternalId, orbCustomerId: currPlan.value.orb_customer_id }
                 });
 
                 return Ok(undefined);

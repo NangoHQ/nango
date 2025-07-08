@@ -117,7 +117,11 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             data: { success: true }
         });
 
-        productTracking.track({ name: 'account:billing:downgraded', team: account, eventProperties: { previousPlan: plan.name, newPlan: body.orbId } });
+        productTracking.track({
+            name: 'account:billing:downgraded',
+            team: account,
+            eventProperties: { previousPlan: plan.name, newPlan: body.orbId, orbCustomerId: plan.orb_customer_id }
+        });
         return;
     }
 });
