@@ -157,6 +157,11 @@ In this integration script, the following Nango utilities are used:
 Learn more about sync scripts: [understanding syncs](/guides/syncs/overview), [script reference](/reference/scripts), [example templates](https://www.nango.dev/templates).
 </Tip>
 
+Import it in your `index.ts` file:
+```typescript index.ts
+import './salesforce/syncs/salesforce-contacts';
+```
+
 ### Write an action script
 
 Create an action script in `./nango-integrations/salesforce/actions/`.
@@ -224,6 +229,11 @@ In this integration script, the following Nango utilities are used:
 <Tip>
 Learn more about action scripts: [understanding actions](/guides/actions/overview), [script reference](/reference/scripts), [example templates](https://www.nango.dev/templates).
 </Tip>
+
+Import it in your `index.ts` file:
+```typescript index.ts
+import './salesforce/actions/salesforce-contact-fields';
+```
 
 ### Test your integration scripts locally
 
