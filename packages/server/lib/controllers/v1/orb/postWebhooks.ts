@@ -113,6 +113,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     trial_end_notified_at: null,
                     trial_extension_count: 0,
                     trial_expired: null,
+                    orb_customer_id: body.subscription.customer.id,
                     orb_subscription_id: body.subscription.id,
                     orb_future_plan: null,
                     orb_future_plan_at: null,
