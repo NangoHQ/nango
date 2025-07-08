@@ -6211,6 +6211,7 @@ linear:
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
+    pre_connection_deletion_script: linearPreConnectionDeletion
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
 
