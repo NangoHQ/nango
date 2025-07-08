@@ -1,8 +1,10 @@
-import db from '@nangohq/database';
 import * as uuid from 'uuid';
-import type { Result } from '@nangohq/utils';
-import { Ok, Err } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
+
 import type { DBUser } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
@@ -139,13 +141,6 @@ class UserService {
         return db.knex.from<DBUser>(`_nango_users`).where({ id: user.id }).update({
             reset_password_token: user.reset_password_token,
             hashed_password: user.hashed_password
-        });
-    }
-
-    async changePassword(newPassword: string, oldPassword: string, id: number) {
-        return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({
-            hashed_password: newPassword,
-            salt: oldPassword
         });
     }
 
