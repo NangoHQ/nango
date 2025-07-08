@@ -1,6 +1,7 @@
+import colors from '@colors/colors';
+
 import type { Logger } from '@nangohq/types';
 import type { Handler } from 'express';
-import colors from '@colors/colors';
 
 export function requestLoggerMiddleware({ logger }: { logger: Logger }): Handler {
     return (req, res, next) => {

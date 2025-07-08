@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "lib": ["ES2023"],
-        "module": "ES2022",
+        "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator"],
+        "module": "nodenext",
         "target": "es2022",
         "ignoreDeprecations": "5.0",
         "declaration": true,
@@ -13,7 +13,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
+        "moduleResolution": "node16",
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
         "exactOptionalPropertyTypes": true,
@@ -23,6 +23,7 @@
         "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
-        "noUnusedParameters": true
+        "noUnusedParameters": true,
+        "resolveJsonModule": true
     }
 }

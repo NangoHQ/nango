@@ -21,8 +21,8 @@ import type {
     OAuth1Credentials,
     OAuth2ClientCredentials,
     ProviderGithubApp,
-    TbaCredentials,
-    ProviderOAuth2
+    ProviderOAuth2,
+    TbaCredentials
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 

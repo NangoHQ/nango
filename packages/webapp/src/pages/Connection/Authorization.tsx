@@ -181,6 +181,22 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                     )}
                 </>
             )}
+            {connection?.credentials && 'client_certificate' in connection.credentials && 'client_private_key' in connection.credentials && (
+                <>
+                    {connection.credentials.client_certificate && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client Public Certificate</span>
+                            <SecretInput disabled value={connection.credentials.client_certificate} copy={true} />
+                        </div>
+                    )}
+                    {connection.credentials.client_private_key && (
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-xs uppercase mb-1">Client Private Key</span>
+                            <SecretInput disabled value={connection.credentials.client_private_key} copy={true} />
+                        </div>
+                    )}
+                </>
+            )}
             {connection.connection_config?.oauth_scopes_override && (
                 <div className="mt-8">
                     <span className="text-gray-400 text-xs uppercase mb-1">Scopes Override</span>
@@ -305,6 +321,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 connection.credentials.type === 'APP' ||
                 connection.credentials.type === 'BILL' ||
                 connection.credentials.type === 'TWO_STEP' ||
+                connection.credentials.type === 'OAUTH2_CC' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>

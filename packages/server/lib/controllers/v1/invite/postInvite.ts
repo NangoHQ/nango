@@ -1,10 +1,13 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostInvite } from '@nangohq/types';
-import { expirePreviousInvitations, inviteEmail, userService } from '@nangohq/shared';
 import { z } from 'zod';
-import { sendInviteEmail } from '../../../helpers/email.js';
+
 import db from '@nangohq/database';
+import { expirePreviousInvitations, inviteEmail, userService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { sendInviteEmail } from '../../../helpers/email.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PostInvite } from '@nangohq/types';
 
 const validation = z
     .object({

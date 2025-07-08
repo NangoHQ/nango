@@ -1,14 +1,17 @@
-import type { EndUser, PostPublicConnectSessionsReconnect } from '@nangohq/types';
 import { z } from 'zod';
+
 import db from '@nangohq/database';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as connectSessionService from '../../services/connectSession.service.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
-import { checkIntegrationsDefault, bodySchema as originalBodySchema } from './postSessions.js';
-import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { bodySchema as originalBodySchema, checkIntegrationsDefault } from './postSessions.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import * as connectSessionService from '../../services/connectSession.service.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { EndUser, PostPublicConnectSessionsReconnect } from '@nangohq/types';
 
 const bodySchema = z
     .object({
@@ -67,7 +70,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
 
             endUser = endUserRes.value;
         } else {
-            const endUserRes = await getEndUser(trx, { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! });
+            const endUserRes = await getEndUser(
+                trx,
+                { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! },
+                { forUpdate: true }
+            );
             if (endUserRes.isErr()) {
                 return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
             }
