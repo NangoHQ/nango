@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { billing } from '@nangohq/billing';
-import { plansList } from '@nangohq/shared';
+import { plansList, productTracking } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -103,17 +103,21 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             }
             report(err);
         }
-    }
+        return;
+    } else {
+        // -- Downgrade
+        const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
+        if (resDowngrade.isErr()) {
+            report(resDowngrade.error);
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
 
-    // -- Downgrade
-    const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
-    if (resDowngrade.isErr()) {
-        report(resDowngrade.error);
-        res.status(500).send({ error: { code: 'server_error' } });
+        res.status(200).send({
+            data: { success: true }
+        });
+
+        productTracking.track({ name: 'account:billing:downgraded', team: account, eventProperties: { previousPlan: plan.name, newPlan: body.orbId } });
         return;
     }
-
-    res.status(200).send({
-        data: { success: true }
-    });
 });

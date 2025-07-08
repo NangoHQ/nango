@@ -8,6 +8,7 @@ export type ProductTrackingTypes =
     | 'account:trial:extend'
     | 'account:trial:started'
     | 'account:billing:plan_changed'
+    | 'account:billing:downgraded'
     | 'server:resource_capped:connection_creation'
     | 'server:resource_capped:connection_imported'
     | 'server:resource_capped:script_activate'

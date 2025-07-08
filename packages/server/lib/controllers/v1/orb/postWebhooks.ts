@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, plansList, productTracking, updatePlanByTeam } from '@nangohq/shared';
+import { accountService, getPlan, plansList, productTracking, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -98,6 +98,11 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to find team');
                 }
 
+                const currPlan = await getPlan(trx, { accountId: team.id });
+                if (currPlan.isErr()) {
+                    return Err('Failed to find plan');
+                }
+
                 logger.info(`Sub started for team "${team.id}"`);
 
                 const updated = await updatePlanByTeam(trx, {
@@ -117,7 +122,11 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to updated plan');
                 }
 
-                productTracking.track({ name: 'account:billing:plan_changed', team, eventProperties: { previousPlan: exists.orbId, newPlan: planExternalId } });
+                productTracking.track({
+                    name: 'account:billing:plan_changed',
+                    team,
+                    eventProperties: { previousPlan: currPlan.value.name, newPlan: planExternalId }
+                });
 
                 return Ok(undefined);
             });
