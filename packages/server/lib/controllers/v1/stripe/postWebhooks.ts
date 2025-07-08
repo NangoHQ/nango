@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlanBy, productTracking, updatePlan } from '@nangohq/shared';
+import { getPlanBy, updatePlan } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -138,11 +138,6 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
             });
             if (resApply.isErr()) {
                 return Err(resApply.error);
-            }
-
-            const team = await accountService.getAccountById(db.knex, plan.account_id);
-            if (team) {
-                productTracking.track({ name: 'account:billing:upgraded', team, eventProperties: { previousPlan: plan.name, newPlan: sub.planExternalId } });
             }
 
             return Ok(undefined);
