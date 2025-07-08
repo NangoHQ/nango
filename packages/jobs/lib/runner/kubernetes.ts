@@ -130,9 +130,14 @@ export const kubernetesNodeProvider: NodeProvider = {
         }
     },
     verifyUrl: (url: string) => {
-        // TODO: Implement URL verification for Kubernetes services
         console.log('verifyUrl', url);
-        return Promise.resolve(Err(new Error('Not implemented')));
+        // Validate URL format for Kubernetes services
+        // Expected format: http://{routingId}-{nodeId}
+        // Example: http://account-123-456
+        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+-\d+$/)) {
+            return Promise.resolve(Err(new Error('Invalid Kubernetes service URL format')));
+        }
+        return Promise.resolve(Ok(undefined));
     }
 };
 
