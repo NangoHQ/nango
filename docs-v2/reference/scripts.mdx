@@ -82,13 +82,13 @@ export default createAction({
 
 Read more about [integration scripts](/guides/custom-integrations/overview) to understand what role they play in Nango.
 
-Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily.
-
 # HTTP requests
 
 Makes an HTTP request inside an integration script:
 ```js
-const config = { endpoint: '/some-endpoint' };
+import type { ProxyConfiguration } from 'nango';
+
+const config: ProxyConfiguration = { endpoint: '/some-endpoint' };
 
 await nango.get(config); // GET request
 await nango.post(config); // POST request

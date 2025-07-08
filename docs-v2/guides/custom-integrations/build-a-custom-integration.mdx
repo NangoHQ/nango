@@ -162,7 +162,7 @@ Learn more about sync scripts: [understanding syncs](/guides/syncs/overview), [s
 Create an action script in `./nango-integrations/salesforce/actions/`.
 
 ```typescript salesforce-contact-fields.ts
-import type { NangoAction, FieldSchema } from '../../models';
+import { createAction } from 'nango';
 
 export default createAction({
   exec: async (nango) => {
@@ -174,7 +174,7 @@ export default createAction({
 Fill metadata and the `exec` method with your integration code. In the example here, we fetch available contact fields from Salesforce:
 
 ```ts salesforce-contact-fields.ts
-import type { NangoAction, FieldSchema } from '../../models';
+import { createAction } from 'nango';
 
 export default createAction({
   description: `Fetches available contact fields from Salesforce`,
