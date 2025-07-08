@@ -205,7 +205,7 @@ export default tseslint.config(
             '@typescript-eslint/no-unnecessary-type-parameters': 'off',
 
             // Off for good reason
-            '@typescript-eslint/no-deprecated': 'off', // takes 33% of the whole linting time
+            '@typescript-eslint/no-deprecated': 'off' // takes 33% of the whole linting time
         }
     },
     {
