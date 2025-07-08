@@ -95,7 +95,7 @@ export default createAction({
   input: UserUnified,
   output: UserUnified,
   exec: async (nango, input) => {
-    // Fetch from Jira
+    // Create user in Jira
   }
 });
 ```
@@ -113,11 +113,12 @@ export default createAction({
   input: UserUnified,
   output: UserUnified,
   exec: async (nango, input) => {
-    // Fetch from Zendesk
+    // Create user in Zendesk
   }
 });
 ```
 </CodeGroup>
+
 ### 3. Fetch data and transform
 
 In your custom scripts, implement data-fetching logic and apply necessary transformations to align external data with the unified model.
