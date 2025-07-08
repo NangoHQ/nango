@@ -1,11 +1,12 @@
-import { Button } from '../../../components/ui/button/Button';
-import { useMemo, useState } from 'react';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
+import { useMemo, useState } from 'react';
+
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { typesOptions } from '../constants';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
+import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { cn } from '../../../utils/utils';
+import { typesOptions } from '../constants';
 
 export interface SearchableMultiSelectArgs<T> {
     selected: string[];

@@ -1,5 +1,6 @@
-import type { ApiUser } from '@nangohq/types';
 import { usePostHog } from 'posthog-js/react';
+
+import type { ApiUser } from '@nangohq/types';
 
 export function useAnalyticsTrack() {
     const posthog = usePostHog();

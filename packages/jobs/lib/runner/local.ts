@@ -1,11 +1,15 @@
-import getPort, { portNumbers } from 'get-port';
-import type { NodeProvider } from '@nangohq/fleet';
 import { spawn } from 'child_process';
-import { logger } from '../logger.js';
-import { envs } from '../env.js';
-import type { Result } from '@nangohq/utils';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+
+import getPort, { portNumbers } from 'get-port';
+
 import { getProvidersUrl } from '@nangohq/shared';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
+
+import { envs } from '../env.js';
+import { logger } from '../logger.js';
+
+import type { NodeProvider } from '@nangohq/fleet';
+import type { Result } from '@nangohq/utils';
 
 const localRunnerPids = new Map<number, number>(); // Mapping Node.id to process PID
 

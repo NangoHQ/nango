@@ -1,7 +1,10 @@
-import { logger } from '../utils/logger.js';
 import { setTimeout } from 'node:timers/promises';
-import type knex from 'knex';
+
 import tracer from 'dd-trace';
+
+import { logger } from '../utils/logger.js';
+
+import type knex from 'knex';
 
 export abstract class SchedulerDaemon {
     private name: string;

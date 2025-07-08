@@ -1,7 +1,8 @@
-import { useMeta } from '../hooks/useMeta';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useStore } from '../store';
 import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { useMeta } from '../hooks/useMeta';
+import { useStore } from '../store';
 
 export const Root: React.FC = () => {
     const location = useLocation();

@@ -1,8 +1,10 @@
-import db from '@nangohq/database';
 import * as uuid from 'uuid';
-import type { Result } from '@nangohq/utils';
-import { Ok, Err } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
+
 import type { DBUser } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 

@@ -1,5 +1,6 @@
-import DefaultLayout from '../layout/DefaultLayout';
 import { Link } from 'react-router-dom';
+
+import DefaultLayout from '../layout/DefaultLayout';
 
 export default function PageNotFound() {
     return (

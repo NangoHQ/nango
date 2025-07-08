@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import chalk from 'chalk';
-import { getNangoRootPath, printDebug } from '../utils.js';
 import { z } from 'zod';
+
+import { getNangoRootPath, printDebug } from '../utils.js';
 
 const supportedAgents = ['claude', 'cursor'] as const;
 const optsValidation = z.array(z.enum(supportedAgents));

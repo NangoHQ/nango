@@ -1,7 +1,10 @@
-import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
-import type { Task } from '@nangohq/scheduler';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { getTestDbClient } from '@nangohq/scheduler';
-import { taskEvents, TaskEventsHandler } from './events.js';
+
+import { TaskEventsHandler, taskEvents } from './events.js';
+
+import type { Task } from '@nangohq/scheduler';
 
 const dbClient = getTestDbClient();
 const mockCallbacks = {

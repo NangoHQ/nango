@@ -1,6 +1,8 @@
-import type { Runner } from './runner.js';
-import { RunnerType } from './runner.js';
 import { getRunnerClient } from '@nangohq/nango-runner';
+
+import { RunnerType } from './runner.js';
+
+import type { Runner } from './runner.js';
 
 export class RemoteRunner implements Runner {
     public client: any;

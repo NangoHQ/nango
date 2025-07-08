@@ -17,11 +17,11 @@ import type {
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
     PostPublicJwtAuthorization,
+    PostPublicOauthOutboundAuthorization,
     PostPublicSignatureAuthorization,
     PostPublicTbaAuthorization,
     PostPublicTwoStepAuthorization,
-    PostPublicUnauthenticatedAuthorization,
-    PostPublicOauthOutboundAuthorization
+    PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
 import type {
     DeleteConnectSession,

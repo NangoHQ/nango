@@ -1,9 +1,11 @@
-import { expect, describe, it, afterEach, vi } from 'vitest';
-import path, { join } from 'node:path';
 import fs from 'node:fs';
-import { removeVersion, getTestDirectory } from '../tests/helpers.js';
+import path, { join } from 'node:path';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import { init } from './init.service.js';
 import { exampleSyncName } from '../constants.js';
+import { getTestDirectory, removeVersion } from '../tests/helpers.js';
 
 describe('init', () => {
     const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);

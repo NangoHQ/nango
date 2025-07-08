@@ -1,7 +1,7 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
-import { v4 as uuidv4 } from 'uuid';
 import { Agent } from 'undici';
+import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
@@ -23,14 +23,14 @@ import { productTracking } from '../utils/productTracking.js';
 import {
     extractStepNumber,
     extractValueByPath,
+    formatPem,
     getStepResponse,
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
     parseTokenExpirationDate,
     stripCredential,
-    stripStepResponse,
-    formatPem
+    stripStepResponse
 } from '../utils/utils.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';

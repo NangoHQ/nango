@@ -1,3 +1,7 @@
+import { ParserErrorBothPostConnectionScriptsAndOnEventsPresent, ParserErrorEndpointsMismatch, ParserErrorInvalidRuns } from './errors.js';
+import { getInterval, parseEndpoint } from './helpers.js';
+import { NangoYamlParser } from './parser.js';
+
 import type {
     NangoModel,
     NangoSyncEndpointV2,
@@ -10,9 +14,6 @@ import type {
     ParsedNangoSync,
     ScriptTypeLiteral
 } from '@nangohq/types';
-import { NangoYamlParser } from './parser.js';
-import { ParserErrorEndpointsMismatch, ParserErrorInvalidRuns, ParserErrorBothPostConnectionScriptsAndOnEventsPresent } from './errors.js';
-import { getInterval, parseEndpoint } from './helpers.js';
 
 export class NangoYamlParserV2 extends NangoYamlParser {
     parse(): boolean {

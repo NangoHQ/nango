@@ -1,8 +1,10 @@
 import db, { dbNamespace } from '@nangohq/database';
-import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import { LogActionEnum } from '../../models/Telemetry.js';
-import type { Job as SyncJob, SyncResultByModel, SyncJobsType } from '../../models/Sync.js';
+
 import { SyncStatus } from '../../models/Sync.js';
+import { LogActionEnum } from '../../models/Telemetry.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+
+import type { Job as SyncJob, SyncJobsType, SyncResultByModel } from '../../models/Sync.js';
 import type { ConnectionJobs } from '@nangohq/types';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';

@@ -1,10 +1,11 @@
 import './tracer.js';
-import { server } from './server.js';
-import { stringifyError } from '@nangohq/utils';
-import { logger } from './logger.js';
 import { monitorProviders } from '@nangohq/shared';
-import { register } from './register.js';
+import { stringifyError } from '@nangohq/utils';
+
 import { envs } from './env.js';
+import { logger } from './logger.js';
+import { register } from './register.js';
+import { server } from './server.js';
 
 const providersMonitorCleanup = await monitorProviders();
 
