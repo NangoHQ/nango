@@ -225,7 +225,7 @@ export const ENVS = z.object({
     SENTRY_DSN: z.string().url().optional(),
 
     // Slack
-    NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
+    NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe
