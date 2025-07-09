@@ -11,7 +11,6 @@ export const kubernetesNodeProvider: NodeProvider = {
         storageMb: 20000
     },
     start: async (node: Node) => {
-        // TODO: Implement Kubernetes pod creation
         if (!envs.RUNNER_OWNER_ID) {
             throw new Error('RUNNER_OWNER_ID is not set');
         }
@@ -24,7 +23,6 @@ export const kubernetesNodeProvider: NodeProvider = {
         const namespace = 'nango';
         const appsApi = kc.makeApiClient(k8s.AppsV1Api);
         const coreApi = kc.makeApiClient(k8s.CoreV1Api);
-        // 1. Create Deployment
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
@@ -69,7 +67,6 @@ export const kubernetesNodeProvider: NodeProvider = {
             namespace,
             body: deploymentManifest
         });
-        console.log(`✅ Deployment created for routing id ${node.routingId}`);
 
         // 2. Create Service
         const serviceManifest: k8s.V1Service = {
@@ -94,7 +91,6 @@ export const kubernetesNodeProvider: NodeProvider = {
             namespace,
             body: serviceManifest
         });
-        console.log(`✅ Service created for routing id ${node.routingId}`);
 
         return Ok(undefined);
     },
@@ -115,23 +111,19 @@ export const kubernetesNodeProvider: NodeProvider = {
                 name,
                 namespace
             });
-            console.log(`✅ Deployment deleted for routing id ${node.routingId}`);
 
             // 2. Delete Service
             await coreApi.deleteNamespacedService({
                 name,
                 namespace
             });
-            console.log(`✅ Service deleted for routing id ${node.routingId}`);
 
             return Ok(undefined);
         } catch (err) {
-            console.error(`❌ Failed to terminate node ${node.routingId}:`, err);
             return Err(err as Error);
         }
     },
     verifyUrl: (url: string) => {
-        console.log('verifyUrl', url);
         if (!url.match(/^http:\/\/[a-zA-Z0-9-]+$/)) {
             return Promise.resolve(Err(new Error('Invalid Kubernetes service URL format')));
         }
