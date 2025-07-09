@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import util from 'util';
 
 import connectSessionKnex from 'connect-session-knex';
 import cookieParser from 'cookie-parser';
@@ -9,7 +8,7 @@ import { BasicStrategy } from 'passport-http';
 import { Strategy as LocalStrategy } from 'passport-local';
 
 import { database } from '@nangohq/database';
-import { userService } from '@nangohq/shared';
+import { pbkdf2, userService } from '@nangohq/shared';
 import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 
 import type { StoreFactory } from 'connect-session-knex';
@@ -70,7 +69,7 @@ export function setupAuth(app: express.Router) {
                     return;
                 }
 
-                const proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+                const proposedHashedPassword = await pbkdf2(password, user.salt, 310000, 32, 'sha256');
                 const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                 if (proposedHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)) {

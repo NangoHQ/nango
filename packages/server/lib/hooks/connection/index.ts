@@ -23,3 +23,4 @@ export { default as ripplingShopAppPostConnection } from './providers/rippling-s
 export { default as azureDevopsCredentialsVerification } from './providers/azure-devops/credentials-verification.js';
 export { default as apolloCredentialsVerification } from './providers/apollo/credentials-verification.js';
 export { default as sentryOauthPostConnection } from './providers/sentry-oauth/post-connection.js';
+export { default as linearPreConnectionDeletion } from './providers/linear/pre-connection-deletion.js';
