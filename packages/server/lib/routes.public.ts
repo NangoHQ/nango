@@ -214,11 +214,6 @@ publicAPI.use('/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/mcp').post(apiAuth, postMcp);
 publicAPI.route('/mcp').get(apiAuth, getMcp);
 
-publicAPI.use('/flow', jsonContentTypeMiddleware);
-publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-// @deprecated use /scripts/configs
-publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
-
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
