@@ -15,7 +15,7 @@
         "directory": "packages/jobs"
     },
     "dependencies": {
-        "@kubernetes/client-node": "^1.3.0",
+        "@kubernetes/client-node": "1.3.0",
         "@nangohq/data-ingestion": "file:../data-ingestion",
         "@nangohq/database": "file:../database",
         "@nangohq/fleet": "file:../fleet",
