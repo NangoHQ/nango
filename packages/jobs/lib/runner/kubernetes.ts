@@ -95,7 +95,6 @@ export const kubernetesNodeProvider: NodeProvider = {
         return Ok(undefined);
     },
     terminate: async (node: Node) => {
-        // TODO: Implement Kubernetes pod deletion
         const name = serviceName(node);
         const namespace = 'nango';
 
