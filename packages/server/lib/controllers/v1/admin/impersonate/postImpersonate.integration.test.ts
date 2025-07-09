@@ -95,24 +95,5 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    // TODO: Can't work because we don't have a session
-    // it('should impersonate', async () => {
-    //     flags.hasAdminCapabilities = true;
-
-    //     const { env, account } = await seeders.seedAccountEnvAndUser();
-    //     const userToImpersonate = await seeders.seedAccountEnvAndUser();
-    //     envs.NANGO_ADMIN_UUID = account.uuid;
-
-    //     const res = await api.fetch(endpoint, {
-    //         method: 'POST',
-    //         query: { env: 'test' },
-    //         token: env.secret_key,
-    //         body: { accountUUID: userToImpersonate.account.uuid, loginReason: 'test' }
-    //     });
-
-    //     isError(res.json);
-    //     expect(res.json).toStrictEqual<typeof res.json>({
-    //         error: { code: 'forbidden', message: 'You are not authorized to impersonate an account' }
-    //     });
-    // });
+    // TODO: Need an actual success test but can't work because we don't have a session with current test setup
 });
