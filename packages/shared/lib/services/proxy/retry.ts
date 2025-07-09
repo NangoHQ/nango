@@ -25,38 +25,42 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     }
 
     const status = err.response?.status || 0;
-
-    // We don't return straight away because headers are more important than status code
-    // If we find headers we will be able to adapt the wait time but we won't look for headers if it's not those status code
-    let isRetryable =
-        // Maybe: temporary error
-        status >= 500 ||
-        // Rate limit
-        status === 429 ||
-        // Maybe: token was refreshed
-        status === 401;
+    const customHeaderConf = proxyConfig.provider.proxy?.retry;
+    let isRetryable = false;
     let reason: string | undefined;
 
+    if (Array.isArray(customHeaderConf?.error_code)) {
+        for (const code of customHeaderConf.error_code) {
+            if (matchesStatusCode(status, code)) {
+                isRetryable = true;
+                reason = `provider_error_code_${code}`;
+                break;
+            }
+        }
+    } else {
+        // If error_code is not defined, we fall back to default retryable statuses
+        // We allow headers to override this later (e.g., remaining=0), so we don't return early
+        isRetryable =
+            // Maybe: temporary error
+            status >= 500 ||
+            // Rate limit
+            status === 429 ||
+            // Maybe: token was refreshed
+            status === 401;
+    }
     if (!isRetryable && proxyConfig.retryOn) {
         if (proxyConfig.retryOn?.includes(status)) {
             isRetryable = true;
             reason = `retry_on_${status}`;
         }
     }
-    if (!isRetryable) {
-        const customHeaderConf = proxyConfig.provider.proxy?.retry;
-        if (customHeaderConf) {
-            if (customHeaderConf.error_code && Number(customHeaderConf.error_code) === status) {
-                // Custom status code in providers.yaml
-                isRetryable = true;
-                reason = 'provider_error_code';
-            } else if (customHeaderConf.remaining && err.response && err.response.headers[customHeaderConf.remaining] === '0') {
-                // Custom header in providers.yaml
-                isRetryable = true;
-                reason = 'provider_remaining';
-            }
-        }
+
+    if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
+        // Custom header in providers.yaml
+        isRetryable = true;
+        reason = 'provider_remaining';
     }
+
     if (!isRetryable) {
         return { retry: false, reason: 'not_retryable' };
     }
@@ -213,4 +217,32 @@ function parseRetryValue({
     }
 
     return { found: false, reason: `unknown_type:${type}` };
+}
+
+function matchesStatusCode(status: number, rule: string): boolean {
+    if (!rule) return false;
+
+    const trimmed = rule.trim();
+
+    if (/^[<>]=?\s*\d+$/.test(trimmed)) {
+        const operatorMatch = trimmed.match(/^([<>]=?)\s*(\d+)$/);
+        if (operatorMatch) {
+            const [, operator, value] = operatorMatch;
+            const numeric = Number(value);
+            switch (operator) {
+                case '>':
+                    return status > numeric;
+                case '>=':
+                    return status >= numeric;
+                case '<':
+                    return status < numeric;
+                case '<=':
+                    return status <= numeric;
+            }
+        }
+    } else if (/^\d+$/.test(trimmed)) {
+        return status === Number(trimmed);
+    }
+
+    return false;
 }
