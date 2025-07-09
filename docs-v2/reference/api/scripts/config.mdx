@@ -16,28 +16,27 @@ The `/scripts/config?format=openai` endpoint transforms the script configuration
 
 The endpoint automatically parses parameter descriptions from the script's description field. If a script's description contains a markdown list of parameters, these descriptions will be used for the corresponding parameters in the OpenAI function format.
 
-For example, in your `nango.yaml` file, you can define a script like this:
+For example, in your script file, you can define a script like this:
 
-```yaml
-integrations:
-  google-calendar:
-    actions:
-      move-event:
-        description: |
-          Move an event to a different time or calendar with the following parameters:
-          - eventId: The ID of the event to move
-          - start: New start time in ISO format (e.g., "2024-03-28T14:00:00")
-          - end: New end time in ISO format (e.g., "2024-03-28T15:00:00")
-          - calendar: Optional new calendar ID to move the event to
-        input: MoveEventInput # References the model defined below
-        scopes: https://www.googleapis.com/auth/calendar
-
-models:
-  MoveEventInput:
-    eventId: string
-    start: string
-    end: string
-    calendar?: string # Optional field
+```typescript google-calendar/actions/move-event.ts
+export default createAction({
+  description: `Move an event to a different time or calendar with the following parameters:
+            - eventId: The ID of the event to move
+            - start: New start time in ISO format (e.g., "2024-03-28T14:00:00")
+            - end: New end time in ISO format (e.g., "2024-03-28T15:00:00")
+            - calendar: Optional new calendar ID to move the event to`,
+  version: '1.0.0',
+  endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
+  frequency: 'every hour',
+  autoStart: false,
+  scopes: ['https://www.googleapis.com/auth/calendar'],
+  input: z.object({
+    eventId: z.string(),
+    start: z.string(),
+    end: z.string(),
+    calendar: z.string().optional()
+  })
+});
 ```
 
 The endpoint will generate a function definition like this:
@@ -79,22 +78,18 @@ The endpoint will generate a function definition like this:
 
 The endpoint properly handles array fields in the configuration. For example, if a field is defined as:
 
-```yaml
-integrations:
-  google-calendar:
-    actions:
-      create-event:
-        description: |
-          Create a new calendar event with the following parameters:
+```typescript google-calendar/actions/create-event.ts
+export default createAction({
+  description: `Create a new calendar event with the following parameters:
           - summary: The title of the event
-          - attendees: List of email addresses of event attendees
-        input: CreateEventInput # References the model defined below
-        scopes: https://www.googleapis.com/auth/calendar
-
-models:
-  CreateEventInput:
-    summary: string
-    attendees?: string[] # Optional array field
+          - attendees: List of email addresses of event attendees`,
+  version: '1.0.0',
+  endpoints: [{ method: 'POST', path: '/example/google-calendar/events', group: 'Events' }],
+  input: z.object({
+    summary: z.string(),
+    attendees: z.array(z.string()).optional()
+  })
+});
 ```
 
 It will be transformed into:
