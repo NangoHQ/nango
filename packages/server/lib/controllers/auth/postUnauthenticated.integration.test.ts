@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { connectionService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer } from '../../utils/tests.js';
@@ -144,7 +145,11 @@ describe(`GET ${endpoint}`, () => {
         });
         isSuccess(resConnect.json);
 
-        const connectionBefore = await connectionService.checkIfConnectionExists(resConnect.json.connectionId, resConnect.json.providerConfigKey, env.id);
+        const connectionBefore = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: resConnect.json.connectionId,
+            providerConfigKey: resConnect.json.providerConfigKey,
+            environmentId: env.id
+        });
 
         // Reconnect session token
         const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
@@ -168,7 +173,11 @@ describe(`GET ${endpoint}`, () => {
 
         // Check that the connection was updated
         // Nothing is different except the dates
-        const connectionAfter = await connectionService.checkIfConnectionExists(resConnect.json.connectionId, resConnect.json.providerConfigKey, env.id);
+        const connectionAfter = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: resConnect.json.connectionId,
+            providerConfigKey: resConnect.json.providerConfigKey,
+            environmentId: env.id
+        });
         expect(connectionAfter).toMatchObject({
             ...connectionBefore,
             credentials_expires_at: expect.toBeIsoDate(), // new credentials means new date
