@@ -378,5 +378,11 @@ export default tseslint.config(
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off'
         }
+    },
+    {
+        files: ['**/*.ts'],
+        rules: {
+            'no-console': 'off'
+        }
     }
 );
