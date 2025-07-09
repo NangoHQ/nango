@@ -20,7 +20,7 @@ export const kubernetesNodeProvider: NodeProvider = {
         // Load Kubernetes config (works with local kubeconfig or in-cluster config)
         const kc = new k8s.KubeConfig();
         kc.loadFromDefault();
-        const namespace = 'nango';
+        const namespace = envs.RUNNER_NAMESPACE;
         const appsApi = kc.makeApiClient(k8s.AppsV1Api);
         const coreApi = kc.makeApiClient(k8s.CoreV1Api);
         const deploymentManifest: k8s.V1Deployment = {
@@ -96,7 +96,7 @@ export const kubernetesNodeProvider: NodeProvider = {
     },
     terminate: async (node: Node) => {
         const name = serviceName(node);
-        const namespace = 'nango';
+        const namespace = envs.RUNNER_NAMESPACE;
 
         // Load Kubernetes config
         const kc = new k8s.KubeConfig();
