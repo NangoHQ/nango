@@ -104,8 +104,9 @@ program
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
     .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
+    .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, ai } = this.opts<GlobalOptions & { ai: string[] }>();
+        const { debug, ai, copy } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
         const currentPath = process.cwd();
         const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
@@ -123,7 +124,7 @@ program
             return;
         }
 
-        const res = await initZero({ absolutePath, debug });
+        const res = await initZero({ absolutePath, debug, onlyCopy: copy });
         if (!res) {
             process.exitCode = 1;
             return;
