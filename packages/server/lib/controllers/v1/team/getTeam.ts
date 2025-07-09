@@ -1,11 +1,11 @@
 import { listInvitations, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { invitationToApi } from '../../../formatters/invitation.js';
 import { teamToApi } from '../../../formatters/team.js';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { NANGO_ADMIN_UUID } from '../../account.controller.js';
 
 import type { GetTeam } from '@nangohq/types';
 
@@ -28,7 +28,7 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
             account: teamToApi(account),
             users: usersFormatted,
             invitedUsers: invitedUsers.map(invitationToApi),
-            isAdminTeam: account.uuid === NANGO_ADMIN_UUID
+            isAdminTeam: account.uuid === envs.NANGO_ADMIN_UUID
         }
     });
 });
