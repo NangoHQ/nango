@@ -41,6 +41,7 @@ export const kubernetesNodeProvider: NodeProvider = {
                                 name: 'runner',
                                 image: node.image,
                                 ports: [{ containerPort: 8080 }],
+                                args: ['node', 'packages/runner/dist/app.js', '80', 'dockerized-runner'],
                                 env: [
                                     { name: 'PORT', value: '8080' },
                                     { name: 'NODE_ENV', value: envs.NODE_ENV },
@@ -131,10 +132,7 @@ export const kubernetesNodeProvider: NodeProvider = {
     },
     verifyUrl: (url: string) => {
         console.log('verifyUrl', url);
-        // Validate URL format for Kubernetes services
-        // Expected format: http://{routingId}-{nodeId}
-        // Example: http://account-123-456
-        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+-\d+$/)) {
+        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+$/)) {
             return Promise.resolve(Err(new Error('Invalid Kubernetes service URL format')));
         }
         return Promise.resolve(Ok(undefined));
