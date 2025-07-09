@@ -24,10 +24,11 @@ This creates the `./nango-integrations` folder with some initial configuration a
 sync script. The `nango-integrations` directory looks like this:
 ```
 nango-integrations/
+├── .nango
 ├── .env
-├── nango.yaml
-├── models.ts
-└── demo-github-integration # this is the integration unique ID and must match the nango.yaml entry and the integration ID in the UI
+├── index.ts
+├── package.json
+└── demo-github-integration # this is the integration unique ID and must match an integration ID in your Nango UI
     └── syncs/
         └── github-issue-example.ts
 ```
@@ -44,82 +45,7 @@ Get your secret keys from the _Environment Settings_ tab (toggle between the `Pr
 
 Learn more about the Nango CLI ([reference](/reference/cli)).
 
-# Edit the `nango.yaml` configuration
-
-In your `nango-integrations` folder, open the `nango.yaml` configuration file ([reference](/reference/integration-configuration)).
-
-<Info>
-In Nango, integration can have multiple types: [sync](/guides/syncs/overview) or [action](/guides/actions/overview). Before starting, determine which one fits your use case.
-</Info>
-
-### Configure a sync
-
-This example `nango.yaml` configuration describes a sync that continuously fetches contacts from Salesforce:
-```yaml nango.yaml
-integrations:
-    salesforce: # Integration ID
-        syncs:
-            salesforce-contacts: # Sync name (must match integration script name)
-                description: |
-                    Syncs contacts based on a field mapping object.
-                runs: every day # Sync frequency
-                output: Contact # Output model
-                endpoint:
-                    method: GET
-                    path: /crm/contact # Unified Nango endpoint
-                    group: Contacts
-                scopes: offline_access,api # Necessary scopes
-
-models:
-    Contact: # Data model reference above
-        id: string # Required unique ID
-        first_name: string
-        last_name: string
-        email: string
-        account_id: string
-        last_modified_date: string
-```
-
-<Tip>
-Learn more about sync configurations in the [reference](/reference/integration-configuration) and check out [pre-built integrations](https://www.nango.dev/templates).
-</Tip>
-
-### Configure an action
-
-This example `nango.yaml` configuration describes an action that synchronously fetches a contact by ID from Salesforce:
-```yaml nango.yaml
-integrations:
-    salesforce: # Integration ID
-        actions:
-            salesforce-contact-fields: # Action name (must match integration script name)
-                description: Fetch available contact fields
-                output: ContactSchema # Output model
-                endpoint:
-                    method: POST
-                    path: /crm/contact-field # Unified Nango endpoint
-                    group: Contacts
-                scopes: offline_access,api # Necessary scopes
-
-models:
-    ContactSchema:
-        fields: string[]
-```
-
-<Tip>
-Learn more about actions configurations in the [reference](/reference/integration-configuration) and check out [example templates](https://www.nango.dev/templates).
-</Tip>
-
 # Write an integration script
-
-### Generate the integration script scaffolding
-
-Every time that you add a new integration to the `nango.yaml` configuration, run:
-
-```bash
-nango generate # (in `./nango-integrations`)
-```
-
-Among other things, this will generate the integration script files with initial scaffolding for any sync or action that you added (existing integration script files stay untouched).
 
 ### Start script development mode
 
@@ -132,26 +58,49 @@ This command starts a process that continuously compiles your integration script
 
 ### Write a sync script
 
-Open the generated sync script (named `[sync-name].ts`) which should contain the following scaffolding :
+Create a sync script in `./nango-integrations/salesforce/syncs/`.
 
 ```typescript salesforce-contacts.ts
-import type { NangoSync, Contact } from '../../models';
+import { createSync } from 'nango';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
-	// Integration code goes here.
-}
+export default createSync({
+  exec: async (nango) => {
+    // Integration code goes here.
+  },
+});
 ```
 
-Fill in the `fetchData` method with your integration code (in the example here, we fetch tasks from Salesforce):
+Fill metadata and the `exec` method with your integration code. In the example here, we fetch tasks from Salesforce:
 
 ```ts salesforce-contacts.ts
-import type { NangoSync, Contact } from '../../models';
+import { createSync } from 'nango';
+import { z } from 'zod';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+const SalesforceContact = z.object({
+  id: z.string(),
+  first_name: z.string(),
+  last_name: z.string(),
+  email: z.string(),
+});
+
+export default createSync({
+  description: `Fetches contacts from Salesforce`,
+  version: '1.0.0',
+  endpoints: [{ method: 'GET', path: '/salesforce/contacts', group: 'Contacts' }],
+  frequency: 'every hour',
+  autoStart: true,
+  syncType: 'full',
+  trackDeletes: true,
+  models: {
+    SalesforceContact: SalesforceContact,
+  },
+  exec: async (nango) => {
     const query = buildQuery(nango.lastSyncDate);
     await fetchAndSaveRecords(nango, query);
     await nango.log('Sync run completed!');
-}
+  },
+});
+export type NangoSyncLocal = Parameters<(typeof sync)['exec']>[0];
 
 function buildQuery(lastSyncDate?: Date): string {
     let baseQuery = `SELECT Id, FirstName, LastName, Email, AccountId, LastModifiedDate FROM Contact`;
@@ -163,7 +112,7 @@ function buildQuery(lastSyncDate?: Date): string {
     return baseQuery;
 }
 
-async function fetchAndSaveRecords(nango: NangoSync, query: string) {
+async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
     let endpoint = '/services/data/v53.0/query';
 
     while (true) {
@@ -208,48 +157,55 @@ In this integration script, the following Nango utilities are used:
 Learn more about sync scripts: [understanding syncs](/guides/syncs/overview), [script reference](/reference/scripts), [example templates](https://www.nango.dev/templates).
 </Tip>
 
-### Write an action script
-
-Open the generated action script (named `[action-name].ts`) which should contain the following scaffolding :
-
-```typescript salesforce-contact-fields.ts
-import type { NangoAction, FieldSchema } from '../../models';
-
-export default async function runAction(nango: NangoAction): Promise<FieldSchema> {
-    // Integration code goes here.
-}
+Import it in your `index.ts` file:
+```typescript index.ts
+import './salesforce/syncs/salesforce-contacts';
 ```
 
-Fill in the `runAction` method with your integration code (in the example here, we fetch available contact fields from Salesforce):
+### Write an action script
+
+Create an action script in `./nango-integrations/salesforce/actions/`.
+
+```typescript salesforce-contact-fields.ts
+import { createAction } from 'nango';
+
+export default createAction({
+  exec: async (nango) => {
+    // Integration code goes here.
+  },
+});
+```
+
+Fill metadata and the `exec` method with your integration code. In the example here, we fetch available contact fields from Salesforce:
 
 ```ts salesforce-contact-fields.ts
-import type { NangoAction, FieldSchema } from '../../models';
+import { createAction } from 'nango';
 
-export default async function runAction(nango: NangoAction): Promise<FieldSchema> {
-    try {
-        const response = await nango.get({
-            endpoint: '/services/data/v51.0/sobjects/Contact/describe'
-        });
+export default createAction({
+  description: `Fetches available contact fields from Salesforce`,
+  version: '1.0.0',
+  input: z.void(),
+  output: z.object({
+    fields: z.array(z.object({
+      name: z.string(),
+      label: z.string(),
+      type: z.string(),
+      relationshipName: z.string()
+    })),
+  }),
+  exec: async (nango) => {
+    const response = await nango.get({
+        endpoint: '/services/data/v51.0/sobjects/Contact/describe'
+    });
 
-        await nango.log('Salesforce fields fetched!');
+    await nango.log('Salesforce fields fetched!');
 
-        const { data } = response;
-        const { fields, childRelationships } = data;
+    const { data } = response;
+    const { fields, childRelationships } = data;
 
-        return {
-            fields: mapFields(fields)
-        };
-    } catch (error: any) {
-        throw new nango.ActionError({
-            message: 'Failed to fetch fields in the runAction call',
-            details: {
-                message: error?.message,
-                method: error?.config?.method,
-                url: error?.config?.url,
-                code: error?.code
-            }
-        });
-    }
+    return {
+        fields: mapFields(fields)
+    };
 }
 
 function mapFields(fields: any) {
@@ -267,13 +223,17 @@ function mapFields(fields: any) {
 
 In this integration script, the following Nango utilities are used:
 - `await nango.get()` to perform an API request (automatically authenticated by Nango)
-- `nango.ActionError()` to report errors in the execution of the integration script
 - `await nango.log()` to print console logs (replaces `console.log()`)
 - `return` will synchronously return results from the action trigger request
 
 <Tip>
 Learn more about action scripts: [understanding actions](/guides/actions/overview), [script reference](/reference/scripts), [example templates](https://www.nango.dev/templates).
 </Tip>
+
+Import it in your `index.ts` file:
+```typescript index.ts
+import './salesforce/actions/salesforce-contact-fields';
+```
 
 ### Test your integration scripts locally
 

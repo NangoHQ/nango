@@ -25,57 +25,28 @@ These files can be versioned and integrated into your own codebase, ensuring con
 
 
 
-## Custom Validation
+## Using zod
 
-For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
-
-
-<Tabs>
-
-<Tab title="Typescript `zod`">
-
-To create `zod` schemas you can use [`ts-to-zod` npm package](https://www.npmjs.com/package/ts-to-zod). This tool converts TypeScript definitions into Zod schemas, which can be used for runtime validation in your own Typescript codebase.
+You can use zod to validate the data you receive from integrations and push to Nango.
 
 
-```bash
-npx ts-to-zod .nango/schema.ts schema.zod.ts
-```
-<Tip>
-You can use zod models in your scripts too
-</Tip>
 ```typescript
-import { myZodModel } from '../../schema.zod.js';
+import { z } from 'zod';
 
-export default async function fetchData(nango: Nango) {
-  const response = await nango.get({ endpoint: '/tickets' });
-  const isValid = myZodModel.parse(response.json);
-  if (isValid) {
-    [...]
-  }
-}
+const dataFromAPI = z.object({  
+  ticketId: z.string(),
+});
+
+export default createSync({
+  exec: async (nango) => {
+    const response = await nango.get({ endpoint: '/tickets' });
+    const isValid = dataFromAPI.parse(response.json);
+    if (isValid) {
+      [...]
+    }
+  },
+});
 ```
-</Tab>
-
-
-<Tab title="Golang">
-You can use [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang struct. Note that some syntax are not supported by this package.
-
-```bash
-go-jsonschema -p main .nango/schema.json > test.go
-```
-
-</Tab>
-
-
-<Tab title="Rust">
-
-You can use [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types.  Note that some syntax are not supported by this package.
-
-```bash
-cargo typify .nango/schema.json
-```
-</Tab>
-</Tabs>
 
 
 ## Using `schema.json` in your codebase
@@ -166,4 +137,29 @@ with open('.nango/schema.json') as file:
 </Tabs>
 
 
+## Custom validation
 
+For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
+
+<Tabs>
+
+
+<Tab title="Golang">
+You can use [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang struct. Note that some syntax are not supported by this package.
+
+```bash
+go-jsonschema -p main .nango/schema.json > test.go
+```
+
+</Tab>
+
+
+<Tab title="Rust">
+
+You can use [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types.  Note that some syntax are not supported by this package.
+
+```bash
+cargo typify .nango/schema.json
+```
+</Tab>
+</Tabs>
