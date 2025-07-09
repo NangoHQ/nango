@@ -844,6 +844,7 @@ atlassian-admin:
             example: ATCTT3xFfGN0_a1B2-c3D4_E5F6-G7H8I9JKLMNOPQRSTUVWXYZ1234567890=DEADBEEF
             pattern: '^ATCTT3xFfGN0[\w\-]+=[A-Z0-9]{8}$'
             doc_section: '#step-1-generating-your-api-key'
+    connection_config:
         organizationId:
             type: string
             title: Atlassian Organization Id
