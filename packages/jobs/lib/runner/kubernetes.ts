@@ -41,7 +41,7 @@ export const kubernetesNodeProvider: NodeProvider = {
                                 name: 'runner',
                                 image: node.image,
                                 ports: [{ containerPort: 8080 }],
-                                args: ['node', 'packages/runner/dist/app.js', '80', 'dockerized-runner'],
+                                args: ['node', 'packages/runner/dist/app.js', '8080', 'dockerized-runner'],
                                 env: [
                                     { name: 'PORT', value: '8080' },
                                     { name: 'NODE_ENV', value: envs.NODE_ENV },
