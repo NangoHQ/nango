@@ -1,11 +1,10 @@
 import crypto from 'crypto';
-import util from 'util';
 
 import { z } from 'zod';
 
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, pbkdf2, updatePlanByTeam, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
@@ -96,7 +95,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
 
     // Create user
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await pbkdf2(password, salt, 310000, 32, 'sha256')).toString('base64');
     const user = await userService.createUser({
         email,
         name,

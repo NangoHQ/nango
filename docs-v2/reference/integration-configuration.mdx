@@ -1,6 +1,6 @@
 ---
-title: 'Integration configuration (nango.yaml)'
-sidebarTitle: 'Integration config (nango.yaml)'
+title: '[deprecated] Integration configuration (nango.yaml)'
+sidebarTitle: '[deprecated] Integration config (nango.yaml)'
 icon: 'arrow-right-arrow-left'
 ---
 
@@ -425,7 +425,7 @@ These changes can have significant impacts, in particular, if you:
 
 ### Adding a sync
 
-Unless you sync configuration specifies `auto_start=false`, the deployment will kick off the data synchronization between the external API and Nango, for all relevant connections.
+Unless you sync configuration specifies `autoStart: false`, the deployment will kick off the data synchronization between the external API and Nango, for all relevant connections.
 
 This change will be reflected in the Nango UI in _Integrations_ > _select your integration_ > _Endpoints_ tab.
 
@@ -455,15 +455,6 @@ For [incremental syncs](/guides/syncs/overview#incremental-syncs), you can end u
 Changing a model name in your configuration is the equivalent of deleting the model with the old name, and creating a new one.
 </Warning>
 
-# Importing models in scripts
-
-The models defined in your `nango.yaml` configuration are used to generate Typescript models (in the `nango-integrations/models.ts` file).
-
-You can then import the relevant models from `models.ts` in your integration scripts.
-
-<Info>
-If your app uses typescript, you can import these same models to enforce strong typing to the Nango API & SDK responses.
-</Info>
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

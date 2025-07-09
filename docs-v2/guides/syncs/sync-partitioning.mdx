@@ -12,7 +12,7 @@ This feature is available on the Growth plan and on Enterprise plans. [See Prici
 
 # Overview
 
-Traditionally, a sync is defined once in the nango.yaml and executed for each connection. With sync partitioning, you can create multiple sync “variants” that share the same base configuration but run independently. Each variant has its own execution schedule, last sync timestamp, and data storage.
+Traditionally, a sync is defined once in a TypeScript file and executed for each connection. With sync partitioning, you can create multiple sync “variants” that share the same base configuration but run independently. Each variant has its own execution schedule, last sync timestamp, and data storage.
 
 Key benefits:
 - Parallel execution: Variants run independently, allowing more granular control over sync execution.
@@ -78,7 +78,8 @@ When a sync script runs, the variant name is available via nango.variant. You ca
 
 <Tab title="example-partitioned-sync-script.ts">
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     await nango.log(`Running sync with variant: ${nango.variant}`);
 
     // Use the variant name to namespace the metadata and/or customize API calls.
@@ -88,7 +89,8 @@ export default async function fetchData(nango: NangoSync) {
 
     // Records are saved in the context of this specific variant.
     await nango.batchSave(res.data.orders, 'Order'); 
-}
+  },
+});
 ```
 </Tab>
 

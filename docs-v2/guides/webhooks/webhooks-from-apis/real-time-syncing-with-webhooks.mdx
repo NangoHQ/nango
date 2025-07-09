@@ -35,35 +35,29 @@ As an alternative to real-time syncing, consider **near**-real-time syncing by p
 
 # Implement a real-time sync
 
-To enable real-time sync, define `webhook-subscriptions` in your `nango.yaml` under the relevant `sync` configuration:
+To enable real-time sync, define `webhookSubscriptions` and `onWebhook` in your TypeScript script:
 
-```yaml
-hubspot:
-  syncs:
-    hubspot-contacts-sync:
-	    webhook-subscriptions:
-		    - contact.propertyChange
-```
-
-Handle payloads in your sync script, e.g.
 ```typescript
-// Use for periodic polling.
-export default async function fetchData(nango: NangoSync) {
-  // Use for periodic polling.
-}
+export default createSync({
+  exec: async (nango) => {
+        // Use for periodic polling.
+  },
 
-// Use for webhook processing.
-export async function onWebhookPayloadReceived(nango: NangoSync, payload: any): Promise<void> {
+  webhookSubscriptions: ['contact.propertyChange'],
+
+  // Webhook handler
+  onWebhook: async (nango, payload) => {
     if (payload.subscriptionType === 'contact.propertyChange') {
-        const updatedObject = {
-            id: payload.objectId,
-            [payload.propertyName]: payload.propertyValue
-        };
+      const updatedObject = {
+        id: payload.objectId,
+        [payload.propertyName]: payload.propertyValue
+      };
 
-		// Use nango.batchSave() or nango.batchUpdate() to save/update records.
+      // Use nango.batchSave() or nango.batchUpdate() to save/update records.
     }
-}
-```
+  }
+});
+
 
 After processing an external webhook, Nango sends a `POST` request to your app with the following body:
 ```json
@@ -102,7 +96,8 @@ Use `setMergingStrategy` to control sync behavior:
 <Tabs>
 <Tab title="TypeScript">
 ```typescript
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // Set merging strategy at the start of the script
     await nango.setMergingStrategy(
         { strategy: 'ignore_if_modified_after' },
@@ -110,9 +105,10 @@ export default async function fetchData(nango: NangoSync) {
     );
 
     // Persist records to the Nango cache.
-    const contacts: Contact[] = ...
+    const contacts: Contact[] = []
     await nango.batchSave(contacts, 'Contact');
-}
+  }
+});
 ```
 </Tab>
 </Tabs>

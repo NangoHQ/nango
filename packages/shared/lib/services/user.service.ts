@@ -144,13 +144,6 @@ class UserService {
         });
     }
 
-    async changePassword(newPassword: string, oldPassword: string, id: number) {
-        return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({
-            hashed_password: newPassword,
-            salt: oldPassword
-        });
-    }
-
     async suspendUser(id: number) {
         if (id !== null && id !== undefined) {
             await db.knex.from<DBUser>(`_nango_users`).where({ id }).update({ suspended: true, suspended_at: new Date() });
