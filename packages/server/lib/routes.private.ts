@@ -12,7 +12,6 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
-import userController from './controllers/user.controller.js';
 import {
     getEmailByExpiredToken,
     getEmailByUuid,
@@ -74,6 +73,7 @@ import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
+import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -190,7 +190,7 @@ web.route('/connections/admin/:connectionId').delete(webAuth, connectionControll
 
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, patchUser);
-web.route('/user/password').put(webAuth, userController.editPassword.bind(userController));
+web.route('/user/password').put(webAuth, putUserPassword);
 
 web.route('/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
