@@ -9,6 +9,7 @@ import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfi
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { Knex } from '@nangohq/database';
 import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider } from '@nangohq/types';
 
 interface ValidationRule {
@@ -46,7 +47,7 @@ class ConfigService {
         return encryptionManager.decryptProviderConfig(result);
     }
 
-    async listProviderConfigs(environment_id: number, trx = db.knex): Promise<ProviderConfig[]> {
+    async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
         return (
             await trx
                 .select('*')

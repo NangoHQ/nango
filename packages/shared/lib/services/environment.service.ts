@@ -468,7 +468,7 @@ class EnvironmentService {
     }
 
     async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
-        const configs = await configService.listProviderConfigs(environmentId);
+        const configs = await configService.listProviderConfigs(db.knex, environmentId);
         for (const config of configs) {
             // This handles deleting connections and syncs down the line
             await configService.deleteProviderConfig({

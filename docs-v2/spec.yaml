@@ -1202,7 +1202,7 @@ paths:
                                                 your-properties:
                                                     type: string
                                                     description: The data Nango synced in for you
-                                                    example: 'Your synced data, in the schema you (or Nango) defined in nango.yaml'
+                                                    example: 'Your synced data, in the schema you (or Nango) defined in script'
                                                 _nango_metadata:
                                                     type: object
                                                     properties:
@@ -1856,7 +1856,7 @@ paths:
                                     description: The name of the action to trigger.
                                 input:
                                     type: object
-                                    description: The necessary input for your action's 'runAction' function.
+                                    description: The necessary input for your action's 'exec' function.
 
             responses:
                 '200':
