@@ -1,9 +1,12 @@
-import type { Task } from '@nangohq/scheduler';
-import { GROUP_PREFIX_SEPARATOR } from '@nangohq/scheduler';
 import EventEmitter from 'node:events';
-import type knex from 'knex';
-import { logger } from './utils.js';
+
+import { GROUP_PREFIX_SEPARATOR } from '@nangohq/scheduler';
 import { retryWithBackoff } from '@nangohq/utils';
+
+import { logger } from './utils.js';
+
+import type { Task } from '@nangohq/scheduler';
+import type knex from 'knex';
 
 class PgEventEmitter extends EventEmitter {
     private knex: knex.Knex;

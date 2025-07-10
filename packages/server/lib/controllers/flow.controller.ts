@@ -6,17 +6,6 @@ import type { ScriptTypeLiteral } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class FlowController {
-    public async getFlows(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const availableFlows = flowService.getAllAvailableFlows();
-            const addedFlows = await flowService.getAddedPublicFlows(res.locals['environment'].id);
-
-            res.send({ addedFlows, availableFlows });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async downloadFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;

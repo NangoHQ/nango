@@ -1,6 +1,8 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
 import { inviteEmail, seeders } from '@nangohq/shared';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/invite';

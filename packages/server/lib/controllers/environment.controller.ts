@@ -1,6 +1,7 @@
 import { accountService, environmentService, errorManager, hmacService } from '@nangohq/shared';
+import { flags } from '@nangohq/utils';
 
-import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { envs } from '../env.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
@@ -34,6 +35,11 @@ class EnvironmentController {
 
     async getAdminAuthInfo(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
+            if (!flags.hasAdminCapabilities || !envs.NANGO_ADMIN_UUID) {
+                res.status(400).send({ error: { code: 'feature_disabled', message: 'Admin capabilities are not enabled' } });
+                return;
+            }
+
             const { connection_id: connectionId } = req.query;
 
             if (!connectionId) {
@@ -41,10 +47,9 @@ class EnvironmentController {
                 return;
             }
 
-            const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-            const nangoAdminUUID = NANGO_ADMIN_UUID;
+            const integration_key = envs.NANGO_SLACK_INTEGRATION_KEY;
             const env = 'prod';
-            const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+            const info = await accountService.getAccountAndEnvironmentIdByUUID(envs.NANGO_ADMIN_UUID, env);
 
             if (!info) {
                 errorManager.errRes(res, 'account_not_found');

@@ -3,14 +3,15 @@ import crypto from 'crypto';
 import get from 'lodash-es/get.js';
 
 import { NangoError, connectionService, environmentService, getProvider } from '@nangohq/shared';
-import type { Result } from '@nangohq/utils';
-import { getLogger, Ok, Err } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
+
 import oauthController from '../controllers/oauth.controller.js';
 
-import type { WebhookHandler, SentryOauthWebhookResponse } from './types.js';
+import type { SentryOauthWebhookResponse, WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig, OAuthSession } from '@nangohq/shared';
-import type { ProviderOAuth2, ConnectionConfig } from '@nangohq/types';
+import type { ConnectionConfig, ProviderOAuth2 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.SentryOauth');
 

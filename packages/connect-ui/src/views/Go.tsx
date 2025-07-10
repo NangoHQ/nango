@@ -144,6 +144,9 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
+            if (preconfigured[name] ?? schema.hidden) {
+                hiddenFields += 1;
+            }
         }
 
         // Append connectionConfig object
@@ -216,7 +219,7 @@ export const Go: React.FC = () => {
             }
 
             telemetry('click:connect');
-            setLoading(detectClosedAuthWindow);
+            setLoading(true);
             setError(null);
             // we don't care if it was already opened
             nango.clear();
@@ -348,7 +351,7 @@ export const Go: React.FC = () => {
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full animate-in" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
-                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger ? 'border border-dark-300' : 'hidden')}>
                                 {orderedFields.map(([name]) => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params', string];
 

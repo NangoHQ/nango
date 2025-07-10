@@ -16,7 +16,15 @@ const execAsync = promisify(exec);
 /**
  * Init a new nango folder
  */
-export async function initZero({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }): Promise<boolean> {
+export async function initZero({
+    absolutePath,
+    debug = false,
+    onlyCopy = false
+}: {
+    absolutePath: string;
+    debug?: boolean;
+    onlyCopy?: boolean;
+}): Promise<boolean> {
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
 
     const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
@@ -60,6 +68,11 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
         return false;
     }
 
+    // If onlyCopy is true, we don't need to run npm install or compile
+    if (onlyCopy) {
+        return true;
+    }
+
     // Run npm install
     {
         const spinner = ora({ text: 'Install packages' }).start();
@@ -75,7 +88,6 @@ export async function initZero({ absolutePath, debug = false }: { absolutePath: 
         }
     }
 
-    // TODO: add compileAll
     {
         const res = await compileAll({ fullPath: absolutePath, debug });
         if (res.isErr()) {

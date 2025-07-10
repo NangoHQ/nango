@@ -1,5 +1,7 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { removeDuplicateKey } from './uniqueKey.js';
+
 import type { FormattedRecord } from '../types.js';
 
 describe('removeDuplicateKey', () => {

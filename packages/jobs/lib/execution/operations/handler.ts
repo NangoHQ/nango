@@ -1,11 +1,12 @@
-import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
-import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
-import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
-import type { NangoProps, RunnerOutputError } from '@nangohq/types';
+import { handleSyncError, handleSyncSuccess } from '../sync.js';
+import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { toNangoError } from './utils/errors.js';
+
+import type { NangoProps, RunnerOutputError } from '@nangohq/types';
+import type { JsonValue } from 'type-fest';
 
 export async function handleSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
     switch (nangoProps.scriptType) {

@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isSuccess, isError } from '../../../utils/tests.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { connectionService, seeders } from '@nangohq/shared';
 import { MAX_CONSECUTIVE_DAYS_FAILED_REFRESH } from '@nangohq/shared/lib/services/connections/utils.js';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

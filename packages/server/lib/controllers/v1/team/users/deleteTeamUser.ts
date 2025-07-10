@@ -1,8 +1,11 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { DeleteTeamUser } from '@nangohq/types';
-import { accountService, userService } from '@nangohq/shared';
 import { z } from 'zod';
+
+import { accountService, userService } from '@nangohq/shared';
+import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { DeleteTeamUser } from '@nangohq/types';
 
 const validation = z
     .object({
