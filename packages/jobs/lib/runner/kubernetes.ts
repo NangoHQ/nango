@@ -4,6 +4,13 @@ import * as k8s from '@kubernetes/client-node';
 import { envs } from '../env.js';
 import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 
+// Load Kubernetes config (works with local kubeconfig or in-cluster config)
+const kc = new k8s.KubeConfig();
+kc.loadFromDefault();
+const namespace = envs.RUNNER_NAMESPACE;
+const appsApi = kc.makeApiClient(k8s.AppsV1Api);
+const coreApi = kc.makeApiClient(k8s.CoreV1Api);
+
 export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
@@ -17,12 +24,6 @@ export const kubernetesNodeProvider: NodeProvider = {
         const ownerId = envs.RUNNER_OWNER_ID;
         const name = serviceName(node);
 
-        // Load Kubernetes config (works with local kubeconfig or in-cluster config)
-        const kc = new k8s.KubeConfig();
-        kc.loadFromDefault();
-        const namespace = envs.RUNNER_NAMESPACE;
-        const appsApi = kc.makeApiClient(k8s.AppsV1Api);
-        const coreApi = kc.makeApiClient(k8s.CoreV1Api);
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
