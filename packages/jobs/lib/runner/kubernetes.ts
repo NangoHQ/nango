@@ -39,7 +39,12 @@ export const kubernetesNodeProvider: NodeProvider = {
                     body: namespaceManifest
                 });
             } catch (err: any) {
-                if (err.body?.reason !== 'AlreadyExists') {
+                if (err.body) {
+                    const body = JSON.parse(err.body);
+                    if (body.reason !== 'AlreadyExists') {
+                        return Err(new Error('Failed to create namespace', { cause: err }));
+                    }
+                } else {
                     return Err(new Error('Failed to create namespace', { cause: err }));
                 }
             }
@@ -76,7 +81,7 @@ export const kubernetesNodeProvider: NodeProvider = {
                                     ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
                                     ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
                                     ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-                                    { name: 'JOBS_SERVICE_URL', value: envs.JOBS_SERVICE_URL },
+                                    { name: 'JOBS_SERVICE_URL', value: getJobsServiceUrl() },
                                     { name: 'PROVIDERS_URL', value: getProvidersUrl() },
                                     { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
                                 ]
@@ -234,6 +239,14 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
             memory: '1024Mi'
         }
     };
+}
+
+function getJobsServiceUrl() {
+    if (namespacePerRunner) {
+        return `${envs.JOBS_SERVICE_URL}.${defaultNamespace}`;
+    } else {
+        return envs.JOBS_SERVICE_URL;
+    }
 }
 
 function serviceName(node: Node) {
