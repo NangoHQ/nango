@@ -211,9 +211,8 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
-    const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
-    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
+    const combinedUrl = [baseFormatted, normalizedEndpoint].filter(Boolean).join('/');
     const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
 
     let url = new URL(fullEndpoint);
