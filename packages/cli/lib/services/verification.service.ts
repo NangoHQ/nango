@@ -10,7 +10,6 @@ import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { parse } from './config.service.js';
 import { generate } from '../cli.js';
 import { printDebug } from '../utils.js';
-import { init } from './init.service.js';
 
 class VerificationService {
     public async necessaryFilesExist({
@@ -34,21 +33,8 @@ class VerificationService {
         }
 
         if (!fs.existsSync(path.join(fullPath, nangoConfigFile))) {
-            const install = autoConfirm
-                ? true
-                : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
-
-            if (install) {
-                if (debug) {
-                    printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
-                }
-                init({ absolutePath: fullPath, debug });
-                generate({ fullPath, debug });
-                await compileAllFiles({ fullPath, debug });
-            } else {
-                console.log(chalk.red(`Exiting...`));
-                process.exit(1);
-            }
+            console.log(chalk.red(`Not a Nango project...`));
+            process.exit(1);
         } else {
             if (debug) {
                 printDebug(`Found ${nangoConfigFile} file successfully.`);

@@ -77,6 +77,25 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        try {
+            // We want to backdate the subscription to the day the team was created to backfill the usage
+            // Orb doesn't allow to backdate the subscription by more than 95 days
+            // Use `upgrade` to change the subscription without backdating
+            const minStartDate = new Date(Date.now() - 95 * 24 * 60 * 60 * 1000);
+            const startDate = new Date(Math.max(team.created_at.getTime(), minStartDate.getTime())).toISOString();
+
+            const subscription = await this.orbSDK.subscriptions.create({
+                external_customer_id: String(team.id),
+                external_plan_id: planExternalId,
+                start_date: startDate
+            });
+            return Ok({ id: subscription.id });
+        } catch (err) {
+            return Err(new Error('failed_to_create_subscription', { cause: err }));
+        }
+    }
+
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
