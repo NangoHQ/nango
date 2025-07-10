@@ -1,5 +1,8 @@
 const { legacySyncModelsToJsonSchema, nangoModelsToJsonSchema } = require('@nangohq/utils');
 
+/**
+ * @param {import('knex').Knex} knex
+ */
 exports.up = async function (knex) {
     const publicSyncConfigs = await knex.select('*').from('_nango_sync_configs').where({
         is_public: true,
@@ -24,7 +27,7 @@ exports.up = async function (knex) {
 
         // Add a marker to the JSON schema to indicate that it was migrated.
         // In case we ever need to fix something about this migration.
-        newJsonSchema['$nango_migration'] = '20250618140753';
+        newJsonSchema['$version'] = '20250618140753';
 
         await knex
             .update({
@@ -44,4 +47,7 @@ function isLegacyModelSchema(modelSchemas) {
     return modelSchemas.length > 0 && modelSchemas[0]?.fields?.length > 0 && Object.keys(modelSchemas[0].fields[0]).includes('type');
 }
 
+/**
+ * @param {import('knex').Knex} knex
+ */
 exports.down = function () {};
