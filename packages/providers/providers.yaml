@@ -860,6 +860,8 @@ attio:
         base_url: https://api.attio.com
         retry:
             after: 'retry-after'
+    webhook_routing_script: attioWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
