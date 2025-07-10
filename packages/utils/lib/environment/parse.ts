@@ -240,6 +240,12 @@ export const ENVS = z.object({
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
+    // ActiveMQ
+    NANGO_ACTIVEMQ_URL: z.string().url().optional().default('ws://localhost:61614/ws'),
+    NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
+    NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
+    NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: bool,
