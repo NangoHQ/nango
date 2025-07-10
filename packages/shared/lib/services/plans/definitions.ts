@@ -17,7 +17,9 @@ export const plansList: PlanDefinition[] = [
             connections_max: 10,
             name: 'free',
             sync_frequency_secs_min: 3600,
-            auto_idle: true
+            auto_idle: true,
+            connectui_disable_watermark: false,
+            connectui_colors_customization: false
         }
     },
     {
@@ -37,7 +39,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: true,
             name: 'yc',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: false,
+            connectui_colors_customization: false
         }
     },
     {
@@ -55,7 +59,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: true,
             name: 'growth',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: true,
+            connectui_colors_customization: true
         }
     },
     {
@@ -74,7 +80,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: true,
             name: 'enterprise',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: true,
+            connectui_colors_customization: true
         }
     },
     {
@@ -94,7 +102,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: false,
             name: 'yc',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: true,
+            connectui_colors_customization: true
         }
     },
 
@@ -114,7 +124,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: true,
             name: 'starter',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: false,
+            connectui_colors_customization: false
         }
     },
     {
@@ -132,7 +144,9 @@ export const plansList: PlanDefinition[] = [
             has_sync_variants: true,
             name: 'scale',
             sync_frequency_secs_min: 30,
-            auto_idle: false
+            auto_idle: false,
+            connectui_disable_watermark: false,
+            connectui_colors_customization: false
         }
     }
 ];

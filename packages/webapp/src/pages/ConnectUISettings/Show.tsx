@@ -252,7 +252,7 @@ const ConnectUISettings: React.FC = () => {
                                             <TooltipContent>
                                                 <div className="space-y-2">
                                                     <p className="text-sm text-gray-300">
-                                                        Only available on paid plans.{' '}
+                                                        Disabling the watermark is only available on the Growth plan.{' '}
                                                         <Link to={`/${env}/team/billing`} className="text-sm font-bold underline">
                                                             Manage plan.
                                                         </Link>
