@@ -6,13 +6,33 @@ import { envs } from '../env.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
 
-// Load Kubernetes config (works with local kubeconfig or in-cluster config)
-const kc = new k8s.KubeConfig();
-kc.loadFromDefault();
+// Lazy initialization for Kubernetes configuration
+let kc: k8s.KubeConfig | null = null;
+let appsApi: k8s.AppsV1Api | null = null;
+let coreApi: k8s.CoreV1Api | null = null;
+let kubernetesConfigLoaded = false;
+
+function getKubernetesConfig() {
+    if (!kubernetesConfigLoaded) {
+        kc = new k8s.KubeConfig();
+        kc.loadFromDefault();
+        appsApi = kc.makeApiClient(k8s.AppsV1Api);
+        coreApi = kc.makeApiClient(k8s.CoreV1Api);
+        kubernetesConfigLoaded = true;
+    }
+    return { kc, appsApi: appsApi!, coreApi: coreApi! };
+}
+
 const defaultNamespace = envs.RUNNER_NAMESPACE;
 const namespacePerRunner = envs.NAMESPACE_PER_RUNNER || false;
-const appsApi = kc.makeApiClient(k8s.AppsV1Api);
-const coreApi = kc.makeApiClient(k8s.CoreV1Api);
+
+const apiUrl = namespacePerRunner ? `${envs.NANGO_SERVER_URL}.${defaultNamespace}` : envs.NANGO_SERVER_URL;
+
+const persistApiUrl = namespacePerRunner ? `${envs.PERSIST_SERVICE_URL}.${defaultNamespace}` : envs.PERSIST_SERVICE_URL || 'http://localhost:3007';
+
+const jobsServiceUrl = namespacePerRunner ? `${envs.JOBS_SERVICE_URL}.${defaultNamespace}` : envs.JOBS_SERVICE_URL;
+
+const providersUrl = `${apiUrl}/providers.json`;
 
 export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
@@ -21,6 +41,17 @@ export const kubernetesNodeProvider: NodeProvider = {
         storageMb: 20000
     },
     start: async (node: Node) => {
+        let coreApi: k8s.CoreV1Api;
+        let appsApi: k8s.AppsV1Api;
+
+        try {
+            const config = getKubernetesConfig();
+            coreApi = config.coreApi;
+            appsApi = config.appsApi;
+        } catch (err) {
+            return Err(err as Error);
+        }
+
         const name = serviceName(node);
         let namespace = defaultNamespace;
         let runnerUrl = `http://${name}`;
@@ -75,13 +106,13 @@ export const kubernetesNodeProvider: NodeProvider = {
                                     { name: 'RUNNER_NODE_ID', value: `${node.id}` },
                                     { name: 'RUNNER_URL', value: runnerUrl },
                                     { name: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
-                                    { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
+                                    { name: 'PERSIST_SERVICE_URL', value: persistApiUrl },
                                     { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
                                     ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
                                     ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
                                     ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-                                    { name: 'JOBS_SERVICE_URL', value: getJobsServiceUrl() },
-                                    { name: 'PROVIDERS_URL', value: getProvidersUrl() },
+                                    { name: 'JOBS_SERVICE_URL', value: jobsServiceUrl },
+                                    { name: 'PROVIDERS_URL', value: providersUrl },
                                     { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
                                 ]
                             }
@@ -129,14 +160,23 @@ export const kubernetesNodeProvider: NodeProvider = {
         return Ok(undefined);
     },
     terminate: async (node: Node) => {
-        const name = serviceName(node);
-        const namespace = envs.RUNNER_NAMESPACE;
+        let coreApi: k8s.CoreV1Api;
+        let appsApi: k8s.AppsV1Api;
 
-        // Load Kubernetes config
-        const kc = new k8s.KubeConfig();
-        kc.loadFromDefault();
-        const appsApi = kc.makeApiClient(k8s.AppsV1Api);
-        const coreApi = kc.makeApiClient(k8s.CoreV1Api);
+        try {
+            const config = getKubernetesConfig();
+            coreApi = config.coreApi;
+            appsApi = config.appsApi;
+        } catch (err) {
+            return Err(err as Error);
+        }
+
+        const name = serviceName(node);
+        let namespace = defaultNamespace;
+
+        if (namespacePerRunner) {
+            namespace = `${defaultNamespace}-${node.routingId}`;
+        }
 
         try {
             // 1. Delete Deployment
@@ -238,34 +278,6 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
             memory: '1024Mi'
         }
     };
-}
-
-function getApiUrl() {
-    if (namespacePerRunner) {
-        return `${envs.NANGO_SERVER_URL}.${defaultNamespace}`;
-    } else {
-        return envs.NANGO_SERVER_URL;
-    }
-}
-
-function getPersistAPIUrl() {
-    if (namespacePerRunner) {
-        return `${envs.PERSIST_SERVICE_URL}.${defaultNamespace}`;
-    } else {
-        return envs.PERSIST_SERVICE_URL || 'http://localhost:3007';
-    }
-}
-
-function getProvidersUrl() {
-    return `${getApiUrl()}/providers.json`;
-}
-
-function getJobsServiceUrl() {
-    if (namespacePerRunner) {
-        return `${envs.JOBS_SERVICE_URL}.${defaultNamespace}`;
-    } else {
-        return envs.JOBS_SERVICE_URL;
-    }
 }
 
 function serviceName(node: Node) {
