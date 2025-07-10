@@ -413,5 +413,18 @@ describe('legacySyncModelsToJsonSchema', () => {
             const result = legacySyncModelsToJsonSchema(models);
             expect(result).toMatchSnapshot();
         });
+
+        it('Empty array type', () => {
+            // This is invalid according to our type definition, but we found it in the wild.
+            const models: LegacySyncModelSchema[] = [
+                {
+                    name: 'EmptyArrayType',
+                    fields: [{ name: 'array', type: [] } as unknown]
+                }
+            ] as LegacySyncModelSchema[];
+
+            const result = legacySyncModelsToJsonSchema(models);
+            expect(result).toMatchSnapshot();
+        });
     });
 });
