@@ -104,6 +104,10 @@ export class Billing {
         return await this.client.getCustomer(accountId);
     }
 
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        return await this.client.createSubscription(team, planExternalId);
+    }
+
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
     }
