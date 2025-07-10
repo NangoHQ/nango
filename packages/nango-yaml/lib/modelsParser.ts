@@ -1,6 +1,7 @@
-import type { NangoModel, NangoModelField, NangoYamlModel, NangoYamlModelFields } from '@nangohq/types';
-import { getNativeDataType, getPotentialTypeAlias, isDisallowedType, shouldQuote } from './helpers.js';
 import { ParserError, ParserErrorCycle, ParserErrorExtendsNotFound, ParserErrorInvalidModelName, ParserErrorTypeSyntax } from './errors.js';
+import { getNativeDataType, getPotentialTypeAlias, isDisallowedType, shouldQuote } from './helpers.js';
+
+import type { NangoModel, NangoModelField, NangoYamlModel, NangoYamlModelFields } from '@nangohq/types';
 
 export class ModelsParser {
     parsed = new Map<string, NangoModel>();

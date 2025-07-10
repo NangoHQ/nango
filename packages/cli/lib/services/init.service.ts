@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path, { dirname } from 'node:path';
-import chalk from 'chalk';
-import { printDebug } from '../utils.js';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { generate } from '../cli.js';
 import { fileURLToPath } from 'node:url';
+
+import chalk from 'chalk';
+
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+
+import { generate } from '../cli.js';
+import { printDebug } from '../utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

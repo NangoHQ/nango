@@ -1,19 +1,21 @@
-import { Button } from '../../../../../components/ui/button/Button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
-import { InfoBloc } from '../../../../../components/InfoBloc';
-import { ScriptToggle } from '../../../components/ScriptToggle';
-import type { GetIntegration } from '@nangohq/types';
-import type { NangoSyncConfigWithEndpoint } from './List';
-import { githubIntegrationTemplates } from '../../../../../utils/utils';
+import { IconCircleCheck, IconHelpCircle, IconPencil } from '@tabler/icons-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { mutate } from 'swr';
+
+import { InfoBloc } from '../../../../../components/InfoBloc';
+import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
+import { Button } from '../../../../../components/ui/button/Button';
 import { Input } from '../../../../../components/ui/input/Input';
 import { apiFlowUpdateFrequency, apiPreBuiltUpgrade } from '../../../../../hooks/useFlow';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
-import { mutate } from 'swr';
-import { Link } from 'react-router-dom';
-import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
-import { IconCircleCheck, IconHelpCircle, IconPencil } from '@tabler/icons-react';
+import { githubIntegrationTemplates } from '../../../../../utils/utils';
+import { ScriptToggle } from '../../../components/ScriptToggle';
+
+import type { NangoSyncConfigWithEndpoint } from './List';
+import type { GetIntegration } from '@nangohq/types';
 
 // To sync with patchFrequency
 const frequencyRegex =

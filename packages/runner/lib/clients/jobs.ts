@@ -1,8 +1,10 @@
-import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
+
 import { httpFetch } from './http.js';
 import { jobsServiceUrl } from '../env.js';
+
+import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const defaultRetryOptions = {
     startingDelay: 1000,

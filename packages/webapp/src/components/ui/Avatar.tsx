@@ -1,8 +1,10 @@
-import * as React from 'react';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import { cn } from '../../utils/utils';
-import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import * as React from 'react';
+
+import { cn } from '../../utils/utils';
+
+import type { VariantProps } from 'class-variance-authority';
 
 const avatarStyle = cva('', {
     variants: {
@@ -42,4 +44,4 @@ const AvatarFallback = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.
 );
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
-export { Avatar, AvatarImage, AvatarFallback };
+export { Avatar, AvatarFallback, AvatarImage };

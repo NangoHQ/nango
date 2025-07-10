@@ -1,10 +1,9 @@
+import { encryptionManager } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-const logger = getLogger('Server');
-
-import { encryptionManager } from '@nangohq/shared';
-
 import type { KnexDatabase } from '@nangohq/database';
+
+const logger = getLogger('Server');
 
 export default async function migrate(db: KnexDatabase): Promise<void> {
     logger.info('Migrating database ...');

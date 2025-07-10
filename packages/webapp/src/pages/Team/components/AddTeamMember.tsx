@@ -1,14 +1,16 @@
 import { Cross1Icon, PlusIcon } from '@radix-ui/react-icons';
-import { Button } from '../../../components/ui/button/Button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import type { ApiTeam } from '@nangohq/types';
 import { useState } from 'react';
+
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
-import { useTeam } from '../../../hooks/useTeam';
-import { useStore } from '../../../store';
-import { useToast } from '../../../hooks/useToast';
-import { cn } from '../../../utils/utils';
 import { apiPostInvite } from '../../../hooks/useInvite';
+import { useTeam } from '../../../hooks/useTeam';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { cn } from '../../../utils/utils';
+
+import type { ApiTeam } from '@nangohq/types';
 
 const emailReg = /(.+)?<(.+[@].+)>/;
 const invalidChar = /['()&=\\/;,?`$*$€^¨°<>]/;

@@ -1,10 +1,14 @@
 import * as fs from 'fs';
-import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
-import { getLogger, stringifyError } from '@nangohq/utils';
-import { OrchestratorClient, OrchestratorProcessor } from '@nangohq/nango-orchestrator';
-import { handler } from './handler.js';
+
 import tracer from 'dd-trace';
+
+import { OrchestratorClient, OrchestratorProcessor } from '@nangohq/nango-orchestrator';
+import { getLogger, stringifyError } from '@nangohq/utils';
+
+import { handler } from './handler.js';
+
+import type { MessagePort } from 'node:worker_threads';
 
 const logger = getLogger('jobs.processor.worker');
 

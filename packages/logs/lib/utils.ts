@@ -1,4 +1,5 @@
 import { getLogger } from '@nangohq/utils';
+
 import { client } from './es/client.js';
 
 export const logger = getLogger('logs');

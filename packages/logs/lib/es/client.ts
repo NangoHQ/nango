@@ -1,4 +1,5 @@
 import { Client } from '@elastic/elasticsearch';
+
 import { envs } from '../env.js';
 
 export const client = new Client({

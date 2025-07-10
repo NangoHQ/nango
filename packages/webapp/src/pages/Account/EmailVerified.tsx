@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Loading } from '@geist-ui/core';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import { useSignin } from '../../utils/user';
-import type { ValidateEmailAndLogin } from '@nangohq/types';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
 import { useStore } from '../../store';
+import { useAnalyticsTrack } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
+import { useSignin } from '../../utils/user';
+
+import type { ValidateEmailAndLogin } from '@nangohq/types';
 
 export const EmailVerified: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
