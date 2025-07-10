@@ -1,7 +1,9 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { exec } from './exec.js';
-import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import { Locks } from './sdk/locks.js';
+
+import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
 function getNangoProps(): NangoProps {
     return {

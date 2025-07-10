@@ -1,10 +1,11 @@
-import { useEffect, forwardRef, useState, useMemo } from 'react';
-import type { KeyboardEvent } from 'react';
-import { PlusSmallIcon } from '@heroicons/react/24/outline';
 import { X } from '@geist-ui/icons';
+import { PlusSmallIcon } from '@heroicons/react/24/outline';
+import { forwardRef, useEffect, useMemo, useState } from 'react';
 
-import useSet from '../../../hooks/useSet';
 import { Input } from './Input';
+import useSet from '../../../hooks/useSet';
+
+import type { KeyboardEvent } from 'react';
 
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     defaultValue?: string;

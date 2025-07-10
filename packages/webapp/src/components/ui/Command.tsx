@@ -1,10 +1,11 @@
-import * as React from 'react';
-import type { DialogProps } from '@radix-ui/react-dialog';
+import { CheckIcon } from '@radix-ui/react-icons';
 import { Command as CommandPrimitive } from 'cmdk';
+import * as React from 'react';
 
 import { Dialog, DialogContent } from './Dialog';
 import { cn } from '../../utils/utils';
-import { CheckIcon } from '@radix-ui/react-icons';
+
+import type { DialogProps } from '@radix-ui/react-dialog';
 
 const Command = React.forwardRef<React.ElementRef<typeof CommandPrimitive>, React.ComponentPropsWithoutRef<typeof CommandPrimitive>>(
     ({ className, ...props }, ref) => (
@@ -121,4 +122,4 @@ const CommandCheck = React.forwardRef<HTMLDivElement, React.ComponentPropsWithou
 );
 CommandCheck.displayName = 'CommandCheck';
 
-export { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, CommandCheck };
+export { Command, CommandCheck, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut };

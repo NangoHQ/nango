@@ -1,8 +1,9 @@
-import { logger } from '../utils/logger.js';
-import { db } from './client.js';
-import { schema, config } from './config.js';
-import { dirname } from '../env.js';
 import path from 'node:path';
+
+import { db } from './client.js';
+import { config, schema } from './config.js';
+import { dirname } from '../env.js';
+import { logger } from '../utils/logger.js';
 
 export async function migrate(): Promise<void> {
     logger.info('[records] migration');

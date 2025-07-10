@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
+
 import * as yaml from 'js-yaml';
 
 const args = process.argv.slice(2);

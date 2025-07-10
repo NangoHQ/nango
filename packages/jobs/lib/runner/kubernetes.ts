@@ -1,8 +1,11 @@
-import type { Node, NodeProvider } from '@nangohq/fleet';
-import { Ok, Err } from '@nangohq/utils';
 import * as k8s from '@kubernetes/client-node';
-import { envs } from '../env.js';
+
 import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
+import { envs } from '../env.js';
+
+import type { Node, NodeProvider } from '@nangohq/fleet';
 
 // Load Kubernetes config (works with local kubeconfig or in-cluster config)
 const kc = new k8s.KubeConfig();

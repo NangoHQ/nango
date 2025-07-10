@@ -1,6 +1,7 @@
 import { CaretSortIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { forwardRef } from 'react';
+
 import { cn } from '../../utils/utils';
 
 const Select = SelectPrimitive.Root;
@@ -111,13 +112,13 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 export {
     Select,
-    SelectGroup,
-    SelectValue,
-    SelectTrigger,
     SelectContent,
-    SelectLabel,
+    SelectGroup,
     SelectItem,
-    SelectSeparator,
+    SelectLabel,
+    SelectScrollDownButton,
     SelectScrollUpButton,
-    SelectScrollDownButton
+    SelectSeparator,
+    SelectTrigger,
+    SelectValue
 };

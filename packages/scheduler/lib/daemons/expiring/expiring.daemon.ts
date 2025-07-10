@@ -1,11 +1,14 @@
+import { setTimeout } from 'node:timers/promises';
+
 import { stringifyError } from '@nangohq/utils';
+
+import { envs } from '../../env.js';
 import * as tasks from '../../models/tasks.js';
-import type knex from 'knex';
 import { logger } from '../../utils/logger.js';
 import { SchedulerDaemon } from '../daemon.js';
-import { envs } from '../../env.js';
+
 import type { Task } from '../../types.js';
-import { setTimeout } from 'node:timers/promises';
+import type knex from 'knex';
 
 export class ExpiringDaemon extends SchedulerDaemon {
     private onExpiring: (task: Task) => void;
