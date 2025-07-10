@@ -3643,6 +3643,7 @@ exact-online:
             at: 'x-ratelimit-reset'
             error_code:
                 - '429'
+                - '503'
         paginate:
             type: link
             link_path_in_response_body: d.__next
