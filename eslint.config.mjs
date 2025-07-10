@@ -373,7 +373,7 @@ export default tseslint.config(
         }
     },
     {
-        files: ['**/**.test.ts'],
+        files: ['scripts/**/**.test.ts'],
         rules: {
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off'
