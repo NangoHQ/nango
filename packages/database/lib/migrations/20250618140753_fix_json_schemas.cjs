@@ -10,6 +10,8 @@ exports.up = async function (knex) {
     });
 
     for (const syncConfig of publicSyncConfigs) {
+        console.log('Migrating sync config', syncConfig.id);
+
         /**
          * Set to null if there are no models.
          */
