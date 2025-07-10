@@ -105,18 +105,6 @@ export interface NangoProps {
     activityLogId?: string | undefined;
 }
 
-export interface CreateConnectionOAuth1 extends OAuth1Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes['OAuth1'];
-}
-
-export interface CreateConnectionOAuth2 extends OAuth2Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes['OAuth2'];
-}
-
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey'> & {
     providerConfigKey?: string;
     connectionId?: string;
