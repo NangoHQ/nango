@@ -40,6 +40,7 @@ export const kubernetesNodeProvider: NodeProvider = {
                                 image: node.image,
                                 ports: [{ containerPort: 8080 }],
                                 args: ['node', 'packages/runner/dist/app.js', '8080', 'dockerized-runner'],
+                                resources: getResourceLimits(node),
                                 env: [
                                     { name: 'PORT', value: '8080' },
                                     { name: 'NODE_ENV', value: envs.NODE_ENV },
@@ -63,10 +64,14 @@ export const kubernetesNodeProvider: NodeProvider = {
                 }
             }
         };
-        await appsApi.createNamespacedDeployment({
-            namespace,
-            body: deploymentManifest
-        });
+        try {
+            await appsApi.createNamespacedDeployment({
+                namespace,
+                body: deploymentManifest
+            });
+        } catch (err) {
+            return Err(new Error('Failed to create deployment', { cause: err }));
+        }
 
         // 2. Create Service
         const serviceManifest: k8s.V1Service = {
@@ -86,11 +91,14 @@ export const kubernetesNodeProvider: NodeProvider = {
                 type: 'ClusterIP' // Change to LoadBalancer or NodePort if needed
             }
         };
-
-        await coreApi.createNamespacedService({
-            namespace,
-            body: serviceManifest
-        });
+        try {
+            await coreApi.createNamespacedService({
+                namespace,
+                body: serviceManifest
+            });
+        } catch (err) {
+            return Err(new Error('Failed to create service', { cause: err }));
+        }
 
         return Ok(undefined);
     },
@@ -129,6 +137,79 @@ export const kubernetesNodeProvider: NodeProvider = {
         return Promise.resolve(Ok(undefined));
     }
 };
+
+function getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
+    if (node.cpuMilli >= 8000 && node.memoryMb >= 32000) {
+        return {
+            requests: {
+                cpu: '4000m',
+                memory: '16384Mi'
+            },
+            limits: {
+                cpu: '8000m',
+                memory: '32768m'
+            }
+        };
+    }
+    if (node.cpuMilli >= 4000 && node.memoryMb >= 16000) {
+        return {
+            requests: {
+                cpu: '4000m',
+                memory: '8192Mi'
+            },
+            limits: {
+                cpu: '4000m',
+                memory: '16384Mi'
+            }
+        };
+    }
+    if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
+        return {
+            requests: {
+                cpu: '2000m',
+                memory: '4096Mi'
+            },
+            limits: {
+                cpu: '4000m',
+                memory: '8192Mi'
+            }
+        };
+    }
+    if (node.cpuMilli > 2000 || node.memoryMb >= 4000) {
+        return {
+            requests: {
+                cpu: '1000m',
+                memory: '2048Mi'
+            },
+            limits: {
+                cpu: '2000m',
+                memory: '4096Mi'
+            }
+        };
+    }
+    if (node.cpuMilli > 1000 || node.memoryMb >= 2000) {
+        return {
+            requests: {
+                cpu: '500m',
+                memory: '10424i'
+            },
+            limits: {
+                cpu: '1000m',
+                memory: '2048Mi'
+            }
+        };
+    }
+    return {
+        requests: {
+            cpu: '500m',
+            memory: '10424i'
+        },
+        limits: {
+            cpu: '500m',
+            memory: '1024Mi'
+        }
+    };
+}
 
 function serviceName(node: Node) {
     return `${node.routingId}-${node.id}`;
