@@ -92,9 +92,9 @@ export const internalPlan: PlanDefinition = {
     flags: {
         api_rate_limit_size: 'l',
         connection_with_scripts_max: null,
-        environments_max: 3,
+        environments_max: 10,
         has_otel: false,
-        has_sync_variants: false,
+        has_sync_variants: true,
         name: 'yc',
         sync_frequency_secs_min: 30,
         auto_idle: false
