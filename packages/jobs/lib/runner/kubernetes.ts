@@ -1,5 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 
+import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -25,14 +26,6 @@ function getKubernetesConfig() {
 
 const defaultNamespace = envs.RUNNER_NAMESPACE;
 const namespacePerRunner = envs.NAMESPACE_PER_RUNNER || false;
-
-const apiUrl = namespacePerRunner ? `${envs.NANGO_SERVER_URL}.${defaultNamespace}` : envs.NANGO_SERVER_URL;
-
-const persistApiUrl = namespacePerRunner ? `${envs.PERSIST_SERVICE_URL}.${defaultNamespace}` : envs.PERSIST_SERVICE_URL || 'http://localhost:3007';
-
-const jobsServiceUrl = namespacePerRunner ? `${envs.JOBS_SERVICE_URL}.${defaultNamespace}` : envs.JOBS_SERVICE_URL;
-
-const providersUrl = `${apiUrl}/providers.json`;
 
 export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
@@ -106,13 +99,13 @@ export const kubernetesNodeProvider: NodeProvider = {
                                     { name: 'RUNNER_NODE_ID', value: `${node.id}` },
                                     { name: 'RUNNER_URL', value: runnerUrl },
                                     { name: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
-                                    { name: 'PERSIST_SERVICE_URL', value: persistApiUrl },
+                                    { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                                     { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
                                     ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
                                     ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
                                     ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-                                    { name: 'JOBS_SERVICE_URL', value: jobsServiceUrl },
-                                    { name: 'PROVIDERS_URL', value: providersUrl },
+                                    { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
+                                    { name: 'PROVIDERS_URL', value: getProvidersUrl() },
                                     { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
                                 ]
                             }
