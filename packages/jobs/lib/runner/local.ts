@@ -51,7 +51,7 @@ export const localNodeProvider: NodeProvider = {
             if (childProcess.stdout) {
                 childProcess.stdout.on('data', (data) => {
                     // used on purpose to not append jobs formatting to runner
-                    // eslint-disable-next-line no-console
+
                     console.log(`[Runner] ${data.toString().slice(0, -1)} `);
                 });
             }
@@ -59,7 +59,7 @@ export const localNodeProvider: NodeProvider = {
             if (childProcess.stderr) {
                 childProcess.stderr.on('data', (data) => {
                     // used on purpose to not append jobs formatting to runner
-                    // eslint-disable-next-line no-console
+
                     console.error(`[Runner][ERROR] ${data.toString().slice(0, -1)} `);
                 });
             }

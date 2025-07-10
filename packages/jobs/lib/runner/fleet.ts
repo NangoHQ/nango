@@ -1,9 +1,9 @@
 import { Fleet } from '@nangohq/fleet';
 
 import { envs } from '../env.js';
+import { kubernetesNodeProvider } from './kubernetes.js';
 import { localNodeProvider } from './local.js';
 import { renderNodeProvider } from './render.js';
-import { kubernetesNodeProvider } from './kubernetes.js';
 
 const fleetId = 'nango_runners';
 export const runnersFleet = (() => {
