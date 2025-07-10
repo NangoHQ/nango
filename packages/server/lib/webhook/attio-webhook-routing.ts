@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
-import type { WebhookHandler, AttioWebhook } from './types.js';
+import type { AttioWebhook, WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
 
