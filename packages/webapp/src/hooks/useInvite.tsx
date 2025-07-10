@@ -1,7 +1,9 @@
-import type { AcceptInvite, DeclineInvite, DeleteInvite, GetInvite, PostInvite } from '@nangohq/types';
 import useSWR from 'swr';
-import type { SWRError } from '../utils/api';
+
 import { apiFetch, swrFetcher } from '../utils/api';
+
+import type { SWRError } from '../utils/api';
+import type { AcceptInvite, DeclineInvite, DeleteInvite, GetInvite, PostInvite } from '@nangohq/types';
 
 export function useInvite(token: string | undefined) {
     const { data, error, mutate } = useSWR<GetInvite['Success'], SWRError<GetInvite['Errors']>>(token ? `/api/v1/invite/${token}` : null, swrFetcher);

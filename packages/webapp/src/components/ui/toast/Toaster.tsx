@@ -1,6 +1,7 @@
+import { IconCheck, IconX } from '@tabler/icons-react';
+
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from './Toast';
 import { useToast } from '../../../hooks/useToast';
-import { IconCheck, IconX } from '@tabler/icons-react';
 
 export function Toaster() {
     const { toasts } = useToast();

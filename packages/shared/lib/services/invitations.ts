@@ -1,8 +1,10 @@
-import type { Knex } from '@nangohq/database';
-import db from '@nangohq/database';
-import type { DBInvitation } from '@nangohq/types';
-import { isEnterprise } from '@nangohq/utils';
 import * as uuid from 'uuid';
+
+import db from '@nangohq/database';
+import { isEnterprise } from '@nangohq/utils';
+
+import type { Knex } from '@nangohq/database';
+import type { DBInvitation } from '@nangohq/types';
 
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 

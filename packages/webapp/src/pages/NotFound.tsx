@@ -1,6 +1,7 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useStore } from '../store';
 import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { useStore } from '../store';
 
 const VALID_PATHS = [
     'getting-started',

@@ -1,12 +1,16 @@
-import type { Tracer } from '@opentelemetry/api';
+import { setTimeout } from 'node:timers/promises';
+
 import { trace } from '@opentelemetry/api';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { Resource } from '@opentelemetry/resources';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+
 import { once, stringifyError } from '@nangohq/utils';
+
 import { logger } from '../utils.js';
 import { RoutingSpanProcessor } from './otlpSpanProcessor.js';
-import { setTimeout } from 'node:timers/promises';
+
+import type { Tracer } from '@opentelemetry/api';
 
 // Enable OpenTelemetry console logging
 // import { DiagLogLevel, DiagConsoleLogger, diag } from '@opentelemetry/api';

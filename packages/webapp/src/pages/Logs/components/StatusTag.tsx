@@ -1,5 +1,6 @@
-import type { SearchOperationsData } from '@nangohq/types';
 import { Tag } from '../../../components/ui/label/Tag';
+
+import type { SearchOperationsData } from '@nangohq/types';
 
 export const StatusTag: React.FC<{ state: SearchOperationsData['state'] }> = ({ state }) => {
     if (state === 'success') {

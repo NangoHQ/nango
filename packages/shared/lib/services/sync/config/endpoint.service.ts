@@ -1,5 +1,7 @@
-import db, { schema, dbNamespace } from '@nangohq/database';
+import db, { dbNamespace, schema } from '@nangohq/database';
+
 import configService from '../../config.service.js';
+
 import type { HTTP_METHOD } from '../../../models/Generic.js';
 import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint } from '@nangohq/types';
 

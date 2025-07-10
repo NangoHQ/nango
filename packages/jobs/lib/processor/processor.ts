@@ -1,4 +1,5 @@
 import { getLogger } from '@nangohq/utils';
+
 import { ProcessorWorker } from './processor.worker.js';
 
 const logger = getLogger('jobs.processor');

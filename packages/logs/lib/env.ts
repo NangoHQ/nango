@@ -1,4 +1,4 @@
-import { parseEnvs, ENVS, MAX_ACTION_DURATION, MAX_SYNC_DURATION, MAX_WEBHOOK_DURATION } from '@nangohq/utils';
+import { ENVS, MAX_ACTION_DURATION, MAX_SYNC_DURATION, MAX_WEBHOOK_DURATION, parseEnvs } from '@nangohq/utils';
 
 // Do not require in community and enterprise right now
 const required = process.env['NANGO_LOGS_ENABLED'] === 'true';

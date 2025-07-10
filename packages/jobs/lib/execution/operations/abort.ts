@@ -1,10 +1,12 @@
-import type { Result } from '@nangohq/utils';
-import { Err, Ok } from '@nangohq/utils';
-import { getRunner } from '../../runner/runner.js';
 import { environmentService } from '@nangohq/shared';
-import { logger } from '../../logger.js';
-import type { TaskAbort } from '@nangohq/nango-orchestrator';
+import { Err, Ok } from '@nangohq/utils';
+
 import { orchestratorClient } from '../../clients.js';
+import { logger } from '../../logger.js';
+import { getRunner } from '../../runner/runner.js';
+
+import type { TaskAbort } from '@nangohq/nango-orchestrator';
+import type { Result } from '@nangohq/utils';
 
 export async function abortTask(task: TaskAbort): Promise<Result<void>> {
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
