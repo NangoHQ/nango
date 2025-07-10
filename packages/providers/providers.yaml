@@ -843,7 +843,7 @@ atlassian-admin:
             description: The API key for your Atlassian account
             example: ATCTT3xFfGN0_a1B2-c3D4_E5F6-G7H8I9JKLMNOPQRSTUVWXYZ1234567890=DEADBEEF
             pattern: '^ATCTT3xFfGN0[\w\-]+=[A-Z0-9]{8}$'
-            doc_section: '#step-1-generating-your-api-key'
+            doc_section: 'step-1%3A-generating-your-api-key'
     connection_config:
         organizationId:
             type: string
@@ -852,7 +852,7 @@ atlassian-admin:
             description: The organization ID of your Atlassian account
             pattern: '^[a-f0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
-            doc_section: '#step-1-generating-your-api-key'
+            doc_section: 'step-1%3A-generating-your-api-key'
 
 attio:
     display_name: Attio
