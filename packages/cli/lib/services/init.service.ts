@@ -6,7 +6,6 @@ import chalk from 'chalk';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
-import { generate } from '../cli.js';
 import { printDebug } from '../utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,6 +113,5 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
-    generate({ debug, fullPath: absolutePath });
     return true;
 }
