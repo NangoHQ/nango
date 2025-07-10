@@ -18,16 +18,12 @@ export const kubernetesNodeProvider: NodeProvider = {
         storageMb: 20000
     },
     start: async (node: Node) => {
-        if (!envs.RUNNER_OWNER_ID) {
-            throw new Error('RUNNER_OWNER_ID is not set');
-        }
-        const ownerId = envs.RUNNER_OWNER_ID;
         const name = serviceName(node);
 
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
-                labels: { app: name, ownerId }
+                labels: { app: name }
             },
             spec: {
                 replicas: 1,
