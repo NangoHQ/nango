@@ -169,7 +169,7 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
             },
             limits: {
                 cpu: '8000m',
-                memory: '32768m'
+                memory: '32768Mi'
             }
         };
     }
@@ -213,7 +213,7 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
         return {
             requests: {
                 cpu: '500m',
-                memory: '10424i'
+                memory: '10424Mi'
             },
             limits: {
                 cpu: '1000m',
@@ -224,7 +224,7 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
     return {
         requests: {
             cpu: '500m',
-            memory: '10424i'
+            memory: '10424Mi'
         },
         limits: {
             cpu: '500m',
