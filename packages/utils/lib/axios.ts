@@ -1,11 +1,13 @@
+import http from 'node:http';
+import https from 'node:https';
+
+import axios from 'axios';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+
 import type { AxiosRequestConfig } from 'axios';
-import axios from 'axios';
-import http from 'node:http';
 import type { Agent as HttpAgent } from 'node:http';
 import type { Agent as HttpsAgent } from 'node:https';
-import https from 'node:https';
 
 let agentOptions: http.AgentOptions = {
     keepAlive: true,

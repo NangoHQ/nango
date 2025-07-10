@@ -1,11 +1,12 @@
+import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
+import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { apiPutTeam, useTeam } from '../../../hooks/useTeam';
-import { useStore } from '../../../store';
-import { Button } from '../../../components/ui/button/Button';
-import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useToast } from '../../../hooks/useToast';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
+import { useStore } from '../../../store';
 
 export const TeamInfo: React.FC = () => {
     const env = useStore((state) => state.env);

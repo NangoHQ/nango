@@ -1,7 +1,8 @@
 import { useState } from 'react';
+
 import { Button } from '../../../components/ui/button/Button';
+import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
-import { apiFetch } from '../../../utils/api';
 
 export const Admin: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -15,19 +16,15 @@ export const Admin: React.FC = () => {
             login_reason: { value: string };
         };
         const payload = {
-            account_uuid: target.account_uuid.value,
-            login_reason: target.login_reason.value
+            accountUUID: target.account_uuid.value,
+            loginReason: target.login_reason.value
         };
 
-        const res = await apiFetch(`/api/v1/account/admin/switch?env=${env}`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        if (res.status === 200) {
+        const res = await apiAdminImpersonate(env, payload);
+        if (res.res.status === 200) {
             window.location.reload();
         } else {
-            setError(JSON.stringify(await res.json()));
+            setError(JSON.stringify(res.json));
         }
     };
 

@@ -1,6 +1,7 @@
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+
 import semver from 'semver';
 
 const MANIFEST_PATH = path.join(process.cwd(), 'managed-manifest.json');

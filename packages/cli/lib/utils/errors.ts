@@ -1,6 +1,8 @@
-import type { ErrorObject } from 'ajv';
-import chalk from 'chalk';
 import { inspect } from 'util';
+
+import chalk from 'chalk';
+
+import type { ErrorObject } from 'ajv';
 
 export function displayValidationError({ data, validation, model }: { data: any; validation: (Error | ErrorObject)[]; model?: string }) {
     if (model) {

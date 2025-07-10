@@ -1,6 +1,6 @@
-import type { Result } from '../result';
-import type { DBTeam } from '../team/db';
-import type { DBUser } from '../user/db';
+import type { Result } from '../result.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
@@ -8,6 +8,7 @@ export interface BillingClient {
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string; immediate: boolean }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
@@ -35,7 +36,7 @@ export interface BillingPlan {
 }
 
 export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions';
+    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections';
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;

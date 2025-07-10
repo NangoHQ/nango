@@ -1,8 +1,10 @@
-import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import { envs } from './env.js';
+
 import { jobsClient } from './clients/jobs.js';
+import { envs } from './env.js';
 import { logger } from './logger.js';
+
+import type { Result } from '@nangohq/utils';
 
 export async function idle(): Promise<Result<void>> {
     try {

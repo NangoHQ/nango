@@ -45,19 +45,6 @@ _No setup guide yet._
 
 - You also need your app's UID, which you should get from Contentstack after registering.
 
-- You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('contentstack', '<CONNECTION-ID>',
-            {
-                params: {
-                    subdomain: 'app',
-                    appId: '<app-uid>'
-                }
-            });
-```
-
-- For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 - You will also need to add your `apiDomain` when creating a new connection. Please refer to the specific API documentation to determine the correct `apiDomain` to use. For instance, if you are using the `Content Delivery API`, review the [Base URL](https://www.contentstack.com/docs/developers/apis/content-delivery-api#base-url) section in its documentation.
 ## API gotchas
 

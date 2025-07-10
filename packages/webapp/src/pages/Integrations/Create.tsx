@@ -1,18 +1,19 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { BookOpenIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import debounce from 'lodash/debounce';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/outline';
-
-import { useGetProvidersAPI } from '../../utils/api';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import DashboardLayout from '../../layout/DashboardLayout';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { useStore } from '../../store';
 import { useSWRConfig } from 'swr';
-import type { AuthModeType } from '@nangohq/types';
+
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { apiPostIntegration } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
-import { Helmet } from 'react-helmet';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
+import { useGetProvidersAPI } from '../../utils/api';
+
+import type { AuthModeType } from '@nangohq/types';
 
 interface Provider {
     name: string;

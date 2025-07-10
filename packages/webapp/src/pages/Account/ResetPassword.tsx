@@ -1,12 +1,12 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import { useResetPasswordAPI } from '../../utils/api';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { Password } from './components/Password';
 import { Button } from '../../components/ui/button/Button';
-import { Helmet } from 'react-helmet';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { useResetPasswordAPI } from '../../utils/api';
 
 export default function ResetPassword() {
     const resetPasswordAPI = useResetPasswordAPI();

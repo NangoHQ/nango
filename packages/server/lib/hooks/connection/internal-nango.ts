@@ -1,11 +1,13 @@
+import { ProxyRequest, connectionService, getProxyConfiguration } from '@nangohq/shared';
+
+import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
-import { connectionService, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, UserProvidedProxyConfiguration, Provider } from '@nangohq/types';
 
 export interface InternalNango {
     getConnection: () => Promise<DBConnectionDecrypted>;
     proxy: <T = any>({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
+    unsetConnectionConfigAttributes: (...keys: string[]) => Promise<ConnectionConfig>;
 }
 
 export function getInternalNango(connection: DBConnectionDecrypted, providerName: string): InternalNango {
@@ -44,6 +46,9 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
         },
         updateConnectionConfig: (connectionConfig: ConnectionConfig) => {
             return connectionService.updateConnectionConfig(connection, connectionConfig);
+        },
+        unsetConnectionConfigAttributes: (...keys: string[]) => {
+            return connectionService.unsetConnectionConfigAttributes(connection, keys);
         }
     };
 }

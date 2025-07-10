@@ -1,5 +1,6 @@
-import type { InternalNango as Nango } from '../../internal-nango';
 import { getLogger } from '@nangohq/utils';
+
+import type { InternalNango as Nango } from '../../internal-nango.js';
 
 const logger = getLogger('post-connection:salesforce');
 

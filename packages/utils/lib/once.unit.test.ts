@@ -1,5 +1,6 @@
-import { once } from './once.js';
 import { describe, expect, it, vi } from 'vitest';
+
+import { once } from './once.js';
 
 describe('once', () => {
     it('should handle sync functions', () => {

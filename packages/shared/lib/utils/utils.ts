@@ -204,6 +204,10 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
     return interpolated;
 }
 function resolveKey(key: string, replacers: Record<string, any>): any {
+    if (key in replacers) {
+        return replacers[key];
+    }
+
     const keys = key.split('.');
     let value = replacers;
 
@@ -330,9 +334,9 @@ export function connectionCopyWithParsedConnectionConfig(connection: Pick<DBConn
     return connectionCopy;
 }
 
-export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
+export function interpolateProxyUrlParts(proxyUrlPart: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace(/connectionConfig/g, 'connection_config') : baseUrl;
+    return proxyUrlPart ? proxyUrlPart.replace(/connectionConfig/g, 'connection_config') : proxyUrlPart;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
@@ -364,15 +368,19 @@ export function encodeParameters(params: Record<string, any>): Record<string, st
 }
 
 /**
- * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ * A helper function to extract the additional connection metadata returned from the Provider in the webhook and token response.
  * It can parse booleans or strings only
  */
-export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
-    if (!params || !provider.token_response_metadata) {
+export function getConnectionMetadata(
+    params: any,
+    provider: Provider,
+    metadataField: 'webhook_response_metadata' | 'token_response_metadata'
+): Record<string, any> {
+    if (!params || !provider[metadataField]) {
         return {};
     }
 
-    const whitelistedKeys = provider.token_response_metadata;
+    const whitelistedKeys = provider[metadataField];
 
     const getValueFromDotNotation = (obj: any, key: string): any => {
         return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
@@ -408,4 +416,31 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
     return new URL(interpolatedUrl);
+}
+
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+    if (!pem || typeof pem !== 'string') {
+        throw new Error('Invalid PEM input: must be a non-empty string');
+    }
+
+    const normalized = pem
+        .replace(/\r\n/g, '\n')
+        .replace(/^\s+|\s+$/g, '')
+        .replace(/-----(BEGIN|END) [^-]+-----/g, '')
+        .replace(/\s+/g, '');
+
+    if (!normalized) {
+        throw new Error('PEM content is empty after normalization');
+    }
+
+    if (!/^[a-zA-Z0-9+/=]+$/.test(normalized)) {
+        throw new Error('PEM contains invalid characters (must be base64)');
+    }
+
+    const chunked = normalized.match(/.{1,64}/g);
+    if (!chunked) {
+        throw new Error('Failed to chunk PEM content');
+    }
+
+    return `-----BEGIN ${type}-----\n${chunked.join('\n')}\n-----END ${type}-----\n`;
 }

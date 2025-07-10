@@ -1,10 +1,13 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
-import * as tasks from './tasks.js';
-import { taskStates } from '../types.js';
-import type { TaskState, Task } from '../types.js';
-import { getTestDbClient } from '../db/helpers.test.js';
-import type { knex } from 'knex';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { nanoid } from '@nangohq/utils';
+
+import * as tasks from './tasks.js';
+import { getTestDbClient } from '../db/helpers.test.js';
+import { taskStates } from '../types.js';
+
+import type { Task, TaskState } from '../types.js';
+import type { knex } from 'knex';
 
 describe('Task', () => {
     const dbClient = getTestDbClient();

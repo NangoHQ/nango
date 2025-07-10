@@ -1,7 +1,9 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PatchOnboarding } from '@nangohq/types';
 import { completeOnboarding } from '@nangohq/shared';
+import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PatchOnboarding } from '@nangohq/types';
 
 export const patchOnboarding = asyncWrapper<PatchOnboarding>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });

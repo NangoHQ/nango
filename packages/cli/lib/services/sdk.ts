@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { Nango } from '@nangohq/node';
 import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 
-import type { DryRunService } from './dryrun.service';
+import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import type { GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
@@ -88,8 +88,7 @@ export class NangoActionCLI extends NangoActionBase {
             ...syncArgs,
             connectionId,
             autoConfirm: true,
-            debug: false,
-            zero: this.dryRunService.isZeroYaml
+            debug: false
         });
     }
 

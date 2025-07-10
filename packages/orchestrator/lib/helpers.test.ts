@@ -1,8 +1,10 @@
-import type { DatabaseClient } from '@nangohq/scheduler';
 import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
-import { TaskEventsHandler } from './events.js';
+
 import { OrchestratorClient } from './clients/client.js';
+import { TaskEventsHandler } from './events.js';
 import { getServer } from './server.js';
+
+import type { DatabaseClient } from '@nangohq/scheduler';
 
 export class TestOrchestratorService {
     private orchestratorClient: OrchestratorClient;

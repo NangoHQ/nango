@@ -1,4 +1,5 @@
-import type { OnEventType } from '../scripts/on-events/api';
+import type { OnEventType } from '../scripts/on-events/api.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
@@ -149,10 +150,14 @@ export type NangoSyncEndpointOld = Partial<Record<HTTP_METHOD, string | undefine
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
-    group?: string | undefined;
+    group?: string | null | undefined;
 }
 
-// --- Providers Yaml is a modified nango.yaml
+// --- Flows Yaml is a modified nango.yaml
 export interface FlowsYaml {
     integrations: Record<string, NangoYamlV2Integration & { models: NangoYamlModel }>;
 }
+
+// --- flows.zero.json is a parsed nango.yaml
+export type FlowZeroJson = NangoYamlParsedIntegration & { jsonSchema: JSONSchema7; sdkVersion: string };
+export type FlowsZeroJson = FlowZeroJson[];

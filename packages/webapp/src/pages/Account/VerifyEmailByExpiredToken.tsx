@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
-import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nangohq/types';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import DefaultLayout from '../../layout/DefaultLayout';
 import { apiFetch } from '../../utils/api';
+
+import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nangohq/types';
 
 export function VerifyEmailByExpiredToken() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
