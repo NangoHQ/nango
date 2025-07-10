@@ -1,11 +1,14 @@
-import { expect, describe, it, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { Scheduler } from './scheduler.js';
-import type { Schedule, ScheduleState, Task } from './types.js';
-import type { TaskProps } from './models/tasks.js';
-import * as tasks from './models/tasks.js';
-import { getTestDbClient } from './db/helpers.test.js';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { nanoid } from '@nangohq/utils';
+
+import { getTestDbClient } from './db/helpers.test.js';
 import { envs } from './env.js';
+import * as tasks from './models/tasks.js';
+import { Scheduler } from './scheduler.js';
+
+import type { TaskProps } from './models/tasks.js';
+import type { Schedule, ScheduleState, Task } from './types.js';
 
 describe('Scheduler', () => {
     const dbClient = getTestDbClient();

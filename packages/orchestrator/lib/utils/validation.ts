@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import type { JsonValue } from 'type-fest';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);

@@ -1,16 +1,20 @@
-import { describe, it, beforeAll, afterAll, vi } from 'vitest';
-import type { Task } from '@nangohq/scheduler';
-import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
+import { setTimeout } from 'timers/promises';
+
+import { tracer } from 'dd-trace';
+import getPort from 'get-port';
+import { afterAll, beforeAll, describe, it, vi } from 'vitest';
+
+import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { Err, Ok, nanoid } from '@nangohq/utils';
+
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
-import getPort from 'get-port';
 import { TaskEventsHandler } from '../events.js';
-import { Err, Ok, nanoid } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+
 import type { OrchestratorTask } from './types.js';
-import { tracer } from 'dd-trace';
-import { setTimeout } from 'timers/promises';
+import type { Task } from '@nangohq/scheduler';
+import type { Result } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
 const taskEventsHandler = new TaskEventsHandler(dbClient.db, {

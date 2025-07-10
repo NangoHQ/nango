@@ -1,14 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import yaml from 'js-yaml';
 
-import type { NangoYaml } from '@nangohq/types';
-
+import { nangoConfigFile } from './constant.js';
 import { determineVersion } from './helpers.js';
-import type { NangoYamlParser } from './parser.js';
 import { NangoYamlParserV1 } from './parser.v1.js';
 import { NangoYamlParserV2 } from './parser.v2.js';
-import { nangoConfigFile } from './constant.js';
+
+import type { NangoYamlParser } from './parser.js';
+import type { NangoYaml } from '@nangohq/types';
 
 /**
  * Load nango.yaml

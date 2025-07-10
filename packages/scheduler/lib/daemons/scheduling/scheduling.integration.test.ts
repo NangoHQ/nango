@@ -1,11 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { uuidv7 } from 'uuidv7';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { dueSchedules } from './scheduling.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
-import { uuidv7 } from 'uuidv7';
-import type knex from 'knex';
+import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
+
 import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
-import { TASKS_TABLE, DbTask } from '../../models/tasks.js';
+import type knex from 'knex';
 
 describe('dueSchedules', () => {
     const dbClient = getTestDbClient();

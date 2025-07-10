@@ -1,6 +1,6 @@
+import { createContext, forwardRef, useContext, useId, useMemo } from 'react';
 import * as RechartsPrimitive from 'recharts';
 
-import { createContext, forwardRef, useContext, useId, useMemo } from 'react';
 import { cn } from '../../utils/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -281,4 +281,4 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
     return configLabelKey in config ? config[configLabelKey] : config[key];
 }
 
-export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle };
+export { ChartContainer, ChartLegend, ChartLegendContent, ChartStyle, ChartTooltip, ChartTooltipContent };

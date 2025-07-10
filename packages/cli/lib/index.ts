@@ -14,6 +14,7 @@ import figlet from 'figlet';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
+import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { compileAllFiles } from './services/compile.service.js';
@@ -34,7 +35,6 @@ import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
-import { initAI } from './ai/init.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {

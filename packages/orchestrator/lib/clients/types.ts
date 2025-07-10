@@ -1,10 +1,10 @@
-import type { JsonValue, SetOptional } from 'type-fest';
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { PostRecurring } from '../routes/v1/postRecurring.js';
-import type { Result } from '@nangohq/utils';
-import type { ScheduleState, TaskState } from '@nangohq/scheduler';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
+import type { ScheduleState, TaskState } from '@nangohq/scheduler';
 import type { ConnectionJobs } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { JsonValue, SetOptional } from 'type-fest';
 
 export type ImmediateProps = PostImmediate['Body'];
 export type RecurringProps = PostRecurring['Body'];

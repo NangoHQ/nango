@@ -1,7 +1,9 @@
-import storage, { LocalStorageKeys } from '../utils/local-storage';
-import { useLogoutAPI } from '../utils/api';
-import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 import { useSWRConfig } from 'swr';
+
+import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
+import { useLogoutAPI } from '../utils/api';
+import storage, { LocalStorageKeys } from '../utils/local-storage';
+
 import type { ApiUser } from '@nangohq/types';
 
 export function useSignin() {

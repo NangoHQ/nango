@@ -1,5 +1,6 @@
-import { Button } from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
+
+import { Button } from '../../../components/ui/button/Button';
 
 export const HelpFooter: React.FC = () => {
     return (

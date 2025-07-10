@@ -1,15 +1,17 @@
 import { Cross1Icon } from '@radix-ui/react-icons';
-import { Button } from '../../../components/ui/button/Button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from '../../../components/ui/Dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
-import type { ApiInvitation, ApiUser } from '@nangohq/types';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
+import { Button } from '../../../components/ui/button/Button';
+import { apiDeleteInvite } from '../../../hooks/useInvite';
 import { apiDeleteTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { useUser } from '../../../hooks/useUser';
-import { useNavigate } from 'react-router-dom';
-import { apiDeleteInvite } from '../../../hooks/useInvite';
+import { useStore } from '../../../store';
+
+import type { ApiInvitation, ApiUser } from '@nangohq/types';
 
 export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
     const env = useStore((state) => state.env);

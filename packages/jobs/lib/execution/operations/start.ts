@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { localFileService, remoteFileService, connectionService } from '@nangohq/shared';
+import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 
 import { getRunner } from '../../runner/runner.js';
