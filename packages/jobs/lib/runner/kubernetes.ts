@@ -227,7 +227,7 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
     return {
         requests: {
             cpu: '500m',
-            memory: '10424Mi'
+            memory: '1023Mi'
         },
         limits: {
             cpu: '500m',
