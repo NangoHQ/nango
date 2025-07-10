@@ -1,4 +1,4 @@
-import type { Endpoint, ApiError } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 import type { Deployment } from './index.js';
 
 export type PostRollout = Endpoint<{

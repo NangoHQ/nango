@@ -9,8 +9,8 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import * as Table from '../../components/ui/Table';
 import { useSyncs } from '../../hooks/useSyncs';
 import { useStore } from '../../store';
-
 import { getLogsUrl } from '../../utils/logs';
+
 import type { SyncResponse } from '../../types.js';
 import type { ApiConnectionFull } from '@nangohq/types';
 

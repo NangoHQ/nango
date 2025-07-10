@@ -1,10 +1,12 @@
-import type { useSWRConfig, Cache } from 'swr';
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
-import type { SWRError } from '../utils/api';
+
 import { apiFetch, swrFetcher } from '../utils/api';
-import type { GetConnections, DeleteConnection, GetConnectionsCount, GetConnection, PostConnectionRefresh } from '@nangohq/types';
-import { useMemo } from 'react';
+
+import type { SWRError } from '../utils/api';
+import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh } from '@nangohq/types';
+import type { Cache, useSWRConfig } from 'swr';
 
 export function useConnections(queries: GetConnections['Querystring']) {
     const { data, error, size, setSize, mutate } = useSWRInfinite<GetConnections['Success'], SWRError<GetConnections['Errors']>>(

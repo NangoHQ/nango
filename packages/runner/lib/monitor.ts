@@ -1,10 +1,12 @@
-import os from 'os';
 import fs from 'fs';
-import { logger } from './logger.js';
-import { idle } from './idle.js';
-import { envs } from './env.js';
-import type { NangoProps } from '@nangohq/types';
+import os from 'os';
+
 import { persistClient } from './clients/persist.js';
+import { envs } from './env.js';
+import { idle } from './idle.js';
+import { logger } from './logger.js';
+
+import type { NangoProps } from '@nangohq/types';
 
 export class RunnerMonitor {
     private runnerId: number;

@@ -2,12 +2,13 @@ import { z } from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
+import { taskEvents } from '../../../../events.js';
+
 import type { Scheduler, Task, TaskState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type { EventEmitter } from 'node:events';
 import type { JsonValue } from 'type-fest';
-import { taskEvents } from '../../../../events.js';
 
 type GetOutput = Endpoint<{
     Method: typeof method;

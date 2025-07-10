@@ -1,5 +1,5 @@
+import { CubeTransparentIcon, LockOpenIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-import { LockOpenIcon, CubeTransparentIcon } from '@heroicons/react/24/outline';
 
 interface IntegrationLogoProps {
     provider: string;

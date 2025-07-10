@@ -1,4 +1,5 @@
 import Nango from '@nangohq/frontend';
+
 import { apiFetch } from './api';
 import { apiPatchEnvironment } from '../hooks/useEnvironment';
 

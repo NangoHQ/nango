@@ -1,15 +1,16 @@
 import { IconKey, IconServer } from '@tabler/icons-react';
-import { useStore } from '../../../store';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
-import SecretInput from '../../../components/ui/input/SecretInput';
-import { EditableInput } from './EditableInput';
-import { Button } from '../../../components/ui/button/Button';
-import { apiFetch } from '../../../utils/api';
 import { useState } from 'react';
-import { useToast } from '../../../hooks/useToast';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import { Info } from '../../../components/Info';
 import { Link } from 'react-router-dom';
+
+import { EditableInput } from './EditableInput';
+import { Info } from '../../../components/Info';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+import { Button } from '../../../components/ui/button/Button';
+import SecretInput from '../../../components/ui/input/SecretInput';
+import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { apiFetch } from '../../../utils/api';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();

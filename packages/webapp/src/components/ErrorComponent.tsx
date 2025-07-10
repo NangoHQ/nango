@@ -1,9 +1,11 @@
-import type { ApiError } from '@nangohq/types';
-import PageNotFound from '../pages/PageNotFound';
-import DashboardLayout from '../layout/DashboardLayout';
-import { Info } from './Info';
-import type { LeftNavBarItems } from './LeftNavBar';
 import { Helmet } from 'react-helmet';
+
+import { Info } from './Info';
+import DashboardLayout from '../layout/DashboardLayout';
+import PageNotFound from '../pages/PageNotFound';
+
+import type { LeftNavBarItems } from './LeftNavBar';
+import type { ApiError } from '@nangohq/types';
 
 export const ErrorPageComponent: React.FC<{ title: string; error: ApiError<string>; page: LeftNavBarItems }> = ({ title, error, page }) => {
     if (error.error.code === 'not_found') {

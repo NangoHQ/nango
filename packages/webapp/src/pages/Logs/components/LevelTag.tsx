@@ -1,5 +1,6 @@
-import type { SearchMessagesData } from '@nangohq/types';
 import { Tag } from '../../../components/ui/label/Tag';
+
+import type { SearchMessagesData } from '@nangohq/types';
 
 export const LevelTag: React.FC<{ level: SearchMessagesData['level'] }> = ({ level }) => {
     if (level === 'error') {
