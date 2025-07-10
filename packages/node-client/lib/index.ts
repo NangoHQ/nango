@@ -6,8 +6,6 @@ import axios from 'axios';
 import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 import type {
-    Integration,
-    IntegrationWithCreds,
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
@@ -183,7 +181,7 @@ export class Nango {
     public async getIntegration(
         params: GetPublicIntegration['Params'],
         queries?: GetPublicIntegration['Querystring']
-    ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+    ): Promise<GetPublicIntegration['Success']> {
         const headers = { 'Content-Type': 'application/json' };
 
         const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
@@ -193,16 +191,13 @@ export class Nango {
         return response.data;
     }
 
-    public async createIntegration(body: PostPublicIntegration['Body']): Promise<{ config: Integration } | PostPublicIntegration['Success']> {
+    public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']> {
         const url = `${this.serverUrl}/integrations`;
         const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
-    public async updateIntegration(
-        params: PatchPublicIntegration['Params'],
-        body: PatchPublicIntegration['Body']
-    ): Promise<{ config: Integration } | PatchPublicIntegration['Success']> {
+    public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']> {
         const url = `${this.serverUrl}/integrations/${params.uniqueKey}`;
         const response = await this.http.patch(url, body, { headers: this.enrichHeaders({}) });
         return response.data;
