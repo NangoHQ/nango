@@ -2,7 +2,7 @@ import { billing } from '@nangohq/billing';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkOrbCustomer, linkOrbFreeSubscription } from '../../../../utils/orb.js';
+import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 
 import type { GetUsage } from '@nangohq/types';
 
@@ -21,18 +21,18 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
 
     // Backfill orb customer
     if (!plan.orb_customer_id) {
-        const linkOrbCustomerRes = await linkOrbCustomer(account, user);
+        const linkOrbCustomerRes = await linkBillingCustomer(account, user);
         if (linkOrbCustomerRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to link Orb customer' } });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to link billing customer' } });
             return;
         }
     }
 
     // Backfill orb subscription (free by default)
     if (!plan.orb_subscription_id) {
-        const linkOrbSubscriptionRes = await linkOrbFreeSubscription(account);
+        const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
         if (linkOrbSubscriptionRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to link Orb subscription' } });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to link billing subscription' } });
             return;
         }
     }

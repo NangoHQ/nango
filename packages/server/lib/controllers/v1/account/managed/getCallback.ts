@@ -6,7 +6,7 @@ import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkOrbCustomer } from '../../../../utils/orb.js';
+import { linkBillingCustomer } from '../../../../utils/billing.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam, GetManagedCallback } from '@nangohq/types';
@@ -118,7 +118,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         }
 
         if (isNewTeam && flagHasUsage) {
-            const res = await linkOrbCustomer(account, user);
+            const res = await linkBillingCustomer(account, user);
             if (res.isErr()) {
                 report(res.error);
             }

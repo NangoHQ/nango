@@ -8,7 +8,7 @@ import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangoh
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { linkOrbCustomer, linkOrbFreeSubscription } from '../../../utils/orb.js';
+import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 
 import type { DBTeam, PostSignup } from '@nangohq/types';
 
@@ -110,11 +110,11 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     if (!token && flagHasUsage) {
-        const linkOrbCustomerRes = await linkOrbCustomer(account, user);
+        const linkOrbCustomerRes = await linkBillingCustomer(account, user);
         if (linkOrbCustomerRes.isErr()) {
             report(linkOrbCustomerRes.error);
         } else {
-            const linkOrbSubscriptionRes = await linkOrbFreeSubscription(account);
+            const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
             if (linkOrbSubscriptionRes.isErr()) {
                 report(linkOrbSubscriptionRes.error);
             }
