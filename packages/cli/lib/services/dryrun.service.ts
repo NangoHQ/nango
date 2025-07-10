@@ -323,8 +323,8 @@ export class DryRunService {
             }
         }
 
-        const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
-        if (!jsonSchema) {
+        const jsonSchemaResult = loadSchemaJson({ fullPath: this.fullPath });
+        if (!jsonSchemaResult) {
             console.log(chalk.red('Failed to load schema.json'));
             return;
         }
@@ -346,7 +346,7 @@ export class DryRunService {
                 nango_config_id: 1,
                 runs: '',
                 webhook_subscriptions: [],
-                models_json_schema: jsonSchema,
+                models_json_schema: jsonSchemaResult.schema,
                 created_at: new Date(),
                 updated_at: new Date(),
                 attributes: {},

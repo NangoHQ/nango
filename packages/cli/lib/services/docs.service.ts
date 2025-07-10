@@ -1,10 +1,12 @@
 import { promises as fs } from 'node:fs';
+import chalk from 'chalk';
+import path from 'node:path';
 
 import { printDebug } from '../utils.js';
 import { loadSchemaJson } from './model.service.js';
 
 import type { NangoYamlParsed, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
-import type { JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7Definition, JSONSchema7 } from 'json-schema';
 
 type NangoSyncOrAction = ParsedNangoSync | ParsedNangoAction;
 
@@ -12,7 +14,7 @@ const divider = '<!-- END  GENERATED CONTENT -->';
 
 export async function generate({
     absolutePath,
-    path,
+    path: subPath,
     parsed,
     isForIntegrationTemplates = false,
     debug = false
@@ -23,8 +25,7 @@ export async function generate({
     debug?: boolean;
     isForIntegrationTemplates?: false;
 }): Promise<boolean> {
-    const pathPrefix = path && path.startsWith('/') ? path.slice(1) : path;
-
+    const pathPrefix = subPath && subPath.startsWith('/') ? subPath.slice(1) : subPath;
     const writePath = pathPrefix ? `${absolutePath}/${pathPrefix}` : absolutePath;
 
     if (debug) {
@@ -36,22 +37,22 @@ export async function generate({
     }
 
     await fs.mkdir(writePath, { recursive: true });
-
-    const jsonSchema = loadSchemaJson({ fullPath: absolutePath });
-    if (!jsonSchema) {
-        return false;
-    }
-
+    const getSchema = createSchemaResolver(absolutePath);
     const integrations = parsed.integrations;
     for (const config of integrations) {
         const integration = config.providerConfigKey;
+
+        const jsonSchema = getSchema(integration);
+        if (!jsonSchema) {
+            return false;
+        }
 
         const toGenerate: NangoSyncOrAction[] = [...Object.values(config.syncs), ...Object.values(config.actions)];
 
         for (const entry of toGenerate) {
             const scriptPath = `${integration}/${entry.type}s/${entry.name}`;
             try {
-                const filename = path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`;
+                const filename = subPath ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`;
 
                 let markdown;
                 try {
@@ -69,7 +70,7 @@ export async function generate({
                     models: entry.usedModels.map((name) => ({ name, def: jsonSchema.definitions![name]! })),
                     isForIntegrationTemplates
                 });
-                await fs.writeFile(path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
+                await fs.writeFile(subPath ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
             } catch {
                 console.error(`Error generating readme for ${integration} ${entry.type} ${entry.name}`);
                 return false;
@@ -78,6 +79,30 @@ export async function generate({
     }
 
     return true;
+}
+
+function createSchemaResolver(absolutePath: string): (integration: string) => JSONSchema7 | null {
+    const globalResult = loadSchemaJson({ fullPath: absolutePath, suppressErrors: true });
+
+    return (integration: string) => {
+        const integrationPath = path.join(absolutePath, integration);
+        const integrationResult = loadSchemaJson({ fullPath: integrationPath, suppressErrors: true });
+        if (integrationResult.schema) {
+            return integrationResult.schema;
+        }
+        if (globalResult.schema) {
+            return globalResult.schema;
+        }
+
+        if (integrationResult.error) {
+            console.error(chalk.red(`Error loading ${integrationPath}`), integrationResult.error);
+        }
+        if (globalResult.error) {
+            console.error(chalk.red(`Error loading ${absolutePath}`), globalResult.error);
+        }
+
+        return null;
+    };
 }
 
 async function directoryExists(path: string): Promise<boolean> {
