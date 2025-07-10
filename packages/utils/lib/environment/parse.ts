@@ -83,6 +83,7 @@ export const ENVS = z.object({
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    NAMESPACE_PER_RUNNER: bool,
 
     // FLEET
     RUNNERS_DATABASE_URL: z.string().url().optional(),

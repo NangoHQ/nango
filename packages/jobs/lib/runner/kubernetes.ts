@@ -7,7 +7,8 @@ import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 // Load Kubernetes config (works with local kubeconfig or in-cluster config)
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
-const namespace = envs.RUNNER_NAMESPACE;
+const defaultNamespace = envs.RUNNER_NAMESPACE;
+const namespacePerRunner = envs.NAMESPACE_PER_RUNNER || false;
 const appsApi = kc.makeApiClient(k8s.AppsV1Api);
 const coreApi = kc.makeApiClient(k8s.CoreV1Api);
 
@@ -19,6 +20,27 @@ export const kubernetesNodeProvider: NodeProvider = {
     },
     start: async (node: Node) => {
         const name = serviceName(node);
+        let namespace = defaultNamespace;
+        let runnerUrl = `http://${name}`;
+
+        if (namespacePerRunner) {
+            namespace = `${defaultNamespace}-${node.routingId}`;
+            runnerUrl = `http://${name}.${namespace}`;
+            const namespaceManifest: k8s.V1Namespace = {
+                metadata: {
+                    name: namespace
+                }
+            };
+            try {
+                await coreApi.createNamespace({
+                    body: namespaceManifest
+                });
+            } catch (err: any) {
+                if (err.body?.reason !== 'AlreadyExists') {
+                    return Err(new Error('Failed to create namespace', { cause: err }));
+                }
+            }
+        }
 
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
@@ -44,7 +66,7 @@ export const kubernetesNodeProvider: NodeProvider = {
                                     { name: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                                     { name: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
                                     { name: 'RUNNER_NODE_ID', value: `${node.id}` },
-                                    { name: 'RUNNER_URL', value: `http://${name}` },
+                                    { name: 'RUNNER_URL', value: runnerUrl },
                                     { name: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
                                     { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                                     { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
@@ -128,7 +150,10 @@ export const kubernetesNodeProvider: NodeProvider = {
         }
     },
     verifyUrl: (url: string) => {
-        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+$/)) {
+        // Match both patterns:
+        // - http://service-name (without namespace)
+        // - http://service-name.namespace (with namespace)
+        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)?$/)) {
             return Promise.resolve(Err(new Error('Invalid Kubernetes service URL format')));
         }
         return Promise.resolve(Ok(undefined));
