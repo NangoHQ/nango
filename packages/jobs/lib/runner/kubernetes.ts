@@ -1,6 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -239,6 +238,26 @@ function getResourceLimits(node: Node): { requests: { cpu: string; memory: strin
             memory: '1024Mi'
         }
     };
+}
+
+function getApiUrl() {
+    if (namespacePerRunner) {
+        return `${envs.NANGO_SERVER_URL}.${defaultNamespace}`;
+    } else {
+        return envs.NANGO_SERVER_URL;
+    }
+}
+
+function getPersistAPIUrl() {
+    if (namespacePerRunner) {
+        return `${envs.PERSIST_SERVICE_URL}.${defaultNamespace}`;
+    } else {
+        return envs.PERSIST_SERVICE_URL || 'http://localhost:3007';
+    }
+}
+
+function getProvidersUrl() {
+    return `${getApiUrl()}/providers.json`;
 }
 
 function getJobsServiceUrl() {
