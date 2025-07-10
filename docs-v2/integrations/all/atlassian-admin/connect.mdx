@@ -7,6 +7,7 @@ sidebarTitle: Atlassian Cloud Admin
 
 To authenticate with Atlassian Cloud Admin, you will need:
 1. **API Key** - A key that grants Nango permission to interact with Atlassian Cloud Admin APIs resources and services.
+2. **Organization ID** - ID that is associated with your Atlassian organization. This is optional.
 
 This guide will walk you through generating your **API Key** within Atlassian.
 
@@ -14,7 +15,7 @@ This guide will walk you through generating your **API Key** within Atlassian.
 
 - You must have an account with Atlassian.
 
-#### Step 1: Generating your API Key
+#### Step 1 Generating your API Key
 - To authenticate with Atlassian Cloud Admin APIs, you’ll need to generate an API key. You can choose between:
 * **API key with scopes** – More secure, allows fine-grained access control.
 * **API key without scopes** – Broader access, potentially less secure.
@@ -37,15 +38,16 @@ This guide will walk you through generating your **API Key** within Atlassian.
 8. Review all details and selected scopes (if applicable).
 <img src="/integrations/all/atlassian-admin/review_key_details.png" />
 9. Click **Create API Key**.
+10. Copy and securely save the API key when prompted — you won’t be able to view it again later.
+11. Copy and save the organization ID. You can optionally enter this in the Connect UI.
 
-<Tip>Copy and securely save the API key when prompted — you won’t be able to view it again later.</Tip>
-
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2 Enter credentials in the Connect UI
 
 Once you have your **API Key**:
 1. Open the form where you need to authenticate with Atlassian Cloud Admin.
 2. Enter your **API Key** in its respective field.
-3. Submit the form, and you should be successfully authenticated.
+3. Optionally enter your **Organization ID** in the correct field.
+4. Submit the form, and you should be successfully authenticated.
 
 
 <img src="/integrations/all/atlassian-admin/form.png" style={{maxWidth: "450px" }}/>

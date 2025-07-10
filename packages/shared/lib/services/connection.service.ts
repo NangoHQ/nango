@@ -104,7 +104,7 @@ class ConnectionService {
         environmentId: number;
         metadata?: Metadata | null;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environmentId);
+        const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId });
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
         if (storedConnection) {
@@ -175,53 +175,55 @@ class ConnectionService {
         metadata?: Metadata | null;
         environment: DBEnvironment;
     }): Promise<ConnectionUpsertResponse[]> {
-        const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            config_id: config.id as number,
-            credentials,
-            connection_config: connectionConfig || {},
-            environment_id: environment.id,
-            metadata: metadata || null,
-            created_at: new Date(),
-            updated_at: new Date(),
-            id: -1,
-            last_fetched_at: new Date(),
-            credentials_expires_at: getExpiresAtFromCredentials(credentials),
-            last_refresh_success: new Date(),
-            last_refresh_failure: null,
-            refresh_attempts: null,
-            refresh_exhausted: false,
-            deleted: false,
-            deleted_at: null
+        return await db.knex.transaction(async (trx) => {
+            const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
+
+            const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                config_id: config.id as number,
+                credentials,
+                connection_config: connectionConfig || {},
+                environment_id: environment.id,
+                metadata: metadata || null,
+                created_at: new Date(),
+                updated_at: new Date(),
+                id: -1,
+                last_fetched_at: new Date(),
+                credentials_expires_at: getExpiresAtFromCredentials(credentials),
+                last_refresh_success: new Date(),
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false,
+                deleted: false,
+                deleted_at: null
+            });
+
+            const [connection] = await db.knex
+                .from<DBConnection>(`_nango_connections`)
+                .insert(encryptedConnection)
+                .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
+                .merge({
+                    connection_id: encryptedConnection.connection_id,
+                    provider_config_key: encryptedConnection.provider_config_key,
+                    config_id: encryptedConnection.config_id,
+                    credentials: encryptedConnection.credentials,
+                    credentials_iv: encryptedConnection.credentials_iv,
+                    credentials_tag: encryptedConnection.credentials_tag,
+                    connection_config: encryptedConnection.connection_config,
+                    environment_id: encryptedConnection.environment_id,
+                    metadata: encryptedConnection.connection_config,
+                    credentials_expires_at: encryptedConnection.credentials_expires_at,
+                    last_refresh_success: encryptedConnection.last_refresh_success,
+                    last_refresh_failure: encryptedConnection.last_refresh_failure,
+                    refresh_attempts: encryptedConnection.refresh_attempts,
+                    refresh_exhausted: encryptedConnection.refresh_exhausted,
+                    updated_at: new Date()
+                })
+                .returning('*');
+
+            return [{ connection: connection!, operation: exists ? 'override' : 'creation' }];
         });
-
-        const [connection] = await db.knex
-            .from<DBConnection>(`_nango_connections`)
-            .insert(encryptedConnection)
-            .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
-            .merge({
-                connection_id: encryptedConnection.connection_id,
-                provider_config_key: encryptedConnection.provider_config_key,
-                config_id: encryptedConnection.config_id,
-                credentials: encryptedConnection.credentials,
-                credentials_iv: encryptedConnection.credentials_iv,
-                credentials_tag: encryptedConnection.credentials_tag,
-                connection_config: encryptedConnection.connection_config,
-                environment_id: encryptedConnection.environment_id,
-                metadata: encryptedConnection.connection_config,
-                credentials_expires_at: encryptedConnection.credentials_expires_at,
-                last_refresh_success: encryptedConnection.last_refresh_success,
-                last_refresh_failure: encryptedConnection.last_refresh_failure,
-                refresh_attempts: encryptedConnection.refresh_attempts,
-                refresh_exhausted: encryptedConnection.refresh_exhausted,
-                updated_at: new Date()
-            })
-            .returning('*');
-
-        const operation = connection ? 'creation' : 'override';
-
-        return [{ connection: connection!, operation }];
     }
 
     public async upsertUnauthConnection({
@@ -237,7 +239,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         environment: DBEnvironment;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
+        const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId: environment.id });
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
         const expiresAt = getExpiresAtFromCredentials({});
 
@@ -364,14 +366,17 @@ class ConnectionService {
         return result || null;
     }
 
-    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | DBConnection> {
-        const result = await db.knex
+    public async checkIfConnectionExists(
+        db: Knex,
+        { connectionId, providerConfigKey, environmentId }: { connectionId: string; providerConfigKey: string; environmentId: number }
+    ): Promise<null | DBConnection> {
+        const result = await db
             .select<DBConnection>('*')
             .from<DBConnection>('_nango_connections')
             .where({
-                connection_id,
-                provider_config_key,
-                environment_id,
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                environment_id: environmentId,
                 deleted: false
             })
             .first();
