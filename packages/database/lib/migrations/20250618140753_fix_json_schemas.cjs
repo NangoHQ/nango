@@ -10,8 +10,6 @@ exports.up = async function (knex) {
     });
 
     for (const syncConfig of publicSyncConfigs) {
-        console.log('Migrating sync config', syncConfig.id);
-
         /**
          * Set to null if there are no models.
          */
@@ -23,22 +21,26 @@ exports.up = async function (knex) {
             await knex.update({ models_json_schema: null }).from('_nango_sync_configs').where({ id: syncConfig.id });
             continue;
         }
+        try {
+            const nangoModels = Array.isArray(syncConfig.model_schema) ? syncConfig.model_schema : [syncConfig.model_schema];
+            const newJsonSchema = isLegacyModelSchema(nangoModels) ? legacySyncModelsToJsonSchema(nangoModels) : nangoModelsToJsonSchema(nangoModels);
 
-        const nangoModels = Array.isArray(syncConfig.model_schema) ? syncConfig.model_schema : [syncConfig.model_schema];
-        const newJsonSchema = isLegacyModelSchema(nangoModels) ? legacySyncModelsToJsonSchema(nangoModels) : nangoModelsToJsonSchema(nangoModels);
+            // Add a marker to the JSON schema to indicate that it was migrated.
+            // In case we ever need to fix something about this migration.
+            newJsonSchema['$version'] = '20250618140753';
 
-        // Add a marker to the JSON schema to indicate that it was migrated.
-        // In case we ever need to fix something about this migration.
-        newJsonSchema['$version'] = '20250618140753';
-
-        await knex
-            .update({
-                models_json_schema: newJsonSchema
-            })
-            .from('_nango_sync_configs')
-            .where({
-                id: syncConfig.id
-            });
+            await knex
+                .update({
+                    models_json_schema: newJsonSchema
+                })
+                .from('_nango_sync_configs')
+                .where({
+                    id: syncConfig.id
+                });
+        } catch (err) {
+            console.error(`Error converting models_schema to json_schema for sync config ${syncConfig.id}. Setting json_schema to null. Error:`, err);
+            await knex.update({ models_json_schema: null }).from('_nango_sync_configs').where({ id: syncConfig.id });
+        }
     }
 };
 
