@@ -38,10 +38,11 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostWs.href,
                     connectUrl,
                     'https://*.posthog.com',
+                    'https://*.stripe.com',
                     ...additionalConnectSources
                 ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
-                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com'],
+                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],
                 imgSrc: [
                     "'self'",
                     'data:',
@@ -62,6 +63,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     "'unsafe-inline'",
                     hostPublic,
                     hostApi,
+                    'https://*.stripe.com',
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://apis.google.com',

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-import { zodErrorToHTTP } from '@nangohq/utils';
+import db from '@nangohq/database';
+import { updatePlan } from '@nangohq/shared';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -36,6 +38,13 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
 
     const stripe = getStripe();
     await stripe.paymentMethods.detach(query.payment_id);
+
+    const updated = await updatePlan(db.knex, { id: plan.id, stripe_payment_id: null });
+    if (updated.isErr()) {
+        report('Failed to update plan', { plan });
+        res.status(500).send({ error: { code: 'server_error', message: 'failed to update plan' } });
+        return;
+    }
 
     res.status(200).send({
         data: {
