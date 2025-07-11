@@ -909,6 +909,81 @@ class OAuthController {
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, provider);
 
         const installationId = req.query['installation_id'] as string | undefined;
+        const authMode = session.authMode;
+        const setupAction = req.query['setup_action'] as string | undefined;
+
+        if (!authorizationCode && authMode === 'CUSTOM' && setupAction === 'update') {
+            // this means the app was already installed and another user is trying to update the app
+            // in this case we don't need the auth token
+            const connectionConfig = {
+                ...session.connectionConfig,
+                app_id: config?.custom?.['app_id'],
+                installation_id: installationId
+            };
+
+            let connectSession: ConnectSessionAndEndUser | undefined;
+
+            if (session.connectSessionId) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
+                    return;
+                }
+            }
+
+            const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                void connectionCreatedHook(
+                    {
+                        connection: res.connection,
+                        environment,
+                        account,
+                        auth_mode: 'APP',
+                        operation: res.operation,
+                        endUser: connectSession?.endUser
+                    },
+                    account,
+                    config,
+                    logContextGetter,
+                    { initiateSync: true, runPostConnectionScript: false }
+                );
+            };
+
+            const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
+                connectionId,
+                config,
+                provider as unknown as ProviderGithubApp,
+                connectionConfig,
+                logCtx,
+                connCreatedHook
+            );
+
+            if (session.connectSessionId && connectionResponse.isOk()) {
+                const upsertedConnection = connectionResponse.value;
+                if (upsertedConnection?.connection && connectSession) {
+                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: upsertedConnection.connection });
+                }
+            }
+
+            await logCtx.success();
+
+            await publisher.notifySuccess({
+                res,
+                wsClientId: channel,
+                providerConfigKey,
+                connectionId,
+                isPending: false
+            });
+
+            return;
+        }
 
         if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
