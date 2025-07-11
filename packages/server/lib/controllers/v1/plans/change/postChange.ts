@@ -81,7 +81,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
             const paymentIntent = await stripe.paymentIntents.create({
                 metadata: { accountUuid: account.uuid },
-                amount: newPlan.basePrice! * 100,
+                amount: resUpgrade.value.amount ? Math.round(Number(resUpgrade.value.amount) * 100) : newPlan.basePrice! * 100,
                 currency: 'usd',
                 customer: plan.stripe_customer_id,
                 payment_method: plan.stripe_payment_id

@@ -148,7 +148,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string }>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amount: string | null }>> {
         try {
             const pendingUpgrade = await this.orbSDK.subscriptions.schedulePlanChange(
                 opts.subscriptionId,
@@ -159,7 +159,12 @@ export class OrbClient implements BillingClient {
                 },
                 { headers: { 'Create-Pending-Subscription-Change': 'true' } }
             );
-            return Ok({ pendingChangeId: pendingUpgrade.pending_subscription_change!.id });
+
+            return Ok({
+                pendingChangeId: pendingUpgrade.pending_subscription_change!.id,
+                // We return the amount due for the first invoice, it's the pending one that contains the pro-rated amount if any
+                amount: pendingUpgrade.changed_resources?.created_invoices[0]?.amount_due || null
+            });
         } catch (err) {
             return Err(new Error('failed_to_upgrade_customer', { cause: err }));
         }
