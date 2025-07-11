@@ -17,6 +17,7 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
+    ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
     BasicApiCredentials,
@@ -28,7 +29,6 @@ import type {
     GetPublicConnections,
     GetPublicIntegration,
     GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
     GetPublicProvider,
     GetPublicProviders,
     JwtCredentials,
@@ -169,7 +169,7 @@ export class Nango {
      * Returns a list of integrations
      * @returns A promise that resolves with an object containing an array of integrations
      */
-    public async listIntegrations(): Promise<GetPublicListIntegrationsLegacy['Success']> {
+    public async listIntegrations(): Promise<{ configs: ApiPublicIntegration[] }> {
         const url = `${this.serverUrl}/integrations`;
         const response = await this.http.get(url, { headers: this.enrichHeaders({}) });
 
