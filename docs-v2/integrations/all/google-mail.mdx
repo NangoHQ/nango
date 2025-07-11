@@ -14,13 +14,12 @@ description: 'Access the Gmail API in 2 minutes 💨'
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then login in to Gmail. Later, you'll let your users do the same directly from your app. 
       </Step>
       <Step title="Call the Gmail API">
-        Let's make your first request to the Gmail API (fetch a list of emails). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Gmail API to fetch your profile information. This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/gmail/v1/users/me/messages" \
-                  --data-urlencode "maxResults=10" \
+                curl "https://api.nango.dev/proxy/gmail/v1/users/me/profile" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -38,8 +37,7 @@ description: 'Access the Gmail API in 2 minutes 💨'
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/gmail/v1/users/me/messages',
-                params: { "maxResults": "10" },
+                endpoint: '/gmail/v1/users/me/profile',
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });

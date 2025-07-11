@@ -19,8 +19,7 @@ description: 'Access the Google Drive API in 2 minutes 💨'
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/drive/v3/files" \
-                  --data-urlencode "pageSize=10" \
+                curl "https://api.nango.dev/proxy/drive/v3/files?pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"

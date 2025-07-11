@@ -14,13 +14,12 @@ description: 'Access the Slack API in 2 minutes 💨'
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then login in to Slack. Later, you'll let your users do the same directly from your app. 
       </Step>
       <Step title="Call the Slack API">
-        Let's make your first request to the Slack API (fetch a list of channels). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Slack API (fetch a list of channels in a Slack team). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/conversations.list" \
-                  --data-urlencode "types=public_channel,private_channel" \
+                curl "https://api.nango.dev/proxy/conversations.list?limit=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +38,7 @@ description: 'Access the Slack API in 2 minutes 💨'
 
             const res = await nango.get({
                 endpoint: '/conversations.list',
-                params: { "types": "public_channel,private_channel" },
+                params: { limit: 10 },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });

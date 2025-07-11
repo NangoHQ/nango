@@ -900,7 +900,6 @@ class OAuthController {
         account: DBTeam,
         logCtx: LogContext
     ) {
-        console.log(req.query);
         const authCodeParam = provider.authorization_code_param_in_callback || 'code';
         const authorizationCode = req.query[authCodeParam] as string | undefined;
 

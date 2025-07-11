@@ -19,8 +19,7 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/calendar/v3/users/me/calendarList" \
-                  --data-urlencode "maxResults=10" \
+                curl "https://api.nango.dev/proxy/calendar/v3/users/me/calendarList?maxResults=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +38,7 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
 
             const res = await nango.get({
                 endpoint: '/calendar/v3/users/me/calendarList',
-                params: { "maxResults": "10" },
+                params: { maxResults: "10" },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
