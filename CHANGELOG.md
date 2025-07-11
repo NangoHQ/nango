@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.63.0] - 2025-07-11
+
+### Added
+
+- *(runner)* Create Kubernetes NodeProvider (#4295) by @rossmcewan
+- Show in-app usage for free plans (#4270) by @kaposke
+- Add resource request and limits as well as better error handling… (#4311) by @rossmcewan
+
+### Changed
+
+- Zero yaml (#4292) by @bodinsamuel
+- Eslint pass on import order 3 (#4296) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1d1d12dae0221dbab67615a003af2b4cc677860d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/48c5e68d77961e372d784798de96e852c08a1384 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(github-app-docs)* [nan-3564] update docs (#4302) by @khaliqgant
+- *(auth)* Various feedback (#4290) by @bodinsamuel
+- *(atlassian-admin-api)* [nan-3578] add in organization id as a connection config param (#4306) by @khaliqgant
+- *(api)* Import or reconnect sending incorrect webhooks (#4299) by @bodinsamuel
+- *(api)* POST /admin/impersonate new format (#4298) by @bodinsamuel
+- *(docs)* Update image and docs section link (#4309) by @khaliqgant
+- *(cli)* Init default to zero yaml (#4303) by @bodinsamuel
+- *(node)* Remove deprecated methods (#4310) by @bodinsamuel
+- *(jira-post-connection)* [nan-3592] wrap potential failing call in a try catch (#4315) by @khaliqgant
+
 ## [v0.62.1] - 2025-07-08
 
 ### Added
@@ -4314,6 +4341,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
 [v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
 [v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0
 [v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3
