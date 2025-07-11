@@ -69,6 +69,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     if (body.isUpgrade) {
         let hasPending: string | undefined;
         try {
+            // Schedula an upgrade
             const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
             if (resUpgrade.isErr()) {
                 report(resUpgrade.error);
@@ -79,6 +80,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
             const stripe = getStripe();
 
+            // Create a payment intent to confirm the card
             const paymentIntent = await stripe.paymentIntents.create({
                 metadata: { accountUuid: account.uuid },
                 amount: resUpgrade.value.amount ? Math.round(Number(resUpgrade.value.amount) * 100) : newPlan.basePrice! * 100,
@@ -91,6 +93,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
                 return;
             }
 
+            // The payment will be confirmed by the webhook
             res.status(200).send({ data: { success: true } });
         } catch (err) {
             if (hasPending) {

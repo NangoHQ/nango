@@ -132,6 +132,7 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err("team doesn't not have a subscription or pending changes");
             }
 
+            // Finally, we apply the pending change to confirm the card
             const resApply = await billing.client.applyPendingChanges({
                 pendingChangeId: sub.pendingChangeId,
                 amount: (data.amount / 100).toFixed(2)
@@ -146,7 +147,6 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
         // payment intent from upgrade has not been successful
         case 'payment_intent.canceled':
         case 'payment_intent.payment_failed': {
-            // TODO: handle that or die
             const data = event.data.object;
             const customer = data.customer;
             if (typeof customer !== 'string') {

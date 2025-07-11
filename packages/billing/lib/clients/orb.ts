@@ -134,6 +134,7 @@ export class OrbClient implements BillingClient {
                     'Orb-Cache-Max-Age-Seconds': '60'
                 }
             });
+
             return Ok(
                 res.data.map((item) => {
                     return {
@@ -150,6 +151,8 @@ export class OrbClient implements BillingClient {
 
     async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amount: string | null }>> {
         try {
+            // We schedule the upgrade but we don't apply it yet
+            // We apply it when the first payment is made to confirm the card
             const pendingUpgrade = await this.orbSDK.subscriptions.schedulePlanChange(
                 opts.subscriptionId,
                 {
@@ -177,6 +180,7 @@ export class OrbClient implements BillingClient {
                 auto_collection: true,
                 external_plan_id: opts.planExternalId
             });
+
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_upgrade_customer', { cause: err }));
@@ -185,10 +189,12 @@ export class OrbClient implements BillingClient {
 
     async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<void>> {
         try {
+            // We apply the pending change to confirm the card
             await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
                 description: 'Initial payment on subscription',
                 previously_collected_amount: opts.amount
             });
+
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));
@@ -198,6 +204,7 @@ export class OrbClient implements BillingClient {
     async cancelPendingChanges(opts: { pendingChangeId: string }): Promise<Result<void>> {
         try {
             await this.orbSDK.subscriptionChanges.cancel(opts.pendingChangeId);
+
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_cancel_pending_changes', { cause: err }));
