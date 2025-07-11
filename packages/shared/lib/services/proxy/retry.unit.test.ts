@@ -171,20 +171,38 @@ describe('getProxyRetryFromErr', () => {
                 expect(res).toStrictEqual({ retry: true, reason: 'status_code_429' });
             });
 
-            it('should retry on status 500 when using >= 500 rule', () => {
-                const mockAxiosError = getDefaultError({ response: { status: 500 } });
-                const res = getProxyRetryFromErr({
-                    err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({
-                        provider: {
-                            proxy: {
-                                base_url: '',
-                                retry: { error_code: ['>= 500'] }
+            describe('5xx error code rule', () => {
+                it('should retry on 500 status code', () => {
+                    const mockAxiosError = getDefaultError({ response: { status: 500 } });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: { error_code: ['5xx'] }
+                                }
                             }
-                        }
-                    })
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
                 });
-                expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_>= 500' });
+
+                it('should retry on 502 status code', () => {
+                    const mockAxiosError = getDefaultError({ response: { status: 502 } });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: { error_code: ['5xx', '429'] }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
+                });
             });
         });
     });

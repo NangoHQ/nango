@@ -218,30 +218,29 @@ function parseRetryValue({
 
     return { found: false, reason: `unknown_type:${type}` };
 }
-
 function matchesStatusCode(status: number, rule: string): boolean {
     if (!rule) return false;
 
     const trimmed = rule.trim();
 
-    if (/^[<>]=?\s*\d+$/.test(trimmed)) {
-        const operatorMatch = trimmed.match(/^([<>]=?)\s*(\d+)$/);
-        if (operatorMatch) {
-            const [, operator, value] = operatorMatch;
-            const numeric = Number(value);
-            switch (operator) {
-                case '>':
-                    return status > numeric;
-                case '>=':
-                    return status >= numeric;
-                case '<':
-                    return status < numeric;
-                case '<=':
-                    return status <= numeric;
-            }
-        }
-    } else if (/^\d+$/.test(trimmed)) {
+    // Handle exact match (e.g., "403")
+    if (/^\d{3}$/.test(trimmed)) {
         return status === Number(trimmed);
+    }
+
+    // Handle xx format (e.g., "5xx")
+    const xxMatch = trimmed.match(/^(\d)xx$/i);
+    if (xxMatch) {
+        const firstDigit = Number(xxMatch[1]);
+        return Math.floor(status / 100) === firstDigit;
+    }
+
+    // Handle range format (e.g., "500-502")
+    const rangeMatch = trimmed.match(/^(\d{3})-(\d{3})$/);
+    if (rangeMatch) {
+        const start = Number(rangeMatch[1]);
+        const end = Number(rangeMatch[2]);
+        return status >= start && status <= end;
     }
 
     return false;

@@ -4383,7 +4383,7 @@ github:
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
-                - '>= 500'
+                - '5xx'
                 - '401'
                 - '429'
         paginate:
@@ -4463,7 +4463,7 @@ github-pat:
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
-                - '>= 500'
+                - '5xx'
                 - '401'
                 - '429'
         headers:
@@ -4712,7 +4712,7 @@ google-calendar:
         retry:
             error_code:
                 - '403'
-                - '>= 500'
+                - '5xx'
                 - '401'
                 - '429'
     docs: https://docs.nango.dev/integrations/all/google-calendar
@@ -6224,7 +6224,7 @@ linear:
             remaining: 'x-ratelimit-requests-remaining'
             error_code:
                 - '400'
-                - '>= 500'
+                - '5xx'
                 - '401'
                 - '429'
     disable_pkce: true
