@@ -8,6 +8,7 @@ export default async function execute(nango: Nango) {
 
     const response = await nango.proxy<AttioTokenResponse>({
         method: 'GET',
+        // https://docs.attio.com/rest-api/endpoint-reference/meta/identify#option-2
         endpoint: `/v2/self`,
         providerConfigKey: connection.provider_config_key
     });
