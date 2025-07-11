@@ -17,9 +17,6 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
-import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
-import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
 import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
@@ -39,7 +36,6 @@ import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIn
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
-import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import proxyController from './controllers/proxy.controller.js';
@@ -99,6 +95,7 @@ publicAPI.use(
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+publicAPI.use(cliMinVersion('0.52.00'));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -143,35 +140,11 @@ publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.use('/unauth', jsonContentTypeMiddleware);
-// @deprecated use /auth/unauthenticated
-publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
-
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
-
-// API routes (Secret key auth).
-publicAPI.use('/provider', jsonContentTypeMiddleware);
-// @deprecated use /providers
-publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
-// @deprecated use /providers
-publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
-
-// @deprecated
-publicAPI.use('/config', jsonContentTypeMiddleware);
-// @deprecated
-publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
-// @deprecated
-publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegrationDeprecated);
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
@@ -194,8 +167,8 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
-publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
+publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
+publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, putSyncConnectionFrequency);
 
@@ -213,11 +186,6 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVarian
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/mcp').post(apiAuth, postMcp);
 publicAPI.route('/mcp').get(apiAuth, getMcp);
-
-publicAPI.use('/flow', jsonContentTypeMiddleware);
-publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-// @deprecated use /scripts/configs
-publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
