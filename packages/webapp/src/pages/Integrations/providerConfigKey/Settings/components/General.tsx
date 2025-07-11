@@ -7,6 +7,7 @@ import { CopyText } from '../../../../../components/CopyText';
 import { Info } from '../../../../../components/Info';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
+import { Switch } from '../../../../../components/ui/Switch';
 import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Input } from '../../../../../components/ui/input/Input';
@@ -15,7 +16,6 @@ import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { formatDateToInternationalFormat } from '../../../../../utils/utils';
-import { Switch } from '../../../../../components/ui/Switch';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 

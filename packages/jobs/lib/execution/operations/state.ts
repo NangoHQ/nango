@@ -1,9 +1,11 @@
-import type { JsonValue } from 'type-fest';
-import type { ApiError, Result } from '@nangohq/types';
 import { NangoError } from '@nangohq/shared';
-import type { ClientError, OrchestratorTask } from '@nangohq/nango-orchestrator';
-import { logger } from '../../logger.js';
+
 import { orchestratorClient } from '../../clients.js';
+import { logger } from '../../logger.js';
+
+import type { ClientError, OrchestratorTask } from '@nangohq/nango-orchestrator';
+import type { ApiError, Result } from '@nangohq/types';
+import type { JsonValue } from 'type-fest';
 
 export async function setTaskSuccess({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<OrchestratorTask>> {
     const setSuccess = await orchestratorClient.succeed({ taskId, output: output });

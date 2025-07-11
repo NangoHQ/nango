@@ -65,18 +65,24 @@ Sync executions are driven by integration scripts, which encapsulate the logic f
 Sync scripts have the following structure:
 
 ```typescript
-import type { NangoSync, ResponseModel } from '../../models';
+import { createSync } from 'nango';
+import { z } from 'zod';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
-    const records: ResponseModel[] = [];
+export default createSync({
+  models: {
+    ResponseModel:  z.object({ ... }),
+  },
+  exec: async (nango) => {
+    const records = [];
 
     // Your integration code goes here.
 
     await nango.batchSave(records, 'ResponseModel');
-}
+  },
+});
 ```
 
-The `fetchData` function starts on the schedule indicated in your integration configuration. The `ResponseModel` is configurable via the integration configuration and is auto-imported into your integration script.
+The `exec` function starts on the schedule indicated in your integration configuration. The `ResponseModel` is configurable via the integration configuration and is auto-imported into your integration script.
 
 Unlike actions, the syncs default function doesn't take any input parameters or return anything. Sync inputs are passed via the [connection metadata](/guides/customer-configuration#store-customer-specific-data). And instead of returning data directly like actions, syncs persist records to Nango's cache, calling `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your application later fetches the records from the cache. 
 

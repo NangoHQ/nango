@@ -45,7 +45,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
     const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
-        const connection = await connectionService.checkIfConnectionExists(body.connection_id, body.integration_id, environment.id);
+        const connection = await connectionService.checkIfConnectionExists(trx, {
+            connectionId: body.connection_id,
+            providerConfigKey: body.integration_id,
+            environmentId: environment.id
+        });
         if (!connection) {
             return {
                 status: 400,
@@ -83,7 +87,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         if (body.integrations_config_defaults) {
-            const integrations = await configService.listProviderConfigs(environment.id);
+            const integrations = await configService.listProviderConfigs(trx, environment.id);
 
             // Enforce that integrations exists in `integrations_config_defaults`
             const check = checkIntegrationsDefault(body, integrations);

@@ -1,9 +1,11 @@
-import type { JsonValue } from 'type-fest';
 import { uuidv7 } from 'uuidv7';
-import type knex from 'knex';
+
 import { Err, Ok, stringifyError } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+
 import type { Schedule, ScheduleProps, ScheduleState } from '../types.js';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
+import type { JsonValue } from 'type-fest';
 
 export const SCHEDULES_TABLE = 'schedules';
 

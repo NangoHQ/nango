@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { NangoConfigMetadata, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 import type { SyncJobsType } from './Sync.js';
+import type { NangoConfigMetadata, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 
 export interface NangoIntegrationDataV1 {
     type?: ScriptTypeLiteral;
