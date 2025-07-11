@@ -20296,7 +20296,7 @@ integrations:
                     group: Bank Transactions
                 scopes:
                     - accounting.transactions
-                version: 1.0.0
+                version: 1.0.1
             general-ledger:
                 description: |
                     Fetch all general ledger entries in Xero
