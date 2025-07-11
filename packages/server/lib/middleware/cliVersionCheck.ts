@@ -25,8 +25,6 @@ export function cliMinVersion(minVersion: string) {
         }
 
         try {
-            console.log('minVersion', minVersion);
-            console.log('match[1]', match[1]);
             if (semver.gt(minVersion, match[1])) {
                 logger.info(`This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})`);
                 res.status(400).send({
