@@ -95,7 +95,6 @@ publicAPI.use(
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
-publicAPI.use(cliMinVersion('0.52.00'));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -167,8 +166,8 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
-publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
+publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
+publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, putSyncConnectionFrequency);
 
