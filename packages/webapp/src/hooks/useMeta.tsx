@@ -1,6 +1,8 @@
 import useSWR from 'swr';
-import type { SWRError } from '../utils/api';
+
 import { swrFetcher } from '../utils/api';
+
+import type { SWRError } from '../utils/api';
 import type { GetMeta } from '@nangohq/types';
 
 export function useMeta() {

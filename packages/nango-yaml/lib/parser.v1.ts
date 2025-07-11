@@ -1,5 +1,6 @@
-import type { NangoYamlParsedIntegration, NangoYamlV1, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
 import { NangoYamlParser } from './parser.js';
+
+import type { NangoYamlParsedIntegration, NangoYamlV1, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
 
 export class NangoYamlParserV1 extends NangoYamlParser {
     parse(): boolean {

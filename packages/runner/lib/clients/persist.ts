@@ -1,8 +1,10 @@
+import { getPersistAPIUrl } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
+import { httpFetch } from './http.js';
+
 import type { PostLog } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok } from '@nangohq/utils';
-import { httpFetch } from './http.js';
-import { getPersistAPIUrl } from '@nangohq/shared';
 
 class PersistClient {
     private baseUrl: string;

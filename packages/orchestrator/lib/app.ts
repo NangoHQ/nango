@@ -1,12 +1,14 @@
 import './tracer.js';
 
-import { metrics, once, stringifyError, initSentry, report } from '@nangohq/utils';
-import { getServer } from './server.js';
+import { DatabaseClient, Scheduler, stringifyTask } from '@nangohq/scheduler';
+import { initSentry, metrics, once, report, stringifyError } from '@nangohq/utils';
+
 import { envs } from './env.js';
-import type { Task } from '@nangohq/scheduler';
-import { Scheduler, DatabaseClient, stringifyTask } from '@nangohq/scheduler';
 import { TaskEventsHandler } from './events.js';
+import { getServer } from './server.js';
 import { logger } from './utils.js';
+
+import type { Task } from '@nangohq/scheduler';
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);

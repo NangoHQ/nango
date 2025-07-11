@@ -1,3 +1,4 @@
+import db from '@nangohq/database';
 import { configService, getProviders } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -14,7 +15,7 @@ export const getPublicListIntegrationsLegacy = asyncWrapper<GetPublicListIntegra
     }
 
     const { environment } = res.locals;
-    const configs = await configService.listProviderConfigs(environment.id);
+    const configs = await configService.listProviderConfigs(db.knex, environment.id);
 
     const providers = getProviders();
     if (!providers) {

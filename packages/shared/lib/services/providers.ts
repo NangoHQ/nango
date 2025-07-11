@@ -1,12 +1,15 @@
-import type { Provider } from '@nangohq/types';
-import { NangoError } from '../utils/error.js';
-import { getLogger, ENVS, parseEnvs } from '@nangohq/utils';
 import { createHash } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
+
 import { updateProviderCache } from '@nangohq/providers';
+import { ENVS, getLogger, parseEnvs } from '@nangohq/utils';
+
+import { NangoError } from '../utils/error.js';
+
+import type { Provider } from '@nangohq/types';
 
 // Just to avoid changing hundreds of refs
-export { getProviders, getProvider } from '@nangohq/providers';
+export { getProvider, getProviders } from '@nangohq/providers';
 
 const logger = getLogger('providers');
 const envs = parseEnvs(ENVS);

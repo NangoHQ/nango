@@ -1,15 +1,16 @@
+import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
+import { Helmet } from 'react-helmet';
+
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { Input } from '../../components/ui/input/Input';
-import { apiPatchUser, useUser } from '../../hooks/useUser';
-import DashboardLayout from '../../layout/DashboardLayout';
-import { Pencil1Icon } from '@radix-ui/react-icons';
-import { useToast } from '../../hooks/useToast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
 import { Button } from '../../components/ui/button/Button';
-import { Helmet } from 'react-helmet';
-import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { Input } from '../../components/ui/input/Input';
+import { useToast } from '../../hooks/useToast';
+import { apiPatchUser, useUser } from '../../hooks/useUser';
+import DashboardLayout from '../../layout/DashboardLayout';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();

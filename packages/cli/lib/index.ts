@@ -14,6 +14,7 @@ import figlet from 'figlet';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
+import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { compileAllFiles } from './services/compile.service.js';
@@ -21,7 +22,6 @@ import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
-import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
@@ -34,14 +34,12 @@ import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
-import { initAI } from './ai/init.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
         const cmd = new Command(name);
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.', false);
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.', false);
-        cmd.option('--zero', 'Run cli in zero yaml mode (alpha)', false);
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts<GlobalOptions>();
             printDebug('Debug mode enabled', debug);
@@ -106,8 +104,9 @@ program
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
     .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
+    .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, zero, ai } = this.opts<GlobalOptions & { ai: string[] }>();
+        const { debug, ai, copy } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
         const currentPath = process.cwd();
         const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
@@ -125,26 +124,14 @@ program
             return;
         }
 
-        if (zero) {
-            const res = await initZero({ absolutePath, debug });
-            if (!res) {
-                process.exitCode = 1;
-                return;
-            }
-
-            await setupAI();
-            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
-            return;
-        }
-
-        const ok = init({ absolutePath, debug });
-        if (!ok) {
+        const res = await initZero({ absolutePath, debug, onlyCopy: copy });
+        if (!res) {
             process.exitCode = 1;
             return;
         }
 
         await setupAI();
-        console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+        console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
         return;
     });
 

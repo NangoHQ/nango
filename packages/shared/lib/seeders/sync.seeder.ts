@@ -1,5 +1,7 @@
 import db from '@nangohq/database';
+
 import * as syncService from '../services/sync/sync.service.js';
+
 import type { Sync } from '../models/Sync.js';
 import type { DBSyncConfig, DBSyncEndpoint, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';

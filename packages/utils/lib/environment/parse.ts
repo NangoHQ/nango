@@ -73,7 +73,7 @@ export const ENVS = z.object({
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
 
     // Runner
-    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
+    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -82,6 +82,8 @@ export const ENVS = z.object({
     RUNNER_URL: z.string().url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
+    RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    NAMESPACE_PER_RUNNER: bool,
 
     // FLEET
     RUNNERS_DATABASE_URL: z.string().url().optional(),
@@ -225,7 +227,7 @@ export const ENVS = z.object({
     SENTRY_DSN: z.string().url().optional(),
 
     // Slack
-    NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
+    NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe

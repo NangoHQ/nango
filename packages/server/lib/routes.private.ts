@@ -6,13 +6,11 @@ import passport from 'passport';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
-import accountController from './controllers/account.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
-import userController from './controllers/user.controller.js';
 import {
     getEmailByExpiredToken,
     getEmailByUuid,
@@ -27,6 +25,7 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
+import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
@@ -76,6 +75,7 @@ import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
+import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -153,7 +153,6 @@ web.route('/invite').delete(webAuth, deleteInvite);
 web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
-web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/current').get(webAuth, getPlanCurrent);
@@ -169,9 +168,9 @@ web.route('/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/environments/variables').post(webAuth, postEnvironmentVariables);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
-web.route('/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
+web.route('/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(environmentController));
+web.route('/environment/revert-key').post(webAuth, environmentController.revertKey.bind(environmentController));
+web.route('/environment/activate-key').post(webAuth, environmentController.activateKey.bind(environmentController));
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
@@ -194,7 +193,7 @@ web.route('/connections/admin/:connectionId').delete(webAuth, connectionControll
 
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, patchUser);
-web.route('/user/password').put(webAuth, userController.editPassword.bind(userController));
+web.route('/user/password').put(webAuth, putUserPassword);
 
 web.route('/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
@@ -222,6 +221,8 @@ if (flagHasUsage) {
 
     web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
 }
+
+web.route('/admin/impersonate').post(webAuth, postImpersonate);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

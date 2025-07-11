@@ -1,5 +1,6 @@
-import type { PatchOnboarding } from '@nangohq/types';
 import { apiFetch } from '../utils/api';
+
+import type { PatchOnboarding } from '@nangohq/types';
 
 export async function apiPatchOnboarding(env: string) {
     const res = await apiFetch(`/api/v1/onboarding?env=${env}`, {

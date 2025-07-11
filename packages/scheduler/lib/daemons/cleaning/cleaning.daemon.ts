@@ -1,10 +1,12 @@
-import * as tasks from '../../models/tasks.js';
+import { setTimeout } from 'node:timers/promises';
+
+import { envs } from '../../env.js';
 import * as schedules from '../../models/schedules.js';
-import type knex from 'knex';
+import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
 import { SchedulerDaemon } from '../daemon.js';
-import { envs } from '../../env.js';
-import { setTimeout } from 'node:timers/promises';
+
+import type knex from 'knex';
 
 export class CleaningDaemon extends SchedulerDaemon {
     constructor({ db, abortSignal, onError }: { db: knex.Knex; abortSignal: AbortSignal; onError: (err: Error) => void }) {

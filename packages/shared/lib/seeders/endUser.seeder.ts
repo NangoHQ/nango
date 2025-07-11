@@ -1,7 +1,9 @@
-import type { DBEnvironment, DBTeam, EndUser } from '@nangohq/types';
-import { createEndUser as createEndUserOriginal } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { nanoid } from '@nangohq/utils';
+
+import { createEndUser as createEndUserOriginal } from '../services/endUser.service.js';
+
+import type { DBEnvironment, DBTeam, EndUser } from '@nangohq/types';
 
 export async function createEndUser({ account, environment }: { account: DBTeam; environment: DBEnvironment }): Promise<EndUser> {
     const id = nanoid();

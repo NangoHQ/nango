@@ -1,15 +1,16 @@
-import { Button } from '../../../components/ui/button/Button';
-import { useEffect, useMemo, useState } from 'react';
 import { CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { useEffect, useMemo, useState } from 'react';
+import { useDebounce } from 'react-use';
+
+import { Info } from '../../../components/Info';
+import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
+import Spinner from '../../../components/ui/Spinner';
+import { Button } from '../../../components/ui/button/Button';
+import { Input } from '../../../components/ui/input/Input';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
-import { Input } from '../../../components/ui/input/Input';
-import Spinner from '../../../components/ui/Spinner';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { useDebounce } from 'react-use';
 import { cn } from '../../../utils/utils';
-import { Info } from '../../../components/Info';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
