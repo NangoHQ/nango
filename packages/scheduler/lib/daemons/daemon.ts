@@ -39,7 +39,7 @@ export abstract class SchedulerDaemon {
         try {
             logger.info(`Starting ${this.name}...`);
             if (this.status !== 'stopped') {
-                logger.warn(`${this.name} is already running or cancelled. Cannot start.`);
+                logger.warning(`${this.name} is already running or cancelled. Cannot start.`);
                 return;
             }
             this.status = 'running';
