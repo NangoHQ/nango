@@ -230,6 +230,7 @@ class OAuthController {
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
                 return;
             }
+            console.log(provider);
 
             if (provider.auth_mode === 'OAUTH2' && provider.installation !== 'outbound') {
                 await this.oauth2Request({
@@ -861,6 +862,7 @@ class OAuthController {
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+            console.log(session);
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
@@ -946,6 +948,7 @@ class OAuthController {
         if (session.authMode === 'CUSTOM' && req.query['setup_action'] === 'update' && installationId) {
             // this means the update request was performed from the provider itself
             if (!req.query['state']) {
+                console.log('Missing state in custom oauth callback, redirecting to GitHub...');
                 res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
 
                 return;
@@ -1052,6 +1055,7 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>
     ) {
+        console.log('in handleTokenExchangeAndConnectionCreation');
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
@@ -1187,6 +1191,8 @@ class OAuthController {
                     ...connectionConfig,
                     installation_id: installationId
                 };
+                console.log('is custom and has installation id');
+                console.log(connectionConfig);
             }
 
             if (connectionConfig['oauth_client_id_override']) {
@@ -1235,6 +1241,7 @@ class OAuthController {
                 connectionConfig,
                 environmentId: session.environmentId
             });
+            console.log(updatedConnection);
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
                 await logCtx.failed();

@@ -986,6 +986,7 @@ class ConnectionService {
         if (create.isErr()) {
             return Err(create.error);
         }
+        console.log('App credentials created successfully. Upserting connection');
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
