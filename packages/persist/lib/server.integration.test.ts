@@ -486,7 +486,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(0))!,
+        account: (await accountService.getAccountById(db.knex, 0))!,
         env,
         activityLogId: logCtx.id,
         connection,

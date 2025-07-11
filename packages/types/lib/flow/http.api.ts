@@ -1,9 +1,10 @@
-import type { ApiError, Endpoint } from '../api';
-import type { ScriptTypeLiteral } from '../nangoYaml';
+import type { ApiError, Endpoint } from '../api.js';
+import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 export type PutUpgradePreBuiltFlow = Endpoint<{
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';
+    Querystring: { env: string };
     Body: {
         id: number;
         provider: string;
@@ -22,13 +23,14 @@ export type PutUpgradePreBuiltFlow = Endpoint<{
 export type PostPreBuiltDeploy = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
+    Querystring: { env: string };
     Body: {
         provider: string;
         providerConfigKey: string;
         scriptName: string;
         type: ScriptTypeLiteral;
     };
-    Error: ApiError<'unknown_provider'> | ApiError<'failed_to_deploy', Error[]> | ApiError<'unknown_flow'>;
+    Error: ApiError<'unknown_provider'> | ApiError<'failed_to_deploy', Error[]>;
     Success: {
         data: {
             id: number;
@@ -39,6 +41,7 @@ export type PostPreBuiltDeploy = Endpoint<{
 export type PatchFlowEnable = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
+    Querystring: { env: string };
     Params: { id: number };
     Body: {
         provider: string;
@@ -57,6 +60,7 @@ export type PatchFlowEnable = Endpoint<{
 export type PatchFlowDisable = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
+    Querystring: { env: string };
     Params: { id: number };
     Body: {
         provider: string;
@@ -75,6 +79,7 @@ export type PatchFlowDisable = Endpoint<{
 export type PatchFlowFrequency = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
+    Querystring: { env: string };
     Params: { id: number };
     Body: {
         provider: string;

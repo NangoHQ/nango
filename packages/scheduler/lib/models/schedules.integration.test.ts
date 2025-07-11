@@ -1,10 +1,13 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { setTimeout } from 'timers/promises';
+
+import { uuidv7 } from 'uuidv7';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
-import { uuidv7 } from 'uuidv7';
-import { setTimeout } from 'timers/promises';
 
 describe('Schedules', () => {
     const dbClient = getTestDbClient();

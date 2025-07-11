@@ -44,13 +44,14 @@
         "qs": "6.11.2",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
+        "undici": "6.21.2",
         "uuid": "9.0.0"
     },
     "devDependencies": {
-        "@types/archiver": "6.0.3",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/types": "file:../types",
+        "@types/archiver": "6.0.3",
         "@types/braintree": "3.3.14",
         "@types/js-yaml": "4.0.9",
         "@types/json-schema": "7.0.15",

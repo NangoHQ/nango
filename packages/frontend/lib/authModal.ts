@@ -1,6 +1,5 @@
-import { WSMessageType } from './types.js';
-
-import type { ErrorHandler } from './types.js';
+import type { AuthErrorType, AuthSuccess, ErrorHandler } from './types.js';
+import type { WebSocketConnectionMessage } from '@nangohq/types';
 
 const debugLogPrefix = '[nango]';
 
@@ -75,7 +74,7 @@ export class AuthorizationModal {
         baseUrl: URL;
         debug: boolean;
         webSocketUrl: string;
-        successHandler: (providerConfigKey: string, connectionId: string) => any;
+        successHandler: (authSuccess: AuthSuccess) => void;
         errorHandler: ErrorHandler;
     }) {
         this.baseURL = baseUrl;
@@ -101,11 +100,11 @@ export class AuthorizationModal {
      * @param message - The message event containing data from the server
      * @param successHandler - The success handler function to be called when a success message is received
      */
-    handleMessage(message: MessageEvent, successHandler: (providerConfigKey: string, connectionId: string) => any) {
-        const data = JSON.parse(message.data);
+    handleMessage(message: MessageEvent, successHandler: (authSuccess: AuthSuccess) => void) {
+        const data = JSON.parse(message.data) as WebSocketConnectionMessage;
 
         switch (data.message_type) {
-            case WSMessageType.ConnectionAck: {
+            case 'connection_ack': {
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
                 }
@@ -114,20 +113,25 @@ export class AuthorizationModal {
                 this.open();
                 break;
             }
-            case WSMessageType.Error:
+            case 'error':
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
-                this.errorHandler(data.error_type, data.error_desc);
+                this.errorHandler(data.error_type as AuthErrorType, data.error_desc);
                 this.swClient.close();
                 break;
-            case WSMessageType.Success:
+            case 'success':
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
-                successHandler(data.provider_config_key, data.connection_id);
+                successHandler({
+                    providerConfigKey: data.provider_config_key,
+                    connectionId: data.connection_id,
+                    isPending: data.is_pending
+                });
+
                 this.swClient.close();
                 break;
             default:

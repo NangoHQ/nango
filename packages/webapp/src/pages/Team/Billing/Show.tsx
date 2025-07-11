@@ -36,7 +36,12 @@ export const TeamBilling: React.FC = () => {
         }
 
         // No self downgrade or old plan
-        if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
+        if (
+            currentPlan.name === 'scale-legacy' ||
+            currentPlan.name === 'enterprise' ||
+            currentPlan.name === 'starter-legacy' ||
+            currentPlan.name === 'growth-legacy'
+        ) {
             return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true }];
         }
 

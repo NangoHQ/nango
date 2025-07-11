@@ -1,4 +1,5 @@
 import { logger } from '../logger.js';
+
 import type { RequestInfo } from 'undici/types/index.js';
 
 export async function httpFetch(resource: RequestInfo | URL, init?: RequestInit): Promise<Response> {

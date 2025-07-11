@@ -1,6 +1,7 @@
+import { Err, Ok } from '@nangohq/utils';
+
 import type { Knex } from '@nangohq/database';
 import type { ConnectSessionInput, DBConnection, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser } from '@nangohq/types';
-import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
@@ -86,15 +87,22 @@ export async function createEndUser(
 
 export async function getEndUser(
     db: Knex,
-    props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number }
+    props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number },
+    { forUpdate = false }: { forUpdate?: boolean } = {}
 ): Promise<Result<EndUser, EndUserError>> {
-    const endUser = await db<DBEndUser>(END_USERS_TABLE)
+    const query = db
+        .from<DBEndUser>(END_USERS_TABLE)
+        .select('*')
         .where(
             'endUserId' in props
                 ? { end_user_id: props.endUserId, environment_id: props.environmentId, account_id: props.accountId }
                 : { id: props.id, environment_id: props.environmentId, account_id: props.accountId }
-        )
-        .first();
+        );
+    if (forUpdate) {
+        query.forUpdate();
+    }
+    const endUser = await query.first();
+
     if (!endUser) {
         return Err(
             new EndUserError({
@@ -182,11 +190,7 @@ export async function upsertEndUser(
     }: { account: DBTeam; environment: DBEnvironment; endUserPayload: ConnectSessionInput['end_user']; organization?: ConnectSessionInput['organization'] }
 ): Promise<Result<EndUser, EndUserError>> {
     // Check if the endUser exists in the database
-    const endUserRes = await getEndUser(db, {
-        endUserId: endUserPayload.id,
-        accountId: account.id,
-        environmentId: environment.id
-    });
+    const endUserRes = await getEndUser(db, { endUserId: endUserPayload.id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
 
     // --- Create end user if it doesn't exist yet
     if (endUserRes.isErr()) {

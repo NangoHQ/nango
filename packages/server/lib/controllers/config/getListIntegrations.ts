@@ -1,8 +1,11 @@
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicListIntegrationsLegacy } from '@nangohq/types';
+import db from '@nangohq/database';
 import { configService, getProviders } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { integrationToPublicApi } from '../../formatters/integration.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { GetPublicListIntegrationsLegacy } from '@nangohq/types';
 
 export const getPublicListIntegrationsLegacy = asyncWrapper<GetPublicListIntegrationsLegacy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -12,7 +15,7 @@ export const getPublicListIntegrationsLegacy = asyncWrapper<GetPublicListIntegra
     }
 
     const { environment } = res.locals;
-    const configs = await configService.listProviderConfigs(environment.id);
+    const configs = await configService.listProviderConfigs(db.knex, environment.id);
 
     const providers = getProviders();
     if (!providers) {

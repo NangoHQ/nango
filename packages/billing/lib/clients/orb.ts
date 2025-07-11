@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -28,12 +28,71 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        try {
+            let exists: Orb.Customers.Customer | null = null;
+            try {
+                exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
+            } catch {
+                // expected error
+            }
+
+            if (exists) {
+                await this.orbSDK.customers.update(exists.id, {
+                    name: team.name
+                });
+                return Ok({ id: exists.id, portalUrl: exists.portal_url });
+            }
+
+            const customer = await this.orbSDK.customers.create({
+                external_customer_id: String(team.id),
+                currency: 'USD',
+                name: team.name,
+                email: user.email
+            });
+            return Ok({ id: customer.id, portalUrl: customer.portal_url });
+        } catch (err) {
+            return Err(new Error('failed_to_upsert_customer', { cause: err }));
+        }
+    }
+
+    async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
+        try {
+            await this.orbSDK.customers.updateByExternalId(String(teamId), {
+                payment_provider: 'stripe_invoice',
+                payment_provider_id: customerId
+            });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_link_customer', { cause: err }));
+        }
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         try {
             const customer = await this.orbSDK.customers.fetchByExternalId(String(accountId));
             return Ok({ id: customer.id, portalUrl: customer.portal_url });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        try {
+            // We want to backdate the subscription to the day the team was created to backfill the usage
+            // Orb doesn't allow to backdate the subscription by more than 95 days
+            // Use `upgrade` to change the subscription without backdating
+            const minStartDate = new Date(Date.now() - 95 * 24 * 60 * 60 * 1000);
+            const startDate = new Date(Math.max(team.created_at.getTime(), minStartDate.getTime())).toISOString();
+
+            const subscription = await this.orbSDK.subscriptions.create({
+                external_customer_id: String(team.id),
+                external_plan_id: planExternalId,
+                start_date: startDate
+            });
+            return Ok({ id: subscription.id });
+        } catch (err) {
+            return Err(new Error('failed_to_create_subscription', { cause: err }));
         }
     }
 
@@ -77,6 +136,40 @@ export class OrbClient implements BillingClient {
             );
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+        try {
+            await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
+                change_option: opts.immediate ? 'immediate' : 'end_of_subscription_term',
+                billing_cycle_alignment: 'plan_change_date',
+                auto_collection: true,
+                external_plan_id: opts.planExternalId
+            });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+        }
+    }
+
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true> {
+        try {
+            this.orbSDK.webhooks.verifySignature(body, headers as any, secret);
+
+            return Ok(true);
+        } catch (err) {
+            return Err(new Error('failed_to_verify_signature', { cause: err }));
+        }
+    }
+
+    async getPlanById(planId: string): Promise<Result<{ id: string; external_plan_id: string }>> {
+        try {
+            const plan = await this.orbSDK.plans.fetch(planId);
+
+            return Ok({ id: plan.id, external_plan_id: plan.external_plan_id! });
+        } catch (err) {
+            return Err(new Error('failed_to_get_plan_by_id', { cause: err }));
         }
     }
 }

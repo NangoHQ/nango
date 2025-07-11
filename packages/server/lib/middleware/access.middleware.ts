@@ -489,7 +489,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        const account = await accountService.getAccountById(user.account_id);
+        const account = await accountService.getAccountById(db.knex, user.account_id);
         if (!account) {
             res.status(401).send({ error: { code: 'unknown_account' } });
             return;

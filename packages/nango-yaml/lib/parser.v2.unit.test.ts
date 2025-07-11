@@ -1,6 +1,5 @@
-import { expect, describe, it } from 'vitest';
-import { NangoYamlParserV2 } from './parser.v2.js';
-import type { NangoYamlParsed, NangoYamlV2 } from '@nangohq/types';
+import { describe, expect, it } from 'vitest';
+
 import {
     ParserErrorBothPostConnectionScriptsAndOnEventsPresent,
     ParserErrorDuplicateEndpoint,
@@ -8,6 +7,9 @@ import {
     ParserErrorModelIsLiteral,
     ParserErrorModelNotFound
 } from './errors.js';
+import { NangoYamlParserV2 } from './parser.v2.js';
+
+import type { NangoYamlParsed, NangoYamlV2 } from '@nangohq/types';
 
 describe('parse', () => {
     it('should parse', () => {

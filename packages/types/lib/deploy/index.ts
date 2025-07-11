@@ -1,4 +1,4 @@
-import type { ScriptTypeLiteral } from '../nangoYaml';
+import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 // TODO split by type
 // and fix id being optional

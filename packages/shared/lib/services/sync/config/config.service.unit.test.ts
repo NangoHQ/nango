@@ -1,4 +1,5 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import * as SyncConfigService from './config.service.js';
 
 describe('Sync config increment', () => {

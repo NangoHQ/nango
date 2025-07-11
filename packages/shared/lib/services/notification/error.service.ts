@@ -1,9 +1,9 @@
-import type { Knex } from 'knex';
-import type { ActiveLog } from '@nangohq/types';
-import { Ok, Err } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-
 import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
+
+import type { ActiveLog } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 const DB_TABLE = '_nango_active_logs';
 const SYNC_TABLE = '_nango_syncs';

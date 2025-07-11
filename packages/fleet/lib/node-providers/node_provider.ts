@@ -1,4 +1,4 @@
-import type { Node } from '../types';
+import type { Node } from '../types.js';
 import type { NodeConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 

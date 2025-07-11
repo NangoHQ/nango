@@ -6,7 +6,7 @@ export * from './logger.js';
 export * from './path.js';
 export * from './id.js';
 export * from './json.js';
-export * from './json-schema.js';
+export * from './jsonSchema/index.js';
 export * from './result.js';
 export * from './encryption.js';
 export * as metrics from './telemetry/metrics.js';

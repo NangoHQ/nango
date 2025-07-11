@@ -42,6 +42,7 @@ export interface SimplifiedJSONSchema {
 export interface BaseProvider {
     display_name: string;
     auth_mode: AuthModeType;
+    installation?: 'outbound';
     proxy?: {
         base_url: string;
         headers?: Record<string, string>;
@@ -74,6 +75,8 @@ export interface BaseProvider {
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
+    webhook_response_metadata?: string[];
+    authorization_code_param_in_webhook?: string;
     docs: string;
     docs_connect?: string;
     token_expiration_buffer?: number; // In seconds.
@@ -88,6 +91,7 @@ export interface BaseProvider {
     credentials?: Record<string, SimplifiedJSONSchema>;
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
+    require_client_certificate?: boolean;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -157,10 +161,6 @@ export interface ProviderAppleAppStore extends BaseProvider {
     token_url: string;
 }
 
-export interface ProviderTableau extends BaseProvider {
-    auth_mode: 'TABLEAU';
-}
-
 export interface ProviderBill extends BaseProvider {
     auth_mode: 'BILL';
 }
@@ -213,7 +213,6 @@ export type Provider =
     | ProviderTwoStep
     | ProviderSignature
     | ProviderApiKey
-    | ProviderTableau
     | ProviderBill
     | ProviderGithubApp
     | ProviderAppleAppStore

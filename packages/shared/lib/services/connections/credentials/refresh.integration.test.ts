@@ -6,7 +6,7 @@ import { Err, Ok, wait } from '@nangohq/utils';
 
 import { refreshOrTestCredentials } from './refresh.js';
 import { createConfigSeed, createConnectionSeed, seedAccountEnvAndUser } from '../../../seeders/index.js';
-import encryptionManager from '../../../utils/encryption.manager';
+import encryptionManager from '../../../utils/encryption.manager.js';
 import { NangoError } from '../../../utils/error.js';
 import connectionService from '../../connection.service.js';
 

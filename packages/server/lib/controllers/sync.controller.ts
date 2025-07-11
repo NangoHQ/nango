@@ -9,11 +9,9 @@ import {
     configService,
     connectionService,
     errorManager,
-    flowService,
     getActionOrModelByEndpoint,
     getAttributes,
     getSyncConfigRaw,
-    getSyncConfigsWithConnectionsByEnvironmentId,
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
@@ -88,19 +86,6 @@ class SyncController {
             }));
         } else {
             return syncs.map((sync) => ({ ...sync, record_count: null }));
-        }
-    }
-
-    public async getSyncs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
-            const flows = flowService.getAllAvailableFlows();
-
-            res.send({ syncs, flows });
-        } catch (err) {
-            next(err);
         }
     }
 
@@ -260,7 +245,7 @@ class SyncController {
                         idempotencyKey: logCtx.id,
                         environmentId: connection.environment_id,
                         providerConfigKey,
-                        connectionId,
+                        connectionId: connection.id,
                         actionName: action_name
                     });
                 }

@@ -1,14 +1,17 @@
-import type { EndUser, PostPublicConnectSessionsReconnect } from '@nangohq/types';
 import { z } from 'zod';
+
 import db from '@nangohq/database';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as connectSessionService from '../../services/connectSession.service.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
-import { checkIntegrationsDefault, bodySchema as originalBodySchema } from './postSessions.js';
-import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { bodySchema as originalBodySchema, checkIntegrationsDefault } from './postSessions.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import * as connectSessionService from '../../services/connectSession.service.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { EndUser, PostPublicConnectSessionsReconnect } from '@nangohq/types';
 
 const bodySchema = z
     .object({
@@ -42,7 +45,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
     const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
-        const connection = await connectionService.checkIfConnectionExists(body.connection_id, body.integration_id, environment.id);
+        const connection = await connectionService.checkIfConnectionExists(trx, {
+            connectionId: body.connection_id,
+            providerConfigKey: body.integration_id,
+            environmentId: environment.id
+        });
         if (!connection) {
             return {
                 status: 400,
@@ -67,7 +74,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
 
             endUser = endUserRes.value;
         } else {
-            const endUserRes = await getEndUser(trx, { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! });
+            const endUserRes = await getEndUser(
+                trx,
+                { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! },
+                { forUpdate: true }
+            );
             if (endUserRes.isErr()) {
                 return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
             }
@@ -76,7 +87,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         if (body.integrations_config_defaults) {
-            const integrations = await configService.listProviderConfigs(environment.id);
+            const integrations = await configService.listProviderConfigs(trx, environment.id);
 
             // Enforce that integrations exists in `integrations_config_defaults`
             const check = checkIntegrationsDefault(body, integrations);

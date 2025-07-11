@@ -158,7 +158,7 @@ describe('Flow service tests', () => {
     });
 
     it('Fetch a flow config by providing a name', () => {
-        vi.spyOn(FlowService, 'getAllAvailableFlows').mockImplementation(() => {
+        vi.spyOn(FlowService, 'getFlowsYaml').mockImplementation(() => {
             return flows;
         });
 
@@ -168,7 +168,7 @@ describe('Flow service tests', () => {
     });
 
     it('should get flows.yaml', () => {
-        const flows = FlowService.getAllAvailableFlows();
+        const flows = FlowService.getFlowsYaml();
         expect(flows).not.toStrictEqual({});
         expect(flows).toHaveProperty('integrations');
         expect(Object.keys(flows.integrations).length).toBeGreaterThan(20);

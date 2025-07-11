@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { WebSocketClientId } from './publisher.client';
-import { Redis, Publisher } from './publisher.client';
-import type { WebSocket } from 'ws';
 import * as uuid from 'uuid';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { Publisher, Redis } from './publisher.client.js';
+
+import type { WebSocketClientId } from './publisher.client.js';
+import type { WebSocket } from 'ws';
 
 const mockWebsocket = () => {
     const mock = {} as any;
@@ -74,7 +76,7 @@ describe('Publisher', () => {
             })
         );
 
-        await publisher1.notifySuccess(res, wsClientId, 'provider-key', 'connection-id');
+        await publisher1.notifySuccess({ res, wsClientId, providerConfigKey: 'provider-key', connectionId: 'connection-id' });
 
         expect(ws.send).toHaveBeenCalledWith(
             JSON.stringify({
@@ -95,7 +97,7 @@ describe('Publisher', () => {
         vi.spyOn(publisher1, 'unsubscribe');
 
         await publisher1.subscribe(ws, wsClientId);
-        await publisher2.notifySuccess(res, wsClientId, 'provider-key', 'connection-id'); // publisher2 does not know about the websocket connection
+        await publisher2.notifySuccess({ res, wsClientId, providerConfigKey: 'provider-key', connectionId: 'connection-id' }); // publisher2 does not know about the websocket connection
 
         expect(ws.send).toHaveBeenCalledTimes(2); // connection_ack + success
         expect(publisher1.unsubscribe).toHaveBeenCalledTimes(1);

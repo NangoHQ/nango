@@ -1194,7 +1194,7 @@ paths:
                                                 your-properties:
                                                     type: string
                                                     description: The data Nango synced in for you
-                                                    example: 'Your synced data, in the schema you (or Nango) defined in nango.yaml'
+                                                    example: 'Your synced data, in the schema you (or Nango) defined in script'
                                                 _nango_metadata:
                                                     type: object
                                                     properties:
@@ -1848,7 +1848,7 @@ paths:
                                     description: The name of the action to trigger.
                                 input:
                                     type: object
-                                    description: The necessary input for your action's 'runAction' function.
+                                    description: The necessary input for your action's 'exec' function.
 
             responses:
                 '200':
@@ -2420,7 +2420,6 @@ components:
                             'APP',
                             'NONE',
                             'TBA',
-                            'TABLEAU',
                             'JWT',
                             'BILL',
                             'TWO_STEP',
@@ -2778,7 +2777,6 @@ components:
                 - $ref: '#/components/schemas/UnauthCredentials'
                 - $ref: '#/components/schemas/CustomCredentials'
                 - $ref: '#/components/schemas/TbaCredentials'
-                - $ref: '#/components/schemas/TableauCredentials'
                 - $ref: '#/components/schemas/BillCredentials'
                 - $ref: '#/components/schemas/TwoStepCredentials'
                 - $ref: '#/components/schemas/SignatureCredentials'
@@ -3025,32 +3023,6 @@ components:
                 - type
                 - username
                 - password
-        TableauCredentials:
-            type: object
-            title: Tableau
-            additionalProperties: false
-            properties:
-                content_url:
-                    type: string
-                expires_at:
-                    type: string
-                    format: date-time
-                pat_name:
-                    type: string
-                pat_secret:
-                    type: string
-                raw:
-                    type: object
-                token:
-                    type: string
-                type:
-                    type: string
-                    enum: [TABLEAU]
-            required:
-                - pat_name
-                - pat_secret
-                - raw
-                - type
         TbaCredentials:
             type: object
             title: TBA

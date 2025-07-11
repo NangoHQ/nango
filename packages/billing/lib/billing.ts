@@ -2,11 +2,22 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingMetric, BillingSubscription, BillingUsageMetric } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 import { Batcher } from './batcher.js';
-import { logger } from './logger.js';
 import { envs } from './envs.js';
+import { logger } from './logger.js';
+
+import type {
+    BillingClient,
+    BillingCustomer,
+    BillingIngestEvent,
+    BillingMetric,
+    BillingPlan,
+    BillingSubscription,
+    BillingUsageMetric,
+    DBTeam,
+    DBUser
+} from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export class Billing {
     private batcher: Batcher<BillingIngestEvent> | null;
@@ -81,8 +92,20 @@ export class Billing {
         return Ok(undefined);
     }
 
+    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+        return await this.client.upsertCustomer(team, user);
+    }
+
+    async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
+        return await this.client.linkStripeToCustomer(teamId, customerId);
+    }
+
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         return await this.client.getCustomer(accountId);
+    }
+
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        return await this.client.createSubscription(team, planExternalId);
     }
 
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
@@ -91,6 +114,18 @@ export class Billing {
 
     async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
         return await this.client.getUsage(subscriptionId, period);
+    }
+
+    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+        return await this.client.upgrade(opts);
+    }
+
+    async getPlanById(planId: string): Promise<Result<BillingPlan>> {
+        return await this.client.getPlanById(planId);
+    }
+
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true> {
+        return this.client.verifyWebhookSignature(body, headers, secret);
     }
 
     // Note: Events are sent immediately

@@ -11,7 +11,7 @@ import ts from 'typescript';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
-import { importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
+import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 
@@ -284,7 +284,7 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
 }
 
 export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll('/', '_').replaceAll('.js', '.cjs');
+    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
 /**
@@ -304,34 +304,56 @@ function nangoPlugin() {
         setMergingStrategyLines
     };
 
+    const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
+    const needsAwait = [
+        'batchSend',
+        'batchSave',
+        'batchDelete',
+        'log',
+        'getFieldMapping',
+        'setFieldMapping',
+        'getMetadata',
+        'setMetadata',
+        'proxy',
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'getConnection',
+        'getEnvironmentVariables',
+        'triggerAction'
+    ];
+    const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
+    const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
+
     return {
         bag,
         plugin: ({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> => {
-            const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
-            const needsAwait = [
-                'batchSend',
-                'batchSave',
-                'batchDelete',
-                'log',
-                'getFieldMapping',
-                'setFieldMapping',
-                'getMetadata',
-                'setMetadata',
-                'proxy',
-                'get',
-                'post',
-                'put',
-                'patch',
-                'delete',
-                'getConnection',
-                'getEnvironmentVariables',
-                'triggerAction'
-            ];
-            const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
-            const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
-
             return {
                 visitor: {
+                    ImportDeclaration(path) {
+                        const lineNumber = path.node.loc?.start.line || 0;
+                        const source = path.node.source.value;
+                        if (typeof source !== 'string') {
+                            return;
+                        }
+
+                        // Allow relative path imports (./path or ../path)
+                        if (source.startsWith('./') || source.startsWith('../')) {
+                            return;
+                        }
+
+                        // Check if the imported package is in the allowed list
+                        if (!allowedPackages.includes(source)) {
+                            throw new CompileError(
+                                'disallowed_import',
+                                lineNumber,
+                                `Import of package '${source}' is not allowed. Allowed packages are: ${allowedPackages.join(', ')}`
+                            );
+                        }
+                    },
+
                     CallExpression(path) {
                         const lineNumber = path.node.loc?.start.line || 0;
                         const callee = path.node.callee;

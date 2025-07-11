@@ -1,9 +1,11 @@
-import type knex from 'knex';
-import type { Schedule } from '../../types.js';
-import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
-import type { Result } from '@nangohq/utils';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
+
+import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
 import { TASKS_TABLE } from '../../models/tasks.js';
+
+import type { Schedule } from '../../types.js';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
 
 export async function dueSchedules(db: knex.Knex): Promise<Result<Schedule[]>> {
     try {
@@ -29,7 +31,6 @@ export async function dueSchedules(db: knex.Knex): Promise<Result<Schedule[]>> {
             .skipLocked();
         return Ok(schedules.map(DbSchedule.from));
     } catch (err) {
-        console.log(err);
         return Err(new Error(`Error getting due schedules: ${stringifyError(err)}`));
     }
 }

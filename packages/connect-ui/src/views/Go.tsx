@@ -37,12 +37,9 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     OAUTH2: z.object({}),
     OAUTH2_CC: z.object({
         client_id: z.string().min(1),
-        client_secret: z.string().min(1)
-    }),
-    TABLEAU: z.object({
-        pat_name: z.string().min(1),
-        pat_secret: z.string().min(1),
-        content_url: z.string().min(1)
+        client_secret: z.string().min(1),
+        client_certificate: z.string().min(1).optional(),
+        client_private_key: z.string().min(1).optional()
     }),
     JWT: z.object({
         // JWT is custom every time
@@ -78,6 +75,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
     'credentials.client_id': { secret: false, title: 'Client ID', example: 'Your Client ID' },
     'credentials.client_secret': { secret: true, title: 'Client Secret', example: 'Your Client Secret' },
+    'credentials.client_certificate': { secret: true, title: 'Client Certificate', example: 'Your Client Certificate' },
+    'credentials.client_private_key': { secret: true, title: 'Private Key', example: 'Your Private Key' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
@@ -128,6 +127,9 @@ export const Go: React.FC = () => {
 
         // Base credentials are usually the first in the list so we start here
         for (const name of Object.keys(baseForm.shape)) {
+            if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
+                continue;
+            }
             order += 1;
             orderedFields[`credentials.${name}`] = order;
         }
@@ -141,6 +143,9 @@ export const Go: React.FC = () => {
             if (!orderedFields[fullName]) {
                 order += 1;
                 orderedFields[fullName] = order;
+            }
+            if (preconfigured[name] ?? schema.hidden) {
+                hiddenFields += 1;
             }
         }
 
@@ -214,7 +219,7 @@ export const Go: React.FC = () => {
             }
 
             telemetry('click:connect');
-            setLoading(detectClosedAuthWindow);
+            setLoading(true);
             setError(null);
             // we don't care if it was already opened
             nango.clear();
@@ -225,7 +230,7 @@ export const Go: React.FC = () => {
                 if (provider.auth_mode === 'NONE') {
                     res = await nango.create(integration.unique_key, { ...values });
                 } else if (
-                    provider.auth_mode === 'OAUTH2' ||
+                    (provider.auth_mode === 'OAUTH2' && !provider.installation) ||
                     provider.auth_mode === 'OAUTH1' ||
                     provider.auth_mode === 'CUSTOM' ||
                     provider.auth_mode === 'APP'
@@ -238,7 +243,8 @@ export const Go: React.FC = () => {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow
+                        detectClosedAuthWindow,
+                        ...(provider.installation && { installation: provider.installation })
                     });
                 }
                 setResult(res);
@@ -249,7 +255,7 @@ export const Go: React.FC = () => {
                         telemetry('popup:blocked_by_browser');
                         setError(t('go.popupBlocked'));
                         return;
-                    } else if (err.type === 'windowClosed') {
+                    } else if (err.type === 'window_closed') {
                         telemetry('popup:closed_early');
                         setError(t('go.popupClosed'));
                         return;
@@ -345,7 +351,7 @@ export const Go: React.FC = () => {
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full animate-in" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
-                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger ? 'border border-dark-300' : 'hidden')}>
                                 {orderedFields.map(([name]) => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params', string];
 

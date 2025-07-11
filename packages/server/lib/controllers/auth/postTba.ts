@@ -238,7 +238,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey, connectionId });
+        res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
@@ -257,7 +257,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             account
         );
         if (logCtx) {
-            void logCtx.error('Error during Tableau credentials creation', { error: err });
+            void logCtx.error('Error during TBA credentials creation', { error: err });
             await logCtx.failed();
         }
 

@@ -1,10 +1,12 @@
 import { getProvider } from '@nangohq/shared';
-import * as preConnectionHandlers from './index.js';
-import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
-import type { DBConnectionDecrypted, DBTeam, DBEnvironment } from '@nangohq/types';
+
+import * as preConnectionHandlers from './index.js';
+import { getHandler, getInternalNango } from './internal-nango.js';
+
 import type { InternalNango } from './internal-nango.js';
-import { getInternalNango, getHandler } from './internal-nango.js';
+import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
+import type { DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
 
 type PreConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 type PreConnectionHandlersMap = Record<string, PreConnectionHandler>;

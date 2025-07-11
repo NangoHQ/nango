@@ -1,3 +1,5 @@
+import tracer from 'dd-trace';
+
 import db from '@nangohq/database';
 import { environmentService, getPlan } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
@@ -32,14 +34,18 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        const accountAndEnv = await tracer.trace('persist.middleware.auth.getAccountAndEnvironmentBySecretKey', async () => {
+            return await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        });
         if (!accountAndEnv || accountAndEnv.environment.id !== environmentId) {
             throw new Error('Cannot find matching environment');
         }
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {
-            const resPlan = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
+            const resPlan = await tracer.trace('persist.middleware.auth.getPlan', async () => {
+                return await getPlan(db.knex, { accountId: accountAndEnv.account.id });
+            });
             if (resPlan.isErr()) {
                 res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(resPlan.error)}` } });
                 return;
