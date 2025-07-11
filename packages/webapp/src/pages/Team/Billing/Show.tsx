@@ -37,7 +37,7 @@ export const TeamBilling: React.FC = () => {
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
         const list: PlanDefinitionList[] = [];
-        let isAboveActive = currentPlan.name === 'scale_legacy' || currentPlan.name === 'starter_legacy' || currentPlan.name === 'internal';
+        let isAboveActive = currentPlan.name === 'scale-legacy' || currentPlan.name === 'starter-legacy' || currentPlan.name === 'growth-legacy';
         for (const plan of plansList.data) {
             const same = plan.code === currentPlan.name;
             if (plan.hidden && !same) {

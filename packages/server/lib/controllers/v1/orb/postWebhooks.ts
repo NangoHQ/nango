@@ -6,7 +6,7 @@ import { Err, Ok, getLogger, report } from '@nangohq/utils';
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PostOrbWebhooks, Result } from '@nangohq/types';
+import type { DBPlan, PostOrbWebhooks, Result } from '@nangohq/types';
 
 const logger = getLogger('Server.Orb');
 
@@ -107,7 +107,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
 
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
-                    name: planExternalId,
+                    name: planExternalId as unknown as DBPlan['name'],
                     trial_start_at: null,
                     trial_end_at: null,
                     trial_end_notified_at: null,

@@ -24,3 +24,4 @@ export { default as azureDevopsCredentialsVerification } from './providers/azure
 export { default as apolloCredentialsVerification } from './providers/apollo/credentials-verification.js';
 export { default as sentryOauthPostConnection } from './providers/sentry-oauth/post-connection.js';
 export { default as linearPreConnectionDeletion } from './providers/linear/pre-connection-deletion.js';
+export { default as attioPostConnection } from './providers/attio/post-connection.js';

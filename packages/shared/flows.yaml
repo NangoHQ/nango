@@ -20292,11 +20292,11 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /BankTransactions
+                    path: /bank-transactions
                     group: Bank Transactions
                 scopes:
                     - accounting.transactions
-                version: 1.0.1
+                version: 2.0.0
             general-ledger:
                 description: |
                     Fetch all general ledger entries in Xero
