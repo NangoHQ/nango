@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import { Client } from '@stomp/stompjs';
 import WebSocket from 'ws';
 
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
@@ -29,7 +29,7 @@ export class ActiveMQ implements Transport {
             },
             heartbeatIncoming: 10000,
             heartbeatOutgoing: 10000,
-            reconnectDelay: 5000,
+            reconnectDelay: 300,
             onConnect: () => {
                 this.isConnected = true;
                 logger.info('ActiveMQ publisher connected');
@@ -39,12 +39,10 @@ export class ActiveMQ implements Transport {
                 logger.warning('ActiveMQ publisher disconnected');
             },
             onStompError: (frame) => {
-                this.isConnected = false;
-                logger.error('ActiveMQ STOMP error:', frame.body);
+                report(new Error(`ActiveMQ STOMP error`), { error: frame.body });
             },
             onWebSocketError: (error) => {
-                this.isConnected = false;
-                logger.error('ActiveMQ WebSocket error:', error);
+                report(new Error(`ActiveMQ WebSocket error`), { error });
             }
         };
 
@@ -69,12 +67,12 @@ export class ActiveMQ implements Transport {
             }
 
             if (!this.isConnected) {
-                throw new Error(`Failed to connect to ActiveMQ within ${timeoutMs}ms`);
+                return Err(`Failed to connect to ActiveMQ within ${timeoutMs}ms`);
             }
 
             return Ok(undefined);
         } catch (err) {
-            logger.error('Error connecting to ActiveMQ:', err);
+            report(new Error('Error connecting to ActiveMQ'), { error: err });
             return Err(new Error('Failed to connect to ActiveMQ', { cause: err }));
         }
     }
@@ -89,7 +87,7 @@ export class ActiveMQ implements Transport {
                 logger.info('ActiveMQ publisher disconnected');
                 return Ok(undefined);
             } catch (err) {
-                logger.error('Error disconnecting from ActiveMQ:', err);
+                report(new Error('Error disconnecting from ActiveMQ'), { error: err });
                 return Err(new Error('Failed to disconnect from ActiveMQ', { cause: err }));
             }
         }
@@ -103,7 +101,7 @@ export class ActiveMQ implements Transport {
         }
 
         try {
-            const encoded = serde.encode(event);
+            const encoded = serde.serialize(event);
             if (encoded.isErr()) {
                 return Err(new Error(`Failed to encode event: ${encoded.error}`));
             }
@@ -126,7 +124,7 @@ export class ActiveMQ implements Transport {
 
     public subscribe({ consumerGroup, subscriptions }: { consumerGroup: string; subscriptions: Subscription[] }): void {
         if (!this.client || !this.isConnected) {
-            logger.error('ActiveMQ publisher not connected, cannot subscribe to events');
+            report(new Error('ActiveMQ publisher not connected, cannot subscribe to events'), { consumerGroup });
             return;
         }
 
@@ -136,9 +134,9 @@ export class ActiveMQ implements Transport {
         for (const { subject, callback } of subscriptions) {
             this.client.subscribe(`/queue/Consumer.${consumerGroup}.VirtualTopic.${subject}`, (message) => {
                 if (message.body) {
-                    const decoded = serde.decode<Event>(Buffer.from(message.body, this.messageEncoding));
+                    const decoded = serde.deserialize<Event>(Buffer.from(message.body, this.messageEncoding));
                     if (decoded.isErr()) {
-                        logger.error('Failed to parse message body:', decoded.error);
+                        report(new Error(`Failed to deserialize message`), { subject, error: decoded.error });
                         return;
                     }
                     callback(decoded.value);
