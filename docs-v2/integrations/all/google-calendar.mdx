@@ -38,7 +38,7 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
 
             const res = await nango.get({
                 endpoint: '/calendar/v3/users/me/calendarList',
-                params: { maxResults: "10" },
+                params: { maxResults: 10 },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });

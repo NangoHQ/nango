@@ -38,7 +38,7 @@ description: 'Access the Google Drive API in 2 minutes 💨'
 
             const res = await nango.get({
                 endpoint: '/drive/v3/files',
-                params: { "pageSize": "10" },
+                params: { pageSize: 10 },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
