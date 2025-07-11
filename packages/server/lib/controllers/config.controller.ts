@@ -67,8 +67,8 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
         return publicFlows.filter(
             (publicFlow) =>
                 !enabled.concat(disabled).some((flow) => {
-                    const flowModelNames = flow.models.map((model) => model.name);
-                    const publicModelNames = publicFlow.models.map((model) => model.name);
+                    const flowModelNames = flow.returns || [];
+                    const publicModelNames = publicFlow.returns || [];
                     const flowEndpointPaths = flow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
                     const publicEndpointPaths = publicFlow.endpoints.map((endpoint) => `${Object.keys(endpoint)[0]} ${Object.values(endpoint)[0]}`);
                     return (

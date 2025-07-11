@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+import { getDefinition } from '@nangohq/utils';
 
 import { providerNameSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -72,7 +73,13 @@ export function transformToOpenAIFunctions(configs: StandardNangoConfig[]): Open
         // Process actions
         for (const action of config.actions) {
             // Get the input schema from the input model
-            const inputSchema = action.input?.name ? (action.json_schema?.definitions?.[action.input.name] as JSONSchema7) : null;
+            let inputSchema = null;
+            if (action.input) {
+                const definition = getDefinition(action.input, action.json_schema as JSONSchema7);
+                if (definition.isOk()) {
+                    inputSchema = definition.unwrap();
+                }
+            }
 
             // Parse parameter descriptions from the action description
             const parameterDescriptions: Record<string, string> = {};

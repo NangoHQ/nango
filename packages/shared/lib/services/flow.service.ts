@@ -3,7 +3,7 @@ import path from 'path';
 
 import yaml from 'js-yaml';
 
-import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
+import { NangoYamlParserV2, nangoModelsToJsonSchema } from '@nangohq/nango-yaml';
 import { filterJsonSchemaForModels, report, stringifyError } from '@nangohq/utils';
 
 import flowsJson from '../../flows.zero.json' with { type: 'json' };
@@ -69,6 +69,9 @@ class FlowService {
             };
 
             for (const item of [...integration.actions, ...integration.syncs]) {
+                const models = item.usedModels.map((model) => parsed.models.get(model)!);
+                const jsonSchema = models.length > 0 ? nangoModelsToJsonSchema(models) : null;
+
                 if (item.type === 'action') {
                     std.actions.push({
                         name: item.name,
@@ -81,12 +84,11 @@ class FlowService {
                         is_public: true,
                         pre_built: true,
                         endpoints: item.endpoint ? [item.endpoint] : [],
-                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        input: item.input || undefined,
                         enabled: false,
-                        models: item.usedModels.map((name) => parsed.models.get(name)!),
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes },
                         sdk_version: null,
                         is_zero_yaml: false
@@ -106,13 +108,12 @@ class FlowService {
                         is_public: true,
                         pre_built: true,
                         endpoints: item.endpoints,
-                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        input: item.input || undefined,
                         runs: item.runs,
                         enabled: false,
-                        models: item.usedModels.map((name) => parsed.models.get(name)!),
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null,
+                        json_schema: jsonSchema,
                         metadata: { description: item.description, scopes: item.scopes },
                         sdk_version: null,
                         is_zero_yaml: false
@@ -154,12 +155,9 @@ class FlowService {
                     is_public: true,
                     pre_built: true,
                     endpoints: item.endpoints,
-                    input: item.input ? { name: item.input, fields: [] } : undefined,
+                    input: item.input || undefined,
                     runs: item.runs,
                     enabled: false,
-                    models: item.usedModels.map((name) => {
-                        return { name, fields: [] };
-                    }),
                     last_deployed: null,
                     webhookSubscriptions: [],
                     json_schema: jsonSchema.value,
@@ -185,11 +183,8 @@ class FlowService {
                     is_public: true,
                     pre_built: true,
                     endpoints: item.endpoint ? [item.endpoint] : [],
-                    input: item.input ? { name: item.input, fields: [] } : undefined,
+                    input: item.input || undefined,
                     enabled: false,
-                    models: item.usedModels.map((name) => {
-                        return { name, fields: [] };
-                    }),
                     last_deployed: null,
                     webhookSubscriptions: [],
                     json_schema: jsonSchema.value,

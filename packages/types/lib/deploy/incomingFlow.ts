@@ -1,4 +1,4 @@
-import type { NangoModel, NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
+import type { NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { Merge } from 'type-fest';
 
@@ -22,7 +22,6 @@ export interface NangoConfigMetadata {
     description?: string | undefined;
 }
 
-// TODO: change that to use Parsed type
 export interface LegacySyncModelSchema {
     name: string;
     fields: {
@@ -36,7 +35,6 @@ export interface PreBuiltAction {
     models: string[];
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
-    model_schema: string | NangoModel[];
     providerConfigKey: string;
     provider: string;
     is_public: boolean;
@@ -46,7 +44,7 @@ export interface PreBuiltAction {
     nango_config_id?: number;
     fileBody?: IncomingScriptFiles;
     endpoints: NangoSyncEndpointV2[];
-    input?: NangoModel | LegacySyncModelSchema | undefined;
+    input?: string | undefined;
     version?: string | null;
 }
 export interface PreBuiltSync {
@@ -56,7 +54,6 @@ export interface PreBuiltSync {
     auto_start?: boolean | undefined;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
-    model_schema: string | NangoModel[];
     track_deletes: boolean;
     providerConfigKey: string;
     provider: string;
@@ -67,9 +64,10 @@ export interface PreBuiltSync {
     nango_config_id?: number;
     fileBody?: IncomingScriptFiles;
     endpoints: NangoSyncEndpointV2[];
-    input?: NangoModel | LegacySyncModelSchema | undefined;
+    input?: string | undefined;
     version?: string | null;
 }
+
 export type PreBuiltFlowConfig = PreBuiltAction | PreBuiltSync;
 
 // TODO: split into action | sync type
@@ -80,7 +78,6 @@ export interface CLIDeployFlowConfig {
     auto_start?: boolean;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
-    model_schema: string | NangoModel[];
     endpoints?: (NangoSyncEndpointV2 | NangoSyncEndpointOld)[] | undefined;
     track_deletes: boolean;
     providerConfigKey: string;

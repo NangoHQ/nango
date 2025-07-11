@@ -211,7 +211,6 @@ async function createPackage({
                     sync_type: sync.sync_type,
                     type: sync.type,
                     fileBody: files,
-                    model_schema: sync.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions
                 };
@@ -249,7 +248,6 @@ async function createPackage({
                     input: action.input || undefined,
                     type: action.type,
                     fileBody: files,
-                    model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: action.endpoint ? [action.endpoint] : [],
                     track_deletes: false
                 };

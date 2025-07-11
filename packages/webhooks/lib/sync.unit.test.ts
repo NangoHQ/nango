@@ -40,7 +40,6 @@ const syncConfig: DBSyncConfig = {
     models: [], // TODO: remove nullable NAN-2527
     active: true,
     runs: null,
-    model_schema: null,
     environment_id: 1,
     track_deletes: true,
     type: 'sync',
@@ -49,6 +48,7 @@ const syncConfig: DBSyncConfig = {
     pre_built: true,
     is_public: false,
     metadata: {},
+    model_schema: null,
     input: null,
     sync_type: 'full',
     webhook_subscriptions: null,

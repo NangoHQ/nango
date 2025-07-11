@@ -6,7 +6,6 @@ export function getTestStdSyncConfig(data?: Partial<NangoSyncConfig>): NangoSync
         type: 'sync',
         version: '1.0.0',
         endpoints: [],
-        models: [],
         returns: [],
         json_schema: {},
         is_zero_yaml: false,

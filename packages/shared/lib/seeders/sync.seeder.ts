@@ -36,8 +36,7 @@ export async function createSyncSeeds({
             enabled: true,
             created_at: now,
             updated_at: now,
-            models: syncData.models || [],
-            model_schema: []
+            models: syncData.models || []
         })
         .returning('*');
     if (!syncConfig) {

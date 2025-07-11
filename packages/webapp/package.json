@@ -65,6 +65,7 @@
         "date-fns": "4.1.0",
         "env-cmd": "10.1.0",
         "httpsnippet-lite": "3.0.5",
+        "json-schema": "^0.4.0",
         "lodash": "4.17.21",
         "nuqs": "2.4.1",
         "postcss": "8.5.1",

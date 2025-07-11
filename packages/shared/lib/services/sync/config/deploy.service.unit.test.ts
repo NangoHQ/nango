@@ -76,7 +76,6 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
                 track_deletes: true,
                 endpoints: [
                     { method: 'GET', path: '/model1' },
@@ -121,7 +120,6 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
                 track_deletes: true,
                 endpoints: [
                     { method: 'GET', path: '/model1' },

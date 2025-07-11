@@ -17,7 +17,6 @@ import type {
     DBSyncEndpoint,
     DBSyncEndpointCreate,
     DBTeam,
-    NangoModel,
     NangoSyncConfig,
     Result,
     SyncDeploymentResult
@@ -106,6 +105,7 @@ export async function deployTemplate({
         return Err(new NangoError('source_copy_error'));
     }
 
+    const modelsNames = [...template.returns, template.input].filter(Boolean) as string[];
     // If it's a zero yaml template json schema is pre-bundled
     // otherwise fetch it from the public folder
     let models_json_schema: JSONSchema7 | null = null;
@@ -120,7 +120,6 @@ export async function deployTemplate({
             return Err(new NangoError('source_copy_error'));
         }
 
-        const modelsNames = template.models.map((m) => m.name);
         if (jsonSchemaString) {
             const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
             const result = filterJsonSchemaForModels(jsonSchema, modelsNames);
@@ -150,8 +149,8 @@ export async function deployTemplate({
         models: template.returns,
         active: true,
         runs: template.type === 'sync' ? template.runs! : null,
-        input: template.input?.name || null,
-        model_schema: JSON.stringify(template.models) as unknown as NangoModel[], // array is not well supported
+        model_schema: null,
+        input: template.input || null,
         environment_id: environment.id,
         deleted: false,
         track_deletes: template.type === 'sync' ? template.track_deletes! : false,
@@ -174,8 +173,8 @@ export async function deployTemplate({
         providerConfigKey: deployInfo.integrationId,
         ...toInsert,
         last_deployed: created_at,
-        input: template.input?.name,
-        models: template.models.map((m) => m.name)
+        input: template.input || null,
+        models: modelsNames
     };
     const now = new Date();
 
@@ -195,7 +194,7 @@ export async function deployTemplate({
                 method: endpoint.method,
                 path: endpoint.path,
                 group_name: endpoint.group || null,
-                model: template.models[index]!.name,
+                model: template.returns[index] || null,
                 created_at: now,
                 updated_at: now
             };
@@ -288,14 +287,14 @@ export async function upgradeTemplate({
         updated_at: now,
         version: template.version!,
         file_location: copyJs,
-        model_schema: JSON.stringify(template.models) as any,
+        model_schema: null,
         metadata: template.metadata || {},
         auto_start: template.auto_start === true,
         track_deletes: template.track_deletes === true,
         models: template.returns,
         sdk_version: template.sdk_version,
         models_json_schema: template.json_schema,
-        input: template.input?.name || null,
+        input: template.input || null,
         runs: template.type === 'sync' ? template.runs! : null
     };
 
@@ -319,7 +318,7 @@ export async function upgradeTemplate({
                     method: endpoint.method,
                     path: endpoint.path,
                     group_name: endpoint.group || null,
-                    model: template.models[index]!.name,
+                    model: template.returns[index] || null,
                     created_at: now,
                     updated_at: now
                 };

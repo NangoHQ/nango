@@ -22,11 +22,13 @@ const nangoModelFieldsBase = z.object({
     tsType: z.boolean().optional(),
     optional: z.boolean().optional()
 });
+
 const nangoModelFields: z.ZodType<NangoModelField> = nangoModelFieldsBase
     .extend({
         value: z.union([z.string(), z.number(), z.boolean(), z.null(), z.lazy(() => nangoModelFields.array())])
     })
     .strict();
+
 const nangoModel = z
     .object({
         name: z.string().max(255),
@@ -34,6 +36,7 @@ const nangoModel = z
         isAnon: z.boolean().optional()
     })
     .strict();
+
 export const flowConfig = z
     .object({
         type: z.enum(['action', 'sync']),
@@ -48,7 +51,7 @@ export const flowConfig = z
             })
             .strict()
             .optional(),
-        model_schema: z.union([z.string(), z.array(nangoModel)]),
+        model_schema: z.union([z.string(), z.array(nangoModel)]).optional(),
         input: z.union([z.string().max(255), z.any()]).optional(),
         endpoints: z
             .array(
