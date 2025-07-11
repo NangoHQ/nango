@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { ElasticsearchContainer } from '@testcontainers/elasticsearch';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { Wait } from 'testcontainers';
+import { GenericContainer, Wait } from 'testcontainers';
 
 import type { StartedTestContainer } from 'testcontainers';
 
@@ -55,8 +55,21 @@ async function setupPostgres() {
     process.env['RECORDS_DATABASE_URL'] = `postgres://${user}:${password}@localhost:${port}/${dbName}`;
 }
 
+export async function setupActiveMQ() {
+    console.log('Starting ActiveMQ...');
+    const amq = await new GenericContainer('apache/activemq-classic:5.18.3').withExposedPorts(61614).start();
+    containers.push(amq);
+
+    const url = `ws://${amq.getHost()}:${amq.getMappedPort(61614)}`;
+
+    process.env['NANGO_ACTIVEMQ_URL'] = url;
+    process.env['NANGO_ACTIVEMQ_USER'] = 'admin';
+    process.env['NANGO_ACTIVEMQ_PASSWORD'] = 'admin';
+    console.log('ActiveMQ running at', url);
+}
+
 export async function setup() {
-    await Promise.all([setupPostgres(), setupElasticsearch()]);
+    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ()]);
 }
 
 export const teardown = async () => {

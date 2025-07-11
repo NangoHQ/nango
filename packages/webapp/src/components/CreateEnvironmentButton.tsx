@@ -55,7 +55,7 @@ export const CreateEnvironmentButton: React.FC = () => {
         tooltipContent = (
             <div>
                 Max number of environments reached.{' '}
-                {environment?.plan?.name === 'scale' ? (
+                {environment?.plan?.name.includes('legacy') ? (
                     <>Contact Nango to add more</>
                 ) : (
                     <>
