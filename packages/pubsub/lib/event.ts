@@ -1,4 +1,4 @@
-import type { DBUser, DBTeam, BillingMetric } from '@nangohq/types';
+import type { BillingMetric, DBTeam, DBUser } from '@nangohq/types';
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue } | Record<string, any>;
 

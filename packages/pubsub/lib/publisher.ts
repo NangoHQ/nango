@@ -1,8 +1,9 @@
-import type { SetOptional } from 'type-fest';
 import { v4 as uuidv4 } from 'uuid';
-import type { Result } from '@nangohq/utils';
-import type { Transport } from './transport/transport.js';
+
 import type { Event } from './event.js';
+import type { Transport } from './transport/transport.js';
+import type { Result } from '@nangohq/utils';
+import type { SetOptional } from 'type-fest';
 
 export class Publisher {
     private transport: Transport;

@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll, assert, vi } from 'vitest';
+import { afterAll, assert, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { ActiveMQ } from './activemq.js';
+
 import type { Event } from '../event.js';
 
 describe('ActiveMQ Transport', () => {
