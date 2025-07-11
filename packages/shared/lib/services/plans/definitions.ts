@@ -3,7 +3,7 @@ import type { PlanDefinition } from '@nangohq/types';
 export const freePlan: PlanDefinition = {
     code: 'free',
     title: 'Free',
-    description: 'API authorization only.',
+    description: 'For hobby and testing.',
     canUpgrade: true,
     canDowngrade: false,
     orbId: 'free',
@@ -37,10 +37,9 @@ export const freePlan: PlanDefinition = {
 export const starterPlan: PlanDefinition = {
     code: 'starter',
     title: 'Starter',
-    description: 'Tailored to your scale.',
+    description: 'For small teams.',
     canUpgrade: false,
     canDowngrade: false,
-    hidden: true,
     basePrice: 50,
     orbId: 'starter',
     flags: {
@@ -68,11 +67,11 @@ export const starterPlan: PlanDefinition = {
 export const growthPlan: PlanDefinition = {
     code: 'growth',
     title: 'Growth',
-    description: 'Pay-as-you-go integrations.',
+    description: 'For growing teams.',
     canUpgrade: true,
     canDowngrade: false,
     orbId: 'growth',
-    basePrice: 50,
+    basePrice: 500,
     flags: {
         api_rate_limit_size: 'l',
         connection_with_scripts_max: null,
@@ -100,7 +99,7 @@ export const growthPlan: PlanDefinition = {
 export const enterprisePlan: PlanDefinition = {
     code: 'enterprise',
     title: 'Enterprise',
-    description: 'Tailored to your scale.',
+    description: 'For custom needs.',
     canUpgrade: false,
     canDowngrade: false,
     cta: 'Contact Us',
