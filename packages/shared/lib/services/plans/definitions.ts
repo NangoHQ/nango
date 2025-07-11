@@ -20,22 +20,19 @@ export const freePlan: PlanDefinition = {
     }
 };
 
-export const ycPlan: PlanDefinition = {
-    code: 'yc',
-    title: 'YC Plan',
-    description: 'For our friends at YC.',
-    canUpgrade: true,
+export const starterPlan: PlanDefinition = {
+    code: 'starter',
+    title: 'Starter',
+    description: 'Tailored to your scale.',
+    canUpgrade: false,
     canDowngrade: false,
-    cta: 'Contact Us',
-    hidden: true,
-    orbId: 'yc',
     flags: {
         api_rate_limit_size: 'l',
         connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'yc',
+        name: 'starter',
         sync_frequency_secs_min: 30,
         auto_idle: false
     }
@@ -80,31 +77,10 @@ export const enterprisePlan: PlanDefinition = {
     }
 };
 
-export const internalPlan: PlanDefinition = {
-    code: 'internal',
-    title: 'Internal',
-    description: 'Congrats, you are an insider.',
-    canUpgrade: false,
-    canDowngrade: false,
-    cta: 'Contact Us',
-    hidden: true,
-    orbId: 'internal',
-    flags: {
-        api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
-        environments_max: 10,
-        has_otel: false,
-        has_sync_variants: true,
-        name: 'yc',
-        sync_frequency_secs_min: 30,
-        auto_idle: false
-    }
-};
-
 // Old plans
-export const starterPlan: PlanDefinition = {
-    code: 'starter',
-    title: 'Starter',
+export const starterLegacyPlan: PlanDefinition = {
+    code: 'starter-legacy',
+    title: 'Starter (legacy)',
     description: 'Tailored to your scale.',
     canUpgrade: false,
     canDowngrade: false,
@@ -115,15 +91,14 @@ export const starterPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'starter',
+        name: 'starter-legacy',
         sync_frequency_secs_min: 30,
         auto_idle: false
     }
 };
-
-export const scalePlan: PlanDefinition = {
-    code: 'scale',
-    title: 'Scale',
+export const scaleLegacyPlan: PlanDefinition = {
+    code: 'scale-legacy',
+    title: 'Scale (legacy)',
     description: 'Tailored to your scale.',
     canUpgrade: false,
     canDowngrade: false,
@@ -134,7 +109,25 @@ export const scalePlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'scale',
+        name: 'scale-legacy',
+        sync_frequency_secs_min: 30,
+        auto_idle: false
+    }
+};
+export const growthLegacyPlan: PlanDefinition = {
+    code: 'growth-legacy',
+    title: 'Growth (legacy)',
+    description: 'Tailored to your scale.',
+    canUpgrade: false,
+    canDowngrade: false,
+    hidden: true,
+    flags: {
+        api_rate_limit_size: 'l',
+        connection_with_scripts_max: null,
+        environments_max: 3,
+        has_otel: false,
+        has_sync_variants: true,
+        name: 'growth-legacy',
         sync_frequency_secs_min: 30,
         auto_idle: false
     }
@@ -142,12 +135,12 @@ export const scalePlan: PlanDefinition = {
 
 export const plansList: PlanDefinition[] = [
     freePlan,
-    ycPlan,
+    starterPlan,
     growthPlan,
     enterprisePlan,
-    internalPlan,
 
     // Old plans
-    starterPlan,
-    scalePlan
+    starterLegacyPlan,
+    scaleLegacyPlan,
+    growthLegacyPlan
 ];
