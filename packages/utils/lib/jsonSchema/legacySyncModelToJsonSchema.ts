@@ -76,6 +76,12 @@ function legacySyncFieldToJsonSchema(field: { name: string; type: string }, allM
                     }
                 };
             }
+            if ((field.type as unknown[]).length === 0) {
+                return {
+                    type: 'array',
+                    items: {}
+                };
+            }
             return {
                 type: 'array',
                 items: legacySyncModelToJsonSchema({ name: '', fields: objectToFields(field.type[0] as Record<string, string>) }, allModels)

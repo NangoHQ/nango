@@ -1,5 +1,24 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`legacySyncModelsToJsonSchema > real-world examples > Empty array type 1`] = `
+{
+  "definitions": {
+    "EmptyArrayType": {
+      "properties": {
+        "array": {
+          "items": {},
+          "type": "array",
+        },
+      },
+      "required": [
+        "array",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
 exports[`legacySyncModelsToJsonSchema > real-world examples > GoogleCalendarEvent 1`] = `
 {
   "definitions": {
@@ -866,6 +885,115 @@ exports[`legacySyncModelsToJsonSchema > should handle references to other models
         "id",
         "profile",
         "roles",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
+
+exports[`legacySyncModelsToJsonSchema > should handle this real-world example 1`] = `
+{
+  "definitions": {
+    "HackerRankWorkInterview": {
+      "properties": {
+        "candidate": {
+          "items": {},
+          "type": "array",
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "ended_at": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "feedback": {
+          "type": "string",
+        },
+        "from": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "id": {
+          "type": "string",
+        },
+        "interview_template_id": {
+          "type": "string",
+        },
+        "interviewers": {
+          "items": {},
+          "type": "array",
+        },
+        "metadata": {
+          "type": "object",
+        },
+        "notes": {
+          "type": "string",
+        },
+        "quickpad": {
+          "type": "boolean",
+        },
+        "report_url": {
+          "type": "string",
+        },
+        "result_url": {
+          "type": "string",
+        },
+        "resume_url": {
+          "type": "string",
+        },
+        "status": {
+          "type": "string",
+        },
+        "thumbs_up": {
+          "type": "boolean",
+        },
+        "timezone": {
+          "type": "string",
+        },
+        "title": {
+          "type": "string",
+        },
+        "to": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string",
+        },
+        "url": {
+          "type": "string",
+        },
+        "user": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "id",
+        "status",
+        "created_at",
+        "updated_at",
+        "title",
+        "feedback",
+        "notes",
+        "metadata",
+        "quickpad",
+        "ended_at",
+        "timezone",
+        "interview_template_id",
+        "from",
+        "to",
+        "url",
+        "user",
+        "thumbs_up",
+        "resume_url",
+        "interviewers",
+        "candidate",
+        "result_url",
+        "report_url",
       ],
       "type": "object",
     },
