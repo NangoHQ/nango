@@ -977,7 +977,7 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
-    ): Promise<Result<void, AuthCredentialsError>> {
+    ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
             provider,
@@ -1000,7 +1000,7 @@ class ConnectionService {
         }
 
         void logCtx.info('App connection was approved and credentials were saved');
-        return Ok(undefined);
+        return Ok(updatedConnection);
     }
 
     public async getOauthClientCredentials({
