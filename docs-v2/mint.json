@@ -175,9 +175,9 @@
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/credentials-refresh-and-validity",
-                        "guides/api-authorization/public-key-deprecation",
                         "guides/api-authorization/authorization-logs",
-                        "guides/api-authorization/new-api-support"
+                        "guides/api-authorization/new-api-support",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 {
