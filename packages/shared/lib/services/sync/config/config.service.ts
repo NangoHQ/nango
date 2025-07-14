@@ -1,7 +1,6 @@
 import semver from 'semver';
 
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { filterJsonSchemaForModels, getDefinition, getLogger } from '@nangohq/utils';
 
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
@@ -12,13 +11,10 @@ import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
 
 const TABLE = dbNamespace + 'sync_configs';
 
 type ExtendedSyncConfig = DBSyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] | null };
-
-const logger = getLogger('sync.config');
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
@@ -735,12 +731,10 @@ export async function getSyncConfigsAsStandardConfig(
         query.where(`${TABLE}.sync_name`, name);
     }
 
-    let syncConfigs = await query;
+    const syncConfigs = await query;
     if (syncConfigs.length === 0) {
         return null;
     }
-
-    syncConfigs = await updateOutdatedJsonSchemas(syncConfigs);
 
     const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
     if (!providerConfigKey) {
@@ -797,52 +791,4 @@ export async function getSoftDeletedSyncConfig({ limit, olderThan }: { limit: nu
 
 export async function hardDeleteSyncConfig(id: number) {
     await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id }).delete();
-}
-
-/**
- * Updates the json_schema of the syncs that are missing it or are missing input model definitions.
- * PreBuilt syncs used to have bad logic for saving the json_schema on deploy.
- * This solution is to avoid huge migration scripts, specially because of self-hosted.
- */
-async function updateOutdatedJsonSchemas(syncConfigs: ExtendedSyncConfig[]): Promise<ExtendedSyncConfig[]> {
-    for (const syncConfig of syncConfigs) {
-        if (!syncConfig.is_public) {
-            continue;
-        }
-
-        if (syncConfig.models_json_schema && (!syncConfig.input || getDefinition(syncConfig.input, syncConfig.models_json_schema).isOk())) {
-            continue;
-        }
-
-        const fullJsonSchemaString = await remoteFileService.getPublicTemplateJsonSchemaFile(syncConfig.provider);
-        if (!fullJsonSchemaString) {
-            logger.error(`Missing public template JSON schema file for provider`, { provider: syncConfig.provider, syncConfigId: syncConfig.id });
-            continue;
-        }
-
-        const fullJsonSchema = JSON.parse(fullJsonSchemaString) as JSONSchema7;
-        const allModels = [...syncConfig.models, syncConfig.input].filter(Boolean) as string[];
-        const result = filterJsonSchemaForModels(fullJsonSchema, allModels);
-        if (result.isErr()) {
-            logger.error(`Error filtering JSON schema for models`, {
-                provider: syncConfig.provider,
-                syncConfigId: syncConfig.id,
-                error: result.error
-            });
-            continue;
-        }
-
-        await db.knex
-            .from<DBSyncConfig>('_nango_sync_configs')
-            .update({
-                models_json_schema: result.value
-            })
-            .where({
-                id: syncConfig.id
-            });
-
-        syncConfig.models_json_schema = result.value;
-    }
-
-    return syncConfigs;
 }
