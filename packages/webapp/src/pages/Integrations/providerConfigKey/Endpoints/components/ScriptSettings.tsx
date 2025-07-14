@@ -278,7 +278,7 @@ export const ScriptSettings: React.FC<{
                             )}
                         </InfoBloc>
                         <InfoBloc title="Sync Metadata" horizontal>
-                            {flow.input ? <code className="font-code text-xs border border-border-gray rounded-md px-1">{flow.input.name}</code> : 'n/a'}
+                            {flow.input ? <code className="font-code text-xs border border-border-gray rounded-md px-1">{flow.input}</code> : 'n/a'}
                         </InfoBloc>
                         <InfoBloc title="Detects Deletions" horizontal>
                             {flow.track_deletes === true ? 'Yes' : 'No'}

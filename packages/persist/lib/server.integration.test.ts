@@ -453,7 +453,6 @@ const initDb = async () => {
             created_at: now,
             updated_at: now,
             models: ['model'],
-            model_schema: [],
             sync_type: 'full'
         })
         .returning('*');
