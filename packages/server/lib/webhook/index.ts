@@ -13,4 +13,5 @@ export { default as calendlyWebhookRouting } from './calendly-webhook-routing.js
 export { default as xeroWebhookRouting } from './xero-webhook-routing.js';
 export { default as sentryOauthWebhookRouting } from './sentry-oauth.js';
 export { default as attioWebhookRouting } from './attio-webhook-routing.js';
+export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
 export type * from './types.js';
