@@ -12,7 +12,6 @@ import type { PostPlanChange } from '@nangohq/types';
 const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
 const validation = z
     .object({
-        isUpgrade: z.boolean(),
         orbId: z.enum(orbIds as [string, ...string[]])
     })
     .strict();

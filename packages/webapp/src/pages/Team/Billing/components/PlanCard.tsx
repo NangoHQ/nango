@@ -28,7 +28,7 @@ export const PlanCard: React.FC<{
     const refInterval = useRef<NodeJS.Timeout>();
 
     const onClick = () => {
-        if (!def.plan.canUpgrade && !def.plan.canDowngrade) {
+        if (!def.plan.canChange) {
             window.open('mailto:upgrade@nango.dev', '_blank');
             return;
         }
@@ -42,7 +42,7 @@ export const PlanCard: React.FC<{
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, isUpgrade: true });
+        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
@@ -94,7 +94,7 @@ export const PlanCard: React.FC<{
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId, isUpgrade: false });
+        const res = await apiPostPlanChange(env, { orbId: def.plan.orbId });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to downgrade, an error occurred', variant: 'error' });
@@ -134,7 +134,7 @@ export const PlanCard: React.FC<{
 
     const plan = def.plan;
 
-    if (!def.active && def.isDowngrade && !activePlan.canDowngrade) {
+    if (!def.active && def.isDowngrade && !activePlan.prevPlan) {
         return null;
     }
     if (def.active && def.plan.hidden) {
@@ -176,15 +176,19 @@ export const PlanCard: React.FC<{
                     </main>
                 </div>
                 <footer className=" py-5 px-5 ">
-                    {def.active && <Button disabled>Current plan</Button>}
-                    {!def.active && def.isUpgrade && (
+                    {def.active && (
+                        <Button disabled variant={'secondary'}>
+                            Current plan
+                        </Button>
+                    )}
+                    {!def.active && def.isUpgrade && activePlan.canChange && (
                         <Button variant={'primary'} onClick={onClick}>
                             {def.plan.cta ? def.plan.cta : 'Upgrade plan'}
                         </Button>
                     )}
-                    {!def.active && def.isDowngrade && (
+                    {!def.active && def.isDowngrade && activePlan.canChange && (
                         <>
-                            {activePlan.canDowngrade && (
+                            {activePlan.prevPlan && (
                                 <Button variant={'primary'} onClick={onClick}>
                                     Downgrade
                                 </Button>

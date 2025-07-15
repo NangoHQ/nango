@@ -18,8 +18,9 @@ export interface PlanDefinition {
     code: DBPlan['name'];
     title: string;
     description: string;
-    canUpgrade: boolean;
-    canDowngrade: boolean;
+    canChange: boolean;
+    nextPlan: string | null;
+    prevPlan: string | null;
     basePrice?: number;
     /**
      * OrbId is the custom external_plan_id that we can setup
@@ -71,7 +72,7 @@ export type PostPlanChange = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };
-    Body: { orbId: string; isUpgrade: boolean };
+    Body: { orbId: string };
     Success: {
         data: { success: true } | { paymentIntent: any };
     };

@@ -166,7 +166,7 @@ export const TeamBilling: React.FC = () => {
                                 <Skeleton className="w-1/2" />
                             ) : (
                                 <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
-                                    <Button variant={'primary'}>View Invoices</Button>
+                                    <Button variant={'secondary'}>View Invoices</Button>
                                 </Link>
                             )}
                         </>
