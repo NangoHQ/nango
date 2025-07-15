@@ -50,25 +50,31 @@ Event-based executions are powered by integration scripts that encapsulate the l
 Event-based scripts have the following structure:
 
 ```typescript setup.ts
-import type { NangoAction } from '../../models';
+import { createOnEvent } from 'nango';
 
-export default async function onEvent(nango: NangoAction): Promise<void> {
+export default createOnEvent({
+  exec: async (nango) => {
     // Your integration code goes here.
-}
+  }
+});
 ```
 
-To enable the above script, you need to configure your `nango.yaml` integration configuration as follows:
-```yaml nango.yaml
-integrations:
-  airtable:
-    on-events:
-      post-connection-creation:
-        - setup # Name of your event-based script (without the .ts extension)
-      pre-connection-deletion:
-        - cleanup # Name of your event-based script (without the .ts extension)
+To enable the above script, you create a file and import in your index.ts file:
+```ts index.ts
+import './airtable/on-events/pre-connection-deletion.js';
 ```
 
-The `onEvent` function kicks off when the event the script is associated to occurs.
+```ts pre-connection-deletion.ts  
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+  exec: async (nango) => {
+    // Your integration code goes here.
+  }
+});
+```
+
+The `exec` function kicks off when the event the script is associated to occurs.
 
 Event-based scripts focus solely on immediate tasks. Calls to `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()` are not applicable. However, scripts can call actions, enabling complex workflows through the composition of multiple actions.
 

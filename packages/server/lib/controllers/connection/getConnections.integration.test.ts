@@ -1,6 +1,8 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isSuccess } from '../../utils/tests.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { seeders } from '@nangohq/shared';
+
+import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

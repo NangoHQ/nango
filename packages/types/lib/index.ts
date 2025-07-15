@@ -10,6 +10,7 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './user/api.js';
 export type * from './user/db.js';

@@ -9,11 +9,11 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
 import { webhooksToApi } from '../../../formatters/webhooks.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { NANGO_ADMIN_UUID } from '../../account.controller.js';
 
 import type { GetEnvironment } from '@nangohq/types';
 
@@ -46,13 +46,12 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
     let slack_notifications_channel = '';
     if (environment.slack_notifications) {
         const connectionId = generateSlackConnectionId(account.uuid, environment.name);
-        const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-        const nangoAdminUUID = NANGO_ADMIN_UUID;
+        const integrationId = envs.NANGO_SLACK_INTEGRATION_KEY;
         const env = 'prod';
-        const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+        const info = await accountService.getAccountAndEnvironmentIdByUUID(envs.NANGO_ADMIN_UUID!, env);
         if (info) {
             const connectionConfig = await connectionService.getConnectionConfig({
-                provider_config_key: integration_key,
+                provider_config_key: integrationId,
                 environment_id: info.environmentId,
                 connection_id: connectionId
             });

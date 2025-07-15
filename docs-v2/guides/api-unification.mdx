@@ -67,45 +67,57 @@ To build a custom unified API in Nango, follow these steps:
 
 ### 1. Define your unified model
 
-Start by defining your unified model in the `nango.yaml` file. This is where you standardize the fields and structure for your use case:
+Start by defining your unified model with a zod model in a file, e.g: `models.ts`.
 
-```yaml
-models: 
-  User:
-    id: string
-    firstName: string
-    lastName: string
-    email: string
+```ts models.ts
+export const UserUnified = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+});
 ```
 
 ### 2. Define your unified endpoints
 
-In your `nango.yaml` configuration, standardize the configuration of endpoints across APIs for consistency: use the same method, path & parameters across APIs.
+In your script's configuration, standardize the configuration of endpoints across APIs for consistency: use the same method, path & parameters across APIs.
 
-```yaml
-integrations:
-  jira-basic:
-    actions:
-      create-user:
-        description: Creates a user in Jira.
-        output: User # Common output between Jira & Zendesk
-        endpoint:  # Common endpoint between Jira & Zendesk
-          method: POST
-          path: /users
-          group: Users
-        input: User  # Common input between Jira & Zendesk
-  zendesk:
-    actions:
-      create-user:
-        description: Creates a user in Zendesk.
-        output: User
-        endpoint:
-          method: POST
-          path: /users
-          group: Users
-        input: User
-...
+<CodeGroup>
+```ts jira/create-user.ts
+import { createAction } from 'nango';
+import { UserUnified } from './models.js';
+
+export default createAction({
+  endpoint: {
+    method: 'POST',
+    path: '/users',
+    group: 'Users',
+  },
+  input: UserUnified,
+  output: UserUnified,
+  exec: async (nango, input) => {
+    // Create user in Jira
+  }
+});
 ```
+
+```ts zendesk/create-user.ts
+import { createAction } from 'nango';
+import { UserUnified } from './models.js';
+
+export default createAction({
+  endpoint: {
+    method: 'POST',
+    path: '/users',
+    group: 'Users',
+  },
+  input: UserUnified,
+  output: UserUnified,
+  exec: async (nango, input) => {
+    // Create user in Zendesk
+  }
+});
+```
+</CodeGroup>
 
 ### 3. Fetch data and transform
 
@@ -114,7 +126,7 @@ In your custom scripts, implement data-fetching logic and apply necessary transf
 ### Optional enhancements
 
 - **Enforce generated types in your codebase:** Nango will leverage your unified model to generate strongly-typed interfaces for your codebase, reducing errors and improving developer productivity ([docs](/guides/data-validation#using-schema-json-in-your-codebase)).
-- **Custom data validation:** Leverage Nango’s integration with zod to define custom validation rules tailored to your unified model ([docs](/guides/data-validation#custom-validation)).
+- **Custom data validation:** Leverage Nango's integration with zod to define custom validation rules tailored to your unified model ([docs](/guides/data-validation#custom-validation)).
 - **Runtime data validation:** Nango includes built-in runtime validation, which surfaces warnings in the _Logs_ tab of the Nango UI when runtime data validation error are detected. 
 
 ### Calling the unified API from your app

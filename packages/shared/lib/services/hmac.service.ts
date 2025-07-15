@@ -1,4 +1,5 @@
 import * as crypto from 'node:crypto';
+
 import type { DBEnvironment } from '@nangohq/types';
 
 class HmacService {

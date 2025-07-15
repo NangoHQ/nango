@@ -1,3 +1,5 @@
+import type { ConnectionResponseSuccess } from '@nangohq/types';
+
 export type AuthErrorType =
     | 'missing_auth_token'
     | 'blocked_by_browser'
@@ -8,11 +10,8 @@ export type AuthErrorType =
     | 'missing_connect_session_token'
     | 'resource_capped';
 
-export interface AuthResult {
-    providerConfigKey: string;
-    connectionId: string;
-    isPending?: boolean;
-}
+export type AuthResult = ConnectionResponseSuccess;
+export type AuthSuccess = AuthResult; // alias for backward compatibility
 
 export type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
@@ -94,12 +93,6 @@ export interface SignatureCredentials {
     type: 'SIGNATURE';
     username: string;
     password: string;
-}
-
-export const enum WSMessageType {
-    ConnectionAck = 'connection_ack',
-    Error = 'error',
-    Success = 'success'
 }
 
 // This one is sent by parent only

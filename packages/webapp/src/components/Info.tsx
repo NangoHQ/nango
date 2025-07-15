@@ -1,9 +1,11 @@
-import type React from 'react';
+import { IconInfoCircleFilled, IconX } from '@tabler/icons-react';
+
 import { Alert, AlertDescription, AlertTitle } from './ui/Alert';
-import type { ComponentProps } from 'react';
 import { cn } from '../utils/utils';
 import { Button } from './ui/button/Button';
-import { IconInfoCircleFilled, IconX } from '@tabler/icons-react';
+
+import type React from 'react';
+import type { ComponentProps } from 'react';
 
 export const Info: React.FC<{ children: React.ReactNode; icon?: React.ReactNode; title?: string; onClose?: () => void } & ComponentProps<typeof Alert>> = ({
     children,

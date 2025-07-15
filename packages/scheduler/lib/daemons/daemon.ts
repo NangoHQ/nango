@@ -1,7 +1,10 @@
-import { logger } from '../utils/logger.js';
 import { setTimeout } from 'node:timers/promises';
-import type knex from 'knex';
+
 import tracer from 'dd-trace';
+
+import { logger } from '../utils/logger.js';
+
+import type knex from 'knex';
 
 export abstract class SchedulerDaemon {
     private name: string;
@@ -36,7 +39,7 @@ export abstract class SchedulerDaemon {
         try {
             logger.info(`Starting ${this.name}...`);
             if (this.status !== 'stopped') {
-                logger.warn(`${this.name} is already running or cancelled. Cannot start.`);
+                logger.warning(`${this.name} is already running or cancelled. Cannot start.`);
                 return;
             }
             this.status = 'running';

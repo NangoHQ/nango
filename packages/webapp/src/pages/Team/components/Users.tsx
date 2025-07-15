@@ -1,12 +1,14 @@
-import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
-import type { ColumnDef } from '@tanstack/react-table';
-import type { ApiInvitation, ApiUser } from '@nangohq/types';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useMemo } from 'react';
+
+import { InvitationAction, UserAction } from './Actions';
+import * as Table from '../../../components/ui/Table';
+import { Tag } from '../../../components/ui/label/Tag';
 import { useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import * as Table from '../../../components/ui/Table';
-import { InvitationAction, UserAction } from './Actions';
-import { Tag } from '../../../components/ui/label/Tag';
-import { useMemo } from 'react';
+
+import type { ApiInvitation, ApiUser } from '@nangohq/types';
+import type { ColumnDef } from '@tanstack/react-table';
 
 export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
     {

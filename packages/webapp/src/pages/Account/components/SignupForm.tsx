@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import type { ApiInvitation, PostSignup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
-import { apiFetch, useSignupAPI } from '../../../utils/api';
+
+import { Password } from './Password';
 import GoogleButton from '../../../components/ui/button/Auth/Google';
 import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
-import { Password } from './Password';
+import { apiFetch, useSignupAPI } from '../../../utils/api';
 import { globalEnv } from '../../../utils/env';
+
+import type { ApiInvitation, PostSignup } from '@nangohq/types';
 
 export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
     const navigate = useNavigate();

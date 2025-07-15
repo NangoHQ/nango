@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
 import { Routes, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+
 import { globalEnv } from './env';
 
 Sentry.init({

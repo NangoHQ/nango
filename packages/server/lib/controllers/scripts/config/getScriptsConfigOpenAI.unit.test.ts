@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
 import { transformToOpenAIFunctions } from './getScriptsConfig.js';
-import type { StandardNangoConfig, NangoSyncConfig, NangoModel, NangoModelField } from '@nangohq/types';
+
+import type { NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
 
 describe('transformToOpenAIFunctions', () => {
     it('should transform syncs to OpenAI function format with empty parameters', () => {
@@ -19,7 +21,9 @@ describe('transformToOpenAIFunctions', () => {
                             type: 'object',
                             properties: {},
                             required: []
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 actions: [],
@@ -54,22 +58,7 @@ describe('transformToOpenAIFunctions', () => {
                         description:
                             'Delete a calendar event with the following parameters:\n- eventId: The ID of the event to delete\n- calendar: Optional calendar ID (defaults to primary calendar)',
                         returns: ['object'],
-                        models: [
-                            {
-                                name: 'DeleteEventInput',
-                                fields: [
-                                    { name: 'eventId', value: 'string', optional: false } as NangoModelField,
-                                    { name: 'calendar', value: 'string', optional: true } as NangoModelField
-                                ]
-                            } as NangoModel
-                        ],
-                        input: {
-                            name: 'DeleteEventInput',
-                            fields: [
-                                { name: 'eventId', value: 'string', optional: false } as NangoModelField,
-                                { name: 'calendar', value: 'string', optional: true } as NangoModelField
-                            ]
-                        } as NangoModel,
+                        input: 'DeleteEventInput',
                         endpoints: [],
                         json_schema: {
                             definitions: {
@@ -82,7 +71,9 @@ describe('transformToOpenAIFunctions', () => {
                                     required: ['eventId']
                                 }
                             }
-                        }
+                        },
+                        sdk_version: '0.0.0',
+                        is_zero_yaml: false
                     } as NangoSyncConfig
                 ],
                 'on-events': []

@@ -1,6 +1,8 @@
 import useSWR from 'swr';
-import type { SWRError } from '../utils/api';
+
 import { apiFetch, swrFetcher } from '../utils/api';
+
+import type { SWRError } from '../utils/api';
 import type { DeleteTeamUser, GetTeam, PutTeam } from '@nangohq/types';
 
 export function useTeam(env: string) {

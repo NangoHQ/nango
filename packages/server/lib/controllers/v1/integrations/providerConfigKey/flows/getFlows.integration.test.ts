@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
 const route = '/api/v1/integrations/:providerConfigKey/flows';
@@ -65,11 +67,10 @@ describe(`GET ${route}`, () => {
             description: expect.any(String),
             enabled: false,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-            input: { fields: expect.any(Array), name: 'GithubWriteFileInput' },
+            input: 'GithubWriteFileInput',
             is_public: true,
-            json_schema: null,
+            json_schema: expect.any(Object),
             last_deployed: null,
-            models: expect.any(Array),
             name: 'write-file',
             pre_built: true,
             returns: ['GithubWriteFileActionResult'],

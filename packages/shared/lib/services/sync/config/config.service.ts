@@ -32,7 +32,6 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
 
         const integration = tmp[syncConfig.provider]!;
 
-        const input = syncConfig.input ? syncConfig.model_schema?.find((m) => m.name === syncConfig.input) : undefined;
         const flowObject: NangoSyncConfig = {
             id: syncConfig.id,
             name: syncConfig.sync_name,
@@ -45,12 +44,13 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
             endpoints: syncConfig.endpoints_object || [],
-            input: input,
+            input: syncConfig.input || undefined,
             enabled: syncConfig.enabled,
-            models: syncConfig.model_schema || [],
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
-            json_schema: syncConfig.models_json_schema || null
+            json_schema: syncConfig.models_json_schema || null,
+            sdk_version: syncConfig.sdk_version,
+            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false
         };
 
         if (syncConfig.type === 'sync') {
@@ -653,7 +653,7 @@ export function increment(input: number | string): number | string {
 }
 
 export async function getPublicConfig(environment_id: number): Promise<DBSyncConfig[]> {
-    return schema()
+    return db.knex
         .from<DBSyncConfig>(TABLE)
         .select(`${TABLE}.*`, '_nango_configs.provider', '_nango_configs.unique_key')
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')

@@ -1,12 +1,12 @@
-import * as crypto from 'node:crypto';
 import https from 'https';
+import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, interpolateProxyUrlParts, formatPem } from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -14,8 +14,8 @@ import type {
     ConnectionForProxy,
     HTTP_METHOD,
     InternalProxyConfiguration,
-    UserProvidedProxyConfiguration,
-    OAuth2ClientCredentials
+    OAuth2ClientCredentials,
+    UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosRequestConfig } from 'axios';

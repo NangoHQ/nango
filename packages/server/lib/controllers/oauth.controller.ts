@@ -12,6 +12,7 @@ import {
     connectionService,
     environmentService,
     errorManager,
+    extractValueByPath,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -21,8 +22,7 @@ import {
     linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager,
-    extractValueByPath
+    providerClientManager
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -791,7 +791,7 @@ class OAuthController {
         });
 
         // All worked, let's redirect the user to the authorization page
-        return res.redirect(redirectUrl);
+        res.redirect(redirectUrl);
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
@@ -909,6 +909,81 @@ class OAuthController {
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, provider);
 
         const installationId = req.query['installation_id'] as string | undefined;
+        const authMode = session.authMode;
+        const setupAction = req.query['setup_action'] as string | undefined;
+
+        if (!authorizationCode && authMode === 'CUSTOM' && setupAction === 'update') {
+            // this means the app was already installed and another user is trying to update the app
+            // in this case we don't need the auth token
+            const connectionConfig = {
+                ...session.connectionConfig,
+                app_id: config?.custom?.['app_id'],
+                installation_id: installationId
+            };
+
+            let connectSession: ConnectSessionAndEndUser | undefined;
+
+            if (session.connectSessionId) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
+                    return;
+                }
+            }
+
+            const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                void connectionCreatedHook(
+                    {
+                        connection: res.connection,
+                        environment,
+                        account,
+                        auth_mode: 'APP',
+                        operation: res.operation,
+                        endUser: connectSession?.endUser
+                    },
+                    account,
+                    config,
+                    logContextGetter,
+                    { initiateSync: true, runPostConnectionScript: false }
+                );
+            };
+
+            const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
+                connectionId,
+                config,
+                provider as unknown as ProviderGithubApp,
+                connectionConfig,
+                logCtx,
+                connCreatedHook
+            );
+
+            if (session.connectSessionId && connectionResponse.isOk()) {
+                const upsertedConnection = connectionResponse.value;
+                if (upsertedConnection?.connection && connectSession) {
+                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: upsertedConnection.connection });
+                }
+            }
+
+            await logCtx.success();
+
+            await publisher.notifySuccess({
+                res,
+                wsClientId: channel,
+                providerConfigKey,
+                connectionId,
+                isPending: false
+            });
+
+            return;
+        }
 
         if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
@@ -1335,7 +1410,13 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
             if (res) {
-                await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+                await publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId,
+                    isPending: pending
+                });
             }
             return;
         } catch (err) {
@@ -1497,7 +1578,12 @@ class OAuthController {
 
                 metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-                return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+                return publisher.notifySuccess({
+                    res,
+                    wsClientId: channel,
+                    providerConfigKey,
+                    connectionId
+                });
             })
             .catch(async (err: unknown) => {
                 errorManager.report(err, {

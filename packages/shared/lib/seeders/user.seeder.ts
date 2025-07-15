@@ -1,7 +1,10 @@
-import { promisify } from 'node:util';
 import crypto from 'node:crypto';
+import { promisify } from 'node:util';
+
 import { nanoid } from '@nangohq/utils';
+
 import userService from '../services/user.service.js';
+
 import type { DBUser } from '@nangohq/types';
 
 const promisePdkdf2 = promisify(crypto.pbkdf2);
