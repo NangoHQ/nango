@@ -381,7 +381,8 @@ export class DryRunService {
                     validateSyncMetadata: false
                 },
                 startedAt: new Date(),
-                endUser: null
+                endUser: null,
+                heartbeatTimeoutSecs: 30
             };
             if (options.saveResponses) {
                 nangoProps.axios = {
