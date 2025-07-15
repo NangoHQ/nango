@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dueSchedules } from './scheduling.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
-import { TASKS_TABLE } from '../../models/tasks.js';
+import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
 
 import type { DBTask } from '../../models/tasks.js';
 import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
