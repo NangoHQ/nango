@@ -2,81 +2,60 @@ import { describe, expect, it } from 'vitest';
 
 import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from './language-snippets';
 
-import type { NangoModel, NangoSyncEndpointV2 } from '@nangohq/types';
+import type { NangoSyncEndpointV2 } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 describe('language snippets', () => {
-    const sampleInput: NangoModel = {
-        name: 'TopLevelModel',
-        fields: [
-            {
-                name: 'aString',
-                value: 'string',
-                tsType: true
+    const sampleInput: JSONSchema7 = {
+        type: 'object',
+        required: ['aString', 'aNumber', 'aBoolean', 'anArrayOfStrings', 'anObject', 'anArrayOfObjects', 'anArrayOfReferencedModel', 'aUnion'],
+        properties: {
+            aString: {
+                type: 'string'
             },
-            {
-                name: 'aNumber',
-                value: 'number',
-                tsType: true
+            aNumber: {
+                type: 'number'
             },
-            {
-                name: 'aBoolean',
-                value: 'boolean',
-                tsType: true
+            aBoolean: {
+                type: 'boolean'
             },
-            {
-                name: 'anArrayOfStrings',
-                value: 'string[]',
-                tsType: true
+            anArrayOfStrings: {
+                type: 'array',
+                items: {
+                    type: 'string'
+                }
             },
-            {
-                name: 'anObject',
-                value: [
-                    {
-                        name: 'anotherString',
-                        value: 'string',
-                        tsType: true
+            anObject: {
+                type: 'object',
+                required: ['anotherString'],
+                properties: {
+                    anotherString: {
+                        type: 'string'
                     }
-                ]
+                }
             },
-            {
-                name: 'anArrayOfObjects',
-                array: true,
-                value: [
-                    {
-                        name: 'anObject',
-                        value: [
-                            {
-                                name: 'anotherString',
-                                value: 'string',
-                                tsType: true
-                            }
-                        ]
+            anArrayOfObjects: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['anotherString'],
+                    properties: {
+                        anotherString: {
+                            type: 'string'
+                        }
                     }
-                ]
+                }
             },
-            {
-                name: 'anArrayOfReferencedModel',
-                array: true,
-                model: true,
-                value: 'Address'
+            anArrayOfReferencedModel: {
+                type: 'array',
+                items: {
+                    $ref: '#/definitions/Address'
+                }
             },
-            {
-                name: 'aUnion',
-                union: true,
-                value: [
-                    {
-                        name: '0',
-                        value: 'string',
-                        tsType: true
-                    },
-                    {
-                        name: '1',
-                        value: 'number',
-                        tsType: true
-                    }
-                ]
+            aUnion: {
+                type: ['string', 'number']
             }
-        ]
+        }
     };
 
     describe('nodeSyncSnippet', () => {

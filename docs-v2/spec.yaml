@@ -1006,10 +1006,6 @@ paths:
                                                     example: 'sync'
                                                 json_schema:
                                                     type: object
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 sync_type:
                                                     type: string
                                                     example: 'full'
@@ -1068,10 +1064,6 @@ paths:
                                                 type:
                                                     type: string
                                                     example: 'action'
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 last_deployed:
                                                     type: string
                                                     example: '2024-02-28T20:16:38.052Z'
