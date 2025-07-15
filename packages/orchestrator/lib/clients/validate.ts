@@ -81,7 +81,8 @@ const commonSchemaFields = {
     retryKey: z.string().min(1).nullable(),
     retryCount: z.number().int(),
     retryMax: z.number().int(),
-    ownerKey: z.string().min(1).nullable()
+    ownerKey: z.string().min(1).nullable(),
+    heartbeatTimeoutSecs: z.number().min(1).default(60)
 };
 const abortSchema = z.object({
     ...commonSchemaFields,
@@ -126,7 +127,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 groupMaxConcurrency: sync.data.groupMaxConcurrency,
                 retryKey: sync.data.retryKey,
                 ownerKey: sync.data.ownerKey,
-                debug: sync.data.payload.debug
+                debug: sync.data.payload.debug,
+                heartbeatTimeoutSecs: sync.data.heartbeatTimeoutSecs
             })
         );
     }
@@ -149,7 +151,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 ownerKey: syncAbort.data.ownerKey,
                 retryKey: syncAbort.data.retryKey,
                 reason: syncAbort.data.payload.reason,
-                debug: syncAbort.data.payload.debug
+                debug: syncAbort.data.payload.debug,
+                heartbeatTimeoutSecs: syncAbort.data.heartbeatTimeoutSecs
             })
         );
     }
@@ -170,7 +173,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 ownerKey: action.data.ownerKey,
                 retryKey: action.data.retryKey,
                 input: action.data.payload.input,
-                async: action.data.payload.async
+                async: action.data.payload.async,
+                heartbeatTimeoutSecs: action.data.heartbeatTimeoutSecs
             })
         );
     }
@@ -191,7 +195,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 groupMaxConcurrency: webhook.data.groupMaxConcurrency,
                 ownerKey: webhook.data.ownerKey,
                 retryKey: webhook.data.retryKey,
-                input: webhook.data.payload.input
+                input: webhook.data.payload.input,
+                heartbeatTimeoutSecs: webhook.data.heartbeatTimeoutSecs
             })
         );
     }
@@ -212,7 +217,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 ownerKey: onEvent.data.ownerKey,
                 retryKey: onEvent.data.retryKey,
                 fileLocation: onEvent.data.payload.fileLocation,
-                activityLogId: onEvent.data.payload.activityLogId
+                activityLogId: onEvent.data.payload.activityLogId,
+                heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
             })
         );
     }
@@ -231,7 +237,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 groupMaxConcurrency: abort.data.groupMaxConcurrency,
                 ownerKey: abort.data.ownerKey,
                 retryKey: abort.data.retryKey,
-                reason: abort.data.payload.reason
+                reason: abort.data.payload.reason,
+                heartbeatTimeoutSecs: abort.data.heartbeatTimeoutSecs
             })
         );
     }
