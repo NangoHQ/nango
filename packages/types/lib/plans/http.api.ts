@@ -19,8 +19,8 @@ export interface PlanDefinition {
     title: string;
     description: string;
     canChange: boolean;
-    nextPlan: string | null;
-    prevPlan: string | null;
+    nextPlan: string[] | null;
+    prevPlan: string[] | null;
     basePrice?: number;
     /**
      * OrbId is the custom external_plan_id that we can setup

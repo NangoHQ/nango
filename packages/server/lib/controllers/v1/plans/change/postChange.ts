@@ -33,9 +33,17 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     const { account, plan } = res.locals;
     const body: PostPlanChange['Body'] = val.data;
-
+    const currentDef = plansList.find((p) => p.code === plan!.name);
+    if (!currentDef) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
+        return;
+    }
     if (!plan?.orb_subscription_id) {
         res.status(400).send({ error: { code: 'invalid_body', message: "team doesn't not have a subscription" } });
+        return;
+    }
+    if (!currentDef.canChange) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change plan' } });
         return;
     }
 
@@ -64,8 +72,10 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
+
     // -- Upgrade
-    if (body.isUpgrade) {
+    if (isUpgrade) {
         let hasPending: string | undefined;
         try {
             // Schedula an upgrade

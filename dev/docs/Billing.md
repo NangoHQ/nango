@@ -4,12 +4,12 @@
 <!--
 shape: sequence_diagram
 User1 -> Nango: I want to upgrade to Starter
-Nango -> User1: Give us some credit card first
+Nango -> User1: Give us a credit card first
 User1 -> Stripe: Save payment info
 User1 -> Nango: I want to upgrade to Starter
 Nango -> Orb: Schedule an upgrade to Starter for User1
 Orb -> Nango: Here is a future SubscriptionID and a prorated invoice
-Nango -> Stripe: User1 need to pay <prorated>
+Nango -> Stripe: User1 needs to pay <prorated>
 Stripe -> Nango: (webhook) Payment succeeded
 Nango -> Orb: User1 paid for SubscriptionID, apply the change
 Orb -> Nango: (webhook) Plan changed
@@ -17,7 +17,7 @@ Nango -> User1: Success
 -->
 <img width="2096" height="2636" src="https://github.com/user-attachments/assets/a270bd2f-0522-4de6-b149-fcb0e25aa0b3" />
 
-- Payments are saved in stripe
+- Payments are saved in Stripe
 - Usage is stored in Orb
 - When we upgrade
   - We plan a change to Orb
@@ -32,7 +32,7 @@ Nango -> User1: Success
 
 ### Plans
 
-Plans configuration are stored in `plans` table. You'll need:
+Plans configurations are stored in `plans` table. You'll need:
 
 - `FLAG_PLAN_ENABLED=true` in your .env
 - Insert a row for your account if you don't have one yet
@@ -45,7 +45,7 @@ Usage is powered by Orb. You'll need:
 
 - Go to Orb
 - Activate test mode
-- Grab an api key for you
+- Grab an API Key for you
 - Go to webhooks and grab the signing secret
 - Put everything in .env
 
@@ -68,7 +68,7 @@ To enable money collection you'll need:
 - Activate test mode
 - Go to developers
 - Grab your secret key and webhooks key + publishable key (public key)
-  You can get the webhook key when you forward the webhooks
+  You can get the webhooks key when you forward the webhooks
 
 ```sh
 STRIPE_SECRET_KEY=
@@ -91,4 +91,4 @@ lt --port 3003
 stripe listen --load-from-webhooks-api --forward-to localhost:3003
 ```
 
-- Go to ui <http://localhost:3000/dev>
+- Go to UI <http://localhost:3000/dev>

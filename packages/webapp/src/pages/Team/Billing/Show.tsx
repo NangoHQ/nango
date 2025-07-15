@@ -37,22 +37,18 @@ export const TeamBilling: React.FC = () => {
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
         const list: PlanDefinitionList[] = [];
-        let isAboveActive = currentPlan.name === 'scale-legacy' || currentPlan.name === 'starter-legacy' || currentPlan.name === 'growth-legacy';
         for (const plan of plansList.data) {
             const same = plan.code === currentPlan.name;
-            if (plan.hidden && !same) {
+            if (plan.hidden) {
                 continue;
             }
 
             list.push({
                 plan,
                 active: same,
-                isDowngrade: !isAboveActive,
-                isUpgrade: isAboveActive
+                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
+                isUpgrade: curr.nextPlan?.includes(plan.code) || false
             });
-            if (same) {
-                isAboveActive = true;
-            }
         }
         return { list, activePlan: curr };
     }, [currentPlan, plansList]);
