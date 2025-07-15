@@ -4797,6 +4797,13 @@ google-play:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
 
+google-cloud-storage:
+    display_name: Google Cloud Storage
+    alias: google
+    categories:
+        - storage
+    docs: https://docs.nango.dev/integrations/all/google-cloud-storage
+
 gorgias:
     display_name: Gorgias
     categories:
