@@ -78,12 +78,12 @@ function startProcedure() {
                 let lastSuccessHeartbeatAt: number | null = null;
                 const abortController = new AbortController();
                 abortControllers.set(taskId, abortController);
+                const heartbeatTimeoutMs = arg.input.nangoProps.heartbeatTimeoutSecs
+                    ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
+                    : heartbeatIntervalMs * 3;
 
                 const heartbeat = setInterval(async () => {
-                    if (
-                        lastSuccessHeartbeatAt &&
-                        lastSuccessHeartbeatAt + (arg.input.nangoProps.heartbeatTimeoutSecs || heartbeatIntervalMs * 3) < Date.now()
-                    ) {
+                    if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
                         // Jobs and orchestrator will kill the task if the heartbeat is not successful for too long
                         // This is to prevent the task from hanging indefinitely if we have trouble reaching orch or the opposite
                         logger.error('Heartbeat failed for too long, self killing task', { taskId });
