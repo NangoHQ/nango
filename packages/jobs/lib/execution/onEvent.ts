@@ -94,7 +94,8 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         metrics.increment(metrics.Types.ON_EVENT_SCRIPT_EXECUTION, 1, { accountId: account.id });
