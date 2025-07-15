@@ -3,8 +3,7 @@ import crypto from 'crypto';
 import get from 'lodash-es/get.js';
 
 import { NangoError, connectionService, environmentService, getProvider } from '@nangohq/shared';
-import type { Result } from '@nangohq/utils';
-import { getLogger, Ok, Err } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
@@ -12,6 +11,7 @@ import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
 import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 

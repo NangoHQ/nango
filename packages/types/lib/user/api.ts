@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api';
+import type { Endpoint } from '../api.js';
 
 export type GetUser = Endpoint<{
     Method: 'GET';
@@ -24,3 +24,10 @@ export interface ApiUser {
     name: string;
     uuid: string;
 }
+
+export type PutUserPassword = Endpoint<{
+    Method: 'PUT';
+    Path: `/api/v1/user/password`;
+    Body: { oldPassword: string; newPassword: string };
+    Success: { success: true };
+}>;

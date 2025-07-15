@@ -1,9 +1,9 @@
-import type { Timestamps } from '../db';
+import type { Timestamps } from '../db.js';
 
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: string;
+    name: 'free' | 'starter' | 'starter-legacy' | 'growth' | 'scale-legacy' | 'growth-legacy' | 'enterprise';
 
     // Stripe
     stripe_customer_id: string | null;

@@ -228,7 +228,7 @@ const result = nango.auth('<INTEGRATION-ID>', {
 
 The Nango Frontend SDK may throw different types of errors during authentication and connection setup. Below is a list of all possible error types along with their meanings:
 
-1. `missingAuthToken`
+1. `missing_auth_token`
    - Occurs when neither a public key nor a connect session token is provided.
    - Message: "You must specify a public key OR a connect session token (cf. documentation)."
 
@@ -236,15 +236,15 @@ The Nango Frontend SDK may throw different types of errors during authentication
    - Occurs when the browser blocks the popup window for authentication.
    - Message: "Modal blocked by browser"
 
-3. `invalidHostUrl`
+3. `invalid_host_url`
    - Occurs when the provided host URL is invalid.
    - Message: "Invalid URL provided for the Nango host."
 
-4. `missingCredentials`
+4. `missing_credentials`
    - Occurs when required credentials are not provided.
    - Message: "You must specify credentials."
 
-5. `windowClosed`
+5. `window_closed`
    - Occurs when the authentication window is closed before completing the flow.
    - Message: "The authorization window was closed before the authorization flow was completed"
 

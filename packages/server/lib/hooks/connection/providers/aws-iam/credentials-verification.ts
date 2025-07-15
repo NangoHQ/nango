@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+
+import type { AWSAuthHeader, AWSAuthHeaderParams, AWSIAMRequestParams, ErrorResponse, GetCallerIdentityResponse } from './types.js';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
-import type { AWSAuthHeader, AWSIAMRequestParams, ErrorResponse, GetCallerIdentityResponse, AWSAuthHeaderParams } from './types.js';
 
 export default async function execute(nango: Nango) {
     try {

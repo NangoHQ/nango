@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '../api';
+import type { ApiError, Endpoint } from '../api.js';
 
 export type RecordLastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 export type CombinedFilterAction = `${RecordLastAction},${RecordLastAction}`;

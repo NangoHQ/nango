@@ -1,12 +1,12 @@
-import type { RequestOptions } from 'node:https';
 import { Agent } from 'node:https';
-import type { Socket } from 'net';
+
 import axios, { AxiosError, isAxiosError } from 'axios';
 
 import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, httpRetryStrategy, retryWithBackoff } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { logger } from '../logger.js';
 
 import type {
@@ -20,7 +20,8 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { envs } from '../env.js';
+import type { Socket } from 'net';
+import type { RequestOptions } from 'node:https';
 
 export class MaxLifetimeAgent extends Agent {
     private readonly maxSocketLifetime: number;

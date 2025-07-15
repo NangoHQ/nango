@@ -1,6 +1,7 @@
-import { expect, describe, it } from 'vitest';
-import { ModelsParser } from './modelsParser.js';
+import { describe, expect, it } from 'vitest';
+
 import { ParserError, ParserErrorCycle, ParserErrorExtendsNotFound, ParserErrorInvalidModelName, ParserErrorTypeSyntax } from './errors.js';
+import { ModelsParser } from './modelsParser.js';
 
 describe('parse', () => {
     it('should parse simple object', () => {

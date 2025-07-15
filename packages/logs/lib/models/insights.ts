@@ -1,6 +1,7 @@
-import type { estypes } from '@elastic/elasticsearch';
-import { indexMessages } from '../es/schema.js';
 import { client } from '../es/client.js';
+import { indexMessages } from '../es/schema.js';
+
+import type { estypes } from '@elastic/elasticsearch';
 import type { ConcatOperationList, InsightsHistogramEntry, OperationList, OperationRow } from '@nangohq/types';
 
 export async function retrieveInsights(opts: { accountId: number; environmentId: number; type: OperationList['type'] | ConcatOperationList }) {

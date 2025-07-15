@@ -1,6 +1,7 @@
-import type { InternalNango as Nango } from '../../internal-nango';
-import type { OAuth2Credentials } from '@nangohq/types';
 import jwt from 'jsonwebtoken';
+
+import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { OAuth2Credentials } from '@nangohq/types';
 
 interface MicrosoftDecodedToken {
     aud: string;

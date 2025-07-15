@@ -1,6 +1,9 @@
 import type {
     AllAuthCredentials,
     ApiKeyCredentials,
+    ApiProvider,
+    ApiPublicConnectionFull,
+    ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
     AuthModeType,
@@ -81,6 +84,9 @@ export type { HTTP_METHOD, NangoSyncEndpointV2 };
 export type { NangoRecord, RecordLastAction, RecordMetadata };
 
 export type {
+    ApiProvider,
+    ApiPublicConnectionFull,
+    ApiPublicIntegration,
     GetPublicConnection,
     GetPublicConnections,
     GetPublicIntegration,
@@ -103,18 +109,6 @@ export interface NangoProps {
     isSync?: boolean;
     dryRun?: boolean;
     activityLogId?: string | undefined;
-}
-
-export interface CreateConnectionOAuth1 extends OAuth1Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes['OAuth1'];
-}
-
-export interface CreateConnectionOAuth2 extends OAuth2Credentials {
-    connection_id: string;
-    provider_config_key: string;
-    type: AuthModes['OAuth2'];
 }
 
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey'> & {
@@ -149,15 +143,6 @@ export interface MetadataChangeResponse {
     connection_id: string | string[];
 }
 
-export interface IntegrationWithCreds extends Integration {
-    client_id: string;
-    client_secret: string;
-    scopes: string;
-    created_at: Date;
-    has_webhook: boolean;
-    webhook_url?: string;
-}
-
 export interface Timestamps {
     created_at: string;
     updated_at: string;
@@ -180,13 +165,6 @@ export interface Action extends Timestamps {
 }
 
 export type SyncType = 'INCREMENTAL' | 'INITIAL';
-
-export interface Integration {
-    unique_key: string;
-    provider: string;
-    syncs: SyncConfig[];
-    actions: Action[];
-}
 
 export interface SyncStatus {
     id: string;

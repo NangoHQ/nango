@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { ProxyRequest } from './request.js';
-import { getDefaultProxy } from './utils.test';
+import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 describe('call', () => {

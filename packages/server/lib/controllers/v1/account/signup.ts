@@ -1,15 +1,14 @@
 import crypto from 'crypto';
-import util from 'util';
 
 import { z } from 'zod';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, updatePlanByTeam, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 
 import type { DBTeam, PostSignup } from '@nangohq/types';
 
@@ -96,7 +95,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
 
     // Create user
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await pbkdf2(password, salt, 310000, 32, 'sha256')).toString('base64');
     const user = await userService.createUser({
         email,
         name,
@@ -111,13 +110,13 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     if (!token && flagHasUsage) {
-        const resCreate = await billing.upsertCustomer(account, user);
-        if (resCreate.isErr()) {
-            report(resCreate.error);
+        const linkOrbCustomerRes = await linkBillingCustomer(account, user);
+        if (linkOrbCustomerRes.isErr()) {
+            report(linkOrbCustomerRes.error);
         } else {
-            const resUpdate = await updatePlanByTeam(db.knex, { account_id: account.id, orb_customer_id: resCreate.value.id });
-            if (resUpdate.isErr()) {
-                report(resUpdate.error);
+            const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
+            if (linkOrbSubscriptionRes.isErr()) {
+                report(linkOrbSubscriptionRes.error);
             }
         }
     }

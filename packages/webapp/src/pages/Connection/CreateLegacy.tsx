@@ -58,6 +58,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [organizationId, setOrganizationId] = useState('');
     const [devKey, setDevKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
+    const [clientCertificate, setClientCertificate] = useState('');
+    const [clientPrivateKey, setClientPrivateKey] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
@@ -123,7 +125,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
-        let credentials = {};
+        let credentials: Record<string, any> = {};
         let params = connectionConfigParams || {};
 
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -176,6 +178,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 client_id: oAuthClientId,
                 client_secret: oAuthClientSecret
             };
+
+            if (clientCertificate && clientPrivateKey) {
+                credentials.client_certificate = clientCertificate;
+                credentials.client_private_key = clientPrivateKey;
+            }
 
             if (oauthccSelectedScopes.length > 0) {
                 params = {
@@ -235,12 +242,14 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ...credentialsState
             };
         }
+        const shouldIncludeUserScope = authMode !== 'NONE' && !integration?.meta.installation;
         const connectionConfig = {
-            user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
+            ...(shouldIncludeUserScope && { user_scope: selectedScopes || [] }),
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
-            credentials
+            credentials,
+            ...(integration?.meta.installation && { installation: integration?.meta.installation })
         };
         const getConnection =
             authMode === 'NONE'
@@ -350,6 +359,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
             if (!hasAnyValue) {
                 connectionConfigParamsStr = '';
             }
+        }
+
+        let installationStr = '';
+        if (integration.meta.installation) {
+            installationStr = "installation: 'outbound'";
         }
 
         if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
@@ -520,6 +534,20 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
             }
 
+            if (clientCertificate || clientPrivateKey) {
+                const existingCredentials = oauth2ClientCredentialsString ? oauth2ClientCredentialsString.trim().slice(0, -1) : 'credentials: {';
+                const certParts = [];
+
+                if (clientCertificate) {
+                    certParts.push(`client_certificate: '${clientCertificate}'`);
+                }
+                if (clientPrivateKey) {
+                    certParts.push(`client_private_key: '${clientPrivateKey}'`);
+                }
+
+                oauth2ClientCredentialsString = `${existingCredentials}${existingCredentials === 'credentials: {' ? '' : ', '}${certParts.join(', ')} }`;
+            }
+
             if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
                 connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
                 connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
@@ -542,6 +570,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
         const connectionConfigStr =
+            !installationStr &&
             !connectionConfigParamsStr &&
             !authorizationParamsStr &&
             !userScopesStr &&
@@ -557,6 +586,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ? ''
                 : ', { ' +
                   [
+                      installationStr,
                       connectionConfigParamsStr,
                       authorizationParamsStr,
                       hmacKeyStr,
@@ -723,6 +753,43 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 removeFromSelectedSet={oauthccRemoveFromSelectedSet}
                                                 minLength={1}
                                                 onChange={() => null}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {integration?.meta.requireClientCertificate && (
+                                <>
+                                    <div className="flex flex-col mt-4">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client Certificate</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_certificate"
+                                                name="client_certificate"
+                                                placeholder="Paste the full PEM-encoded client certificate"
+                                                optionalValue={clientCertificate}
+                                                setOptionalValue={setClientCertificate}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col mt-4">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Private Key</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_private_key"
+                                                name="client_private_key"
+                                                placeholder="Paste the full PEM-encoded private key"
+                                                optionalValue={clientPrivateKey}
+                                                setOptionalValue={setClientPrivateKey}
+                                                required
                                             />
                                         </div>
                                     </div>

@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Err, Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
+import { env, filterJsonSchemaForModels } from '@nangohq/utils';
 
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -13,8 +13,6 @@ import { onEventScriptService } from '../../on-event-scripts.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import type { Config } from '../../../models/Provider.js';
-import type { Sync, SyncModelSchema } from '../../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     CLIDeployFlowConfig,
@@ -27,23 +25,18 @@ import type {
     DBSyncEndpointCreate,
     DBTeam,
     HTTP_METHOD,
-    NangoModel,
-    NangoSyncConfig,
     NangoSyncEndpointV2,
     OnEventScriptsByProvider,
     SyncDeploymentResult
 } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
-import type { Merge } from 'type-fest';
 
 const TABLE = dbNamespace + 'sync_configs';
-const SYNC_TABLE = dbNamespace + 'syncs';
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 
 const nameOfType = 'sync/action';
 
-type FlowParsed = Merge<CleanedIncomingFlowConfig, { model_schema: NangoModel[] }>;
+type FlowParsed = CleanedIncomingFlowConfig;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
 
 interface SyncConfigResult {
@@ -111,15 +104,11 @@ export async function deploy({
     const idsToMarkAsInactive: number[] = [];
     const syncConfigs: DBSyncConfigInsert[] = [];
     for (const flow of flows) {
-        const flowParsed: FlowParsed = {
-            ...flow,
-            model_schema: typeof flow.model_schema === 'string' ? (JSON.parse(flow.model_schema) as NangoModel[]) : flow.model_schema
-        };
-        const { fileBody: _fileBody, ...rest } = flowParsed;
+        const { fileBody: _fileBody, ...rest } = flow;
         flowsWithoutScript.push({ ...rest });
 
         const { success, error, response } = await compileDeployInfo({
-            flow: flowParsed,
+            flow,
             jsonSchema,
             env,
             environment_id: environment.id,
@@ -166,15 +155,7 @@ export async function deploy({
     const flowNames = flows.map((flow) => flow.syncName);
 
     try {
-        const flowIds = await db.knex
-            .from<DBSyncConfig>(TABLE)
-            .insert(
-                syncConfigs.map((syncConfig) => {
-                    // We need to stringify before inserting
-                    return { ...syncConfig, model_schema: JSON.stringify(syncConfig.model_schema) as any };
-                })
-            )
-            .returning('id');
+        const flowIds = await db.knex.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
 
         const endpoints: DBSyncEndpointCreate[] = [];
         for (const [index, row] of flowIds.entries()) {
@@ -225,120 +206,6 @@ export async function deploy({
     }
 }
 
-export async function upgradePreBuilt({
-    environment,
-    account,
-    config,
-    syncConfig,
-    flow,
-    logContextGetter
-}: {
-    environment: DBEnvironment;
-    account: DBTeam;
-    config: Config;
-    // The current sync config
-    syncConfig: DBSyncConfig;
-    // The new version of the flow
-    flow: NangoSyncConfig;
-    logContextGetter: LogContextGetter;
-}): Promise<Result<boolean | null>> {
-    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
-
-    const { sync_name: name, is_public, type } = syncConfig;
-    const { unique_key: provider_config_key, provider } = config;
-    const remoteBasePath = `${env}/account/${account.id}/environment/${environment.id}/config/${syncConfig.nango_config_id}`;
-
-    void logCtx.info(`Upgrading ${syncConfig.sync_name} to version ${flow.version}`);
-
-    const file_location = await remoteFileService.copy({
-        sourcePath: `${provider}/dist/${name}-${provider}.js`,
-        destinationPath: `${remoteBasePath}/${name}-v${flow.version}.js`,
-        destinationLocalPath: `dist/${name}-${provider_config_key}.js`
-    });
-    if (!file_location) {
-        void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
-        await logCtx.failed();
-
-        return Err(new NangoError('file_upload_error'));
-    }
-
-    const copy = await remoteFileService.copy({
-        sourcePath: `${provider}/${type}s/${name}.ts`,
-        destinationPath: `${remoteBasePath}/${name}.ts`,
-        destinationLocalPath: `${provider_config_key}/${type}s/${name}.ts`
-    });
-    if (!copy) {
-        void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
-        await logCtx.failed();
-
-        return Err(new NangoError('file_upload_error'));
-    }
-
-    const now = new Date();
-
-    const { id, ...restWithoutId } = syncConfig;
-    const flowData: DBSyncConfigInsert = {
-        ...restWithoutId,
-        created_at: now,
-        updated_at: now,
-        version: flow.version!,
-        file_location,
-        model_schema: JSON.stringify(flow.models) as any,
-        metadata: flow.metadata || {},
-        auto_start: flow.auto_start === true,
-        track_deletes: flow.track_deletes === true,
-        models: flow.returns
-    };
-
-    try {
-        const [newSyncConfig] = await db.knex.from<DBSyncConfig>(TABLE).insert(flowData).returning('*');
-
-        if (!newSyncConfig?.id) {
-            throw new NangoError('error_creating_sync_config');
-        }
-        const newSyncConfigId = newSyncConfig.id;
-        const endpoints: DBSyncEndpointCreate[] = [];
-
-        // update sync_config_id in syncs table
-        await db.knex.from<Sync>(SYNC_TABLE).update({ sync_config_id: newSyncConfigId }).where('sync_config_id', syncConfig.id);
-
-        // update endpoints
-        if (flow.endpoints) {
-            flow.endpoints.forEach(({ method, path, group }, endpointIndex) => {
-                const res: DBSyncEndpointCreate = {
-                    sync_config_id: newSyncConfigId,
-                    method,
-                    path,
-                    group_name: group || null,
-                    created_at: now,
-                    updated_at: now
-                };
-                const model = flowData.models[endpointIndex];
-                if (model) {
-                    res.model = model;
-                }
-                endpoints.push(res);
-            });
-        }
-
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-        }
-
-        await db.knex.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
-
-        void logCtx.info('Successfully deployed', { nameOfType, configs: name });
-        await logCtx.success();
-
-        return Ok(true);
-    } catch (err) {
-        void logCtx.error('Failed to upgrade', { type: flow.type, name: flow.name, error: err });
-        await logCtx.failed();
-
-        throw new NangoError('error_creating_sync_config');
-    }
-}
-
 async function compileDeployInfo({
     flow,
     jsonSchema,
@@ -369,7 +236,6 @@ async function compileDeployInfo({
         models,
         runs,
         version: optionalVersion,
-        model_schema,
         type = 'sync',
         track_deletes,
         auto_start,
@@ -497,11 +363,11 @@ async function compileDeployInfo({
                 file_location,
                 runs,
                 active: true,
-                model_schema: model_schema as unknown as SyncModelSchema[],
                 input: typeof flow.input === 'string' ? flow.input : null,
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
+                model_schema: null,
                 models_json_schema,
                 sdk_version: sdkVersion || null,
                 created_at: new Date(),

@@ -1,6 +1,8 @@
-import { basePublicUrl, baseUrl, connectUrl } from '@nangohq/utils';
-import type { RequestHandler } from 'express';
 import helmet from 'helmet';
+
+import { basePublicUrl, baseUrl, connectUrl } from '@nangohq/utils';
+
+import type { RequestHandler } from 'express';
 
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;

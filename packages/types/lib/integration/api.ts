@@ -1,8 +1,8 @@
-import type { ApiTimestamps, Endpoint } from '../api';
-import type { IntegrationConfig } from './db';
-import type { AuthModeType, AuthModes } from '../auth/api';
-import type { NangoSyncConfig } from '../flow';
-import type { Provider } from '../providers/provider';
+import type { ApiTimestamps, Endpoint } from '../api.js';
+import type { IntegrationConfig } from './db.js';
+import type { AuthModeType, AuthModes } from '../auth/api.js';
+import type { NangoSyncConfig } from '../flow/index.js';
+import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
@@ -99,6 +99,8 @@ export type ApiIntegrationList = ApiIntegration & {
         connectionConfigParams?: string[];
         credentialParams?: string[];
         displayName: string;
+        requireClientCertificate?: boolean;
+        installation?: 'outbound';
     };
 };
 
