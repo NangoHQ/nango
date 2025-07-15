@@ -122,7 +122,8 @@ export class RunnerMonitor {
 
         for (const task of this.tracked.values()) {
             // Should cover sync and sync variant
-            if (task.syncId === newTask.syncId) {
+            // Webhooks have the same syncId so we allow them to run in parallel
+            if (task.syncId === newTask.syncId && task.scriptType === 'sync') {
                 return true;
             }
         }
