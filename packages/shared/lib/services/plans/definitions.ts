@@ -9,7 +9,6 @@ export const freePlan: PlanDefinition = {
     orbId: 'free',
     flags: {
         api_rate_limit_size: 'm',
-        connection_with_scripts_max: null,
         environments_max: 2,
         has_otel: false,
         has_sync_variants: false,
@@ -28,7 +27,6 @@ export const starterPlan: PlanDefinition = {
     canDowngrade: false,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
@@ -47,7 +45,6 @@ export const growthPlan: PlanDefinition = {
     orbId: 'growth',
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
@@ -67,7 +64,6 @@ export const enterprisePlan: PlanDefinition = {
     orbId: 'enterprise',
     flags: {
         api_rate_limit_size: '2xl',
-        connection_with_scripts_max: null,
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
@@ -87,7 +83,6 @@ export const starterLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
@@ -105,7 +100,6 @@ export const scaleLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
@@ -123,7 +117,6 @@ export const growthLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,

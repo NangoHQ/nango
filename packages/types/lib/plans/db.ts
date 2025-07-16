@@ -24,13 +24,6 @@ export interface DBPlan extends Timestamps {
     trial_expired: boolean | null;
 
     /**
-     * Limit the number of connections with active scripts
-     * Set to null to remove limit
-     * @default 3
-     */
-    connection_with_scripts_max: number | null;
-
-    /**
      * Limit the number of total non-deleted connections
      * Set to null to remove limit
      * @default null
