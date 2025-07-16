@@ -90,17 +90,13 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             const stripe = getStripe();
 
             // Create a payment intent to confirm the card
-            const paymentIntent = await stripe.paymentIntents.create({
+            await stripe.paymentIntents.create({
                 metadata: { accountUuid: account.uuid },
                 amount: resUpgrade.value.amount ? Math.round(Number(resUpgrade.value.amount) * 100) : newPlan.basePrice! * 100,
                 currency: 'usd',
                 customer: plan.stripe_customer_id,
                 payment_method: plan.stripe_payment_id
             });
-            if (paymentIntent.status !== 'succeeded') {
-                res.status(200).send({ data: { paymentIntent } });
-                return;
-            }
 
             // The payment will be confirmed by the webhook
             res.status(200).send({ data: { success: true } });
