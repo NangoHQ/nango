@@ -24,6 +24,7 @@ const nangoPropsSchema = z
             id: z.number(),
             name: z.string().min(1)
         }),
+        heartbeatTimeoutSecs: z.number().optional(),
         syncConfig: z
             .object({
                 id: z.number(),
