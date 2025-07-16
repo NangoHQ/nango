@@ -70,7 +70,7 @@ describe(`POST ${endpoint}`, () => {
                         {
                             code: 'invalid_enum_value',
                             message:
-                                "Invalid enum value. Expected 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache', received 'invalid-sync-mode'",
+                                'Invalid enum value. Expected "incremental" | "full_refresh" | "full_refresh_and_clear_cache", received "invalid-sync-mode"',
                             path: ['sync_mode']
                         },
                         {
