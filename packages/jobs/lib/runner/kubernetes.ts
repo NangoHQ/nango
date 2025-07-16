@@ -13,6 +13,7 @@ class Kubernetes {
     private readonly kc: k8s.KubeConfig;
     private readonly appsApi: k8s.AppsV1Api;
     private readonly coreApi: k8s.CoreV1Api;
+    private readonly networkingApi: k8s.NetworkingV1Api;
     private readonly defaultNamespace: string;
     private readonly namespacePerRunner: boolean;
 
@@ -24,6 +25,7 @@ class Kubernetes {
         this.kc.loadFromDefault();
         this.appsApi = this.kc.makeApiClient(k8s.AppsV1Api);
         this.coreApi = this.kc.makeApiClient(k8s.CoreV1Api);
+        this.networkingApi = this.kc.makeApiClient(k8s.NetworkingV1Api);
     }
 
     static getInstance(): Kubernetes {
@@ -58,6 +60,12 @@ class Kubernetes {
             return serviceResult;
         }
 
+        // Create network policies
+        const networkPoliciesResult = await this.createNetworkPolicies(namespace);
+        if (networkPoliciesResult.isErr()) {
+            return networkPoliciesResult;
+        }
+
         return Ok(undefined);
     }
 
@@ -77,6 +85,9 @@ class Kubernetes {
                 name,
                 namespace
             });
+
+            // Delete network policies
+            await this.deleteNetworkPolicies(namespace);
 
             return Ok(undefined);
         } catch (err) {
@@ -184,6 +195,131 @@ class Kubernetes {
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('Failed to create service', { cause: err }));
+        }
+    }
+
+    private async createNetworkPolicies(namespace: string): Promise<Result<void>> {
+        try {
+            // 1. Default deny all ingress
+            await this.networkingApi.createNamespacedNetworkPolicy({
+                namespace,
+                body: {
+                    metadata: { name: 'default-deny' },
+                    spec: {
+                        podSelector: {},
+                        policyTypes: ['Ingress']
+                    }
+                }
+            });
+        } catch (err: any) {
+            if (err.body) {
+                const body = JSON.parse(err.body);
+                if (body.reason !== 'AlreadyExists') {
+                    return Err(new Error('Failed to create default-deny network policy', { cause: err }));
+                }
+            } else {
+                return Err(new Error('Failed to create default-deny network policy', { cause: err }));
+            }
+        }
+
+        try {
+            // 2. Allow ingress from nango
+            await this.networkingApi.createNamespacedNetworkPolicy({
+                namespace,
+                body: {
+                    metadata: { name: 'allow-from-nango' },
+                    spec: {
+                        podSelector: {},
+                        ingress: [
+                            {
+                                _from: [
+                                    {
+                                        namespaceSelector: {
+                                            matchLabels: { name: 'nango' }
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        policyTypes: ['Ingress']
+                    }
+                }
+            });
+        } catch (err: any) {
+            if (err.body) {
+                const body = JSON.parse(err.body);
+                if (body.reason !== 'AlreadyExists') {
+                    return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
+                }
+            } else {
+                return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
+            }
+        }
+
+        try {
+            // 3. Allow egress to nango + internet
+            await this.networkingApi.createNamespacedNetworkPolicy({
+                namespace,
+                body: {
+                    metadata: { name: 'allow-egress-to-nango-and-internet' },
+                    spec: {
+                        podSelector: {},
+                        policyTypes: ['Egress'],
+                        egress: [
+                            {
+                                to: [
+                                    {
+                                        namespaceSelector: {
+                                            matchLabels: { name: 'nango' }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                to: [
+                                    {
+                                        ipBlock: {
+                                            cidr: '0.0.0.0/0'
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            });
+        } catch (err: any) {
+            if (err.body) {
+                const body = JSON.parse(err.body);
+                if (body.reason !== 'AlreadyExists') {
+                    return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
+                }
+            } else {
+                return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
+            }
+        }
+
+        return Ok(undefined);
+    }
+
+    private async deleteNetworkPolicies(namespace: string): Promise<void> {
+        try {
+            // Delete network policies
+            await this.networkingApi.deleteNamespacedNetworkPolicy({
+                name: 'default-deny',
+                namespace
+            });
+            await this.networkingApi.deleteNamespacedNetworkPolicy({
+                name: 'allow-from-nango',
+                namespace
+            });
+            await this.networkingApi.deleteNamespacedNetworkPolicy({
+                name: 'allow-egress-to-nango-and-internet',
+                namespace
+            });
+        } catch (err) {
+            // Ignore errors when deleting network policies as they might not exist
+            console.warn('Failed to delete network policies:', err);
         }
     }
 
