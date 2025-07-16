@@ -43,13 +43,13 @@ describe('POST /logs/filters', () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'invalid_value',
-                        message: 'Invalid option: expected one of "integration"|"connection"|"syncConfig"',
+                        code: 'invalid_enum_value',
+                        message: "Invalid enum value. Expected 'integration' | 'connection' | 'syncConfig', received 'a'",
                         path: ['category']
                     },
                     {
                         code: 'unrecognized_keys',
-                        message: 'Unrecognized key: "foo"',
+                        message: "Unrecognized key(s) in object: 'foo'",
                         path: []
                     }
                 ]

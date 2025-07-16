@@ -44,7 +44,7 @@ describe(`PUT ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received number', path: ['name'] }]
+                errors: [{ code: 'invalid_type', message: 'Expected string, received number', path: ['name'] }]
             }
         });
         expect(res.res.status).toBe(400);

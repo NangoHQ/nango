@@ -42,9 +42,9 @@ describe(`PATCH ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_format', message: 'Invalid string: must match pattern /^[a-zA-Z0-9~:.@ _-]+$/', path: ['unique_key'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received boolean', path: ['display_name'] },
-                    { code: 'invalid_union', message: 'invalid credentials object', path: ['credentials', 'type'] }
+                    { code: 'invalid_string', message: 'Invalid', path: ['unique_key'] },
+                    { code: 'invalid_type', message: 'Expected string, received boolean', path: ['display_name'] },
+                    { code: 'invalid_union_discriminator', message: 'invalid credentials object', path: ['credentials', 'type'] }
                 ]
             }
         });

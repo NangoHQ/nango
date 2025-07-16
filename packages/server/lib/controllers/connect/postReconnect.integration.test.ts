@@ -42,8 +42,8 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['connection_id'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['integration_id'] }
+                    { code: 'invalid_type', message: 'Required', path: ['connection_id'] },
+                    { code: 'invalid_type', message: 'Required', path: ['integration_id'] }
                 ]
             }
         });

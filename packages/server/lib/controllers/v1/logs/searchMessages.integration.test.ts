@@ -44,17 +44,17 @@ describe('POST /logs/messages', () => {
                 errors: [
                     {
                         code: 'invalid_type',
-                        message: 'Invalid input: expected string, received undefined',
+                        message: 'Required',
                         path: ['operationId']
                     },
                     {
                         code: 'invalid_type',
-                        message: 'Invalid input: expected number, received string',
+                        message: 'Expected number, received string',
                         path: ['limit']
                     },
                     {
                         code: 'unrecognized_keys',
-                        message: 'Unrecognized key: "foo"',
+                        message: "Unrecognized key(s) in object: 'foo'",
                         path: []
                     }
                 ]

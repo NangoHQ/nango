@@ -35,7 +35,7 @@ describe(`PATCH ${route}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
                 code: 'invalid_query_params',
-                errors: [{ code: 'unrecognized_keys', message: 'Unrecognized key: "env"', path: [] }]
+                errors: [{ code: 'unrecognized_keys', message: "Unrecognized key(s) in object: 'env'", path: [] }]
             }
         });
     });

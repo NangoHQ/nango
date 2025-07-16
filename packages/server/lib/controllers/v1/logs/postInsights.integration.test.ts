@@ -56,7 +56,7 @@ describe('POST /logs/insights', () => {
                 errors: [
                     {
                         code: 'unrecognized_keys',
-                        message: 'Unrecognized key: "foo"',
+                        message: "Unrecognized key(s) in object: 'foo'",
                         path: []
                     }
                 ]

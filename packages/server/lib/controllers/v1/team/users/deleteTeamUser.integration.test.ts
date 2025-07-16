@@ -46,7 +46,7 @@ describe(`DELETE ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_uri_params',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected number, received NaN', path: ['id'] }]
+                errors: [{ code: 'invalid_type', message: 'Expected number, received nan', path: ['id'] }]
             }
         });
         expect(res.res.status).toBe(400);

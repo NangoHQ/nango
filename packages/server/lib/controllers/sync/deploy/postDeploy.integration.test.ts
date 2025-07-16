@@ -47,10 +47,10 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['flowConfigs'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['reconcile'] },
+                    { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
+                    { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
                     { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['nangoYamlBody'] }
+                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] }
                 ]
             }
         });

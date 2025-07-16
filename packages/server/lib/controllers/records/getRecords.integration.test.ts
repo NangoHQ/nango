@@ -38,7 +38,7 @@ describe(`GET ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_query_params',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['model'] }]
+                errors: [{ code: 'invalid_type', message: 'Required', path: ['model'] }]
             }
         });
     });
@@ -57,8 +57,8 @@ describe(`GET ${route}`, () => {
             error: {
                 code: 'invalid_headers',
                 errors: [
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['connection-id'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['provider-config-key'] }
+                    { code: 'invalid_type', message: 'Required', path: ['connection-id'] },
+                    { code: 'invalid_type', message: 'Required', path: ['provider-config-key'] }
                 ]
             }
         });

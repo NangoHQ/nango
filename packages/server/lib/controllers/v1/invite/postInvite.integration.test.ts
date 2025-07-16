@@ -46,7 +46,7 @@ describe(`POST ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected array, received number', path: ['emails'] }]
+                errors: [{ code: 'invalid_type', message: 'Expected array, received number', path: ['emails'] }]
             }
         });
         expect(res.res.status).toBe(400);

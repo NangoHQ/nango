@@ -27,9 +27,9 @@ describe('POST /api/v1/account/signup', () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['email'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['password'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['name'] }
+                    { code: 'invalid_type', message: 'Required', path: ['email'] },
+                    { code: 'invalid_type', message: 'Required', path: ['password'] },
+                    { code: 'invalid_type', message: 'Required', path: ['name'] }
                 ]
             }
         });
