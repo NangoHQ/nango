@@ -7,7 +7,6 @@ import remoteFileService from '../../file/remote.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
-import connectionService from '../../connection.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 
@@ -18,7 +17,6 @@ import type {
     CLIDeployFlowConfig,
     CleanedIncomingFlowConfig,
     DBEnvironment,
-    DBPlan,
     DBSyncConfig,
     DBSyncConfigInsert,
     DBSyncEndpoint,
@@ -67,7 +65,6 @@ export function cleanIncomingFlow(flowConfigs: CLIDeployFlowConfig[]): CleanedIn
 export async function deploy({
     environment,
     account,
-    plan,
     flows,
     jsonSchema,
     onEventScriptsByProvider,
@@ -79,7 +76,6 @@ export async function deploy({
 }: {
     environment: DBEnvironment;
     account: DBTeam;
-    plan: DBPlan | null;
     flows: CleanedIncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
     onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
@@ -113,7 +109,6 @@ export async function deploy({
             env,
             environment_id: environment.id,
             account,
-            plan,
             debug: Boolean(debug),
             logCtx,
             orchestrator,
@@ -212,7 +207,6 @@ async function compileDeployInfo({
     env,
     environment_id,
     account,
-    plan,
     debug,
     logCtx,
     orchestrator,
@@ -223,7 +217,6 @@ async function compileDeployInfo({
     env: string;
     environment_id: number;
     account: DBTeam;
-    plan: DBPlan | null;
     debug: boolean;
     logCtx: LogContext;
     orchestrator: Orchestrator;
@@ -322,16 +315,6 @@ async function compileDeployInfo({
         }
     }
 
-    // if there are too many connections for this sync then we need to also
-    // mark it as disabled
-    const shouldCap = await connectionService.shouldCapUsage({
-        providerConfigKey,
-        environmentId: environment_id,
-        type: 'deploy',
-        team: account,
-        plan
-    });
-
     let models_json_schema: JSONSchema7 | null = null;
     if (jsonSchema) {
         const allModels = [...models, flow.input].filter(Boolean) as string[];
@@ -366,7 +349,7 @@ async function compileDeployInfo({
                 input: typeof flow.input === 'string' ? flow.input : null,
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
-                enabled: lastSyncWasEnabled && !shouldCap,
+                enabled: lastSyncWasEnabled,
                 model_schema: null,
                 models_json_schema,
                 sdk_version: sdkVersion || null,
