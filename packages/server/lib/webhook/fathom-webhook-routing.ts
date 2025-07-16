@@ -41,7 +41,7 @@ const route: WebhookHandler<FathomWeebhook> = async (nango, integration, headers
     const parsedBody = body;
 
     logger.info(`processing meeting: ${parsedBody.title}`, { configId: integration.id });
-    const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'meeting_type', 'recorded_by.email', logContextGetter, 'metadata.webhooks');
+    const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'meeting_type', 'recorded_by.email', logContextGetter, 'metadata.user');
 
     let connectionIds: string[] = [];
     if (response && response.connectionIds?.length > 0) {
