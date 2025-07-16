@@ -34,7 +34,7 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import type { SafeParseSuccess, ZodSchema, z } from 'zod';
+import type { z } from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
@@ -338,10 +338,10 @@ export abstract class NangoActionBase<
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
     }
 
-    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>> {
+    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: z.ZodType<Z>; input: T }): Promise<z.ZodSafeParseSuccess<Z>> {
         const parsedInput = zodSchema.safeParse(input);
         if (!parsedInput.success) {
-            for (const error of parsedInput.error.errors) {
+            for (const error of parsedInput.error.issues) {
                 await this.log(`Invalid input provided: ${error.message} at path ${error.path.join('.')}`, { level: 'error' });
             }
             throw new this.ActionError({

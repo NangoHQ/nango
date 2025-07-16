@@ -33,7 +33,7 @@ const bodyValidation = z.object({}).catchall(z.any()).strict();
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
+        params: z.record(z.string(), z.any()).optional(),
         user_scope: z.string().optional()
     })
     .and(connectionCredential);

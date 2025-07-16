@@ -195,7 +195,8 @@ export const ENVS = z.object({
     NANGO_DB_SSL: bool,
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z
-        .string({
+        .string({})
+        .meta({
             required_error:
                 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
         })
@@ -257,7 +258,7 @@ export const ENVS = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
-export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.SafeParseSuccess<z.infer<T>>['data'] {
+export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
     const res = schema.safeParse(envs);
     if (!res.success) {
         throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
@@ -266,7 +267,7 @@ export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<st
     return res.data;
 }
 
-function zodErrorToString(issues: z.ZodIssue[]) {
+function zodErrorToString(issues: z.core.$ZodIssue[]) {
     return issues
         .map((issue) => {
             return `${issue.path.join('')} (${issue.code} ${issue.message})`;

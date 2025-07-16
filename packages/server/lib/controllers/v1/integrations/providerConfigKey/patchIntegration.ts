@@ -48,7 +48,7 @@ const validationBody = z
                     })
                     .strict()
             ],
-            { errorMap: () => ({ message: 'invalid credentials object' }) }
+            { error: () => ({ message: 'invalid credentials object' }) }
         )
     );
 

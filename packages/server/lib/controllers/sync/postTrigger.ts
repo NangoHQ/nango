@@ -15,7 +15,7 @@ const bodyValidation = z
     .object({
         syncs: z.array(
             z.union([z.string(), z.object({ name: z.string(), variant: z.string() })], {
-                errorMap: () => ({ message: 'Each sync must be either a string or a { name: string, variant: string } object' })
+                error: () => ({ message: 'Each sync must be either a string or a { name: string, variant: string } object' })
             })
         ),
         sync_mode: z.enum(['incremental', 'full_refresh', 'full_refresh_and_clear_cache']).optional(),

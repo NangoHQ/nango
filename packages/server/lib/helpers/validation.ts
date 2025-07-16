@@ -89,5 +89,5 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
             })
             .strict()
     ],
-    { errorMap: () => ({ message: 'invalid credentials object' }) }
+    { error: () => ({ message: 'invalid credentials object' }) }
 );

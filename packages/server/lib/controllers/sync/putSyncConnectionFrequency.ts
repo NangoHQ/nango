@@ -38,7 +38,7 @@ export const putSyncConnectionFrequency = asyncWrapper<PutPublicSyncConnectionFr
 
         const valBody = bodyValidation.safeParse(req.body);
         if (!valBody.success) {
-            res.status(400).send({ error: { code: 'invalid_body', errors: valBody.error.errors } });
+            res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
             return;
         }
 

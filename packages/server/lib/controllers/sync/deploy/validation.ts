@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
-import type { NangoModelField } from '@nangohq/types';
+import type { NangoModelField, OnEventType } from '@nangohq/types';
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
     .object({
         $schema: z.literal('http://json-schema.org/draft-07/schema#'),
         $comment: z.string(),
-        definitions: z.record(z.string(), z.object({}).passthrough())
+        definitions: z.record(z.string(), z.looseObject({}))
     })
     .strict();
 
@@ -114,7 +114,7 @@ const postConnectionScriptsByProvider = z.array(
             scripts: data.scripts.map((script) => ({
                 name: script.name,
                 fileBody: script.fileBody,
-                event: 'post-connection-creation'
+                event: 'post-connection-creation' as OnEventType
             }))
         }))
 );
@@ -136,20 +136,20 @@ const commonValidation = z
     })
     .strict();
 
-const addOnEventScriptsValidation = <T extends z.ZodType>(schema: T) =>
-    // cannot transform commonValidation because it cannot be merge with another schema
-    // https://github.com/colinhacks/zod/issues/2474
-    schema.transform((data) => ({
-        ...data,
-        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-    }));
+export const validation = commonValidation.transform((data) => {
+    return {
+        ...data
+        // onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+    };
+});
 
-export const validation = addOnEventScriptsValidation(commonValidation);
-
-export const validationWithNangoYaml = addOnEventScriptsValidation(
-    commonValidation.merge(
-        z.object({
-            nangoYamlBody: z.string()
-        })
-    )
-);
+export const validationWithNangoYaml = commonValidation
+    .extend({
+        nangoYamlBody: z.string()
+    })
+    .transform((data) => {
+        return {
+            ...data,
+            onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+        };
+    });
