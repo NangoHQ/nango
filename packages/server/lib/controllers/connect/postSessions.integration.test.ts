@@ -45,7 +45,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['end_user'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected object, received undefined', path: ['end_user'] }]
             }
         });
         expect(res.res.status).toBe(400);
@@ -149,7 +149,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['allowed_integrations', 0] }]
+                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['allowed_integrations', '0'] }]
             }
         });
     });
