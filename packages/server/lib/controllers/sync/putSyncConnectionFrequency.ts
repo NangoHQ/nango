@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { getInterval } from '@nangohq/nango-yaml';
 import { configService, connectionService, getSyncAndActionConfigsBySyncNameAndConfigId, getSyncsByConnectionId, setFrequency } from '@nangohq/shared';

@@ -34,7 +34,7 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;

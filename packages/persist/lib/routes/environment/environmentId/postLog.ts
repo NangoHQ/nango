@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { validateRequest } from '@nangohq/utils';

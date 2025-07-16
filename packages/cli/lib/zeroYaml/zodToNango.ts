@@ -1,5 +1,5 @@
 import type { NangoModelField } from '@nangohq/types';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export function zodToNangoModelField(name: string, schema: z.core.$ZodType): NangoModelField {
     const optional = (schema as z.ZodType).isOptional();

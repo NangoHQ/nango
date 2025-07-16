@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
@@ -152,11 +152,11 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
             allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
             integrationsConfigDefaults: body.integrations_config_defaults
                 ? Object.fromEntries(
-                      Object.entries(body.integrations_config_defaults).map(([key, value]) => [
-                          key,
-                          { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
-                      ])
-                  )
+                    Object.entries(body.integrations_config_defaults).map(([key, value]) => [
+                        key,
+                        { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
+                    ])
+                )
                 : null,
             operationId: logCtx.id
         });

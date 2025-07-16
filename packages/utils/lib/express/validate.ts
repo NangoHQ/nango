@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { EndpointLocals, EndpointRequest, EndpointResponse } from './route.js';
 import type { Endpoint, ValidationError } from '@nangohq/types';
@@ -12,34 +12,34 @@ interface RequestParser<E extends Endpoint<any>> {
 
 export const validateRequest =
     <E extends Endpoint<any>>(parser: RequestParser<E>) =>
-    (req: EndpointRequest, res: EndpointResponse<E, EndpointLocals<E>>, next: NextFunction) => {
-        try {
-            if (parser.parseBody) {
-                res.locals.parsedBody = parser.parseBody(req.body || {});
-            } else {
-                z.strictObject({})
-                    .meta({ description: 'Body is not allowed' })
-                    .parse(req.body || {});
+        (req: EndpointRequest, res: EndpointResponse<E, EndpointLocals<E>>, next: NextFunction) => {
+            try {
+                if (parser.parseBody) {
+                    res.locals.parsedBody = parser.parseBody(req.body || {});
+                } else {
+                    z.strictObject({})
+                        .meta({ description: 'Body is not allowed' })
+                        .parse(req.body || {});
+                }
+                if (parser.parseQuery) {
+                    res.locals.parsedQuery = parser.parseQuery(req.query);
+                } else {
+                    z.strictObject({}).meta({ description: 'Query string parameters are not allowed' }).parse(req.query);
+                }
+                if (parser.parseParams) {
+                    res.locals.parsedParams = parser.parseParams(req.params);
+                } else {
+                    z.strictObject({}).meta({ description: 'Url parameters are not allowed' }).parse(req.params);
+                }
+                next();
+            } catch (err) {
+                if (err instanceof z.ZodError) {
+                    res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
+                    return;
+                }
+                res.status(400).send({ error: { code: 'invalid_request', message: 'unknown error' } });
             }
-            if (parser.parseQuery) {
-                res.locals.parsedQuery = parser.parseQuery(req.query);
-            } else {
-                z.strictObject({}).meta({ description: 'Query string parameters are not allowed' }).parse(req.query);
-            }
-            if (parser.parseParams) {
-                res.locals.parsedParams = parser.parseParams(req.params);
-            } else {
-                z.strictObject({}).meta({ description: 'Url parameters are not allowed' }).parse(req.params);
-            }
-            next();
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
-                return;
-            }
-            res.status(400).send({ error: { code: 'invalid_request', message: 'unknown error' } });
-        }
-    };
+        };
 
 export function zodErrorToHTTP(error: Pick<z.ZodError, 'issues'>): ValidationError[] {
     return error.issues.map(({ code, message, path }) => {
@@ -71,11 +71,11 @@ export function requireEmptyQuery(req: Request<any>, { withEnv }: { withEnv: boo
         .object(
             withEnv
                 ? {
-                      env: z
-                          .string()
-                          .regex(/^[a-zA-Z0-9_-]+$/)
-                          .max(255)
-                  }
+                    env: z
+                        .string()
+                        .regex(/^[a-zA-Z0-9_-]+$/)
+                        .max(255)
+                }
                 : {}
         )
         .strict()

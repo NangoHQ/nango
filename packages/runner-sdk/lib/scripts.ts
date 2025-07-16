@@ -3,7 +3,7 @@ import type { NangoSyncBase } from './sync.js';
 import type { ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
 
