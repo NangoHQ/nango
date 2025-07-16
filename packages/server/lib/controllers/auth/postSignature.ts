@@ -97,13 +97,13 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             isConnectSession && connectSession.operationId
                 ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
-                    {
-                        operation: { type: 'auth', action: 'create_connection' },
-                        meta: { authType: 'signature', connectSession: endUserToMeta(res.locals.endUser) },
-                        expiresAt: defaultOperationExpiration.auth()
-                    },
-                    { account, environment }
-                );
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'signature', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });

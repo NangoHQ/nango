@@ -50,17 +50,17 @@ export const postPublicMetadata = asyncWrapper<SetMetadata>(async (req, res) => 
             const error: ApiError<'unknown_connection'> =
                 connectionIds.length > 1
                     ? {
-                        error: {
-                            code: 'unknown_connection',
-                            message: `${baseMessage}. No actions were taken on any of the connections as a result of this failure.`
-                        }
-                    }
+                          error: {
+                              code: 'unknown_connection',
+                              message: `${baseMessage}. No actions were taken on any of the connections as a result of this failure.`
+                          }
+                      }
                     : {
-                        error: {
-                            code: 'unknown_connection',
-                            message: baseMessage
-                        }
-                    };
+                          error: {
+                              code: 'unknown_connection',
+                              message: baseMessage
+                          }
+                      };
             res.status(404).json(error);
 
             return;

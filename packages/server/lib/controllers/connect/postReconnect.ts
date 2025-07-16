@@ -110,11 +110,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             allowedIntegrations: [body.integration_id],
             integrationsConfigDefaults: body.integrations_config_defaults
                 ? Object.fromEntries(
-                    Object.entries(body.integrations_config_defaults).map(([key, value]) => [
-                        key,
-                        { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
-                    ])
-                )
+                      Object.entries(body.integrations_config_defaults).map(([key, value]) => [
+                          key,
+                          { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
+                      ])
+                  )
                 : null,
             operationId: logCtx.id
         });
