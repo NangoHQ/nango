@@ -114,6 +114,20 @@ export class RunnerMonitor {
             this.checkIdle(nextTimeout);
         }, timeoutMs);
     }
+
+    hasConflictingSync(newTask: NangoProps): boolean {
+        if (newTask.scriptType !== 'sync') {
+            return false;
+        }
+
+        for (const task of this.tracked.values()) {
+            // Should cover sync and sync variant
+            if (task.syncId === newTask.syncId) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 function getRenderTotalMemoryInBytes(): number {

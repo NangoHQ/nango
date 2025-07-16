@@ -3789,13 +3789,13 @@ figma-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.host}/scim
+        base_url: https://${connectionConfig.host}/scim/v2/${connectionConfig.tenantId}
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /v2/${connectionConfig.tenantId}/Users
+                - /Users
     docs: https://docs.nango.dev/integrations/all/figma-scim
     docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
     credentials:
@@ -4797,6 +4797,13 @@ google-play:
     proxy:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
+
+google-cloud-storage:
+    display_name: Google Cloud Storage
+    alias: google
+    categories:
+        - storage
+    docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
 gorgias:
     display_name: Gorgias

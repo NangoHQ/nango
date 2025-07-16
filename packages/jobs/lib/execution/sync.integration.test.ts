@@ -200,6 +200,7 @@ const runJob = async (
             connection_id: connection.connection_id
         },
         ownerKey: null,
+        heartbeatTimeoutSecs: 30,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
