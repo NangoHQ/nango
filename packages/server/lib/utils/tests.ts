@@ -131,7 +131,7 @@ export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any 
     expect(json).toStrictEqual({
         error: {
             code: 'invalid_query_params',
-            errors: [{ code: 'invalid_type', message: 'Required', path: ['env'] }]
+            errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['env'] }]
         }
     });
     expect(res.status).toBe(400);
