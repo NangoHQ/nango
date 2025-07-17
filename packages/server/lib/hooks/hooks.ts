@@ -71,26 +71,6 @@ export const connectionCreationStartCapCheck = async ({
         return { capped: true, code: 'max' };
     }
 
-    if (plan.connection_with_scripts_max) {
-        for (const byProvider of connectionCount.data) {
-            const totalByProvider = parseInt(byProvider.connectionsWithScripts, 10);
-            if (byProvider.providerConfigKey !== providerConfigKey) {
-                continue;
-            }
-            if (totalByProvider < plan.connection_with_scripts_max) {
-                continue;
-            }
-
-            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            if (creationType === 'create') {
-                productTracking.track({ name: 'server:resource_capped:connection_creation', team });
-            } else {
-                productTracking.track({ name: 'server:resource_capped:connection_imported', team });
-            }
-            return { capped: true, code: 'max_with_scripts' };
-        }
-    }
-
     return { capped: false };
 };
 

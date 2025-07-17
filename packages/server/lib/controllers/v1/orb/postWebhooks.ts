@@ -27,7 +27,6 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
         res.status(400).send({ error: { code: 'invalid_headers', message: 'invalid signature' } });
         return;
     }
-
     const handled = await handleWebhook(req.body as Webhooks);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
@@ -76,7 +75,7 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
 type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
-    logger.info('Received', body.type);
+    logger.info('[orb-hook]', body.type);
 
     switch (body.type) {
         case 'subscription.started':
@@ -98,12 +97,16 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to find team');
                 }
 
-                const currPlan = await getPlan(trx, { accountId: team.id });
-                if (currPlan.isErr()) {
-                    return Err('Failed to find plan');
+                logger.info(`Sub started for team "${team.id}"`);
+                const plan = await getPlan(trx, { accountId: team.id });
+                if (plan.isErr()) {
+                    return Err(plan.error);
                 }
 
-                logger.info(`Sub started for team "${team.id}"`);
+                if (plan.value.name === exists.flags.name) {
+                    logger.info('skip plan update, it is the same plan');
+                    return Ok(undefined);
+                }
 
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
@@ -126,7 +129,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 productTracking.track({
                     name: 'account:billing:plan_changed',
                     team,
-                    eventProperties: { previousPlan: currPlan.value.name, newPlan: planExternalId, orbCustomerId: currPlan.value.orb_customer_id }
+                    eventProperties: { previousPlan: plan.value.name, newPlan: planExternalId, orbCustomerId: plan.value.orb_customer_id }
                 });
 
                 return Ok(undefined);

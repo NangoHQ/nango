@@ -70,7 +70,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             models_json_schema: null,
             pre_built: false,
             sync_type: null,
-            sdk_version: null,
+            sdk_version: task.sdkVersion,
             created_at: new Date(),
             updated_at: new Date()
         };

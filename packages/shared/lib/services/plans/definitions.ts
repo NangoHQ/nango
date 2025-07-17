@@ -11,14 +11,15 @@ export const freePlan: PlanDefinition = {
     basePrice: 0,
     flags: {
         api_rate_limit_size: 'm',
-        connection_with_scripts_max: null,
         environments_max: 2,
         has_otel: false,
         has_sync_variants: false,
         connections_max: 10,
         name: 'free',
         sync_frequency_secs_min: 3600,
-        auto_idle: true
+        auto_idle: true,
+        monthly_actions_max: 1000,
+        monthly_active_records_max: 5000
     },
     display: {
         features: [
@@ -46,13 +47,14 @@ export const starterPlan: PlanDefinition = {
     orbId: 'starter',
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
         name: 'starter',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -77,13 +79,14 @@ export const growthPlan: PlanDefinition = {
     basePrice: 500,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
         name: 'growth',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -110,13 +113,14 @@ export const enterprisePlan: PlanDefinition = {
     orbId: 'enterprise',
     flags: {
         api_rate_limit_size: '2xl',
-        connection_with_scripts_max: null,
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
         name: 'enterprise',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -134,13 +138,14 @@ export const starterLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
         name: 'starter-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -153,13 +158,14 @@ export const scaleLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
         name: 'scale-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -172,13 +178,14 @@ export const growthLegacyPlan: PlanDefinition = {
     hidden: true,
     flags: {
         api_rate_limit_size: 'l',
-        connection_with_scripts_max: null,
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
         name: 'growth-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 
