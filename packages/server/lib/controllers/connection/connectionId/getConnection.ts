@@ -5,7 +5,7 @@ import { configService, connectionService, refreshOrTestCredentials } from '@nan
 import { Err, Ok, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
-import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -14,8 +14,8 @@ import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, 
 const queryStringValidation = z
     .object({
         provider_config_key: providerConfigKeySchema,
-        refresh_token: stringBool.optional(),
-        force_refresh: stringBool.optional()
+        refresh_token: z.stringbool().optional().default(false),
+        force_refresh: z.stringbool().optional().default(false)
     })
     .strict();
 

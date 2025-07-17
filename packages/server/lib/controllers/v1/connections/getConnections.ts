@@ -4,7 +4,7 @@ import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
-import { envSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
+import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetConnections } from '@nangohq/types';
@@ -18,7 +18,7 @@ const queryStringValidation = z
             .pipe(z.array(providerConfigKeySchema))
             .optional(),
         search: z.string().max(255).optional(),
-        withError: stringBool.optional(),
+        withError: z.stringbool().optional(),
         env: envSchema,
         page: z.coerce.number().min(0).max(50).optional()
     })
