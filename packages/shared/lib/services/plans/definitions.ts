@@ -15,7 +15,9 @@ export const freePlan: PlanDefinition = {
         connections_max: 10,
         name: 'free',
         sync_frequency_secs_min: 3600,
-        auto_idle: true
+        auto_idle: true,
+        monthly_actions_max: 1000,
+        monthly_active_records_max: 5000
     }
 };
 
@@ -32,7 +34,9 @@ export const starterPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'starter',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 
@@ -50,7 +54,9 @@ export const growthPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'growth',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 
@@ -69,7 +75,9 @@ export const enterprisePlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'enterprise',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 
@@ -88,7 +96,9 @@ export const starterLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'starter-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -105,7 +115,9 @@ export const scaleLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'scale-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -122,7 +134,9 @@ export const growthLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'growth-legacy',
         sync_frequency_secs_min: 30,
-        auto_idle: false
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null
     }
 };
 
