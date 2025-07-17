@@ -175,9 +175,9 @@
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/credentials-refresh-and-validity",
-                        "guides/api-authorization/public-key-deprecation",
                         "guides/api-authorization/authorization-logs",
-                        "guides/api-authorization/new-api-support"
+                        "guides/api-authorization/new-api-support",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 {
@@ -195,7 +195,6 @@
                         "guides/custom-integrations/extend-a-pre-built-integration",
                         "guides/custom-integrations/generate-integrations-with-ai",
                         "guides/custom-integrations/event-based-scripts",
-                        "guides/custom-integrations/service",
                         "guides/custom-integrations/migrate-to-zero-yaml"
                     ]
                 },
