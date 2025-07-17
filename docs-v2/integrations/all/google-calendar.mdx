@@ -4,6 +4,9 @@ sidebarTitle: 'Google Calendar'
 description: 'Access the Google Calendar API in 2 minutes 💨'
 ---
 
+import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
+import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -11,7 +14,7 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Calendar_.
       </Step>
       <Step title="Authorize Google Calendar">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then login in to Google Calendar. Later, you'll let your users do the same directly from your app. 
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Calendar. Later, you'll let your users do the same directly from your app. 
       </Step>
       <Step title="Call the Google Calendar API">
         Let's make your first request to the Google Calendar API (fetch a list of calendars). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -58,9 +61,7 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next steps: 
-    - [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Calendar accounts
-    - [Go live](/getting-started/quickstart/embed-in-your-app)
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Calendar accounts
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -123,24 +124,26 @@ description: 'Access the Google Calendar API in 2 minutes 💨'
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
+    ## Common Scopes
+
+  | Scope | Description |
+  | ----- | ----------- |
+  | openid | Access to basic profile information |
+  | profile | Access to user's basic profile information |
+  | email | Access to user's email address |
+  | `https://www.googleapis.com/auth/calendar` | See, edit, share, and permanently delete all the calendars you can access using Google Calendar |
+  | `https://www.googleapis.com/auth/calendar.events` | View and edit events on all your calendars |
+  | `https://www.googleapis.com/auth/calendar.events.readonly` | View events on all your calendars |
+  | `https://www.googleapis.com/auth/calendar.readonly` | See and download any calendar you can access using your Google Calendar |
+
   </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
-    | General | [Website](https://calendar.google.com/) |
-    | | [Create a test account](https://accounts.google.com/signup) |
-    | Developer | [API documentation](https://developers.google.com/calendar/api) |
-    | | [Create a developer account](https://console.cloud.google.com/) |
-    | | [Developer console](https://console.cloud.google.com/) |
-    | | [Authorization documentation](https://developers.google.com/calendar/api/guides/auth) |
-    | | [Register an OAuth app](https://console.cloud.google.com/apis/credentials) |
-    | | [List of OAuth scopes](https://developers.google.com/calendar/api/guides/auth#scopes) |
-    | | [Details on rate limits](https://developers.google.com/calendar/api/limits) |
+    <UsefulLinks />
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-calendar.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    _No reported gotchas._
+    <ApiGotchas />
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-calendar.mdx)</Note>
   </Tab>

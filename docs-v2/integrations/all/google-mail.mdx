@@ -4,6 +4,10 @@ sidebarTitle: 'Gmail'
 description: 'Access the Gmail API in 2 minutes 💨'
 ---
 
+import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
+import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
+
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -57,9 +61,7 @@ description: 'Access the Gmail API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next steps: 
-    - [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Gmail accounts
-    - [Go live](/getting-started/quickstart/embed-in-your-app)
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GMail accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -122,24 +124,25 @@ description: 'Access the Gmail API in 2 minutes 💨'
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
+  ## Common Scopes
+  | Scope | Description |
+  | ----- | ----------- |
+  | openid | Access to basic profile information |
+  | profile | Access to user's basic profile information |
+  | email | Access to user's email address |
+  | `https://mail.google.com/` | Read, compose, send, and permanently delete all your email from Gmail |
+  | `https://www.googleapis.com/auth/gmail.readonly` | View your email messages and settings |
+  | `https://www.googleapis.com/auth/gmail.send` | Send email on your behalf |
+  | `https://www.googleapis.com/auth/gmail.compose` | Manage drafts and send emails |
+
   </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
-    | General | [Website](https://mail.google.com/) |
-    | | [Create a test account](https://accounts.google.com/signup) |
-    | Developer | [API documentation](https://developers.google.com/gmail/api) |
-    | | [Create a developer account](https://console.cloud.google.com/) |
-    | | [Developer console](https://console.cloud.google.com/) |
-    | | [Authorization documentation](https://developers.google.com/gmail/api/auth/about-auth) |
-    | | [Register an OAuth app](https://console.cloud.google.com/apis/credentials) |
-    | | [List of OAuth scopes](https://developers.google.com/gmail/api/auth/scopes) |
-    | | [Details on rate limits](https://developers.google.com/gmail/api/reference/quota) |
+     <UsefulLinks />
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    _No reported gotchas._
+    <ApiGotchas />
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
   </Tab>

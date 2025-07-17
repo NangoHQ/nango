@@ -4,6 +4,9 @@ sidebarTitle: 'Google Drive'
 description: 'Access the Google Drive API in 2 minutes 💨'
 ---
 
+import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
+import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -58,9 +61,7 @@ description: 'Access the Google Drive API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next steps: 
-    - [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Drive accounts
-    - [Go live](/getting-started/quickstart/embed-in-your-app)
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Drive accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -123,32 +124,19 @@ description: 'Access the Google Drive API in 2 minutes 💨'
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
-  </Tab>
-  <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
-    | General | [Website](https://drive.google.com/) |
-    | | [Create a test account](https://accounts.google.com/signup) |
-    | Developer | [API documentation](https://developers.google.com/drive/api) |
-    | | [Create a developer account](https://console.cloud.google.com/) |
-    | | [Developer console](https://console.cloud.google.com/) |
-    | | [Authorization documentation](https://developers.google.com/drive/api/guides/about-auth) |
-    | | [Register an OAuth app](https://console.cloud.google.com/apis/credentials) |
-    | | [List of OAuth scopes](https://developers.google.com/drive/api/guides/api-specific-auth) |
-    | | [Details on rate limits](https://developers.google.com/drive/api/limits) |
+    ## Common Scopes
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
-  </Tab>
-  <Tab title="🚨 API gotchas">
-    _No reported gotchas._
-
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
-  </Tab>
-</Tabs>
-
-<Info>
-    Questions? Join us in the [Slack community](https://nango.dev/slack).
-</Info>
+  | Scope | Description |
+  | ----- | ----------- |
+  | openid | Access to basic profile information |
+  | profile | Access to user's basic profile information |
+  | email | Access to user's email address |
+  | `https://www.googleapis.com/auth/drive` | See, edit, create, and delete all of your Google Drive files |
+  | `https://www.googleapis.com/auth/drive.apps.readonly` | View your Google Drive apps |
+  | `https://www.googleapis.com/auth/drive.file` | See, edit, create, and delete only the specific Google Drive files you use with this app |
+  | `https://www.googleapis.com/auth/drive.metadata` | View and manage metadata of files in your Google Drive |
+  | `https://www.googleapis.com/auth/drive.readonly` | See and download all your Google Drive files |
+  | `https://www.googleapis.com/auth/drive.scripts` | Modify your Google Apps Script scripts' behavior |
 
 ## Pre-built Google Drive Integration Overview
 
@@ -385,23 +373,20 @@ The sample app supports all Google Drive file types through Nango's proxy:
 
 The implementation handles file type conversion and downloading automatically.
 
-<UsefulLinks />
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    <UsefulLinks />
 
-## Common Scopes
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+   <ApiGotchas />
 
-| Scope | Description |
-| ----- | ----------- |
-| openid | Access to basic profile information |
-| profile | Access to user's basic profile information |
-| email | Access to user's email address |
-| https://www.googleapis.com/auth/drive | See, edit, create, and delete all of your Google Drive files |
-| https://www.googleapis.com/auth/drive.apps.readonly | View your Google Drive apps |
-| https://www.googleapis.com/auth/drive.file | See, edit, create, and delete only the specific Google Drive files you use with this app |
-| https://www.googleapis.com/auth/drive.metadata | View and manage metadata of files in your Google Drive |
-| https://www.googleapis.com/auth/drive.readonly | See and download all your Google Drive files |
-| https://www.googleapis.com/auth/drive.scripts | Modify your Google Apps Script scripts' behavior |
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
+  </Tab>
+</Tabs>
 
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
 
-<ApiGotchas />
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-drive.mdx)</Note>
