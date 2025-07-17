@@ -86,6 +86,7 @@
         "babel-loader": "9.1.2",
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
+        "type-fest": "4.41.0",
         "vitest": "3.1.2"
     },
     "engines": {

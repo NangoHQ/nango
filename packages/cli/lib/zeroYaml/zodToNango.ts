@@ -48,7 +48,7 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
     } else if (isZodUnion(schema)) {
         const values: NangoModelField['value'] = [];
 
-        for (const [key, value] of Object.entries(schema.def.options)) {
+        for (const [key, value] of Object.entries(schema._zod.def.options)) {
             values.push(zodToNangoModelField(key, value));
         }
         return { name, value: values, tsType: true, union: true, optional };

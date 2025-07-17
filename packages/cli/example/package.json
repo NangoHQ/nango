@@ -6,6 +6,10 @@
     "engines": {
         "node": ">=20.0"
     },
+    "scripts": {
+        "compile": "nango compile",
+        "dev": "nango dev"
+    },
     "devDependencies": {
         "nango": "XXX",
         "zod": "4.0.5"
