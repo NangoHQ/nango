@@ -73,10 +73,10 @@ export class InMemoryKVStore implements KVStore {
 
     public incr(key: string, opts?: { ttlInMs?: number }) {
         const res = this.store.get(key);
-        if (res === undefined) {
-            this.store.set(key, { value: '1', timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
-            return 1;
-        }
-        return Number(res.value) + 1;
+
+        const nextVal = res ? String(parseInt(res.value, 10) + 1) : '1';
+        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+
+        return Number(nextVal);
     }
 }
