@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`generateModelsTs > should generate models.ts 1`] = `
-"import { z } from "zod";
+"import * as z from "zod";
 
 export const Model = z.object({
   id: z.string(),

@@ -617,7 +617,7 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
             .filter((path) => path.node.source.value === 'zod')
             .size() > 0;
     if (usesZ && !hasZodImport) {
-        importDecls.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+        importDecls.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
     }
 
     // Insert all at once, in order, after the last import
@@ -739,7 +739,7 @@ export function generateModelsTs({ parsed }: { parsed: Pick<NangoYamlParsed, 'mo
     const root = j('');
 
     // Add import * as z from 'zod';
-    root.get().node.program.body.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+    root.get().node.program.body.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
 
     // Generate all models as Zod schemas and type aliases, and export them
     const allModelNames = Array.from(parsed.models.keys());
