@@ -1,12 +1,14 @@
 import * as k8s from '@kubernetes/client-node';
 
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
+
+export const logger = getLogger('Kubernetes');
 
 class Kubernetes {
     private static instance: Kubernetes | null = null;
@@ -16,10 +18,12 @@ class Kubernetes {
     private readonly networkingApi: k8s.NetworkingV1Api;
     private readonly defaultNamespace: string;
     private readonly namespacePerRunner: boolean;
+    private readonly jobsNamespace: string;
 
     private constructor() {
         this.defaultNamespace = envs.RUNNER_NAMESPACE;
         this.namespacePerRunner = envs.NAMESPACE_PER_RUNNER || false;
+        this.jobsNamespace = envs.JOBS_NAMESPACE;
 
         this.kc = new k8s.KubeConfig();
         this.kc.loadFromDefault();
@@ -235,7 +239,7 @@ class Kubernetes {
                                 _from: [
                                     {
                                         namespaceSelector: {
-                                            matchLabels: { name: 'nango' }
+                                            matchLabels: { name: this.jobsNamespace }
                                         }
                                     }
                                 ]
@@ -270,7 +274,7 @@ class Kubernetes {
                                 to: [
                                     {
                                         namespaceSelector: {
-                                            matchLabels: { name: 'nango' }
+                                            matchLabels: { name: this.jobsNamespace }
                                         }
                                     }
                                 ]
@@ -319,7 +323,7 @@ class Kubernetes {
             });
         } catch (err) {
             // Ignore errors when deleting network policies as they might not exist
-            console.warn('Failed to delete network policies:', err);
+            logger.warn('Failed to delete network policies:', err);
         }
     }
 
