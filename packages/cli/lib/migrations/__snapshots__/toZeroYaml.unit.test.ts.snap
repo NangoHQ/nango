@@ -142,7 +142,7 @@ exports[`transformSync > should transform a sync (different values) 1`] = `
 "import { createSync } from "nango";
 import type { ProxyConfiguration } from "nango";
 import { Model } from "../../models.js";
-import { z } from "zod";
+import * as z from "zod";
 
 interface Config extends ProxyConfiguration {
   params: Record<string, string | number>;

@@ -195,10 +195,8 @@ export const ENVS = z.object({
     NANGO_DB_SSL: bool,
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z
-        .string({})
-        .meta({
-            required_error:
-                'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
+        .string({
+            error: 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
         })
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
