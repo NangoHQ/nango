@@ -45,8 +45,8 @@ export const growthPlan: PlanDefinition = {
     orbId: 'growth',
     flags: {
         api_rate_limit_size: 'l',
-        environments_max: 3,
-        has_otel: false,
+        environments_max: 10,
+        has_otel: true,
         has_sync_variants: true,
         name: 'growth',
         sync_frequency_secs_min: 30,
