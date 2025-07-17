@@ -4,7 +4,7 @@ import { Link, Navigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { AuthError } from '@nangohq/frontend';
 
@@ -20,9 +20,10 @@ import { cn, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
+import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
 
-const formSchema: Record<AuthModeType, z.AnyZodObject> = {
+const formSchema: Record<AuthModeType, z.ZodObject> = {
     API_KEY: z.object({
         apiKey: z.string().min(1)
     }),
@@ -150,7 +151,7 @@ export const Go: React.FC = () => {
         }
 
         // Append connectionConfig object
-        const additionalFields: z.ZodRawShape = {};
+        const additionalFields: Record<string, z.ZodType> = {};
         for (const [name, schema] of Object.entries(provider.connection_config || [])) {
             if (schema.automated) {
                 continue;
@@ -213,10 +214,12 @@ export const Go: React.FC = () => {
     }, [connectionFailed]);
 
     const onSubmit = useCallback(
-        async (values: z.infer<(typeof formSchema)[AuthModeType]>) => {
+        async (v: Record<string, unknown>) => {
             if (!integration || loading || !provider || !nango) {
                 return;
             }
+
+            const values = v as { credentials: Record<string, string>; params: Record<string, string> };
 
             telemetry('click:connect');
             setLoading(true);
@@ -242,7 +245,7 @@ export const Go: React.FC = () => {
                 } else {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
-                        credentials: { ...values['credentials'], type: provider.auth_mode },
+                        credentials: { ...values['credentials'], type: provider.auth_mode } as Record<string, string>,
                         detectClosedAuthWindow,
                         ...(provider.installation && { installation: provider.installation })
                     });
@@ -397,7 +400,7 @@ export const Go: React.FC = () => {
                                                                     placeholder={definition?.example || definition?.title || base?.example}
                                                                     prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}
-                                                                    {...field}
+                                                                    {...(field as InputHTMLAttributes<HTMLInputElement>)}
                                                                     autoComplete="off"
                                                                     type={definition?.secret || base?.secret ? 'password' : 'text'}
                                                                 />

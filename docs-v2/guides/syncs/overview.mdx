@@ -66,7 +66,7 @@ Sync scripts have the following structure:
 
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 export default createSync({
   models: {

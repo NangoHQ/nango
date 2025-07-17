@@ -15,8 +15,9 @@ import {
 } from './utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
-import type { ZodModel } from '@nangohq/runner-sdk/lib/types.js';
+import type { ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
 
@@ -47,8 +48,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>
-            | CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>
+            | CreateSyncResponse<Record<string, ZodModel>, z.ZodObject>
+            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
@@ -125,7 +126,7 @@ export function buildSync({
     basenameClean
 }: {
     filePath: string;
-    params: CreateSyncResponse<Record<string, ZodModel>, Zod.ZodTypeAny>;
+    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
@@ -197,7 +198,7 @@ export function buildAction({
     basename,
     basenameClean
 }: {
-    params: CreateActionResponse<Zod.ZodTypeAny, Zod.ZodTypeAny, Zod.ZodTypeAny>;
+    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;

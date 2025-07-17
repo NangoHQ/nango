@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 export const providerSchema = z
     .string()
@@ -52,12 +52,6 @@ export const connectionCredential = z.union([
     z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
 
-export const stringBool = z
-    .enum(['true', 'false', ''])
-    .optional()
-    .default('false')
-    .transform((value) => value === 'true');
-
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
@@ -89,5 +83,5 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
             })
             .strict()
     ],
-    { errorMap: () => ({ message: 'invalid credentials object' }) }
+    { error: () => ({ message: 'invalid credentials object' }) }
 );

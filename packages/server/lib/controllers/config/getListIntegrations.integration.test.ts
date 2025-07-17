@@ -35,7 +35,7 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_query_params',
-                errors: [{ code: 'unrecognized_keys', message: "Unrecognized key(s) in object: 'foo'", path: [] }]
+                errors: [{ code: 'unrecognized_keys', message: 'Unrecognized key: "foo"', path: [] }]
             }
         });
         expect(res.res.status).toBe(400);

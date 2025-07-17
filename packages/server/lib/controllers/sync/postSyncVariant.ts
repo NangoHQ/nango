@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, createSync, getSyncConfig, getSyncConfigByParams, getSyncsByConnectionId } from '@nangohq/shared';

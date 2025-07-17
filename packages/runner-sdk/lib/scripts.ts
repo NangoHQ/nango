@@ -3,7 +3,7 @@ import type { NangoSyncBase } from './sync.js';
 import type { ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
 
@@ -165,7 +165,7 @@ export function createSync<TModels extends Record<string, ZodModel>, TMetadata e
 }
 
 // ----- Action
-export interface CreateActionProps<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined> {
+export interface CreateActionProps<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined> {
     /**
      * The version of the action.
      * Use it to track changes to the action inside Nango's UI.
@@ -261,7 +261,7 @@ export interface CreateActionProps<TInput extends Zod.ZodTypeAny, TOutput extend
      */
     exec: (nango: NangoActionBase<TMetadata>, input: z.infer<TInput>) => MaybePromise<z.infer<TOutput>>;
 }
-export interface CreateActionResponse<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined>
+export interface CreateActionResponse<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>
     extends CreateActionProps<TInput, TOutput, TMetadata> {
     type: 'action';
 }
@@ -286,7 +286,7 @@ export interface CreateActionResponse<TInput extends Zod.ZodTypeAny, TOutput ext
  * export default action;
  * ```
  */
-export function createAction<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined>(
+export function createAction<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>(
     params: CreateActionProps<TInput, TOutput, TMetadata>
 ): CreateActionResponse<TInput, TOutput, TMetadata> {
     return { type: 'action', ...params };

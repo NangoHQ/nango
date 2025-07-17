@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { SimplifiedJSONSchema } from '@nangohq/types';
 import type { ClassValue } from 'clsx';

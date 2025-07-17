@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { getLogger } from '@nangohq/utils';
 

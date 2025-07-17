@@ -42,6 +42,7 @@ jobs:
               with:
                   cache: 'npm'
                   node-version: ${{ matrix.node-version }}
+                  cache-dependency-path: 'package-lock.json'
 
             - run: npm ci
 

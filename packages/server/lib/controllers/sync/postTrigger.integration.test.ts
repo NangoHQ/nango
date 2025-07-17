@@ -60,22 +60,21 @@ describe(`POST ${endpoint}`, () => {
                         {
                             code: 'invalid_union',
                             message: 'Each sync must be either a string or a { name: string, variant: string } object',
-                            path: ['syncs', 0]
+                            path: ['syncs', '0']
                         },
                         {
                             code: 'invalid_union',
                             message: 'Each sync must be either a string or a { name: string, variant: string } object',
-                            path: ['syncs', 2]
+                            path: ['syncs', '2']
                         },
                         {
-                            code: 'invalid_enum_value',
-                            message:
-                                "Invalid enum value. Expected 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache', received 'invalid-sync-mode'",
+                            code: 'invalid_value',
+                            message: 'Invalid option: expected one of "incremental"|"full_refresh"|"full_refresh_and_clear_cache"',
                             path: ['sync_mode']
                         },
                         {
                             code: 'invalid_type',
-                            message: 'Expected boolean, received string',
+                            message: 'Invalid input: expected boolean, received string',
                             path: ['full_resync']
                         }
                     ]

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';

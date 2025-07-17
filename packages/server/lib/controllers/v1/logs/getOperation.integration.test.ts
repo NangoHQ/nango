@@ -49,7 +49,7 @@ describe('GET /logs/operations/:operationId', () => {
                 errors: [
                     {
                         code: 'unrecognized_keys',
-                        message: "Unrecognized key(s) in object: 'foo'",
+                        message: 'Unrecognized key: "foo"',
                         path: []
                     }
                 ]

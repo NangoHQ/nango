@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { EndpointLocals, EndpointRequest, EndpointResponse } from './route.js';
 import type { Endpoint, ValidationError } from '@nangohq/types';
@@ -17,19 +17,17 @@ export const validateRequest =
             if (parser.parseBody) {
                 res.locals.parsedBody = parser.parseBody(req.body || {});
             } else {
-                z.object({})
-                    .strict('Body is not allowed')
-                    .parse(req.body || {});
+                z.strictObject({}, { error: 'Body is not allowed' }).parse(req.body || {});
             }
             if (parser.parseQuery) {
                 res.locals.parsedQuery = parser.parseQuery(req.query);
             } else {
-                z.object({}).strict('Query string parameters are not allowed').parse(req.query);
+                z.strictObject({}, { error: 'Query string parameters are not allowed' }).parse(req.query);
             }
             if (parser.parseParams) {
                 res.locals.parsedParams = parser.parseParams(req.params);
             } else {
-                z.object({}).strict('Url parameters are not allowed').parse(req.params);
+                z.strictObject({}, { error: 'Url parameters are not allowed' }).parse(req.params);
             }
             next();
         } catch (err) {
@@ -43,7 +41,7 @@ export const validateRequest =
 
 export function zodErrorToHTTP(error: Pick<z.ZodError, 'issues'>): ValidationError[] {
     return error.issues.map(({ code, message, path }) => {
-        return { code, message, path };
+        return { code, message, path: path.map((p) => p.toString()) };
     });
 }
 

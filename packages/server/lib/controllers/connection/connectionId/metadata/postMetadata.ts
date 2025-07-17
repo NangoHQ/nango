@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { connectionService } from '@nangohq/shared';
@@ -13,7 +13,7 @@ const validation = z
     .object({
         connection_id: z.union([connectionIdSchema, z.array(connectionIdSchema)]),
         provider_config_key: providerConfigKeySchema,
-        metadata: z.record(z.unknown())
+        metadata: z.record(z.string(), z.unknown())
     })
     .strict();
 

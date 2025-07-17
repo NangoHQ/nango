@@ -69,8 +69,8 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_string', message: 'Invalid uuid', path: ['accountUUID'] },
-                    { code: 'invalid_type', message: 'Required', path: ['loginReason'] }
+                    { code: 'invalid_format', message: 'Invalid UUID', path: ['accountUUID'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['loginReason'] }
                 ]
             }
         });

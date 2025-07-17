@@ -4,7 +4,7 @@ import { validateData } from './dataValidation.js';
 import type { ValidateDataError } from './dataValidation.js';
 import type { RawModel, ZodMetadata, ZodModel } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export const BASE_VARIANT = 'base';
 

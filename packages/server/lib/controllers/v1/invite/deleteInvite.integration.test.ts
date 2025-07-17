@@ -47,7 +47,7 @@ describe(`DELETE ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Expected string, received number', path: ['email'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received number', path: ['email'] }]
             }
         });
         expect(res.res.status).toBe(400);
