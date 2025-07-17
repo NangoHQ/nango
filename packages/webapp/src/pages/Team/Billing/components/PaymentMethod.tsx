@@ -206,7 +206,7 @@ export const CreditCardForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess 
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto overflow-x-hidden">
                 <PaymentElement />
                 <AddressElement options={{ mode: 'billing' }} />
             </div>
