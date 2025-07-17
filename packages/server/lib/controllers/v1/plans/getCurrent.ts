@@ -5,7 +5,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetPlan } from '@nangohq/types';
 
-export const getPlanCurrent = asyncWrapper<GetPlan>((req, res) => {
+export const getCurrentPlan = asyncWrapper<GetPlan>((req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

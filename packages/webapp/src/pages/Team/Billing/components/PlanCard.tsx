@@ -42,6 +42,7 @@ export const PlanCard: React.FC<{
         }
 
         setLoading(true);
+        setLongWait(false);
         const res = await apiPostPlanChange(env, { orbId: def.plan.orbId });
         if ('error' in res.json) {
             setLoading(false);
@@ -219,39 +220,6 @@ export const PlanCard: React.FC<{
                                 the month ends.
                             </>
                         )}
-
-                        {/* {def.isUpgrade && (
-                            <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
-                                <div className="flex items-center justify-between gap-2 py-3">
-                                    <span>New plan</span>
-                                    <span className="text-grayscale-13">{def.plan.title}</span>
-                                </div>
-                                <div className="flex items-center justify-between gap-2 py-3">
-                                    <span>Plan monthly price</span>
-                                    <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
-                                </div>
-                                <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
-                                    <div>Charged today</div>
-                                    <div className="text-grayscale-13">${def.plan.basePrice} (immediate)</div>
-                                </div>
-                            </div>
-                        )}
-                        {def.isDowngrade && (
-                            <div className="mt-10 mb-4 text-sm text-grayscale-12 text-s">
-                                <div className="flex items-center justify-between gap-2 py-3">
-                                    <span>New plan</span>
-                                    <span className="text-grayscale-13">{def.plan.title}</span>
-                                </div>
-                                <div className="flex items-center justify-between gap-2 py-3">
-                                    <span>Plan monthly price</span>
-                                    <span className="text-grayscale-13">${def.plan.basePrice}/month</span>
-                                </div>
-                                <div className="flex items-center justify-between gap-2 mt-3 py-3 border-t border-grayscale-600">
-                                    <div>Charged today</div>
-                                    <div className="text-grayscale-13">$0</div>
-                                </div>
-                            </div>
-                        )} */}
                         {longWait && (
                             <div className="text-right text-xs text-grayscale-500 mt-2">{def.isDowngrade ? 'Downgrading...' : 'Payment is processing...'}</div>
                         )}

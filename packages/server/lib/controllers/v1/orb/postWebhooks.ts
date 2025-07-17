@@ -111,11 +111,6 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
                     name: planExternalId as unknown as DBPlan['name'],
-                    trial_start_at: null,
-                    trial_end_at: null,
-                    trial_end_notified_at: null,
-                    trial_extension_count: 0,
-                    trial_expired: null,
                     orb_customer_id: body.subscription.customer.id,
                     orb_subscription_id: body.subscription.id,
                     orb_future_plan: null,

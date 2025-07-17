@@ -54,7 +54,12 @@ export const starterPlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -86,7 +91,12 @@ export const growthPlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -120,7 +130,12 @@ export const enterprisePlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -145,7 +160,12 @@ export const starterLegacyPlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -165,7 +185,12 @@ export const scaleLegacyPlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -185,7 +210,12 @@ export const growthLegacyPlan: PlanDefinition = {
         sync_frequency_secs_min: 30,
         auto_idle: false,
         monthly_actions_max: null,
-        monthly_active_records_max: null
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null
     }
 };
 

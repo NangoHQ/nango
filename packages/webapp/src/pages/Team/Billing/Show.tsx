@@ -29,7 +29,7 @@ export const TeamBilling: React.FC = () => {
     const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
 
-    const list = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
+    const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
             return null;
         }
@@ -122,23 +122,23 @@ export const TeamBilling: React.FC = () => {
                 <div className="flex flex-col gap-5">
                     <h2 className="text-grayscale-10 uppercase text-sm">Plans</h2>
 
-                    {list?.activePlan && list.activePlan.hidden && (
+                    {plans?.activePlan && plans.activePlan.hidden && (
                         <div className="text-white text-s flex items-center font-semibold">
-                            <span className="text-grayscale-300 pr-2">Current plan:</span> {list.activePlan.title}{' '}
+                            <span className="text-grayscale-300 pr-2">Current plan:</span> {plans.activePlan.title}{' '}
                             <span className="bg-success-4 h-1.5 w-1.5 rounded-full inline-flex ml-2"></span>
                         </div>
                     )}
                     {futurePlan && futurePlan.futurePlan?.code === 'free' && (
                         <Info variant={'warning'} className="mt-2">
-                            Your {list?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.
+                            Your {plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.
                         </Info>
                     )}
                     {futurePlan && futurePlan.futurePlan?.code !== 'free' && (
                         <Info variant={'warning'} className="mt-2">
-                            Your {list?.activePlan.title} subscription will switch to Starter at the end of the month.
+                            Your {plans?.activePlan.title} subscription will switch to Starter at the end of the month.
                         </Info>
                     )}
-                    {list?.activePlan.hidden ? (
+                    {plans?.activePlan.hidden ? (
                         <div>
                             <a href="https://nango.dev/support">
                                 <Button>Contact us to change your plan</Button>
@@ -146,8 +146,8 @@ export const TeamBilling: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-4 gap-4 mt-6">
-                            {list?.list.map((def) => {
-                                return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={list.activePlan} />;
+                            {plans?.list.map((def) => {
+                                return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={plans.activePlan} />;
                             })}
                         </div>
                     )}

@@ -63,7 +63,7 @@ import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
-import { getPlanCurrent } from './controllers/v1/plans/getCurrent.js';
+import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
@@ -155,7 +155,7 @@ web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
 
 web.route('/plans').get(webAuth, getPlans);
-web.route('/plans/current').get(webAuth, getPlanCurrent);
+web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/change').post(webAuth, postPlanChange);
