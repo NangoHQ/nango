@@ -1,12 +1,14 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, plansList, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok, report } from '@nangohq/utils';
+import { accountService, getPlan, plansList, updatePlanByTeam } from '@nangohq/shared';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { DBPlan, PostOrbWebhooks, Result } from '@nangohq/types';
+
+const logger = getLogger('Server.Orb');
 
 /**
  * Orb is sending webhooks when subscription changes or else
@@ -25,7 +27,6 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
         res.status(400).send({ error: { code: 'invalid_headers', message: 'invalid signature' } });
         return;
     }
-
     const handled = await handleWebhook(req.body as Webhooks);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
@@ -74,6 +75,8 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
 type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
+    logger.info('[orb-hook]', body.type);
+
     switch (body.type) {
         case 'subscription.started':
         case 'subscription.plan_changed': {
@@ -92,6 +95,16 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 const team = await accountService.getAccountById(trx, parseInt(teamId, 10));
                 if (!team) {
                     return Err('Failed to find team');
+                }
+
+                const plan = await getPlan(trx, { accountId: team.id });
+                if (plan.isErr()) {
+                    return Err(plan.error);
+                }
+
+                if (plan.value.name === exists.flags.name) {
+                    logger.info('skip plan update, it is the same plan');
+                    return Ok(undefined);
                 }
 
                 const updated = await updatePlanByTeam(trx, {
