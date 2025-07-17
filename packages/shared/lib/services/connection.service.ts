@@ -1112,7 +1112,9 @@ class ConnectionService {
         connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
+        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
+        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
+        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
 
         const bodyFormat = provider.body_format || 'json';
 

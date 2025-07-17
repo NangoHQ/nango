@@ -661,6 +661,7 @@
                 "integrations/all/sentry-oauth",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
+                "integrations/all/setmore",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
                 "integrations/all/sharepoint-online-oauth2-cc",
