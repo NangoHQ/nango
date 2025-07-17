@@ -1,8 +1,9 @@
-import type { PrismProps } from '@mantine/prism';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import classNames from 'classnames';
 import { useCallback, useState } from 'react';
+
+import type { PrismProps } from '@mantine/prism';
 
 //just Prism component with some additional powers!
 

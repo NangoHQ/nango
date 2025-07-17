@@ -1,14 +1,18 @@
-import { stringifyError } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
-import type knex from 'knex';
-import { logger } from '../../utils/logger.js';
-import { dueSchedules } from './scheduling.js';
-import * as tasks from '../../models/tasks.js';
+
+import tracer from 'dd-trace';
+
+import { stringifyError } from '@nangohq/utils';
+
 import * as schedules from '../../models/schedules.js';
 import { SchedulerDaemon } from '../daemon.js';
-import tracer from 'dd-trace';
+import { dueSchedules } from './scheduling.js';
 import { envs } from '../../env.js';
+import * as tasks from '../../models/tasks.js';
+import { logger } from '../../utils/logger.js';
+
 import type { Task } from '../../types.js';
+import type knex from 'knex';
 
 export class SchedulingDaemon extends SchedulerDaemon {
     private readonly onScheduling: (task: Task) => void;

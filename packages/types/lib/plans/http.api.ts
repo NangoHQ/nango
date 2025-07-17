@@ -15,7 +15,7 @@ export type PostPlanExtendTrial = Endpoint<{
 }>;
 
 export interface PlanDefinition {
-    code: string;
+    code: DBPlan['name'];
     title: string;
     description: string;
     canUpgrade: boolean;

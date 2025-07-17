@@ -44,6 +44,16 @@ services:
                 limits:
                     memory: 2GB
 
+    activemq:
+        container_name: activemq
+        image: apache/activemq-classic:5.18.3
+        ports:
+            - '8161:8161' # Web console
+            - '61613:61613' # STOMP
+            - '61614:61614' # WS
+        networks:
+            - nango
+
 networks:
     nango:
 

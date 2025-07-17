@@ -1,8 +1,10 @@
-import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
-import { getProxyRetryFromErr, getRetryFromHeader, getRetryFromBody } from './retry.js';
+
+import { getProxyRetryFromErr, getRetryFromBody, getRetryFromHeader } from './retry.js';
 import { getDefaultProxy } from './utils.test.js';
+
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Merge } from 'type-fest';
 
 function getDefaultError(value: Merge<Partial<AxiosError>, { response?: Partial<AxiosResponse> }>): AxiosError {

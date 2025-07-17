@@ -1,10 +1,12 @@
-import * as tasks from '../../models/tasks.js';
+import { setTimeout } from 'node:timers/promises';
+
+import { envs } from '../../env.js';
 import * as schedules from '../../models/schedules.js';
-import type knex from 'knex';
+import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
 import { SchedulerDaemon } from '../daemon.js';
-import { envs } from '../../env.js';
-import { setTimeout } from 'node:timers/promises';
+
+import type knex from 'knex';
 
 export class CleaningDaemon extends SchedulerDaemon {
     constructor({ db, abortSignal, onError }: { db: knex.Knex; abortSignal: AbortSignal; onError: (err: Error) => void }) {
@@ -24,15 +26,15 @@ export class CleaningDaemon extends SchedulerDaemon {
             const lockGranted = res?.rows.length > 0 ? res.rows[0]!.lock_clean : false;
 
             if (lockGranted) {
-                // hard delete schedules where deletedAt is older than 10 days
-                const deletedSchedules = await schedules.hardDeleteOlderThanNDays(trx, 10);
+                // hard delete schedules where deletedAt is older than N days
+                const deletedSchedules = await schedules.hardDeleteOlderThanNDays(trx, envs.ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS);
                 if (deletedSchedules.isErr()) {
                     logger.error(deletedSchedules.error);
                 } else if (deletedSchedules.value.length > 0) {
                     logger.info(`Hard deleted ${deletedSchedules.value.length} schedules`);
                 }
-                // hard delete terminated tasks older than 10 days unless it is the last task for an active schedule
-                const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, 10);
+                // hard delete terminated tasks older than N days unless it is the last task for an active schedule
+                const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, envs.ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS);
                 if (deletedTasks.isErr()) {
                     logger.error(deletedTasks.error);
                 } else if (deletedTasks.value.length > 0) {

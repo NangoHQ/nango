@@ -3,7 +3,7 @@ import type { Timestamps } from '../db.js';
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: string;
+    name: 'free' | 'starter' | 'starter-legacy' | 'growth' | 'scale-legacy' | 'growth-legacy' | 'enterprise';
 
     // Stripe
     stripe_customer_id: string | null;
@@ -22,13 +22,6 @@ export interface DBPlan extends Timestamps {
     trial_extension_count: number;
     trial_end_notified_at: Date | null;
     trial_expired: boolean | null;
-
-    /**
-     * Limit the number of connections with active scripts
-     * Set to null to remove limit
-     * @default 3
-     */
-    connection_with_scripts_max: number | null;
 
     /**
      * Limit the number of total non-deleted connections

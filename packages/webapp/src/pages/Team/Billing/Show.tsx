@@ -36,7 +36,12 @@ export const TeamBilling: React.FC = () => {
         }
 
         // No self downgrade or old plan
-        if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
+        if (
+            currentPlan.name === 'scale-legacy' ||
+            currentPlan.name === 'enterprise' ||
+            currentPlan.name === 'starter-legacy' ||
+            currentPlan.name === 'growth-legacy'
+        ) {
             return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true }];
         }
 
@@ -91,7 +96,16 @@ export const TeamBilling: React.FC = () => {
                 {hasUsage && (
                     <div className="flex flex-col gap-2.5">
                         <h2 className="text-grayscale-10 uppercase text-sm">Usage</h2>
-                        <UsageTable data={usage} isLoading={usageIsLoading} />
+                        <div className="flex flex-col gap-4">
+                            <UsageTable data={usage} isLoading={usageIsLoading} />
+                            {usageIsLoading ? (
+                                <Skeleton className="w-32" />
+                            ) : (
+                                <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                                    <Button variant={'secondary'}>View detailed usage</Button>
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 )}
                 <div className="flex flex-col gap-2.5">

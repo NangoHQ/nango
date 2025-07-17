@@ -1,10 +1,13 @@
 import braintree from 'braintree';
-import type { Config as ProviderConfig, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
-import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
-import { parseTokenExpirationDate, isTokenExpired, makeUrl } from '../utils/utils.js';
+
+import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+
 import { NangoError } from '../utils/error.js';
-import { getLogger, axiosInstance as axios, stringifyError } from '@nangohq/utils';
+import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
+
+import type { AuthorizationTokenResponse, Config as ProviderConfig, RefreshTokenResponse } from '../models/index.js';
+import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;

@@ -1,10 +1,12 @@
+import { exec } from 'child_process';
 import fs, { writeFileSync } from 'fs';
 import path from 'path';
+
 import chalk from 'chalk';
-import { exec } from 'child_process';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { printDebug, getNangoRootPath } from '../utils.js';
+
+import { getNangoRootPath, printDebug } from '../utils.js';
 import { parse } from './config.service.js';
 
 export const v1toV2Migration = (loadLocation: string): void => {

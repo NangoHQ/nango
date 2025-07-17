@@ -11,7 +11,6 @@ import configService from '../../config.service.js';
 import environmentService from '../../environment.service.js';
 import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
-import connectionService from '../../connection.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
@@ -50,7 +49,6 @@ describe('Sync config create', () => {
         const emptyConfig = await DeployConfigService.deploy({
             account,
             environment,
-            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -76,7 +74,6 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
                 track_deletes: true,
                 endpoints: [
                     { method: 'GET', path: '/model1' },
@@ -92,7 +89,6 @@ describe('Sync config create', () => {
         const { error } = await DeployConfigService.deploy({
             account,
             environment,
-            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -121,7 +117,6 @@ describe('Sync config create', () => {
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
-                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
                 track_deletes: true,
                 endpoints: [
                     { method: 'GET', path: '/model1' },
@@ -239,10 +234,6 @@ describe('Sync config create', () => {
             });
         });
 
-        vi.spyOn(connectionService, 'shouldCapUsage').mockImplementation(() => {
-            return Promise.resolve(false);
-        });
-
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockImplementation(() => {
             return Promise.resolve([]);
         });
@@ -253,7 +244,6 @@ describe('Sync config create', () => {
             DeployConfigService.deploy({
                 environment,
                 account,
-                plan: null,
                 flows: syncs,
                 nangoYamlBody: '',
                 logContextGetter,

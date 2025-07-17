@@ -1006,10 +1006,6 @@ paths:
                                                     example: 'sync'
                                                 json_schema:
                                                     type: object
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 sync_type:
                                                     type: string
                                                     example: 'full'
@@ -1068,10 +1064,6 @@ paths:
                                                 type:
                                                     type: string
                                                     example: 'action'
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 last_deployed:
                                                     type: string
                                                     example: '2024-02-28T20:16:38.052Z'
@@ -1202,7 +1194,7 @@ paths:
                                                 your-properties:
                                                     type: string
                                                     description: The data Nango synced in for you
-                                                    example: 'Your synced data, in the schema you (or Nango) defined in nango.yaml'
+                                                    example: 'Your synced data, in the schema you (or Nango) defined in script'
                                                 _nango_metadata:
                                                     type: object
                                                     properties:
@@ -1856,7 +1848,7 @@ paths:
                                     description: The name of the action to trigger.
                                 input:
                                     type: object
-                                    description: The necessary input for your action's 'runAction' function.
+                                    description: The necessary input for your action's 'exec' function.
 
             responses:
                 '200':
