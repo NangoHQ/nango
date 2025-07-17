@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Button } from '../../../../../components/ui/button/Button';
-import { apiDeleteIntegration } from '../../../../../hooks/useIntegration';
-import type { ApiIntegration } from '@nangohq/types';
-import { useToast } from '../../../../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
+
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
+import { Button } from '../../../../../components/ui/button/Button';
 import { clearConnectionsCache } from '../../../../../hooks/useConnections';
+import { apiDeleteIntegration } from '../../../../../hooks/useIntegration';
+import { useToast } from '../../../../../hooks/useToast';
+
+import type { ApiIntegration } from '@nangohq/types';
 
 export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration }> = ({ env, integration }) => {
     const { toast } = useToast();

@@ -1,14 +1,14 @@
-import SecretInput from '../../../components/ui/input/SecretInput';
-import { useStore } from '../../../store';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
-import { EditableInput } from './EditableInput';
-
-import { useToast } from '../../../hooks/useToast';
-import { Switch } from '../../../components/ui/Switch';
-import { useState } from 'react';
-import Spinner from '../../../components/ui/Spinner';
 import { IconExternalLink } from '@tabler/icons-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { EditableInput } from './EditableInput';
+import Spinner from '../../../components/ui/Spinner';
+import { Switch } from '../../../components/ui/Switch';
+import SecretInput from '../../../components/ui/input/SecretInput';
+import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
 
 export const AuthorizationSettings: React.FC = () => {
     const { toast } = useToast();

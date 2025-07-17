@@ -164,7 +164,7 @@ describe('Flow service tests', () => {
 
         const flow = FlowService.getFlow('issues-lite');
         expect(flow).not.toBeNull();
-        expect(flow?.models).not.toBeUndefined();
+        expect(flow?.returns).not.toBeUndefined();
     });
 
     it('should get flows.yaml', () => {

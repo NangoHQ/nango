@@ -1,9 +1,12 @@
 import path from 'node:path';
-import knex from 'knex';
 import { fileURLToPath } from 'node:url';
-import { logger } from '../utils/logger.js';
+
+import knex from 'knex';
+
 import { isTest } from '@nangohq/utils';
+
 import { envs } from '../env.js';
+import { logger } from '../utils/logger.js';
 
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;

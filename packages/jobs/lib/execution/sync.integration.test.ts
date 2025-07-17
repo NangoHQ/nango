@@ -1,13 +1,16 @@
-import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { multipleMigrations } from '@nangohq/database';
-import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
-import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
-import { handleSyncSuccess, startSync } from './sync.js';
-import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
-import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
+import { clearDbTestsOnly as clearRecordsDb, format as recordsFormatter, migrate as migrateRecords, records as recordsService } from '@nangohq/records';
+import { getLatestSyncJob, isSyncJobRunning, seeders, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
+
+import { handleSyncSuccess, startSync } from './sync.js';
 import { envs } from '../env.js';
+
+import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
+import type { ReturnedRecord, UnencryptedRecordData } from '@nangohq/records';
+import type { Job as SyncJob, Sync, SyncResult } from '@nangohq/shared';
 import type { ConnectionJobs, DBSyncConfig } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
@@ -197,6 +200,7 @@ const runJob = async (
             connection_id: connection.connection_id
         },
         ownerKey: null,
+        heartbeatTimeoutSecs: 30,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

@@ -832,6 +832,8 @@ atlassian-admin:
             at: 'x-ratelimit-reset'
         headers:
             authorization: Bearer ${apiKey}
+        connection_config:
+            organizationId: ${connectionConfig.organizationId}
     docs: https://docs.nango.dev/integrations/all/atlassian-admin
     docs_connect: https://docs.nango.dev/integrations/all/atlassian-admin/connect
     credentials:
@@ -841,6 +843,15 @@ atlassian-admin:
             description: The API key for your Atlassian account
             example: ATCTT3xFfGN0_a1B2-c3D4_E5F6-G7H8I9JKLMNOPQRSTUVWXYZ1234567890=DEADBEEF
             pattern: '^ATCTT3xFfGN0[\w\-]+=[A-Z0-9]{8}$'
+            doc_section: '#step-1-generating-your-api-key'
+    connection_config:
+        organizationId:
+            type: string
+            title: Atlassian Organization Id
+            optional: true
+            description: The organization ID of your Atlassian account
+            pattern: '^[a-f0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
+            example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
 attio:
@@ -860,6 +871,9 @@ attio:
         base_url: https://api.attio.com
         retry:
             after: 'retry-after'
+    post_connection_script: attioPostConnection
+    webhook_routing_script: attioWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
@@ -3774,13 +3788,13 @@ figma-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.host}/scim
+        base_url: https://${connectionConfig.host}/scim/v2/${connectionConfig.tenantId}
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /v2/${connectionConfig.tenantId}/Users
+                - /Users
     docs: https://docs.nango.dev/integrations/all/figma-scim
     docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
     credentials:
@@ -4782,6 +4796,13 @@ google-play:
     proxy:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
+
+google-cloud-storage:
+    display_name: Google Cloud Storage
+    alias: google
+    categories:
+        - storage
+    docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
 gorgias:
     display_name: Gorgias
@@ -6211,6 +6232,7 @@ linear:
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
+    pre_connection_deletion_script: linearPreConnectionDeletion
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
 

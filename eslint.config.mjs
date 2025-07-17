@@ -68,7 +68,7 @@ export default tseslint.config(
             'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
             'import/namespace': 'off',
             'import/order': [
-                'warn',
+                'error',
                 {
                     'newlines-between': 'always',
                     named: true,
@@ -191,7 +191,6 @@ export default tseslint.config(
             ],
 
             // To re-enable as error progressively
-            '@typescript-eslint/no-deprecated': 'warn',
             '@typescript-eslint/no-floating-promises': 'warn',
             '@typescript-eslint/no-unsafe-assignment': 'warn',
             '@typescript-eslint/no-non-null-assertion': 'warn',
@@ -203,7 +202,10 @@ export default tseslint.config(
             '@typescript-eslint/no-unsafe-return': 'warn',
             '@typescript-eslint/no-empty-function': 'warn',
             '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
-            '@typescript-eslint/no-unnecessary-type-parameters': 'off'
+            '@typescript-eslint/no-unnecessary-type-parameters': 'off',
+
+            // Off for good reason
+            '@typescript-eslint/no-deprecated': 'off' // takes 33% of the whole linting time
         }
     },
     {
@@ -371,10 +373,16 @@ export default tseslint.config(
         }
     },
     {
-        files: ['**/**.test.ts'],
+        files: ['scripts/**/**.test.ts'],
         rules: {
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off'
+        }
+    },
+    {
+        files: ['**/*.ts'],
+        rules: {
+            'no-console': 'off'
         }
     }
 );

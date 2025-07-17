@@ -1,4 +1,5 @@
 import { getFeatureFlagsClient } from '@nangohq/kvstore';
+
 import type { RunnerFlags } from '@nangohq/types';
 
 export const featureFlags = await getFeatureFlagsClient();

@@ -11,26 +11,25 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select';
 import * as Table from '../../../components/ui/Table';
+import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
+import { apiRunSyncCommand } from '../../../hooks/useSyncs';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { UserFacingSyncCommand } from '../../../types.js';
+import { getLogsUrl } from '../../../utils/logs';
 import {
     formatDateToUSFormat,
     formatFrequency,
     formatQuantity,
     getRunTime,
-    parseLatestSyncResult,
     interpretNextRun,
+    parseLatestSyncResult,
     truncateMiddle
 } from '../../../utils/utils';
-import { getLogsUrl } from '../../../utils/logs';
-import { UserFacingSyncCommand } from '../../../types.js';
 
 import type { RunSyncCommand, SyncResponse } from '../../../types.js';
-import { useStore } from '../../../store';
-
 import type { ApiConnectionFull } from '@nangohq/types';
-import { Button, ButtonLink } from '../../../components/ui/button/Button';
-import { useToast } from '../../../hooks/useToast';
-import { apiRunSyncCommand } from '../../../hooks/useSyncs';
 
 export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null; showSyncVariant: boolean }> = ({
     sync,

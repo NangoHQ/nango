@@ -1,5 +1,7 @@
-import { expect, describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import * as utils from './utils.js';
+
 import type { Provider } from '@nangohq/types';
 
 describe('Proxy service Construct Header Tests', () => {

@@ -1,11 +1,14 @@
-import type { JsonValue, SetOptional } from 'type-fest';
-import type knex from 'knex';
-import type { Result } from '@nangohq/utils';
-import { Ok, Err, stringifyError, stringToHash } from '@nangohq/utils';
+import { uuidv4, uuidv7 } from 'uuidv7';
+
+import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
+
 import { taskStates } from '../types.js';
-import type { TaskState, Task, TaskTerminalState, TaskNonTerminalState } from '../types.js';
-import { uuidv7, uuidv4 } from 'uuidv7';
 import { SCHEDULES_TABLE } from './schedules.js';
+
+import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
+import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
+import type { JsonValue, SetOptional } from 'type-fest';
 
 export const TASKS_TABLE = 'tasks';
 
@@ -44,7 +47,7 @@ const TaskStateTransition = {
     }
 };
 
-export interface DbTask {
+export interface DBTask {
     readonly id: string;
     readonly name: string;
     readonly payload: JsonValue;
@@ -67,7 +70,7 @@ export interface DbTask {
     readonly owner_key: string | null;
 }
 export const DbTask = {
-    to: (task: Task): DbTask => {
+    to: (task: Task): DBTask => {
         return {
             id: task.id,
             name: task.name,
@@ -91,7 +94,7 @@ export const DbTask = {
             owner_key: task.ownerKey
         };
     },
-    from: (dbTask: DbTask): Task => {
+    from: (dbTask: DBTask): Task => {
         return {
             id: dbTask.id,
             name: dbTask.name,
@@ -132,7 +135,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         retryKey: taskProps.retryKey || uuidv4()
     };
     try {
-        const inserted = await db.from<DbTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
+        const inserted = await db.from<DBTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
         if (!inserted?.[0]) {
             return Err(new Error(`Error: no task '${taskProps.name}' created`));
         }
@@ -143,7 +146,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
 }
 
 export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> {
-    const task = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).first();
+    const task = await db.from<DBTask>(TASKS_TABLE).where('id', taskId).first();
     if (!task) {
         return Err(new Error(`Task with id '${taskId}' not found`));
     }
@@ -162,7 +165,7 @@ export async function search(
         limit?: number;
     }
 ): Promise<Result<Task[]>> {
-    const query = db.from<DbTask>(TASKS_TABLE);
+    const query = db.from<DBTask>(TASKS_TABLE);
     if (params?.ids) {
         query.whereIn('id', params.ids);
     }
@@ -188,7 +191,7 @@ export async function search(
 
 export async function heartbeat(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     try {
-        const updated = await db.from<DbTask>(TASKS_TABLE).where('id', taskId).update({ last_heartbeat_at: new Date() }).returning('*');
+        const updated = await db.from<DBTask>(TASKS_TABLE).where('id', taskId).update({ last_heartbeat_at: new Date() }).returning('*');
         if (!updated?.[0]) {
             return Err(new Error(`Error: Task with id '${taskId}' not updated`));
         }
@@ -240,7 +243,7 @@ export async function transitionState(
     };
 
     const updated = await db
-        .from<DbTask>(TASKS_TABLE)
+        .from<DBTask>(TASKS_TABLE)
         .where('id', props.taskId)
         .update({
             state: transition.value.to,
@@ -311,17 +314,18 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                     .with(
                         'updated_tasks',
                         db
+                            .from<DBTask>(TASKS_TABLE)
                             .update({
                                 state: 'STARTED',
+                                last_heartbeat_at: new Date(),
                                 last_state_transition_at: new Date()
                             })
-                            .from(TASKS_TABLE)
                             .whereIn('id', db.select('id').from('to_start'))
                             .returning('*')
                     )
                     // 6. return the updated tasks
                     .select('*')
-                    .from<DbTask>('updated_tasks')
+                    .from<DBTask>('updated_tasks')
                     .orderBy('id')
             );
         });
@@ -337,7 +341,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
 
 export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     try {
-        const { rows: tasks } = await db.raw<{ rows: DbTask[] }>(
+        const { rows: tasks } = await db.raw<{ rows: DBTask[] }>(
             `
             WITH eligible_tasks AS (
                 SELECT id, state, output,
@@ -386,7 +390,7 @@ export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Pro
         // Delete terminated tasks where lastStateTransitionAt is older than N days
         // unless it is the most recent task for an given schedule
         const tasks = await db
-            .from<DbTask>(TASKS_TABLE)
+            .from<DBTask>(TASKS_TABLE)
             .where(
                 'id',
                 '=',

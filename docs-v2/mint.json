@@ -464,6 +464,7 @@
                 "integrations/all/google-ads",
                 "integrations/all/google-analytics",
                 "integrations/all/google-calendar",
+                "integrations/all/google-cloud-storage",
                 "integrations/all/google-docs",
                 "integrations/all/google-drive",
                 "integrations/all/google-mail",

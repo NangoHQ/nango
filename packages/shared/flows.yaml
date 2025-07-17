@@ -14027,10 +14027,11 @@ integrations:
                 output: OutlookCalendarEvent
                 sync_type: full
                 track_deletes: true
-                version: 1.0.1
+                version: 2.0.0
                 endpoint:
                     method: GET
                     path: /events
+                    group: Events
                 scopes: Calendars.Read
             calendars:
                 description: |
@@ -14057,6 +14058,15 @@ integrations:
                     method: GET
                     path: /folders
         actions:
+            fetch-event-content:
+                description: Fetch the body content of an event
+                input: IdEntity
+                scopes: Calendars.Read
+                output: BodyContent
+                endpoint:
+                    method: POST
+                    path: /events/content
+                    group: Events
             fetch-attachment:
                 input: DocumentInput
                 output: string
@@ -14068,6 +14078,8 @@ integrations:
                 description: |
                     An action used to fetch the contents of an attachment.
         models:
+            IdEntity:
+                id: string
             OptionalBackfillSetting:
                 backfillPeriodMs: number
             OutlookEmail:
@@ -14104,12 +14116,12 @@ integrations:
                 isTallyingResponses: boolean
                 name: string
                 owner: EmailAddress
+            BodyContent:
+                content: string
+                contentType: text | html
             OutlookCalendarEvent:
                 id: string
                 attendees: Attendee[]
-                body:
-                    content: string
-                    contentType: text | html
                 bodyPreview: string
                 end:
                     dateTime: string
@@ -18573,6 +18585,146 @@ integrations:
                 name: string
                 errorConditionFormula: string
                 errorMessage: string
+    sap-success-factors:
+        syncs:
+            employees:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of current employees from sap success factors
+                version: 1.0.0
+                output: Employee
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Employees
+            locations:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of locations from sap success factors
+                version: 1.0.0
+                output: Location
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /locations
+                    group: Locations
+            groups:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of organizational groups from sap success factors
+                version: 1.0.0
+                output: Group
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /groups
+                    group: Groups
+            unified-employees:
+                runs: every hour
+                description: >
+                    Fetches a list of current employees from  sap success factors and maps
+                    them to the standard HRIS model
+                output: StandardEmployee
+                version: 1.0.0
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Employees
+        models:
+            Employee:
+                id: string
+                personIdExternal: string
+                firstName: string
+                lastName: string
+                preferredName: string
+                gender: string
+                nationality: string
+                maritalStatus: string | null
+                dateOfBirth: string | null
+                countryOfBirth: string | null
+                createdDateTime: string
+                lastModifiedDateTime: string
+            Location:
+                id: string
+                externalCode: string
+                name: string
+                description: string | null
+                status: string
+                startDate: string
+                endDate: string
+                timezone: string
+                createdDateTime: string
+                lastModifiedDateTime: string
+                country: string
+                state: string | null
+                city: string | null
+                zipCode: string | null
+                addressLine1: string | null
+                addressLine2: string | null
+            Group:
+                id: string
+                name: string
+                name_localized: string
+                name_en_US: string
+                name_defaultValue: string
+                description: string | null
+                startDate: string
+                endDate: string
+                parent: string | null
+                costCenter: string | null
+                headOfUnit: string | null
+                status: string
+                createdDateTime: string
+                lastModifiedDateTime: string
+                entityUUID: string
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber: string
+                title: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                terminationType?: string
+                manager: Person
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?: Address
+                addresses: Address[]
+                phones: Phone[]
+                emails: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Address:
+                street: string
+                city: string
+                state: string
+                country: string
+                postalCode: string
+                type: HOME | WORK
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
+            Person:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     sharepoint-online:
         actions:
             list-shared-sites:
@@ -20152,11 +20304,11 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /BankTransactions
+                    path: /bank-transactions
                     group: Bank Transactions
                 scopes:
                     - accounting.transactions
-                version: 1.0.0
+                version: 2.0.0
             general-ledger:
                 description: |
                     Fetch all general ledger entries in Xero

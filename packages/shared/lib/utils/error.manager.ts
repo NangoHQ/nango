@@ -1,8 +1,11 @@
-import * as uuid from 'uuid';
 import tracer from 'dd-trace';
-import { NangoError } from './error.js';
-import type { Response, Request } from 'express';
+import * as uuid from 'uuid';
+
 import { errorToObject, getLogger } from '@nangohq/utils';
+
+import { NangoError } from './error.js';
+
+import type { Request, Response } from 'express';
 
 const logger = getLogger('ErrorManager');
 

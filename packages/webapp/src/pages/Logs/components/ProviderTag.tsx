@@ -1,5 +1,6 @@
-import type { SearchOperationsData } from '@nangohq/types';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+
+import type { SearchOperationsData } from '@nangohq/types';
 
 export const ProviderTag: React.FC<{ msg: Pick<SearchOperationsData, 'providerName' | 'integrationId' | 'integrationName'> }> = ({ msg }) => {
     if (!msg.integrationId || !msg.providerName) {

@@ -70,3 +70,58 @@ export interface SentryOauthWebhookResponse {
         name: string;
     };
 }
+
+interface AttioWebhookEvent {
+    event_type:
+        | 'record.created'
+        | 'record.updated'
+        | 'record.deleted'
+        | 'record.merged'
+        | 'object-attribute.created'
+        | 'object-attribute.updated'
+        | 'list-entry.created'
+        | 'list-entry.deleted'
+        | 'list-attribute.created'
+        | 'list-attribute.updated'
+        | 'list.created'
+        | 'list.updated'
+        | 'list.deleted'
+        | 'note.created'
+        | 'note.updated'
+        | 'note-content.updated'
+        | 'task.created'
+        | 'task.updated'
+        | 'task.deleted'
+        | 'comment.created'
+        | 'comment.resolved'
+        | 'comment.unresolved'
+        | 'comment.deleted'
+        | 'workspace-member.created';
+
+    id: {
+        workspace_id: string;
+        object_id?: string;
+        record_id?: string;
+        attribute_id?: string;
+        list_id?: string;
+        entry_id?: string;
+        note_id?: string;
+        task_id?: string;
+        comment_id?: string;
+        workspace_member_id?: string;
+    };
+    actor: {
+        type: string;
+        id: string;
+    };
+    duplicate_object_id?: string;
+    duplicate_record_id?: string;
+    parent_object_id?: string;
+    parent_record_id?: string;
+    thread_id?: string;
+}
+
+export interface AttioWebhook {
+    webhook_id: string;
+    events: AttioWebhookEvent[];
+}

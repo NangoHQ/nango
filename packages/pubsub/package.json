@@ -1,0 +1,26 @@
+{
+    "name": "@nangohq/pubsub",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/pubsub"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "@stomp/stompjs": "7.1.1",
+        "dd-trace": "5.52.0",
+        "uuid": "9.0.0",
+        "ws": "8.18.3"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "@types/ws": "8.18.1",
+        "@types/uuid": "9.0.0",
+        "vitest": "3.1.2"
+    }
+}

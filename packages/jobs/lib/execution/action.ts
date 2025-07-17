@@ -1,5 +1,4 @@
 import db from '@nangohq/database';
-import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -14,18 +13,19 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
+import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -94,7 +94,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         metrics.increment(metrics.Types.ACTION_EXECUTION, 1, { accountId: account.id });

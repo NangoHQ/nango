@@ -8,11 +8,9 @@ Custom integrations allows you to create tailored interactions with external API
 
 ## Integration configurations & scripts
 
-Each integration combines:
-- **Configuration**: Managed in the `nango.yaml` file.
-- **Script**: Written in TypeScript, similar to a lambda function.
+An integration is created on Nango's dashboard and powered by a set of scripts. A script combines it's configuration and logic.
 
-Configurations & scripts are developed locally using the Nango CLI and deployed independently to your Nango workspace. Once deployed, each integration creates a Nango API endpoint to:
+Scripts are developed locally using the Nango CLI and deployed independently to your Nango workspace. Once deployed, each integration creates a Nango API endpoint to:
 - Execute scripts (for actions).
 - Provide access to synced data (for syncs).
 
@@ -44,13 +42,11 @@ Integration scripts are tied to a specific API and apply to all connections for 
 Scripts are stored in a dedicated `nango-integrations` folder and developed locally using the Nango CLI. This workflow ensures a smooth process from scaffolding to deployment.
 
 ### Steps to develop an integration:
-1. **Define configurations**: Use the `nango.yaml` file to specify integration details, including:
-   - Script types (syncs, actions, webhooks).
+1. **Build and define scripts**: Use the CLI to develop your TypeScript scripts. A script is self-contained and defines its own configuration and logic:
    - Input/output models.
    - Schedules and operational modes (e.g., incremental or full refresh for syncs).
-2. **Build scripts**: Use the CLI to scaffold and develop your TypeScript scripts.
-3. **Test locally**: Validate scripts using the CLI before deploying them.
-4. **Deploy to Nango**: Push scripts to Nango's infrastructure for execution.
+2. **Test locally**: Validate scripts using the CLI before deploying them.
+3. **Deploy to Nango**: Push scripts to Nango's infrastructure for execution.
 
 ## The `nango` helper object
 

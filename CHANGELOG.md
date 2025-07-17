@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.63.0] - 2025-07-11
+
+### Added
+
+- *(runner)* Create Kubernetes NodeProvider (#4295) by @rossmcewan
+- Show in-app usage for free plans (#4270) by @kaposke
+- Add resource request and limits as well as better error handling… (#4311) by @rossmcewan
+
+### Changed
+
+- Zero yaml (#4292) by @bodinsamuel
+- Eslint pass on import order 3 (#4296) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1d1d12dae0221dbab67615a003af2b4cc677860d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/48c5e68d77961e372d784798de96e852c08a1384 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(github-app-docs)* [nan-3564] update docs (#4302) by @khaliqgant
+- *(auth)* Various feedback (#4290) by @bodinsamuel
+- *(atlassian-admin-api)* [nan-3578] add in organization id as a connection config param (#4306) by @khaliqgant
+- *(api)* Import or reconnect sending incorrect webhooks (#4299) by @bodinsamuel
+- *(api)* POST /admin/impersonate new format (#4298) by @bodinsamuel
+- *(docs)* Update image and docs section link (#4309) by @khaliqgant
+- *(cli)* Init default to zero yaml (#4303) by @bodinsamuel
+- *(node)* Remove deprecated methods (#4310) by @bodinsamuel
+- *(jira-post-connection)* [nan-3592] wrap potential failing call in a try catch (#4315) by @khaliqgant
+
+## [v0.62.1] - 2025-07-08
+
+### Added
+
+- *(integrations)* Add support for fathom (#4276) by @aniruddhb
+- *(provider)* Added AWS scim integration (#4272) by @yksolanki9
+- *(integrations)* Improve sap successfactors and other documentation pages (#4279) by @hassan254-prog
+- Add index to sync_jobs (#4280) by @TBonnin
+- *(integrations)* Add support for atlassian cloud admin (#4287) by @hassan254-prog
+- *(api)* Unify auth response types (#4283) by @bodinsamuel
+- *(pre-connection-deletion)* Add linear token revocation (#4293) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/94d3e6ca338a44c4f885d80021362210713d77a6 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0f09aa12f862674f16c51254ad339c9c8c3e0ad7 by Khaliq by @github-actions[bot]
+- Eslint pass on import order (#4286) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ac898ed546cb0f2b98a7be7d7e8c4a2a2507842a by Samuel Bodin by @github-actions[bot]
+
+### Fixed
+
+- *(ramp)* Update ramp docs (#4278) by @khaliqgant
+- *(ci)* Mintlify broken links (#4285) by @bodinsamuel
+- *(frontend-sdk)* Encode connectionConfig params to preserve special characters in URL (#4288) by @hassan254-prog
+- *(endUser)* Missing forUpdate in transaction (#4281) by @bodinsamuel
+- *(zeroYaml)* Support zero yaml templates (#4274) by @bodinsamuel
+- *(api)* Migrate PUT /password to new format (#4297) by @bodinsamuel
+
 ## [v0.62.0] - 2025-07-01
 
 ### Added
@@ -4286,6 +4341,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
+[v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
 [v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0
 [v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3
 [v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
