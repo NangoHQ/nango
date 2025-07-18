@@ -21,7 +21,7 @@ export class KvUsageStore implements UsageStore {
 
     async incrementUsage(accountId: number, metric: UsageMetric, delta: number): Promise<number> {
         const key = this.getKey(accountId, metric);
-        return this.kvStore.incr(key, { amount: delta, ttlInMs: MONTH_IN_MS });
+        return this.kvStore.incr(key, { delta, ttlInMs: MONTH_IN_MS });
     }
 
     private getKey(accountId: number, metric: UsageMetric, month?: Date): string {
