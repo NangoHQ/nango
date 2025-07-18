@@ -14,8 +14,7 @@ exports.up = async function (knex) {
 
         table.foreign('accountId').references('id').inTable('_nango_accounts').onDelete('CASCADE');
 
-        // Index for efficient queries
-        table.index(['accountId', 'month']);
+        table.unique(['accountId', 'month']);
     });
 };
 
