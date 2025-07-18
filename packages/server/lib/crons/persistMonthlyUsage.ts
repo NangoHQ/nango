@@ -53,6 +53,10 @@ async function exec(): Promise<void> {
         skipped: 0
     };
 
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
     for await (const key of kvStore.scan('usage:*')) {
         const [_, accountId, metric, yearMonth] = key.split(':');
         if (!accountId || !metric || !yearMonth) {
@@ -76,7 +80,7 @@ async function exec(): Promise<void> {
         report.persisted++;
 
         // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.
-        if (monthDate.getMonth() < new Date().getMonth()) {
+        if (monthDate.getTime() < startOfMonth.getTime()) {
             logger.info(`Cleaning up kvStore key from past month: ${key}`);
             await kvStore.delete(key);
             report.deleted++;
