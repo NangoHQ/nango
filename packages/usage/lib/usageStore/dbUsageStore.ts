@@ -33,17 +33,18 @@ export class DbUsageStore implements UsageStore {
 
     async incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number> {
         month = this.normalizeMonth(month);
+        const incrementValue = delta ?? 1;
 
         const result = await db.knex
             .from('usage')
             .insert({
                 month,
                 accountId,
-                [metric]: delta
+                [metric]: incrementValue
             })
             .onConflict(['accountId', 'month'])
             .merge({
-                [metric]: db.knex.raw(`${metric} + ${delta}`)
+                [metric]: db.knex.raw('COALESCE(??, 0) + ?', [metric, incrementValue])
             })
             .returning('*');
 
