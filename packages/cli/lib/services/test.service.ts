@@ -25,16 +25,20 @@ const VITEST_SETUP_TEMPLATE = path.resolve(__dirname, '../templates/vitest.setup
 const SYNC_TEMPLATE_PATH = path.resolve(__dirname, '../templates/sync-test-template.ejs');
 const ACTION_TEMPLATE_PATH = path.resolve(__dirname, '../templates/action-test-template.ejs');
 
-function askQuestion(query: string): Promise<boolean> {
+function askQuestion(query: string, defaultAnswer: boolean = false): Promise<boolean> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     });
-
+    const suffix = defaultAnswer ? ' (Y/n):' : ' (y/N):';
     return new Promise((resolve) => {
-        rl.question(query + ' (y/N): ', (answer) => {
+        rl.question(query + suffix, (answer) => {
             rl.close();
-            resolve(/^y(es)?$/i.test(answer.trim()));
+            if (answer.trim() === '') {
+                resolve(defaultAnswer);
+            } else {
+                resolve(/^y(es)?$/i.test(answer.trim()));
+            }
         });
     });
 }
@@ -239,7 +243,14 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
             if (debug) {
                 printDebug(`Running npm install in project root`);
             }
-            await execAsync('npm install', { cwd: rootPath });
+            try {
+                await execAsync('npm install', { cwd: rootPath });
+            } catch (err: any) {
+                if (debug) {
+                    printDebug(`npm install failed: ${err.message}`);
+                }
+                throw new Error(`Failed to install dependencies: ${err.message}`);
+            }
         } else if (debug) {
             printDebug(`All required dependencies already present in package.json`);
         }
