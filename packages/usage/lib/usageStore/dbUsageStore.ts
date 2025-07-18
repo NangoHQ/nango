@@ -31,7 +31,7 @@ export class DbUsageStore implements UsageStore {
         return result[0][metric];
     }
 
-    async incrementUsage(accountId: number, metric: UsageMetric, delta: number, month?: Date): Promise<number> {
+    async incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number> {
         month = this.normalizeMonth(month);
 
         const result = await db.knex
