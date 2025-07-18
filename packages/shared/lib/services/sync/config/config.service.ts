@@ -608,28 +608,6 @@ export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfi
     return result;
 }
 
-export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
-    const result = await db.readOnly
-        .from<DBSyncConfig>(TABLE)
-        .select(`${TABLE}.attributes`)
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            '_nango_configs.unique_key': provider_config_key,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false,
-            [`${TABLE}.sync_name`]: sync_name,
-            [`${TABLE}.active`]: true
-        })
-        .first()
-        .orderBy(`${TABLE}.created_at`, 'desc');
-
-    if (!result) {
-        return null;
-    }
-
-    return result.attributes;
-}
-
 export function increment(input: number | string): number | string {
     if (typeof input === 'string') {
         if (input.includes('.')) {
