@@ -6,6 +6,6 @@ export interface KVStore {
     get(key: string): Promise<string | null>;
     delete(key: string): Promise<void>;
     exists(key: string): Promise<boolean>;
-    incr(key: string, opts?: { ttlInMs?: number; amount?: number }): MaybePromise<number>;
+    incr(key: string, opts?: { ttlInMs?: number; delta?: number }): MaybePromise<number>;
     scan(pattern: string): AsyncGenerator<string>;
 }
