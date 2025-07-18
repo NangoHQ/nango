@@ -269,7 +269,8 @@
                                 "error_code": {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "pattern": "^\\S*$"
                                     }
                                 },
                                 "in_body": {

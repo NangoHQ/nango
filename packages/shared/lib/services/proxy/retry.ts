@@ -221,22 +221,20 @@ function parseRetryValue({
 function matchesStatusCode(status: number, rule: string): boolean {
     if (!rule) return false;
 
-    const trimmed = rule.trim();
-
     // Handle exact match (e.g., "403")
-    if (/^\d{3}$/.test(trimmed)) {
-        return status === Number(trimmed);
+    if (!isNaN(Number(rule))) {
+        return status === Number(rule);
     }
 
     // Handle xx format (e.g., "5xx")
-    const xxMatch = trimmed.match(/^(\d)xx$/i);
+    const xxMatch = rule.match(/^(\d)xx$/i);
     if (xxMatch) {
         const firstDigit = Number(xxMatch[1]);
         return Math.floor(status / 100) === firstDigit;
     }
 
     // Handle range format (e.g., "500-502")
-    const rangeMatch = trimmed.match(/^(\d{3})-(\d{3})$/);
+    const rangeMatch = rule.match(/^(\d{3})-(\d{3})$/);
     if (rangeMatch) {
         const start = Number(rangeMatch[1]);
         const end = Number(rangeMatch[2]);
