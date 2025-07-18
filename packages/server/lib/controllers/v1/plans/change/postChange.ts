@@ -93,12 +93,12 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
             const stripe = getStripe();
 
-            logger.info(`Asking for base fee ${resUpgrade.value.amount} for ${account.id}`);
+            logger.info(`Asking for base fee ${resUpgrade.value.amountInCents} for ${account.id}`);
 
             // Create a payment intent to confirm the card
             const paymentIntent = await stripe.paymentIntents.create({
                 metadata: { accountUuid: account.uuid },
-                amount: resUpgrade.value.amount ? Math.round(Number(resUpgrade.value.amount) * 100) : newPlan.basePrice! * 100,
+                amount: resUpgrade.value.amountInCents ? Math.round(resUpgrade.value.amountInCents) : newPlan.basePrice! * 100,
                 currency: 'usd',
                 customer: plan.stripe_customer_id,
                 payment_method: plan.stripe_payment_id
@@ -115,6 +115,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             res.status(200).send({ data: { success: true } });
         } catch (err) {
             if (hasPending) {
+                logger.info(`Error: cancelling pending change ${hasPending} for ${account.id}`);
                 const resCancel = await billing.client.cancelPendingChanges({ pendingChangeId: hasPending });
                 if (resCancel.isErr()) {
                     report(resCancel.error);
@@ -129,6 +130,8 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     } else {
         // -- Downgrade
+        logger.info(`Downgrading ${account.id} to ${body.orbId}`);
+
         const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
         if (resDowngrade.isErr()) {
             report(resDowngrade.error);

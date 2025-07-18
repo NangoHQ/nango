@@ -10,7 +10,7 @@ export interface BillingClient {
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
-    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amount: string | null }>>;
+    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
     downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
     applyPendingChanges: (opts: {
         pendingChangeId: string;
