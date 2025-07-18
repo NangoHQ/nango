@@ -4,7 +4,7 @@
     "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
-    "types": "dist/index.js",
+    "typings": "dist/index.d.ts",
     "private": true,
     "scripts": {
         "start": "tsc && node dist/server.js",
