@@ -11,6 +11,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
+
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 import { initAI } from './ai/init.js';
@@ -22,6 +23,7 @@ import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
+import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { compileAll } from './zeroYaml/compile.js';
@@ -33,8 +35,6 @@ import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
 import type { NangoYamlParsed } from '@nangohq/types';
-
-import { generateTests } from './services/test.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {

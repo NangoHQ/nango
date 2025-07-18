@@ -73,7 +73,11 @@ class NangoActionMock {
   ) {
     const filePath = path.resolve(
       this.dirname,
+      <% if (isZeroYaml) { %>
+      `mocks/${fileName}.json`,
+      <% } else { %>
       `../nango-integrations/${this.dirname}/mocks/${fileName}.json`,
+      <% } %>
     );
     try {
       const fileContent = await fs.readFile(filePath, "utf-8");
@@ -91,7 +95,11 @@ class NangoActionMock {
   private async hashDirExists(hashDir: string) {
     const filePath = path.resolve(
       this.dirname,
+      <% if (isZeroYaml) { %>
+      `mocks/${hashDir}/`,
+      <% } else { %>
       `../nango-integrations/${this.dirname}/mocks/${hashDir}/`,
+      <% } %>
     );
 
     try {
