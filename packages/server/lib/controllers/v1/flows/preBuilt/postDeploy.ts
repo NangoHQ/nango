@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, deployTemplate, flowService, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { configService, deployTemplate, flowService, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -56,20 +56,6 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     if (plan && !plan.trial_end_at && plan.auto_idle) {
         await startTrial(db.knex, plan);
         productTracking.track({ name: 'account:trial:started', team: account, user });
-    }
-
-    const isCapped = await connectionService.shouldCapUsage({
-        providerConfigKey: body.providerConfigKey,
-        environmentId,
-        type: 'deploy',
-        team: account,
-        plan
-    });
-    if (isCapped) {
-        res.status(400).send({
-            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
-        });
-        return;
     }
 
     const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });

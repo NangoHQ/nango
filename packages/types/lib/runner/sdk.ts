@@ -30,6 +30,7 @@ export interface NangoProps {
     debug: boolean;
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
+    heartbeatTimeoutSecs?: number | undefined;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;

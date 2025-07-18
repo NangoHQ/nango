@@ -6,6 +6,7 @@ import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
 import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
 
+import type { DBTask } from '../../models/tasks.js';
 import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
 import type knex from 'knex';
 
@@ -130,7 +131,7 @@ async function addTask(
         startsAfter?: Date;
     }
 ): Promise<Task> {
-    const task: DbTask = {
+    const task: DBTask = {
         id: uuidv7(),
         schedule_id: params?.scheduleId || uuidv7(),
         group_key: Math.random().toString(36).substring(7),
@@ -152,7 +153,7 @@ async function addTask(
         retry_key: null,
         owner_key: null
     };
-    const res = await db.from<DbTask>(TASKS_TABLE).insert(task).returning('*');
+    const res = await db.from<DBTask>(TASKS_TABLE).insert(task).returning('*');
     const inserted = res[0];
     if (!inserted) {
         throw new Error('Failed to insert task');

@@ -34,7 +34,8 @@ const nangoProps: NangoProps = {
     debug: false,
     runnerFlags: {} as any,
     startedAt: new Date(),
-    endUser: null
+    endUser: null,
+    heartbeatTimeoutSecs: 30
 };
 
 const locks = new Locks();

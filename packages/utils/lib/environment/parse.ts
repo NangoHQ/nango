@@ -85,6 +85,7 @@ export const ENVS = z.object({
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     NAMESPACE_PER_RUNNER: bool,
+    JOBS_NAMESPACE: z.string().optional().default('nango'),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.string().url().optional(),
@@ -232,6 +233,7 @@ export const ENVS = z.object({
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe
+    PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
 

@@ -370,6 +370,7 @@ export class Orchestrator {
         version,
         name,
         fileLocation,
+        sdkVersion,
         async,
         logCtx
     }: {
@@ -378,6 +379,7 @@ export class Orchestrator {
         version: string;
         name: string;
         fileLocation: string;
+        sdkVersion: string | null;
         async: boolean;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
@@ -398,7 +400,7 @@ export class Orchestrator {
         try {
             const groupKey: TaskType = 'on-event';
             const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
-            const args = {
+            const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
                 connection: {
                     id: connection.id,
@@ -408,7 +410,8 @@ export class Orchestrator {
                 },
                 version,
                 activityLogId: logCtx.id,
-                fileLocation
+                fileLocation,
+                sdkVersion: sdkVersion
             };
             const result = await this.client.executeOnEvent({
                 name: executionId,
