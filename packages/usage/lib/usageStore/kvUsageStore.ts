@@ -13,21 +13,22 @@ export class KvUsageStore implements UsageStore {
         return value ? Number(value) : 0;
     }
 
-    async setUsage(accountId: number, metric: UsageMetric, value: number): Promise<number> {
-        const key = this.getKey(accountId, metric);
+    async setUsage(accountId: number, metric: UsageMetric, value: number, month?: Date): Promise<number> {
+        const key = this.getKey(accountId, metric, month);
         await this.kvStore.set(key, value.toString(), { ttlInMs: MONTH_IN_MS });
         return value;
     }
 
-    async incrementUsage(accountId: number, metric: UsageMetric, delta: number): Promise<number> {
-        const key = this.getKey(accountId, metric);
-        return this.kvStore.incr(key, { delta, ttlInMs: MONTH_IN_MS });
+    async incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number> {
+        const key = this.getKey(accountId, metric, month);
+        return this.kvStore.incr(key, { delta: delta ?? 1, ttlInMs: MONTH_IN_MS });
     }
 
     private getKey(accountId: number, metric: UsageMetric, month?: Date): string {
         month ??= new Date();
         month.setUTCHours(0, 0, 0, 0);
 
+        // YYYY-MM
         const monthString = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
         return `usage:${accountId}:${metric}:${monthString}`;
     }
