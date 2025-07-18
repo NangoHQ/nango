@@ -71,12 +71,32 @@ export class InMemoryKVStore implements KVStore {
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
-    public incr(key: string, opts?: { ttlInMs?: number }) {
+    public incr(key: string, opts?: { ttlInMs?: number; amount?: number }) {
         const res = this.store.get(key);
 
-        const nextVal = res ? String(parseInt(res.value, 10) + 1) : '1';
+        const nextVal = res ? String(parseInt(res.value, 10) + (opts?.amount || 1)) : '1';
         this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
 
         return Number(nextVal);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async *scan(pattern: string): AsyncGenerator<string> {
+        for (const key of this.store.keys()) {
+            if (this.matchesPattern(key, pattern)) {
+                yield key;
+            }
+        }
+    }
+
+    // AI generated - works well for `usage:*:something:*`
+    private matchesPattern(key: string, pattern: string): boolean {
+        // Convert glob pattern to regex
+        const regexPattern = pattern
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
+            .replace(/\\\*/g, '.*'); // Convert escaped * to .*
+
+        const regex = new RegExp(`^${regexPattern}$`);
+        return regex.test(key);
     }
 }
