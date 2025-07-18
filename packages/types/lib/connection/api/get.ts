@@ -37,7 +37,8 @@ export type GetConnectionsCount = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
+export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
+    provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created: string;
     metadata: Record<string, unknown> | null;
     provider: string;
@@ -83,7 +84,8 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'connection_config'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config'> & {
+    provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;
     last_fetched_at: string | null;
