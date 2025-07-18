@@ -54,7 +54,7 @@ export interface RetryHeaderConfig {
     at?: string;
     after?: string;
     remaining?: string;
-    error_code?: number;
+    error_code?: string[];
     in_body?: {
         path: string;
         value?: string;

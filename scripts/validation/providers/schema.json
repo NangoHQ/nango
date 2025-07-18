@@ -267,7 +267,11 @@
                                     "pattern": "^[a-z0-9-]+$"
                                 },
                                 "error_code": {
-                                    "type": "number"
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^\\S*$"
+                                    }
                                 },
                                 "in_body": {
                                     "type": "object",
