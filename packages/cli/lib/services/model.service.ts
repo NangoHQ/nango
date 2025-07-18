@@ -55,13 +55,19 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
     return parsing.value.parsed!;
 }
 
-export function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {
+export function loadSchemaJson({ fullPath, suppressErrors = false }: { fullPath: string; suppressErrors?: boolean }): {
+    schema: JSONSchema7 | null;
+    error?: Error;
+} {
     const filePath = path.join(fullPath, '.nango', 'schema.json');
     try {
-        return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
+        return { schema: JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7 };
     } catch (err) {
-        console.error(chalk.red(`Error loading ${filePath}`), err);
-        return null;
+        const error = err as Error;
+        if (!suppressErrors) {
+            console.error(chalk.red(`Error loading ${filePath}`), error);
+        }
+        return { schema: null, error };
     }
 }
 
