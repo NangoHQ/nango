@@ -172,6 +172,12 @@ export interface SignatureCredentials {
     expires_at?: Date | undefined;
 }
 
+export interface CombinedOauth2AppCredentials extends CredentialsCommon {
+    type: AuthModes['Custom'];
+    app: AppCredentials;
+    user: OAuth2Credentials | null;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -205,4 +211,5 @@ export type AllAuthCredentials =
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials
+    | CombinedOauth2AppCredentials
     | SignatureCredentials;
