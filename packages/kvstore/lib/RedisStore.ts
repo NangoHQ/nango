@@ -40,9 +40,9 @@ export class RedisKVStore implements KVStore {
         await this.client.del(key);
     }
 
-    public async incr(key: string, opts?: { ttlInMs?: number; amount?: number }): Promise<number> {
+    public async incr(key: string, opts?: { ttlInMs?: number; delta?: number }): Promise<number> {
         const multi = this.client.multi();
-        multi.incrBy(key, opts?.amount || 1);
+        multi.incrBy(key, opts?.delta || 1);
         if (opts?.ttlInMs) {
             multi.pExpire(key, opts.ttlInMs);
         }
