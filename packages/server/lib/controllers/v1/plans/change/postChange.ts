@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 import { billing } from '@nangohq/billing';
 import { plansList, productTracking } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostPlanChange } from '@nangohq/types';
+
+const logger = getLogger('orb');
 
 const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
 const validation = z
@@ -78,7 +80,9 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     if (isUpgrade) {
         let hasPending: string | undefined;
         try {
-            // Schedula an upgrade
+            logger.info(`Upgrading ${account.id} to ${body.orbId}`);
+
+            // Schedule an upgrade
             const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
             if (resUpgrade.isErr()) {
                 report(resUpgrade.error);
@@ -88,6 +92,8 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             hasPending = resUpgrade.value.pendingChangeId;
 
             const stripe = getStripe();
+
+            logger.info(`Asking for base fee ${resUpgrade.value.amount} for ${account.id}`);
 
             // Create a payment intent to confirm the card
             const paymentIntent = await stripe.paymentIntents.create({
@@ -118,6 +124,8 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             }
             report(err);
         }
+
+        res.status(500).send({ error: { code: 'server_error' } });
         return;
     } else {
         // -- Downgrade
