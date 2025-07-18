@@ -1,11 +1,12 @@
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+
+import { InsightChart } from './components/InsightChart';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
+import { useMeta } from '../../hooks/useMeta';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { InsightChart } from './components/InsightChart';
-import { useMeta } from '../../hooks/useMeta';
 import { globalEnv } from '../../utils/env';
-import { Helmet } from 'react-helmet';
 
 export const Homepage: React.FC = () => {
     const { meta } = useMeta();

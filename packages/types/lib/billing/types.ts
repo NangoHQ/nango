@@ -8,8 +8,18 @@ export interface BillingClient {
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
-    upgrade: (opts: { subscriptionId: string; planExternalId: string; immediate: boolean }) => Promise<Result<void>>;
+    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
+    downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
+    applyPendingChanges: (opts: {
+        pendingChangeId: string;
+        /**
+         * format: dollar.cent = 0.00
+         */
+        amount: string;
+    }) => Promise<Result<void>>;
+    cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
     getPlanById(planId: string): Promise<Result<BillingPlan>>;
 }
@@ -21,6 +31,8 @@ export interface BillingCustomer {
 
 export interface BillingSubscription {
     id: string;
+    pendingChangeId?: string | undefined;
+    planExternalId: string;
 }
 
 export interface BillingUsageMetric {

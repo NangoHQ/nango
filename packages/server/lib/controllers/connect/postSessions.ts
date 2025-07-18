@@ -102,7 +102,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         if (body.allowed_integrations || body.integrations_config_defaults) {
-            const integrations = await configService.listProviderConfigs(environment.id, trx);
+            const integrations = await configService.listProviderConfigs(trx, environment.id);
 
             // Enforce that integrations exists in `allowed_integrations`
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {

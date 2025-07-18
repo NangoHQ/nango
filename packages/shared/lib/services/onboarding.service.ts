@@ -1,5 +1,6 @@
-import type { DBOnboarding } from '@nangohq/types';
 import db, { dbNamespace } from '@nangohq/database';
+
+import type { DBOnboarding } from '@nangohq/types';
 
 const TABLE = `${dbNamespace}onboarding_demo_progress`;
 

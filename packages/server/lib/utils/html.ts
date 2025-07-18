@@ -23,15 +23,19 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
     <div id="content" style="display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; font-size: 14px; opacity: 0">
       <div>
         ${error ? `<div style="color: #ef665b;">An error occurred during authorization, please reach out to the support (code: ${error}).</div>` : '<div>You are now connected</div>'}
-        <button id="closeButton" style="padding: 8px 16px; background-color: #4a5568; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-          Close this window
+        <button id="closeButton" style="padding: 8px 16px; background-color: #161616; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+          You can close this window
         </button>
       </div>
     </div>
 
     <script type="text/javascript">
       function closeWindow() {
-        window.open('', '_self').close();
+        try {
+          window.open('', '_self').close();
+        } catch (err) {
+          console.error('Error closing window', err);
+        }
       }
 
       // Add event listener to close button
@@ -44,16 +48,20 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
       // Close the modal
       window.setTimeout(function() {
-        window.close();
-      }, 300);
+        try {
+          window.close();
+        } catch (err) {
+          console.error('Error closing window', err);
+        }
+      }, 200);
       // Try something else
       window.setTimeout(function() {
         closeWindow();
-      }, 600);
+      }, 400);
       // Display message
       window.setTimeout(function() {
         document.getElementById('content').style.opacity = 1
-      }, 1000);
+      }, 500);
     </script>
   </body>
 </html>

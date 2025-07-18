@@ -24,6 +24,7 @@ const nangoPropsSchema = z
             id: z.number(),
             name: z.string().min(1)
         }),
+        heartbeatTimeoutSecs: z.number().optional(),
         syncConfig: z
             .object({
                 id: z.number(),
@@ -39,7 +40,7 @@ const nangoPropsSchema = z
                 auto_start: z.boolean(),
                 enabled: z.boolean(),
                 webhook_subscriptions: z.array(z.string()).or(z.null()),
-                model_schema: z.array(z.any()),
+                model_schema: z.array(z.any()).optional().nullable(),
                 models_json_schema: z.object({}).nullable(),
                 created_at: z.coerce.date(),
                 updated_at: z.coerce.date(),

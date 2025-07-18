@@ -1,9 +1,12 @@
-import { expect, describe, it, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import { multipleMigrations } from '@nangohq/database';
 import { connectionService, environmentService, seeders } from '@nangohq/shared';
-import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
-import { NangoActionRunner } from './sdk.js';
+
 import { Locks } from './locks.js';
+import { NangoActionRunner } from './sdk.js';
+
+import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
@@ -53,7 +56,8 @@ describe('Connection service integration tests', () => {
                 debug: false,
                 runnerFlags: {} as any,
                 startedAt: new Date(),
-                endUser: null
+                endUser: null,
+                heartbeatTimeoutSecs: 30
             };
 
             const nango = new NangoActionRunner(nangoProps, { locks });

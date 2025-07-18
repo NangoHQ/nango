@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 import { Err, Ok, redactHeaders, redactObjectOrString, redactURL } from '@nangohq/utils';
-import type { Agent } from 'undici';
 
 import { NangoInternalError } from './error.js';
 
 import type { LogContextStateless } from '@nangohq/logs';
 import type { HTTP_METHOD, MessageHTTPRequest, MessageRow } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 export async function loggedFetch<TBody>(
     {

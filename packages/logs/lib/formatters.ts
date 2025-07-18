@@ -1,5 +1,6 @@
-import type { EndUser, MessageRow } from '@nangohq/types';
 import { errorToObject } from '@nangohq/utils';
+
+import type { EndUser, MessageRow } from '@nangohq/types';
 
 export function errorToDocument(error?: unknown): MessageRow['error'] {
     if (!error) {

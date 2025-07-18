@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import type { ApiWebhooks } from '@nangohq/types';
-import { useToast } from '../../../hooks/useToast';
-import { apiPatchWebhook } from '../../../hooks/useEnvironment';
-import { Switch } from '../../../components/ui/Switch';
+
 import Spinner from '../../../components/ui/Spinner';
+import { Switch } from '../../../components/ui/Switch';
+import { apiPatchWebhook } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+
+import type { ApiWebhooks } from '@nangohq/types';
 
 interface CheckboxConfig {
     label: string;

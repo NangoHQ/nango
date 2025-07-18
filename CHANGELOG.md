@@ -2,6 +2,70 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.63.1] - 2025-07-18
+
+### Added
+
+- *(pubsub)* Add pubsub package (#4313) by @TBonnin
+- *(webhooks)* Add support for attio webhooks (#4312) by @hassan254-prog
+- Replace NangoModel with json schema (#4177) by @kaposke
+- *(integrations)* Add support for google cloud storage (#4324) by @hassan254-prog
+- Add detailed usage button in billing (#4321) by @kaposke
+- Remove connection_with_scripts_max cap (#4329) by @kaposke
+- *(jobs)* Network policies for kubernetes runners (#4330) by @rossmcewan
+- Create new free-plan caps (#4334) by @kaposke
+- *(kvstore)* Add incr methods  (#4336) by @bodinsamuel
+- *(billing)* Self serve (#4220) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/11febd739d4d2d839cf8c3b31dbb1d7b2a00fda1 by Khaliq by @github-actions[bot]
+- *(orch)* Clean schedules and tasks older than 5 days (#4318) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9ee5e21f8497e8b3c72441353d6d38f3040787da by Khaliq by @github-actions[bot]
+- New API docs pages (#4316) by @hassan254-prog
+- *(deps)* Bump multer from 2.0.1 to 2.0.2 in /packages/server (#4338) by @dependabot[bot]
+- *(plans)* Update growth default flags (#4335) by @bodinsamuel
+
+### Fixed
+
+- *(billing)* Do not backfill sub for non-free plan (#4317) by @bodinsamuel
+- Migration to fix json schema in public flows (#4268) by @kaposke
+- *(github-app)* Handle update without auth code (#4320) by @khaliqgant
+- *(providers)* Move Figma SCIM tenantId from endpoint to base URL for proper SCIM API calls (#4277) by @yksolanki9
+- *(runner)* Prevent parallel run and zombie tasks (#4325) by @bodinsamuel
+- Heartbeat ms -> sec, set last_heartbeat_at on started (#4326) by @bodinsamuel
+- *(runner)* Allow webhooks and syncs to run in parallel (#4327) by @bodinsamuel
+- *(orb)* Do not override flags if same plan (#4332) by @bodinsamuel
+- *(zero)* Correctly support on-event execution (#4333) by @bodinsamuel
+- *(types)* Do not leak deprecate state for providerConfigKey (#4339) by @bodinsamuel
+
+## [v0.63.0] - 2025-07-11
+
+### Added
+
+- *(runner)* Create Kubernetes NodeProvider (#4295) by @rossmcewan
+- Show in-app usage for free plans (#4270) by @kaposke
+- Add resource request and limits as well as better error handling… (#4311) by @rossmcewan
+
+### Changed
+
+- Zero yaml (#4292) by @bodinsamuel
+- Eslint pass on import order 3 (#4296) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1d1d12dae0221dbab67615a003af2b4cc677860d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/48c5e68d77961e372d784798de96e852c08a1384 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(github-app-docs)* [nan-3564] update docs (#4302) by @khaliqgant
+- *(auth)* Various feedback (#4290) by @bodinsamuel
+- *(atlassian-admin-api)* [nan-3578] add in organization id as a connection config param (#4306) by @khaliqgant
+- *(api)* Import or reconnect sending incorrect webhooks (#4299) by @bodinsamuel
+- *(api)* POST /admin/impersonate new format (#4298) by @bodinsamuel
+- *(docs)* Update image and docs section link (#4309) by @khaliqgant
+- *(cli)* Init default to zero yaml (#4303) by @bodinsamuel
+- *(node)* Remove deprecated methods (#4310) by @bodinsamuel
+- *(jira-post-connection)* [nan-3592] wrap potential failing call in a try catch (#4315) by @khaliqgant
+
 ## [v0.62.1] - 2025-07-08
 
 ### Added
@@ -4314,6 +4378,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
+[v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
 [v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
 [v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0
 [v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3

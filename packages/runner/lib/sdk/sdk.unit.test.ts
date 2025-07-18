@@ -6,12 +6,12 @@ import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
+import { Locks } from './locks.js';
 import { PersistClient } from './persist.js';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import { Locks } from './locks.js';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -34,7 +34,8 @@ const nangoProps: NangoProps = {
     debug: false,
     runnerFlags: {} as any,
     startedAt: new Date(),
-    endUser: null
+    endUser: null,
+    heartbeatTimeoutSecs: 30
 };
 
 const locks = new Locks();

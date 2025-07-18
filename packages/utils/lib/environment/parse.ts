@@ -64,6 +64,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
     ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
+    ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
 
     // Jobs
@@ -73,7 +74,7 @@ export const ENVS = z.object({
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
 
     // Runner
-    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
+    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -82,6 +83,9 @@ export const ENVS = z.object({
     RUNNER_URL: z.string().url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
+    RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    NAMESPACE_PER_RUNNER: bool,
+    JOBS_NAMESPACE: z.string().optional().default('nango'),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.string().url().optional(),
@@ -225,10 +229,11 @@ export const ENVS = z.object({
     SENTRY_DSN: z.string().url().optional(),
 
     // Slack
-    NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
+    NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe
+    PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
 
@@ -237,6 +242,12 @@ export const ENVS = z.object({
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
+
+    // ActiveMQ
+    NANGO_ACTIVEMQ_URL: z.string().url().optional().default('ws://localhost:61614/ws'),
+    NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
+    NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
+    NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

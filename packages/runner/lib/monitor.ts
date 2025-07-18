@@ -1,10 +1,12 @@
-import os from 'os';
 import fs from 'fs';
-import { logger } from './logger.js';
-import { idle } from './idle.js';
-import { envs } from './env.js';
-import type { NangoProps } from '@nangohq/types';
+import os from 'os';
+
 import { persistClient } from './clients/persist.js';
+import { envs } from './env.js';
+import { idle } from './idle.js';
+import { logger } from './logger.js';
+
+import type { NangoProps } from '@nangohq/types';
 
 export class RunnerMonitor {
     private runnerId: number;
@@ -111,6 +113,21 @@ export class RunnerMonitor {
             }
             this.checkIdle(nextTimeout);
         }, timeoutMs);
+    }
+
+    hasConflictingSync(newTask: NangoProps): boolean {
+        if (newTask.scriptType !== 'sync') {
+            return false;
+        }
+
+        for (const task of this.tracked.values()) {
+            // Should cover sync and sync variant
+            // Webhooks have the same syncId so we allow them to run in parallel
+            if (task.syncId === newTask.syncId && task.scriptType === 'sync') {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

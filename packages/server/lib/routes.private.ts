@@ -6,7 +6,6 @@ import passport from 'passport';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
-import accountController from './controllers/account.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -26,6 +25,7 @@ import { postManagedSignup } from './controllers/v1/account/managed/postSignup.j
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
+import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
@@ -62,6 +62,8 @@ import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
+import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
@@ -151,11 +153,12 @@ web.route('/invite').delete(webAuth, deleteInvite);
 web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, acceptInvite);
 web.route('/invite/:id').delete(webAuth, declineInvite);
-web.route('/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
+web.route('/plans/change').post(webAuth, postPlanChange);
 
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
@@ -165,9 +168,9 @@ web.route('/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/environments/variables').post(webAuth, postEnvironmentVariables);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
-web.route('/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
+web.route('/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(environmentController));
+web.route('/environment/revert-key').post(webAuth, environmentController.revertKey.bind(environmentController));
+web.route('/environment/activate-key').post(webAuth, environmentController.activateKey.bind(environmentController));
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
@@ -218,6 +221,8 @@ if (flagHasUsage) {
 
     web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
 }
+
+web.route('/admin/impersonate').post(webAuth, postImpersonate);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

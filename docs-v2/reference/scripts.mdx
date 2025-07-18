@@ -10,9 +10,26 @@ icon: 'code'
 
 <Tab title="Sync script">
 ```ts
-import type { GithubIssueDemo, NangoSync } from '../../models';
+import { createSync } from 'nango';
 
-export default async function fetchData(nango: NangoSync) {
+const githubIssueDemoSchema = z.object({ ... });
+type GithubIssueDemo = z.infer<typeof githubIssueDemoSchema>;
+
+export default createSync({
+  description: `Fetches the Github issues from all a user's repositories.`,
+  version: '1.0.0',
+  endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
+  frequency: 'every hour',
+  autoStart: true,
+  syncType: 'full',
+  trackDeletes: true,
+
+  metadata: z.void(),
+  models: {
+    GithubIssueDemo: githubIssueDemoSchema
+  },
+
+  exec: async (nango) => {
     // Fetch issues from GitHub.
     const res = await nango.get({
         endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
@@ -25,15 +42,25 @@ export default async function fetchData(nango: NangoSync) {
 
     // Persist issues to the Nango cache.
     await nango.batchSave(issues, 'GithubIssueDemo');
-}
+  },
+});
 ```
 </Tab>
 
 <Tab title="Action script">
 ```ts
-import type { NangoAction, GithubCreateIssueInput, GithubCreateIssueResult } from '../../models';
+import { createAction } from 'nango';
+import { GithubCreateIssueInput, GithubCreateIssueResult } from '../../models.js';
 
-export default async function runAction(nango: NangoAction, input: GithubCreateIssueInput): Promise<GithubCreateIssueResult> {
+export default createAction({
+  description: `Create an issue in GitHub`,
+  version: '1.0.0',
+  endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
+
+  input: GithubCreateIssueInput,
+  output: GithubCreateIssueResult,
+  
+  exec: async (nango, input) => {
     // Create a GitHub issue.
     const res = await nango.post({
         endpoint: '/repos/NangoHQ/interactive-demo/issues',
@@ -46,7 +73,8 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
     // Send response.
     return { url: res.data.html_url, status: res.status };
-}
+  },
+});
 ```
 </Tab>
 
@@ -54,13 +82,13 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
 Read more about [integration scripts](/guides/custom-integrations/overview) to understand what role they play in Nango.
 
-Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily.
-
 # HTTP requests
 
 Makes an HTTP request inside an integration script:
 ```js
-const config = { endpoint: '/some-endpoint' };
+import type { ProxyConfiguration } from 'nango';
+
+const config: ProxyConfiguration = { endpoint: '/some-endpoint' };
 
 await nango.get(config); // GET request
 await nango.post(config); // POST request
@@ -197,7 +225,7 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
         The name of the action to trigger.
     </ResponseField>
     <ResponseField name="input" type="unkown" required>
-        The necessary input for your action's `runAction` function.
+        The necessary input for your action's `exec` function.
     </ResponseField>
 </Expandable>
 
@@ -615,7 +643,8 @@ A common use case is when handling external webhooks, where only a partial updat
 If you are using sync variants, you can access the current variant name via the `nango.variant` property.
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     await nango.log(`Running sync with variant: ${nango.variant}`);
 
     // Customize sync behavior based on variant
@@ -624,7 +653,8 @@ export default async function fetchData(nango: NangoSync) {
     });
 
     // Rest of sync implementation...
-}
+  },
+});
 ```
 
 # Action-specific helper methods
@@ -634,11 +664,13 @@ export default async function fetchData(nango: NangoSync) {
 You can use `ActionError` in an action script to return a descriptive error to your app when needed:
 ```ts
 
-export default async function runAction(nango: NangoAction): Promise<Response> {
+export default createAction({
+  exec: async (nango) => {
     // Something went wrong...
 
     throw new ActionError({ any_key: 'any_value' });
-}
+  },
+});
 ```
 
 In this case, the response to the trigger action call will be:
@@ -659,10 +691,10 @@ different scripts by importing it. The imported file must live in the `nango-int
 directory and can be imported in the following way:
 
 ```ts
-import type { GithubIssueDemo, NangoSync } from '../../models';
 import { issueMapper } from '../mappers/issue-mappper';
 
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // Fetch issues from GitHub.
     const res = await nango.get({
         endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
@@ -670,7 +702,8 @@ export default async function fetchData(nango: NangoSync) {
 
     // Persist issues to the Nango cache.
     await nango.batchSave(issueMapper(res.data), 'GithubIssueDemo');
-}
+  },
+});
 ```
 
 Note that you cannot import third-party modules at this time. Additionally, if there is a compilation error in an imported file, the entry point file will also fail to compile.

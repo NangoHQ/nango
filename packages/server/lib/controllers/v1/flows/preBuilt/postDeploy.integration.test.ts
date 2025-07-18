@@ -77,7 +77,7 @@ describe(`POST ${endpoint}`, () => {
                 description: expect.any(String),
                 scopes: ['schema.bases:read']
             },
-            model_schema: expect.any(Array),
+            model_schema: null,
             models_json_schema: {
                 definitions: {
                     SyncMetadata_airtable_tables: {

@@ -1,5 +1,6 @@
-import type { PostInternalConnectSessions } from '@nangohq/types';
 import { apiFetch } from '../utils/api';
+
+import type { PostInternalConnectSessions } from '@nangohq/types';
 
 export async function apiConnectSessions(env: string, body: PostInternalConnectSessions['Body']) {
     const res = await apiFetch(`/api/v1/connect/sessions?env=${env}`, {

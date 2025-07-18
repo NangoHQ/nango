@@ -1,14 +1,15 @@
 import { IconChevronRight, IconLockOpen2, IconPencil, IconPlayerPlay, IconRefresh, IconTool } from '@tabler/icons-react';
+import { useScript } from '@uidotdev/usehooks';
+import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Button } from '../../components/ui/button/Button';
 import { Tag } from '../../components/ui/label/Tag';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { Helmet } from 'react-helmet';
-import { useScript } from '@uidotdev/usehooks';
-import { useEffect, useState } from 'react';
-import { cn } from '../../utils/utils';
 import { globalEnv } from '../../utils/env';
+import { cn } from '../../utils/utils';
 
 let ytLoaded = false;
 export const GettingStarted: React.FC = () => {

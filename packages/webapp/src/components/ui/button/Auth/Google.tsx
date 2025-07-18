@@ -1,5 +1,6 @@
-import type { PostManagedSignup } from '@nangohq/types';
 import { apiFetch } from '../../../../utils/api';
+
+import type { PostManagedSignup } from '@nangohq/types';
 
 interface Props {
     text: string;

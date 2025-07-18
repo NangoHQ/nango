@@ -151,7 +151,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             runnerFlags: await getRunnerFlags(),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         if (task.debug) {
