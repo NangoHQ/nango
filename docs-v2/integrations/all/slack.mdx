@@ -1,6 +1,6 @@
 ---
 title: 'Slack'
-sidebarTitle: 'Slack' 
+sidebarTitle: 'Slack'
 description: 'Access the Slack API in 2 minutes 💨'
 ---
 
@@ -11,7 +11,7 @@ description: 'Access the Slack API in 2 minutes 💨'
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Slack_.
       </Step>
       <Step title="Authorize Slack">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Slack. Later, you'll let your users do the same directly from your app. 
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Slack. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Slack API">
         Let's make your first request to the Slack API (fetch a list of channels in a Slack team). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -47,11 +47,11 @@ description: 'Access the Slack API in 2 minutes 💨'
             ```
             </Tab>
 
-            
+
         </Tabs>
 
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
-            
+
       </Step>
     </Steps>
 
@@ -64,13 +64,13 @@ description: 'Access the Slack API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
     <Steps>
       <Step title="Create a developer account">
-        Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program. 
+        Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program.
       </Step>
       <Step title="Create & configure a Slack app">
         Start creating a Slack app by clicking on the _Your Apps_ button then _Create New App_.
 
-        Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch. 
-        
+        Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch.
+
         After choosing how you'd like to configure your app, add your app's name and pick a workspace to develop your app in.
 
         In the _Basic Information_ tab, copy/paste your app's `Client ID` and `Client Secret`, you will need to specify it in Nango later on.
@@ -83,12 +83,12 @@ description: 'Access the Slack API in 2 minutes 💨'
         Still in the _OAuth & Permissions_ tab, under _Scopes_, add the scopes that are relevant to how you want to consume Slack's API.
 
         There are 2 types of scopes, `Bot Token Scopes` and `User Token Scopes`. Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
-        
+
         User Token Scopes access user data and act on behalf of users that authorize them. They will be added to Nango when creating a Slack connection.
       </Step>
 
       <Step title="Create a Slack Developer Sandbox">
-        If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration. 
+        If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration.
       </Step>
 
       <Step title="Next">
@@ -97,8 +97,8 @@ description: 'Access the Slack API in 2 minutes 💨'
     </Steps>
   </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
+    | Topic | Links |
+    | - | - |
     | General | [Website](https://slack.com/) |
     | | [Create a test account](https://slack.com/get-started) |
     | Developer | [API documentation](https://api.slack.com/web) |

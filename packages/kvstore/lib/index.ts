@@ -45,7 +45,7 @@ export async function destroy() {
     }
 }
 
-async function createKVStore() {
+async function createKVStore(): Promise<KVStore> {
     const url = process.env['NANGO_REDIS_URL'];
     if (url) {
         const store = new RedisKVStore(await getRedis(url));
