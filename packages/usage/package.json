@@ -1,0 +1,27 @@
+{
+    "name": "@nangohq/usage",
+    "version": "1.0.0",
+    "description": "Simple local usage tracking for monthly usage limits.",
+    "private": true,
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/usage"
+    },
+    "dependencies": {
+        "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/types": "file:../types",
+        "@nangohq/database": "file:../database",
+        "@nangohq/utils": "file:../utils"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}
