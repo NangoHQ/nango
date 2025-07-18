@@ -24,6 +24,7 @@ const VITE_CONFIG_TEMPLATE = path.resolve(__dirname, '../templates/vite.config.e
 const VITEST_SETUP_TEMPLATE = path.resolve(__dirname, '../templates/vitest.setup.ejs');
 const SYNC_TEMPLATE_PATH = path.resolve(__dirname, '../templates/sync-test-template.ejs');
 const ACTION_TEMPLATE_PATH = path.resolve(__dirname, '../templates/action-test-template.ejs');
+const DEFAULT_NANGO_SHARED_VERSION = '0.49.0';
 
 function askQuestion(query: string, defaultAnswer: boolean = false): Promise<boolean> {
     const rl = readline.createInterface({
@@ -100,7 +101,9 @@ async function fetchLatestVersions(packages: string[], debug: boolean): Promise<
             versions[pkg] = latestVersion;
         } catch (err: any) {
             if (debug) {
-                printDebug(`Failed to fetch latest version for ${pkg}: ${err}`);
+                // add more context to the error
+                const errorType = err.code === 'ENOTFOUND' || err.code === 'ETIMEDOUT' ? 'Network error' : 'Error';
+                printDebug(`${errorType} fetching latest version for ${pkg}: ${err.message}`);
             }
         }
     }
@@ -112,7 +115,7 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
     const rootPath = await getProjectRoot();
     const packageJsonPath = path.resolve(rootPath, 'package.json');
     const sharedPackageJsonPath = path.resolve(__dirname, '../../../shared/package.json');
-    let nangoSharedVersion = '0.49.0'; // fallback version
+    let nangoSharedVersion = DEFAULT_NANGO_SHARED_VERSION; // fallback version
     if (!(await pathExists(packageJsonPath))) {
         if (debug) {
             printDebug(`package.json not found at ${packageJsonPath}. Skipping dependency injection.`);
