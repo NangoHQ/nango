@@ -4,7 +4,7 @@
     "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
-    "typings": "dist/index.d.ts",
+    "types": "dist/index.js",
     "private": true,
     "scripts": {
         "start": "tsc && node dist/server.js",
@@ -31,6 +31,7 @@
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
+        "@nangohq/usage": "file:../usage",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
         "axios": "1.9.0",
