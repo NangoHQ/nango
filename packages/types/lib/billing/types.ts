@@ -18,7 +18,7 @@ export interface BillingClient {
          * format: dollar.cent = 0.00
          */
         amount: string;
-    }) => Promise<Result<void>>;
+    }) => Promise<Result<BillingSubscription>>;
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
     getPlanById(planId: string): Promise<Result<BillingPlan>>;
