@@ -871,6 +871,9 @@ attio:
         base_url: https://api.attio.com
         retry:
             after: 'retry-after'
+    post_connection_script: attioPostConnection
+    webhook_routing_script: attioWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
@@ -3652,6 +3655,9 @@ exact-online:
             accept: application/json
         retry:
             at: 'x-ratelimit-reset'
+            error_code:
+                - '429'
+                - '503'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -3785,13 +3791,13 @@ figma-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.host}/scim
+        base_url: https://${connectionConfig.host}/scim/v2/${connectionConfig.tenantId}
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /v2/${connectionConfig.tenantId}/Users
+                - /Users
     docs: https://docs.nango.dev/integrations/all/figma-scim
     docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
     credentials:
@@ -4389,7 +4395,11 @@ github:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -4465,7 +4475,11 @@ github-pat:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         headers:
             authorization: Bearer ${apiKey}
             x-github-api-version: ${connectionConfig.version} || 2022-11-28
@@ -4710,8 +4724,21 @@ google-calendar:
             cursor_name_in_request: pageToken
             response_path: items
         retry:
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
     docs: https://docs.nango.dev/integrations/all/google-calendar
+
+google-chat:
+    display_name: Google Chat
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://chat.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-chat
 
 google-docs:
     display_name: Google Docs
@@ -4793,6 +4820,13 @@ google-play:
     proxy:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
+
+google-cloud-storage:
+    display_name: Google Cloud Storage
+    alias: google
+    categories:
+        - storage
+    docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
 gorgias:
     display_name: Gorgias
@@ -6218,7 +6252,11 @@ linear:
         retry:
             at: 'x-ratelimit-requests-reset'
             remaining: 'x-ratelimit-requests-remaining'
-            error_code: 400
+            error_code:
+                - '400'
+                - '5xx'
+                - '401'
+                - '429'
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection

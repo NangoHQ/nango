@@ -1,12 +1,13 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
+
+import { taskEvents } from '../../events.js';
 
 import type { Scheduler, Task } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type EventEmitter from 'node:events';
-import { taskEvents } from '../../events.js';
 
 const path = '/v1/dequeue';
 const method = 'POST';

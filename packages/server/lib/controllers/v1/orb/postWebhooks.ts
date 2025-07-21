@@ -1,12 +1,14 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, plansList, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok, report } from '@nangohq/utils';
+import { accountService, getPlan, plansList, productTracking, updatePlanByTeam } from '@nangohq/shared';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PostOrbWebhooks, Result } from '@nangohq/types';
+import type { DBPlan, PostOrbWebhooks, Result } from '@nangohq/types';
+
+const logger = getLogger('Server.Orb');
 
 /**
  * Orb is sending webhooks when subscription changes or else
@@ -25,11 +27,10 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
         res.status(400).send({ error: { code: 'invalid_headers', message: 'invalid signature' } });
         return;
     }
-
     const handled = await handleWebhook(req.body as Webhooks);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
-        res.status(500).send({ success: false });
+        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
         return;
     }
 
@@ -74,6 +75,8 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
 type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
+    logger.info('[orb-hook]', body.type);
+
     switch (body.type) {
         case 'subscription.started':
         case 'subscription.plan_changed': {
@@ -94,14 +97,21 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to find team');
                 }
 
+                logger.info(`Sub started for team "${team.id}"`);
+                const plan = await getPlan(trx, { accountId: team.id });
+                if (plan.isErr()) {
+                    return Err(plan.error);
+                }
+
+                if (plan.value.name === exists.flags.name) {
+                    logger.info('skip plan update, it is the same plan');
+                    return Ok(undefined);
+                }
+
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
-                    name: planExternalId,
-                    trial_start_at: null,
-                    trial_end_at: null,
-                    trial_end_notified_at: null,
-                    trial_extension_count: 0,
-                    trial_expired: null,
+                    name: planExternalId as unknown as DBPlan['name'],
+                    orb_customer_id: body.subscription.customer.id,
                     orb_subscription_id: body.subscription.id,
                     orb_future_plan: null,
                     orb_future_plan_at: null,
@@ -110,6 +120,12 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 if (updated.isErr()) {
                     return Err('Failed to updated plan');
                 }
+
+                productTracking.track({
+                    name: 'account:billing:plan_changed',
+                    team,
+                    eventProperties: { previousPlan: plan.value.name, newPlan: planExternalId, orbCustomerId: plan.value.orb_customer_id }
+                });
 
                 return Ok(undefined);
             });
@@ -137,6 +153,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     return Err('Failed to find team');
                 }
 
+                logger.info(`Sub scheduled for team "${team.id}"`);
                 const updated = await updatePlanByTeam(trx, {
                     account_id: team.id,
                     orb_future_plan: resNewPlan.value.external_plan_id,

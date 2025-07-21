@@ -1,0 +1,106 @@
+---
+title: Google Cloud Storage
+sidebarTitle: Google Cloud Storage
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/google-cloud-storage/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/google-cloud-storage/PreBuiltUseCases.mdx"
+import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
+import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Google Cloud account](https://console.cloud.google.com/). |
+| Paid test account | ✅ Not required | Free Google account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required for [sensitive and restricted scopes](https://support.google.com/cloud/answer/9110914) or for publishing to Google Marketplace. |
+| Security audit | ⚠️ Conditional | May be required as part of the verification process for sensitive scopes. |
+
+
+## Setup guide
+
+<Steps>
+  <Step title="Create a Google Cloud account">
+    If you don't already have one, sign up for a [Google Cloud account](https://console.cloud.google.com/).
+  </Step>
+  <Step title="Create a new project">
+    1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    2. Click on the project dropdown at the top left of the page.
+    3. Click **New Project**.
+    4. Enter a **Project Name** for your project 
+    5. Under **Location**, select the appropriate organization or folder where this project should belong.
+    <Note>If you're not part of an organization, it will default to No organization</Note>
+    6. Click **Create** and wait for the project to be created.
+    5. Select it from the project dropdown.
+  </Step>
+  <Step title="Enable the APIs you need">
+    1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
+    2. Search for **Cloud Storage API** and select the ones you wish to integrate with, such as **Cloud Storage**, **Google Cloud Storage JSON API**, etc., then click **Enable** for each.
+  </Step>
+  <Step title="Configure the OAuth consent screen">
+    1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
+    2. Click **Get started**.
+    3. Fill in the **App Information** form.
+      - **App Name**: The name of the app asking for consent.
+      - **User support email**: For users to contact you with questions about their consent
+    4. Click **Next**. Select the appropriate Audience:
+       - **External**: For applications available to any Google user
+       - **Internal**: For applications restricted to users within your Google Workspace organization
+    5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+    6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
+    7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
+    8  Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
+  </Step>
+  <Step title="Create OAuth 2.0 credentials">
+    1. Go to **APIs & Services** > **Credentials** in the Google Cloud Console.
+    2. Click **Create Credentials** and select **OAuth client ID**.
+    3. Select **Web application** as the application type.
+    4. Enter a name for your OAuth client.
+    5. Under **Authorized redirect URIs**, add `https://api.nango.dev/oauth/callback`.
+    6. Click **Create**.
+    7. A dialog will appear with your client ID and client secret. Save these credentials securely as you'll need them when configuring your integration in Nango.
+  </Step>
+    <Step title="Publish your app (switch from Testing to Production)">
+    To move your OAuth app from testing to production:
+    1. Go to **APIs & Services** > **OAuth consent screen** > **Audience**.
+    2. Click **Publish App** to switch your app from testing to production.
+  </Step>
+
+  <Step title="Verify your app (if required)">
+    If your app uses sensitive or restricted scopes, you’ll need to verify it with Google:
+    1. Once published to production, click **Prepare for Verification** to start the verification process.
+    2. Review and confirm all app details, then click **Save and Continue**.
+    3. Justify your use of any sensitive or restricted scopes.
+    4. Upload a demo video showing your app's OAuth flow and scope usage.
+    5. Click **Submit for Verification** to begin Google’s review.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+<UsefulLinks />
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-cloud-storage.mdx)</Note>
+
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| openid | Access to basic profile information |
+| profile | Access to user's basic profile information |
+| email | Access to user's email address |
+| `https://www.googleapis.com/auth/cloud-platform` | See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account |
+| `https://www.googleapis.com/auth/cloud-platform.read-only` | View your data across Google Cloud services and see the email address of your Google Account |
+
+
+<ApiGotchas />
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-cloud-storage.mdx)</Note>

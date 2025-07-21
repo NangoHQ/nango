@@ -1,8 +1,10 @@
-import type { SWRConfiguration } from 'swr';
 import useSWR from 'swr';
-import type { SWRError } from '../utils/api';
+
 import { apiFetch, swrFetcher } from '../utils/api';
+
+import type { SWRError } from '../utils/api';
 import type { GetUser, PatchUser } from '@nangohq/types';
+import type { SWRConfiguration } from 'swr';
 
 export function useUser(enabled: boolean = true, options?: SWRConfiguration) {
     const { data, error, mutate, isLoading } = useSWR<GetUser['Success'], SWRError<GetUser['Errors']>>(enabled ? '/api/v1/user' : null, swrFetcher, options);

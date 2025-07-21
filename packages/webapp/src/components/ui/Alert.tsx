@@ -1,7 +1,9 @@
-import * as React from 'react';
 import { cva } from 'class-variance-authority';
-import type { VariantProps } from 'class-variance-authority';
+import * as React from 'react';
+
 import { cn } from '../../utils/utils';
+
+import type { VariantProps } from 'class-variance-authority';
 
 const alertVariants = cva('relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-start min-h-10', {
     variants: {
@@ -31,4 +33,4 @@ const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttrib
 ));
 AlertDescription.displayName = 'AlertDescription';
 
-export { Alert, AlertTitle, AlertDescription };
+export { Alert, AlertDescription, AlertTitle };

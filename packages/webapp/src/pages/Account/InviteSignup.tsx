@@ -1,15 +1,16 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInvite';
-import DefaultLayout from '../../layout/DefaultLayout';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { Info } from '../../components/Info';
-import { Button, ButtonLink } from '../../components/ui/button/Button';
+import { ExitIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+
+import { SignupForm } from './components/SignupForm';
+import { Info } from '../../components/Info';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
+import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
-import { SignupForm } from './components/SignupForm';
+import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { ExitIcon } from '@radix-ui/react-icons';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();

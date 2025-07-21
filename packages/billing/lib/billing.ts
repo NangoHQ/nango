@@ -21,7 +21,10 @@ import type { Result } from '@nangohq/utils';
 
 export class Billing {
     private batcher: Batcher<BillingIngestEvent> | null;
-    constructor(private client: BillingClient) {
+
+    client: BillingClient;
+
+    constructor(client: BillingClient) {
         this.client = client;
         this.batcher = flagHasUsage
             ? new Batcher(
@@ -104,6 +107,10 @@ export class Billing {
         return await this.client.getCustomer(accountId);
     }
 
+    async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
+        return await this.client.createSubscription(team, planExternalId);
+    }
+
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
     }
@@ -112,8 +119,12 @@ export class Billing {
         return await this.client.getUsage(subscriptionId, period);
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string; immediate: boolean }): Promise<Result<void>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return await this.client.upgrade(opts);
+    }
+
+    async downgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+        return await this.client.downgrade(opts);
     }
 
     async getPlanById(planId: string): Promise<Result<BillingPlan>> {

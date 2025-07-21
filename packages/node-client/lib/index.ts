@@ -6,10 +6,6 @@ import axios from 'axios';
 import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 import type {
-    CreateConnectionOAuth1,
-    CreateConnectionOAuth2,
-    Integration,
-    IntegrationWithCreds,
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
@@ -182,119 +178,28 @@ export class Nango {
         return { configs: tmp.data };
     }
 
-    /**
-     * Returns a specific integration
-     * @param uniqueKey - The key identifying the provider configuration on Nango
-     * @returns A promise that resolves with an object containing an integration
-     */
     public async getIntegration(
         params: GetPublicIntegration['Params'],
         queries?: GetPublicIntegration['Querystring']
-    ): Promise<GetPublicIntegration['Success']>;
-
-    /**
-     * Returns a specific integration
-     * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param includeIntegrationCredentials - An optional flag indicating whether to include integration credentials in the response. Default is false
-     * @returns A promise that resolves with an object containing an integration configuration
-     * @deprecated Use `getIntegration({ unique_key })`
-     */
-    public async getIntegration(providerConfigKey: string, includeIntegrationCredentials?: boolean): Promise<{ config: Integration | IntegrationWithCreds }>;
-
-    public async getIntegration(
-        params: string | GetPublicIntegration['Params'],
-        queries?: boolean | GetPublicIntegration['Querystring']
-    ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+    ): Promise<GetPublicIntegration['Success']> {
         const headers = { 'Content-Type': 'application/json' };
 
-        if (typeof params === 'string') {
-            const url = `${this.serverUrl}/config/${params}`;
-            const response = await this.http.get(url, { headers: this.enrichHeaders(headers), params: { include_creds: queries } });
-            return response.data;
-        } else {
-            const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
-            addQueryParams(url, queries as GetPublicIntegration['Querystring']);
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
+        addQueryParams(url, queries as GetPublicIntegration['Querystring']);
 
-            const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
-            return response.data;
-        }
-    }
-
-    /**
-     * Creates a new integration
-     * @param body - The integration you want to create
-     * @returns A promise that resolves with an object containing an integration
-     */
-    public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']>;
-
-    /**
-     * Creates a new integration with the specified provider and configuration key
-     * Optionally, you can provide credentials for the integration
-     * @param provider - The provider of the integration
-     * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param credentials - Optional credentials for the integration
-     * @returns A promise that resolves with the created integration configuration
-     *
-     * @deprecated use createIntegration({ ... });
-     */
-    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
-
-    public async createIntegration(
-        providerOrBody: string | PostPublicIntegration['Body'],
-        providerConfigKey?: string,
-        credentials?: Record<string, string>
-    ): Promise<{ config: Integration } | PostPublicIntegration['Success']> {
-        if (typeof providerOrBody === 'string') {
-            const url = `${this.serverUrl}/config`;
-            const response = await this.http.post(
-                url,
-                { provider: providerOrBody, provider_config_key: providerConfigKey, ...credentials },
-                { headers: this.enrichHeaders({}) }
-            );
-            return response.data;
-        }
-
-        const url = `${this.serverUrl}/integrations`;
-        const response = await this.http.post(url, providerOrBody, { headers: this.enrichHeaders({}) });
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
 
-    /**
-     * Update a specific integration
-     * @params body - The integration you want to update
-     * @returns A promise that resolves with an object containing an integration
-     */
-    public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']>;
+    public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']> {
+        const url = `${this.serverUrl}/integrations`;
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
 
-    /**
-     * Updates an integration with the specified provider and configuration key
-     * Only integrations using OAuth 1 & 2 can be updated, not integrations using API keys & Basic auth (because there is nothing to update for them)
-     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml))
-     * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
-     * @returns A promise that resolves with the updated integration configuration object
-     *
-     * @deprecated use updateIntegration({ uniqueKey }, { ... });
-     */
-    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }>;
-
-    public async updateIntegration(
-        providerOrParams: string | PatchPublicIntegration['Params'],
-        providerConfigKeyOrBody: string | PatchPublicIntegration['Body'],
-        credentials?: Record<string, string>
-    ): Promise<{ config: Integration } | PatchPublicIntegration['Success']> {
-        if (typeof providerOrParams === 'string') {
-            const url = `${this.serverUrl}/config`;
-            const response = await this.http.put(
-                url,
-                { provider: providerOrParams, provider_config_key: providerConfigKeyOrBody, ...credentials },
-                { headers: this.enrichHeaders({}) }
-            );
-            return response.data;
-        }
-
-        const url = `${this.serverUrl}/integrations/${providerOrParams.uniqueKey}`;
-        const response = await this.http.patch(url, providerConfigKeyOrBody, { headers: this.enrichHeaders({}) });
+    public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']> {
+        const url = `${this.serverUrl}/integrations/${params.uniqueKey}`;
+        const response = await this.http.patch(url, body, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -371,20 +276,6 @@ export class Nango {
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
         return response.data;
-    }
-
-    /**
-     * @deprecated This method has been deprecated, please use the REST API to import a connection.
-     */
-    public importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error('This method has been deprecated, please use the REST API to import a connection.');
-    }
-
-    /**
-     * @deprecated This method has been deprecated, please use the REST API to import a connection.
-     */
-    public createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        throw new Error('This method has been deprecated, please use the REST API to create a connection.');
     }
 
     /**

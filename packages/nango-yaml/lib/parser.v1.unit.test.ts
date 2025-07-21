@@ -1,7 +1,9 @@
-import { expect, describe, it } from 'vitest';
-import { NangoYamlParserV1 } from './parser.v1.js';
-import type { NangoYamlParsed, NangoYamlV1 } from '@nangohq/types';
+import { describe, expect, it } from 'vitest';
+
 import { ParserErrorMissingId } from './errors.js';
+import { NangoYamlParserV1 } from './parser.v1.js';
+
+import type { NangoYamlParsed, NangoYamlV1 } from '@nangohq/types';
 
 describe('parse', () => {
     it('should parse', () => {

@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+
 import type { DBExternalWebhook } from '@nangohq/types';
 
 export async function get(id: number): Promise<DBExternalWebhook | null> {
