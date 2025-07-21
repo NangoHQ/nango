@@ -4731,6 +4731,15 @@ google-calendar:
                 - '429'
     docs: https://docs.nango.dev/integrations/all/google-calendar
 
+google-chat:
+    display_name: Google Chat
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://chat.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-chat
+
 google-docs:
     display_name: Google Docs
     categories:
