@@ -236,7 +236,7 @@ export class DryRunService {
         }
 
         const {
-            config: { provider }
+            data: { name: provider }
         } = await getConfig(providerConfigKey, debug);
         if (!provider) {
             console.log(chalk.red('Provider not found'));
