@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.64.0] - 2025-07-21
+
+### Added
+
+- *(integrations)* Add support for google chat (#4343) by @hassan254-prog
+
+### Fixed
+
+- *(billing)* Correctly compute initial base fee (#4340) by @bodinsamuel
+- *(proxy)* Retry only on specific error codes for some providers (#4305) by @hassan254-prog
+- Upgrade to zod v4 (#4328) by @bodinsamuel
+
 ## [v0.63.1] - 2025-07-18
 
 ### Added
@@ -4378,6 +4390,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
 [v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
 [v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
 [v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
