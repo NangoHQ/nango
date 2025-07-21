@@ -33,7 +33,6 @@ export function persistAccountUsageCron(): void {
 
                 logger.info('✅ done');
             } catch (err) {
-                console.log(err);
                 report(new Error('cron_failed_to_persist_monthly_usage', { cause: err }));
             }
             metrics.duration(metrics.Types.CRON_PERSIST_MONTHLY_USAGE, Date.now() - start);
