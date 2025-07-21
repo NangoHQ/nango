@@ -6451,6 +6451,7 @@ mailchimp:
     proxy:
         base_url: https://${connectionConfig.dc}.api.mailchimp.com
     docs: https://docs.nango.dev/integrations/all/mailchimp
+    post_connection_script: mailchimpPostConnection
     connection_config:
         dc:
             type: string
@@ -6458,6 +6459,7 @@ mailchimp:
             description: The data center for your account
             pattern: '^[a-z]+\d*$'
             example: us6
+            automated: true
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
