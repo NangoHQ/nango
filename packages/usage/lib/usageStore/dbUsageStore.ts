@@ -2,13 +2,13 @@ import db from '@nangohq/database';
 
 import type { UsageMetric } from '../metrics.js';
 import type { UsageStore } from './usageStore.js';
-import type { DBUsage } from '@nangohq/types';
+import type { DBAccountUsage } from '@nangohq/types';
 
 export class DbUsageStore implements UsageStore {
     async getUsage(accountId: number, metric: UsageMetric, month?: Date): Promise<number> {
         month = this.normalizeMonth(month);
 
-        const result = await db.knex.from<DBUsage>('usage').select(metric).where({ accountId, month }).first();
+        const result = await db.knex.from<DBAccountUsage>('accounts_usage').select(metric).where({ account_id: accountId, month }).first();
         return result?.[metric] ?? 0;
     }
 
@@ -16,13 +16,13 @@ export class DbUsageStore implements UsageStore {
         month = this.normalizeMonth(month);
 
         const result = await db.knex
-            .from('usage')
+            .from('accounts_usage')
             .insert({
                 month,
-                accountId,
+                account_id: accountId,
                 [metric]: value
             })
-            .onConflict(['accountId', 'month'])
+            .onConflict(['account_id', 'month'])
             .merge({
                 [metric]: value
             })
@@ -36,13 +36,13 @@ export class DbUsageStore implements UsageStore {
         const incrementValue = delta ?? 1;
 
         const result = await db.knex
-            .from('usage')
+            .from('accounts_usage')
             .insert({
                 month,
-                accountId,
+                account_id: accountId,
                 [metric]: incrementValue
             })
-            .onConflict(['accountId', 'month'])
+            .onConflict(['account_id', 'month'])
             .merge({
                 [metric]: db.knex.raw('COALESCE(??, 0) + ?', [metric, incrementValue])
             })
@@ -52,9 +52,9 @@ export class DbUsageStore implements UsageStore {
     }
 
     private normalizeMonth(month?: Date): Date {
-        month ??= new Date();
-        month.setUTCHours(0, 0, 0, 0);
-        month.setUTCDate(1);
-        return month;
+        const normalizedMonth = month ? new Date(month) : new Date();
+        normalizedMonth.setUTCHours(0, 0, 0, 0);
+        normalizedMonth.setUTCDate(1);
+        return normalizedMonth;
     }
 }

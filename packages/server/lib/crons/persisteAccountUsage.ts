@@ -1,5 +1,5 @@
 /**
- * Persist monthly usage data from redis to the database.
+ * Persist monthly account usage data from redis to the database.
  * This usage is used for capping, not for billing.
  */
 
@@ -16,7 +16,7 @@ import type { UsageMetric } from '@nangohq/usage/lib/metrics.js';
 const cronMinutes = envs.CRON_PERSIST_MONTHLY_USAGE_MINUTES;
 const logger = getLogger('cron.persistMonthlyUsage');
 
-export function persistMonthlyUsageCron(): void {
+export function persistAccountUsageCron(): void {
     if (!flagHasPlan) {
         return;
     }
@@ -58,7 +58,7 @@ async function exec(): Promise<void> {
     startOfMonth.setHours(0, 0, 0, 0);
 
     for await (const key of kvStore.scan('usage:*')) {
-        const [_, accountId, metric, yearMonth] = key.split(':');
+        const [, accountId, metric, yearMonth] = key.split(':');
         if (!accountId || !metric || !yearMonth) {
             logger.error(`Invalid key: ${key}`);
             report.skipped++;
