@@ -68,6 +68,7 @@ export const onEventArgsSchema = z.object({
     onEventName: z.string().min(1),
     version: z.string().min(1),
     fileLocation: z.string().min(1),
+    sdkVersion: z.string().nullable(),
     activityLogId: z.string(),
     ...commonSchemaArgsFields
 });
@@ -217,6 +218,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 ownerKey: onEvent.data.ownerKey,
                 retryKey: onEvent.data.retryKey,
                 fileLocation: onEvent.data.payload.fileLocation,
+                sdkVersion: onEvent.data.payload.sdkVersion,
                 activityLogId: onEvent.data.payload.activityLogId,
                 heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
             })
