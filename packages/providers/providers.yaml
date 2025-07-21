@@ -3655,6 +3655,9 @@ exact-online:
             accept: application/json
         retry:
             at: 'x-ratelimit-reset'
+            error_code:
+                - '429'
+                - '503'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -4392,7 +4395,11 @@ github:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -4468,7 +4475,11 @@ github-pat:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         headers:
             authorization: Bearer ${apiKey}
             x-github-api-version: ${connectionConfig.version} || 2022-11-28
@@ -4713,7 +4724,11 @@ google-calendar:
             cursor_name_in_request: pageToken
             response_path: items
         retry:
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
     docs: https://docs.nango.dev/integrations/all/google-calendar
 
 google-docs:
@@ -6228,7 +6243,11 @@ linear:
         retry:
             at: 'x-ratelimit-requests-reset'
             remaining: 'x-ratelimit-requests-remaining'
-            error_code: 400
+            error_code:
+                - '400'
+                - '5xx'
+                - '401'
+                - '429'
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
