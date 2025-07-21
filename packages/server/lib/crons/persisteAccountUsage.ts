@@ -46,7 +46,7 @@ async function exec(): Promise<void> {
     const kvStore = await getKVStore();
     const dbStore = new DbUsageStore();
 
-    const report = {
+    const summary = {
         persisted: 0,
         deleted: 0,
         skipped: 0
@@ -60,7 +60,7 @@ async function exec(): Promise<void> {
         const [, accountId, metric, yearMonth] = key.split(':');
         if (!accountId || !metric || !yearMonth) {
             logger.error(`Invalid key: ${key}`);
-            report.skipped++;
+            summary.skipped++;
             continue;
         }
 
@@ -70,21 +70,21 @@ async function exec(): Promise<void> {
         const usage = await kvStore.get(key);
         if (!usage) {
             logger.error(`Usage not found for key: ${key}`);
-            report.skipped++;
+            summary.skipped++;
             continue;
         }
 
         logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
         await dbStore.setUsage(Number(accountId), metric as UsageMetric, Number(usage), monthDate);
-        report.persisted++;
+        summary.persisted++;
 
         // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.
         if (monthDate.getTime() < startOfMonth.getTime()) {
             logger.info(`Cleaning up kvStore key from past month: ${key}`);
             await kvStore.delete(key);
-            report.deleted++;
+            summary.deleted++;
         }
     }
 
-    logger.info(`✅ done (Persisted: ${report.persisted}, Deleted keys: ${report.deleted}, Skipped: ${report.skipped})`);
+    logger.info(`✅ done (Persisted: ${summary.persisted}, Deleted keys: ${summary.deleted}, Skipped: ${summary.skipped})`);
 }
