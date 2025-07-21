@@ -25,11 +25,11 @@ export class KvUsageStore implements UsageStore {
     }
 
     private getKey(accountId: number, metric: UsageMetric, month?: Date): string {
-        month ??= new Date();
-        month.setUTCHours(0, 0, 0, 0);
+        const normalizedMonth = month ?? new Date();
+        normalizedMonth.setUTCHours(0, 0, 0, 0);
 
         // YYYY-MM
-        const monthString = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+        const monthString = `${normalizedMonth.getFullYear()}-${String(normalizedMonth.getMonth() + 1).padStart(2, '0')}`;
         return `usage:${accountId}:${metric}:${monthString}`;
     }
 }
