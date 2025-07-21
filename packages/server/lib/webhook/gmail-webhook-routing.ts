@@ -19,6 +19,11 @@ interface DecodedDataObject {
 export async function validate(integration: ProviderConfig, headers: Record<string, any>): Promise<boolean> {
     try {
         const authHeader: string | undefined = headers['authorization'];
+
+        if (!authHeader) {
+            return true;
+        }
+
         if (!authHeader?.startsWith('Bearer ')) {
             return false;
         }
