@@ -73,6 +73,7 @@ export async function preConnectionDeletion({
             version,
             name,
             fileLocation,
+            sdkVersion: script.sdk_version,
             async: false,
             logCtx
         });

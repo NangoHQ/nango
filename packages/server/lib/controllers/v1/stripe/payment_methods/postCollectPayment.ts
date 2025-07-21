@@ -10,8 +10,8 @@ import { getStripe } from '../../../../utils/stripe.js';
 import type { PostStripeCollectPayment } from '@nangohq/types';
 
 /**
- * A session checkout is an URL that redirects to a pre-built UI
- * It's the opportunity for us to link a future subscription to an account by specifying the metadata.accountUuid.
+ * We are getting a temp token to allow payment collection
+ * It's also the opportunity for us to link a future subscription to an account by specifying the metadata.accountUuid.
  * Each link is unique and should not reused.
  */
 export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(async (req, res) => {
@@ -61,7 +61,6 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
         stripeCustomerId = customer.id;
     }
 
-    // Replace Checkout Session with SetupIntent
     const setupIntent = await stripe.setupIntents.create({
         customer: stripeCustomerId,
         usage: 'off_session',

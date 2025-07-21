@@ -74,7 +74,7 @@ Fill metadata and the `exec` method with your integration code. In the example h
 
 ```ts salesforce-contacts.ts
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const SalesforceContact = z.object({
   id: z.string(),
