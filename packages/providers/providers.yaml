@@ -4757,6 +4757,7 @@ google-mail:
     alias: google
     proxy:
         base_url: https://gmail.googleapis.com
+    webhook_routing_script: gmailWebhookRouting
     docs: https://docs.nango.dev/integrations/all/google-mail
 
 google-sheet:
