@@ -45,6 +45,7 @@ interface OnEventArgs {
     version: string;
     fileLocation: string;
     activityLogId: string;
+    sdkVersion: string | null;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
@@ -234,6 +235,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         version: props.version,
         connection: props.connection,
         fileLocation: props.fileLocation,
+        sdkVersion: props.sdkVersion,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,

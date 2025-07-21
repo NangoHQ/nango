@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
@@ -86,7 +86,6 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     } = await deploy({
         environment,
         account,
-        plan: null, // We don't care it's our own stuff
         flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,

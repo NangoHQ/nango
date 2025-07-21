@@ -24,13 +24,6 @@ export interface DBPlan extends Timestamps {
     trial_expired: boolean | null;
 
     /**
-     * Limit the number of connections with active scripts
-     * Set to null to remove limit
-     * @default 3
-     */
-    connection_with_scripts_max: number | null;
-
-    /**
      * Limit the number of total non-deleted connections
      * Set to null to remove limit
      * @default null
@@ -42,6 +35,18 @@ export interface DBPlan extends Timestamps {
      * @default 2
      */
     environments_max: number;
+
+    /**
+     * Limit the number of actions that can be triggered in a month
+     * @default 1000
+     */
+    monthly_actions_max: number | null;
+
+    /**
+     * Limit the amount of monthly active records (Records created or updated in a month)
+     * @default 5000
+     */
+    monthly_active_records_max: number | null;
 
     /**
      * Limit the minimum frequency of a sync
