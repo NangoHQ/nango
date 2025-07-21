@@ -1,9 +1,9 @@
-export interface DBUsage {
+export interface DBAccountUsage {
     id: number;
-    accountId: number;
+    account_id: number;
     month: Date;
     actions: number;
     active_records: number;
-    created_at?: string;
-    updated_at?: string;
+    created_at: string;
+    updated_at: string;
 }
