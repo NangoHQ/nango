@@ -70,4 +70,13 @@ export class InMemoryKVStore implements KVStore {
         }
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
+
+    public incr(key: string, opts?: { ttlInMs?: number }) {
+        const res = this.store.get(key);
+
+        const nextVal = res ? String(parseInt(res.value, 10) + 1) : '1';
+        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+
+        return Number(nextVal);
+    }
 }

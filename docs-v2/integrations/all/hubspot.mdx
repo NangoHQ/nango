@@ -1,29 +1,68 @@
 ---
-title: HubSpot
-sidebarTitle: HubSpot
+title: 'Hubspot'
+sidebarTitle: 'Hubspot'
+description: 'Access the Hubspot API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/hubspot/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/hubspot/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hubspot_.
+      </Step>
+      <Step title="Authorize Hubspot">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hubspot. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Hubspot API">
+        Let's make your first request to the Hubspot API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/crm/v3/objects/contacts?properties=email,phone" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
+            </Tab>
 
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup [here](https://developers.hubspot.com/). |
-| Paid test account | ✅ Not required | Create free Enterprise account for testing from your developer account. | 
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | Only required for marketplace listing, not for integration distribution. |
-| Security audit | ✅ Not required | |
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-<Steps>
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/crm/v3/objects/contacts',
+                params: { properties: "email,phone" },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You’re connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Hubspot accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
   <Step title="Create a developer account">
     Go to [Hubspot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account. 
   </Step>
@@ -44,27 +83,29 @@ import PreBuiltUseCases from "/snippets/generated/hubspot/PreBuiltUseCases.mdx"
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.hubspot.com/) |
+    | | [Create a test account](https://app.hubspot.com/signup-hubspot/crm) |
+    | Developer | [API documentation](https://developers.hubspot.com/docs/reference/api/overview) |
+    | | [Create a developer account](https://app.hubspot.com/signup-hubspot/developers) |
+    | | [Developer console](https://app.hubspot.com/) |
+    | | [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) |
+    | | [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0) |
+    | | [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) |
+    | | [Details on rate limits](https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits) |
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _No reported gotchas._
 
-## Useful links
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+  </Tab>
+</Tabs>
 
-| Topic | Links | 
-| - | - | 
-| General | [Website](https://www.hubspot.com/) |
-| | [Create a test account](https://app.hubspot.com/signup-hubspot/crm) |
-| Developer | [API documentation](https://developers.hubspot.com/docs/reference/api/overview) |
-| | [Create a developer account](https://app.hubspot.com/signup-hubspot/developers) |
-| | [Developer console](https://app.hubspot.com/) |
-| | [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) |
-| | [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0) |
-| | [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) |
-| | [Details on rate limits](https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits) |
-
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
-
-## API gotchas
-
-_No reported gotchas yet_
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
