@@ -59,8 +59,9 @@ export class OrbClient implements BillingClient {
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         try {
             await this.orbSDK.customers.updateByExternalId(String(teamId), {
-                payment_provider: 'stripe_invoice',
-                payment_provider_id: customerId
+                payment_provider: 'stripe_charge',
+                payment_provider_id: customerId,
+                auto_collection: true
             });
             return Ok(undefined);
         } catch (err) {
@@ -205,15 +206,21 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<void>> {
+    async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<BillingSubscription>> {
         try {
             // We apply the pending change to confirm the card
-            await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
+            const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
                 description: 'Initial payment on subscription',
                 previously_collected_amount: opts.amount
             });
+            if (!res.subscription) {
+                return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
+            }
 
-            return Ok(undefined);
+            return Ok({
+                id: res.subscription.id,
+                planExternalId: res.subscription.plan!.external_plan_id!
+            });
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));
         }

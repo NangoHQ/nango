@@ -29,7 +29,7 @@ export const PlanCard: React.FC<{
 
     const onClick = () => {
         if (!def.plan.canChange) {
-            window.open('mailto:upgrade@nango.dev', '_blank');
+            window.open('https://www.nango.dev/demo', '_blank');
             return;
         }
 
