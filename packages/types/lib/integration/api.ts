@@ -19,14 +19,6 @@ export interface ApiPublicIntegrationInclude {
         | null;
 }
 
-export type GetPublicListIntegrationsLegacy = Endpoint<{
-    Method: 'GET';
-    Path: '/config';
-    Success: {
-        configs: ApiPublicIntegration[];
-    };
-}>;
-
 export type GetPublicListIntegrations = Endpoint<{
     Method: 'GET';
     Path: '/integrations';
@@ -78,13 +70,6 @@ export type DeletePublicIntegration = Endpoint<{
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
-    Success: { success: true };
-}>;
-
-export type DeletePublicIntegrationDeprecated = Endpoint<{
-    Method: 'DELETE';
-    Path: '/config/:providerConfigKey';
-    Params: { providerConfigKey: string };
     Success: { success: true };
 }>;
 
