@@ -4,7 +4,7 @@ exports.config = { transaction: false };
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
-    await knex.schema.createTable('account_usage', (table) => {
+    await knex.schema.createTable('accounts_usage', (table) => {
         table.increments('id').primary();
         table.integer('account_id').unsigned().notNullable();
         table.date('month').notNullable();
@@ -22,5 +22,5 @@ exports.up = async function (knex) {
  * @param {import('knex').Knex} knex
  */
 exports.down = async function (knex) {
-    await knex.schema.dropTableIfExists('account_usage');
+    await knex.schema.dropTableIfExists('accounts_usage');
 };
