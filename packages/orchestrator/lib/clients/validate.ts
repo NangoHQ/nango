@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';

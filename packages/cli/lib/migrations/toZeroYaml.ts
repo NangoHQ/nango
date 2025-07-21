@@ -18,6 +18,7 @@ import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, P
 import type { Collection, ImportSpecifier } from 'jscodeshift';
 import { exampleFolder } from '../zeroYaml/constants.js';
 import { syncTsConfig } from '../zeroYaml/utils.js';
+import type { PackageJson } from 'type-fest';
 
 const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];
 const methodsWithGenericTypeArguments = ['batchSave', 'batchUpdate', 'batchDelete', 'getMetadata'];
@@ -167,7 +168,7 @@ async function getContent({ targetFile }: { targetFile: string }): Promise<strin
 /**
  * Runs npm install in the given directory
  */
-async function runNpmInstall(fullPath: string): Promise<void> {
+export async function runNpmInstall(fullPath: string): Promise<void> {
     await new Promise((resolve, reject) => {
         const proc = spawn('npm', ['install', '--no-audit', '--no-fund', '--no-progress'], {
             cwd: fullPath,
@@ -616,7 +617,7 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
             .filter((path) => path.node.source.value === 'zod')
             .size() > 0;
     if (usesZ && !hasZodImport) {
-        importDecls.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+        importDecls.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
     }
 
     // Insert all at once, in order, after the last import
@@ -644,36 +645,37 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     try {
         await fs.promises.access(packageJsonPath, fs.constants.F_OK);
         packageJsonExists = true;
-    } catch (_err) {
+    } catch {
         packageJsonExists = false;
     }
 
     const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
-    const examplePkg = JSON.parse(examplePkgRaw);
+    const examplePkg = JSON.parse(examplePkgRaw) as PackageJson;
 
-    let pkg: { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
+    let pkg: PackageJson;
     if (!packageJsonExists) {
         printDebug('package.json does not exist', debug);
         pkg = examplePkg;
     } else {
         printDebug('package.json exists, updating', debug);
         const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        pkg = JSON.parse(pkgRaw);
+        pkg = JSON.parse(pkgRaw) as PackageJson;
+
+        pkg.devDependencies = pkg.devDependencies || {};
+        pkg.devDependencies['nango'] = NANGO_VERSION;
+
+        const zodVersion = examplePkg.devDependencies!['zod']!;
+        pkg.devDependencies['zod'] = zodVersion;
+
+        // Remove nango and zod from dependencies just in case they were added as prod
+        if (pkg.dependencies?.['nango']) {
+            delete pkg.dependencies['nango'];
+        }
+        if (pkg.dependencies?.['zod']) {
+            delete pkg.dependencies['zod'];
+        }
     }
 
-    pkg.devDependencies = pkg.devDependencies || {};
-    pkg.devDependencies['nango'] = NANGO_VERSION;
-
-    const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
-    pkg.devDependencies['zod'] = zodVersion;
-
-    // Remove nango and zod from dependencies just in case they were added as prod
-    if (pkg.dependencies?.['nango']) {
-        delete pkg.dependencies['nango'];
-    }
-    if (pkg.dependencies?.['zod']) {
-        delete pkg.dependencies['zod'];
-    }
     await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
 }
 
@@ -736,8 +738,8 @@ export function generateModelsTs({ parsed }: { parsed: Pick<NangoYamlParsed, 'mo
     const j = jscodeshift.withParser('ts');
     const root = j('');
 
-    // Add import { z } from 'zod';
-    root.get().node.program.body.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+    // Add import * as z from 'zod';
+    root.get().node.program.body.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
 
     // Generate all models as Zod schemas and type aliases, and export them
     const allModelNames = Array.from(parsed.models.keys());
