@@ -114,6 +114,21 @@ export class RunnerMonitor {
             this.checkIdle(nextTimeout);
         }, timeoutMs);
     }
+
+    hasConflictingSync(newTask: NangoProps): boolean {
+        if (newTask.scriptType !== 'sync') {
+            return false;
+        }
+
+        for (const task of this.tracked.values()) {
+            // Should cover sync and sync variant
+            // Webhooks have the same syncId so we allow them to run in parallel
+            if (task.syncId === newTask.syncId && task.scriptType === 'sync') {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 function getRenderTotalMemoryInBytes(): number {

@@ -1,75 +1,123 @@
 ---
-title: Slack
-sidebarTitle: Slack
+title: 'Slack'
+sidebarTitle: 'Slack'
+description: 'Access the Slack API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/slack/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/slack/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Slack_.
+      </Step>
+      <Step title="Authorize Slack">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Slack. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Slack API">
+        Let's make your first request to the Slack API (fetch a list of channels in a Slack team). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/conversations.list?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup [here](https://api.slack.com/developer-program). |
-| Paid test account | ✅ Not required | Provision a sandbox for free from your developer account. Note that you will need to provide a payment method. The payment method is used for identity verification purposes only; you will not be charged. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | Only required if you intend to list your app in the Slack Marketplace |
-| Security audit | ✅ Not required | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
-<Steps>
-  <Step title="Create a developer account">
-    Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program. 
-  </Step>
-  <Step title="Create & configure a Slack app">
-    Start creating a Slack app by clicking on the _Your Apps_ button then _Create New App_.
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-    Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch. 
-    
-    After choosing how you'd like to configure your app, add your app's name and pick a workspace to develop your app in.
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-    In the _Basic Information_ tab, copy/paste your app's `Client ID` and `Client Secret`, you will need to specify it in Nango later on.
-    </Step>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-    <Step title="Set up the OAuth scopes">
+            const res = await nango.get({
+                endpoint: '/conversations.list',
+                params: { limit: 10 },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
-    In the _OAuth & Permissions_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
-
-    Still in the _OAuth & Permissions_ tab, under _Scopes_, add the scopes that are relevant to how you want to consume Slack's API.
-
-    There are 2 types of scopes, `Bot Token Scopes` and `User Token Scopes`. Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
-    
-    User Token Scopes access user data and act on behalf of users that authorize them. They will be added to Nango when creating a Slack connection.
-  </Step>
-
-  <Step title="Create a Slack Developer Sandbox">
-    If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration. 
-  </Step>
-
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
-
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/slack.mdx)</Note>
+            console.log(res.data);
+            ```
+            </Tab>
 
 
-## Useful links
+        </Tabs>
 
--   [How to register an Application](https://api.slack.com/apps)
--   [OAuth-related docs](https://api.slack.com/authentication/oauth-v2)
--   [List of OAuth scopes](https://api.slack.com/scopes)
--   [API](https://api.slack.com/web)
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/slack.mdx)</Note>
+      </Step>
+    </Steps>
 
-## API gotchas
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/slack.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Slack accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a developer account">
+        Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program.
+      </Step>
+      <Step title="Create & configure a Slack app">
+        Start creating a Slack app by clicking on the _Your Apps_ button then _Create New App_.
+
+        Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch.
+
+        After choosing how you'd like to configure your app, add your app's name and pick a workspace to develop your app in.
+
+        In the _Basic Information_ tab, copy/paste your app's `Client ID` and `Client Secret`, you will need to specify it in Nango later on.
+        </Step>
+
+        <Step title="Set up the OAuth scopes">
+
+        In the _OAuth & Permissions_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+
+        Still in the _OAuth & Permissions_ tab, under _Scopes_, add the scopes that are relevant to how you want to consume Slack's API.
+
+        There are 2 types of scopes, `Bot Token Scopes` and `User Token Scopes`. Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
+
+        User Token Scopes access user data and act on behalf of users that authorize them. They will be added to Nango when creating a Slack connection.
+      </Step>
+
+      <Step title="Create a Slack Developer Sandbox">
+        If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration.
+      </Step>
+
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://slack.com/) |
+    | | [Create a test account](https://slack.com/get-started) |
+    | Developer | [API documentation](https://api.slack.com/web) |
+    | | [Create a developer account](https://api.slack.com/developer-program) |
+    | | [Developer console](https://api.slack.com/apps) |
+    | | [Authorization documentation](https://api.slack.com/authentication/oauth-v2) |
+    | | [Register an OAuth app](https://api.slack.com/apps) |
+    | | [List of OAuth scopes](https://api.slack.com/scopes) |
+    | | [Details on rate limits](https://api.slack.com/docs/rate-limits) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/slack.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _No reported gotchas._
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/slack.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

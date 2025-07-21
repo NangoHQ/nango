@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { createAction, createOnEvent, createSync } from './scripts.js';
 

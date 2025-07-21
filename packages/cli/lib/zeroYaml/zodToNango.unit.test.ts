@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { zodToNangoModelField } from './zodToNango.js';
 
@@ -11,6 +11,7 @@ describe('zodToNango', () => {
                 'test',
                 z.object({
                     foo: z.literal('bar'),
+                    literalArray: z.literal(['bar', 'baz']),
                     num: z.number(),
                     bool: z.boolean(),
                     null: z.null(),
@@ -34,6 +35,15 @@ describe('zodToNango', () => {
             optional: false,
             value: [
                 { name: 'foo', optional: false, value: 'bar' },
+                {
+                    name: 'literalArray',
+                    optional: false,
+                    union: true,
+                    value: [
+                        { name: '0', value: 'bar' },
+                        { name: '1', value: 'baz' }
+                    ]
+                },
                 { name: 'num', optional: false, tsType: true, value: 'number' },
                 { name: 'bool', optional: false, tsType: true, value: 'boolean' },
                 { name: 'null', optional: false, tsType: true, value: null },

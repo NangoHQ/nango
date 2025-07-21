@@ -1,5 +1,5 @@
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const LIMIT = 100;
 const issueSchema = z.object({
