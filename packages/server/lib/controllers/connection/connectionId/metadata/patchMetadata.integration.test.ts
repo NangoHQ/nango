@@ -46,8 +46,8 @@ describe(`PATCH ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'invalid_string',
-                        message: 'Invalid',
+                        code: 'invalid_union',
+                        message: 'Invalid input',
                         path: ['connection_id']
                     }
                 ]
@@ -74,8 +74,8 @@ describe(`PATCH ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'invalid_string',
-                        message: 'Invalid',
+                        code: 'invalid_format',
+                        message: 'Invalid string: must match pattern /^[a-zA-Z0-9~:.@ _-]+$/',
                         path: ['provider_config_key']
                     }
                 ]

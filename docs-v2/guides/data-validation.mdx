@@ -31,7 +31,7 @@ You can use zod to validate the data you receive from integrations and push to N
 
 
 ```typescript
-import { z } from 'zod';
+import * as z from 'zod';
 
 const dataFromAPI = z.object({  
   ticketId: z.string(),
