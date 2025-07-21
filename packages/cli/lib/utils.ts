@@ -201,7 +201,7 @@ export async function getConnection(
 }
 
 export async function getConfig(providerConfigKey: string, debug = false) {
-    const url = process.env['NANGO_HOSTPORT'] + `/config/${providerConfigKey}`;
+    const url = process.env['NANGO_HOSTPORT'] + `/providers/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
