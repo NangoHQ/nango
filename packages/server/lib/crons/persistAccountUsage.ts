@@ -9,7 +9,7 @@ import * as cron from 'node-cron';
 import { DbAccountUsageStore } from '@nangohq/account-usage';
 import { getKVStore } from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
+import { flagHasPlan, getLogger, metrics, report, startOfMonth } from '@nangohq/utils';
 
 import type { AccountUsageMetric } from '@nangohq/account-usage';
 
@@ -52,37 +52,40 @@ async function exec(): Promise<void> {
         skipped: 0
     };
 
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    const startOfMonthDate = startOfMonth(new Date());
 
     for await (const key of kvStore.scan('usage:*')) {
-        const [, accountId, metric, yearMonth] = key.split(':');
-        if (!accountId || !metric || !yearMonth) {
-            logger.error(`Invalid key: ${key}`);
+        try {
+            const [, accountId, metric, yearMonth] = key.split(':');
+            if (!accountId || !metric || !yearMonth) {
+                logger.error(`Invalid key: ${key}`);
+                summary.skipped++;
+                continue;
+            }
+
+            const [year, month] = yearMonth.split('-');
+            const monthDate = new Date(Number(year), Number(month) - 1, 1);
+
+            const usage = await kvStore.get(key);
+            if (!usage) {
+                logger.error(`Usage not found for key: ${key}`);
+                summary.skipped++;
+                continue;
+            }
+
+            logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
+            await dbStore.setUsage({ accountId: Number(accountId), metric: metric as AccountUsageMetric, value: Number(usage), month: monthDate });
+            summary.persisted++;
+
+            // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.
+            if (monthDate.getTime() < startOfMonthDate.getTime()) {
+                logger.info(`Cleaning up kvStore key from past month: ${key}`);
+                await kvStore.delete(key);
+                summary.deleted++;
+            }
+        } catch (err) {
+            logger.error(`Error persisting usage for key: ${key}`, { cause: err });
             summary.skipped++;
-            continue;
-        }
-
-        const [year, month] = yearMonth.split('-');
-        const monthDate = new Date(Number(year), Number(month) - 1, 1);
-
-        const usage = await kvStore.get(key);
-        if (!usage) {
-            logger.error(`Usage not found for key: ${key}`);
-            summary.skipped++;
-            continue;
-        }
-
-        logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
-        await dbStore.setUsage({ accountId: Number(accountId), metric: metric as AccountUsageMetric, value: Number(usage), month: monthDate });
-        summary.persisted++;
-
-        // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.
-        if (monthDate.getTime() < startOfMonth.getTime()) {
-            logger.info(`Cleaning up kvStore key from past month: ${key}`);
-            await kvStore.delete(key);
-            summary.deleted++;
         }
     }
 
