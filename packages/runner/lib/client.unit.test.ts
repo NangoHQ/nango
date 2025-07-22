@@ -30,7 +30,8 @@ describe('Runner client', () => {
         startedAt: new Date(),
         runnerFlags: {} as any,
         endUser: null,
-        team: { id: 1, name: 'team' }
+        team: { id: 1, name: 'team' },
+        heartbeatTimeoutSecs: 30
     };
 
     beforeAll(() => {

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 

@@ -1,109 +1,146 @@
 ---
-title: Salesforce
-sidebarTitle: Salesforce
+title: 'Salesforce'
+sidebarTitle: 'Salesforce'
+description: 'Access the Salesforce API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/salesforce/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/salesforce/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Salesforce_.
+      </Step>
+      <Step title="Authorize Salesforce">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Salesforce. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Salesforce API">
+        Let's make your first request to the Salesforce API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/services/data/v58.0/query?q=SELECT+Id,FirstName,LastName,Email+FROM+Contact+LIMIT+10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for a [Salesforce Developer Edition](https://developer.salesforce.com/signup). |
-| Paid test account | ✅ Not required | Developer Edition can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | Only required for apps published on AppExchange. |
-| Security audit | ✅ Not required | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-<Steps>
-  <Step title="Create a Salesforce Developer account">
-    Go to [Salesforce Developer Edition signup page](https://developer.salesforce.com/signup) and create a free account.
-  </Step>
-  <Step title="Create a Connected App">
-    1. Log in to your Salesforce account.
-    2. Navigate to **Setup** (gear icon in the top right) > **Open Advanced Setup**.
-    3. Under **PLATFORM TOOLS**, click on the **Apps** dropdown then **App Manager**.
-    4. Click **New Connected App** in the top right, select **Create a Connected App**, then click **Continue** to proceed.
-  </Step>
-  <Step title="Configure Connected App settings">
-    1. Fill in the required basic information:
-       - **Connected App Name**: Your app's name
-       - **API Name**: Will auto-populate
-       - **Contact Email**: Your email address
-    2. Check the **Enable OAuth Settings** checkbox.
-    3. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
-    4. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
-       - "Access and manage your data (api)"
-       - "Perform requests on your behalf at any time (refresh_token, offline_access)"
-    5. Check **Require Secret for Web Server Flow**.
-    6. Click **Save**, then **Continue**.
-    <Note>Changes can take up to 10 minutes to take effect</Note>
-  </Step>
-  <Step title="Obtain API credentials">
-    1. After saving, you'll be redirected to the Connected App detail page.
-    2. You may need to wait a few minutes for the app to be fully created.
-    3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
-    4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
-    5. You will need these credentials when configuring your integration in Nango.
-  </Step>
-  <Step title="Configure token settings (recommended)">
-    1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to your application.
-    2. Under **OAuth Policies**, set **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
-    3. Click **Save**.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/services/data/v58.0/query',
+                params: { q: "SELECT Id,FirstName,LastName,Email FROM Contact LIMIT 10" },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
 
 
-## Useful links
+        </Tabs>
 
-| Topic | Links | 
-| - | - | 
-| General | [Website](https://www.salesforce.com/) |
-| | [Get a free Developer Edition](https://developer.salesforce.com/signup) |
-| | [Trailhead learning platform](https://trailhead.salesforce.com/) |
-| Developer | [API documentation](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm) |
-| | [Developer console](https://developer.salesforce.com/) |
-| | [Authentication documentation](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5) |
-| | [OAuth authorization code flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authorization_code_credentials_flow.htm&type=5) |
-| | [Connected App setup guide](https://help.salesforce.com/s/articleView?id=xcloud.connected_app_create_api_integration.htm&type=5) |
-| | [List of OAuth scopes](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_tokens_scopes.htm&type=5) |
-| | [API rate limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm) |
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
+      </Step>
+    </Steps>
 
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## Common Scopes
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Salesforce accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Salesforce Developer account">
+        Go to [Salesforce Developer Edition signup page](https://developer.salesforce.com/signup) and create a free account.
+      </Step>
+      <Step title="Create a Connected App">
+        1. Log in to your Salesforce account.
+        2. Navigate to **Setup** (gear icon in the top right) > **Open Advanced Setup**.
+        3. Under **PLATFORM TOOLS**, click on the **Apps** dropdown then **App Manager**.
+        4. Click **New Connected App** in the top right, select **Create a Connected App**, then click **Continue** to proceed.
+      </Step>
+      <Step title="Configure Connected App settings">
+        1. Fill in the required basic information:
+           - **Connected App Name**: Your app's name
+           - **API Name**: Will auto-populate
+           - **Contact Email**: Your email address
+        2. Check the **Enable OAuth Settings** checkbox.
+        3. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
+        4. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
+           - "Access and manage your data (api)"
+           - "Perform requests on your behalf at any time (refresh_token, offline_access)"
+        5. Check **Require Secret for Web Server Flow**.
+        6. Click **Save**, then **Continue**.
+        <Note>Changes can take up to 10 minutes to take effect</Note>
+      </Step>
+      <Step title="Obtain API credentials">
+        1. After saving, you'll be redirected to the Connected App detail page.
+        2. You may need to wait a few minutes for the app to be fully created.
+        3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
+        4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
+        5. You will need these credentials when configuring your integration in Nango.
+      </Step>
+      <Step title="Configure token settings (recommended)">
+        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to your application.
+        2. Under **OAuth Policies**, set **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+        3. Click **Save**.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
 
-| Scope | Description |
-| ----- | ----------- |
-| api | Access and manage your data |
-| refresh_token, offline_access | Perform requests on your behalf at any time |
-| chatter_api | Access Chatter API |
-| custom_permissions | Access custom permissions |
-| wave_api | Access Analytics REST API |
-| eclair_api | Access Einstein Analytics API |
-| pardot_api | Access Pardot services |
-| lightning | Access Lightning applications |
+    ## Common Scopes
+    | Scope | Description |
+    | ----- | ----------- |
+    | api | Access and manage your data |
+    | refresh_token, offline_access | Perform requests on your behalf at any time |
+    | chatter_api | Access Chatter API |
+    | custom_permissions | Access custom permissions |
+    | wave_api | Access Analytics REST API |
+    | eclair_api | Access Einstein Analytics API |
+    | pardot_api | Access Pardot services |
+    | lightning | Access Lightning applications |
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.salesforce.com/) |
+    | | [Get a free Developer Edition](https://developer.salesforce.com/signup) |
+    | | [Trailhead learning platform](https://trailhead.salesforce.com/) |
+    | Developer | [API documentation](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm) |
+    | | [Developer console](https://developer.salesforce.com/) |
+    | | [Authentication documentation](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5) |
+    | | [OAuth authorization code flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authorization_code_credentials_flow.htm&type=5) |
+    | | [Connected App setup guide](https://help.salesforce.com/s/articleView?id=xcloud.connected_app_create_api_integration.htm&type=5) |
+    | | [List of OAuth scopes](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_tokens_scopes.htm&type=5) |
+    | | [API rate limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm) |
 
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    -   If you or your end-user are authorizing a Salesforce sandbox account, you must use the `salesforce-sandbox` integration in Nango. Your Salesforce Developer Edition account is **not** a Salesforce sandbox! Use it with the regular `salesforce` connector.
+    -   Salesforce calls the `client_id` and `client_secret` as `Consumer Key` and `Consumer Secret`.
+    -   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default, access tokens expire in ~2h (but customers can configure this value). Also, check the "Introspect All Tokens" checkbox in your OAuth app settings on the Salesforce developer portal (Salesforce doesn't share the expiration date of access tokens. Instead, Nango needs to call the Salesforce API to check if access tokens are valid.)
+    -   If you encounter an error in your flow that says `invalid_client_id`, [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
 
-## API gotchas
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
+  </Tab>
+</Tabs>
 
--   If you or your end-user are authorizing a Salesforce sandbox account, you must use the `salesforce-sandbox` integration in Nango. Your Salesforce Developer Edition account is **not** a Salesforce sandbox! Use it with the regular `salesforce` connector.
--   Salesforce calls the `client_id` and `client_secret` as `Consumer Key` and `Consumer Secret`.
--   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default, access tokens expire in ~2h (but customers can configure this value). Also, check the "Introspect All Tokens" checkbox in your OAuth app settings on the Salesforce developer portal (Salesforce doesn't share the expiration date of access tokens. Instead, Nango needs to call the Salesforce API to check if access tokens are valid.)
--   If you encounter an error in your flow that says `invalid_client_id`, [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

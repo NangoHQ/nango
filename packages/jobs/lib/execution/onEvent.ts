@@ -59,9 +59,9 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             auto_start: false,
             enabled: true,
             environment_id: task.connection.environment_id,
-            model_schema: [],
             nango_config_id: -1,
             runs: '',
+            model_schema: null,
             webhook_subscriptions: [],
             attributes: {},
             input: null,
@@ -70,7 +70,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             models_json_schema: null,
             pre_built: false,
             sync_type: null,
-            sdk_version: null,
+            sdk_version: task.sdkVersion,
             created_at: new Date(),
             updated_at: new Date()
         };
@@ -94,7 +94,8 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         metrics.increment(metrics.Types.ON_EVENT_SCRIPT_EXECUTION, 1, { accountId: account.id });
