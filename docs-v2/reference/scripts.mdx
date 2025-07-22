@@ -82,6 +82,202 @@ export default createAction({
 
 Read more about [integration scripts](/guides/custom-integrations/overview) to understand what role they play in Nango.
 
+# Configuration
+
+### `createSync`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="endpoints" type="object[]" required>
+    The endpoints of the sync.
+    You can call this endpoint to fetch records synced by the sync.
+    You need one endpoint per model.
+
+    ```ts
+    endpoints: [{ method: 'GET', path: '/github/issues' }],
+    ```
+    Which you can then call like this:
+    ```ts
+    const res = await fetch('https://api.nango.dev/github/issues');
+    ```
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the sync is triggered.
+</ResponseField>
+
+<ResponseField name="frequency" type="string" required>
+    The frequency of the sync.
+
+    ```ts
+    frequency: 'every 1 minute',
+    frequency: 'every hour',
+    frequency: 'every 2 days'
+    frequency: 'every 3 week'
+    ```
+</ResponseField>
+
+<ResponseField name="models" type="object" required>
+    The models that will be synced by this script.
+    You need one endpoint per model.
+
+    ```ts
+    models: {
+        GithubIssue: z.object({
+            id: z.string(),
+        }),
+    },
+    ```
+</ResponseField>
+
+<ResponseField name="syncType" type="'full' | 'incremental'" required>
+    The type of the sync.
+</ResponseField>
+
+<ResponseField name="autoStart" type="boolean">
+    If `true`, automatically runs the sync when a new connection is created.
+    Otherwise, it needs to be triggered via the API or Nango UI.
+</ResponseField>
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the action.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="onWebhook" type="function">
+    The function that will be called when a webhook is received.
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    The integration's scopes required by the action.
+    This field is for documentation purposes only and currently not enforced by Nango.
+
+    ```ts
+    scopes: ['read:user', 'write:user'],
+    ```
+</ResponseField>
+
+<ResponseField name="trackDeletes" type="boolean">
+    If `true`, automatically detects deleted records and removes them when you fetch the latest data.
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the sync.
+    Use it to track changes to the sync inside Nango's UI.
+</ResponseField>
+
+<ResponseField name="webhookSubscriptions" type="string[]" default="undefined">
+    The webhook subscriptions of the sync.
+    Specify the types of webhooks the method `onWebhook` will handle.
+    If a webhook type is not on the list, it will not be handled.
+
+    ```ts
+    webhookSubscriptions: ['*'],
+    ```
+</ResponseField>
+
+
+
+### `createAction`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="endpoint" type="object" required>
+    The endpoints of the sync.
+    You can call this endpoint to fetch records synced by the sync.
+    You need one endpoint per model.
+
+    ```ts
+    endpoint: { method: 'POST', path: '/github/issues' },
+    ```
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the action is triggered.
+</ResponseField>
+
+<ResponseField name="input" type="object" required>
+    The input required by the action when triggering it.
+    ```ts
+    input: z.object({
+        title: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="output" type="object" required>
+    The output of the action.
+    ```ts
+    output: z.object({
+        issueId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the sync.
+    Use it to track changes to the sync inside Nango's UI.
+</ResponseField>
+
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the action.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    The integration's scopes required by the action.
+    This field is for documentation purposes only and currently not enforced by Nango.
+
+    ```ts
+    scopes: ['read:user', 'write:user'],
+    ```
+</ResponseField>
+
+
+### `createOnEvent`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="event" type="'post-connection-creation' | 'pre-connection-deletion'" required>
+    The event that will trigger this script.
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the action is triggered.
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the onEvent script.
+    Use it to track changes to the onEvent script inside Nango's UI.
+</ResponseField>
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the script.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
+
 # HTTP requests
 
 Makes an HTTP request inside an integration script:

@@ -11,6 +11,8 @@ import { NANGO_VERSION } from '../version.js';
 import { compileAll } from './compile.js';
 import { exampleFolder } from './constants.js';
 
+import type { PackageJson } from 'type-fest';
+
 const execAsync = promisify(exec);
 
 /**
@@ -60,8 +62,12 @@ export async function initZero({
     const packageJsonPath = path.join(absolutePath, 'package.json');
     try {
         const packageJsonRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        const packageJson = JSON.parse(packageJsonRaw) as { devDependencies: { nango: string } };
-        packageJson.devDependencies.nango = NANGO_VERSION;
+        const packageJson = JSON.parse(packageJsonRaw) as PackageJson;
+        if (!packageJson.devDependencies) {
+            packageJson.devDependencies = {};
+        }
+        packageJson.devDependencies['nango'] = NANGO_VERSION;
+        packageJson.devDependencies['nango'] = NANGO_VERSION;
         await fs.promises.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8');
     } catch (err) {
         console.log(chalk.red(`Failed to update nango version in package.json: ${err instanceof Error ? err.message : 'unknown error'}`));

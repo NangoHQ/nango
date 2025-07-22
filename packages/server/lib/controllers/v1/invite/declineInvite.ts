@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { declineInvitation, getInvitation } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
