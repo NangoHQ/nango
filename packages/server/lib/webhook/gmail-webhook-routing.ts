@@ -45,7 +45,7 @@ export async function validate(integration: ProviderConfig, headers: Record<stri
         const signature = Buffer.from(signatureB64, 'base64url');
 
         const jwks = await getGoogleJWKS();
-        const jwk = jwks.find((key: string) => key.kid === header.kid);
+        const jwk = jwks.find((key: Record<string, string>) => key['kid'] === header.kid);
         if (!jwk) {
             throw new Error(`No matching JWK found for kid: ${header.kid}`);
         }
