@@ -1,3 +1,5 @@
+import { startOfMonth } from '@nangohq/utils';
+
 import type { UsageStore } from './usageStore.js';
 import type { UsageMetric } from '../metrics.js';
 import type { KVStore } from '@nangohq/kvstore';
@@ -25,11 +27,10 @@ export class KvUsageStore implements UsageStore {
     }
 
     private getKey(accountId: number, metric: UsageMetric, month?: Date): string {
-        const normalizedMonth = month ?? new Date();
-        normalizedMonth.setUTCHours(0, 0, 0, 0);
+        const startOfMonthDate = startOfMonth(month ?? new Date());
 
         // YYYY-MM
-        const monthString = `${normalizedMonth.getFullYear()}-${String(normalizedMonth.getMonth() + 1).padStart(2, '0')}`;
+        const monthString = `${startOfMonthDate.getFullYear()}-${String(startOfMonthDate.getMonth() + 1).padStart(2, '0')}`;
         return `usage:${accountId}:${metric}:${monthString}`;
     }
 }

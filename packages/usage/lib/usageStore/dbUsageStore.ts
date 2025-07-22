@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import { startOfMonth } from '@nangohq/utils';
 
 import type { UsageMetric } from '../metrics.js';
 import type { UsageStore } from './usageStore.js';
@@ -6,19 +7,19 @@ import type { DBAccountUsage } from '@nangohq/types';
 
 export class DbUsageStore implements UsageStore {
     async getUsage(accountId: number, metric: UsageMetric, month?: Date): Promise<number> {
-        month = this.normalizeMonth(month);
+        const startOfMonthDate = startOfMonth(month ?? new Date());
 
-        const result = await db.knex.from<DBAccountUsage>('accounts_usage').select(metric).where({ account_id: accountId, month }).first();
+        const result = await db.knex.from<DBAccountUsage>('accounts_usage').select(metric).where({ account_id: accountId, month: startOfMonthDate }).first();
         return result?.[metric] ?? 0;
     }
 
     async setUsage(accountId: number, metric: UsageMetric, value: number, month?: Date): Promise<number> {
-        month = this.normalizeMonth(month);
+        const startOfMonthDate = startOfMonth(month ?? new Date());
 
         const result = await db.knex
             .from('accounts_usage')
             .insert({
-                month,
+                month: startOfMonthDate,
                 account_id: accountId,
                 [metric]: value
             })
@@ -32,13 +33,13 @@ export class DbUsageStore implements UsageStore {
     }
 
     async incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number> {
-        month = this.normalizeMonth(month);
+        const startOfMonthDate = startOfMonth(month ?? new Date());
         const incrementValue = delta ?? 1;
 
         const result = await db.knex
             .from('accounts_usage')
             .insert({
-                month,
+                month: startOfMonthDate,
                 account_id: accountId,
                 [metric]: incrementValue
             })
@@ -49,12 +50,5 @@ export class DbUsageStore implements UsageStore {
             .returning('*');
 
         return result[0][metric];
-    }
-
-    private normalizeMonth(month?: Date): Date {
-        const normalizedMonth = month ? new Date(month) : new Date();
-        normalizedMonth.setUTCHours(0, 0, 0, 0);
-        normalizedMonth.setUTCDate(1);
-        return normalizedMonth;
     }
 }
