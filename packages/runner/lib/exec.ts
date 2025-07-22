@@ -158,6 +158,24 @@ export async function exec({
                 return { success: true, response: output, error: null };
             }
 
+            // Action
+            if (nangoProps.scriptType === 'on-event') {
+                let output: unknown;
+                if (isZeroYaml) {
+                    const payload = def;
+                    if (payload.type !== 'onEvent') {
+                        throw new Error('Incorrect script loaded for action');
+                    }
+                    if (!payload.exec) {
+                        throw new Error(`Missing exec function`);
+                    }
+                    output = await payload.exec(nango as any);
+                } else {
+                    output = await def(nango);
+                }
+                return { success: true, response: output, error: null };
+            }
+
             // Sync
             if (isZeroYaml) {
                 const payload = def;

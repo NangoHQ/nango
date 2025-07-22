@@ -45,6 +45,7 @@ interface OnEventArgs {
     version: string;
     fileLocation: string;
     activityLogId: string;
+    sdkVersion: string | null;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
@@ -76,6 +77,7 @@ interface TaskCommonFields {
     attemptMax: number;
     ownerKey: string | null;
     retryKey: string | null;
+    heartbeatTimeoutSecs: number;
 }
 interface TaskCommon extends TaskCommonFields {
     isSync(this: OrchestratorTask): this is TaskSync;
@@ -100,6 +102,7 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -126,6 +129,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -154,6 +158,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         groupMaxConcurrency: props.groupMaxConcurrency,
         reason: props.reason,
         ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
@@ -180,6 +185,7 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         async: props.async,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => true,
@@ -206,6 +212,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => true,
         isAction: (): this is TaskAction => false,
@@ -228,10 +235,12 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         version: props.version,
         connection: props.connection,
         fileLocation: props.fileLocation,
+        sdkVersion: props.sdkVersion,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
         isSync: (): this is TaskSync => false,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

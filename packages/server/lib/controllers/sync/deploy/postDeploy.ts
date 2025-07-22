@@ -56,7 +56,6 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     } = await deploy({
         environment,
         account,
-        plan,
         flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
