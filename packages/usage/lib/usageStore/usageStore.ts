@@ -1,7 +1,25 @@
 import type { UsageMetric } from '../metrics.js';
 
+export interface GetUsageParams {
+    accountId: number;
+    metric: UsageMetric;
+    month?: Date;
+}
+export interface SetUsageParams {
+    accountId: number;
+    metric: UsageMetric;
+    value: number;
+    month?: Date;
+}
+export interface IncrementUsageParams {
+    accountId: number;
+    metric: UsageMetric;
+    delta?: number;
+    month?: Date;
+}
+
 export interface UsageStore {
-    getUsage(accountId: number, metric: UsageMetric, month?: Date): Promise<number>;
-    setUsage(accountId: number, metric: UsageMetric, value: number, month?: Date): Promise<number>;
-    incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number>;
+    getUsage(params: GetUsageParams): Promise<number>;
+    setUsage(params: SetUsageParams): Promise<number>;
+    incrementUsage(params: IncrementUsageParams): Promise<number>;
 }

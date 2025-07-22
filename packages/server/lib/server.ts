@@ -18,7 +18,7 @@ import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddle
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
-import { persistAccountUsageCron } from './crons/persisteAccountUsage.js';
+import { persistAccountUsageCron } from './crons/persistAccountUsage.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';

@@ -13,7 +13,7 @@ export class UsageTracker {
 
     public async shouldCapUsage(plan: DBPlan, metric: UsageMetric): Promise<boolean> {
         try {
-            const currentUsage = await this.usageStore.getUsage(plan.account_id, metric);
+            const currentUsage = await this.usageStore.getUsage({ accountId: plan.account_id, metric });
             const limit = this.getLimit(plan, metric);
 
             if (limit === null) {
@@ -36,11 +36,11 @@ export class UsageTracker {
      * Increments usage of given metric for current month.
      */
     public async incrementUsage(accountId: number, metric: UsageMetric, delta: number = 1): Promise<number> {
-        return this.usageStore.incrementUsage(accountId, metric, delta);
+        return this.usageStore.incrementUsage({ accountId, metric, delta });
     }
 
     public async getUsage(accountId: number, metric: UsageMetric): Promise<number | null> {
-        return this.usageStore.getUsage(accountId, metric);
+        return this.usageStore.getUsage({ accountId, metric });
     }
 
     public getLimit(plan: DBPlan, metric: UsageMetric): number | null {

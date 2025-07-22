@@ -75,7 +75,7 @@ async function exec(): Promise<void> {
         }
 
         logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
-        await dbStore.setUsage(Number(accountId), metric as UsageMetric, Number(usage), monthDate);
+        await dbStore.setUsage({ accountId: Number(accountId), metric: metric as UsageMetric, value: Number(usage), month: monthDate });
         summary.persisted++;
 
         // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.

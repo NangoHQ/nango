@@ -1,5 +1,4 @@
-import type { UsageMetric } from '../metrics.js';
-import type { UsageStore } from './usageStore.js';
+import type { GetUsageParams, IncrementUsageParams, SetUsageParams, UsageStore } from './usageStore.js';
 
 /**
  * A UsageStore that uses a quick store for quick reads and writes,
@@ -12,26 +11,26 @@ export class HybridUsageStore implements UsageStore {
         private readonly persistentStore: UsageStore
     ) {}
 
-    async getUsage(accountId: number, metric: UsageMetric, month?: Date): Promise<number> {
-        const cachedUsage = await this.cacheStore.getUsage(accountId, metric, month);
+    async getUsage(params: GetUsageParams): Promise<number> {
+        const cachedUsage = await this.cacheStore.getUsage(params);
         if (cachedUsage) {
             return cachedUsage;
         }
 
-        const persistedUsage = await this.persistentStore.getUsage(accountId, metric, month);
+        const persistedUsage = await this.persistentStore.getUsage(params);
         if (persistedUsage) {
-            await this.cacheStore.setUsage(accountId, metric, persistedUsage);
+            await this.cacheStore.setUsage({ ...params, value: persistedUsage });
             return persistedUsage;
         }
 
-        return this.cacheStore.setUsage(accountId, metric, 0);
+        return this.cacheStore.setUsage({ ...params, value: 0 });
     }
 
-    async setUsage(accountId: number, metric: UsageMetric, value: number, month?: Date): Promise<number> {
-        return this.cacheStore.setUsage(accountId, metric, value, month);
+    async setUsage(params: SetUsageParams): Promise<number> {
+        return this.cacheStore.setUsage(params);
     }
 
-    async incrementUsage(accountId: number, metric: UsageMetric, delta: number, month?: Date): Promise<number> {
-        return this.cacheStore.incrementUsage(accountId, metric, delta, month);
+    async incrementUsage(params: IncrementUsageParams): Promise<number> {
+        return this.cacheStore.incrementUsage(params);
     }
 }

@@ -1,23 +1,22 @@
 import db from '@nangohq/database';
 import { startOfMonth } from '@nangohq/utils';
 
-import type { UsageMetric } from '../metrics.js';
-import type { UsageStore } from './usageStore.js';
+import type { GetUsageParams, IncrementUsageParams, SetUsageParams, UsageStore } from './usageStore.js';
 import type { DBAccountUsage } from '@nangohq/types';
 
 export class DbUsageStore implements UsageStore {
-    async getUsage(accountId: number, metric: UsageMetric, month?: Date): Promise<number> {
+    async getUsage({ accountId, metric, month }: GetUsageParams): Promise<number> {
         const startOfMonthDate = startOfMonth(month ?? new Date());
 
         const result = await db.knex.from<DBAccountUsage>('accounts_usage').select(metric).where({ account_id: accountId, month: startOfMonthDate }).first();
         return result?.[metric] ?? 0;
     }
 
-    async setUsage(accountId: number, metric: UsageMetric, value: number, month?: Date): Promise<number> {
+    async setUsage({ accountId, metric, value, month }: SetUsageParams): Promise<number> {
         const startOfMonthDate = startOfMonth(month ?? new Date());
 
         const result = await db.knex
-            .from('accounts_usage')
+            .from<DBAccountUsage>('accounts_usage')
             .insert({
                 month: startOfMonthDate,
                 account_id: accountId,
@@ -29,15 +28,15 @@ export class DbUsageStore implements UsageStore {
             })
             .returning('*');
 
-        return result[0][metric];
+        return result[0]?.[metric] ?? value;
     }
 
-    async incrementUsage(accountId: number, metric: UsageMetric, delta?: number, month?: Date): Promise<number> {
+    async incrementUsage({ accountId, metric, delta, month }: IncrementUsageParams): Promise<number> {
         const startOfMonthDate = startOfMonth(month ?? new Date());
         const incrementValue = delta ?? 1;
 
         const result = await db.knex
-            .from('accounts_usage')
+            .from<DBAccountUsage>('accounts_usage')
             .insert({
                 month: startOfMonthDate,
                 account_id: accountId,
@@ -49,6 +48,6 @@ export class DbUsageStore implements UsageStore {
             })
             .returning('*');
 
-        return result[0][metric];
+        return result[0]?.[metric] ?? 0;
     }
 }
