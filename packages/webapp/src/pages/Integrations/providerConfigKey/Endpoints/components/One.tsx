@@ -101,7 +101,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: inputModel,
+                        input: flow.type === 'action' ? inputModel : undefined,
                         language: language === 'curl' ? 'shell' : language!
                     })
                 );
@@ -112,7 +112,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: inputModel,
+                        input: flow.type === 'action' ? inputModel : undefined,
                         language: language === 'curl' ? 'shell' : language!,
                         hideSecret: false
                     })
