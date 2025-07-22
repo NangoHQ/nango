@@ -1,7 +1,7 @@
 import { startOfMonth } from '@nangohq/utils';
 
 import type { AccountUsageStore, GetUsageParams, IncrementUsageParams, SetUsageParams } from './accountUsageStore.js';
-import type { UsageMetric } from '../metrics.js';
+import type { AccountUsageMetric } from '../metrics.js';
 import type { KVStore } from '@nangohq/kvstore';
 
 const MONTH_IN_MS = 31 * 24 * 60 * 60 * 1000;
@@ -30,7 +30,7 @@ export class KvAccountUsageStore implements AccountUsageStore {
         return this.kvStore.incr(key, { delta: delta ?? 1, ttlInMs: MONTH_IN_MS });
     }
 
-    private getKey(accountId: number, metric: UsageMetric, month?: Date): string {
+    private getKey(accountId: number, metric: AccountUsageMetric, month?: Date): string {
         const startOfMonthDate = startOfMonth(month ?? new Date());
 
         // YYYY-MM

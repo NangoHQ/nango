@@ -3,7 +3,7 @@ import { report } from '@nangohq/utils';
 import { metricFlags } from './metrics.js';
 
 import type { AccountUsageStore, GetUsageParams, IncrementUsageParams } from './accountUsageStore/accountUsageStore.js';
-import type { UsageMetric } from './metrics.js';
+import type { AccountUsageMetric } from './metrics.js';
 import type { DBPlan } from '@nangohq/types';
 
 /**
@@ -12,7 +12,7 @@ import type { DBPlan } from '@nangohq/types';
 export class AccountUsageTracker {
     constructor(private readonly usageStore: AccountUsageStore) {}
 
-    public async shouldCapUsage(plan: DBPlan, metric: UsageMetric): Promise<boolean> {
+    public async shouldCapUsage(plan: DBPlan, metric: AccountUsageMetric): Promise<boolean> {
         try {
             const currentUsage = await this.getUsage({ accountId: plan.account_id, metric });
             const limit = this.getLimit(plan, metric);
@@ -57,7 +57,7 @@ export class AccountUsageTracker {
         }
     }
 
-    public getLimit(plan: DBPlan, metric: UsageMetric): number | null {
+    public getLimit(plan: DBPlan, metric: AccountUsageMetric): number | null {
         const flag = metricFlags[metric];
         return plan[flag as keyof DBPlan] as number | null;
     }
