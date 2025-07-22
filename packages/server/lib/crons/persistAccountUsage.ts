@@ -13,8 +13,8 @@ import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
 import type { UsageMetric } from '@nangohq/usage/lib/metrics.js';
 
-const cronMinutes = envs.CRON_PERSIST_MONTHLY_USAGE_MINUTES;
-const logger = getLogger('cron.persistMonthlyUsage');
+const cronMinutes = envs.CRON_PERSIST_ACCOUNT_USAGE_MINUTES;
+const logger = getLogger('cron.persistAccountUsage');
 
 export function persistAccountUsageCron(): void {
     if (!flagHasPlan) {
@@ -27,15 +27,15 @@ export function persistAccountUsageCron(): void {
         async () => {
             const start = Date.now();
             try {
-                await tracer.trace<Promise<void>>('nango.cron.trial', async () => {
+                await tracer.trace<Promise<void>>('nango.server.cron.persistAccountUsage', async () => {
                     await exec();
                 });
 
                 logger.info('✅ done');
             } catch (err) {
-                report(new Error('cron_failed_to_persist_monthly_usage', { cause: err }));
+                report(new Error('cron_failed_to_persist_account_usage', { cause: err }));
             }
-            metrics.duration(metrics.Types.CRON_PERSIST_MONTHLY_USAGE, Date.now() - start);
+            metrics.duration(metrics.Types.CRON_PERSIST_ACCOUNT_USAGE, Date.now() - start);
         }
     );
 }

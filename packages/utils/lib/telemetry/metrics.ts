@@ -92,7 +92,7 @@ export enum Types {
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
 
-    CRON_PERSIST_MONTHLY_USAGE = 'nango.server.cron.persistMonthlyUsage'
+    CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
