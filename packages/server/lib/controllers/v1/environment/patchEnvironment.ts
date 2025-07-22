@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { environmentService } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';

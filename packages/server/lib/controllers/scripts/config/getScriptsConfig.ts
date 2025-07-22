@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { getDefinition } from '@nangohq/utils';

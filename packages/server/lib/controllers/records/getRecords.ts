@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { records } from '@nangohq/records';
 import { connectionService, trackFetch } from '@nangohq/shared';

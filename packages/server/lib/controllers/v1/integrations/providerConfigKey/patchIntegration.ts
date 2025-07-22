@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -48,7 +48,7 @@ const validationBody = z
                     })
                     .strict()
             ],
-            { errorMap: () => ({ message: 'invalid credentials object' }) }
+            { error: () => ({ message: 'invalid credentials object' }) }
         )
     );
 

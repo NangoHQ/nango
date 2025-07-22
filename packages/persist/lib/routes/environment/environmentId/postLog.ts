@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { validateRequest } from '@nangohq/utils';
@@ -28,16 +28,16 @@ export const logBodySchema = z.object({
             .object({
                 url: z.string(),
                 method: z.string(),
-                headers: z.record(z.string())
+                headers: z.record(z.string(), z.string())
             })
             .optional(),
         response: z
             .object({
                 code: z.number(),
-                headers: z.record(z.string())
+                headers: z.record(z.string(), z.string())
             })
             .optional(),
-        meta: z.record(z.any()).optional().nullable(),
+        meta: z.record(z.string(), z.any()).optional().nullable(),
         createdAt: z.string(),
         endedAt: z.string().optional(),
         durationMs: z.number().optional(),

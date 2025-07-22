@@ -1,5 +1,5 @@
 import { UAParser } from 'ua-parser-js';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';

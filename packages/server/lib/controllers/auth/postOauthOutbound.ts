@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -28,7 +28,7 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         hmac: z.string().optional(),
-        params: z.record(z.any()).optional()
+        params: z.record(z.string(), z.any()).optional()
     })
     .and(connectionCredential);
 
@@ -49,7 +49,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
 
     const paramsVal = paramsValidation.safeParse(req.params);
     if (!paramsVal.success) {
-        res.status(400).send({ error: { code: 'invalid_uri_params', errors: paramsVal.error.errors } });
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramsVal.error) } });
         return;
     }
 

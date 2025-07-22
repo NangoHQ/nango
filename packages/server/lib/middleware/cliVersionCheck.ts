@@ -1,6 +1,6 @@
 import semver from 'semver';
 
-import { NANGO_VERSION, getLogger } from '@nangohq/utils';
+import { NANGO_VERSION, getLogger, report } from '@nangohq/utils';
 
 import type { ApiError } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -24,12 +24,16 @@ export function cliMinVersion(minVersion: string) {
             return;
         }
 
-        if (semver.gt(minVersion, match[1])) {
-            logger.info(`This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})`);
-            res.status(400).send({
-                error: { code: 'invalid_cli_version', message: `This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})` }
-            });
-            return;
+        try {
+            if (semver.gt(minVersion, match[1])) {
+                logger.info(`This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})`);
+                res.status(400).send({
+                    error: { code: 'invalid_cli_version', message: `This endpoint requires a CLI version >= ${minVersion} (current: ${match[0]})` }
+                });
+                return;
+            }
+        } catch (err) {
+            report('cli_version_check_error', { error: err, userAgent, minVersion });
         }
 
         next();

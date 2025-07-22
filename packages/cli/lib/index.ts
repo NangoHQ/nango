@@ -26,6 +26,7 @@ import { directoryMigration, endpointMigration, v1toV2Migration } from './servic
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAll } from './zeroYaml/compile.js';
 import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
@@ -196,6 +197,13 @@ program
                 return;
             }
         } else {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;
@@ -233,6 +241,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             await dev({ fullPath, debug });
             return;
         }
@@ -263,6 +278,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const resCompile = await compileAll({ fullPath, debug });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
@@ -353,6 +375,13 @@ program
 
         let parsed: NangoYamlParsed;
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const def = await buildDefinitions({ fullPath, debug });
             if (def.isErr()) {
                 console.log('');
@@ -422,6 +451,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;

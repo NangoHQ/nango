@@ -17,7 +17,7 @@ import { cloudHost } from './constants.js';
 import { state } from './state.js';
 import { NANGO_VERSION } from './version.js';
 
-import type { GetPublicConnection } from '@nangohq/types';
+import type { GetPublicConnection, GetPublicIntegration } from '@nangohq/types';
 import type { PackageJson } from 'type-fest';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -193,27 +193,27 @@ export async function getConnection(
 
     try {
         const res = await http.get(url, { params: { provider_config_key: providerConfigKey }, headers });
-        return res.data;
+        return res.data as GetPublicConnection['Success'];
     } catch (err) {
         console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
         return;
     }
 }
 
-export async function getConfig(providerConfigKey: string, debug = false) {
-    const url = process.env['NANGO_HOSTPORT'] + `/config/${providerConfigKey}`;
+export async function getConfig(providerConfigKey: string, debug = false): Promise<GetPublicIntegration['Success'] | undefined> {
+    const url = process.env['NANGO_HOSTPORT'] + `/integrations/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
-    return await http
-        .get(url, { headers })
-        .then((res) => {
-            return res.data;
-        })
-        .catch((err: unknown) => {
-            console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
-        });
+
+    try {
+        const res = await http.get(url, { headers });
+        return res.data as GetPublicIntegration['Success'];
+    } catch (err) {
+        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        return;
+    }
 }
 
 export function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {

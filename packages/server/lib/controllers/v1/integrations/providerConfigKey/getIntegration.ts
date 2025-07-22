@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';

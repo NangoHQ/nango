@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
@@ -14,7 +14,6 @@ import type { RequestLocals } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
 import type { PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
-import type { ZodIssue } from 'zod';
 
 export const bodySchema = z
     .object({
@@ -41,10 +40,9 @@ export const bodySchema = z
                         user_scopes: z.string().optional(),
                         authorization_params: z.record(z.string(), z.string()).optional(),
                         connection_config: z
-                            .object({
+                            .looseObject({
                                 oauth_scopes_override: z.string().optional()
                             })
-                            .passthrough()
                             .optional()
                     })
                     .strict()
@@ -78,15 +76,23 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
 /**
  * Enforce that integrations exists in `integrations_config_defaults`
  */
-export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
+export function checkIntegrationsDefault(
+    body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>,
+    integrations: Config[]
+): z.core.$ZodIssue[] | false {
     if (!body.integrations_config_defaults) {
         return false;
     }
 
-    const errors: ZodIssue[] = [];
+    const errors: z.core.$ZodIssue[] = [];
     for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
         if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+            errors.push({
+                path: ['integrations_config_defaults', uniqueKey],
+                code: 'custom',
+                message: 'Integration does not exist',
+                input: body.integrations_config_defaults
+            });
         }
     }
 
@@ -106,10 +112,15 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
 
             // Enforce that integrations exists in `allowed_integrations`
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {
-                const errors: ZodIssue[] = [];
+                const errors: z.core.$ZodIssue[] = [];
                 for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
                     if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-                        errors.push({ path: ['allowed_integrations', key], code: 'custom', message: 'Integration does not exist' });
+                        errors.push({
+                            path: ['allowed_integrations', key],
+                            code: 'custom',
+                            message: 'Integration does not exist',
+                            input: body.allowed_integrations
+                        });
                     }
                 }
                 if (errors.length > 0) {

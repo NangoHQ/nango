@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import chalk from 'chalk';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { getNangoRootPath, printDebug } from '../utils.js';
 

@@ -119,7 +119,7 @@ export class Billing {
         return await this.client.getUsage(subscriptionId, period);
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amount: string | null }>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return await this.client.upgrade(opts);
     }
 

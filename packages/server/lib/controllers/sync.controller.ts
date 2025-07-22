@@ -10,7 +10,6 @@ import {
     connectionService,
     errorManager,
     getActionOrModelByEndpoint,
-    getAttributes,
     getSyncConfigRaw,
     getSyncs,
     getSyncsByConnectionId,
@@ -510,30 +509,6 @@ class SyncController {
                 void logCtx.error('Failed to sync command', { error: err });
                 await logCtx.failed();
             }
-            next(err);
-        }
-    }
-
-    public async getFlowAttributes(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { sync_name, provider_config_key } = req.query;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            if (!sync_name) {
-                res.status(400).send({ message: 'Missing sync name' });
-
-                return;
-            }
-
-            const attributes = await getAttributes(provider_config_key as string, sync_name as string);
-
-            res.status(200).send(attributes);
-        } catch (err) {
             next(err);
         }
     }

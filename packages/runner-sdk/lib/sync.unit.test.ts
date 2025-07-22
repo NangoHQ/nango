@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, expectTypeOf, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { NangoSyncBase } from './sync.js';
 

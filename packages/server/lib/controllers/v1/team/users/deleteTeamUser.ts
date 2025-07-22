@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { accountService, userService } from '@nangohq/shared';
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
