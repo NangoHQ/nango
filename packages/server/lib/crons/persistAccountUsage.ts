@@ -6,12 +6,12 @@
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
+import { DbAccountUsageStore } from '@nangohq/account-usage';
 import { getKVStore } from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { DbAccountUsageStore } from '@nangohq/usage';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
-import type { UsageMetric } from '@nangohq/usage/lib/metrics.js';
+import type { UsageMetric } from '@nangohq/account-usage';
 
 const cronMinutes = envs.CRON_PERSIST_ACCOUNT_USAGE_MINUTES;
 const logger = getLogger('cron.persistAccountUsage');
