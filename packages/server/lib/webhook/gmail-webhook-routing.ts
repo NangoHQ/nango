@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { NangoError, environmentService, getGlobalWebhookReceiveUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { getGoogleJWKS } from './cache.js';
 
@@ -79,8 +79,8 @@ export async function validate(integration: ProviderConfig, headers: Record<stri
         }
 
         return true;
-    } catch (err: any) {
-        logger.error('Validation error:', err.message);
+    } catch (err: unknown) {
+        report(new Error('Validation error', { cause: err }));
         return false;
     }
 }
