@@ -1,12 +1,10 @@
-import { getLogger } from '@nangohq/utils';
+import { report } from '@nangohq/utils';
 
 import { metricFlags } from './metrics.js';
 
 import type { UsageMetric } from './metrics.js';
 import type { UsageStore } from './usageStore/usageStore.js';
 import type { DBPlan } from '@nangohq/types';
-
-const logger = getLogger('UsageTracker');
 
 export class UsageTracker {
     constructor(private readonly usageStore: UsageStore) {}
@@ -22,11 +20,11 @@ export class UsageTracker {
 
             return !!currentUsage && currentUsage >= limit;
         } catch (err) {
-            logger.error(`Error checking if usage should be capped`, {
-                error: err,
+            report(new Error('Error checking if usage should be capped', { cause: err }), {
                 accountId: plan.account_id,
                 metric
             });
+
             // In an effort to avoid blocking, we return true if there is any error in obtaining metrics.
             return true;
         }
