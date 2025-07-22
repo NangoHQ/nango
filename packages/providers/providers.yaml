@@ -5957,6 +5957,37 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+knowbe4:
+    display_name: KnowBe4 (Reporting)
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.knowbe4.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/knowbe4
+    docs_connect: https://docs.nango.dev/integrations/all/knowbe4/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your KnowBe4 account
+            doc_section: '#step-2-generating-your-knowbe4-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your API base URL
+            doc_section: '#step-1-finding-your-subdomain'
+            example: api
+            pattern: '^(api|api-eu|api-ca|api-uk|api-de)$'
+            order: 1
+
 klipfolio:
     display_name: Klipfolio
     categories:

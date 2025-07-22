@@ -1,0 +1,54 @@
+---
+title: KnowBe4 (Reporting) - How do I link my account?
+sidebarTitle: KnowBe4 (Reporting)
+---
+
+
+# Overview
+
+To authenticate with KnowBe4 (Reporting), you need:
+1. **Subdomain** - The subdomain to your API base URL.
+2. **API key** - A key that grants Nango permission to interact with KnowBe4 (Reporting)'s APIs resources and services.
+
+This guide will walk you through obtaining both the **API Key** and **Subdomain** within KnowBe4.
+
+### Prerequisites:
+
+- You must have an account with KnowBe4.
+
+### Instructions:
+
+#### Step 1: Finding Your Subdomain
+1. Log in to your KnowBe4 account in your web browser.
+2. Check the address bar at the top of your browser window.
+- Compare your address with the following table to determine the **required subdomain** you must use:
+
+| **Web App URL**        | **Web App Subdomain** | **Required Subdomain** |
+|:-----------------------|:----------------------|:-----------------------|
+| `training.knowbe4.com` | `training`            | `api`                  |
+| `eu.knowbe4.com`       | `eu`                  | `api-eu`               |
+| `ca.knowbe4.com`       | `ca`                  | `api-ca`               |
+| `uk.knowbe4.com`       | `uk`                  | `api-uk`               |
+| `de.knowbe4.com`       | `de`                  | `api-de`               |
+
+#### Step 2: Finding Your API Key
+1. **Log in** to your KnowBe4 (Reporting) account as admin.
+2. Go to **Account Settings**.
+3. Click the **Account Integrations** from the left menu.
+4. Click the **API** option.
+<img src="/integrations/all/knowbe4/account_information.png" />
+5. Mark the **Enable Reporting API Access** checkbox. 
+6. The system generates an **API Key**.
+<img src="/integrations/all/knowbe4/api_key.png" />
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have both your **Subdomain** and **API key**:
+1. Open the form where you need to authenticate with KnowBe4 (Reporting).
+2. Enter your **Subdomain** and **API key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/knowbe4/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to KnowBe4 (Reporting).
+ 
