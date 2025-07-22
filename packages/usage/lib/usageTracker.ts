@@ -3,7 +3,7 @@ import { report } from '@nangohq/utils';
 import { metricFlags } from './metrics.js';
 
 import type { UsageMetric } from './metrics.js';
-import type { UsageStore } from './usageStore/usageStore.js';
+import type { GetUsageParams, IncrementUsageParams, UsageStore } from './usageStore/usageStore.js';
 import type { DBPlan } from '@nangohq/types';
 
 export class UsageTracker {
@@ -11,7 +11,7 @@ export class UsageTracker {
 
     public async shouldCapUsage(plan: DBPlan, metric: UsageMetric): Promise<boolean> {
         try {
-            const currentUsage = await this.usageStore.getUsage({ accountId: plan.account_id, metric });
+            const currentUsage = await this.getUsage({ accountId: plan.account_id, metric });
             const limit = this.getLimit(plan, metric);
 
             if (limit === null) {
@@ -33,12 +33,25 @@ export class UsageTracker {
     /**
      * Increments usage of given metric for current month.
      */
-    public async incrementUsage(accountId: number, metric: UsageMetric, delta: number = 1): Promise<number> {
-        return this.usageStore.incrementUsage({ accountId, metric, delta });
+    public async incrementUsage(params: IncrementUsageParams): Promise<number> {
+        try {
+            return await this.usageStore.incrementUsage(params);
+        } catch (err) {
+            report(new Error('Error incrementing usage', { cause: err }), { ...params });
+
+            // In an effort to avoid blocking, we return 0 if there is any error in incrementing usage.
+            return 0;
+        }
     }
 
-    public async getUsage(accountId: number, metric: UsageMetric): Promise<number | null> {
-        return this.usageStore.getUsage({ accountId, metric });
+    public async getUsage(params: GetUsageParams): Promise<number | null> {
+        try {
+            return await this.usageStore.getUsage(params);
+        } catch (err) {
+            report(new Error('Error getting usage', { cause: err }), { ...params });
+
+            return null;
+        }
     }
 
     public getLimit(plan: DBPlan, metric: UsageMetric): number | null {
