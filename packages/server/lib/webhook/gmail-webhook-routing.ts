@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 
-import axios from 'axios';
-
 import { NangoError, environmentService, getGlobalWebhookReceiveUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
+
+import { getGoogleJWKS } from './cache.js';
 
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -44,8 +44,8 @@ export async function validate(integration: ProviderConfig, headers: Record<stri
         const signedData = `${headerB64}.${payloadB64}`;
         const signature = Buffer.from(signatureB64, 'base64url');
 
-        const { data: jwks } = await axios.get('https://www.googleapis.com/oauth2/v3/certs');
-        const jwk = jwks.keys.find((key: any) => key.kid === header.kid);
+        const jwks = await getGoogleJWKS();
+        const jwk = jwks.find((key: string) => key.kid === header.kid);
         if (!jwk) {
             throw new Error(`No matching JWK found for kid: ${header.kid}`);
         }
@@ -99,7 +99,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
 
     let decodedBody: DecodedDataObject | null = null;
 
-    const encodedBody = typeof body.data === 'string' ? Buffer.from(body.data, 'base64').toString('utf8') : body;
+    const encodedBody = typeof body.message.data === 'string' ? Buffer.from(body.message.data, 'base64').toString('utf8') : body;
     try {
         decodedBody = JSON.parse(encodedBody);
     } catch (err) {
