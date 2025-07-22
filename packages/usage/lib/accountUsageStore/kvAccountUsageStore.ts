@@ -1,12 +1,16 @@
 import { startOfMonth } from '@nangohq/utils';
 
-import type { GetUsageParams, IncrementUsageParams, SetUsageParams, UsageStore } from './usageStore.js';
+import type { AccountUsageStore, GetUsageParams, IncrementUsageParams, SetUsageParams } from './accountUsageStore.js';
 import type { UsageMetric } from '../metrics.js';
 import type { KVStore } from '@nangohq/kvstore';
 
 const MONTH_IN_MS = 31 * 24 * 60 * 60 * 1000;
 
-export class KvUsageStore implements UsageStore {
+/**
+ * A key-value store backed account usage store.
+ * Uses a key-value store to store usage.
+ */
+export class KvAccountUsageStore implements AccountUsageStore {
     constructor(private readonly kvStore: KVStore) {}
 
     async getUsage({ accountId, metric, month }: GetUsageParams): Promise<number> {

@@ -8,7 +8,7 @@ import * as cron from 'node-cron';
 
 import { getKVStore } from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { DbUsageStore } from '@nangohq/usage/lib/usageStore/dbUsageStore.js';
+import { DbAccountUsageStore } from '@nangohq/usage';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
 import type { UsageMetric } from '@nangohq/usage/lib/metrics.js';
@@ -44,7 +44,7 @@ async function exec(): Promise<void> {
     logger.info(`Starting`);
 
     const kvStore = await getKVStore();
-    const dbStore = new DbUsageStore();
+    const dbStore = new DbAccountUsageStore();
 
     const summary = {
         persisted: 0,

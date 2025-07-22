@@ -2,12 +2,15 @@ import { report } from '@nangohq/utils';
 
 import { metricFlags } from './metrics.js';
 
+import type { AccountUsageStore, GetUsageParams, IncrementUsageParams } from './accountUsageStore/accountUsageStore.js';
 import type { UsageMetric } from './metrics.js';
-import type { GetUsageParams, IncrementUsageParams, UsageStore } from './usageStore/usageStore.js';
 import type { DBPlan } from '@nangohq/types';
 
-export class UsageTracker {
-    constructor(private readonly usageStore: UsageStore) {}
+/**
+ * Tracks usage for an account. Prioritizes performance over precision.
+ */
+export class AccountUsageTracker {
+    constructor(private readonly usageStore: AccountUsageStore) {}
 
     public async shouldCapUsage(plan: DBPlan, metric: UsageMetric): Promise<boolean> {
         try {

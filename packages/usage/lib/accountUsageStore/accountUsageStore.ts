@@ -18,7 +18,7 @@ export interface IncrementUsageParams {
     month?: Date;
 }
 
-export interface UsageStore {
+export interface AccountUsageStore {
     getUsage(params: GetUsageParams): Promise<number>;
     setUsage(params: SetUsageParams): Promise<number>;
     incrementUsage(params: IncrementUsageParams): Promise<number>;

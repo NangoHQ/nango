@@ -1,14 +1,16 @@
-import type { GetUsageParams, IncrementUsageParams, SetUsageParams, UsageStore } from './usageStore.js';
+import type { AccountUsageStore, GetUsageParams, IncrementUsageParams, SetUsageParams } from './accountUsageStore.js';
 
 /**
- * A UsageStore that uses a quick store for quick reads and writes,
+ * A UsageStore that uses a "quick" store for quick reads and writes,
  * and a persistent store as fallback for reads.
  * The cached store is dumped to the persistent store separately in a cron job.
+ *
+ * @see /packages/server/lib/crons/persistAccountUsage.ts
  */
-export class HybridUsageStore implements UsageStore {
+export class HybridAccountUsageStore implements AccountUsageStore {
     constructor(
-        private readonly cacheStore: UsageStore,
-        private readonly persistentStore: UsageStore
+        private readonly cacheStore: AccountUsageStore,
+        private readonly persistentStore: AccountUsageStore
     ) {}
 
     async getUsage(params: GetUsageParams): Promise<number> {

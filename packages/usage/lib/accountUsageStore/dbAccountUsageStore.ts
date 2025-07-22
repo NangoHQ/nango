@@ -1,10 +1,13 @@
 import db from '@nangohq/database';
 import { startOfMonth } from '@nangohq/utils';
 
-import type { GetUsageParams, IncrementUsageParams, SetUsageParams, UsageStore } from './usageStore.js';
+import type { AccountUsageStore, GetUsageParams, IncrementUsageParams, SetUsageParams } from './accountUsageStore.js';
 import type { DBAccountUsage } from '@nangohq/types';
 
-export class DbUsageStore implements UsageStore {
+/**
+ * A database backed account usage store. Directly tied to `accounts_usage` table.
+ */
+export class DbAccountUsageStore implements AccountUsageStore {
     async getUsage({ accountId, metric, month }: GetUsageParams): Promise<number> {
         const startOfMonthDate = startOfMonth(month ?? new Date());
 
