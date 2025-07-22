@@ -316,6 +316,7 @@
                 "integrations/all/aws",
                 "integrations/all/aws-iam",
                 "integrations/all/aws-scim",
+                "integrations/all/azure-blob-storage",
                 "integrations/all/azure-devops",
                 "integrations/all/bamboohr",
                 "integrations/all/bamboohr-basic",
