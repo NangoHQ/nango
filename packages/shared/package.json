@@ -33,7 +33,7 @@
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
         "fast-xml-parser": "4.5.0",
-        "form-data": "4.0.0",
+        "form-data": "4.0.4",
         "js-yaml": "4.1.0",
         "jsonwebtoken": "9.0.2",
         "lodash-es": "4.17.21",

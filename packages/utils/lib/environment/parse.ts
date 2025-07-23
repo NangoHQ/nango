@@ -46,6 +46,7 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_PERSIST_ACCOUNT_USAGE_MINUTES: z.coerce.number().optional().default(30),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
