@@ -555,6 +555,8 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
 Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
 
+To implement deletion detection in your syncs, [follow this guide](/guides/syncs/detecting-deletes).
+
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
 ```js

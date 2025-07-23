@@ -203,6 +203,7 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
+                        "guides/syncs/detecting-deletes",
                         "guides/syncs/large-datasets",
                         "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
                         "guides/syncs/sync-partitioning"
