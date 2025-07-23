@@ -64,14 +64,12 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                 return endpoint.method === flow.endpoint.method && endpoint.path === flow.endpoint.path;
             });
 
-            let inputModel = flow.input ? getDefinition(flow.input, flow.json_schema || {}) || undefined : undefined;
+            let inputModel = flow.type === 'action' && flow.input ? getDefinition(flow.input, flow.json_schema || {}) || undefined : undefined;
             // If it's primitive, it's an anonymous type, so we need to wrap it in an object
             if (inputModel && isPrimitiveType(inputModel)) {
                 inputModel = { type: 'object', properties: { input: inputModel }, required: ['input'] };
             }
-            if (flow.type === 'action') {
-                setInputModel(inputModel);
-            }
+            setInputModel(inputModel);
 
             const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
             let outputModel = getDefinition(outputModelName, flow.json_schema || {});
@@ -103,7 +101,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: flow.type === 'action' ? inputModel : undefined,
+                        input: inputModel,
                         language: language === 'curl' ? 'shell' : language!
                     })
                 );
@@ -114,7 +112,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                         secretKey,
                         connectionId,
                         providerConfigKey,
-                        input: flow.type === 'action' ? inputModel : undefined,
+                        input: inputModel,
                         language: language === 'curl' ? 'shell' : language!,
                         hideSecret: false
                     })
