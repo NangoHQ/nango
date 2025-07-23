@@ -34,7 +34,7 @@ export function errorRestrictConnectionId(res: Response<ApiError<'invalid_query_
         error: {
             code: 'invalid_query_params',
             errors: zodErrorToHTTP({
-                issues: [{ code: 'custom', path: ['connection_id'], message: 'connection_id is forbidden when using session token' }]
+                issues: [{ code: 'custom', path: ['connection_id'], message: 'connection_id is forbidden when using session token', input: {} }]
             })
         }
     });

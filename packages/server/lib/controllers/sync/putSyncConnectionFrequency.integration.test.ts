@@ -50,11 +50,20 @@ describe(`POST ${endpoint}`, () => {
                 error: {
                     code: 'invalid_body',
                     errors: [
-                        { code: 'invalid_string', message: 'Invalid', path: ['sync_name'], validation: 'regex' },
-                        { code: 'invalid_string', message: 'Invalid', path: ['sync_variant'], validation: 'regex' },
-                        { code: 'invalid_string', message: 'Invalid', path: ['provider_config_key'], validation: 'regex' },
-                        { code: 'invalid_string', message: 'Invalid', path: ['connection_id'], validation: 'regex' },
-                        { code: 'invalid_string', message: 'Invalid', path: ['frequency'], validation: 'regex' }
+                        { code: 'invalid_format', message: 'Invalid string: must match pattern /^[a-zA-Z0-9_-]+$/', path: ['sync_name'] },
+                        { code: 'invalid_format', message: 'Invalid string: must match pattern /^[a-zA-Z0-9_-]+$/', path: ['sync_variant'] },
+                        { code: 'invalid_format', message: 'Invalid string: must match pattern /^[a-zA-Z0-9~:.@ _-]+$/', path: ['provider_config_key'] },
+                        {
+                            code: 'invalid_format',
+                            message: 'Invalid string: must match pattern /^[a-zA-Z0-9,.;:=+~[\\]|@${}"\'\\\\/_ -]+$/',
+                            path: ['connection_id']
+                        },
+                        {
+                            code: 'invalid_format',
+                            message:
+                                'Invalid string: must match pattern /^(?<every>every )?((?<amount>[0-9]+)?\\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/',
+                            path: ['frequency']
+                        }
                     ]
                 }
             });

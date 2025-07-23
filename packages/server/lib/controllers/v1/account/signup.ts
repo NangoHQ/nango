@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
