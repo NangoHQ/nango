@@ -31,6 +31,7 @@
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
+        "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
         "axios": "1.10.0",
