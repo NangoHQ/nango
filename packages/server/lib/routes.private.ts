@@ -66,7 +66,7 @@ import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
-import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
+import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
@@ -157,7 +157,7 @@ web.route('/invite/:id').delete(webAuth, declineInvite);
 web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, postPlanExtendTrial);
-web.route('/plans/usage').get(webAuth, getUsage);
+web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/change').post(webAuth, postPlanChange);
 
 web.route('/environments').post(webAuth, postEnvironment);

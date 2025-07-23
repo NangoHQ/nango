@@ -4,9 +4,9 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 
-import type { GetUsage } from '@nangohq/types';
+import type { GetBillingUsage } from '@nangohq/types';
 
-export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
+export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -55,9 +55,9 @@ export type GetPlan = Endpoint<{
     };
 }>;
 
-export type GetUsage = Endpoint<{
+export type GetBillingUsage = Endpoint<{
     Method: 'GET';
-    Path: '/api/v1/plans/usage';
+    Path: '/api/v1/plans/billing-usage';
     Querystring: { env: string };
     Success: {
         data: {
