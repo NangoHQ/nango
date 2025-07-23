@@ -1005,7 +1005,7 @@ class ConnectionService {
         return Ok(updatedConnection);
     }
 
-    public async refreshAppCredentials(
+    public async refreshGithubAppCredentials(
         provider: Provider,
         config: ProviderConfig,
         connection: DBConnectionDecrypted,
@@ -1430,7 +1430,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await this.refreshAppCredentials(provider, providerConfig, connection, logCtx);
+            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }
