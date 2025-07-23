@@ -1129,6 +1129,31 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+azure-blob-storage:
+    display_name: Azure Blob Storage
+    alias: microsoft
+    default_scopes:
+        - offline_access
+        - https://storage.azure.com/.default
+    proxy:
+        base_url: https://${connectionConfig.accountName}.blob.core.windows.net
+        headers:
+            x-ms-version: ${connectionConfig.version} || 2025-05-05
+    docs: https://docs.nango.dev/integrations/all/azure-blob-storage
+    docs_connect: https://docs.nango.dev/integrations/all/azure-blob-storage/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The name of the Azure Storage account you want to connect to.
+            example: nangoStorage
+            doc_section: '#step-1-finding-your-account-name'
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 azure-devops:
     display_name: Azure DevOps
     categories:
