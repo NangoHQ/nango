@@ -104,7 +104,6 @@ export function generateInterfaces({ parsed }: { parsed: NangoYamlParsed }): str
 export function modelToTypescript({ model }: { model: NangoModel }) {
     const output: string[] = [];
     if (model.isAnon) {
-        output.push(`/** @deprecated It is recommended to use a Model */`);
         output.push(`export type ${model.name} = ${fieldToTypescript({ field: model.fields[0]! })}`);
     } else {
         output.push(`export interface ${model.name} {`);
@@ -139,26 +138,30 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
  * Transform a field definition to its typescript equivalent
  */
 export function fieldToTypescript({ field }: { field: NangoModelField }): string | boolean | null | undefined | number {
+    let output = '';
     if (Array.isArray(field.value)) {
         if (field.union) {
-            return field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
+            output = field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
+        } else if (field.array) {
+            output = `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
+        } else {
+            output = `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
         }
-        if (field.array) {
-            return `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
-        }
+    } else if (field.model || field.tsType) {
+        output = `${field.value}${field.array ? '[]' : ''}`;
+    } else if (field.value === null) {
+        output = 'null';
+    } else if (typeof field.value === 'string') {
+        output = `'${field.value}${field.array ? '[]' : ''}'`;
+    } else {
+        output = `${field.value}${field.array ? '[]' : ''}`;
+    }
 
-        return `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
+    if (field.optional) {
+        output = `${output} | undefined`;
     }
-    if (field.model || field.tsType) {
-        return `${field.value}${field.array ? '[]' : ''}`;
-    }
-    if (field.value === null) {
-        return 'null';
-    }
-    if (typeof field.value === 'string') {
-        return `'${field.value}${field.array ? '[]' : ''}'`;
-    }
-    return `${field.value}${field.array ? '[]' : ''}`;
+
+    return output;
 }
 
 /**
