@@ -59,9 +59,9 @@ export default function UsageCard() {
                 <div className="flex flex-col gap-[10px] w-full">
                     {isLoading ? (
                         <>
-                            <Skeleton className="h-[20px]" />
-                            <Skeleton className="h-[20px]" />
-                            <Skeleton className="h-[20px]" />
+                            <Skeleton className="h-[24px]" />
+                            <Skeleton className="h-[24px]" />
+                            <Skeleton className="h-[24px]" />
                         </>
                     ) : (
                         usage?.data?.map((metric) => (
