@@ -19,6 +19,7 @@ import { useClickAway } from 'react-use';
 
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
+import { useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
 import { apiPatchOnboarding } from '../hooks/useOnboarding';
 import { useUser } from '../hooks/useUser';
@@ -68,6 +69,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { data } = useConnectionsCount(env);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const refMenu = useRef<HTMLDivElement | null>(null);
+    const { plan } = useEnvironment(env);
 
     useClickAway(refMenu, () => {
         setShowUserSettings(false);
@@ -172,7 +174,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     </div>
                 </div>
                 <div className="flex flex-col gap-4 mx-4">
-                    <UsageCard />
+                    {plan?.name === 'free' && <UsageCard />}
                     <div>
                         <Button
                             variant={'emptyFaded'}

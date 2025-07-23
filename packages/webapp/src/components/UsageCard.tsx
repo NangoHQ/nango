@@ -26,6 +26,19 @@ function getDaysUntilNextMonth() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * Formats multiples of 1000 to k
+ * @example 1000 -> 1k
+ * @example 2000 -> 2k
+ * @example 2025 -> 2025
+ */
+function formatLimit(limit: number) {
+    if (limit >= 1000 && limit % 1000 === 0) {
+        return `${(limit / 1000).toFixed(0)}k`;
+    }
+    return limit;
+}
+
 export default function UsageCard() {
     const env = useStore((state) => state.env);
     const { data: usage, isLoading } = useApiGetUsage(env);
@@ -56,7 +69,7 @@ export default function UsageCard() {
                                 <span className="text-text-secondary text-s">{metric.label}</span>
                                 <div>
                                     <span className={cn('text-s', getColorForUsage(metric.usage, metric.limit))}>{metric.usage}</span>
-                                    {metric.limit && <span className="text-text-tertiary text-s">/{metric.limit}</span>}
+                                    {metric.limit && <span className="text-text-tertiary text-s">/{formatLimit(metric.limit)}</span>}
                                 </div>
                             </div>
                         ))
