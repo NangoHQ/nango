@@ -1,29 +1,74 @@
 ---
-title: Linear
-sidebarTitle: Linear
+title: 'Linear'
+sidebarTitle: 'Linear'
+description: 'Access the Hubspot API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/linear/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hubspot_.
+      </Step>
+      <Step title="Authorize Hubspot">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hubspot. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Hubspot API">
+        Let's make your first request to the Hubspot API (fetch a list of issues). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs> 
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/graphql" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                        "query": "query { issues(first: 10) { nodes { id title identifier } } }"
+                      }'
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for a [Linear account](https://linear.app/signup). |
-| Paid test account | ✅ Not required | Free Linear account can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | No app review process for OAuth applications. |
-| Security audit | ✅ Not required | |
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.post({
+              endpoint: '/graphql',
+              data: {
+                "query": "query { issues(first: 10) { nodes { id title identifier } } }"
+              },
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, 2, null));
+            ```
+            </Tab>
 
 
-## Setup guide
+        </Tabs>
 
-<Steps>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You’re connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Hubspot accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
   <Step title="Create a Linear account">
     If you don't already have one, sign up for a [Linear account](https://linear.app/signup).
   </Step>
@@ -56,11 +101,8 @@ import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
   </Step>
 </Steps>
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-
-## Useful links
-
+  </Tab>
+  <Tab title="🔗 Useful links">
 | Topic | Links | 
 | - | - | 
 | General | [Website](https://linear.app/) |
@@ -74,18 +116,20 @@ import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
 | | [API rate limits](https://linear.app/developers/rate-limiting) |
 | | [Webhooks](https://linear.app/developers/webhooks) |
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+  -  Linear uses a GraphQL API rather than a REST API. This means all API requests are made to a single endpoint (`https://api.linear.app/graphql`).
+  -  Linear has different rate limits depending on the authentication method used. For full details, refer to the [Linear rate limit documentation](https://linear.app/developers/rate-limiting#api-request-limits).
+  -  OAuth tokens do not expire in the short term, but they are valid for up to 10 years. After that, users will need to reauthenticate.
+  -  When creating an OAuth application, it's recommended to create a dedicated workspace for managing the application.
+  -  Linear's GraphQL API requires that you specify exactly which fields you want to retrieve in your queries.
+  -  Linear supports webhooks for real-time updates, which can be more [efficient](https://linear.app/developers/rate-limiting#avoid-polling) than polling for changes.
+  -  The `admin` scope should only be requested if absolutely necessary, as it provides full access to admin-level endpoints.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+  </Tab>
+</Tabs>
 
-
-
-## API gotchas
-
-- Linear uses a GraphQL API rather than a REST API. This means all API requests are made to a single endpoint (`https://api.linear.app/graphql`).
-- Linear has different rate limits depending on the authentication method used. For full details, refer to the [Linear rate limit documentation](https://linear.app/developers/rate-limiting#api-request-limits).
-- OAuth tokens do not expire in the short term, but they are valid for up to 10 years. After that, users will need to reauthenticate.
-- When creating an OAuth application, it's recommended to create a dedicated workspace for managing the application.
-- Linear's GraphQL API requires that you specify exactly which fields you want to retrieve in your queries.
-- Linear supports webhooks for real-time updates, which can be more [efficient](https://linear.app/developers/rate-limiting#avoid-polling) than polling for changes.
-- The `admin` scope should only be requested if absolutely necessary, as it provides full access to admin-level endpoints.
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
