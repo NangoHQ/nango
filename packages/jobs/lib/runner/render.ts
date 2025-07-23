@@ -61,7 +61,8 @@ export const renderNodeProvider: NodeProvider = {
                     ...(envs.DD_TRACE_AGENT_URL ? [{ key: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
                     { key: 'JOBS_SERVICE_URL', value: envs.JOBS_SERVICE_URL },
                     { key: 'PROVIDERS_URL', value: getProvidersUrl() },
-                    { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
+                    { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
+                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : [])
                 ]
             })
         );

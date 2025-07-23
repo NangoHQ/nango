@@ -4782,6 +4782,7 @@ google-mail:
     alias: google
     proxy:
         base_url: https://gmail.googleapis.com
+    webhook_routing_script: gmailWebhookRouting
     docs: https://docs.nango.dev/integrations/all/google-mail
 
 google-sheet:
@@ -5982,6 +5983,37 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+knowbe4:
+    display_name: KnowBe4 (Reporting)
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.knowbe4.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/knowbe4
+    docs_connect: https://docs.nango.dev/integrations/all/knowbe4/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your KnowBe4 account
+            doc_section: '#step-2-generating-your-knowbe4-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your API base URL
+            doc_section: '#step-1-finding-your-subdomain'
+            example: api
+            pattern: '^(api|api-eu|api-ca|api-uk|api-de)$'
+            order: 1
+
 klipfolio:
     display_name: Klipfolio
     categories:
@@ -6511,6 +6543,7 @@ mailchimp:
     proxy:
         base_url: https://${connectionConfig.dc}.api.mailchimp.com
     docs: https://docs.nango.dev/integrations/all/mailchimp
+    post_connection_script: mailchimpPostConnection
     connection_config:
         dc:
             type: string
@@ -6518,6 +6551,7 @@ mailchimp:
             description: The data center for your account
             pattern: '^[a-z]+\d*$'
             example: us6
+            automated: true
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:

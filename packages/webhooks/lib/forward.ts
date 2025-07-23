@@ -68,10 +68,10 @@ export const forwardWebhook = async ({
         });
 
         if (result.isOk()) {
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
             await logCtx.success();
         } else {
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED, 1, { accountId: account.id });
             await logCtx.failed();
         }
 
@@ -93,9 +93,9 @@ export const forwardWebhook = async ({
         });
 
         if (result.isOk()) {
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
         } else {
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED, 1, { accountId: account.id });
             success = false;
         }
     }
