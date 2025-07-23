@@ -24,6 +24,7 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/account-usage": "file:../account-usage",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
         "zod": "4.0.5"

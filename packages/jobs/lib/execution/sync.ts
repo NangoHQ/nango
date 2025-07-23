@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker } from '@nangohq/account-usage';
 import db from '@nangohq/database';
 import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
@@ -18,6 +19,7 @@ import {
     getApiUrl,
     getEndUserByConnectionId,
     getLastSyncDate,
+    getPlan,
     getSyncConfigRaw,
     getSyncJobByRunId,
     setLastSyncDate,
@@ -39,6 +41,8 @@ import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+const accountUsageTracker = await getAccountUsageTracker();
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContextOrigin | undefined;
@@ -76,9 +80,12 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
+        const planRes = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
+        const plan = planRes.isOk() ? planRes.value : null;
+
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
-        tagTraceUser(accountAndEnv);
+        tagTraceUser({ ...accountAndEnv, plan });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
@@ -99,6 +106,19 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation, startedAt));
+
+        // We stop any sync from running if the active_records limit is reached
+        if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'active_records'))) {
+            void logCtx.error(`Usage limit exceeded for monthly active records`, {
+                usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
+                limit: accountUsageTracker.getLimit(plan, 'active_records')
+            });
+
+            throw new NangoError('usage_limit_exceeded_active_records', {
+                usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
+                limit: accountUsageTracker.getLimit(plan, 'active_records')
+            });
+        }
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
