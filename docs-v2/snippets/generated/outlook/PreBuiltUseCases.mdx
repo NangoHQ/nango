@@ -4,12 +4,19 @@
 <AccordionGroup>
 
 
+<Accordion title="Events">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /events/content` | Fetch the body content of an event | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-event-content.md) |
+| `GET /events` | Sync calendar events on the primary calendar going back as specified in the metadata `backfillPeriodMs`, or fallback to 1 month if not provided. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/events.md) |
+</Accordion>
+
+
 <Accordion title="Others">
 | Endpoint | Description | Readme |
 | - | - | - |
 | `GET /fetch-attachment` | An action used to fetch the contents of an attachment. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.md) |
 | `GET /emails` | Fetches a list of emails from outlook. Goes back default to 1 year<br />but metadata can be set using the `backfillPeriodMs` property<br />to change the lookback. The property should be set in milliseconds. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/emails.md) |
-| `GET /events` | Sync calendar events on the primary calendar going back as specified in the metadata `backfillPeriodMs`, or fallback to 1 month if not provided. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/events.md) |
 | `GET /calendars` | Sync the calendars list of the user | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/calendars.md) |
 | `GET /folders` | Fetches a list of folders from outlook. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/syncs/folders.md) |
 </Accordion>

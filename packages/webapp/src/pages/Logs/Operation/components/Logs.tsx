@@ -8,6 +8,7 @@ import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
 import { PeriodSelector } from '../../../../components/PeriodSelector';
+import { SimpleTooltip } from '../../../../components/SimpleTooltip';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import Spinner from '../../../../components/ui/Spinner';
@@ -190,8 +191,22 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
-                <div className="text-white text-xs">
-                    {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
+                <div className="flex gap-2 text-white text-xs">
+                    <div>
+                        {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
+                    </div>
+                    <div>
+                        <SimpleTooltip
+                            tooltipContent={
+                                <>
+                                    Successfull HTTP logs are sampled to 10% to reduce noise.
+                                    <br /> Other logs are not sampled
+                                </>
+                            }
+                        >
+                            (sampling is on)
+                        </SimpleTooltip>
+                    </div>
                 </div>
             </div>
             <header className="flex gap-2 items-center">

@@ -24,6 +24,7 @@ export class DatabaseClient {
             client: 'postgres',
             connection: {
                 connectionString: url,
+                ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
                 statement_timeout: 60000,
                 application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
             },

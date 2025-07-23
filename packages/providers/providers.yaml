@@ -1129,6 +1129,33 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+azure-blob-storage:
+    categories:
+        - storage
+    display_name: Azure Blob Storage
+    alias: microsoft
+    default_scopes:
+        - offline_access
+        - https://storage.azure.com/.default
+    proxy:
+        base_url: https://${connectionConfig.accountName}.blob.core.windows.net
+        headers:
+            x-ms-version: ${connectionConfig.version} || 2025-05-05
+    docs: https://docs.nango.dev/integrations/all/azure-blob-storage
+    docs_connect: https://docs.nango.dev/integrations/all/azure-blob-storage/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The name of the Azure Storage account you want to connect to.
+            example: nangoStorage
+            doc_section: '#step-1-finding-your-account-name'
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 azure-devops:
     display_name: Azure DevOps
     categories:
@@ -3655,6 +3682,9 @@ exact-online:
             accept: application/json
         retry:
             at: 'x-ratelimit-reset'
+            error_code:
+                - '429'
+                - '503'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -3788,13 +3818,13 @@ figma-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.host}/scim
+        base_url: https://${connectionConfig.host}/scim/v2/${connectionConfig.tenantId}
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /v2/${connectionConfig.tenantId}/Users
+                - /Users
     docs: https://docs.nango.dev/integrations/all/figma-scim
     docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
     credentials:
@@ -4392,7 +4422,11 @@ github:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -4468,7 +4502,11 @@ github-pat:
         retry:
             at: 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
         headers:
             authorization: Bearer ${apiKey}
             x-github-api-version: ${connectionConfig.version} || 2022-11-28
@@ -4713,8 +4751,21 @@ google-calendar:
             cursor_name_in_request: pageToken
             response_path: items
         retry:
-            error_code: 403
+            error_code:
+                - '403'
+                - '5xx'
+                - '401'
+                - '429'
     docs: https://docs.nango.dev/integrations/all/google-calendar
+
+google-chat:
+    display_name: Google Chat
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://chat.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-chat
 
 google-docs:
     display_name: Google Docs
@@ -4733,6 +4784,7 @@ google-mail:
     alias: google
     proxy:
         base_url: https://gmail.googleapis.com
+    webhook_routing_script: gmailWebhookRouting
     docs: https://docs.nango.dev/integrations/all/google-mail
 
 google-sheet:
@@ -4796,6 +4848,13 @@ google-play:
     proxy:
         base_url: https://play.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-play
+
+google-cloud-storage:
+    display_name: Google Cloud Storage
+    alias: google
+    categories:
+        - storage
+    docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
 gorgias:
     display_name: Gorgias
@@ -5926,6 +5985,37 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+knowbe4:
+    display_name: KnowBe4 (Reporting)
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.knowbe4.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/knowbe4
+    docs_connect: https://docs.nango.dev/integrations/all/knowbe4/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your KnowBe4 account
+            doc_section: '#step-2-generating-your-knowbe4-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your API base URL
+            doc_section: '#step-1-finding-your-subdomain'
+            example: eu.api
+            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
+            order: 1
+
 klipfolio:
     display_name: Klipfolio
     categories:
@@ -6221,7 +6311,11 @@ linear:
         retry:
             at: 'x-ratelimit-requests-reset'
             remaining: 'x-ratelimit-requests-remaining'
-            error_code: 400
+            error_code:
+                - '400'
+                - '5xx'
+                - '401'
+                - '429'
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
@@ -6451,6 +6545,7 @@ mailchimp:
     proxy:
         base_url: https://${connectionConfig.dc}.api.mailchimp.com
     docs: https://docs.nango.dev/integrations/all/mailchimp
+    post_connection_script: mailchimpPostConnection
     connection_config:
         dc:
             type: string
@@ -6458,6 +6553,7 @@ mailchimp:
             description: The data center for your account
             pattern: '^[a-z]+\d*$'
             example: us6
+            automated: true
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
@@ -9188,6 +9284,30 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
+
+setmore:
+    display_name: Setmore
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://developer.setmore.com/api/v1/o/oauth2/token?refreshToken=${credentials.refreshToken}
+    proxy:
+        base_url: https://developer.setmore.com/api
+    token_response:
+        token: data.token.access_token
+        token_expiration: data.token.expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/setmore
+    docs_connect: https://docs.nango.dev/integrations/all/setmore/connect
+    credentials:
+        refreshToken:
+            type: string
+            title: Access Token
+            pattern: '^r1\/[A-Za-z0-9\-]+$'
+            example: r1/Ab12Cd34Ef56Gh78Ij90KlMnOpQr-StUvWxYz123456
+            description: The access token provided to you by Setmore team
+            doc_section: '#step-1-requesting-access-to-the-api'
 
 servicem8:
     display_name: ServiceM8

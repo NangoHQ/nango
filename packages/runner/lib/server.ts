@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import timeout from 'connect-timeout';
@@ -6,12 +7,10 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { envs, heartbeatIntervalMs } from './env.js';
+import { heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
-import { RunnerMonitor } from './monitor.js';
-import { Locks } from './sdk/locks.js';
-import { abortControllers } from './state.js';
+import { abortControllers, locks, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -45,14 +44,11 @@ function healthProcedure() {
     });
 }
 
-const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
-const locks = new Locks();
-
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
-        .mutation(({ input }): boolean => {
-            const { taskId, nangoProps, code, codeParams } = input;
+        .mutation((arg): boolean => {
+            const { taskId, nangoProps, code, codeParams } = arg.input;
             logger.info('Received task', {
                 taskId: taskId,
                 env: nangoProps.environmentId,
@@ -62,17 +58,42 @@ function startProcedure() {
                 fileLocation: nangoProps.syncConfig.file_location,
                 input: codeParams
             });
-            usage.track(nangoProps);
+
+            // Sometimes we can receive the same job (http retry) or a job for the same sync (orchestrator miss scheduling)
+            // Here is the last safety net to be sure nothing runs in parallel
+            if (usage.hasConflictingSync(nangoProps)) {
+                logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
+                throw new Error('Conflicting sync detected');
+            }
+
+            usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
-                const heartbeat = setInterval(async () => {
-                    await jobsClient.postHeartbeat({ taskId });
-                }, heartbeatIntervalMs);
-                try {
-                    const abortController = new AbortController();
-                    abortControllers.set(taskId, abortController);
+                let lastSuccessHeartbeatAt: number | null = null;
+                const abortController = new AbortController();
+                abortControllers.set(taskId, abortController);
+                const heartbeatTimeoutMs = arg.input.nangoProps.heartbeatTimeoutSecs
+                    ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
+                    : heartbeatIntervalMs * 3;
 
+                const heartbeat = setInterval(async () => {
+                    if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
+                        // Jobs and orchestrator will kill the task if the heartbeat is not successful for too long
+                        // This is to prevent the task from hanging indefinitely if we have trouble reaching orch or the opposite
+                        logger.error('Heartbeat failed for too long, self killing task', { taskId });
+                        abortController.abort();
+                        clearInterval(heartbeat);
+                        return;
+                    }
+
+                    const res = await jobsClient.postHeartbeat({ taskId });
+                    if (res.isOk()) {
+                        lastSuccessHeartbeatAt = Date.now();
+                    }
+                }, heartbeatIntervalMs);
+
+                try {
                     const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
 
                     await jobsClient.putTask({

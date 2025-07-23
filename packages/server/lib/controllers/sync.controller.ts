@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -10,7 +11,6 @@ import {
     connectionService,
     errorManager,
     getActionOrModelByEndpoint,
-    getAttributes,
     getSyncConfigRaw,
     getSyncs,
     getSyncsByConnectionId,
@@ -33,6 +33,7 @@ import type { Span } from 'dd-trace';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
+const accountUsageTracker = await getAccountUsageTracker();
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -141,6 +142,7 @@ class SyncController {
 
         const { input, action_name } = req.body;
         const { account, environment, plan } = res.locals;
+
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
@@ -207,6 +209,7 @@ class SyncController {
                 .setTag('nango.connectionId', connectionId)
                 .setTag('nango.environmentId', environmentId)
                 .setTag('nango.providerConfigKey', providerConfigKey);
+
             logCtx = await logContextGetter.create(
                 { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
                 {
@@ -219,6 +222,22 @@ class SyncController {
                 }
             );
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
+            if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'actions'))) {
+                void logCtx.error('Usage limit exceeded for actions', {
+                    usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
+                    limit: accountUsageTracker.getLimit(plan, 'actions')
+                });
+
+                res.status(400).send({ error: 'Usage limit exceeded for actions' });
+
+                span.setTag('nango.usageLimitExceeded', true);
+                await logCtx.failed();
+                span.finish();
+                return;
+            }
+
+            void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,
@@ -510,30 +529,6 @@ class SyncController {
                 void logCtx.error('Failed to sync command', { error: err });
                 await logCtx.failed();
             }
-            next(err);
-        }
-    }
-
-    public async getFlowAttributes(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { sync_name, provider_config_key } = req.query;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            if (!sync_name) {
-                res.status(400).send({ message: 'Missing sync name' });
-
-                return;
-            }
-
-            const attributes = await getAttributes(provider_config_key as string, sync_name as string);
-
-            res.status(200).send(attributes);
-        } catch (err) {
             next(err);
         }
     }

@@ -116,7 +116,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         }
 
         if (globalEnv.features.plan) {
-            list.push({ link: `/${env}/team/billing`, name: 'Billing', icon: IconCreditCard, value: LeftNavBarItems.TeamBilling });
+            list.push({ link: `/${env}/team/billing`, name: 'Usage & Billing', icon: IconCreditCard, value: LeftNavBarItems.TeamBilling });
         }
 
         return list;

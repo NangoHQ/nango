@@ -3,8 +3,18 @@ import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiPlan, GetPlans, GetUsage, PostPlanExtendTrial } from '@nangohq/types';
+import type { ApiPlan, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial } from '@nangohq/types';
 
+export async function apiGetCurrentPlan(env: string) {
+    const res = await apiFetch(`/api/v1/plans/current?env=${env}`, {
+        method: 'GET'
+    });
+
+    return {
+        res,
+        json: (await res.json()) as GetPlan['Reply']
+    };
+}
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
         method: 'POST'
@@ -64,4 +74,16 @@ export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver
     }, [plan]);
 
     return res;
+}
+
+export async function apiPostPlanChange(env: string, body: PostPlanChange['Body']) {
+    const res = await apiFetch(`/api/v1/plans/change?env=${env}`, {
+        method: 'POST',
+        body: JSON.stringify(body)
+    });
+
+    return {
+        res,
+        json: (await res.json()) as PostPlanChange['Reply']
+    };
 }
