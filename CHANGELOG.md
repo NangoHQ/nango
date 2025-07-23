@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.64.2] - 2025-07-23
+
+### Added
+
+- *(post-connection-script)* Add mailchimp post connection script to get dc connection config value (#4348) by @hassan254-prog
+- *(webhook > metric)* Add breakdown per customer (#4355) by @bodinsamuel
+- *(gmail-webhook)* Add gmail webhook routing script with validation (#4347) by @khaliqgant
+- *(usage)* Create usage tracker (#4345) by @kaposke
+- *(integrations)* Add support for knowbe4 (#4363) by @hassan254-prog
+- *(integrations)* Add support for azure blob storage (#4358) by @hassan254-prog
+
+### Changed
+
+- *(deps)* Bump form-data from 4.0.0 to 4.0.4 in /packages/shared (#4353) by @dependabot[bot]
+- Remove service (#4322) by @mintlify[bot]
+
+### Fixed
+
+- *(plans)* Update flags (#4354) by @bodinsamuel
+- Upgrade node to 22.17.1 (#4356) by @bodinsamuel
+- *(deps)* Upgrade various (#4357) by @bodinsamuel
+- *(cli)* Correctly support optional in zod->json (#4359) by @bodinsamuel
+- *(sdk)* Sample successful http logs (#4360) by @bodinsamuel
+
 ## [v0.64.1] - 2025-07-21
 
 ### Added
@@ -4409,6 +4433,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
 [v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
 [v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
 [v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
