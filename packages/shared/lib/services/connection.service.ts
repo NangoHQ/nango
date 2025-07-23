@@ -1416,6 +1416,8 @@ class ConnectionService {
             .leftJoin('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
             .leftJoin('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
             .where('_nango_accounts.id', accountId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_environments.deleted', false)
             .count<{ count: string }>('*')
             .first();
 
