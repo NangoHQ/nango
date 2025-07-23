@@ -59,7 +59,7 @@ export interface MetricUsage {
     metric: string;
     label: string;
     usage: number;
-    limit?: number | null;
+    limit: number | null;
 }
 
 export type GetUsage = Endpoint<{
