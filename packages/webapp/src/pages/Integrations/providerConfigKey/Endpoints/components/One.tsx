@@ -64,7 +64,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                 return endpoint.method === flow.endpoint.method && endpoint.path === flow.endpoint.path;
             });
 
-            let inputModel = flow.input ? getDefinition(flow.input, flow.json_schema || {}) || undefined : undefined;
+            let inputModel = flow.type === 'action' && flow.input ? getDefinition(flow.input, flow.json_schema || {}) || undefined : undefined;
             // If it's primitive, it's an anonymous type, so we need to wrap it in an object
             if (inputModel && isPrimitiveType(inputModel)) {
                 inputModel = { type: 'object', properties: { input: inputModel }, required: ['input'] };
