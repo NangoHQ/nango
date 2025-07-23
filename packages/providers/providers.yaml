@@ -1129,6 +1129,31 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+azure-blob-storage:
+    display_name: Azure Blob Storage
+    alias: microsoft
+    default_scopes:
+        - offline_access
+        - https://storage.azure.com/.default
+    proxy:
+        base_url: https://${connectionConfig.accountName}.blob.core.windows.net
+        headers:
+            x-ms-version: ${connectionConfig.version} || 2025-05-05
+    docs: https://docs.nango.dev/integrations/all/azure-blob-storage
+    docs_connect: https://docs.nango.dev/integrations/all/azure-blob-storage/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The name of the Azure Storage account you want to connect to.
+            example: nangoStorage
+            doc_section: '#step-1-finding-your-account-name'
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 azure-devops:
     display_name: Azure DevOps
     categories:
@@ -5957,6 +5982,37 @@ keeper-scim:
             pattern: '^\d{15}$'
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
+
+knowbe4:
+    display_name: KnowBe4 (Reporting)
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.knowbe4.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/knowbe4
+    docs_connect: https://docs.nango.dev/integrations/all/knowbe4/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your KnowBe4 account
+            doc_section: '#step-2-generating-your-knowbe4-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your API base URL
+            doc_section: '#step-1-finding-your-subdomain'
+            example: api
+            pattern: '^(api|api-eu|api-ca|api-uk|api-de)$'
+            order: 1
 
 klipfolio:
     display_name: Klipfolio
