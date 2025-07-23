@@ -69,7 +69,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             if (inputModel && isPrimitiveType(inputModel)) {
                 inputModel = { type: 'object', properties: { input: inputModel }, required: ['input'] };
             }
-            setInputModel(inputModel);
+            if (flow.type === 'action') {
+                setInputModel(inputModel);
+            }
 
             const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
             let outputModel = getDefinition(outputModelName, flow.json_schema || {});
