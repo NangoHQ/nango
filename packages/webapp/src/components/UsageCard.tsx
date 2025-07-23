@@ -43,7 +43,6 @@ export default function UsageCard() {
     const env = useStore((state) => state.env);
     const { data: usage, isLoading } = useApiGetUsage(env);
 
-    // Calculate days until the next month using useMemo
     const usageResetMessage = useMemo(() => {
         const daysUntilNextMonth = getDaysUntilNextMonth();
         if (daysUntilNextMonth <= 1) {
@@ -53,7 +52,7 @@ export default function UsageCard() {
     }, []);
 
     return (
-        <div className="flex flex-col gap-[20px] p-3 rounded border border-border-gray">
+        <div className="flex flex-col gap-[20px] p-3 rounded">
             <span className="text-white font-semibold text-sm">Free plan usage</span>
             <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col gap-[10px] w-full">
