@@ -42,6 +42,7 @@ COPY packages/providers/package.json ./packages/providers/package.json
 COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY packages/billing/package.json ./packages/billing/package.json
 COPY packages/pubsub/package.json ./packages/pubsub/package.json
+COPY packages/account-usage/package.json ./packages/account-usage/package.json
 COPY package*.json  ./
 
 # Install every dependencies
