@@ -46,6 +46,7 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_PERSIST_ACCOUNT_USAGE_MINUTES: z.coerce.number().optional().default(30),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -61,6 +62,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
@@ -79,6 +81,7 @@ export const ENVS = z.object({
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
 
