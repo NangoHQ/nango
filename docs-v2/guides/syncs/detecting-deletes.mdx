@@ -75,7 +75,8 @@ Full refresh syncs download all records on every run.
 
 Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour with the `trackDeletes` flag ([full reference](/reference/integration-configuration#param-track-deletes)).
 
-<Warning>**Do not use `trackDeletes` with incremental syncs**.
+<Warning>
+**Do not use `trackDeletes` with incremental syncs**.
 
 The trackDeletes flag is only safe for full refresh syncs. 
 Enabling it on an incremental sync will cause Nango to treat any record that wasn't fetched in the current delta window as “missing” and mark it deleted, corrupting your data.
@@ -122,7 +123,8 @@ export default createSync({
 2. On the next run, Nango compares the new list with the old one.
 3. Any records missing in the new list are marked as deleted (soft delete). They remain accessible from the Nango cache, but with `record._metadata.deleted === true`.
 
-<Warning>**Careful with exception handling**
+<Warning>
+**Careful with exception handling**
 
 Nango only performs the diff when the sync run finishes successfully (=without uncaught exceptions).
 
