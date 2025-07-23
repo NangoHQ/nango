@@ -1130,6 +1130,8 @@ aws-scim:
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
 azure-blob-storage:
+    categories:
+        - storage
     display_name: Azure Blob Storage
     alias: microsoft
     default_scopes:
@@ -6010,8 +6012,8 @@ knowbe4:
             title: Subdomain
             description: The subdomain to your API base URL
             doc_section: '#step-1-finding-your-subdomain'
-            example: api
-            pattern: '^(api|api-eu|api-ca|api-uk|api-de)$'
+            example: eu.api
+            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
             order: 1
 
 klipfolio:
