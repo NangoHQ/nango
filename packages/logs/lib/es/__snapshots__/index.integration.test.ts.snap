@@ -213,6 +213,6 @@ exports[`mapping > should create one index automatically on operation 3`] = `
 
 exports[`mapping > should create one index automatically on operation 4`] = `
 {
-  "name": "policy_retention",
+  "name": "test_policy_retention_operations",
 }
 `;
