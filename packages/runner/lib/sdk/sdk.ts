@@ -76,7 +76,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             }).unwrap(),
             logger: async (log) => {
                 // We only sample successful HTTP logs because they are the most common and the most noisy.
-                if (HTTP_LOG_SAMPLE_PCT && this.props.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
+                if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
                     const pct = Math.random() * 100 > HTTP_LOG_SAMPLE_PCT;
                     if (this.httpLogSample > HTTP_LOG_MIN_CALLS && pct) {
                         return;
