@@ -1413,15 +1413,15 @@ class ConnectionService {
     async countByAccountId(accountId: number): Promise<number> {
         const res = await db.knex
             .from('_nango_connections')
-            .leftJoin('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
-            .leftJoin('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
             .where('_nango_accounts.id', accountId)
             .where('_nango_connections.deleted', false)
             .where('_nango_environments.deleted', false)
             .count<{ count: string }>('*')
             .first();
 
-        return res?.count ? Number(res.count) : 0;
+        return Number(res?.count || 0);
     }
 
     // return the number of connections per account
