@@ -252,7 +252,7 @@ export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRe
 }
 
 export const policyOperations = {
-    name: `${envs.NANGO_LOGS_ES_POLICY_PREFIX}_policy_retention_operations`,
+    name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention_operations`,
     policy: {
         phases: {
             delete: { min_age: '15d', actions: { delete: {} } }
@@ -263,7 +263,7 @@ export const policyOperations = {
 export const indexOperations: estypes.IndicesCreateRequest = {
     index: `20250724_${envs.NANGO_LOGS_ES_INDEX_OPERATIONS ?? 'operations'}`,
     settings: {
-        lifecycle: { name: 'policy_retention' },
+        lifecycle: { name: policyOperations.name },
         analysis: {
             analyzer: {
                 default: {
@@ -289,7 +289,7 @@ export const indexOperations: estypes.IndicesCreateRequest = {
 };
 
 export const policyMessages = {
-    name: 'policy_retention',
+    name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention`,
     policy: {
         phases: {
             delete: { min_age: '15d', actions: { delete: {} } }
@@ -300,7 +300,7 @@ export const policyMessages = {
 export const indexMessages: estypes.IndicesCreateRequest = {
     index: `20240528_${envs.NANGO_LOGS_ES_INDEX_MESSAGES ?? 'messages'}`,
     settings: {
-        lifecycle: { name: 'policy_retention' },
+        lifecycle: { name: policyMessages.name },
         analysis: {
             analyzer: {
                 default: {
