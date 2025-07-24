@@ -251,16 +251,14 @@ export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRe
     };
 }
 
-export function policyRetention(): estypes.IlmPutLifecycleRequest {
-    return {
-        name: 'policy_retention',
-        policy: {
-            phases: {
-                delete: { min_age: '15d', actions: { delete: {} } }
-            }
+export const policyOperations = {
+    name: `${envs.NANGO_LOGS_ES_POLICY_PREFIX}_policy_retention_operations`,
+    policy: {
+        phases: {
+            delete: { min_age: '15d', actions: { delete: {} } }
         }
-    };
-}
+    }
+};
 
 export const indexOperations: estypes.IndicesCreateRequest = {
     index: `20250724_${envs.NANGO_LOGS_ES_INDEX_OPERATIONS ?? 'operations'}`,
@@ -287,6 +285,15 @@ export const indexOperations: estypes.IndicesCreateRequest = {
         _source: { enabled: true },
         dynamic: false,
         properties: propsOperations
+    }
+};
+
+export const policyMessages = {
+    name: 'policy_retention',
+    policy: {
+        phases: {
+            delete: { min_age: '15d', actions: { delete: {} } }
+        }
     }
 };
 

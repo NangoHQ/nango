@@ -3,7 +3,7 @@ import { isTest } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { client } from './client.js';
-import { getDailyIndexPipeline, indexMessages, indexOperations, policyRetention } from './schema.js';
+import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
 import { getFormattedMessage, getFormattedOperation } from '../models/helpers.js';
 import { createMessage } from '../models/messages.js';
 import { createOperation } from '../models/operations.js';
@@ -25,10 +25,11 @@ export async function migrateMapping() {
     try {
         for (const index of [indexMessages, indexOperations]) {
             logger.info(`Migrating index "${index.index}"...`);
+            const isMessages = index.index.includes('messages');
 
             // -- Policy
             logger.info(`  Updating policy`);
-            await client.ilm.putLifecycle(policyRetention());
+            await client.ilm.putLifecycle(isMessages ? policyMessages : policyOperations);
 
             // -- Index
             const existsTemplate = await client.indices.existsIndexTemplate({ name: `${index.index}-template` });
