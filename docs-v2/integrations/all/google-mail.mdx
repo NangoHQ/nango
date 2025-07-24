@@ -1,6 +1,6 @@
 ---
 title: 'Gmail'
-sidebarTitle: 'Gmail' 
+sidebarTitle: 'Gmail'
 description: 'Access the Gmail API in 2 minutes 💨'
 ---
 
@@ -15,7 +15,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Gmail_.
       </Step>
       <Step title="Authorize Gmail">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app. 
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Gmail API">
         Let's make your first request to the Gmail API to fetch your profile information. This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -50,11 +50,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
             ```
             </Tab>
 
-            
+
         </Tabs>
 
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
-            
+
       </Step>
     </Steps>
 
@@ -73,11 +73,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project 
+        4. Enter a **Project Name** for your project
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
-        5. Select it from the project dropdown.
+        7. Select it from the project dropdown.
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
@@ -95,7 +95,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
-        8  Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
+        8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
       </Step>
       <Step title="Create OAuth 2.0 credentials">
         1. Go to **APIs & Services** > **Credentials** in the Google Cloud Console.

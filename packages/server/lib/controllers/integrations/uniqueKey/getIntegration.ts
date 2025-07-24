@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';

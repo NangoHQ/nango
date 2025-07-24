@@ -27,13 +27,13 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "axios": "1.9.0",
+        "axios": "1.10.0",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
         "get-port": "7.1.0",
         "rate-limiter-flexible": "5.0.3",
         "redis": "4.6.13",
-        "zod": "3.24.2"
+        "zod": "4.0.5"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",

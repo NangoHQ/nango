@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -17,7 +17,7 @@ import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional()
+        params: z.record(z.string(), z.any()).optional()
     })
     .and(connectionCredential);
 

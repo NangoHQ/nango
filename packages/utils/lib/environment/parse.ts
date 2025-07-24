@@ -1,10 +1,5 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
-const bool = z
-    .enum(['true', 'false', ''])
-    .optional()
-    .default('false')
-    .transform((value) => value === 'true');
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -25,14 +20,14 @@ export const ENVS = z.object({
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
-    NANGO_SERVER_URL: z.string().url().optional(),
+    NANGO_SERVER_URL: z.url().optional(),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional(),
-    NANGO_CACHE_ENV_KEYS: bool,
+    NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
 
     // Connect
-    NANGO_PUBLIC_CONNECT_URL: z.string().url().optional(),
+    NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
@@ -51,44 +46,47 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_PERSIST_ACCOUNT_USAGE_MINUTES: z.coerce.number().optional().default(30),
 
     // Persist
-    PERSIST_SERVICE_URL: z.string().url().optional(),
+    PERSIST_SERVICE_URL: z.url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
-    ORCHESTRATOR_SERVICE_URL: z.string().url().optional(),
+    ORCHESTRATOR_SERVICE_URL: z.url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
-    ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
+    ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
     ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
-    JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
+    JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
-    PROVIDERS_URL: z.string().url().optional(),
+    PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
-    RUNNER_SERVICE_URL: z.string().url().optional(),
+    RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().optional(),
-    RUNNER_URL: z.string().url().optional(),
+    RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
-    NAMESPACE_PER_RUNNER: bool,
+    RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
+    NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
 
     // FLEET
-    RUNNERS_DATABASE_URL: z.string().url().optional(),
+    RUNNERS_DATABASE_URL: z.url().optional(),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
@@ -138,8 +136,8 @@ export const ENVS = z.object({
     FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
     // Billing
-    FLAG_PLAN_ENABLED: bool,
-    FLAG_USAGE_ENABLED: bool,
+    FLAG_PLAN_ENABLED: z.stringbool().optional().default(false),
+    FLAG_USAGE_ENABLED: z.stringbool().optional().default(false),
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
@@ -155,7 +153,7 @@ export const ENVS = z.object({
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
-    FLAG_BIG_QUERY_EXPORT_ENABLED: bool,
+    FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
     DD_ENV: z.string().optional(),
@@ -163,42 +161,41 @@ export const ENVS = z.object({
     DD_TRACE_AGENT_URL: z.string().optional(),
 
     // Elasticsearch
-    NANGO_LOGS_ES_URL: z.string().url().optional(),
+    NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
-    NANGO_LOGS_ENABLED: bool,
+    NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
     NANGO_LOGS_ES_INDEX: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
 
     // Koala
-    PUBLIC_KOALA_API_URL: z.string().url().optional(),
-    PUBLIC_KOALA_CDN_URL: z.string().url().optional(),
+    PUBLIC_KOALA_API_URL: z.url().optional(),
+    PUBLIC_KOALA_CDN_URL: z.url().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
-    MAILGUN_URL: z.string().url().optional(),
+    MAILGUN_URL: z.url().optional(),
 
     // SMTP
-    SMTP_URL: z.string().url().optional(),
+    SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
 
     // Postgres
-    NANGO_DATABASE_URL: z.string().url().optional(),
-    NANGO_DB_READ_URL: z.string().url().optional(),
+    NANGO_DATABASE_URL: z.url().optional(),
+    NANGO_DB_READ_URL: z.url().optional(),
     NANGO_DB_HOST: z.string().optional().default('localhost'),
     NANGO_DB_PORT: z.coerce.number().optional().default(5432),
     NANGO_DB_USER: z.string().optional().default('nango'),
     NANGO_DB_NAME: z.string().optional().default('nango'),
     NANGO_DB_PASSWORD: z.string().optional().default('nango'),
-    NANGO_DB_SSL: bool,
+    NANGO_DB_SSL: z.stringbool().optional().default(false),
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z
         .string({
-            required_error:
-                'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
+            error: 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
         })
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
@@ -210,29 +207,30 @@ export const ENVS = z.object({
     PUBLIC_POSTHOG_HOST: z.string().optional(),
 
     // Records
-    RECORDS_DATABASE_URL: z.string().url().optional(),
-    RECORDS_DATABASE_READ_URL: z.string().url().optional(),
+    RECORDS_DATABASE_URL: z.url().optional(),
+    RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
 
     // Redis
-    NANGO_REDIS_URL: z.string().url().optional(),
+    NANGO_REDIS_URL: z.url().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
     RENDER_SERVICE_CREATION_MAX_PER_MINUTE: z.coerce.number().optional(),
     RENDER_SERVICE_CREATION_MAX_PER_HOUR: z.coerce.number().optional(),
     RENDER_WAIT_WHEN_THROTTLED_MS: z.coerce.number().default(1000),
-    IS_RENDER: bool,
+    IS_RENDER: z.stringbool().optional().default(false),
 
     // Sentry
     PUBLIC_SENTRY_KEY: z.string().optional(),
-    SENTRY_DSN: z.string().url().optional(),
+    SENTRY_DSN: z.url().optional(),
 
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Stripe
+    PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
 
@@ -243,22 +241,22 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
-    NANGO_ACTIVEMQ_URL: z.string().url().optional().default('ws://localhost:61614/ws'),
+    NANGO_ACTIVEMQ_URL: z.url().optional().default('ws://localhost:61614/ws'),
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
-    NANGO_CLOUD: bool,
-    NANGO_ENTERPRISE: bool,
-    NANGO_TELEMETRY_SDK: bool,
+    NANGO_CLOUD: z.stringbool().optional().default(false),
+    NANGO_ENTERPRISE: z.stringbool().optional().default(false),
+    NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
-export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.SafeParseSuccess<z.infer<T>>['data'] {
+export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
     const res = schema.safeParse(envs);
     if (!res.success) {
         throw new Error(`Missing or invalid env vars: ${zodErrorToString(res.error.issues)}`);
@@ -267,7 +265,7 @@ export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<st
     return res.data;
 }
 
-function zodErrorToString(issues: z.ZodIssue[]) {
+function zodErrorToString(issues: z.core.$ZodIssue[]) {
     return issues
         .map((issue) => {
             return `${issue.path.join('')} (${issue.code} ${issue.message})`;
