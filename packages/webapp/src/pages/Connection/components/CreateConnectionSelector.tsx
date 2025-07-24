@@ -1,4 +1,5 @@
 import { IconCheck, IconChevronDown } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
@@ -15,7 +16,7 @@ import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { clearIntegrationsCache, useListIntegration } from '../../../hooks/useIntegration';
-import { useApiGetUsage } from '../../../hooks/usePlan';
+import { invalidateUsage, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useUser } from '../../../hooks/useUser';
 import { useStore } from '../../../store';
@@ -29,6 +30,7 @@ export const CreateConnectionSelector: React.FC = () => {
     const paramIntegrationId = useSearchParam('integration_id');
     const toast = useToast();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
@@ -112,6 +114,7 @@ export const CreateConnectionSelector: React.FC = () => {
                 void listIntegrationMutate();
                 clearConnectionsCache(cache, mutate);
                 clearIntegrationsCache(cache, mutate);
+                invalidateUsage(queryClient);
                 hasConnected.current = event.payload;
             }
         },
