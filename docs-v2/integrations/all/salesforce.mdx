@@ -64,27 +64,64 @@ description: 'Access the Salesforce API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
   ## Key Changes: Connected Apps vs External Client Apps
   
-  **Important:** Salesforce has transitioned from **Connected Apps** to **External Client Apps**. Here's what changed:
+  **Important:** Salesforce has transitioned from **Connected Apps** to **External Client Apps**. Both Salesforce and Nango recommend using **External Client Apps** for new integrations. Here's are a [few points](https://help.salesforce.com/s/articleView?id=xcloud.connected_apps_and_external_client_apps_features.htm&type=5) you need to know between the two:
   
-  - **Connected Apps**: Could be used for both internal (same org) and external (different orgs) purposes without upfront decision.
-  - **External Client Apps** (current): You must choose the **Distribution State** upfront:
-    - **Local**: For internal use within your Salesforce org only
-    - **Packaged**: For distribution to other Salesforce orgs (requires packaging and installation process)
+  - **Connected Apps**: Disabled by default in new Salesforce organizations but can be enabled from **External Client Apps** settings.
+  - **External Client Apps** (recommended): Must choose the **Distribution State** upfront:
+    - **Local**: For internal use within your Salesforce organization only
+    - **Packaged**: For distribution to other Salesforce organizations (requires packaging and installation process)
 
-  This guide covers both scenarios. Choose the appropriate section based on your needs.
-
-  ## Prerequisites 
+  ### Prerequisites 
   - Salesforce **External Client Apps** are only available in the following editions: Professional, Performance, Unlimited, Developer. 
   - A user account with the **Create, Edit, and Delete External Client Apps** permission is also required.
 
-  ## Option A: Internal Use (Local Distribution)
+  Choose the appropriate option below based on your needs.
+
+  ## Option A: Connected App
   
-  Use this option if your app will only be used within your own Salesforce org.
+  **Note:** Connected Apps are disabled by default in new Salesforce organizations. To enable them:
+  1. Navigate to **Setup** > **External Client App Manager** > **Settings**
+  2. Toggle the button for **Allow creation of connected apps**
+  3. Then proceed with creating a **Connected App** using the steps below.
 
     <Steps>
-      <Step title="Create a Salesforce Developer account">
-        Go to [Salesforce Developer Edition signup page](https://developer.salesforce.com/signup) and create a free account.
+      <Step title="Configure Connected App settings">
+        1. Click **New Connected App**.
+        2. Fill in the required basic information:
+           - **Connected App Name**: Your app's name
+           - **API Name**: Will auto-populate
+           - **Contact Email**: Your email address
+        3. Check the **Enable OAuth Settings** checkbox.
+        4. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
+        5. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
+           - "Access and manage your data (api)"
+           - "Perform requests on your behalf at any time (refresh_token, offline_access)"
+        6. Leave the rest of the default settings unchanged.
+        7. Click **Save**, then **Continue**.
+        <Note>Changes can take up to 10 minutes to take effect</Note>
       </Step>
+      <Step title="Obtain API credentials">
+        1. After saving, you'll be redirected to the Connected App detail page.
+        2. You may need to wait a few minutes for the app to be fully created.
+        3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
+        4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
+        5. You will need these credentials when configuring your integration in Nango.
+      </Step>
+      <Step title="Configure token settings (recommended)">
+        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to your application.
+        2. Under **OAuth Policies**, set **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+        3. Click **Save**.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+  ## Option B: External Client App - Internal Use (Local Distribution)
+  
+  Use this option if your app will only be used within your own Salesforce organization.
+
+    <Steps>
       <Step title="Create an External Client App">
         1. Log in to your Salesforce account.
         2. Click on the **Setup** menu, in the **Quick Find** box, enter **App Manager**, and then select **App Manager**.
@@ -95,7 +132,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
        - **External Client App Name**: The display name of your app as it will appear in Salesforce.
        - **API Name**: Auto-filled based on the app name; used internally by Salesforce.
        - **Contact Email**: The email address Salesforce can use to contact the app owner.
-       - **Distribution State**: Select **Local** for internal use within your Salesforce org.
+       - **Distribution State**: Select **Local** for internal use within your Salesforce organization.
        - **Contact Phone (Optional)**: A phone number for reaching the app's designated point of contact.
        - **Info URL (Optional)**: A link to your app's website or documentation.
        - **Logo Image URL (Optional)**: A direct URL to an image that will be used as the app's logo.
@@ -128,15 +165,15 @@ description: 'Access the Salesforce API in 2 minutes 💨'
 
   ## Option B: External Distribution (Packaged Distribution)
   
-  Use this option if your app will be distributed to other Salesforce orgs. This requires a more complex setup with packaging.
+  Use this option if your app will be distributed to other Salesforce organizations. This requires a more complex setup with packaging.
 
   ### Environment Setup Requirements
   
   **Important**: Due to [Salesforce limitations](https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T44UpSAJ), you need **two separate Salesforce accounts**:
   - **Developer Hub (Dev Hub) Account**: For creating and managing packages.
-  - **Namespace Account**: The Namespace Account is used to register and manage a unique namespace for packaging and publishing apps. 
-  
-  You cannot have both Dev Hub enabled and register a namespace in the same org.
+  - **Namespace Account**: Used to register and manage a unique namespace for packaging and publishing apps.
+   
+  You cannot have both Dev Hub enabled and register a namespace in the same organization.
 
     <Steps>
       <Step title="Set up two Salesforce accounts">
@@ -151,14 +188,14 @@ description: 'Access the Salesforce API in 2 minutes 💨'
            - Choose a unique namespace (this will be part of your package identity)
         
         3. **Link the namespace to your Dev Hub account**:
-           - Log in to your **Dev Hub org** as the System Administrator or as a user with the Salesforce DX Namespace Registry permissions.
-           <Tip>Make sure your browser allows pop-ups from your Dev Hub org</Tip>
+           - Log in to your **Dev Hub organization** as the System Administrator or as a user with the Salesforce DX Namespace Registry permissions.
+           <Tip>Make sure your browser allows pop-ups from your Dev Hub organization</Tip>
            - From the App Launcher menu, select **Namespace Registries**
            - Click **Link Namespace**
-           - In the pop-up window that appears, log in to your **Namespace Account** (the Developer Edition org where your namespace is registered) using the System Administrator's credentials.
+           - In the pop-up window that appears, log in to your **Namespace Account** (the Developer Edition organization where your namespace is registered) using the System Administrator's credentials.
            - After successful linking, you can view all linked namespaces by selecting the **All Namespace Registries** list view.
            
-           <Note>You can't link orgs without a namespace - sandboxes, scratch orgs, patch orgs, and branch orgs require a namespace to be linked to the Namespace Registry.</Note>
+           <Note>You can't link organizations without a namespace - sandboxes, scratch organizations, patch organizations, and branch organizations require a namespace to be linked to the Namespace Registry.</Note>
       </Step>
       <Step title="Create External Client App in Developer Hub (Dev Hub)">
         1. Log in to your **Developer Hub (Dev Hub)** (the first account).
@@ -207,13 +244,13 @@ description: 'Access the Salesforce API in 2 minutes 💨'
            ```bash
            sf org login web --set-default-dev-hub --alias my-dev-hub
            ```
-           This will open a browser window where you can login to your **Developer Hub account** (the first account you created).
+           This will open a browser window where you can log in to your **Developer Hub account** (the first account you created).
         
-        4. **Verify login and see connected orgs**:
+        4. **Verify login and see connected organizations**:
            ```bash
            sf org list
            ```
-           You should see your Dev Hub org listed with a "(D)" indicating it's set as the default Dev Hub.
+           You should see your Dev Hub organization listed with a "(D)" indicating it's set as the default Dev Hub.
         
         5. **Create a Salesforce project**:
            ```bash
@@ -293,16 +330,16 @@ description: 'Access the Salesforce API in 2 minutes 💨'
            ```
            You can leave `--installation-key ""` empty to make the package installation open, or provide a key that users will need to enter during installation.
            
-           After successfully creating the package, you will get a successful message with an installation URL that you can use to distribute your External Client App to other Salesforce orgs.
+           After successfully creating the package, you will get a successful message with an installation URL that you can use to distribute your External Client App to other Salesforce organizations.
         
-        10. **Install the package to target org**:
-            Use the installation URL above to install your package to the target Salesforce org where you want to use the External Client App. 
+        10. **Install the package to target organization**:
+            Use the installation URL above to install your package to the target Salesforce organization where you want to use the External Client App. 
       </Step>
      </Steps>
 
   ## Already using a Connected App? Migrate to External Client App
   
-  If you previously created a **Connected App**, you can migrate it to an **External Client App** that Salesforce recommends. Note that **Connected Apps** are now disabled by default in all new Salesforce orgs.
+  If you previously created a **Connected App**, you can migrate it to an **External Client App** that Salesforce recommends.
 
   1. From **Setup**, go to **App Manager** and open the connected app.
   2. If eligible, click the **Migrate to External Client App** button.
@@ -352,7 +389,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    -   **External Client Apps vs Connected Apps**: Salesforce has transitioned from Connected Apps to External Client Apps. You must choose the Distribution State (Local vs Packaged) upfront. If distributing to other orgs, you need separate accounts for Dev Hub and namespace registration, and must follow the packaging process outlined in the Oauth Setup guide.
+    -   **External Client Apps vs Connected Apps**: Salesforce has transitioned from Connected Apps to External Client Apps. You must choose the Distribution State (Local vs Packaged) upfront. If distributing to other organizations, you need separate accounts for Dev Hub and namespace registration, and must follow the packaging process outlined in the Oauth Setup guide.
     -   If you or your end-user are authorizing a Salesforce sandbox account, you must use the `salesforce-sandbox` integration in Nango. Your Salesforce Developer Edition account is **not** a Salesforce sandbox! Use it with the regular `salesforce` connector.
     -   Salesforce calls the `client_id` and `client_secret` as `Consumer Key` and `Consumer Secret`.
     -   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default, access tokens expire in ~2h (but customers can configure this value). Also, check the "Introspect All Tokens" checkbox in your OAuth app settings on the Salesforce developer portal (Salesforce doesn't share the expiration date of access tokens. Instead, Nango needs to call the Salesforce API to check if access tokens are valid.)
