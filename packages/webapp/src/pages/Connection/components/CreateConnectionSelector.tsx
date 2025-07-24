@@ -53,14 +53,20 @@ export const CreateConnectionSelector: React.FC = () => {
     }, [user]);
 
     const { data: usage, isLoading: usageLoading } = useApiGetUsage(env);
-    const canCreateConnection = useMemo(() => {
+    const usageCapReached = useMemo(() => {
         if (usageLoading) {
             return false;
         }
-
         const connectionsUsage = usage?.data.find((v) => v.metric === 'connections');
-        return !connectionsUsage || !connectionsUsage.limit || connectionsUsage.usage < connectionsUsage.limit;
+        return connectionsUsage && connectionsUsage.limit && connectionsUsage.usage >= connectionsUsage.limit;
     }, [usage, usageLoading]);
+
+    const integrationHasMissingFields = useMemo(() => {
+        if (!integration) {
+            return false;
+        }
+        return integration.missing_fields.length > 0;
+    }, [integration]);
 
     useEffect(() => {
         if (paramIntegrationId && listIntegration) {
@@ -127,6 +133,32 @@ export const CreateConnectionSelector: React.FC = () => {
         }
     });
 
+    const tooltipContent = useMemo(() => {
+        if (usageCapReached) {
+            return (
+                <p>
+                    Connection limit reached.{' '}
+                    <Link to={`/${env}/team/billing`} className="underline">
+                        Upgrade your plan
+                    </Link>{' '}
+                    to get rid of connection limits.
+                </p>
+            );
+        }
+        if (integrationHasMissingFields) {
+            return (
+                <p>
+                    This integration is not fully configured. Fill in the missing fields in the{' '}
+                    <Link to={`/${env}/integrations/${integration?.unique_key}/settings`} className="underline">
+                        integration settings
+                    </Link>
+                    .
+                </p>
+            );
+        }
+        return null;
+    }, [usageCapReached, integrationHasMissingFields]);
+
     return (
         <div className="flex flex-col gap-4">
             <label htmlFor="integration_id">Pick an integration</label>
@@ -187,22 +219,8 @@ export const CreateConnectionSelector: React.FC = () => {
                     </PopoverContent>
                 </Popover>
 
-                <SimpleTooltip
-                    tooltipContent={
-                        !canCreateConnection && (
-                            <p>
-                                Connection limit reached.{' '}
-                                <Link to={`/${env}/team/billing`} className="underline">
-                                    Upgrade your plan
-                                </Link>{' '}
-                                to get rid of connection limits.
-                            </p>
-                        )
-                    }
-                    side="bottom"
-                    delay={0}
-                >
-                    <Button onClick={onClickConnectUI} size="lg" disabled={!canCreateConnection}>
+                <SimpleTooltip tooltipContent={tooltipContent} side="bottom" delay={0}>
+                    <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields}>
                         Authorize
                     </Button>
                 </SimpleTooltip>
