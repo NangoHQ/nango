@@ -6,7 +6,7 @@ import { getFormattedOperation } from './helpers.js';
 import { logContextGetter } from './logContextGetter.js';
 import { getOperation, listOperations, setTimeoutForAll } from './operations.js';
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
-import { indexMessages } from '../es/schema.js';
+import { indexOperations } from '../es/schema.js';
 
 import type { ListOperations } from './operations.js';
 import type { OperationRowInsert } from '@nangohq/types';
@@ -17,7 +17,7 @@ const operationPayload: OperationRowInsert = { operation: { type: 'sync', action
 
 describe('operations', () => {
     beforeAll(async () => {
-        await deleteIndex({ prefix: indexMessages.index });
+        await deleteIndex({ prefix: indexOperations.index });
         await migrateMapping();
     });
     afterEach(() => {
