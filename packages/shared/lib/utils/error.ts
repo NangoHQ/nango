@@ -356,10 +356,6 @@ export class NangoError extends NangoInternalError {
                 this.message = `The sync script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
-            case 'usage_limit_exceeded_active_records':
-                this.message = `Usage limit exceeded for monthly active records. Please upgrade your plan.`;
-                break;
-
             case 'two_step_credentials_fetch_error':
                 this.status = 400;
                 this.message = `Error fetching Two Step credentials`;
