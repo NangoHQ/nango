@@ -175,6 +175,8 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
     Defaults to `false`.
 
     <Info>
+        [Follow this guide](/guides/syncs/detecting-deletes) to add support for deletion detection to your syncs.
+
         This setting only applies if `sync_type: full` ([details](/guides/syncs/overview#detecting-deletions-incremental-vs-full-refresh-syncs)). For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync script using `nango.batchDelete()` ([reference](/reference/scripts)).
     </Info>
 </ResponseField>

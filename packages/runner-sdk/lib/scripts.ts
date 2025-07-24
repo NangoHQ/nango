@@ -3,7 +3,7 @@ import type { NangoSyncBase } from './sync.js';
 import type { ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
 
@@ -53,11 +53,22 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
      */
     frequency: string;
 
+    /**
+     * The models that will be synced by this script.
+     * You need one endpoint per model.
+     *
+     * @example
+     * ```ts
+     * models: {
+     *     GithubIssue: z.object({
+     *         id: z.string(),
+     *     }),
+     * },
+     */
     models: TModels;
 
     /**
      * The type of the sync.
-     * @default 'full'
      */
     syncType: 'full' | 'incremental';
 
@@ -165,7 +176,7 @@ export function createSync<TModels extends Record<string, ZodModel>, TMetadata e
 }
 
 // ----- Action
-export interface CreateActionProps<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined> {
+export interface CreateActionProps<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined> {
     /**
      * The version of the action.
      * Use it to track changes to the action inside Nango's UI.
@@ -261,7 +272,7 @@ export interface CreateActionProps<TInput extends Zod.ZodTypeAny, TOutput extend
      */
     exec: (nango: NangoActionBase<TMetadata>, input: z.infer<TInput>) => MaybePromise<z.infer<TOutput>>;
 }
-export interface CreateActionResponse<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined>
+export interface CreateActionResponse<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>
     extends CreateActionProps<TInput, TOutput, TMetadata> {
     type: 'action';
 }
@@ -286,7 +297,7 @@ export interface CreateActionResponse<TInput extends Zod.ZodTypeAny, TOutput ext
  * export default action;
  * ```
  */
-export function createAction<TInput extends Zod.ZodTypeAny, TOutput extends Zod.ZodTypeAny, TMetadata extends ZodMetadata = undefined>(
+export function createAction<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>(
     params: CreateActionProps<TInput, TOutput, TMetadata>
 ): CreateActionResponse<TInput, TOutput, TMetadata> {
     return { type: 'action', ...params };
@@ -294,10 +305,49 @@ export function createAction<TInput extends Zod.ZodTypeAny, TOutput extends Zod.
 
 // ----- On Event
 export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined> {
+    /**
+     * The version of the onEvent script.
+     * Use it to track changes to the onEvent script inside Nango's UI.
+     *
+     * @default '0.0.1'
+     * @example '1.0.0'
+     */
     version?: string;
+
+    /**
+     * The description of the onEvent script.
+     *
+     * @example 'Fetch id from GitHub'
+     */
     description: string;
+
+    /**
+     * The event that will trigger this script.
+     */
     event: 'post-connection-creation' | 'pre-connection-deletion';
+
+    /**
+     * The connection's metadata of the script.
+     *
+     * @default z.void();
+     * @example
+     * ```ts
+     * metadata: z.object({
+     *     userId: z.string(),
+     * });
+     * ```
+     */
     metadata?: TMetadata;
+
+    /**
+     * The function that will be called when the onEvent script is triggered.
+     * @example
+     * ```ts
+     * exec: async (nango) => {
+     *  await nango.log('Hello, world!');
+     * }
+     * ```
+     */
     exec: (nango: NangoActionBase<TMetadata>) => MaybePromise<void>;
 }
 export interface CreateOnEventResponse<TMetadata extends ZodMetadata = undefined> extends CreateOnEventProps<TMetadata> {

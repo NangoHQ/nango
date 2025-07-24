@@ -19,7 +19,6 @@ import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
-import { productTracking } from '../utils/productTracking.js';
 import {
     extractStepNumber,
     extractValueByPath,
@@ -60,9 +59,7 @@ import type {
     DBConnectionDecrypted,
     DBEndUser,
     DBEnvironment,
-    DBPlan,
     DBTeam,
-    DBUser,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -1161,7 +1158,9 @@ class ConnectionService {
         connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
+        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
+        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
+        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
@@ -1317,40 +1316,6 @@ class ConnectionService {
 
             return { success: false, error, response: null };
         }
-    }
-
-    public async shouldCapUsage({
-        providerConfigKey,
-        environmentId,
-        type,
-        team,
-        user,
-        plan
-    }: {
-        providerConfigKey: string;
-        environmentId: number;
-        type: 'activate' | 'deploy';
-        team: DBTeam;
-        user?: DBUser;
-        plan: DBPlan | null;
-    }): Promise<boolean> {
-        if (!plan || !plan.connection_with_scripts_max) {
-            return false;
-        }
-
-        const count = await this.countConnections({ environmentId, providerConfigKey });
-
-        if (count > plan.connection_with_scripts_max) {
-            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            if (type === 'deploy') {
-                productTracking.track({ name: 'server:resource_capped:script_deploy_is_disabled', team, user });
-            } else {
-                productTracking.track({ name: 'server:resource_capped:script_activate', team, user });
-            }
-            return true;
-        }
-
-        return false;
     }
 
     public async getNewCredentials({

@@ -1,5 +1,5 @@
 import tracer from 'dd-trace';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, environmentService } from '@nangohq/shared';

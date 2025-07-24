@@ -16,16 +16,16 @@ export interface Foo {
 export interface Bar {
   value: null;
   top: boolean[];
-  ref?: Foo;
+  ref?: Foo | undefined;
   union: 'literal1' | 'literal2';
   array: ('arr1' | 'arr2')[];
   obj: {  nes: 'ted';};
 };
 
-/** @deprecated It is recommended to use a Model */
 export type Anonymous_unauthenticated_action_returnType_input = number
 // ------ /Models
-"
+
+// ------ SDK"
 `;
 
 exports[`buildModelTs > should return empty (with sdk) 1`] = `
@@ -493,7 +493,7 @@ export interface Base {
   num: 1;
   literalNull: null[];
   obj: {  nested: string;};
-  optional?: string;
+  optional?: string | undefined;
   arrayLiteral: any[];
   objectLiteral: Record<string, any>;
   any: any;
@@ -527,10 +527,8 @@ export interface RecordObject {
   [key: string]: {  str: string;};
 };
 
-/** @deprecated It is recommended to use a Model */
 export type Anonymous_unauthenticated_action_inputoutputunion_output = string | null[]
 
-/** @deprecated It is recommended to use a Model */
 export type Anonymous_unauthenticated_action_inputoutputunion_input = true | 'hello' | Ref
 // ------ /Models
 "

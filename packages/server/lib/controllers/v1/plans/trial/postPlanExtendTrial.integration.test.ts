@@ -46,7 +46,7 @@ describe(`POST ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'unrecognized_keys', message: "Unrecognized key(s) in object: 'test'", path: [] }]
+                errors: [{ code: 'unrecognized_keys', message: 'Unrecognized key: "test"', path: [] }]
             }
         });
         expect(res.res.status).toBe(400);

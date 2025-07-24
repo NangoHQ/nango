@@ -54,7 +54,6 @@ import type {
     GetIntegrationFlows,
     GetPublicIntegration,
     GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
     PatchIntegration,
     PatchPublicIntegration,
     PostIntegration,
@@ -87,7 +86,6 @@ export type PublicApiEndpoints =
     | PostPublicAppStoreAuthorization
     | GetPublicProviders
     | GetPublicProvider
-    | GetPublicListIntegrationsLegacy
     | GetPublicListIntegrations
     | GetPublicIntegration
     | DeletePublicIntegration
