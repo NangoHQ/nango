@@ -15,8 +15,6 @@ import type { Span } from 'dd-trace';
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
 
-const accountUsageTracker = await getAccountUsageTracker();
-
 export async function persistRecords({
     persistType,
     accountId,
@@ -175,6 +173,7 @@ export async function persistRecords({
             metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         }
 
+        const accountUsageTracker = await getAccountUsageTracker();
         // Account usage tracking for capping
         void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
 
