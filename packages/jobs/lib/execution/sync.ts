@@ -111,7 +111,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         const accountUsageTracker = await getAccountUsageTracker();
         // We stop any sync from running if the active_records limit is reached
-        if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'active_records')) && syncType === 'full') {
+        if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'active_records'))) {
             void logCtx.error(`Usage limit exceeded for monthly active records`, {
                 usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
                 limit: accountUsageTracker.getLimit(plan, 'active_records')
