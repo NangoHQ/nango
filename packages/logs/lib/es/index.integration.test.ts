@@ -6,7 +6,7 @@ import { client } from './client.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
 import { indexMessages } from './schema.js';
 import { getFormattedOperation } from '../models/helpers.js';
-import { createOperation, getOperation, updateOperation } from '../models/messages.js';
+import { createOperation, getOperation, updateOperation } from '../models/operations.js';
 
 // This file is sequential
 describe('mapping', () => {

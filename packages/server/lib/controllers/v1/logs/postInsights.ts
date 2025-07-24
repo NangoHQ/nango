@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { envs, modelOperations } from '@nangohq/logs';
+import { envs, modelInsights } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -35,7 +35,7 @@ export const postInsights = asyncWrapper<PostInsights>(async (req, res) => {
 
     const env = res.locals['environment'];
     const body: PostInsights['Body'] = val.data;
-    const insights = await modelOperations.retrieveInsights({
+    const insights = await modelInsights.retrieveInsights({
         accountId: env.account_id,
         environmentId: env.id,
         type: body.type

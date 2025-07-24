@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { envs, model } from '@nangohq/logs';
+import { envs, modelOperations } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -34,7 +34,13 @@ export const searchFilters = asyncWrapper<SearchFilters>(async (req, res) => {
 
     const env = res.locals['environment'];
     const body: SearchFilters['Body'] = val.data;
-    const rawOps = await model.listFilters({ accountId: env.account_id, environmentId: env.id, category: body.category, limit: 20, search: body.search });
+    const rawOps = await modelOperations.listFilters({
+        accountId: env.account_id,
+        environmentId: env.id,
+        category: body.category,
+        limit: 20,
+        search: body.search
+    });
 
     res.status(200).send({
         data: rawOps.items
