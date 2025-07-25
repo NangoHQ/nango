@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
@@ -166,10 +167,17 @@ export async function persistRecords({
 
         const mar = new Set(summary.activatedKeys).size;
 
+        // Billing metrics
         if (plan && shouldBillMonthlyActiveRecords) {
             billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
             metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         }
+
+        const accountUsageTracker = await getAccountUsageTracker();
+        // Account usage tracking for capping
+        void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+
+        // Datadog metrics
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
