@@ -778,6 +778,17 @@ paths:
                                                     type: array
                                                     items:
                                                         type: string
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                            fields:
+                                                                type: array
+                                                        required:
+                                                            - name
                                     actions:
                                         type: array
                                         items:
@@ -821,6 +832,17 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                            fields:
+                                                                type: array
+                                                        required:
+                                                            - name
                                     on-events:
                                         type: array
                                         items:

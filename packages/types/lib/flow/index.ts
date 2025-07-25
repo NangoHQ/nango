@@ -1,5 +1,5 @@
-import type { NangoConfigMetadata } from '../deploy/incomingFlow.js';
-import type { NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
+import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow.js';
+import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { JSONSchema7 } from 'json-schema';
 
 // TODO: Split by type
@@ -28,6 +28,8 @@ export interface NangoSyncConfig {
     upgrade_version?: string;
     is_zero_yaml: boolean;
     sdk_version: string | null;
+    // Temporary regression
+    models?: NangoModel[] | LegacySyncModelSchema[] | undefined;
 }
 
 export interface StandardNangoConfig {

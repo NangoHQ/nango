@@ -62,6 +62,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
@@ -209,6 +210,7 @@ export const ENVS = z.object({
     RECORDS_DATABASE_URL: z.url().optional(),
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
+    RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),

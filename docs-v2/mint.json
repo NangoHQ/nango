@@ -203,6 +203,7 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
+                        "guides/syncs/detecting-deletes",
                         "guides/syncs/large-datasets",
                         "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
                         "guides/syncs/sync-partitioning"
@@ -663,6 +664,7 @@
                 "integrations/all/sentry-oauth",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
+                "integrations/all/setmore",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
                 "integrations/all/sharepoint-online-oauth2-cc",
