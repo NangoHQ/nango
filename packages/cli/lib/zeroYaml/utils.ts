@@ -118,3 +118,9 @@ export class DuplicateModelDefinitionError extends DefinitionError {
         super(`Model "${modelName}" is defined multiple times. Please make sure all models are unique per integration.`, filePath, property);
     }
 }
+
+export class TrackDeletesDefinitionError extends DefinitionError {
+    constructor(filePath: string, property: string[]) {
+        super(`Track deletes is not supported for incremental syncs`, filePath, property);
+    }
+}
