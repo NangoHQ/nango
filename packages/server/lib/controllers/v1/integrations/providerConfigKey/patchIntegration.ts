@@ -95,7 +95,11 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     if ('authType' in body && (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA')) {
         const userDefined = body.userDefined ?? true;
-        if (userDefined && (!body.clientId || !body.clientSecret || body.scopes === undefined)) {
+        const validateUserDefinedFields = (userDefined: boolean, body: any) => {
+            return userDefined && (!body.clientId || !body.clientSecret || body.scopes === undefined);
+        };
+
+        if (validateUserDefinedFields(userDefined, body)) {
             res.status(400).send({
                 error: {
                     code: 'invalid_body',
