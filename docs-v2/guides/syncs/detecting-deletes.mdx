@@ -75,12 +75,9 @@ Full refresh syncs download all records on every run.
 
 Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour with the `trackDeletes` flag ([full reference](/reference/integration-configuration#param-track-deletes)).
 
-<Warning>
-  **`Do not use trackDeletes with incremental syncs`**.
-
-  The trackDeletes flag is only safe for full refresh syncs.
-  Enabling it on an incremental sync will cause Nango to treat any record that wasn't fetched in the current delta window as “missing” and mark it deleted, corrupting your data.
-</Warning>
+<Note>
+  `trackDeletes` does not work with incremental syncs because fetching the data incrementally prevents performing a diff and automatically detecting deletions.
+</Note>
 
 ### Example full refresh sync with deletion detection
 
@@ -124,23 +121,25 @@ export default createSync({
 3. Any records missing in the new list are marked as deleted (soft delete). They remain accessible from the Nango cache, but with `record._metadata.deleted === true`.
 
 <Warning>
-  **Be Careful with Exception Handling When Using **`trackDelete`
+**Be careful with exception handling when using** `trackDelete`
 
-  Nango only performs deletion detection (the “diff”) if a sync run completes successfully without any uncaught exceptions.
+Nango only performs deletion detection (the “diff”) if a sync run completes successfully without any uncaught exceptions.
 
-  If you’re using `trackDelete`, exception handling becomes critical:
-
-  	•	If your sync doesn’t fetch the full dataset, but still completes (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
-
-  	•	This leads to false positives, where valid records are mistakenly considered deleted.
+If you’re using `trackDelete`, exception handling becomes critical:
+- If your sync doesn’t fetch the full dataset, but still completes (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
+- This leads to false positives, where valid records are mistakenly considered deleted.
 
   ✅ What You Should Do
 
-  If a failure prevents full data retrieval, make sure the sync run fails so Nango skips deletion detection:
+If a failure prevents full data retrieval, make sure the sync run fails so Nango skips deletion detection:
+- Let exceptions bubble up and interrupt the run.
+- If you’re using `try/catch`, re-throw exceptions that indicate incomplete data.
+</Warning>
+<Warning>
+**How to use** `trackDeletes` **safely**
+If some records are incorrectly marked as deleted due to the `trackDeletes` feature, you can trigger a full resync (via the UI or API) to restore the correct data state.
 
-  	•	Let exceptions bubble up and interrupt the run.
-
-  	•	If you’re using `try/catch`, re-throw exceptions that indicate incomplete data.
+However, because `trackDeletes` relies on logic in your sync scripts—and mistakes there can lead to false deletions—we strongly recommend not performing irreversible destructive actions (like hard-deleting records in your system) based solely on deletions reported by Nango. A full resync should always be able to recover from issues.
 </Warning>
 
 ## Troubleshooting deletion detection issues
