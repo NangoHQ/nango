@@ -6,6 +6,7 @@ interface CustomMatchers<TR = unknown> {
     toBeIsoDateTimezone: () => string;
     toBeSha256: () => string;
     toBeUUID: () => TR;
+    toBeWithinMs: (expected: Date, ms: number) => string;
 }
 
 declare module 'vitest' {

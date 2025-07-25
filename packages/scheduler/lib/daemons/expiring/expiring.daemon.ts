@@ -3,6 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import { stringifyError } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import * as schedules from '../../models/schedules.js';
 import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
 import { SchedulerDaemon } from '../daemon.js';
@@ -47,6 +48,15 @@ export class ExpiringDaemon extends SchedulerDaemon {
                     return;
                 }
                 if (expired.value.length > 0) {
+                    // update schedules to reflect the expired tasks
+                    const scheduleRes = await schedules.updateLastScheduledTaskState(trx, {
+                        taskIds: expired.value.filter((t) => t.scheduleId).map((t) => t.id),
+                        taskState: 'EXPIRED'
+                    });
+                    if (scheduleRes.isErr()) {
+                        logger.error(`Error updating schedules for expired tasks: ${stringifyError(scheduleRes.error)}`);
+                        return;
+                    }
                     for (const task of expired.value) {
                         this.onExpiring(task);
                     }

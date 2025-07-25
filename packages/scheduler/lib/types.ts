@@ -30,7 +30,7 @@ export interface Task {
 }
 
 export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
-export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'nextExecutionAt'>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
@@ -52,6 +52,8 @@ export interface Schedule {
     readonly updatedAt: Date;
     readonly deletedAt: Date | null;
     readonly lastScheduledTaskId: string | null;
+    readonly lastScheduledTaskState: TaskState | null;
+    readonly nextExecutionAt: Date;
 }
 
 export interface Group {
