@@ -19,7 +19,9 @@ export const freePlan: PlanDefinition = {
         sync_frequency_secs_min: 3600,
         auto_idle: true,
         monthly_actions_max: 1000,
-        monthly_active_records_max: 5000
+        monthly_active_records_max: 5000,
+        has_webhooks_script: false,
+        has_webhooks_forward: false
     },
     display: {
         features: [
@@ -60,7 +62,9 @@ export const starterPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: false,
+        has_webhooks_forward: false
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -98,7 +102,9 @@ export const growthPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -138,7 +144,9 @@ export const enterprisePlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -169,7 +177,9 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -195,7 +205,9 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -221,7 +233,9 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
     }
 };
 
