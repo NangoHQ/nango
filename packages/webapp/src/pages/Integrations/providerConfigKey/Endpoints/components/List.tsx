@@ -31,7 +31,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
     const env = useStore((state) => state.env);
 
     const { plan } = useEnvironment(env);
-    const { isTrial } = useTrial(plan);
+    const { isTrial, daysRemaining } = useTrial(plan);
 
     if (byGroup.length <= 0 && v1Flow.length <= 0) {
         return (
@@ -104,7 +104,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                                     <Table.Cell bordered className="text-white">
                                                         <div className="flex gap-2 items-start">
                                                             {isTrial && flow.enabled && (
-                                                                <SimpleTooltip tooltipContent="Deactivates at the end of your trial.">
+                                                                <SimpleTooltip tooltipContent={`Idles in ${daysRemaining} days`}>
                                                                     <ErrorCircle icon="clock" variant="warning" />
                                                                 </SimpleTooltip>
                                                             )}

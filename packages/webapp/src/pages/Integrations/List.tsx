@@ -14,6 +14,7 @@ import { useListIntegration } from '../../hooks/useIntegration';
 import { useTrial } from '../../hooks/usePlan';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 export default function IntegrationList() {
     const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function IntegrationList() {
                     </Link>
                 )}
             </div>
+            <AutoIdlingBanner />
             {list.length > 0 && (
                 <>
                     <div className="h-fit rounded-md text-white text-sm">
