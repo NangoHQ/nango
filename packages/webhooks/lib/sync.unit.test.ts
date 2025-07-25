@@ -28,7 +28,8 @@ const providerConfig: IntegrationConfig = {
     missing_fields: [],
     created_at: new Date(),
     updated_at: new Date(),
-    forward_webhooks: true
+    forward_webhooks: true,
+    user_defined: true
 };
 
 const syncConfig: DBSyncConfig = {
