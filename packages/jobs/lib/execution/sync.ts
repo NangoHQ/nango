@@ -22,6 +22,7 @@ import {
     getPlan,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    productTracking,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
@@ -116,6 +117,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
                 limit: accountUsageTracker.getLimit(plan, 'active_records')
             });
+
+            productTracking.track({ name: 'server:resource_capped:active_records', team });
 
             throw new Error('Usage limit exceeded for monthly active records');
         }
