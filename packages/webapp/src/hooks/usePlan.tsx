@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiPlan, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial } from '@nangohq/types';
+import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial } from '@nangohq/types';
 
 export async function apiGetCurrentPlan(env: string) {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, {
@@ -55,6 +55,26 @@ export function useApiGetUsage(env: string) {
             });
 
             const json = (await res.json()) as GetUsage['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        refetchInterval: 1000 * 60 // 1 minute
+    });
+}
+
+export function useApiGetBillingUsage(env: string) {
+    return useQuery<GetBillingUsage['Success'], APIError>({
+        enabled: Boolean(env),
+        queryKey: ['plans', 'billing-usage'],
+        queryFn: async (): Promise<GetBillingUsage['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing-usage?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetBillingUsage['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }
