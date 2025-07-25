@@ -50,5 +50,13 @@ expect.extend({
             };
         }
         return { pass: true, message: () => '' };
+    },
+
+    toBeWithinMs(received: Date, expected: Date, toleranceMs: number) {
+        const diff = Math.abs(received.getTime() - expected.getTime());
+        return {
+            pass: diff <= toleranceMs,
+            message: () => `Expected ${received.toISOString()} to be within ${toleranceMs} ms of ${expected.toISOString()}. Difference was ${diff}ms`
+        };
     }
 });

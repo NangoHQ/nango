@@ -264,20 +264,11 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             createdAt: z.coerce.date(),
             updatedAt: z.coerce.date(),
             deletedAt: z.coerce.date().nullable(),
-            lastScheduledTaskId: z.string().uuid().nullable()
+            lastScheduledTaskId: z.string().uuid().nullable(),
+            lastScheduledTaskState: z.enum(taskStates).nullable(),
+            nextExecutionAt: z.coerce.date().nullable()
         })
         .strict();
-    const getNextDueDate = (startsAt: Date, frequencyMs: number) => {
-        const now = new Date();
-        const startDate = new Date(startsAt);
-        if (startDate >= now) {
-            return startDate;
-        }
-        const timeDiff = now.getTime() - startDate.getTime();
-        const nextDueDate = new Date(now.getTime() + frequencyMs - (timeDiff % frequencyMs));
-
-        return nextDueDate;
-    };
     const validation = scheduleSchema.safeParse(schedule);
     if (validation.success) {
         const schedule: OrchestratorSchedule = {
@@ -285,7 +276,7 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             name: validation.data.name,
             state: validation.data.state,
             frequencyMs: validation.data.frequencyMs,
-            nextDueDate: validation.data.state == 'STARTED' ? getNextDueDate(validation.data.startsAt, validation.data.frequencyMs) : null
+            nextDueDate: validation.data.state == 'STARTED' ? validation.data.nextExecutionAt : null
         };
         return Ok(schedule);
     }
