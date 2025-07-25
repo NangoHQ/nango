@@ -1,13 +1,15 @@
+import { useMemo } from 'react';
 import { Route, Routes, useParams, useSearchParams } from 'react-router-dom';
+
+import { EndpointsList } from './components/List';
+import { EndpointOne } from './components/One';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
-import { useMemo } from 'react';
-import type { GetIntegration, NangoSyncConfig } from '@nangohq/types';
-import type { FlowGroup, NangoSyncConfigWithEndpoint } from './components/List';
-import { EndpointsList } from './components/List';
-import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
+
+import type { FlowGroup, NangoSyncConfigWithEndpoint } from './components/List';
+import type { GetIntegration, NangoSyncConfig } from '@nangohq/types';
 
 const METHOD_PRIORITY = { GET: 1, POST: 2, PUT: 3, PATCH: 4, DELETE: 5 };
 

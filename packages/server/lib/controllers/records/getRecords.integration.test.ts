@@ -1,8 +1,9 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import { format, migrate as migrateRecords, records } from '@nangohq/records';
+import { seeders } from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/records';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -37,7 +38,7 @@ describe(`GET ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_query_params',
-                errors: [{ code: 'invalid_type', message: 'Required', path: ['model'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['model'] }]
             }
         });
     });
@@ -56,8 +57,8 @@ describe(`GET ${route}`, () => {
             error: {
                 code: 'invalid_headers',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['connection-id'] },
-                    { code: 'invalid_type', message: 'Required', path: ['provider-config-key'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['connection-id'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['provider-config-key'] }
                 ]
             }
         });

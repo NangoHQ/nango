@@ -1,35 +1,42 @@
-import { describe, it, beforeAll, afterAll, vi } from 'vitest';
-import type { Task } from '@nangohq/scheduler';
-import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
+import { setTimeout } from 'timers/promises';
+
+import { tracer } from 'dd-trace';
+import getPort from 'get-port';
+import { afterAll, beforeAll, describe, it, vi } from 'vitest';
+
+import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { Err, Ok, nanoid } from '@nangohq/utils';
+
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
-import getPort from 'get-port';
-import { EventsHandler } from '../events.js';
-import { Err, Ok, nanoid } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
+import { TaskEventsHandler } from '../events.js';
+
 import type { OrchestratorTask } from './types.js';
-import { tracer } from 'dd-trace';
-import { setTimeout } from 'timers/promises';
+import type { Task } from '@nangohq/scheduler';
+import type { Result } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
-const eventsHandler = new EventsHandler({
-    CREATED: () => {},
-    STARTED: () => {},
-    SUCCEEDED: () => {},
-    FAILED: () => {},
-    EXPIRED: () => {},
-    CANCELLED: () => {}
+const taskEventsHandler = new TaskEventsHandler(dbClient.db, {
+    on: {
+        CREATED: () => {},
+        STARTED: () => {},
+        SUCCEEDED: () => {},
+        FAILED: () => {},
+        EXPIRED: () => {},
+        CANCELLED: () => {}
+    }
 });
 const scheduler = new Scheduler({
-    dbClient,
-    on: eventsHandler.onCallbacks
+    db: dbClient.db,
+    on: taskEventsHandler.onCallbacks,
+    onError: () => {}
 });
 const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
 describe('OrchestratorProcessor', () => {
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, taskEventsHandler);
 
     beforeAll(async () => {
         await dbClient.migrate();

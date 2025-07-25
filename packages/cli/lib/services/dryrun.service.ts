@@ -235,13 +235,12 @@ export class DryRunService {
             printDebug(`Connection found with ${JSON.stringify(nangoConnection, null, 2)}`);
         }
 
-        const {
-            config: { provider }
-        } = await getConfig(providerConfigKey, debug);
-        if (!provider) {
-            console.log(chalk.red('Provider not found'));
+        const resConfig = await getConfig(providerConfigKey, debug);
+        if (!resConfig || !resConfig.data) {
             return;
         }
+
+        const { provider } = resConfig.data;
         if (debug) {
             printDebug(`Provider found: ${provider}`);
         }
@@ -335,6 +334,7 @@ export class DryRunService {
                 sync_name: syncName,
                 file_location: '',
                 models: scriptInfo?.output || [],
+                model_schema: null,
                 input: scriptInfo?.input || null,
                 track_deletes: false,
                 type: scriptInfo?.type || 'sync',
@@ -342,7 +342,6 @@ export class DryRunService {
                 auto_start: false,
                 enabled: true,
                 environment_id: 1,
-                model_schema: [],
                 nango_config_id: 1,
                 runs: '',
                 webhook_subscriptions: [],
@@ -381,7 +380,8 @@ export class DryRunService {
                     validateSyncMetadata: false
                 },
                 startedAt: new Date(),
-                endUser: null
+                endUser: null,
+                heartbeatTimeoutSecs: 30
             };
             if (options.saveResponses) {
                 nangoProps.axios = {

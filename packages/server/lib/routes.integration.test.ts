@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isError, runServer } from './utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;

@@ -1,3 +1,4 @@
+import https from 'https';
 import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
@@ -5,7 +6,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -13,6 +14,7 @@ import type {
     ConnectionForProxy,
     HTTP_METHOD,
     InternalProxyConfiguration,
+    OAuth2ClientCredentials,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -26,7 +28,8 @@ type ProxyErrorCode =
     | 'unsupported_provider'
     | 'invalid_query_params'
     | 'unknown_error'
-    | 'failed_to_get_connection';
+    | 'failed_to_get_connection'
+    | 'invalid_certificate_or_key_format';
 
 export interface RetryReason {
     retry: boolean;
@@ -43,6 +46,7 @@ export class ProxyError extends Error {
 }
 
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
+const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
 export function getAxiosConfiguration({
     proxyConfig,
@@ -68,6 +72,41 @@ export function getAxiosConfiguration({
 
     if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
         axiosConfig.decompress = true;
+    }
+
+    if (proxyConfig.provider.require_client_certificate) {
+        const { client_certificate, client_private_key } = connection.credentials as OAuth2ClientCredentials;
+
+        if (client_certificate && client_private_key) {
+            try {
+                const cert = formatPem(client_certificate, 'CERTIFICATE');
+                const key = formatPem(client_private_key, 'PRIVATE KEY');
+
+                if (
+                    !/^-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----\n?$/.test(cert) ||
+                    !/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----\n?$/.test(key)
+                ) {
+                    throw new ProxyError(
+                        'invalid_certificate_or_key_format',
+                        'Certificate and private key must be in PEM format with proper BEGIN/END boundaries'
+                    );
+                }
+
+                const agent = new https.Agent({
+                    cert,
+                    key,
+                    rejectUnauthorized: false
+                });
+
+                axiosConfig.httpAgent = agent;
+                axiosConfig.httpsAgent = agent;
+            } catch (err: any) {
+                throw new ProxyError(
+                    'invalid_certificate_or_key_format',
+                    `Certificate and private key must be in PEM format with proper BEGIN/END boundaries: ${err}`
+                );
+            }
+        }
     }
 
     return axiosConfig;
@@ -168,13 +207,14 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         apiBase = splitApiBase[index]?.trim();
     }
 
-    const base = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const endpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
+    const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
 
-    const fullEndpoint = interpolateIfNeeded(
-        `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
-        connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
-    );
+    const baseFormatted = interpolateProxyUrlParts(normalizedBase);
+    const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
+
+    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
 
     let url = new URL(fullEndpoint);
     if (config.params) {
@@ -232,10 +272,6 @@ export function buildProxyHeaders({
         case 'TWO_STEP':
         case 'JWT': {
             headers['authorization'] = `Bearer ${connection.credentials.token}`;
-            break;
-        }
-        case 'TABLEAU': {
-            headers['x-tableau-auth'] = `${connection.credentials.token}`;
             break;
         }
         case 'TBA': {
@@ -318,7 +354,13 @@ export function buildProxyHeaders({
     }
 
     if (config.headers) {
-        // Headers set in scripts should override the default ones
+        // Headers set in scripts should override the default ones except for special headers like 'user-agent'
+        for (const key of providedHeaders) {
+            if (headers[key]) {
+                config.headers[key] = headers[key];
+            }
+        }
+
         headers = { ...headers, ...config.headers };
     }
 

@@ -14,6 +14,7 @@ import figlet from 'figlet';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
+import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { compileAllFiles } from './services/compile.service.js';
@@ -21,10 +22,10 @@ import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
-import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAll } from './zeroYaml/compile.js';
 import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
@@ -40,7 +41,6 @@ class NangoCommand extends Command {
         const cmd = new Command(name);
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.', false);
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.', false);
-        cmd.option('--zero', 'Run cli in zero yaml mode (alpha)', false);
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts<GlobalOptions>();
             printDebug('Debug mode enabled', debug);
@@ -104,34 +104,35 @@ program
     .command('init')
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
+    .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
+    .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, zero } = this.opts<GlobalOptions>();
+        const { debug, ai, copy } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
         const currentPath = process.cwd();
         const absolutePath = path.resolve(currentPath, this.args[0] || '');
 
+        const setupAI = async (): Promise<void> => {
+            const ok = await initAI({ absolutePath, debug, aiOpts: ai });
+            if (ok) {
+                printDebug(`AI agent instructions files initialized in ${absolutePath}`, debug);
+            }
+        };
+
         const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
         if (check.hasNangoYaml || check.isZeroYaml) {
+            await setupAI();
             console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
             return;
         }
 
-        if (zero) {
-            const res = await initZero({ absolutePath, debug });
-            if (!res) {
-                process.exitCode = 1;
-                return;
-            }
-
-            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
-            return;
-        }
-
-        const ok = init({ absolutePath, debug });
-        if (!ok) {
+        const res = await initZero({ absolutePath, debug, onlyCopy: copy });
+        if (!res) {
             process.exitCode = 1;
             return;
         }
-        console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+
+        await setupAI();
+        console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
         return;
     });
 
@@ -195,6 +196,13 @@ program
                 return;
             }
         } else {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;
@@ -232,6 +240,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             await dev({ fullPath, debug });
             return;
         }
@@ -262,6 +277,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const resCompile = await compileAll({ fullPath, debug });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
@@ -352,6 +374,13 @@ program
 
         let parsed: NangoYamlParsed;
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const def = await buildDefinitions({ fullPath, debug });
             if (def.isErr()) {
                 console.log('');
@@ -421,6 +450,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;

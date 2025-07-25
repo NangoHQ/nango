@@ -1,13 +1,16 @@
-import { describe, beforeAll, it, expect, vi } from 'vitest';
-import * as model from './models/messages.js';
-import { logger } from './utils.js';
-import { deleteIndex, migrateMapping } from './es/helpers.js';
-import type { ListOperations } from './models/messages.js';
-import { getOperation, listMessages, listOperations } from './models/messages.js';
-import type { OperationRowInsert } from '@nangohq/types';
 import { afterEach } from 'node:test';
-import { logContextGetter } from './models/logContextGetter.js';
+
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { deleteIndex, migrateMapping } from './es/helpers.js';
 import { indexMessages } from './es/schema.js';
+import { logContextGetter } from './models/logContextGetter.js';
+import * as model from './models/messages.js';
+import { getOperation, listMessages, listOperations } from './models/messages.js';
+import { logger } from './utils.js';
+
+import type { ListOperations } from './models/messages.js';
+import type { OperationRowInsert } from '@nangohq/types';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };

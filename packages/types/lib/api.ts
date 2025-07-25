@@ -1,4 +1,4 @@
-export interface ApiError<TCode extends string, TErrors = any, TPayload = unknown> {
+export interface ApiError<TCode extends string, TErrors = Error[] | ValidationError[] | undefined, TPayload = unknown> {
     error: {
         code: TCode;
         message?: string | undefined;

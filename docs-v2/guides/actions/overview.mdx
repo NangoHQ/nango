@@ -48,16 +48,18 @@ Action executions are powered by integration scripts that encapsulate the logic 
 Action scripts have the following structure:
 
 ```typescript
-import type { NangoAction, ResponseModel, ParameterModel } from '../../models';
+import { ResponseModel, ParameterModel } from '../../models.js';
 
-export default async function runAction(
-    nango: NangoAction, 
-    input: ParameterModel): Promise<ResponseModel> {
-    // Your integration code goes here.
-}
+export default createAction({
+    input: ParameterModel,
+    output: ResponseModel,
+    exec: async (nango, input) => {
+        // Your integration code goes here.
+    }
+});
 ```
 
-The `runAction` function kicks off when an action is triggered. It takes inputs from the trigger API/SDK request and returns outputs in the response. The `ParameterModel` and `ResponseModel` are configurable via the integration configuration and are auto-imported into your integration script.
+The `exec` function kicks off when an action is triggered. It takes inputs from the trigger API/SDK request and returns outputs in the response.
 
 Actions focus solely on immediate tasks without persisting data to Nango's cache, thus calls to `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()` are not applicable. However, actions can call other actions, enabling complex workflows through the composition of multiple actions.
 

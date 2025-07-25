@@ -152,13 +152,19 @@
             "group": "Getting Started",
             "pages": [
                 "getting-started/intro-to-nango",
-                "getting-started/quickstart",
-                "guides/ai-use-cases"
+                {
+                    "group": "Quickstart",
+                    "pages": [
+                        "getting-started/quickstart/access-an-api",
+                        "getting-started/quickstart/embed-in-your-app"
+                    ]
+                }
             ]
         },
         {
-            "group": "Guides",
+            "group": "Advanced Guides & Resources",
             "pages": [
+                "getting-started/sample-app",
                 {
                     "group": "API authorization",
                     "pages": [
@@ -169,9 +175,9 @@
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/credentials-refresh-and-validity",
-                        "guides/api-authorization/public-key-deprecation",
                         "guides/api-authorization/authorization-logs",
-                        "guides/api-authorization/new-api-support"
+                        "guides/api-authorization/new-api-support",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 {
@@ -187,8 +193,9 @@
                         "guides/custom-integrations/overview",
                         "guides/custom-integrations/build-a-custom-integration",
                         "guides/custom-integrations/extend-a-pre-built-integration",
+                        "guides/custom-integrations/generate-integrations-with-ai",
                         "guides/custom-integrations/event-based-scripts",
-                        "guides/custom-integrations/service"
+                        "guides/custom-integrations/migrate-to-zero-yaml"
                     ]
                 },
                 {
@@ -196,6 +203,7 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
+                        "guides/syncs/detecting-deletes",
                         "guides/syncs/large-datasets",
                         "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
                         "guides/syncs/sync-partitioning"
@@ -298,6 +306,7 @@
                 "integrations/all/ashby",
                 "integrations/all/atlas-so",
                 "integrations/all/atlassian",
+                "integrations/all/atlassian-admin",
                 "integrations/all/attio",
                 "integrations/all/auth0",
                 "integrations/all/auth0-cc",
@@ -306,6 +315,8 @@
                 "integrations/all/avalara-sandbox",
                 "integrations/all/aws",
                 "integrations/all/aws-iam",
+                "integrations/all/aws-scim",
+                "integrations/all/azure-blob-storage",
                 "integrations/all/azure-devops",
                 "integrations/all/bamboohr",
                 "integrations/all/bamboohr-basic",
@@ -418,6 +429,7 @@
                 "integrations/all/facebook",
                 "integrations/all/factorial",
                 "integrations/all/falai",
+                "integrations/all/fathom",
                 "integrations/all/figjam",
                 "integrations/all/figma",
                 "integrations/all/figma-scim",
@@ -453,6 +465,8 @@
                 "integrations/all/google-ads",
                 "integrations/all/google-analytics",
                 "integrations/all/google-calendar",
+                "integrations/all/google-chat",
+                "integrations/all/google-cloud-storage",
                 "integrations/all/google-docs",
                 "integrations/all/google-drive",
                 "integrations/all/google-mail",
@@ -508,6 +522,7 @@
                 "integrations/all/kandji",
                 "integrations/all/keap",
                 "integrations/all/keeper-scim",
+                "integrations/all/knowbe4",
                 "integrations/all/klaviyo",
                 "integrations/all/klaviyo-oauth",
                 "integrations/all/klipfolio",
@@ -626,9 +641,11 @@
                 "integrations/all/ring-central-sandbox",
                 "integrations/all/rippling",
                 "integrations/all/rippling-shop-app",
+                "integrations/all/roam-scim",
                 "integrations/all/rock-gym-pro",
                 "integrations/all/rootly",
                 "integrations/all/sage",
+                "integrations/all/sage-hr",
                 "integrations/all/sage-intacct",
                 "integrations/all/sage-intacct-oauth",
                 "integrations/all/salesforce",
@@ -644,8 +661,10 @@
                 "integrations/all/segment",
                 "integrations/all/sendgrid",
                 "integrations/all/sentry",
+                "integrations/all/sentry-oauth",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
+                "integrations/all/setmore",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
                 "integrations/all/sharepoint-online-oauth2-cc",
@@ -691,6 +710,7 @@
                 "integrations/all/tiktok-ads",
                 "integrations/all/timely",
                 "integrations/all/todoist",
+                "integrations/all/trafft",
                 "integrations/all/trakstar-hire",
                 "integrations/all/trello",
                 "integrations/all/tldv",

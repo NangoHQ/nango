@@ -1,13 +1,15 @@
 import './tracer.js';
 
-import { getLogger, once, initSentry, report } from '@nangohq/utils';
-import { server } from './server.js';
-import { envs } from './env.js';
-import type { Server } from 'node:http';
-import db from '@nangohq/database';
-import { destroy as destroyRecords } from '@nangohq/records';
-import { destroy as destroyLogs } from '@nangohq/logs';
 import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
+import { destroy as destroyLogs } from '@nangohq/logs';
+import { destroy as destroyRecords } from '@nangohq/records';
+import { getLogger, initSentry, once, report } from '@nangohq/utils';
+
+import { envs } from './env.js';
+import { server } from './server.js';
+
+import type { Server } from 'node:http';
 
 const logger = getLogger('Persist');
 

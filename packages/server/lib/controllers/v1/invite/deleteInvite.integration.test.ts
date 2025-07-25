@@ -1,6 +1,8 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
 import { inviteEmail, seeders } from '@nangohq/shared';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/invite';
@@ -45,7 +47,7 @@ describe(`DELETE ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Expected string, received number', path: ['email'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received number', path: ['email'] }]
             }
         });
         expect(res.res.status).toBe(400);

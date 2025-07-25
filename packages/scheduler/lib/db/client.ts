@@ -1,9 +1,12 @@
 import path from 'node:path';
-import knex from 'knex';
 import { fileURLToPath } from 'node:url';
-import { logger } from '../utils/logger.js';
+
+import knex from 'knex';
+
 import { isTest } from '@nangohq/utils';
+
 import { envs } from '../env.js';
+import { logger } from '../utils/logger.js';
 
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
@@ -21,6 +24,7 @@ export class DatabaseClient {
             client: 'postgres',
             connection: {
                 connectionString: url,
+                ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
                 statement_timeout: 60000,
                 application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
             },

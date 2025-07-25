@@ -1,6 +1,8 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
+
+import { taskEvents } from '../../../../events.js';
 
 import type { Scheduler, Task, TaskState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -37,7 +39,7 @@ const validate = validateRequest<GetOutput>({
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<GetOutput>) => {
         const longPollingTimeoutMs = res.locals.parsedQuery.longPolling || 120_000;
-        const eventId = `task:completed:${res.locals.parsedParams.taskId}`;
+        const eventId = taskEvents.taskCompleted(res.locals.parsedParams.taskId);
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -49,8 +51,13 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
                 respond(res);
             }
         };
-        const onCompletion = (completedTask: Task) => {
-            cleanupAndRespond((res) => res.status(200).json({ state: completedTask.state, output: completedTask.output }));
+        const onCompletion = async (taskId: Task['id']) => {
+            const completedTask = await scheduler.get({ taskId });
+            if (completedTask.isErr()) {
+                cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: completedTask.error.message } }));
+                return;
+            }
+            cleanupAndRespond((res) => res.status(200).json({ state: completedTask.value.state, output: completedTask.value.output }));
         };
         const timeout = setTimeout(() => {
             cleanupAndRespond((res) => res.status(408).send({ error: { code: 'timeout', message: 'Long polling timeout' } }));

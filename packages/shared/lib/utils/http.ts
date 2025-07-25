@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 import { Err, Ok, redactHeaders, redactObjectOrString, redactURL } from '@nangohq/utils';
 
 import { NangoInternalError } from './error.js';
@@ -6,18 +5,21 @@ import { NangoInternalError } from './error.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import type { HTTP_METHOD, MessageHTTPRequest, MessageRow } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 export async function loggedFetch<TBody>(
     {
         url,
         method,
         headers,
-        body
+        body,
+        agent
     }: {
         url: URL;
         method?: HTTP_METHOD;
         headers?: Record<string, string> | undefined;
         body?: string | null;
+        agent?: Agent | undefined;
     },
     options: {
         // TODO: maybe put that in logCtx
@@ -29,8 +31,11 @@ export async function loggedFetch<TBody>(
     const props: RequestInit = {
         headers: new Headers(headers),
         method: method || 'GET'
-        // TODO: use agent
     };
+
+    if (agent) {
+        (props as any).dispatcher = agent;
+    }
 
     if (body) {
         props.body = body;

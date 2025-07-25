@@ -1,8 +1,11 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostInsights } from '@nangohq/types';
+import * as z from 'zod';
+
 import { envs, modelOperations } from '@nangohq/logs';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PostInsights } from '@nangohq/types';
 
 const validation = z
     .object({

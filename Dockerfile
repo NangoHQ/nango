@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:20.18.1-bookworm-slim AS build
+FROM node:22.17.1-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
@@ -41,6 +41,8 @@ COPY packages/fleet/package.json ./packages/fleet/package.json
 COPY packages/providers/package.json ./packages/providers/package.json
 COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY packages/billing/package.json ./packages/billing/package.json
+COPY packages/pubsub/package.json ./packages/pubsub/package.json
+COPY packages/account-usage/package.json ./packages/account-usage/package.json
 COPY package*.json  ./
 
 # Install every dependencies
@@ -75,7 +77,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:20.18.1-bookworm-slim as web
+FROM node:22.17.1-bookworm-slim AS web
 
 # Install a more recent npm
 RUN npm install -g npm@10.9.2
@@ -102,7 +104,7 @@ ARG git_hash
 
 ENV PORT=8080
 ENV NODE_ENV=production
-ENV GIT_HASH $git_hash
+ENV GIT_HASH=$git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 
 EXPOSE 8080

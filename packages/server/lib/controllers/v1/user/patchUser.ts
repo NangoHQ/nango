@@ -1,9 +1,12 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { DBUser, PatchUser } from '@nangohq/types';
+import * as z from 'zod';
+
 import { userService } from '@nangohq/shared';
-import { z } from 'zod';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { DBUser, PatchUser } from '@nangohq/types';
 
 const validation = z
     .object({

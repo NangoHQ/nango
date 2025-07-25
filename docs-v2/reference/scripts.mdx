@@ -10,9 +10,26 @@ icon: 'code'
 
 <Tab title="Sync script">
 ```ts
-import type { GithubIssueDemo, NangoSync } from '../../models';
+import { createSync } from 'nango';
 
-export default async function fetchData(nango: NangoSync) {
+const githubIssueDemoSchema = z.object({ ... });
+type GithubIssueDemo = z.infer<typeof githubIssueDemoSchema>;
+
+export default createSync({
+  description: `Fetches the Github issues from all a user's repositories.`,
+  version: '1.0.0',
+  endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
+  frequency: 'every hour',
+  autoStart: true,
+  syncType: 'full',
+  trackDeletes: true,
+
+  metadata: z.void(),
+  models: {
+    GithubIssueDemo: githubIssueDemoSchema
+  },
+
+  exec: async (nango) => {
     // Fetch issues from GitHub.
     const res = await nango.get({
         endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
@@ -25,15 +42,25 @@ export default async function fetchData(nango: NangoSync) {
 
     // Persist issues to the Nango cache.
     await nango.batchSave(issues, 'GithubIssueDemo');
-}
+  },
+});
 ```
 </Tab>
 
 <Tab title="Action script">
 ```ts
-import type { NangoAction, GithubCreateIssueInput, GithubCreateIssueResult } from '../../models';
+import { createAction } from 'nango';
+import { GithubCreateIssueInput, GithubCreateIssueResult } from '../../models.js';
 
-export default async function runAction(nango: NangoAction, input: GithubCreateIssueInput): Promise<GithubCreateIssueResult> {
+export default createAction({
+  description: `Create an issue in GitHub`,
+  version: '1.0.0',
+  endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
+
+  input: GithubCreateIssueInput,
+  output: GithubCreateIssueResult,
+  
+  exec: async (nango, input) => {
     // Create a GitHub issue.
     const res = await nango.post({
         endpoint: '/repos/NangoHQ/interactive-demo/issues',
@@ -46,7 +73,8 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
     // Send response.
     return { url: res.data.html_url, status: res.status };
-}
+  },
+});
 ```
 </Tab>
 
@@ -54,13 +82,209 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
 Read more about [integration scripts](/guides/custom-integrations/overview) to understand what role they play in Nango.
 
-Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily.
+# Configuration
+
+### `createSync`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="endpoints" type="object[]" required>
+    The endpoints of the sync.
+    You can call this endpoint to fetch records synced by the sync.
+    You need one endpoint per model.
+
+    ```ts
+    endpoints: [{ method: 'GET', path: '/github/issues' }],
+    ```
+    Which you can then call like this:
+    ```ts
+    const res = await fetch('https://api.nango.dev/github/issues');
+    ```
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the sync is triggered.
+</ResponseField>
+
+<ResponseField name="frequency" type="string" required>
+    The frequency of the sync.
+
+    ```ts
+    frequency: 'every 1 minute',
+    frequency: 'every hour',
+    frequency: 'every 2 days'
+    frequency: 'every 3 week'
+    ```
+</ResponseField>
+
+<ResponseField name="models" type="object" required>
+    The models that will be synced by this script.
+    You need one endpoint per model.
+
+    ```ts
+    models: {
+        GithubIssue: z.object({
+            id: z.string(),
+        }),
+    },
+    ```
+</ResponseField>
+
+<ResponseField name="syncType" type="'full' | 'incremental'" required>
+    The type of the sync.
+</ResponseField>
+
+<ResponseField name="autoStart" type="boolean">
+    If `true`, automatically runs the sync when a new connection is created.
+    Otherwise, it needs to be triggered via the API or Nango UI.
+</ResponseField>
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the action.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="onWebhook" type="function">
+    The function that will be called when a webhook is received.
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    The integration's scopes required by the action.
+    This field is for documentation purposes only and currently not enforced by Nango.
+
+    ```ts
+    scopes: ['read:user', 'write:user'],
+    ```
+</ResponseField>
+
+<ResponseField name="trackDeletes" type="boolean">
+    If `true`, automatically detects deleted records and removes them when you fetch the latest data.
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the sync.
+    Use it to track changes to the sync inside Nango's UI.
+</ResponseField>
+
+<ResponseField name="webhookSubscriptions" type="string[]" default="undefined">
+    The webhook subscriptions of the sync.
+    Specify the types of webhooks the method `onWebhook` will handle.
+    If a webhook type is not on the list, it will not be handled.
+
+    ```ts
+    webhookSubscriptions: ['*'],
+    ```
+</ResponseField>
+
+
+
+### `createAction`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="endpoint" type="object" required>
+    The endpoints of the sync.
+    You can call this endpoint to fetch records synced by the sync.
+    You need one endpoint per model.
+
+    ```ts
+    endpoint: { method: 'POST', path: '/github/issues' },
+    ```
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the action is triggered.
+</ResponseField>
+
+<ResponseField name="input" type="object" required>
+    The input required by the action when triggering it.
+    ```ts
+    input: z.object({
+        title: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="output" type="object" required>
+    The output of the action.
+    ```ts
+    output: z.object({
+        issueId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the sync.
+    Use it to track changes to the sync inside Nango's UI.
+</ResponseField>
+
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the action.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
+
+<ResponseField name="scopes" type="string[]">
+    The integration's scopes required by the action.
+    This field is for documentation purposes only and currently not enforced by Nango.
+
+    ```ts
+    scopes: ['read:user', 'write:user'],
+    ```
+</ResponseField>
+
+
+### `createOnEvent`
+
+<ResponseField name="description" type="string" required>
+    The description of the sync.
+</ResponseField>
+
+<ResponseField name="event" type="'post-connection-creation' | 'pre-connection-deletion'" required>
+    The event that will trigger this script.
+</ResponseField>
+
+<ResponseField name="exec" type="function" required>
+    The function that will be called when the action is triggered.
+</ResponseField>
+
+<ResponseField name="version" type="string">
+    The version of the onEvent script.
+    Use it to track changes to the onEvent script inside Nango's UI.
+</ResponseField>
+
+<ResponseField name="metadata" type="object" default="z.void()">
+    The connection's metadata of the script.
+
+    ```ts
+    metadata: z.object({
+        userId: z.string(),
+    });
+    ```
+</ResponseField>
 
 # HTTP requests
 
 Makes an HTTP request inside an integration script:
 ```js
-const config = { endpoint: '/some-endpoint' };
+import type { ProxyConfiguration } from 'nango';
+
+const config: ProxyConfiguration = { endpoint: '/some-endpoint' };
 
 await nango.get(config); // GET request
 await nango.post(config); // POST request
@@ -197,7 +421,7 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
         The name of the action to trigger.
     </ResponseField>
     <ResponseField name="input" type="unkown" required>
-        The necessary input for your action's `runAction` function.
+        The necessary input for your action's `exec` function.
     </ResponseField>
 </Expandable>
 
@@ -527,6 +751,8 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
 Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
 
+To implement deletion detection in your syncs, [follow this guide](/guides/syncs/detecting-deletes).
+
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
 ```js
@@ -615,7 +841,8 @@ A common use case is when handling external webhooks, where only a partial updat
 If you are using sync variants, you can access the current variant name via the `nango.variant` property.
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     await nango.log(`Running sync with variant: ${nango.variant}`);
 
     // Customize sync behavior based on variant
@@ -624,7 +851,8 @@ export default async function fetchData(nango: NangoSync) {
     });
 
     // Rest of sync implementation...
-}
+  },
+});
 ```
 
 # Action-specific helper methods
@@ -634,11 +862,13 @@ export default async function fetchData(nango: NangoSync) {
 You can use `ActionError` in an action script to return a descriptive error to your app when needed:
 ```ts
 
-export default async function runAction(nango: NangoAction): Promise<Response> {
+export default createAction({
+  exec: async (nango) => {
     // Something went wrong...
 
     throw new ActionError({ any_key: 'any_value' });
-}
+  },
+});
 ```
 
 In this case, the response to the trigger action call will be:
@@ -659,10 +889,10 @@ different scripts by importing it. The imported file must live in the `nango-int
 directory and can be imported in the following way:
 
 ```ts
-import type { GithubIssueDemo, NangoSync } from '../../models';
 import { issueMapper } from '../mappers/issue-mappper';
 
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // Fetch issues from GitHub.
     const res = await nango.get({
         endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
@@ -670,7 +900,8 @@ export default async function fetchData(nango: NangoSync) {
 
     // Persist issues to the Nango cache.
     await nango.batchSave(issueMapper(res.data), 'GithubIssueDemo');
-}
+  },
+});
 ```
 
 Note that you cannot import third-party modules at this time. Additionally, if there is a compilation error in an imported file, the entry point file will also fail to compile.

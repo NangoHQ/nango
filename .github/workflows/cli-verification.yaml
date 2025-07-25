@@ -99,13 +99,20 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  npm init -y
-                  npm install nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
+                  # Install the cli from the github package registry
+                  npm install -g nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
                   VERSION_OUTPUT=$(npx nango version)
                   EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
                   [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
+
+                  # Test the cli by creating a new project and compiling it
                   npx nango version --debug
-                  npx nango init nango-integrations --debug
+                  npx nango init nango-integrations --debug --copy
                   cd nango-integrations
-                  npx nango generate --debug
+
+                  # Install the cli from the github package registry
+                  npm i -ED nango@npm:@nangohq/cli@0.0.1-$GIT_HASH
+                  npm i
+
+                  # Compile the project
                   npx nango compile --debug

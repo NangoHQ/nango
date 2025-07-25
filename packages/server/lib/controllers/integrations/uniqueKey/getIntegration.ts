@@ -1,10 +1,13 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
+import * as z from 'zod';
+
 import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
-import { z } from 'zod';
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
 import { integrationToPublicApi } from '../../../formatters/integration.js';
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
 
 export const validationParams = z
     .object({

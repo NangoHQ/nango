@@ -7,9 +7,8 @@ import archiver from 'archiver';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { report } from '@nangohq/utils';
 
-import { LogActionEnum } from '../../models/Telemetry.js';
 import { NangoError } from '../../utils/error.js';
-import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import errorManager from '../../utils/error.manager.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import type { Response } from 'express';
@@ -59,16 +58,8 @@ class LocalFileService {
         }
     }
 
-    public checkForIntegrationSourceFile(fileName: string, optionalNangoIntegrationsDirPath?: string) {
-        let nangoIntegrationsDirPath = '';
-
-        if (optionalNangoIntegrationsDirPath) {
-            nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath;
-        } else {
-            nangoIntegrationsDirPath = basePath;
-        }
-
-        const filePath = path.resolve(nangoIntegrationsDirPath, fileName);
+    public checkForIntegrationSourceFile(fileName: string) {
+        const filePath = path.resolve(basePath, fileName);
         let realPath;
         try {
             realPath = fs.realpathSync(filePath);
@@ -82,15 +73,24 @@ class LocalFileService {
         };
     }
 
-    private getFullPathTsFile(scriptName: string, providerConfigKey: string, type: NangoProps['scriptType']): null | string {
-        const nestedFilePath = `${providerConfigKey}/${scriptTypeToPath[type]}/${scriptName}.ts`;
+    private resolveTsFile({
+        scriptName,
+        providerConfigKey,
+        syncConfig
+    }: {
+        scriptName: string;
+        providerConfigKey: string;
+        syncConfig: DBSyncConfig;
+    }): null | string {
+        const fileName = `${scriptName}.ts`;
+        const nestedFilePath = `${providerConfigKey}/${scriptTypeToPath[syncConfig.type]}/${fileName}`;
         const nestedPath = path.resolve(basePath, nestedFilePath);
         if (this.checkForIntegrationSourceFile(nestedFilePath).result) {
             return nestedPath;
         }
 
-        const tsFilePath = path.resolve(basePath, `${scriptName}.ts`);
-        if (!this.checkForIntegrationSourceFile(`${scriptName}.ts`).result) {
+        const tsFilePath = path.resolve(basePath, fileName);
+        if (!this.checkForIntegrationSourceFile(fileName).result) {
             return null;
         }
 
@@ -102,38 +102,39 @@ class LocalFileService {
      * @desc grab the files locally from the integrations path, zip and send
      * the archive
      */
-    public async zipAndSendFiles(
-        res: Response,
-        integrationName: string,
-        accountId: number,
-        environmentId: number,
-        nangoConfigId: number,
-        providerConfigKey: string,
-        flowType: string
-    ) {
-        const nangoConfigFilePath = path.resolve(basePath, nangoConfigFile);
-        const nangoConfigFileExists = this.checkForIntegrationSourceFile(nangoConfigFile);
+    public async zipAndSendFiles({
+        res,
+        scriptName,
+        providerConfigKey,
+        syncConfig
+    }: {
+        res: Response;
+        scriptName: string;
+        providerConfigKey: string;
+        syncConfig: DBSyncConfig;
+    }) {
+        const files: string[] = [];
+        if (!syncConfig.sdk_version?.includes('-zero')) {
+            const yamlPath = path.resolve(basePath, nangoConfigFile);
+            const yamlExists = this.checkForIntegrationSourceFile(nangoConfigFile);
+            if (!yamlExists.result) {
+                errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
+                return;
+            }
+            files.push(yamlPath);
+        }
 
-        const tsFilePath = this.getFullPathTsFile(integrationName, providerConfigKey, flowType as NangoProps['scriptType']);
-
-        if (!tsFilePath || !nangoConfigFileExists.result) {
+        const tsFilePath = this.resolveTsFile({ scriptName, providerConfigKey, syncConfig });
+        if (!tsFilePath) {
             errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
             return;
         }
+        files.push(tsFilePath);
 
         const archive = archiver('zip');
 
         archive.on('error', (err) => {
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                environmentId,
-                operation: LogActionEnum.FILE,
-                metadata: {
-                    integrationName,
-                    accountId,
-                    nangoConfigId
-                }
-            });
+            report(err);
 
             errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
             return;
@@ -144,8 +145,9 @@ class LocalFileService {
 
         archive.pipe(res);
 
-        archive.append(fs.createReadStream(nangoConfigFilePath), { name: nangoConfigFile });
-        archive.append(fs.createReadStream(tsFilePath), { name: `${integrationName}.ts` });
+        for (const file of files) {
+            archive.append(fs.createReadStream(file), { name: path.basename(file) });
+        }
 
         await archive.finalize();
     }

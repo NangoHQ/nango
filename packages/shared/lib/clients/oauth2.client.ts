@@ -12,7 +12,7 @@ import { makeUrl } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
 import type { LogContextStateless } from '@nangohq/logs';
-import type { DBConnectionDecrypted, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { DBConnectionDecrypted, Provider, ProviderCustom, ProviderOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import type { Merge } from 'type-fest';
 
@@ -37,11 +37,21 @@ export function getSimpleOAuth2ClientConfig(
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
     const tokenUrl = makeUrl(templateTokenUrl, connectionConfig, provider.token_url_skip_encode);
-    const authorizeUrl = makeUrl(provider.authorization_url!, connectionConfig, provider.authorization_url_skip_encode);
 
     const headers = { 'User-Agent': 'Nango' };
 
     const authConfig = provider as ProviderOAuth2;
+
+    const authSection: any = {
+        tokenHost: tokenUrl.origin,
+        tokenPath: tokenUrl.pathname
+    };
+
+    if (provider.authorization_url) {
+        const authorizeUrl = makeUrl(provider.authorization_url, connectionConfig, provider.authorization_url_skip_encode);
+        authSection.authorizeHost = authorizeUrl.origin;
+        authSection.authorizePath = authorizeUrl.pathname;
+    }
 
     return {
         client: {
@@ -53,12 +63,7 @@ export function getSimpleOAuth2ClientConfig(
             // @ts-expect-error agents are not specified in the types, but are available as an option
             agents: agentConfig
         },
-        auth: {
-            tokenHost: tokenUrl.origin,
-            tokenPath: tokenUrl.pathname,
-            authorizeHost: authorizeUrl.origin,
-            authorizePath: authorizeUrl.pathname
-        },
+        auth: authSection,
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format || 'form',
@@ -76,7 +81,7 @@ export async function getFreshOAuth2Credentials({
 }: {
     connection: DBConnectionDecrypted;
     config: ProviderConfig;
-    provider: ProviderOAuth2;
+    provider: ProviderOAuth2 | ProviderCustom;
     logCtx: LogContextStateless;
 }): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
@@ -96,10 +101,15 @@ export async function getFreshOAuth2Credentials({
         simpleOAuth2ClientConfig.http.headers = headers;
     }
     const client = new AuthorizationCode(simpleOAuth2ClientConfig);
+    const tokenSource = provider.auth_mode === 'CUSTOM' ? connection.connection_config['userCredentials'] : credentials;
+    // handle situation where userCredentials is not present
+    if (!tokenSource) {
+        return { success: false, error: new NangoError('no_user_credentials'), response: null };
+    }
     const oldAccessToken = client.createToken({
-        access_token: credentials.access_token,
-        expires_at: credentials.expires_at,
-        refresh_token: credentials.refresh_token
+        access_token: tokenSource.access_token,
+        expires_at: tokenSource.expires_at,
+        refresh_token: tokenSource.refresh_token
     });
 
     let additionalParams = {};

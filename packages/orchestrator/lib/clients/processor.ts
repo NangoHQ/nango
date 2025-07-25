@@ -1,8 +1,10 @@
-import type { Result } from '@nangohq/utils';
-import { stringifyError, getLogger } from '@nangohq/utils';
+import PQueue from 'p-queue';
+
+import { getLogger, stringifyError } from '@nangohq/utils';
+
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
-import PQueue from 'p-queue';
+import type { Result } from '@nangohq/utils';
 import type { Tracer } from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');

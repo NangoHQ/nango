@@ -23,7 +23,6 @@ export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
-export * as tableauClient from './auth/tableau.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
@@ -39,7 +38,7 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
-export { deployTemplate } from './services/deploy/template.js';
+export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 

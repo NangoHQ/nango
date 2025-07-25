@@ -1,6 +1,7 @@
-import type { InternalNango as Nango } from '../../post-connection.js';
-import type { BasecampAuthorizationResponse } from './types.js';
 import { isAxiosError } from 'axios';
+
+import type { BasecampAuthorizationResponse } from './types.js';
+import type { InternalNango as Nango } from '../../internal-nango.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();

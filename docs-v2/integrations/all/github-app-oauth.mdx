@@ -60,8 +60,8 @@ import PreBuiltUseCases from "/snippets/generated/github-app-oauth/PreBuiltUseCa
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
+| Topic | Links |
+| - | - |
 | General | [GitHub Developer Documentation](https://docs.github.com/en) |
 | | [GitHub Apps Documentation](https://docs.github.com/en/apps) |
 | | [GitHub Marketplace](https://github.com/marketplace) |
@@ -86,12 +86,49 @@ import PreBuiltUseCases from "/snippets/generated/github-app-oauth/PreBuiltUseCa
     - The App Public Link is the URL to your Github App public page (e.g. https://github.com/apps/nango-github-app)
     - The App Private Key needs to be generated in your GitHub App settings and starts with `-----BEGIN RSA PRIVATE KEY-----` (not to be confused with the Client Secrets)
     - The "Callback URL" needs to be filled in with the callback URL which unless customized will be https://api.nango.dev/oauth/callback and the checkbox "Request user authorization (OAuth) during installation" should be checked
-    - The checkbox "Redirect on update" under "Post installation" should NOT be checked and the "Setup URL (optional)" should not be accessible
--   The **GitHub App OAuth** flow is a hybrid between a **GitHub App** and an **OAuth App**. It is recommended when your **GitHub App** needs approval before being installed into an organization.
+    - The checkbox "Redirect on update" under "Post installation" should be checked and the "Setup URL (optional)" should not be accessible
 -   There are certain API methods that only work with an OAuth App that will not work with an App. Please check the Github documentation and look for a "Works with Github Apps" header under the endpoint.
 -   Nango supports initiating a connection with a GitHub App using the frontend SDK, but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
 -   Just like GitHub Apps, OAuth Apps can access GitHub's REST and GraphQL APIs, though the endpoints they can use are limited by the OAuth scopes granted by the user during authorization.
--   **GitHub App OAuth** authentication uses a user access token, rather than an installation token.
 -   Webhook payloads are signed with the webhook secret you configured. Always verify the signature to ensure the webhook is legitimate.
+
+### Understanding the GitHub App OAuth Flow
+
+The GitHub App OAuth flow is a **hybrid between a GitHub App and a traditional OAuth App**.
+
+It enables authentication of:
+
+- ✅ **The user**, via OAuth authorization
+- ✅ **The installation**, via app tokens
+
+#### Why use it?
+
+This flow is recommended when your GitHub App:
+
+- Requires **user identity and permissions**
+- Needs to be **approved before installation** into an organization
+
+#### Key Differences Between Installation & Authorization
+
+- 🧩 **Installation Tokens** (installation-based access):
+  - Created by the app backend using a JWT and installation ID
+  - Not tied to any specific user
+  - Short-lived (1 hour), scoped to the org/repo permissions granted at install time
+  - Used for server-side GitHub API operations like issues, PRs, branches, and checks
+  - ⚠️ Cannot access user-specific data (like profile, personal repos)
+  - ✅ A single installation token can be used across all users within the same GitHub App installation
+
+- 👤 **OAuth User Tokens** (user-based access):
+  - Obtained when a user authorizes the app via the OAuth flow
+  - Used to fetch user-specific resources, such as their GitHub profile or private personal repositories
+  - ⚠️ These cannot access private organization repositories unless the app is also installed in that org
+
+---
+
+#### Best Practices
+
+- 🔐 Use **installation tokens** for all organization/repo-level operations
+- 🙋 Use **OAuth tokens** when you need to personalize the user experience (e.g., show GitHub avatar or access user-specific data)
+- ✅ Installation tokens are **shared across users** in the same installation and do not need to be regenerated per user
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/github-app-oauth.mdx)</Note>

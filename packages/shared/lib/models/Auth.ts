@@ -63,7 +63,6 @@ export type AuthCredentials =
     | OAuth1Credentials
     | OAuth2ClientCredentials
     | TbaCredentials
-    | TableauCredentials
     | BillCredentials
     | TwoStepCredentials
     | SignatureCredentials
@@ -109,6 +108,8 @@ export interface OAuth2ClientCredentials extends CredentialsCommon {
 
     client_id: string;
     client_secret: string;
+    client_certificate?: string | undefined;
+    client_private_key?: string | undefined;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
@@ -134,15 +135,6 @@ export interface TbaCredentials {
         client_id?: string;
         client_secret?: string;
     };
-}
-
-export interface TableauCredentials extends CredentialsCommon {
-    type: 'TABLEAU';
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
-    token?: string;
-    expires_at?: Date | undefined;
 }
 
 export interface JwtCredentials {

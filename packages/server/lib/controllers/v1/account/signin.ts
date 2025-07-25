@@ -1,9 +1,12 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import * as z from 'zod';
+
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { getUserFromSession } from '../../../utils/utils.js';
-import type { PostSignin } from '@nangohq/types';
+
 import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getUserFromSession } from '../../../utils/utils.js';
+
+import type { PostSignin } from '@nangohq/types';
 
 const validation = z
     .object({

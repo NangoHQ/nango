@@ -40,6 +40,7 @@ export function validateData({ version, input, modelName, jsonSchema }: Validate
 
     if (!ajv) {
         ajv = new Ajv({ allErrors: true, discriminator: true });
+        // @ts-expect-error types are wrong
         addFormats(ajv);
     }
 

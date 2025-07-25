@@ -60,26 +60,6 @@ import PreBuiltUseCases from "/snippets/generated/clickup/PreBuiltUseCases.mdx"
     When setting up your ClickUp integration in Nango:
     
     - Use your **Client ID** and **Client Secret** from the previous step
-    - For the authorization URL, use: `https://app.clickup.com/api`
-    - For the token URL, use: `https://api.clickup.com/api/v2/oauth/token`
-    
-    Note: ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty.
-  </Step>
-  
-  <Step title="Understand the OAuth flow">
-    The ClickUp OAuth flow follows these steps:
-    
-    1. Users are redirected to ClickUp's authorization page: `https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}`
-    2. Users log in to ClickUp and select which Workspaces to authorize for your app
-    3. After authorization, users are redirected back to your redirect URL with an authorization code
-    4. Your application exchanges this code for an access token using the token endpoint
-  </Step>
-  
-  <Step title="Test the OAuth flow">
-    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
-    2. The authorization flow will redirect users to ClickUp where they can approve access to their Workspaces.
-    3. After approval, users will be redirected back to your application with an authorization code.
-    4. This code will be exchanged for an access token that can be used to make API requests.
   </Step>
   
   <Step title="Next">

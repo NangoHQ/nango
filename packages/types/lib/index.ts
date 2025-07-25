@@ -10,6 +10,7 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
@@ -23,6 +24,9 @@ export type * from './syncConfigs/api.js';
 export type * from './team/api.js';
 export type * from './team/db.js';
 export type * from './billing/types.js';
+export type * from './billing/http.api.js';
+export type * from './usage/dto.js';
+export type * from './usage/db.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';
@@ -53,6 +57,7 @@ export type * from './runner/index.js';
 export type * from './runner/sdk.js';
 export type * from './plans/db.js';
 export type * from './plans/http.api.js';
+export type * from './stripe/http.api.js';
 
 export type * from './nangoYaml/index.js';
 

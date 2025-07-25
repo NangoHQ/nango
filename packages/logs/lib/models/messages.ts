@@ -44,7 +44,7 @@ export async function createOperation(row: OperationRow): Promise<{ index: strin
         index: indexMessages.index,
         id: row.id,
         document: row,
-        refresh: true,
+        refresh: isTest,
         pipeline: `daily.${indexMessages.index}`
     });
     return { index: res._index };

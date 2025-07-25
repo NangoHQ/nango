@@ -1,11 +1,14 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import * as z from 'zod';
+
 import { logContextGetter } from '@nangohq/logs';
-import { configService, flowService, getSyncConfigById, upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
-import { flowConfig } from '../../../sync/deploy/validation.js';
+import { configService, flowService, getSyncConfigById, upgradeTemplate } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { flowConfig } from '../../../sync/deploy/validation.js';
+
+import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -45,36 +48,36 @@ export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (re
         return;
     }
 
-    const config = await configService.getProviderConfig(body.providerConfigKey, environment.id);
-    if (!config) {
+    const integration = await configService.getProviderConfig(body.providerConfigKey, environment.id);
+    if (!integration) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
         return;
     }
 
-    const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });
-    if (!flow) {
+    const template = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });
+    if (!template) {
         res.status(400).send({ error: { code: 'unknown_flow' } });
         return;
     }
 
-    if (flow.version !== body.upgradeVersion) {
+    if (template.version !== body.upgradeVersion) {
         res.status(400).send({ error: { code: 'invalid_version' } });
         return;
     }
 
-    const result = await upgradePrebuiltFlow({
+    const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
+    const result = await upgradeTemplate({
         environment,
-        account,
-        config,
+        team: account,
+        integration,
         syncConfig,
-        flow,
-        logContextGetter
+        template,
+        logCtx
     });
-
-    if (result.isOk()) {
-        res.send({ success: true });
+    if (result.isErr()) {
+        res.status(400).send({ error: { code: 'upgrade_failed', message: result.error.message } });
         return;
     }
 
-    res.status(400).send({ error: { code: 'upgrade_failed', message: result.error.message } });
+    res.send({ success: true });
 });

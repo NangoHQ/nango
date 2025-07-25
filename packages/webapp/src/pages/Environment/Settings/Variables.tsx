@@ -1,14 +1,16 @@
 import { IconCode, IconEdit, IconTrash } from '@tabler/icons-react';
-import { useStore } from '../../../store';
-import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
 import SecretInput from '../../../components/ui/input/SecretInput';
-import type { ApiEnvironmentVariable } from '@nangohq/types';
+import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
-import { Link } from 'react-router-dom';
+import { useStore } from '../../../store';
+import { cn } from '../../../utils/utils';
+
+import type { ApiEnvironmentVariable } from '@nangohq/types';
 
 export const VariablesSettings: React.FC = () => {
     const { toast } = useToast();

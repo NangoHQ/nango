@@ -1,6 +1,8 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -41,13 +43,13 @@ describe('POST /logs/filters', () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'invalid_enum_value',
-                        message: "Invalid enum value. Expected 'integration' | 'connection' | 'syncConfig', received 'a'",
+                        code: 'invalid_value',
+                        message: 'Invalid option: expected one of "integration"|"connection"|"syncConfig"',
                         path: ['category']
                     },
                     {
                         code: 'unrecognized_keys',
-                        message: "Unrecognized key(s) in object: 'foo'",
+                        message: 'Unrecognized key: "foo"',
                         path: []
                     }
                 ]

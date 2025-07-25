@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 
 import { globalEnv } from './env';
 
-import type { SyncResult } from '../types';
+import type { SyncResult } from '../types.js';
 import type { ClassValue } from 'clsx';
 
 const customTwMerge = extendTailwindMerge({
@@ -27,7 +27,7 @@ export function defaultCallback() {
     return globalEnv.apiUrl + '/oauth/callback';
 }
 
-export function formatDateToShortUSFormat(dateString: string): string {
+export function formatDateToPreciseUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         hour: '2-digit',
@@ -35,7 +35,8 @@ export function formatDateToShortUSFormat(dateString: string): string {
         second: '2-digit',
         month: 'short',
         day: '2-digit',
-        hour12: false
+        hour12: false,
+        year: 'numeric'
     };
 
     const formattedDate = date.toLocaleString('en-US', options);
@@ -43,9 +44,8 @@ export function formatDateToShortUSFormat(dateString: string): string {
     if (formattedDate === 'Invalid Date') {
         return '-';
     }
-
     const parts = formattedDate.split(', ');
-    return `${parts[1]}, ${parts[0]}`;
+    return `${parts[2]}, ${parts[0]}, ${parts[1]}`;
 }
 
 export function formatDateToUSFormat(dateString?: string): string {

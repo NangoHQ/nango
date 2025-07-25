@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`generateModelsTs > should generate models.ts 1`] = `
-"import { z } from "zod";
+"import * as z from "zod";
 
 export const Model = z.object({
   id: z.string(),
@@ -11,6 +11,11 @@ export const Model = z.object({
   any: z.any(),
   opt: z.number().optional(),
   ref: z.literal("Foo").optional(),
+
+  "withBadChar:": z.object({
+    "nes?": z.literal("ted")
+  }),
+
   union: z.union([z.literal("literal1"), z.literal("literal2")]),
   array: z.array(z.union([z.literal("arr1"), z.literal("arr2")])),
 
@@ -137,7 +142,7 @@ exports[`transformSync > should transform a sync (different values) 1`] = `
 "import { createSync } from "nango";
 import type { ProxyConfiguration } from "nango";
 import { Model } from "../../models.js";
-import { z } from "zod";
+import * as z from "zod";
 
 interface Config extends ProxyConfiguration {
   params: Record<string, string | number>;

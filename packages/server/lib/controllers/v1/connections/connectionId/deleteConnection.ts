@@ -1,13 +1,16 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { DeleteConnection } from '@nangohq/types';
-import { connectionService } from '@nangohq/shared';
-import { getOrchestrator } from '../../../../utils/utils.js';
+import * as z from 'zod';
+
 import { logContextGetter } from '@nangohq/logs';
+import { connectionService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../../hooks/connection/on/connection-deleted.js';
 import { slackService } from '../../../../services/slack.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
+
+import type { DeleteConnection } from '@nangohq/types';
 
 const validationQuery = z
     .object({

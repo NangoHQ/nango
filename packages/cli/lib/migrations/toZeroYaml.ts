@@ -18,9 +18,10 @@ import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, P
 import type { Collection, ImportSpecifier } from 'jscodeshift';
 import { exampleFolder } from '../zeroYaml/constants.js';
 import { syncTsConfig } from '../zeroYaml/utils.js';
+import type { PackageJson } from 'type-fest';
 
 const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];
-const batchMethods = ['batchSave', 'batchUpdate', 'batchDelete'];
+const methodsWithGenericTypeArguments = ['batchSave', 'batchUpdate', 'batchDelete', 'getMetadata'];
 
 export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<void>> {
     const spinner = ora({ text: 'Precompiling' }).start();
@@ -167,7 +168,7 @@ async function getContent({ targetFile }: { targetFile: string }): Promise<strin
 /**
  * Runs npm install in the given directory
  */
-async function runNpmInstall(fullPath: string): Promise<void> {
+export async function runNpmInstall(fullPath: string): Promise<void> {
     await new Promise((resolve, reject) => {
         const proc = spawn('npm', ['install', '--no-audit', '--no-fund', '--no-progress'], {
             cwd: fullPath,
@@ -616,7 +617,7 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
             .filter((path) => path.node.source.value === 'zod')
             .size() > 0;
     if (usesZ && !hasZodImport) {
-        importDecls.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+        importDecls.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
     }
 
     // Insert all at once, in order, after the last import
@@ -644,36 +645,37 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     try {
         await fs.promises.access(packageJsonPath, fs.constants.F_OK);
         packageJsonExists = true;
-    } catch (_err) {
+    } catch {
         packageJsonExists = false;
     }
 
     const examplePkgRaw = await fs.promises.readFile(examplePackageJsonPath, 'utf-8');
-    const examplePkg = JSON.parse(examplePkgRaw);
+    const examplePkg = JSON.parse(examplePkgRaw) as PackageJson;
 
-    let pkg: { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
+    let pkg: PackageJson;
     if (!packageJsonExists) {
         printDebug('package.json does not exist', debug);
         pkg = examplePkg;
     } else {
         printDebug('package.json exists, updating', debug);
         const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        pkg = JSON.parse(pkgRaw);
+        pkg = JSON.parse(pkgRaw) as PackageJson;
+
+        pkg.devDependencies = pkg.devDependencies || {};
+        pkg.devDependencies['nango'] = NANGO_VERSION;
+
+        const zodVersion = examplePkg.devDependencies!['zod']!;
+        pkg.devDependencies['zod'] = zodVersion;
+
+        // Remove nango and zod from dependencies just in case they were added as prod
+        if (pkg.dependencies?.['nango']) {
+            delete pkg.dependencies['nango'];
+        }
+        if (pkg.dependencies?.['zod']) {
+            delete pkg.dependencies['zod'];
+        }
     }
 
-    pkg.devDependencies = pkg.devDependencies || {};
-    pkg.devDependencies['nango'] = NANGO_VERSION;
-
-    const zodVersion = (examplePkg.devDependencies && examplePkg.devDependencies['zod'])!;
-    pkg.devDependencies['zod'] = zodVersion;
-
-    // Remove nango and zod from dependencies just in case they were added as prod
-    if (pkg.dependencies?.['nango']) {
-        delete pkg.dependencies['nango'];
-    }
-    if (pkg.dependencies?.['zod']) {
-        delete pkg.dependencies['zod'];
-    }
     await fs.promises.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
 }
 
@@ -716,7 +718,7 @@ function removeBatchTypeArguments({ root, j }: { root: Collection; j: jscodeshif
                     callee.object.type === 'Identifier' &&
                     callee.object.name === 'nango' &&
                     callee.property.type === 'Identifier' &&
-                    batchMethods.includes(callee.property.name)
+                    methodsWithGenericTypeArguments.includes(callee.property.name)
                 ) {
                     if ('typeArguments' in callPath.node && callPath.node.typeArguments) {
                         callPath.node.typeArguments = null;
@@ -736,8 +738,8 @@ export function generateModelsTs({ parsed }: { parsed: Pick<NangoYamlParsed, 'mo
     const j = jscodeshift.withParser('ts');
     const root = j('');
 
-    // Add import { z } from 'zod';
-    root.get().node.program.body.push(j.importDeclaration([j.importSpecifier(j.identifier('z'))], j.literal('zod')));
+    // Add import * as z from 'zod';
+    root.get().node.program.body.push(j.importDeclaration([j.importNamespaceSpecifier(j.identifier('z'))], j.literal('zod')));
 
     // Generate all models as Zod schemas and type aliases, and export them
     const allModelNames = Array.from(parsed.models.keys());
@@ -814,7 +816,9 @@ export function nangoModelToZod({
             .map((field) => {
                 const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });
                 if (!zodAst) return undefined;
-                return j.objectProperty(j.identifier(field.name), zodAst);
+                // Use string literal for keys that are not valid identifiers
+                const key = isValidIdentifier(field.name) ? j.identifier(field.name) : j.stringLiteral(field.name);
+                return j.objectProperty(key, zodAst);
             })
             .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
         const objectExpr = j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('object')), [j.objectExpression(otherProps)]);
@@ -830,7 +834,9 @@ export function nangoModelToZod({
         .map((field) => {
             const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });
             if (!zodAst) return undefined;
-            return j.objectProperty(j.identifier(field.name), zodAst);
+            // Use string literal for keys that are not valid identifiers
+            const key = isValidIdentifier(field.name) ? j.identifier(field.name) : j.stringLiteral(field.name);
+            return j.objectProperty(key, zodAst);
         })
         .filter((prop): prop is ReturnType<typeof j.objectProperty> => !!prop);
 
@@ -1051,13 +1057,20 @@ async function processHelperFiles({ fullPath, parsed }: { fullPath: string; pars
         }
     }
 
+    const ignored = ['/models.ts', '/.nango/schema.ts'];
+
     // Filter out integration files from the glob list since they were already processed
     for (const absPath of files) {
         if (integrationFiles.has(absPath)) {
             continue;
         }
 
-        const spinner = ora({ text: `Migrating ${absPath.replace(fullPath, '')}` }).start();
+        const relPath = absPath.replace(fullPath, '');
+        if (ignored.includes(relPath)) {
+            continue;
+        }
+
+        const spinner = ora({ text: `Migrating ${relPath}` }).start();
         if (await hasSymlinkInPath(absPath, fullPath)) {
             spinner.warn('Skipping symlink');
             continue;
@@ -1144,6 +1157,81 @@ function isImportSpecifier(s: unknown): s is ImportSpecifier {
         (s as any).imported &&
         (s as any).imported.type === 'Identifier'
     );
+}
+
+const reservedWords = new Set([
+    'break',
+    'case',
+    'catch',
+    'class',
+    'const',
+    'continue',
+    'debugger',
+    'default',
+    'delete',
+    'do',
+    'else',
+    'export',
+    'extends',
+    'finally',
+    'for',
+    'function',
+    'if',
+    'import',
+    'in',
+    'instanceof',
+    'new',
+    'return',
+    'super',
+    'switch',
+    'this',
+    'throw',
+    'try',
+    'typeof',
+    'var',
+    'void',
+    'while',
+    'with',
+    'yield',
+    'let',
+    'static',
+    'enum',
+    'implements',
+    'interface',
+    'package',
+    'private',
+    'protected',
+    'public',
+    'abstract',
+    'boolean',
+    'byte',
+    'char',
+    'double',
+    'final',
+    'float',
+    'goto',
+    'int',
+    'long',
+    'native',
+    'short',
+    'synchronized',
+    'throws',
+    'transient',
+    'volatile'
+]);
+// Helper to check if a string is a valid JavaScript identifier
+function isValidIdentifier(name: string): boolean {
+    if (!name || typeof name !== 'string') {
+        return false;
+    }
+
+    // Can only contain letters, digits, underscores, and dollar signs
+    if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name)) {
+        return false;
+    }
+
+    // Check for reserved words
+    return !reservedWords.has(name);
 }
 
 // Helper to check if a file or any parent directory is a symlink

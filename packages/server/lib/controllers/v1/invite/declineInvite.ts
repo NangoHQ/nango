@@ -1,8 +1,11 @@
-import type { DeclineInvite } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { z } from 'zod';
+import * as z from 'zod';
+
 import { declineInvitation, getInvitation } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { DeclineInvite } from '@nangohq/types';
 
 const validation = z
     .object({

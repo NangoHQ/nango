@@ -1,10 +1,13 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
-import type { Transporter } from 'nodemailer';
 import nodemailer from 'nodemailer';
+
 import { getLogger } from '@nangohq/utils';
-import type { Interfaces, MessagesSendResult } from 'mailgun.js/definitions';
+
 import { envs } from '../env.js';
+
+import type { Interfaces, MessagesSendResult } from 'mailgun.js/definitions';
+import type { Transporter } from 'nodemailer';
 
 const logger = getLogger('Server.EmailClient');
 
@@ -78,7 +81,7 @@ class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
     }
 
     async send(email: string, subject: string, html: string): Promise<MessagesSendResult> {
-        return this.client.messages.create('email.nango.dev', {
+        return this.client.messages.create('nango.dev', {
             from: envs.SMTP_FROM,
             to: [email],
             subject,

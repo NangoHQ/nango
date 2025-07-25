@@ -1,5 +1,7 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/refs/heads/main/schemas/v3.1/schema.yaml
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2025-02-13
 openapi: 3.1.0
+externalDocs:
+    url: https://docs.nango.dev/reference/overview
 info:
     title: 'Nango API'
     description: 'Nango API specs used to authorize & sync data with external APIs.'
@@ -9,6 +11,8 @@ servers:
       description: Production server
     - url: http://localhost:3003
       description: Local server
+security:
+    - bearerAuth: []
 paths:
     /providers:
         get:
@@ -59,281 +63,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '404':
                     $ref: '#/components/responses/NotFound'
-    /config:
-        get:
-            deprecated: true
-            description: Returns a list of integrations. Deprecated, please use `GET /integrations`
-            responses:
-                '200':
-                    description: Successfully returned a list of integrations
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - configs
-                                properties:
-                                    configs:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Integration'
-        post:
-            description: Create a new integration. Deprecated, please use `POST /integrations`
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - provider_config_key
-                                - provider
-                            properties:
-                                provider_config_key:
-                                    type: string
-                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
-                                provider:
-                                    type: string
-                                    description: The Nango API Configuration.
-                                oauth_client_id:
-                                    type: string
-                                    description: The ID of your OAuth app (registered with the external API). Required for OAuth APIs.
-                                oauth_client_secret:
-                                    type: string
-                                    description: The secret of your OAuth app (registered with the external API). Required for OAuth APIs.
-                                oauth_scopes:
-                                    type: string
-                                    description: Comma separated list of scopes.
-            responses:
-                '200':
-                    description: Successfully created an integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - config
-                                properties:
-                                    config:
-                                        type: object
-                                        required:
-                                            - unique_key
-                                            - provider
-                                        properties:
-                                            unique_key:
-                                                type: string
-                                                description: The integration ID that you created in Nango.
-                                            provider:
-                                                type: string
-                                                description: The Nango API Configuration.
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-        put:
-            description: Edits an integration (only for OAuth APIs). Deprecated, please use `PATCH /integrations/:uniqueKey`
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - provider_config_key
-                                - provider
-                                - oauth_client_id
-                                - oauth_client_secret
-                            properties:
-                                provider_config_key:
-                                    type: string
-                                    description: The integration ID that you created on Nango.
-                                provider:
-                                    type: string
-                                    description: The Nango API Configuration.
-                                oauth_client_id:
-                                    type: string
-                                    description: The ID of your OAuth app (registered with the external API).
-                                oauth_client_secret:
-                                    type: string
-                                    description: The secret of your OAuth app (registered with the external API).
-                                oauth_scopes:
-                                    type: string
-                                    description: Comma separated list of scopes.
-            responses:
-                '200':
-                    description: Successfully edit an integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - config
-                                properties:
-                                    config:
-                                        type: object
-                                        required:
-                                            - unique_key
-                                            - provider
-                                        properties:
-                                            unique_key:
-                                                type: string
-                                                description: The integration ID that you created in Nango.
-                                            provider:
-                                                type: string
-                                                description: The Nango API Configuration.
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                '404':
-                    description: Unknown integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-
-    /config/{providerConfigKey}:
-        get:
-            deprecated: true
-            description: Returns a specific integration. Deprecated, please use `GET /integrations/{uniqueKey}`
-            parameters:
-                - name: providerConfigKey
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The integration ID that you created in Nango.
-                - name: include_creds
-                  in: query
-                  required: false
-                  description: If true, the response will contain the client ID, secret, scopes, auth_mode and app link - if applicable. include_creds is false by default.
-                  schema:
-                      type: boolean
-            responses:
-                '200':
-                    description: Successfully returned an integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - config
-                                properties:
-                                    config:
-                                        type: object
-                                        required:
-                                            - unique_key
-                                            - provider
-                                        properties:
-                                            unique_key:
-                                                type: string
-                                                description: The integration ID that you created in Nango.
-                                            provider:
-                                                type: string
-                                                description: The Nango API Configuration.
-                                            actions:
-                                                type: array
-                                                items:
-                                                    type: object
-                                                    properties:
-                                                        name:
-                                                            type: string
-                                                            description: The name of the action.
-                                                        created_at:
-                                                            type: string
-                                                            description: The creation timestamp of the sync.
-                                                            format: date-time
-                                                        updated_at:
-                                                            type: string
-                                                            description: The last updated timestamp of the sync.
-                                                            format: date-time
-                                            syncs:
-                                                type: array
-                                                items:
-                                                    type: object
-                                                    properties:
-                                                        name:
-                                                            type: string
-                                                            description: The name of the sync.
-                                                        created_at:
-                                                            type: string
-                                                            description: The creation timestamp of the sync.
-                                                            format: date-time
-                                                        updated_at:
-                                                            type: string
-                                                            description: The last updated timestamp of the sync.
-                                                            format: date-time
-                                                        description:
-                                                            type: string
-                                                            description: Description of what the sync does and details about it
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                '404':
-                    description: Unknown integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-        delete:
-            description: Deletes a specific integration. Deprecated, please use `DELETE /integrations/:uniqueKey`
-            parameters:
-                - name: providerConfigKey
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The integration ID that you created in Nango.
-            responses:
-                '200':
-                    description: Successfully deleted an integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                '404':
-                    description: Unknown integration
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
     /integrations:
         get:
             description: Returns a list of integrations
@@ -1004,10 +733,6 @@ paths:
                                                     example: 'sync'
                                                 json_schema:
                                                     type: object
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 sync_type:
                                                     type: string
                                                     example: 'full'
@@ -1053,6 +778,17 @@ paths:
                                                     type: array
                                                     items:
                                                         type: string
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                            fields:
+                                                                type: array
+                                                        required:
+                                                            - name
                                     actions:
                                         type: array
                                         items:
@@ -1066,10 +802,6 @@ paths:
                                                 type:
                                                     type: string
                                                     example: 'action'
-                                                models:
-                                                    type: array
-                                                    items:
-                                                        $ref: '#/components/schemas/NangoModel'
                                                 last_deployed:
                                                     type: string
                                                     example: '2024-02-28T20:16:38.052Z'
@@ -1100,6 +832,17 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
+                                                models:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            name:
+                                                                type: string
+                                                            fields:
+                                                                type: array
+                                                        required:
+                                                            - name
                                     on-events:
                                         type: array
                                         items:
@@ -1200,7 +943,7 @@ paths:
                                                 your-properties:
                                                     type: string
                                                     description: The data Nango synced in for you
-                                                    example: 'Your synced data, in the schema you (or Nango) defined in nango.yaml'
+                                                    example: 'Your synced data, in the schema you (or Nango) defined in script'
                                                 _nango_metadata:
                                                     type: object
                                                     properties:
@@ -1854,7 +1597,7 @@ paths:
                                     description: The name of the action to trigger.
                                 input:
                                     type: object
-                                    description: The necessary input for your action's 'runAction' function.
+                                    description: The necessary input for your action's 'exec' function.
 
             responses:
                 '200':
@@ -2320,6 +2063,11 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
 components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            description: The secret key from your Nango environment.
     responses:
         BadRequest:
             description: Bad request
@@ -2421,7 +2169,6 @@ components:
                             'APP',
                             'NONE',
                             'TBA',
-                            'TABLEAU',
                             'JWT',
                             'BILL',
                             'TWO_STEP',
@@ -2514,6 +2261,8 @@ components:
                 webhook_user_defined_secret:
                     type: boolean
                 post_connection_script:
+                    type: string
+                pre_connection_deletion_script:
                     type: string
                 categories:
                     items:
@@ -2777,7 +2526,6 @@ components:
                 - $ref: '#/components/schemas/UnauthCredentials'
                 - $ref: '#/components/schemas/CustomCredentials'
                 - $ref: '#/components/schemas/TbaCredentials'
-                - $ref: '#/components/schemas/TableauCredentials'
                 - $ref: '#/components/schemas/BillCredentials'
                 - $ref: '#/components/schemas/TwoStepCredentials'
                 - $ref: '#/components/schemas/SignatureCredentials'
@@ -3024,32 +2772,6 @@ components:
                 - type
                 - username
                 - password
-        TableauCredentials:
-            type: object
-            title: Tableau
-            additionalProperties: false
-            properties:
-                content_url:
-                    type: string
-                expires_at:
-                    type: string
-                    format: date-time
-                pat_name:
-                    type: string
-                pat_secret:
-                    type: string
-                raw:
-                    type: object
-                token:
-                    type: string
-                type:
-                    type: string
-                    enum: [TABLEAU]
-            required:
-                - pat_name
-                - pat_secret
-                - raw
-                - type
         TbaCredentials:
             type: object
             title: TBA

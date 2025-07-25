@@ -1,12 +1,11 @@
-/* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import chalk from 'chalk';
-
 import Ajv from 'ajv';
-import jsYaml from 'js-yaml';
+// eslint-disable-next-line import/order
+import chalk from 'chalk';
+import { dump, load } from 'js-yaml';
 
 import type { Provider } from '@nangohq/types';
 
@@ -35,7 +34,7 @@ console.log('loaded schema.json', pathSchema);
 // Providers
 const providersYaml = fs.readFileSync(pathProviders);
 console.log('loaded providers.yaml', pathProviders, providersYaml.toString().length);
-const providersJson = jsYaml.load(providersYaml.toString()) as Record<string, Provider>;
+const providersJson = load(providersYaml.toString()) as Record<string, Provider>;
 console.log('parsed providers', Object.keys(providersJson));
 const webhookContent = fs.readFileSync(pathWebhooks, 'utf-8');
 const scriptsContent = fs.readFileSync(pathConnectionScripts, 'utf-8');
@@ -55,7 +54,7 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
         continue;
     }
     const { credentials, connection_config, ...providerWithoutSensitive } = provider;
-    const strippedProviderYaml = jsYaml.dump({ [providerKey]: providerWithoutSensitive });
+    const strippedProviderYaml = dump({ [providerKey]: providerWithoutSensitive });
     const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
     if (match.length > 0) {
         console.error(chalk.red('error'), 'Provider', chalk.blue(providerKey), `contains interpolation errors. A \`{\` does not have a \`$\` in front of it.`);
@@ -275,6 +274,17 @@ function validateProvider(providerKey: string, provider: Provider) {
                 chalk.red('error'),
                 chalk.blue(providerKey),
                 `post_connection_script "${provider.post_connection_script}" not found in connection scripts index.ts`
+            );
+            error = true;
+        }
+    }
+
+    if (provider.pre_connection_deletion_script) {
+        if (!scriptsContent.includes(provider.pre_connection_deletion_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `pre_connection_deletion_script "${provider.pre_connection_deletion_script}" not found in connection scripts index.ts`
             );
             error = true;
         }

@@ -28,6 +28,12 @@ export async function dev({ fullPath, debug }: { fullPath: string; debug: boolea
     typescriptWatchSimple({ fullPath, debug });
 }
 
+// Global state
+// We keep a list of failing files because we have two kinds of errors: tsc and bundling
+// Both of them happen in parallel we keep track of what's failing and only display "No error" if this is empty
+const failingFiles = new Set<string>();
+let isReady = false;
+
 /**
  * Manual watch uses chokidar to listen to files changes and bundle what's declared in index.ts
  * We are not relying on tsc because it's not always sending the appropriate events on delete or rename.
@@ -39,20 +45,19 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
     const graph = new DependencyGraph({ fullPath });
     const indexTs = 'index.ts';
     const processing = new Set<string>();
-    const failures = new Map<string, string>();
+    const failures = new Map<string, { msg: string; line?: number | undefined }>();
     let entryPoints: string[] = [];
-    let isReady = false;
 
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: ['node_modules', '.nango', 'dist', 'build']
     });
 
-    function bufferOrDisplayError(filePath: string, msg: string) {
+    function bufferOrDisplayError(filePath: string, msg: string, line?: number) {
         if (isReady) {
-            fileErrorToText({ filePath, msg });
+            console.error(fileErrorToText({ filePath, msg, line }));
         } else {
-            failures.set(filePath, msg);
+            failures.set(filePath, { msg, line });
         }
     }
 
@@ -113,16 +118,20 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
             const res = await compileOne({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
             if (res.isErr()) {
                 spinner.fail();
+                failingFiles.add(filePath);
+
                 // Errors are already displayed by typescriptWatchSimple
                 if (res.error instanceof CompileError && res.error.type !== 'failed_to_build_unknown') {
-                    bufferOrDisplayError(filePath, res.error.message);
+                    bufferOrDisplayError(filePath, res.error.customMessage, res.error.lineNumber);
                 }
             } else {
                 spinner.succeed();
+                failingFiles.delete(filePath);
             }
         } catch (err) {
             spinner?.fail();
             bufferOrDisplayError(filePath, err instanceof Error ? err.message : 'Unknown error');
+            failingFiles.add(filePath);
         } finally {
             processing.delete(filePath);
         }
@@ -150,10 +159,11 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
 
             console.log('');
 
-            if (failures.size) {
+            if (failures.size > 0) {
                 for (const fail of failures) {
-                    fileErrorToText({ filePath: fail[0], msg: fail[1] });
+                    console.error(fileErrorToText({ filePath: fail[0], ...fail[1] }));
                 }
+                failures.clear();
             }
             isReady = true;
         }
@@ -189,26 +199,27 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
  * Use typescript watch program to typecheck all files in parallel
  */
 function typescriptWatchSimple({ fullPath, debug }: { fullPath: string; debug: boolean }) {
-    let hasError = false;
+    let hadError = false;
 
     function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
         if (typeof diagnostic.messageText !== 'string') {
             return;
         }
 
+        const hasPendingErrors = failingFiles.size > 0;
         const noError = diagnostic.messageText.startsWith('Found 0 errors');
         const maybeError = diagnostic.messageText.startsWith('Found');
         if (maybeError && !noError) {
-            hasError = true;
+            hadError = true;
             console.info(diagnostic.messageText);
         } else if (diagnostic.messageText.startsWith('Starting compilation')) {
             console.info(diagnostic.messageText);
         } else if (noError) {
-            if (hasError) {
+            if (isReady && (hadError || !hasPendingErrors)) {
                 // Only log after we had some errors
                 console.info(chalk.green('✔'), 'No error');
             }
-            hasError = false;
+            hadError = false;
         } else {
             printDebug(diagnostic.messageText, debug);
         }

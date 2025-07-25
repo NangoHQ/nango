@@ -1,15 +1,15 @@
 ---
-title: 'Authorize in your app (default UI)'
-sidebarTitle: 'Authorize in your app'
-description: 'Guide to letting your users authorize an external API from your application.'
+title: "Authorize in your app (default UI)"
+sidebarTitle: "Authorize in your app"
+description: "Guide to letting your users authorize an external API from your application."
 ---
 
 <Info>
-Pre-requisite: complete the [Configuration](/guides/api-authorization/configuration) guide.
+  Pre-requisite: complete the [Configuration](/guides/api-authorization/configuration) guide.
 </Info>
 
 <Frame caption="Authorization overview.">
-  <img src="/images/auth.png"/>
+  ![](/images/auth.png)
 </Frame>
 
 # 1. Generate a session token (backend)
@@ -19,63 +19,57 @@ In **your backend**, set up an API endpoint that your frontend will call before 
 Here's an example of how your backend can retrieve a session token from Nango ([API](/reference/api/connect/sessions/create) / [Node SDK](/reference/sdks/node#create-a-connect-session) references):
 
 <Tabs>
-
-<Tab title="Node">
-
-```ts
-import { Nango } from '@nangohq/node';
-
-const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
-
-api.post('/sessionToken', (req, res) => {
-  // Ask Nango for a secure token
-  const res = await nango.createConnectSession({
-    end_user: {
-      id: '<END-USER-ID>',
-      email: '<OPTIONAL-END-USER-EMAIL>',
-      display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
-    },
-    organization: {
-      id: '<OPTIONAL-ORG-ID>',
-      display_name: '<OPTIONAL-ORG-DISPLAY-NAME>'
-    },
-    allowed_integrations: ['<INTEGRATION-ID>'],
-  });
-
-  // Send this token back to your frontend
-  res.status(200).send({
-    sessionToken: res.data.token
-  });
-});
-```
-</Tab>
-
-<Tab title="cURL">
-
-```bash
-curl --request POST \
-  --url https://api.nango.dev/connect/sessions \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "end_user": {
-      "id": "<REQUIRED-END-USER-ID>",
-      "email": "<OPTIONAL-END-USER-EMAIL>",
-      "display_name": "<OPTIONAL-END-USER-DISPLAY-NAME>"
-    },
-    "organization": {
-      "id": "<OPTIONAL-ORG-ID>",
-      "display_name": "<OPTIONAL-ORG-DISPLAY-NAME>"
-    },
-    "allowed_integrations": [
-      "<INTEGRATION-ID>"
-    ]
-  }'
-
-```
-
-</Tab>
-
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+    
+    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+    
+    api.post('/sessionToken', (req, res) => {
+      // Ask Nango for a secure token
+      const res = await nango.createConnectSession({
+        end_user: {
+          id: '<END-USER-ID>',
+          email: '<OPTIONAL-END-USER-EMAIL>',
+          display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
+        },
+        organization: {
+          id: '<OPTIONAL-ORG-ID>',
+          display_name: '<OPTIONAL-ORG-DISPLAY-NAME>'
+        },
+        allowed_integrations: ['<INTEGRATION-ID>'],
+      });
+    
+      // Send this token back to your frontend
+      res.status(200).send({
+        sessionToken: res.data.token
+      });
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "end_user": {
+          "id": "<REQUIRED-END-USER-ID>",
+          "email": "<OPTIONAL-END-USER-EMAIL>",
+          "display_name": "<OPTIONAL-END-USER-DISPLAY-NAME>"
+        },
+        "organization": {
+          "id": "<OPTIONAL-ORG-ID>",
+          "display_name": "<OPTIONAL-ORG-DISPLAY-NAME>"
+        },
+        "allowed_integrations": [
+          "<INTEGRATION-ID>"
+        ]
+      }'
+    
+    ```
+  </Tab>
 </Tabs>
 
 <Accordion title="ℹ️ Details on end user and organization information">
@@ -84,30 +78,28 @@ curl --request POST \
   <Info>
     The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-and-save-the-connection-id-backend)).
   </Info>
-
   <Info>
     It's possible that the end use's email in your app will not match the email they use to connect their external account, which is fine.
   </Info>
-
   <Info>
-  **Organization-level connections**
+    **Editing user and org data**
 
-  In some cases, a connection belongs to an organization rather than a user. In such cases, fill in the relevant organization information and use a place holder for the required `end_user.id` (or use the information of the user who initiated the authorization flow). 
-  </Info>  
+    Updating data for a user ID or org ID will apply the changes to all connections linked to that ID.
 
+    For example, if you create connection `A` with user ID `X` and email `a@a.com`, then connection `B` with the same user ID `X` and email `b@b.com`, both connections will reflect the latest data: `b@b.com`. The same applies to org data—editing it updates all connections tied to that org ID.
+  </Info>
 </Accordion>
 
 <Tip>
-  Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from: 
+  Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from:
 
   <Frame caption="Nango's default authorization UI.">
-    <img src="/images/connect-integration-list.png" />
+    ![](/images/connect-integration-list.png)
   </Frame>
-
   Passing a single integration ID in `allowed_integrations` will send the end user directly to this integration's authorization flow:
 
   <Frame caption="Nango's default authorization UI.">
-    <img src="/images/connect-linear-only.png" />
+    ![](/images/connect-linear-only.png)
   </Frame>
 </Tip>
 
@@ -119,13 +111,14 @@ In **your frontend**, load the Nango frontend SDK, retrieve the session token fr
 
 <Tip>
   Nango's default authorization UI comes with pre-built features:
+
   - Displays the necessary input fields, validates their format & provides end-user instructions
   - Authorizes a specific integration or can display a list of integrations to choose from
   - Is fully whitelabel, without any Nango branding
 </Tip>
 
 <Frame caption="Nango's default authorization UI.">
-  <img src="/images/connect-ui.gif" />
+  ![](/images/connect-ui.gif)
 </Frame>
 
 ```js
@@ -157,7 +150,7 @@ Refer to the [Authorize in your app (custom UI)](/guides/api-authorization/autho
 <Accordion title="👩🏻‍💻 Simplified flow for development">
   In development, you can retrieve the connection ID without relying on webhooks.
 
-	When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback:
+  When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback:
 
   ```ts
   await nango.openConnectUI({
@@ -169,7 +162,7 @@ Refer to the [Authorize in your app (custom UI)](/guides/api-authorization/autho
   });
   ```
 
-	However, we do not recommend using this approach in production, as it is safer to avoid exposing the connection ID to the frontend.
+  However, we do not recommend using this approach in production, as it is safer to avoid exposing the connection ID to the frontend.
 </Accordion>
 
 The connection ID, a UUID generated by Nango, is required to manage the connection and access its credentials & data. So you need to persist this ID.
@@ -177,12 +170,14 @@ The connection ID, a UUID generated by Nango, is required to manage the connecti
 Upon successful authorization, Nango will send a webhook to your backend with the connection ID.
 
 To set up this webhook:
+
 1. go to the _Environment Settings_ tab in the Nango UI
 2. specify a _Webhook URL_ where Nango should send notifications
 3. enable the _Send New Connection Creation Webhooks_ option
 4. create the specified route in your backend to handle Nango webhooks
 
 Successful authorization webhooks sent by Nango are `POST` requests with the following JSON body:
+
 ```json
 {
     "type": "auth",
@@ -211,13 +206,13 @@ Details in this [guide](/guides/api-authorization/re-authorize-a-connection).
 ## Next
 
 You have successfully set up the authorization flow for your users. Next steps:
+
 - View new connections & associated credentials in the _Connections_ tab of the Nango UI
 - Retrieve connection credentials with the [API](/reference/api/connection/get) or [Node SDK](/reference/sdks/node#get-a-connection-with-credentials)
 - [Sync](/guides/syncs/use-a-sync) data from APIs
 - Perform [actions](/guides/actions/use-an-action) with APIs
 - Perform [direct request](/guides/proxy-requests) to APIs
 
-
 <Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>

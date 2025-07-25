@@ -1,4 +1,5 @@
 import { envs } from '../env.js';
+
 import type { Knex } from 'knex';
 
 export const schema = envs.RECORDS_DATABASE_SCHEMA;
@@ -14,6 +15,7 @@ const config: Knex.Config = {
     connection: {
         connectionString: databaseUrl,
         statement_timeout: 60000,
+        ssl: envs.RECORDS_DATABASE_SSL ? { rejectUnauthorized: false } : false,
         application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
     },
     searchPath: schema,

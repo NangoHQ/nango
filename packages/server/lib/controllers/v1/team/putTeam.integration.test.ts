@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/team';
@@ -42,7 +44,7 @@ describe(`PUT ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Expected string, received number', path: ['name'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received number', path: ['name'] }]
             }
         });
         expect(res.res.status).toBe(400);

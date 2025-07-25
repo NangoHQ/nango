@@ -120,7 +120,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             debug: false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         metrics.increment(metrics.Types.WEBHOOK_EXECUTION, 1, { accountId: team.id });

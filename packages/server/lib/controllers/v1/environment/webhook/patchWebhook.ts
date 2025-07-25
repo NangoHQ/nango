@@ -1,13 +1,32 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
+import { URL } from 'url';
+
+import * as z from 'zod';
+
+import { externalWebhookService, getApiUrl } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { externalWebhookService } from '@nangohq/shared';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
+
+const urlValidation = z
+    .string()
+    .url()
+    .or(z.literal(''))
+    .optional()
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            const inputUrl = new URL(url);
+            return inputUrl.origin !== new URL(getApiUrl()).origin;
+        },
+        { message: `Webhook URLs cannot point to domain (${new URL(getApiUrl()).origin}).` }
+    );
 
 const validation = z
     .object({
-        primary_url: z.string().url().or(z.literal('')).optional(),
-        secondary_url: z.string().url().or(z.literal('')).optional(),
+        primary_url: urlValidation,
+        secondary_url: urlValidation,
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),

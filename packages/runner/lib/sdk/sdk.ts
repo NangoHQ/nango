@@ -4,6 +4,7 @@ import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 
 import { PersistClient } from './persist.js';
+import { envs } from '../env.js';
 import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
@@ -22,6 +23,8 @@ export const oldLevelToNewLevel = {
 } as const;
 
 const RECORDS_VALIDATION_SAMPLE = 1;
+const HTTP_LOG_MIN_CALLS = 5;
+const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
 /**
  * Action SDK
@@ -30,6 +33,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
     nango: Nango;
     protected persistClient: PersistClient;
     protected locking: Locking;
+    protected httpLogSample: number = 0;
 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
@@ -71,6 +75,15 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                 }
             }).unwrap(),
             logger: async (log) => {
+                // We only sample successful HTTP logs because they are the most common and the most noisy.
+                if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
+                    const pct = Math.random() * 100 > HTTP_LOG_SAMPLE_PCT;
+                    if (this.httpLogSample > HTTP_LOG_MIN_CALLS && pct) {
+                        return;
+                    }
+                    this.httpLogSample += 1;
+                }
+
                 await this.sendLogToPersist(log);
             },
             onError: (props) => {
@@ -247,6 +260,7 @@ export class NangoSyncRunner extends NangoSyncBase {
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
+    protected httpLogSample: number = 0;
 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);

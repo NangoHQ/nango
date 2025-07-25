@@ -1,16 +1,18 @@
-import { Link } from 'react-router-dom';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
-import type { SyncResponse } from '../../types';
-import type { ApiConnectionFull } from '@nangohq/types';
-import { SyncRow } from './components/SyncRow';
-import * as Table from '../../components/ui/Table';
-import { useStore } from '../../store';
-import { Info } from '../../components/Info';
-import { getLogsUrl } from '../../utils/logs';
 import { Fragment } from 'react/jsx-runtime';
-import { useSyncs } from '../../hooks/useSyncs';
-import { Skeleton } from '../../components/ui/Skeleton';
+import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
+
+import { SyncRow } from './components/SyncRow';
+import { Info } from '../../components/Info';
+import { Skeleton } from '../../components/ui/Skeleton';
+import * as Table from '../../components/ui/Table';
+import { useSyncs } from '../../hooks/useSyncs';
+import { useStore } from '../../store';
+import { getLogsUrl } from '../../utils/logs';
+
+import type { SyncResponse } from '../../types.js';
+import type { ApiConnectionFull } from '@nangohq/types';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;

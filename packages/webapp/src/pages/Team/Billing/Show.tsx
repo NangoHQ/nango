@@ -3,25 +3,23 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { PaymentMethods } from './components/PaymentMethod';
+import { PlanCard } from './components/PlanCard';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { Info } from '../../../components/Info';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetPlans, useApiGetUsage } from '../../../hooks/usePlan';
+import { useStripePaymentMethods } from '../../../hooks/useStripe';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
-import { cn } from '../../../utils/utils';
+import { formatDateToInternationalFormat } from '../../../utils/utils';
 
+import type { PlanDefinitionList } from './types';
 import type { GetUsage, PlanDefinition } from '@nangohq/types';
-
-interface PlanDefinitionList {
-    plan: PlanDefinition;
-    active: boolean;
-    isDowngrade?: boolean;
-    isUpgrade?: boolean;
-}
 
 export const TeamBilling: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -29,31 +27,48 @@ export const TeamBilling: React.FC = () => {
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
     const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
+    const { data: paymentMethods } = useStripePaymentMethods(env);
 
-    const plans = useMemo<PlanDefinitionList[]>(() => {
+    const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
-            return [];
+            return null;
         }
 
-        // No self downgrade or old plan
-        if (currentPlan.name === 'scale' || currentPlan.name === 'enterprise' || currentPlan.name === 'starter' || currentPlan.name === 'internal') {
-            return [{ plan: plansList.data.find((p) => p.code === currentPlan.name)!, active: true }];
-        }
+        const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
         const list: PlanDefinitionList[] = [];
-        let isAboveActive = false;
         for (const plan of plansList.data) {
             const same = plan.code === currentPlan.name;
-            if (plan.hidden && !same) {
+            if (plan.hidden) {
                 continue;
             }
 
-            list.push({ plan, active: same, isDowngrade: !isAboveActive, isUpgrade: isAboveActive });
-            if (same) {
-                isAboveActive = true;
-            }
+            list.push({
+                plan,
+                active: same,
+                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
+                isUpgrade: curr.nextPlan?.includes(plan.code) || false
+            });
         }
-        return list;
+        return { list, activePlan: curr };
+    }, [currentPlan, plansList]);
+
+    const hasPaymentMethod = useMemo<boolean>(() => {
+        if (!paymentMethods || !paymentMethods.data || paymentMethods.data.length <= 0) {
+            return false;
+        }
+        return true;
+    }, [paymentMethods]);
+
+    const futurePlan = useMemo(() => {
+        if (!currentPlan?.orb_future_plan) {
+            return null;
+        }
+
+        return {
+            until: formatDateToInternationalFormat(currentPlan.orb_future_plan_at!),
+            futurePlan: plansList?.data.find((p) => p.orbId === currentPlan.orb_future_plan)
+        };
     }, [currentPlan, plansList]);
 
     if (loading) {
@@ -89,18 +104,53 @@ export const TeamBilling: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white mb-16">Billing</h2>
             <div className="flex flex-col gap-10">
                 {hasUsage && (
-                    <div className="flex flex-col gap-2.5">
+                    <div className="flex flex-col gap-5">
                         <h2 className="text-grayscale-10 uppercase text-sm">Usage</h2>
-                        <UsageTable data={usage} isLoading={usageIsLoading} />
+                        <div className="flex flex-col gap-4">
+                            <UsageTable data={usage} isLoading={usageIsLoading} />
+                            {usageIsLoading ? (
+                                <Skeleton className="w-32" />
+                            ) : (
+                                <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                                    <Button variant={'secondary'}>View detailed usage</Button>
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 )}
-                <div className="flex flex-col gap-2.5">
-                    <h2 className="text-grayscale-10 uppercase text-sm">Plan</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                        {plans.map((def) => {
-                            return <PlanCard key={def.plan.code} env={env} def={def} />;
-                        })}
-                    </div>
+
+                <div className="flex flex-col gap-5">
+                    <h2 className="text-grayscale-10 uppercase text-sm">Plans</h2>
+
+                    {plans?.activePlan && plans.activePlan.hidden && (
+                        <div className="text-white text-s flex items-center font-semibold">
+                            <span className="text-grayscale-300 pr-2">Current plan:</span> {plans.activePlan.title}{' '}
+                            <span className="bg-success-4 h-1.5 w-1.5 rounded-full inline-flex ml-2"></span>
+                        </div>
+                    )}
+                    {futurePlan && futurePlan.futurePlan?.code === 'free' && (
+                        <Info variant={'warning'} className="mt-2">
+                            Your {plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.
+                        </Info>
+                    )}
+                    {futurePlan && futurePlan.futurePlan?.code !== 'free' && (
+                        <Info variant={'warning'} className="mt-2">
+                            Your {plans?.activePlan.title} subscription will switch to Starter at the end of the month.
+                        </Info>
+                    )}
+                    {plans?.activePlan.hidden ? (
+                        <div>
+                            <a href="https://nango.dev/support">
+                                <Button>Contact us to change your plan</Button>
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-4 gap-4 mt-6">
+                            {plans?.list.map((def) => {
+                                return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={plans.activePlan} />;
+                            })}
+                        </div>
+                    )}
 
                     <div className="flex text-white text-sm">
                         <Link to="https://nango.dev/pricing" target="_blank" className="flex gap-2">
@@ -109,19 +159,24 @@ export const TeamBilling: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                {hasUsage && (
-                    <div className="flex gap-4 items-center">
-                        <h2 className="text-grayscale-10 uppercase text-sm">Billing and Invoicing</h2>
 
-                        {usageIsLoading ? (
-                            <Skeleton className="w-1/2" />
-                        ) : (
-                            <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
-                                <Button variant={'primary'}>Manage Billing</Button>
-                            </Link>
-                        )}
-                    </div>
-                )}
+                <div className="flex flex-col gap-5">
+                    <h2 className="text-grayscale-10 uppercase text-sm">Payment and Invoices</h2>
+
+                    <PaymentMethods />
+
+                    {hasUsage && (
+                        <>
+                            {usageIsLoading ? (
+                                <Skeleton className="w-1/2" />
+                            ) : (
+                                <Link to={usage?.data.customer.portalUrl || ''} target="_blank">
+                                    <Button variant={'secondary'}>View Invoices</Button>
+                                </Link>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </DashboardLayout>
     );
@@ -168,33 +223,5 @@ const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: b
                 })}
             </Table.Body>
         </Table.Table>
-    );
-};
-
-export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ def }) => {
-    const Comp = def.active ? 'div' : Link;
-    return (
-        <Comp
-            className={cn(
-                'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
-                def.active && 'bg-grayscale-1 border-grayscale-7'
-            )}
-            target="_blank"
-            to={def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : 'https://nango.dev/demo'}
-            // to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
-            // onClick={onClickPlan}
-        >
-            <div className="flex flex-col gap-2.5">
-                <header className="flex gap-3 items-center">
-                    <div className="capitalize">{def.plan.title}</div>
-                    {def.active && <div className="bg-success-4 h-1.5 w-1.5 rounded-full"></div>}
-                </header>
-                <div className="text-sm text-grayscale-10">{def.plan.description}</div>
-            </div>
-            <footer>
-                {!def.active && def.isUpgrade && <Button variant={'primary'}>{def.plan.cta ? def.plan.cta : 'Upgrade plan'}</Button>}
-                {!def.active && def.isDowngrade && <Button variant={'primary'}>Contact us to downgrade</Button>}
-            </footer>
-        </Comp>
     );
 };

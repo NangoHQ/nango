@@ -1,12 +1,16 @@
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import type { Request } from 'express';
+import { fileURLToPath } from 'node:url';
+
+import { serializeError } from 'serialize-error';
+
+import { getFeatureFlagsClient } from '@nangohq/kvstore';
+import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
 import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok } from '@nangohq/utils';
-import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
-import { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import { getFeatureFlagsClient } from '@nangohq/kvstore';
+import type { Request } from 'express';
 
 const BINARY_CONTENT_TYPES = [
     'image/png',
@@ -143,7 +147,8 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
                 ![
                     ...(provider.token_response_metadata || []),
                     ...(provider.redirect_uri_metadata || []),
-                    ...(provider.connection_configuration || [])
+                    ...(provider.connection_configuration || []),
+                    ...(provider.webhook_response_metadata || [])
                 ].includes(cleanParamName(param))
         );
         const proxyVerificationMatches = [
@@ -223,7 +228,7 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | P
  * This can be used to convert the keys of a Json to snake case
  * @param payload This the json we want to convert from a camelCase a snake_case
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
 export function convertJsonKeysToSnakeCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;
@@ -240,7 +245,7 @@ export function convertJsonKeysToSnakeCase<TReturn>(payload: Record<string, any>
  *
  * @param payload The json we want to convert its keys to camelCase
  */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
 export function convertJsonKeysToCamelCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;
@@ -268,4 +273,29 @@ export function getOrchestrator() {
 export function isBinaryContentType(contentType: string | undefined): boolean {
     if (!contentType) return false;
     return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
+}
+
+export function stringifyEnrichedError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
+    const serialized = serializeError(err);
+    const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack', 'cause'] : [])];
+
+    const enriched: Record<string, unknown> = {
+        ...serialized
+    };
+
+    // Handle Boom-style error objects like the ones use in simpleOauth2
+    // These errors often contain valuable debugging information in `data.payload` that
+    // wouldn't be included in standard error serialization. We explicitly extract this
+    // as 'provider_error_payload' since it typically contains API-specific error details
+    // that are useful for debugging.
+    if (typeof err === 'object' && err != null) {
+        const anyErr = err as any;
+
+        const payload = anyErr.data?.payload;
+        if (payload && typeof payload === 'object') {
+            enriched['provider_error_payload'] = payload;
+        }
+    }
+    const filtered: Record<string, unknown> = Object.fromEntries(Object.entries(enriched).filter(([key]) => allowedErrorProperties.includes(key)));
+    return JSON.stringify(filtered, null, opts?.pretty ? 2 : undefined);
 }

@@ -1,10 +1,13 @@
 import braintree from 'braintree';
-import type { Config as ProviderConfig, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
-import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
-import { parseTokenExpirationDate, isTokenExpired, makeUrl } from '../utils/utils.js';
+
+import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+
 import { NangoError } from '../utils/error.js';
-import { getLogger, axiosInstance as axios, stringifyError } from '@nangohq/utils';
+import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
+
+import type { AuthorizationTokenResponse, Config as ProviderConfig, RefreshTokenResponse } from '../models/index.js';
+import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
@@ -23,6 +26,7 @@ class ProviderClient {
             case 'facebook':
             case 'tiktok-ads':
             case 'tiktok-accounts':
+            case 'sentry-oauth':
             case 'stripe-app':
             case 'stripe-app-sandbox':
             case 'workday-oauth':
@@ -58,6 +62,8 @@ class ProviderClient {
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'tiktok-ads':
                 return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'sentry-oauth':
+                return this.createSentryOauthToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'stripe-app':
             case 'stripe-app-sandbox':
                 return this.createStripeAppToken(tokenUrl, code, config.oauth_client_secret, callBackUrl);
@@ -105,6 +111,13 @@ class ProviderClient {
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
                     provider.refresh_url as string,
+                    credentials.refresh_token as string,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
+            case 'sentry-oauth':
+                return this.refreshSentryOauthToken(
+                    interpolatedTokenUrl.href,
                     credentials.refresh_token as string,
                     config.oauth_client_id,
                     config.oauth_client_secret
@@ -223,6 +236,62 @@ class ProviderClient {
             throw new NangoError('tiktok_token_request_error');
         } catch (err: any) {
             throw new NangoError('tiktok_token_request_error', err.message);
+        }
+    }
+
+    private async createSentryOauthToken(tokenUrl: string, code: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'authorization_code',
+                code
+            };
+
+            const response = await axios.post(tokenUrl, body);
+
+            if (response.status === 201 && response.data) {
+                const { token, refreshToken, expiresAt, ...rest } = response.data;
+
+                return {
+                    ...rest,
+                    expires_at: expiresAt,
+                    access_token: token,
+                    refresh_token: refreshToken
+                };
+            }
+
+            throw new NangoError('sentry_oauth_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('sentry_oauth_token_request_error', err);
+        }
+    }
+
+    private async refreshSentryOauthToken(refreshTokenUrl: string, refresh_token: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'refresh_token',
+                refresh_token
+            };
+
+            const response = await axios.post(refreshTokenUrl, body);
+
+            if (response.status === 201 && response.data) {
+                const { token, refreshToken, expiresAt, ...rest } = response.data;
+
+                return {
+                    ...rest,
+                    expires_at: expiresAt,
+                    access_token: token,
+                    refresh_token: refreshToken
+                };
+            }
+
+            throw new NangoError('sentry_oauth_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('sentry_oauth_refresh_token_request_error', err);
         }
     }
 

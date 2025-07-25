@@ -1,5 +1,6 @@
+import * as z from 'zod';
+
 import { operationIdRegex } from '@nangohq/logs';
-import { z } from 'zod';
 
 const mergingStrategySchema = z.discriminatedUnion('strategy', [
     z.object({

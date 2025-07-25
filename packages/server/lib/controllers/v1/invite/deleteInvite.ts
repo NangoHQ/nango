@@ -1,9 +1,12 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { DeleteInvite } from '@nangohq/types';
-import { expirePreviousInvitations } from '@nangohq/shared';
-import { z } from 'zod';
+import * as z from 'zod';
+
 import db from '@nangohq/database';
+import { expirePreviousInvitations } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { DeleteInvite } from '@nangohq/types';
 
 const validation = z
     .object({

@@ -1,5 +1,6 @@
+import * as z from 'zod';
+
 import { operationIdRegex } from '@nangohq/logs';
-import { z } from 'zod';
 
 export const getCursorRequestParser = {
     parseQuery: (data: unknown) =>
