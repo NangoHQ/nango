@@ -1,48 +1,130 @@
 ---
-title: HighLevel White Label
-sidebarTitle: HighLevel White Label
+title: 'HighLevel White Label'
+sidebarTitle: 'HighLevel White Label'
+description: 'Access the HighLevel White Label API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/highlevel-white-label/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/highlevel-white-label/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _HighLevel White Label_.
+      </Step>
+      <Step title="Authorize HighLevel White Label">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to HighLevel. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the HighLevel API">
+        Let's make your first request to the HighLevel API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/contacts?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Version: 2021-07-28"
+                ```
+            </Tab>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            <Tab title="Node">
 
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-## Setup guide
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-_No setup guide yet._
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const res = await nango.get({
+                endpoint: '/contacts',
+                params: { limit: 10 },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                headers: {
+                  Version: '2021-07-28'
+                }
+              });
+            console.log(res.data);
+            ```
+            </Tab>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/highlevel-white-label.mdx)</Note>
+        </Tabs>
 
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Useful links
+      </Step>
+    </Steps>
 
--   [How to register an Application](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization#1-register-an-oauth-app)
--   [OAuth related docs](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization)
--   [List of OAuth scopes](https://highlevel.stoplight.io/docs/integrations/vcctp9t1w8hja-scopes)
--   [HighLevel REST API docs](https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview)
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/highlevel-white-label.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their HighLevel White Label accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a HighLevel developer account">
+        If you don't already have one, sign up for a developer account at the [HighLevel Marketplace](https://marketplace.gohighlevel.com/).
+      </Step>
+      <Step title="Register an OAuth app">
+        1. Go to the [HighLevel Marketplace](https://marketplace.gohighlevel.com/)
+        2. Navigate to **My Apps** and click **Create App**
+        3. Fill in the required details:
+           - **App Name**: Your application name
+           - **App Type**: Select either **Public** or **Private**
+           - **Target User**: Choose the intended user — either **Sub-Account** or **Agency**
+           - **Installation Permissions**: Specify who can install the app — either **Agency & Sub-Account** or **Agency Only**
+           - **Listing Type**: Select **White-label**
+        4. Click **Create App** to create your app
+        5. Complete all mandatory sections: **Basic Info**, **App Profile Details**, **Support Details**, and **Pricing Details**
+      </Step>
+      <Step title="Configure OAuth settings">
+        1. In your app settings, navigate to **Advanced Settings** then **Auth** section
+        2. Configure the following:
+           - **Redirect URI**: Set this to your Nango OAuth redirect URL:
+             ```
+             https://api.nango.dev/oauth/callback
+             ```
+           - **Scopes**: Select the required scopes for your integration (see [HighLevel scopes documentation](https://highlevel.stoplight.io/docs/integrations/vcctp9t1w8hja-scopes))
+        3. Generate Client Keys:
+           - Click **Add** in the Client Key section
+           - Enter a name for your key and click **Add**
+           - A pair of keys will be generated: **Client ID** and **Client Secret**
+           - Save these credentials as you'll need them when configuring Nango
+        4. Click **Save** to complete your OAuth configuration
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | General | [HighLevel Website](https://www.gohighlevel.com/) |
+    | | [HighLevel Marketplace](https://marketplace.gohighlevel.com/) |
+    | | [HighLevel Support](https://help.gohighlevel.com/) |
+    | White Label | [White Label Documentation](https://help.gohighlevel.com/support/solutions/folders/155000000067) |
+    | | [White Label Setup Guide](https://help.gohighlevel.com/support/solutions/articles/155000000136-how-to-get-started-with-the-developer-s-marketplace) |
+    | Developer | [How to register an Application](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization#1-register-an-oauth-app) |
+    | | [OAuth related docs](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization) |
+    | | [List of OAuth scopes](https://highlevel.stoplight.io/docs/integrations/vcctp9t1w8hja-scopes) |
+    | | [HighLevel REST API docs](https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview) |
+    | | [Rate limits documentation](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization#what-are-current-rate-limits-for-api-20) |
 
-## API gotchas
--   HighLevel offers two different authorization flows for their users. The `standard` option allows for general OAuth2 authentication, while the `highlevel-white-label` option allows users to generate access tokens, enabling them to white-label the platform. This means users can rebrand the platform with their own branding elements and customize it to match their brand identity
--   HighLevel enforces rate limits for its public V2 APIs. For more details check [HighLevel rate limits](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization#what-are-current-rate-limits-for-api-20).
--   When creating an app, there are 2 types of access: Location Level Access (also known as Sub-Account) and Agency Level Access (also known as Company). These access levels provide comprehensive control over location data at either the individual location or agency-wide level.
--   The App Type determines the accessibility and visibility of your application. A public app is available for anyone to use and access, while a private app is restricted to a specific group or individuals and is not publicly listed in the marketplace. For more details check [profile information](https://help.gohighlevel.com/support/solutions/articles/155000000136-how-to-get-started-with-the-developer-s-marketplace#How-to-use-the-oAuth-V2-to-configure-Webhooks-for-your-apps?)
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/highlevel-white-label.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    -   HighLevel offers two different authorization flows for their users. The `standard` option allows for general OAuth2 authentication, while the `highlevel-white-label` option allows users to generate access tokens, enabling them to white-label the platform. This means users can rebrand the platform with their own branding elements and customize it to match their brand identity
+    -   HighLevel enforces rate limits for its public V2 APIs. For more details check [HighLevel rate limits](https://highlevel.stoplight.io/docs/integrations/a04191c0fabf9-authorization#what-are-current-rate-limits-for-api-20).
+    -   When creating an app, there are 2 types of access: Location Level Access (also known as Sub-Account) and Agency Level Access (also known as Company). These access levels provide comprehensive control over location data at either the individual location or agency-wide level.
+    -   The App Type determines the accessibility and visibility of your application. A public app is available for anyone to use and access, while a private app is restricted to a specific group or individuals and is not publicly listed in the marketplace. For more details check [profile information](https://help.gohighlevel.com/support/solutions/articles/155000000136-how-to-get-started-with-the-developer-s-marketplace#How-to-use-the-oAuth-V2-to-configure-Webhooks-for-your-apps?)
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/highlevel-white-label.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/highlevel-white-label.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
