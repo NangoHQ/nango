@@ -98,7 +98,12 @@ describe('zodToNango', () => {
             optional: false,
             value: [
                 { name: 'foo', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] },
-                { array: true, name: 'arr', optional: false, tsType: true, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] }
+                {
+                    array: true,
+                    name: 'arr',
+                    optional: false,
+                    value: [{ name: '0', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] }]
+                }
             ]
         });
     });
