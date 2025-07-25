@@ -1,52 +1,35 @@
-import { IconBook, IconCheck, IconChevronDown, IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { IconBook, IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
-import { useSWRConfig } from 'swr';
-
-import Nango from '@nangohq/frontend';
 
 import { Info } from '../../components/Info';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/Collapsible';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/Command';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/Popover';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Button, ButtonLink } from '../../components/ui/button/Button';
 import { Input } from '../../components/ui/input/Input';
-import { apiConnectSessions } from '../../hooks/useConnect';
-import { clearConnectionsCache } from '../../hooks/useConnections';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { clearIntegrationsCache, useListIntegration } from '../../hooks/useIntegration';
-import { useToast } from '../../hooks/useToast';
+import { useListIntegration } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { globalEnv } from '../../utils/env';
-import { cn } from '../../utils/utils';
+import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 
-import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
+import type { ConnectUI } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
 
 export const ConnectionCreate: React.FC = () => {
-    const toast = useToast();
     const env = useStore((state) => state.env);
     const paramExtended = useSearchParam('extended');
     const paramIntegrationId = useSearchParam('integration_id');
-    const navigate = useNavigate();
-    const { mutate, cache } = useSWRConfig();
 
     const connectUI = useRef<ConnectUI>();
-    const hasConnected = useRef<AuthResult | undefined>();
 
-    const { environmentAndAccount } = useEnvironment(env);
     const { user } = useUser(true);
-    const { list: listIntegration, mutate: listIntegrationMutate, loading } = useListIntegration(env);
+    const { list: listIntegration, loading } = useListIntegration(env);
 
-    const [open, setOpen] = useState(false);
     const [integration, setIntegration] = useState<ApiIntegrationList>();
     const [testUserEmail, setTestUserEmail] = useState(user!.email);
     const [testUserId, setTestUserId] = useState(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
@@ -59,55 +42,6 @@ export const ConnectionCreate: React.FC = () => {
             connectUI.current.close();
         }
     });
-
-    const onEvent: OnConnectEvent = useCallback(
-        (event) => {
-            if (event.type === 'close') {
-                void listIntegrationMutate();
-                if (hasConnected.current) {
-                    toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
-                    navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
-                }
-            } else if (event.type === 'connect') {
-                void listIntegrationMutate();
-                clearConnectionsCache(cache, mutate);
-                clearIntegrationsCache(cache, mutate);
-                hasConnected.current = event.payload;
-            }
-        },
-        [toast]
-    );
-
-    const onClickConnectUI = () => {
-        if (!environmentAndAccount) {
-            return;
-        }
-
-        const nango = new Nango({
-            host: globalEnv.apiUrl,
-            websocketsPath: environmentAndAccount.environment.websockets_path || ''
-        });
-
-        connectUI.current = nango.openConnectUI({
-            baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
-            onEvent
-        });
-
-        // We defer the token creation so the iframe can open and display a loading screen
-        //   instead of blocking the main loop and no visual clue for the end user
-        setTimeout(async () => {
-            const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.unique_key] : undefined,
-                end_user: { id: testUserId, email: testUserEmail, display_name: testUserName },
-                organization: testOrgId ? { id: testOrgId, display_name: testOrgName } : undefined
-            });
-            if ('error' in res.json) {
-                return;
-            }
-            connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
-    };
 
     useEffect(() => {
         if (paramIntegrationId && listIntegration) {
@@ -147,79 +81,7 @@ export const ConnectionCreate: React.FC = () => {
                 <div className="pr-10">
                     <div className="flex flex-col gap-8">
                         <h1 className="text-2xl">Create a test connection</h1>
-                        <div className="flex flex-col gap-4">
-                            <label htmlFor="integration_id">Pick an integration</label>
-                            <div className="flex gap-4">
-                                <Popover open={open} onOpenChange={setOpen}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            role="combobox"
-                                            variant={'select'}
-                                            size={'lg'}
-                                            className="justify-between grow"
-                                            disabled={Boolean(paramIntegrationId)}
-                                        >
-                                            {integration ? (
-                                                <div className="flex gap-3">
-                                                    <IntegrationLogo provider={integration.provider} /> {integration.unique_key}
-                                                </div>
-                                            ) : (
-                                                'Choose from the list'
-                                            )}
-                                            <IconChevronDown stroke={1} size={18} />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent
-                                        side="bottom"
-                                        align="start"
-                                        style={{ width: 'var(--radix-popover-trigger-width)' }}
-                                        className="bg-grayscale-900 w-full px-3"
-                                    >
-                                        <Command>
-                                            <CommandInput
-                                                placeholder="Search integrations..."
-                                                className="text-white ring-0 focus:ring-0 focus-visible:outline-none"
-                                            ></CommandInput>
-                                            <CommandList className="max-h-[400px]">
-                                                <CommandEmpty>No integrations found.</CommandEmpty>
-                                                <CommandGroup className="px-0">
-                                                    {listIntegration?.map((item) => {
-                                                        const checked = integration && item.unique_key === integration.unique_key;
-                                                        return (
-                                                            <CommandItem
-                                                                key={item.unique_key}
-                                                                value={item.unique_key}
-                                                                onSelect={(curr) => {
-                                                                    setIntegration(
-                                                                        integration && curr === integration.unique_key
-                                                                            ? undefined
-                                                                            : listIntegration.find((v) => v.unique_key === curr)!
-                                                                    );
-                                                                    setOpen(false);
-                                                                }}
-                                                                className={cn(
-                                                                    'items-center pl-2 py-2.5 justify-between text-white',
-                                                                    checked && 'bg-grayscale-1000'
-                                                                )}
-                                                            >
-                                                                <div className="flex gap-3">
-                                                                    <IntegrationLogo provider={item.provider} /> {item.unique_key}
-                                                                </div>
-                                                                <IconCheck className={cn('mr-2 h-4 w-4', checked ? 'opacity-100' : 'opacity-0')} />
-                                                            </CommandItem>
-                                                        );
-                                                    })}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <Button onClick={onClickConnectUI} size="lg">
-                                    Authorize
-                                </Button>
-                            </div>
-                        </div>
+                        <CreateConnectionSelector />
 
                         <Info>
                             The test connection will use the name & email address of your Nango dashboard account. In your app, you can pass your user’s
@@ -410,7 +272,6 @@ export const ConnectionCreate: React.FC = () => {
                         <div className="flex gap-4">
                             <ButtonLink
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
-                                onClick={onClickConnectUI}
                                 size="md"
                                 variant={'link'}
                             >

@@ -229,7 +229,12 @@ class SyncController {
                     limit: accountUsageTracker.getLimit(plan, 'actions')
                 });
 
-                res.status(400).send({ error: 'Usage limit exceeded for actions' });
+                res.status(400).send({
+                    error: {
+                        code: 'resource_capped',
+                        message: 'Usage limit exceeded for actions. Upgrade your plan to get rid of action limits.'
+                    }
+                });
 
                 span.setTag('nango.usageLimitExceeded', true);
                 await logCtx.failed();
