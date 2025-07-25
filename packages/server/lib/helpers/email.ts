@@ -74,14 +74,14 @@ export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DB
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         user.email,
-        `Your Nango trial ends in ${inDays} days`,
+        `Some Nango features will pause in ${inDays} days`,
         `<p>Hi ${he.encode(user.name)},</p>
 
-<p>Your free Nango trial expires in ${inDays} days. After that, integration endpoints and scripts will be paused. All authorization features will continue to work.</p>
+<p>Some Nango features (syncs & actions) will pause in 3 days. All other features—like authorization flows, credential retrieval, and the proxy—will keep working as usual.</p>
 
-<p>You can extend your trial for 14 days at a time directly from the Nango UI. Just click on any integration using scripts and select Extend.</p>
+<p>You can delay the idle from the Integrations tab in the <a href="https://app.nango.dev">Nango UI</a>.</p>
 
-<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+<p>We idle syncs & actions because they use dedicated infrastructure, which is too costly to run indefinitely on free plans. <a href="https://app.nango.dev/prod/team/billing">Upgrade</a> to prevent auto idling forever.</p>
 
 <p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
@@ -95,14 +95,14 @@ export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' 
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         user.email,
-        `Your Nango trial has expired`,
+        `Some Nango features have been paused`,
         `<p>Hi ${he.encode(user.name)},</p>
 
-<p>Your Nango trial has expired. Integration endpoints and scripts have been paused, but authorization features are still active.</p>
+<p>Some Nango features (syncs & actions) have been paused. All other features—like authorization flows, credential retrieval, and the proxy—still work as usual.</p>
 
-<p>You can extend your trial for 14 more days directly in the Nango UI. Just click on any integration using scripts and select Extend.</p>
+<p>You can reactivate any sync or action in the <a href="https://app.nango.dev">Nango UI</a> for 14 more days.</p>
 
-<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+<p>We idle syncs & actions because they use dedicated infrastructure, which is too costly to run indefinitely on free plans. <a href="https://app.nango.dev/prod/team/billing">Upgrade</a> to prevent auto idling forever.</p>
 
 <p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
