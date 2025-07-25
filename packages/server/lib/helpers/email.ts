@@ -77,7 +77,7 @@ export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DB
         `Some Nango features will pause in ${inDays} days`,
         `<p>Hi ${he.encode(user.name)},</p>
 
-<p>Some Nango features (syncs & actions) will pause in 3 days. All other features—like authorization flows, credential retrieval, and the proxy—will keep working as usual.</p>
+<p>Some Nango features (syncs & actions) will pause in ${inDays} days. All other features—like authorization flows, credential retrieval, and the proxy—will keep working as usual.</p>
 
 <p>You can delay the idle from the Integrations tab in the <a href="https://app.nango.dev">Nango UI</a>.</p>
 
