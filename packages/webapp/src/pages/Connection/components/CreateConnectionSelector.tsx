@@ -124,7 +124,7 @@ export const CreateConnectionSelector: React.FC = () => {
                 hasConnected.current = event.payload;
             }
         },
-        [toast, queryClient, env, navigate, listIntegrationMutate, cache, mutate]
+        [toast, queryClient, env, navigate, integration, listIntegrationMutate, cache, mutate]
     );
 
     useUnmount(() => {
