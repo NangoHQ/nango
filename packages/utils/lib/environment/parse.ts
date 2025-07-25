@@ -165,8 +165,11 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
-    NANGO_LOGS_ES_INDEX: z.string().optional(),
-    NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
+    NANGO_LOGS_ES_PREFIX: z.string().optional(),
+    NANGO_LOGS_ES_INDEX_OPERATIONS: z.string().optional(),
+    NANGO_LOGS_ES_INDEX_MESSAGES: z.string().optional(),
+    NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
+    NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
 
     // Koala
     PUBLIC_KOALA_API_URL: z.url().optional(),
@@ -210,6 +213,7 @@ export const ENVS = z.object({
     RECORDS_DATABASE_URL: z.url().optional(),
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
+    RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),

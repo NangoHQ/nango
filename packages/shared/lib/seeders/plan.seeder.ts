@@ -25,6 +25,8 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         has_otel: false,
         api_rate_limit_size: 'm',
         auto_idle: true,
+        has_webhooks_script: false,
+        has_webhooks_forward: false,
         created_at: new Date(),
         updated_at: new Date(),
         ...override
