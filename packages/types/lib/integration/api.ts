@@ -134,9 +134,10 @@ export type PatchIntegration = Endpoint<{
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-              clientId: string;
-              clientSecret: string;
+              clientId?: string | undefined;
+              clientSecret?: string | undefined;
               scopes?: string | undefined;
+              userDefined: boolean;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;

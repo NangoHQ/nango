@@ -102,7 +102,8 @@ class ConfigService {
                 environment_id,
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
-                forward_webhooks: true
+                forward_webhooks: true,
+                user_defined: false
             },
             provider
         );
@@ -253,6 +254,44 @@ class ConfigService {
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
         return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
+    }
+
+    async getPreConfiguredProviderScopes(provider: string): Promise<{ scopes: string[]; preConfigured: boolean } | null> {
+        const preConfiguredProvider = await db.knex.select('oauth_scopes').from('_nango_pre_provisioned_providers').where('name', provider).first();
+
+        if (!preConfiguredProvider) {
+            return null;
+        }
+
+        const scopes = preConfiguredProvider.oauth_scopes ? preConfiguredProvider.oauth_scopes.split(',').map((scope: string) => scope.trim()) : [];
+
+        return { scopes, preConfigured: true };
+    }
+
+    async getPreConfiguredProviderCredentials(provider: string): Promise<{
+        scopes: string[];
+        client_id?: string;
+        client_secret?: string;
+    } | null> {
+        const preConfiguredProvider = await db.knex
+            .select('oauth_scopes', 'oauth_client_id', 'oauth_client_secret')
+            .from('_nango_pre_provisioned_providers')
+            .where('name', provider)
+            .first();
+
+        if (!preConfiguredProvider) {
+            return null;
+        }
+
+        const scopes = preConfiguredProvider.oauth_scopes ? preConfiguredProvider.oauth_scopes.split(',').map((scope: string) => scope.trim()) : [];
+
+        const result = {
+            scopes,
+            ...(preConfiguredProvider.oauth_client_id && { client_id: preConfiguredProvider.oauth_client_id }),
+            ...(preConfiguredProvider.oauth_client_secret && { client_secret: preConfiguredProvider.oauth_client_secret })
+        };
+
+        return result;
     }
 }
 

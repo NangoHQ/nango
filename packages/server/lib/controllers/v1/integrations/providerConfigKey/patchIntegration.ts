@@ -24,9 +24,10 @@ const validationBody = z
                 z
                     .object({
                         authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                        clientId: z.string().min(1).max(255),
-                        clientSecret: z.string().min(1),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
+                        clientId: z.string().min(1).max(255).optional(),
+                        clientSecret: z.string().min(1).optional(),
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                        userDefined: z.boolean().default(true)
                     })
                     .strict(),
                 z
@@ -92,6 +93,19 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
+    if ('authType' in body && (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA')) {
+        const userDefined = body.userDefined ?? true;
+        if (userDefined && (!body.clientId || !body.clientSecret || body.scopes === undefined)) {
+            res.status(400).send({
+                error: {
+                    code: 'invalid_body',
+                    message: 'clientId, clientSecret, and scopes are required when userDefined is true'
+                }
+            });
+            return;
+        }
+    }
+
     // Integration ID
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
@@ -127,9 +141,21 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            integration.oauth_client_id = body.clientId;
-            integration.oauth_client_secret = body.clientSecret;
-            integration.oauth_scopes = body.scopes || '';
+            const userDefined = body.userDefined ?? true;
+
+            if (!userDefined) {
+                const preConfigured = await configService.getPreConfiguredProviderCredentials(integration.provider);
+                if (preConfigured) {
+                    integration.oauth_client_id = preConfigured.client_id || '';
+                    integration.oauth_client_secret = preConfigured.client_secret || '';
+                    integration.oauth_scopes = preConfigured.scopes.join(',');
+                }
+            } else {
+                if (body.clientId) integration.oauth_client_id = body.clientId;
+                if (body.clientSecret) integration.oauth_client_secret = body.clientSecret;
+                integration.oauth_scopes = body.scopes || '';
+            }
+            integration.user_defined = userDefined;
         } else if (body.authType === 'APP') {
             integration.oauth_client_id = body.appId;
             // This is a legacy thing
