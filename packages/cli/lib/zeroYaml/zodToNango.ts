@@ -43,8 +43,11 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         return { name, value: [{ ...zodToNangoModelField('__string', schema.def.valueType), dynamic: true }], optional };
     } else if (isZodArray(schema)) {
         // console.log('array', schema.def);
-        const value = zodToNangoModelField('0', schema.def.element).value;
-        return { name, value, tsType: true, array: true, optional };
+        const value = zodToNangoModelField('0', schema.def.element);
+        if (isZodObject(schema.def.element)) {
+            return { name, value: [value], array: true, optional };
+        }
+        return { name, value: value.value, tsType: true, array: true, optional };
     } else if (isZodUnion(schema)) {
         const values: NangoModelField['value'] = [];
 

@@ -90,4 +90,21 @@ describe('zodToNango', () => {
             ]
         });
     });
+
+    it('should support nested objects', () => {
+        const ref = z.object({ id: z.string() });
+        expect(zodToNangoModelField('test', z.object({ foo: ref, arr: z.array(ref) }))).toStrictEqual({
+            name: 'test',
+            optional: false,
+            value: [
+                { name: 'foo', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] },
+                {
+                    array: true,
+                    name: 'arr',
+                    optional: false,
+                    value: [{ name: '0', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] }]
+                }
+            ]
+        });
+    });
 });
