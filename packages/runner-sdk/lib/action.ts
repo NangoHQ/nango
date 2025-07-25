@@ -59,6 +59,7 @@ export abstract class NangoActionBase<
     abortSignal?: NangoProps['abortSignal'];
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
+    scriptType: NangoProps['scriptType'];
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -75,6 +76,7 @@ export abstract class NangoActionBase<
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
+        this.scriptType = config.scriptType;
 
         if (config.syncId) {
             this.syncId = config.syncId;
