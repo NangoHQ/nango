@@ -23,7 +23,7 @@ import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
-import type { MessageRow, SearchMessages } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
 
 const drawerWidth = '834px';
@@ -35,7 +35,7 @@ const fullPeriod: PeriodPreset = {
     toPeriod: () => null // Null means no period
 };
 
-export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ operationId, isLive }) => {
+export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLive: boolean }> = ({ operation, operationId, isLive }) => {
     const env = useStore((state) => state.env);
     const [message, setMessage] = useState<MessageRow>();
 
@@ -195,18 +195,20 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     <div>
                         {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                     </div>
-                    <div>
-                        <SimpleTooltip
-                            tooltipContent={
-                                <>
-                                    Successfull HTTP logs are sampled to 10% to reduce noise.
-                                    <br /> Other logs are not sampled
-                                </>
-                            }
-                        >
-                            (sampling is on)
-                        </SimpleTooltip>
-                    </div>
+                    {operation.operation.type === 'sync' && operation.operation.action === 'run' && (
+                        <div>
+                            <SimpleTooltip
+                                tooltipContent={
+                                    <>
+                                        Successfull HTTP logs are sampled to 10% to reduce noise.
+                                        <br /> Other logs are not sampled
+                                    </>
+                                }
+                            >
+                                (sampling is on)
+                            </SimpleTooltip>
+                        </div>
+                    )}
                 </div>
             </div>
             <header className="flex gap-2 items-center">
