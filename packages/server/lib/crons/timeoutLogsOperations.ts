@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import * as cron from 'node-cron';
 
-import { envs, model } from '@nangohq/logs';
+import { envs, modelOperations } from '@nangohq/logs';
 import { getLogger, report } from '@nangohq/utils';
 
 const logger = getLogger('cron.timeoutLogsOperations');
@@ -19,11 +19,11 @@ export function timeoutLogsOperations(): void {
         async () => {
             try {
                 logger.info(`Starting`);
-                await model.setCancelledForAuth();
+                await modelOperations.setCancelledForAuth();
 
                 await setTimeout(15000);
 
-                await model.setTimeoutForAll();
+                await modelOperations.setTimeoutForAll();
                 logger.info(`✅ Timeouted`);
             } catch (err) {
                 report(new Error('cron_failed_to_timeout_operation', { cause: err }));
