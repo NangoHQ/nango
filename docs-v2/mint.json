@@ -600,6 +600,7 @@
                 "integrations/all/paylocity",
                 "integrations/all/paypal",
                 "integrations/all/paypal-sandbox",
+                "integrations/all/paycom",
                 "integrations/all/paychex",
                 "integrations/all/pendo",
                 "integrations/all/pennylane",
@@ -810,16 +811,6 @@
                                 "reference/api/integration/create",
                                 "reference/api/integration/update",
                                 "reference/api/integration/delete"
-                            ]
-                        },
-                        {
-                            "group": "Configs (deprecated)",
-                            "pages": [
-                                "reference/api/configs/listLegacy",
-                                "reference/api/configs/getLegacy",
-                                "reference/api/configs/createLegacy",
-                                "reference/api/configs/updateLegacy",
-                                "reference/api/configs/deleteLegacy"
                             ]
                         },
                         {
