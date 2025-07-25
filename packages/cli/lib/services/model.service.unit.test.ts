@@ -30,6 +30,8 @@ describe('buildModelTs', () => {
                 fields: [
                     { name: 'value', value: null, tsType: true },
                     { name: 'top', value: 'boolean', tsType: true, array: true },
+                    { name: 'arrayOfModel', value: 'Foo', tsType: false, array: true, model: true },
+                    { name: 'arrayOfObject', value: [{ name: 'nes', value: 'ted' }], tsType: true, array: true },
                     { name: 'ref', value: 'Foo', tsType: false, model: true, optional: true },
                     {
                         name: 'union',
