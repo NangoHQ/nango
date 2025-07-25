@@ -264,7 +264,7 @@ export const Go: React.FC = () => {
                         return;
                     } else if (err.type === 'connection_test_failed') {
                         setConnectionFailed(true);
-                        setError(t('go.invalidCredentials', { provider: provider.display_name }));
+                        setError(t('go.invalidCredentials', { provider: displayName }));
                         return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
@@ -286,6 +286,8 @@ export const Go: React.FC = () => {
         return <Navigate to="/" />;
     }
 
+    const displayName = integration.display_name || provider.display_name;
+
     if (result) {
         return (
             <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
@@ -293,7 +295,7 @@ export const Go: React.FC = () => {
                 <div className="flex flex-col items-center gap-5">
                     <IconCircleCheckFilled className="text-green-base" size={44} />
                     <h2 className="text-xl font-semibold">{t('go.success')}</h2>
-                    <p className="text-dark-500">{t('go.successMessage', { provider: provider.name })}</p>
+                    <p className="text-dark-500">{t('go.successMessage', { provider: displayName })}</p>
                 </div>
                 <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                     {t('common.finish')}
@@ -347,7 +349,7 @@ export const Go: React.FC = () => {
                     <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                         <img src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-xl text-dark-800">{t('go.linkAccount', { provider: provider.display_name })}</h1>
+                    <h1 className="font-semibold text-xl text-dark-800">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
@@ -420,7 +422,7 @@ export const Go: React.FC = () => {
                                 <div></div>
                                 <div className="text-sm text-dark-500 w-full text-center -mt-20">
                                     {/* visual centering */}
-                                    {t('go.willConnect', { provider: provider.display_name })}
+                                    {t('go.willConnect', { provider: displayName })}
                                     {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
                                 </div>
                             </>
