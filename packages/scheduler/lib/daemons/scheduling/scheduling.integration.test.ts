@@ -112,7 +112,9 @@ async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; star
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: params?.state === 'DELETED' ? new Date() : null,
-        last_scheduled_task_id: null
+        last_scheduled_task_id: null,
+        last_scheduled_task_state: null,
+        next_execution_at: params?.startsAt || new Date()
     };
     const res = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(schedule).returning('*');
     const inserted = res[0];
