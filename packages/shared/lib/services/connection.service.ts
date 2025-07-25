@@ -1008,6 +1008,20 @@ class ConnectionService {
         connection: DBConnectionDecrypted,
         logCtx: LogContextStateless
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
+        if (provider.auth_mode === 'APP') {
+            const appResult = await githubAppClient.createCredentials({
+                integration: config,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            });
+
+            if (appResult.isErr()) {
+                return Err(new NangoError('github_app_token_fetch_error'));
+            }
+
+            return Ok(appResult.value);
+        }
+
         const [userResult, appResult] = await Promise.all([
             getFreshOAuth2Credentials({
                 connection,
