@@ -76,7 +76,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
         await handleSave();
     };
 
-    const shouldShowCredentials = userDefined;
+    const shouldShowCredentials = userDefined && integration.user_defined;
     const isSaveDisabled = shouldShowCredentials && (!clientId || !clientSecret);
     return (
         <div className="mt-10">

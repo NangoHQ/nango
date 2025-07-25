@@ -6,7 +6,7 @@ import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'user_defined'>,
     ApiTimestamps
 > & {
     logo: string;
@@ -37,6 +37,7 @@ export type PostPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        user_defined?: boolean | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
