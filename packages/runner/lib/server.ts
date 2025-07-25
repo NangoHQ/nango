@@ -7,12 +7,10 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { envs, heartbeatIntervalMs } from './env.js';
+import { heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
-import { RunnerMonitor } from './monitor.js';
-import { Locks } from './sdk/locks.js';
-import { abortControllers } from './state.js';
+import { abortControllers, locks, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -46,9 +44,6 @@ function healthProcedure() {
     });
 }
 
-const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
-const locks = new Locks();
-
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
@@ -71,7 +66,7 @@ function startProcedure() {
                 throw new Error('Conflicting sync detected');
             }
 
-            usage.track(nangoProps);
+            usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {

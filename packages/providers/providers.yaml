@@ -1130,6 +1130,8 @@ aws-scim:
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
 azure-blob-storage:
+    categories:
+        - storage
     display_name: Azure Blob Storage
     alias: microsoft
     default_scopes:
@@ -6010,8 +6012,8 @@ knowbe4:
             title: Subdomain
             description: The subdomain to your API base URL
             doc_section: '#step-1-finding-your-subdomain'
-            example: api
-            pattern: '^(api|api-eu|api-ca|api-uk|api-de)$'
+            example: eu.api
+            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
             order: 1
 
 klipfolio:
@@ -9282,6 +9284,30 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
+
+setmore:
+    display_name: Setmore
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://developer.setmore.com/api/v1/o/oauth2/token?refreshToken=${credentials.refreshToken}
+    proxy:
+        base_url: https://developer.setmore.com/api
+    token_response:
+        token: data.token.access_token
+        token_expiration: data.token.expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/setmore
+    docs_connect: https://docs.nango.dev/integrations/all/setmore/connect
+    credentials:
+        refreshToken:
+            type: string
+            title: Access Token
+            pattern: '^r1\/[A-Za-z0-9\-]+$'
+            example: r1/Ab12Cd34Ef56Gh78Ij90KlMnOpQr-StUvWxYz123456
+            description: The access token provided to you by Setmore team
+            doc_section: '#step-1-requesting-access-to-the-api'
 
 servicem8:
     display_name: ServiceM8

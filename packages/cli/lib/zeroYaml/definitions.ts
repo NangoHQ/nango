@@ -11,7 +11,8 @@ import {
     DuplicateModelDefinitionError,
     EndpointMismatchDefinitionError,
     InvalidIntervalDefinitionError,
-    InvalidModelDefinitionError
+    InvalidModelDefinitionError,
+    TrackDeletesDefinitionError
 } from './utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
@@ -151,6 +152,9 @@ export function buildSync({
     }
     if (Object.keys(params.models).length !== params.endpoints.length) {
         return Err(new EndpointMismatchDefinitionError(filePath, ['createSync', 'endpoints']));
+    }
+    if (params.syncType === 'incremental' && params.trackDeletes) {
+        return Err(new TrackDeletesDefinitionError(filePath, ['createSync', 'trackDeletes']));
     }
 
     const seen = new Set();

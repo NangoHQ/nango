@@ -19,6 +19,11 @@ models:
             - Ref
             - true
         literal: hello
+        test:
+            - foo: bar
+              id: number
+            - bar: foo
+              id: number
         num: 1
         literalNull: null[]
         obj:

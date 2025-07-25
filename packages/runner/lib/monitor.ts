@@ -10,7 +10,7 @@ import type { NangoProps } from '@nangohq/types';
 
 export class RunnerMonitor {
     private runnerId: number;
-    private tracked: Map<number, NangoProps> = new Map<number, NangoProps>();
+    private tracked = new Map<number, { nangoProps: NangoProps; taskId: string }>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -33,16 +33,25 @@ export class RunnerMonitor {
         }
     }
 
-    track(nangoProps: NangoProps): void {
+    track(nangoProps: NangoProps, taskId: string): void {
         if (nangoProps.syncJobId) {
             this.lastIdleTrackingDate = Date.now();
-            this.tracked.set(nangoProps.syncJobId, nangoProps);
+            this.tracked.set(nangoProps.syncJobId, { nangoProps, taskId });
         }
     }
 
     untrack(nangoProps: NangoProps): void {
         if (nangoProps.syncJobId) {
             this.tracked.delete(nangoProps.syncJobId);
+        }
+    }
+
+    untrackByTaskId(taskId: string): void {
+        for (const [syncJobId, value] of this.tracked.entries()) {
+            if (value.taskId === taskId) {
+                this.tracked.delete(syncJobId);
+                break;
+            }
         }
     }
 
@@ -71,8 +80,11 @@ export class RunnerMonitor {
                 return;
             }
         }
+
         this.lastMemoryReportDate = new Date();
-        for (const { environmentId, activityLogId, secretKey } of this.tracked.values()) {
+        for (const {
+            nangoProps: { environmentId, activityLogId, secretKey }
+        } of this.tracked.values()) {
             if (!environmentId || !activityLogId) {
                 continue;
             }
@@ -123,7 +135,7 @@ export class RunnerMonitor {
         for (const task of this.tracked.values()) {
             // Should cover sync and sync variant
             // Webhooks have the same syncId so we allow them to run in parallel
-            if (task.syncId === newTask.syncId && task.scriptType === 'sync') {
+            if (task.nangoProps.syncId === newTask.syncId && task.nangoProps.scriptType === 'sync') {
                 return true;
             }
         }

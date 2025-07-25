@@ -188,7 +188,12 @@ describe(`POST ${endpoint}`, () => {
                                     },
                                     Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
                                 }
-                            }
+                            },
+                            models: [
+                                { name: 'Output', fields: [] },
+                                { name: 'Ref', fields: [] },
+                                { name: 'Input', fields: [] }
+                            ]
                         }
                     ]
                 }

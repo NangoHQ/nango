@@ -10,7 +10,8 @@ import remoteFileService from '../../file/remote.service.js';
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { SyncConfigWithProvider } from '../../../models/Sync.js';
-import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type { DBConnection, DBSyncConfig, NangoModel, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -50,7 +51,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null,
             sdk_version: syncConfig.sdk_version,
-            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false
+            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false,
+            // Temporary regression
+            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema)
         };
 
         if (syncConfig.type === 'sync') {
@@ -65,6 +68,18 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
     }
 
     return Object.values(tmp);
+}
+
+/**
+ * Temporary regression - getting a list of models from the json schema to
+ * give customers more time to migrate to it
+ */
+function modelsFromJsonSchema(jsonSchema: JSONSchema7 | null): NangoModel[] {
+    if (!jsonSchema) {
+        return [];
+    }
+
+    return Object.keys(jsonSchema.definitions || {}).map((key) => ({ name: key, fields: [] }));
 }
 
 export async function getSyncConfig({

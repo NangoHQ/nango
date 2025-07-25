@@ -1,5 +1,5 @@
 import { client } from '../es/client.js';
-import { indexMessages } from '../es/schema.js';
+import { indexOperations } from '../es/schema.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type { ConcatOperationList, InsightsHistogramEntry, OperationList, OperationRow } from '@nangohq/types';
@@ -26,7 +26,7 @@ export async function retrieveInsights(opts: { accountId: number; environmentId:
             histogram: estypes.AggregationsDateHistogramAggregate;
         }
     >({
-        index: indexMessages.index,
+        index: indexOperations.index,
         size: 0,
         sort: [{ createdAt: 'desc' }, 'id'],
         track_total_hits: true,
