@@ -73,7 +73,7 @@ export default createSync({
 
 Full refresh syncs download all records on every run.
 
-Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour with the `trackDeletes` flag ([full reference](/reference/integration-configuration#param-track-deletes)). Please note that
+Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour with the `trackDeletes` flag ([full reference](/reference/integration-configuration#param-track-deletes)).
 
 <Note>
   `trackDeletes` does not work with incremental syncs because fetching the data incrementally prevents performing a diff and automatically detecting deletions.
