@@ -15,6 +15,7 @@ import {
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
+    productTracking,
     syncCommandToOperation,
     syncManager,
     verifyOwnership
@@ -228,6 +229,8 @@ class SyncController {
                     usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
                     limit: accountUsageTracker.getLimit(plan, 'actions')
                 });
+
+                productTracking.track({ name: 'server:resource_capped:action_triggered', team: account });
 
                 res.status(400).send({ error: 'Usage limit exceeded for actions' });
 
