@@ -1016,7 +1016,7 @@ class ConnectionService {
             });
 
             if (appResult.isErr()) {
-                return Err(new NangoError('github_app_token_fetch_error'));
+                return Err(appResult.error);
             }
 
             return Ok(appResult.value);
