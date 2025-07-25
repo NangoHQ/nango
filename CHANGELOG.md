@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.64.3] - 2025-07-25
+
+### Added
+
+- Cap action usage (#4350) by @kaposke
+- *(integrations)* Add support for setmore (#4337) by @hassan254-prog
+- *(refresh)* Implement refresh logic for GitHub OAuth app user credentials (#4341) by @hassan254-prog
+- *(plans)* Add webhooks flags (#4374) by @bodinsamuel
+
+### Changed
+
+- Add deletion detection guide for syncs (#4367) by @rguldener
+- Update Salesforce documentation for recent transition from Connected Apps to External Client Apps (#4300) by @hassan254-prog
+- Track delete callout clarification (#4375) by @mintlify[bot]
+- *(docs)* Update webhooks-from-nango.mdx to describe working with `modifiedAfter` (#4165) by @CharlieDigital
+
+### Fixed
+
+- Allow orchestrator db to support ssl (#4365) by @rossmcewan
+- *(webapp)* Ignore sync input in snippets (#4361) by @kaposke
+- *(runner)* Untrack usage when aborting (#4362) by @bodinsamuel
+- Allow SSL for records database (#4370) by @rossmcewan
+- Temporarily add model_schema back to /scripts/config (#4373) by @kaposke
+- *(github-app-oauth)* Clean up docs and clarify (#4372) by @khaliqgant
+- *(logs)* Fine tune http sampling (#4368) by @bodinsamuel
+- *(refresh)* Fix github app refresh (#4377) by @hassan254-prog
+- *(sync)* Disallow incremental and trackDeletes (#4376) by @bodinsamuel
+- *(script)* Support array of objects in exports (#4378) by @bodinsamuel
+
 ## [v0.64.2] - 2025-07-23
 
 ### Added
@@ -4433,6 +4462,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
 [v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
 [v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
 [v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
