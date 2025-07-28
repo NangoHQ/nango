@@ -28,7 +28,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/account-usage": "file:../account-usage",
-        "axios": "1.10.0",
+        "axios": "1.11.0",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
         "get-port": "7.1.0",
