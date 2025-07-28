@@ -255,6 +255,7 @@ export const policyOperations = {
     name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention_operations`,
     policy: {
         phases: {
+            hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
             delete: { min_age: '15d', actions: { delete: {} } }
         }
     }
@@ -292,6 +293,16 @@ export const policyMessages = {
     name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention`,
     policy: {
         phases: {
+            hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
+            warm: {
+                min_age: '25h',
+                actions: {
+                    allocate: { require: { data: 'warm' } },
+                    set_priority: { priority: 50 },
+                    shrink: { max_primary_shard_size: '10gb' },
+                    readonly: {}
+                }
+            },
             delete: { min_age: '15d', actions: { delete: {} } }
         }
     }

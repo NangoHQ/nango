@@ -59,7 +59,6 @@ export async function listOperations(opts: {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }],
-            must_not: { exists: { field: 'parentId' } },
             should: []
         }
     };
@@ -264,7 +263,6 @@ export async function listFilters(opts: {
     const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
-            must_not: { exists: { field: 'parentId' } },
             should: []
         }
     };
@@ -309,7 +307,6 @@ export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promis
                         }
                     }
                 ],
-                must_not: { exists: { field: 'parentId' } },
                 should: []
             }
         },
@@ -334,7 +331,6 @@ export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<v
                         }
                     }
                 ],
-                must_not: { exists: { field: 'parentId' } },
                 should: []
             }
         },
