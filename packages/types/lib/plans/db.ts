@@ -78,4 +78,16 @@ export interface DBPlan extends Timestamps {
      * @default true
      */
     auto_idle: boolean;
+
+    /**
+     * Enable or disable webhooks script
+     * @default false
+     */
+    has_webhooks_script: boolean;
+
+    /**
+     * Enable or disable webhooks forward
+     * @default false
+     */
+    has_webhooks_forward: boolean;
 }

@@ -25,9 +25,9 @@
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "10.45.1",
         "@trpc/server": "10.45.1",
-        "axios": "1.9.0",
+        "axios": "1.11.0",
         "botbuilder": "4.23.2",
-        "connect-timeout": "1.9.0",
+        "connect-timeout": "1.9.1",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
         "soap": "1.1.12",
@@ -39,7 +39,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@nangohq/database": "file:../database",
-        "@types/connect-timeout": "0.0.39",
+        "@types/connect-timeout": "1.9.0",
         "@types/unzipper": "0.10.10",
         "typescript": "5.8.3",
         "vitest": "3.1.2"

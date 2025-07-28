@@ -43,6 +43,9 @@
         },
         {
             "path": "../billing"
+        },
+        {
+            "path": "../account-usage"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts"]

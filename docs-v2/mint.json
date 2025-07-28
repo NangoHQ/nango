@@ -175,9 +175,9 @@
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/credentials-refresh-and-validity",
-                        "guides/api-authorization/public-key-deprecation",
                         "guides/api-authorization/authorization-logs",
-                        "guides/api-authorization/new-api-support"
+                        "guides/api-authorization/new-api-support",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 {
@@ -195,7 +195,6 @@
                         "guides/custom-integrations/extend-a-pre-built-integration",
                         "guides/custom-integrations/generate-integrations-with-ai",
                         "guides/custom-integrations/event-based-scripts",
-                        "guides/custom-integrations/service",
                         "guides/custom-integrations/migrate-to-zero-yaml"
                     ]
                 },
@@ -204,6 +203,7 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
+                        "guides/syncs/detecting-deletes",
                         "guides/syncs/large-datasets",
                         "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
                         "guides/syncs/sync-partitioning"
@@ -316,6 +316,7 @@
                 "integrations/all/aws",
                 "integrations/all/aws-iam",
                 "integrations/all/aws-scim",
+                "integrations/all/azure-blob-storage",
                 "integrations/all/azure-devops",
                 "integrations/all/bamboohr",
                 "integrations/all/bamboohr-basic",
@@ -521,6 +522,7 @@
                 "integrations/all/kandji",
                 "integrations/all/keap",
                 "integrations/all/keeper-scim",
+                "integrations/all/knowbe4",
                 "integrations/all/klaviyo",
                 "integrations/all/klaviyo-oauth",
                 "integrations/all/klipfolio",
@@ -598,6 +600,7 @@
                 "integrations/all/paylocity",
                 "integrations/all/paypal",
                 "integrations/all/paypal-sandbox",
+                "integrations/all/paycom",
                 "integrations/all/paychex",
                 "integrations/all/pendo",
                 "integrations/all/pennylane",
@@ -662,6 +665,7 @@
                 "integrations/all/sentry-oauth",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
+                "integrations/all/setmore",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
                 "integrations/all/sharepoint-online-oauth2-cc",
@@ -807,16 +811,6 @@
                                 "reference/api/integration/create",
                                 "reference/api/integration/update",
                                 "reference/api/integration/delete"
-                            ]
-                        },
-                        {
-                            "group": "Configs (deprecated)",
-                            "pages": [
-                                "reference/api/configs/listLegacy",
-                                "reference/api/configs/getLegacy",
-                                "reference/api/configs/createLegacy",
-                                "reference/api/configs/updateLegacy",
-                                "reference/api/configs/deleteLegacy"
                             ]
                         },
                         {

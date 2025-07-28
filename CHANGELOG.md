@@ -2,6 +2,78 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.64.3] - 2025-07-25
+
+### Added
+
+- Cap action usage (#4350) by @kaposke
+- *(integrations)* Add support for setmore (#4337) by @hassan254-prog
+- *(refresh)* Implement refresh logic for GitHub OAuth app user credentials (#4341) by @hassan254-prog
+- *(plans)* Add webhooks flags (#4374) by @bodinsamuel
+
+### Changed
+
+- Add deletion detection guide for syncs (#4367) by @rguldener
+- Update Salesforce documentation for recent transition from Connected Apps to External Client Apps (#4300) by @hassan254-prog
+- Track delete callout clarification (#4375) by @mintlify[bot]
+- *(docs)* Update webhooks-from-nango.mdx to describe working with `modifiedAfter` (#4165) by @CharlieDigital
+
+### Fixed
+
+- Allow orchestrator db to support ssl (#4365) by @rossmcewan
+- *(webapp)* Ignore sync input in snippets (#4361) by @kaposke
+- *(runner)* Untrack usage when aborting (#4362) by @bodinsamuel
+- Allow SSL for records database (#4370) by @rossmcewan
+- Temporarily add model_schema back to /scripts/config (#4373) by @kaposke
+- *(github-app-oauth)* Clean up docs and clarify (#4372) by @khaliqgant
+- *(logs)* Fine tune http sampling (#4368) by @bodinsamuel
+- *(refresh)* Fix github app refresh (#4377) by @hassan254-prog
+- *(sync)* Disallow incremental and trackDeletes (#4376) by @bodinsamuel
+- *(script)* Support array of objects in exports (#4378) by @bodinsamuel
+
+## [v0.64.2] - 2025-07-23
+
+### Added
+
+- *(post-connection-script)* Add mailchimp post connection script to get dc connection config value (#4348) by @hassan254-prog
+- *(webhook > metric)* Add breakdown per customer (#4355) by @bodinsamuel
+- *(gmail-webhook)* Add gmail webhook routing script with validation (#4347) by @khaliqgant
+- *(usage)* Create usage tracker (#4345) by @kaposke
+- *(integrations)* Add support for knowbe4 (#4363) by @hassan254-prog
+- *(integrations)* Add support for azure blob storage (#4358) by @hassan254-prog
+
+### Changed
+
+- *(deps)* Bump form-data from 4.0.0 to 4.0.4 in /packages/shared (#4353) by @dependabot[bot]
+- Remove service (#4322) by @mintlify[bot]
+
+### Fixed
+
+- *(plans)* Update flags (#4354) by @bodinsamuel
+- Upgrade node to 22.17.1 (#4356) by @bodinsamuel
+- *(deps)* Upgrade various (#4357) by @bodinsamuel
+- *(cli)* Correctly support optional in zod->json (#4359) by @bodinsamuel
+- *(sdk)* Sample successful http logs (#4360) by @bodinsamuel
+
+## [v0.64.1] - 2025-07-21
+
+### Added
+
+- Usage table migration (#4342) by @kaposke
+- Add more docs for zero yaml config (#4331) by @bodinsamuel
+
+### Changed
+
+- Specify the tenant type users should select when registering an Azure app (#4349) by @hassan254-prog
+
+### Fixed
+
+- *(api)* Remove deprecated /flow routes (#4307) by @bodinsamuel
+- *(api)* Remove deprecated endpoints  (#4319) by @bodinsamuel
+- *(billing)* Feedback (#4346) by @bodinsamuel
+- *(cli)* Replace depreciated endpoint (#4351) by @hassan254-prog
+- *(cli)* Correctly fix deprecated endpoint, remove leftover docs (#4352) by @bodinsamuel
+
 ## [v0.64.0] - 2025-07-21
 
 ### Added
@@ -4390,6 +4462,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
+[v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
+[v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
 [v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
 [v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
 [v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0

@@ -1129,6 +1129,33 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+azure-blob-storage:
+    categories:
+        - storage
+    display_name: Azure Blob Storage
+    alias: microsoft
+    default_scopes:
+        - offline_access
+        - https://storage.azure.com/.default
+    proxy:
+        base_url: https://${connectionConfig.accountName}.blob.core.windows.net
+        headers:
+            x-ms-version: ${connectionConfig.version} || 2025-05-05
+    docs: https://docs.nango.dev/integrations/all/azure-blob-storage
+    docs_connect: https://docs.nango.dev/integrations/all/azure-blob-storage/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The name of the Azure Storage account you want to connect to.
+            example: nangoStorage
+            doc_section: '#step-1-finding-your-account-name'
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 azure-devops:
     display_name: Azure DevOps
     categories:
@@ -4757,6 +4784,7 @@ google-mail:
     alias: google
     proxy:
         base_url: https://gmail.googleapis.com
+    webhook_routing_script: gmailWebhookRouting
     docs: https://docs.nango.dev/integrations/all/google-mail
 
 google-sheet:
@@ -5957,6 +5985,37 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+knowbe4:
+    display_name: KnowBe4 (Reporting)
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.knowbe4.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/knowbe4
+    docs_connect: https://docs.nango.dev/integrations/all/knowbe4/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your KnowBe4 account
+            doc_section: '#step-2-generating-your-knowbe4-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain to your API base URL
+            doc_section: '#step-1-finding-your-subdomain'
+            example: eu.api
+            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
+            order: 1
+
 klipfolio:
     display_name: Klipfolio
     categories:
@@ -6486,6 +6545,7 @@ mailchimp:
     proxy:
         base_url: https://${connectionConfig.dc}.api.mailchimp.com
     docs: https://docs.nango.dev/integrations/all/mailchimp
+    post_connection_script: mailchimpPostConnection
     connection_config:
         dc:
             type: string
@@ -6493,6 +6553,7 @@ mailchimp:
             description: The data center for your account
             pattern: '^[a-z]+\d*$'
             example: us6
+            automated: true
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
@@ -7640,6 +7701,27 @@ paychex:
             title: Client Secret
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
+
+paycom:
+    display_name: Paycom
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.paycomonline.net
+    docs: https://docs.nango.dev/integrations/all/paycom
+    docs_connect: https://docs.nango.dev/integrations/all/paycom/connect
+    credentials:
+        username:
+            type: string
+            title: SID
+            description: The SID of your Paycom account
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: API Token
+            description: The API token of your Paycom account
+            doc_section: '#step-1-finding-your-credentials'
 
 payfit:
     display_name: Payfit
@@ -9223,6 +9305,30 @@ sedna-basic:
             type: string
             title: Tenant
             description: The tenant name to your sedna account
+
+setmore:
+    display_name: Setmore
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://developer.setmore.com/api/v1/o/oauth2/token?refreshToken=${credentials.refreshToken}
+    proxy:
+        base_url: https://developer.setmore.com/api
+    token_response:
+        token: data.token.access_token
+        token_expiration: data.token.expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/setmore
+    docs_connect: https://docs.nango.dev/integrations/all/setmore/connect
+    credentials:
+        refreshToken:
+            type: string
+            title: Access Token
+            pattern: '^r1\/[A-Za-z0-9\-]+$'
+            example: r1/Ab12Cd34Ef56Gh78Ij90KlMnOpQr-StUvWxYz123456
+            description: The access token provided to you by Setmore team
+            doc_section: '#step-1-requesting-access-to-the-api'
 
 servicem8:
     display_name: ServiceM8

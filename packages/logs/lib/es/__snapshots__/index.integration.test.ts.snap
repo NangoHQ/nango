@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`mapping > should create one index automatically on log 1`] = `
+exports[`mapping > should create one index automatically on operation 1`] = `
 {
   "mappings": {
     "dynamic": "false",
@@ -22,9 +22,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
           },
         },
         "type": "text",
-      },
-      "context": {
-        "type": "keyword",
       },
       "createdAt": {
         "type": "date",
@@ -122,52 +119,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
           },
         },
       },
-      "parentId": {
-        "type": "keyword",
-      },
-      "persistResults": {
-        "properties": {
-          "added": {
-            "type": "integer",
-          },
-          "addedKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-          "deleteKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-          "deleted": {
-            "type": "integer",
-          },
-          "model": {
-            "type": "keyword",
-          },
-          "unchanged": {
-            "type": "integer",
-          },
-          "unchangedKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-          "updated": {
-            "type": "integer",
-          },
-          "updatedKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-        },
-      },
       "providerName": {
         "type": "keyword",
       },
@@ -196,19 +147,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
           "headers": {
             "enabled": false,
             "type": "object",
-          },
-        },
-      },
-      "retry": {
-        "properties": {
-          "attempt": {
-            "type": "integer",
-          },
-          "max": {
-            "type": "integer",
-          },
-          "waited": {
-            "type": "integer",
           },
         },
       },
@@ -247,7 +185,7 @@ exports[`mapping > should create one index automatically on log 1`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on log 2`] = `
+exports[`mapping > should create one index automatically on operation 2`] = `
 {
   "analyzer": {
     "default": {
@@ -260,7 +198,7 @@ exports[`mapping > should create one index automatically on log 2`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on log 3`] = `
+exports[`mapping > should create one index automatically on operation 3`] = `
 {
   "field": [
     "createdAt",
@@ -273,8 +211,8 @@ exports[`mapping > should create one index automatically on log 3`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on log 4`] = `
+exports[`mapping > should create one index automatically on operation 4`] = `
 {
-  "name": "policy_retention",
+  "name": "test_policy_retention_operations",
 }
 `;

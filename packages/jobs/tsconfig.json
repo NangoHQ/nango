@@ -46,6 +46,9 @@
         },
         {
             "path": "../fleet"
+        },
+        {
+            "path": "../account-usage"
         }
     ],
     "include": ["lib/**/*"]
