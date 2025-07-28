@@ -83,6 +83,15 @@ export const flowConfig = z
         sync_type: z.enum(['incremental', 'full']).optional(),
         webhookSubscriptions: z.array(z.string().max(255)).optional()
     })
+    .refine(
+        (data) => {
+            if (data.sync_type === 'incremental' && data.track_deletes) {
+                return false;
+            }
+            return true;
+        },
+        { message: 'Track deletes is not supported for incremental syncs', path: ['track_deletes'] }
+    )
     .strict();
 const flowConfigs = z.array(flowConfig);
 const onEventScriptsByProvider = z.array(

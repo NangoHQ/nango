@@ -370,7 +370,11 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 
         const json = (await res.json()) as PostDeployConfirmation['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error checking state:\n${json.error.message} ${chalk.gray(`(${json.error.code})`)}`));
+            return Err(
+                new Error(
+                    `Error checking state:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}${json.error.errors ? `\n${json.error.errors.map((e) => `- ${e.message}`).join('\n')}` : ''}`
+                )
+            );
         }
 
         return Ok(json);

@@ -16,6 +16,8 @@ export interface Foo {
 export interface Bar {
   value: null;
   top: boolean[];
+  arrayOfModel: Foo[];
+  arrayOfObject: ({  nes: 'ted';})[];
   ref?: Foo | undefined;
   union: 'literal1' | 'literal2';
   array: ('arr1' | 'arr2')[];
@@ -23,9 +25,7 @@ export interface Bar {
 };
 
 export type Anonymous_unauthenticated_action_returnType_input = number
-// ------ /Models
-
-// ------ SDK"
+// ------ /Models"
 `;
 
 exports[`buildModelTs > should return empty (with sdk) 1`] = `
@@ -490,6 +490,9 @@ export interface Base {
   unions: string | null | Ref | true[] | Ref2[];
   arrUnion: (Ref | true)[];
   literal: 'hello';
+  test: ({  foo: 'bar';
+  id: number;} | {  bar: 'foo';
+  id: number;})[];
   num: 1;
   literalNull: null[];
   obj: {  nested: string;};

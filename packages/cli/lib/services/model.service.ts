@@ -142,10 +142,16 @@ export function fieldToTypescript({ field }: { field: NangoModelField }): string
     if (Array.isArray(field.value)) {
         if (field.union) {
             output = field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
-        } else if (field.array) {
-            output = `(${field.value.map((f) => fieldToTypescript({ field: f })).join(' | ')})[]`;
         } else {
-            output = `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
+            if (!field.tsType && field.array) {
+                output = field.value.map((f) => fieldToTypescript({ field: f })).join(' | ');
+            } else {
+                // Due to bad decision an object is an array of values without any other flag
+                output = `{${fieldsToTypescript({ fields: field.value }).join('\n')}}`;
+            }
+            if (field.array) {
+                output = `(${output})[]`;
+            }
         }
     } else if (field.model || field.tsType) {
         output = `${field.value}${field.array ? '[]' : ''}`;

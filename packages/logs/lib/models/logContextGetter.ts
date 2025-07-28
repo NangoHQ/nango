@@ -4,7 +4,7 @@ import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js'
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { getFormattedOperation } from './helpers.js';
-import { createOperation } from './messages.js';
+import { createOperation } from './operations.js';
 import { BufferTransport } from '../transport.js';
 
 import type { AdditionalOperationData } from './helpers.js';

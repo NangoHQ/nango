@@ -2,7 +2,7 @@ import { report } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { errorToDocument } from './formatters.js';
-import { setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
+import { setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/operations.js';
 import { ESTransport } from './transport.js';
 import { isCli, logger } from './utils.js';
 
