@@ -257,7 +257,7 @@ export const policyOperations = {
         phases: {
             hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
             warm: {
-                min_age: '25h',
+                min_age: '72h',
                 actions: { set_priority: { priority: 50 }, shrink: { max_primary_shard_size: '10gb' }, readonly: {} }
             },
             delete: { min_age: '15d', actions: { delete: {} } }
