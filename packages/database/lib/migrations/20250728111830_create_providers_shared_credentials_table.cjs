@@ -4,7 +4,7 @@
 exports.up = async function (knex) {
     return knex.schema.createTable('providers_shared_credentials', function (table) {
         table.increments('id').primary();
-        table.string('name').notNullable();
+        table.string('name').notNullable().unique();
         table.json('credentials').notNullable();
         table.timestamps(true, true);
     });
