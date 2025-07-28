@@ -17,7 +17,7 @@
     "dependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/utils": "file:../utils",
-        "axios": "1.10.0",
+        "axios": "1.11.0",
         "dayjs": "1.11.7",
         "dayjs-plugin-utc": "0.1.2"
     },
