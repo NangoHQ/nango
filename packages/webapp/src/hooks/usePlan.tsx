@@ -45,10 +45,12 @@ export function useApiGetPlans(env: string) {
     });
 }
 
+export const GetUsageQueryKey = ['plans', 'usage'];
+
 export function useApiGetUsage(env: string) {
     return useQuery<GetUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: ['plans', 'usage'],
+        queryKey: GetUsageQueryKey,
         queryFn: async (): Promise<GetUsage['Success']> => {
             const res = await apiFetch(`/api/v1/plans/usage?env=${env}`, {
                 method: 'GET'
