@@ -16,7 +16,7 @@ import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { clearIntegrationsCache, useListIntegration } from '../../../hooks/useIntegration';
-import { invalidateUsage, useApiGetUsage } from '../../../hooks/usePlan';
+import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useUser } from '../../../hooks/useUser';
 import { useStore } from '../../../store';
@@ -120,7 +120,7 @@ export const CreateConnectionSelector: React.FC = () => {
                 void listIntegrationMutate();
                 clearConnectionsCache(cache, mutate);
                 clearIntegrationsCache(cache, mutate);
-                invalidateUsage(queryClient);
+                queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
             }
         },

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { APIError, apiFetch } from '../utils/api';
 
 import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial } from '@nangohq/types';
-import type { QueryClient } from '@tanstack/react-query';
 
 export async function apiGetCurrentPlan(env: string) {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, {
@@ -46,10 +45,12 @@ export function useApiGetPlans(env: string) {
     });
 }
 
+export const GetUsageQueryKey = ['plans', 'usage'];
+
 export function useApiGetUsage(env: string) {
     return useQuery<GetUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: ['plans', 'usage'],
+        queryKey: GetUsageQueryKey,
         queryFn: async (): Promise<GetUsage['Success']> => {
             const res = await apiFetch(`/api/v1/plans/usage?env=${env}`, {
                 method: 'GET'
@@ -64,10 +65,6 @@ export function useApiGetUsage(env: string) {
         },
         refetchInterval: 1000 * 60 // 1 minute
     });
-}
-
-export function invalidateUsage(queryClient: QueryClient) {
-    queryClient.invalidateQueries({ queryKey: ['plans', 'usage'] });
 }
 
 export function useApiGetBillingUsage(env: string) {
