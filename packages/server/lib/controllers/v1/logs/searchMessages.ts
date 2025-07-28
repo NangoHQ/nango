@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { envs, model, operationIdRegex } from '@nangohq/logs';
+import { ResponseError, envs, modelMessages, modelOperations, operationIdRegex } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -48,13 +48,13 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
     // Manually ensure that `operationId` belongs to the account for now
     // Because not all the logs have accountId/environmentId
     try {
-        const operation = await model.getOperation({ id: val.data.operationId });
+        const operation = await modelOperations.getOperation({ id: val.data.operationId });
         if (operation.accountId !== account.id || operation.environmentId !== environment.id) {
             res.status(404).send({ error: { code: 'not_found' } });
             return;
         }
     } catch (err) {
-        if (err instanceof model.ResponseError && err.statusCode === 404) {
+        if (err instanceof ResponseError && err.statusCode === 404) {
             res.status(404).send({ error: { code: 'not_found' } });
             return;
         }
@@ -62,7 +62,7 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
     }
 
     const body: SearchMessages['Body'] = val.data;
-    const rawOps = await model.listMessages({
+    const rawOps = await modelMessages.listMessages({
         parentId: body.operationId,
         limit: body.limit!,
         states: body.states,
