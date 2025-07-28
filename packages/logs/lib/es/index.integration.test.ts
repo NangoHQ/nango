@@ -4,20 +4,20 @@ import { nanoid } from '@nangohq/utils';
 
 import { client } from './client.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
-import { indexMessages } from './schema.js';
+import { indexOperations } from './schema.js';
 import { getFormattedOperation } from '../models/helpers.js';
-import { createOperation, getOperation, updateOperation } from '../models/messages.js';
+import { createOperation, getOperation, updateOperation } from '../models/operations.js';
 
 // This file is sequential
 describe('mapping', () => {
     const today = new Date().toISOString().split('T')[0];
     let fullIndexName: string;
     beforeAll(async () => {
-        indexMessages.index = `index-messages-${nanoid()}`.toLocaleLowerCase();
-        fullIndexName = `${indexMessages.index}.${today}`;
+        indexOperations.index = `index-operations-${nanoid()}`.toLocaleLowerCase();
+        fullIndexName = `${indexOperations.index}.${today}`;
 
         // Delete before otherwise it's hard to debug
-        await deleteIndex({ prefix: 'index-messages' });
+        await deleteIndex({ prefix: 'index-operations' });
     });
 
     it('should not have an index before migration', async () => {
@@ -29,12 +29,12 @@ describe('mapping', () => {
     });
 
     it('should have create index and alias', async () => {
-        await client.indices.getMapping({ index: indexMessages.index });
+        await client.indices.getMapping({ index: indexOperations.index });
 
         await client.indices.getMapping({ index: fullIndexName });
     });
 
-    it('should create one index automatically on log', async () => {
+    it('should create one index automatically on operation', async () => {
         const today = new Date();
         // Log to automatically create an index
         const id = nanoid();
@@ -54,7 +54,7 @@ describe('mapping', () => {
     it('should create yesterday index automatically', async () => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayIndexName = `${indexMessages.index}.${yesterday.toISOString().split('T')[0]}`;
+        const yesterdayIndexName = `${indexOperations.index}.${yesterday.toISOString().split('T')[0]}`;
 
         // Log to automatically create an index
         const id = nanoid();

@@ -1008,6 +1008,20 @@ class ConnectionService {
         connection: DBConnectionDecrypted,
         logCtx: LogContextStateless
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
+        if (provider.auth_mode === 'APP') {
+            const appResult = await githubAppClient.createCredentials({
+                integration: config,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            });
+
+            if (appResult.isErr()) {
+                return Err(appResult.error);
+            }
+
+            return Ok(appResult.value);
+        }
+
         const [userResult, appResult] = await Promise.all([
             getFreshOAuth2Credentials({
                 connection,
@@ -1451,6 +1465,20 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
+    }
+
+    async countByAccountId(accountId: number): Promise<number> {
+        const res = await db.knex
+            .from('_nango_connections')
+            .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where('_nango_accounts.id', accountId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_environments.deleted', false)
+            .count<{ count: string }>('*')
+            .first();
+
+        return Number(res?.count || 0);
     }
 
     // return the number of connections per account
