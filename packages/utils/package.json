@@ -17,7 +17,7 @@
     "dependencies": {
         "@colors/colors": "1.6.0",
         "@sentry/node": "9.3.0",
-        "axios": "1.10.0",
+        "axios": "1.11.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
         "fast-safe-stringify": "2.1.1",
