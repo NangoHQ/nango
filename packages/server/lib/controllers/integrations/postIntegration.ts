@@ -76,7 +76,8 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         unique_key: body.unique_key,
         custom: null,
         missing_fields: [],
-        forward_webhooks: body.forward_webhooks ?? true
+        forward_webhooks: body.forward_webhooks ?? true,
+        user_defined: true // to add logic later, right now we just have this as true since its user defined
     };
 
     if (creds) {

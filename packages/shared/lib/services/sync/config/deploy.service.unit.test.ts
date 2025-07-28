@@ -138,7 +138,8 @@ describe('Sync config create', () => {
                 created_at: new Date(),
                 updated_at: new Date(),
                 missing_fields: [],
-                forward_webhooks: true
+                forward_webhooks: true,
+                user_defined: true
             });
         });
 
