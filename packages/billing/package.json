@@ -18,7 +18,7 @@
         "uuidv7": "1.0.2"
     },
     "devDependencies": {
-        "vitest": "3.1.2"
+        "vitest": "3.2.4"
     },
     "files": [
         "dist/**/*"
