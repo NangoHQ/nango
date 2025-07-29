@@ -772,6 +772,7 @@ ashby:
             endpoints:
                 - apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
+    docs_connect: https://docs.nango.dev/integrations/all/ashby/connect
     credentials:
         username:
             type: string
