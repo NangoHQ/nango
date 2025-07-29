@@ -42,7 +42,7 @@ description: 'Access the Ashby API in 2 minutes 💨'
             const res = await nango.post({
               endpoint: '/candidate.list',
               providerConfigKey: '<INTEGRATION-ID>',
-              connectionId: '<CONNECTION-ID>'
+              connectionId: '<CONNECTION-ID>',
               data: {
                 limit: 10
               }
@@ -76,13 +76,13 @@ description: 'Access the Ashby API in 2 minutes 💨'
     | | [API Authentication](https://developers.ashbyhq.com/reference/authentication) |
     | | [API Key Endpoint Permissions](https://developers.ashbyhq.com/reference/authentication#api-key-endpoint-permissions) |
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/anrok.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ashby.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
       - Ashby gives you only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username to Nango and leave the password blank.
       - The `apiKey.info` scope is required for the api key to pass verification.
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/anrok.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ashby.mdx)</Note>
   </Tab>
 </Tabs>
 
