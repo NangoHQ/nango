@@ -4,7 +4,6 @@ import { nanoid } from '@nangohq/utils';
 
 import { getTestDbClient } from './db/helpers.test.js';
 import { envs } from './env.js';
-import * as tasks from './models/tasks.js';
 import { Scheduler } from './scheduler.js';
 
 import type { TaskProps } from './models/tasks.js';
@@ -12,7 +11,6 @@ import type { Schedule, ScheduleState, Task } from './types.js';
 
 describe('Scheduler', () => {
     const dbClient = getTestDbClient();
-    const db = dbClient.db;
     const callbacks = {
         CREATED: vi.fn((task: Task) => expect(task.state).toBe('CREATED')),
         STARTED: vi.fn((task: Task) => expect(task.state).toBe('STARTED')),
@@ -105,24 +103,63 @@ describe('Scheduler', () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
         await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
-        const expired = (await tasks.get(db, task.id)).unwrap();
-        expect(expired.state).toBe('EXPIRED');
+        const [expired] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
+        expect(expired?.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
-        const taskAfter = (await tasks.get(db, task.id)).unwrap();
-        expect(taskAfter.state).toBe('EXPIRED');
+        const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
+        expect(taskAfter?.state).toBe('EXPIRED');
     });
     it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
-        const taskAfter = (await tasks.get(db, task.id)).unwrap();
-        expect(taskAfter.state).toBe('EXPIRED');
+        const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
+        expect(taskAfter?.state).toBe('EXPIRED');
+    });
+    it('should set schedule last scheduled task state', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.lastScheduledTaskId).toBe(task.id);
+    });
+    it('should update last scheduled task when task is succeeded', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        expect(dequeued.length).toBe(1);
+        (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.lastScheduledTaskId).toBe(task.id);
+        expect(scheduleAfter?.lastScheduledTaskState).toBe('SUCCEEDED');
+        expect(scheduleAfter?.nextExecutionAt).toEqual(new Date((scheduleAfter?.startsAt.getTime() || 0) + (scheduleAfter?.frequencyMs || 0)));
+    });
+    it('should update last scheduled task when task is failed', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        expect(dequeued.length).toBe(1);
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.lastScheduledTaskId).toBe(task.id);
+        expect(scheduleAfter?.lastScheduledTaskState).toBe('FAILED');
+        expect(scheduleAfter?.nextExecutionAt).toEqual(new Date((scheduleAfter?.startsAt.getTime() || 0) + (scheduleAfter?.frequencyMs || 0)));
+    });
+    it('should update last scheduled task when task is cancelled', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        expect(dequeued.length).toBe(1);
+        (await scheduler.cancel({ taskId: task.id, reason: 'cancelled by user' })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.lastScheduledTaskId).toBe(task.id);
+        expect(scheduleAfter?.lastScheduledTaskState).toBe('CANCELLED');
+        expect(scheduleAfter?.nextExecutionAt).toEqual(new Date((scheduleAfter?.startsAt.getTime() || 0) + (scheduleAfter?.frequencyMs || 0)));
     });
     it('should not run an immediate task for a schedule if another task is already running', async () => {
         const schedule = await recurring({ scheduler });
@@ -143,16 +180,18 @@ describe('Scheduler', () => {
         await immediate(scheduler, { schedule });
         const deleted = (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'DELETED' })).unwrap();
         expect(deleted.state).toBe('DELETED');
-        const tasks = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
-        expect(tasks.length).toBe(1);
-        expect(tasks[0]?.state).toBe('CANCELLED');
+        const [task] = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
+        expect(task?.state).toBe('CANCELLED');
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
+        expect(deleted.lastScheduledTaskId).toBe(task?.id);
+        expect(deleted.lastScheduledTaskState).toBe('CANCELLED');
     });
     it('should update schedule frequency', async () => {
         const schedule = await recurring({ scheduler });
         const newFrequency = 1_800_000;
         const updated = (await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: newFrequency })).unwrap();
         expect(updated.frequencyMs).toBe(newFrequency);
+        expect(updated.nextExecutionAt).toEqual(new Date(updated.startsAt.getTime() + newFrequency));
     });
     it('should search schedules by name', async () => {
         const schedule = await recurring({ scheduler });
@@ -175,7 +214,8 @@ async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler
         createdToStartedTimeoutSecs: 3600,
         startedToCompletedTimeoutSecs: 3600,
         heartbeatTimeoutSecs: 600,
-        lastScheduledTaskId: null
+        lastScheduledTaskId: null,
+        lastScheduledTaskState: null
     };
     return (await scheduler.recurring(recurringProps)).unwrap();
 }

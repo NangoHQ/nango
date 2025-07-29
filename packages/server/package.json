@@ -91,6 +91,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "3.1.2"
+        "vitest": "3.2.4"
     }
 }
