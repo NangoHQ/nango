@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.64.4] - 2025-07-29
+
+### Added
+
+- Cap syncs based on active records (#4366) by @kaposke
+- *(webapp)* Show usage on sidebar for free plans (#4369) by @kaposke
+- *(integrations)* Add support for paycom (#4386) by @hassan254-prog
+- Cap max connections globally (with UI work) (#4381) by @kaposke
+- Track action and active records being capped in posthog (#4384) by @kaposke
+- Update trial messaging to Auto Idling (#4385) by @kaposke
+- *(es)* Add warm tier (#4387) by @bodinsamuel
+
+### Changed
+
+- Change to new API docs layout (#4364) by @hassan254-prog
+- *(ashby)* Change to new API docs layout (#4392) by @hassan254-prog
+
+### Fixed
+
+- *(logs)* Split operations and messages index (#4371) by @bodinsamuel
+- *(deps)* Upgrade axios to 1.11.0 (#4379) by @bodinsamuel
+- *(two_step)* Migrate zod body validation (#4388) by @hassan254-prog
+- *(api)* Rollback /config/uniqueKey (#4391) by @bodinsamuel
+- *(es)* Change warm tier settings (#4394) by @bodinsamuel
+- Upgrade dependencies (#4393) by @bodinsamuel
+
 ## [v0.64.3] - 2025-07-25
 
 ### Added
@@ -4462,6 +4488,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
 [v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
 [v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
 [v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
