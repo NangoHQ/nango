@@ -1,109 +1,125 @@
 ---
-title: Airtable
-sidebarTitle: Airtable
+title: 'Airtable'
+sidebarTitle: 'Airtable'
+description: 'Access the Airtable API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/airtable/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Airtable_.
+      </Step>
+      <Step title="Authorize Airtable">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Airtable. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Airtable API">
+        Let's make your first request to the Airtable API (fetch records from a table). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/v0/meta/bases" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for an [Airtable account](https://airtable.com/signup). |
-| Paid test account | ✅ Not required | Free Airtable account can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | No app review process for OAuth integrations. |
-| Security audit | ✅ Not required | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-<Steps>
-  <Step title="Create an Airtable account">
-    If you don't already have one, sign up for an [Airtable account](https://airtable.com/signup).
-  </Step>
-  <Step title="Register a new OAuth integration">
-    1. Go to the [OAuth integrations panel](https://airtable.com/create/oauth) in your Airtable account.
-    2. Click **Register new OAuth integration**.
-    3. Enter a unique name for your integration.
-    4. Add `https://api.nango.dev/oauth/callback` as your OAuth redirect URI.
-    5. Click **Register integration**.
-  </Step>
-  <Step title="Configure your OAuth integration">
-    After creating your integration, you'll be taken to the management page where you can configure the following properties:
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-    1. **Name**: You can update the name of your integration if needed.
-    2. **OAuth redirect URI**: Verify that `https://api.nango.dev/oauth/callback` is set correctly.
-    3. **Permission scopes**: Select the scopes your application requires. Common scopes include:
-       - `data.records:read` - Read records from bases
-       - `data.records:write` - Create, update, and delete records
-       - `data.recordComments:read` - Read record comments
-       - `data.recordComments:write` - Create, update, and delete record comments
-       - `schema.bases:read` - Read base schema information
-    4. **Tagline** (optional): Add a brief description of what your integration does.
-    5. **Homepage URL** (optional): Add your website or homepage URL.
-    6. **Logo** (optional): Upload a logo for your integration.
-    7. **Support email** (optional): Add an email address where users can reach you for support.
-    8. **Privacy policy URL** (required to share integration): Add your privacy policy URL.
-    9. **Terms of service URL** (required to share integration): Add your terms of service URL.
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-    Click **Save changes** when you're done.
-  </Step>
-  <Step title="Generate a client secret">
-    1. On your integration's management page, click **Generate client secret**.
-    2. Confirm the action by clicking **Generate**.
-    3. Copy the client secret that appears. Note that this is the only time you'll see this secret, so make sure to store it securely.
-    4. Click **Done** after copying the secret.
-  </Step>
-  <Step title="Obtain your client ID">
-    Your client ID is displayed on your integration's management page. You'll need both the client ID and client secret when configuring your integration in Nango.
-  </Step>
-  <Step title="Preview the user authorization dialog">
-    You can preview what users will see when authorizing your integration by clicking the **Preview authorization dialog** button on your integration's management page.
-  </Step>
-  <Step title="Make your integration available to users">
-    To make your integration available to other users, you must add:
-    - A support email
-    - A privacy policy URL
-    - A terms of service URL
+            const res = await nango.get({
+                endpoint: '/v0/meta/bases',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
-    Once these are added and saved, other users will be able to authorize your integration.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+            console.log(res.data);
+            ```
+            </Tab>
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+        </Tabs>
 
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Useful links
-- [Airtable Website](https://airtable.com/)
-- [Create an Airtable account](https://airtable.com/signup)
-- [OAuth Integrations Panel](https://airtable.com/create/oauth)
-- [Web API Documentation](https://airtable.com/developers/web/api/introduction)
-- [OAuth Reference](https://airtable.com/developers/web/api/oauth-reference)
-- [OAuth Integrations Guide](https://airtable.com/developers/web/guides/oauth-integrations)
-- [OAuth Scopes](https://airtable.com/developers/web/api/scopes)
-- [Authentication Reference](https://airtable.com/developers/web/api/authentication)
-- [Rate Limits](https://airtable.com/developers/web/api/rate-limits)
-- [SCIM API Documentation](https://airtable.com/developers/web/api/scim-overview)
-- [Example OAuth Setup Repository](https://github.com/Airtable/oauth-example)
+      </Step>
+    </Steps>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## Scopes
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Airtable accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create an Airtable account">
+        If you don't already have one, sign up for an [Airtable account](https://airtable.com/signup).
+      </Step>
+      <Step title="Register a new OAuth integration">
+        1. Go to the [OAuth integrations panel](https://airtable.com/create/oauth) in your Airtable account.
+        2. Click **Register new OAuth integration**.
+        3. Enter a unique name for your integration.
+        4. Add `https://api.nango.dev/oauth/callback` as your OAuth redirect URI.
+        5. Click **Register integration**.
+      </Step>
+      <Step title="Configure OAuth scopes and details">
+        1. Select the scopes your application requires:
+           - `data.records:read` - Read records from bases
+           - `data.records:write` - Create, update, and delete records
+           - `data.recordComments:read` - Read record comments
+           - `data.recordComments:write` - Create, update, and delete record comments
+           - `schema.bases:read` - Read base schema information
+        2. Add optional details like tagline, homepage URL, and logo.
+        3. For public integrations, add required fields: support email, privacy policy URL, and terms of service URL.
+        4. Click **Save changes**.
+      </Step>
+      <Step title="Generate credentials">
+        1. Click **Generate client secret** and confirm the action.
+        2. Copy the client secret (you'll only see it once).
+        3. Note your client ID from the integration management page.
+        4. You'll need both when configuring your integration in Nango.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | General | [Airtable Website](https://airtable.com/) |
+    | | [Create an Airtable account](https://airtable.com/signup) |
+    | | [OAuth Integrations Panel](https://airtable.com/create/oauth) |
+    | Developer | [Web API Documentation](https://airtable.com/developers/web/api/introduction) |
+    | | [OAuth Reference](https://airtable.com/developers/web/api/oauth-reference) |
+    | | [OAuth Integrations Guide](https://airtable.com/developers/web/guides/oauth-integrations) |
+    | | [OAuth Scopes](https://airtable.com/developers/web/api/scopes) |
+    | | [Authentication Reference](https://airtable.com/developers/web/api/authentication) |
+    | | [Rate Limits](https://airtable.com/developers/web/api/rate-limits) |
+    | | [SCIM API Documentation](https://airtable.com/developers/web/api/scim-overview) |
+    | | [Example OAuth Setup Repository](https://github.com/Airtable/oauth-example) |
 
-See the full list of available scopes in the [Airtable OAuth Scopes documentation](https://airtable.com/developers/web/api/scopes).
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - During the OAuth flow, users can decide which resources (Bases) your app should have access to. This means your app might not have access to all bases in their workspace.
+    - Airtable requires specific scopes for different operations. Make sure to request all necessary scopes during OAuth setup.
+    - Rate limits apply per workspace, not per integration, so high-volume usage might affect other integrations in the same workspace.
+    - See the full list of available scopes in the [Airtable OAuth Scopes documentation](https://airtable.com/developers/web/api/scopes).
 
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
+  </Tab>
+</Tabs>
 
-## API gotchas
-
--   During the OAuth flow, the user can decide to which resources (Bases) the app should have access to. [Read more here](https://airtable.com/developers/web/api/oauth-reference#resources)
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
