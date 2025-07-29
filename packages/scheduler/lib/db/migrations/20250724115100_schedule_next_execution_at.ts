@@ -31,9 +31,9 @@ export async function up(knex: Knex): Promise<void> {
             last_scheduled_task_state = ts.last_task_state,
             next_execution_at = (
                 CASE
-                    WHEN ts.last_task_state = 'SUCCEEDED'
-                    THEN s.starts_at + (ceiling(extract(EPOCH FROM (now() - s.starts_at)) / extract(EPOCH FROM s.frequency)) * s.frequency)
-                    ELSE s.starts_at + (floor(extract(EPOCH FROM (now() - s.starts_at)) / extract(EPOCH FROM s.frequency)) * s.frequency)
+                    WHEN ts.last_task_state IS NULL
+                    THEN s.starts_at + (floor(extract(EPOCH FROM (now() - s.starts_at)) / extract(EPOCH FROM s.frequency)) * s.frequency)
+                    ELSE s.starts_at + (ceiling(extract(EPOCH FROM (now() - s.starts_at)) / extract(EPOCH FROM s.frequency)) * s.frequency)
                 END
             )
         FROM task_states ts
