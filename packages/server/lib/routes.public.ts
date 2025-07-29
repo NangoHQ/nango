@@ -17,6 +17,7 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
 import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
@@ -144,6 +145,8 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
+
+publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
