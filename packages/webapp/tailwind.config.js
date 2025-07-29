@@ -195,6 +195,8 @@ export default {
                 'text-10': '#a0a8b1',
                 'text-11': '#c7ccd1',
                 'text-12': '#e3e5e8',
+                'text-secondary': '#cccccc',
+                'text-tertiary': '#999999',
 
                 'data-success': '#5bb98b',
                 'data-failure': '#e5484d',
