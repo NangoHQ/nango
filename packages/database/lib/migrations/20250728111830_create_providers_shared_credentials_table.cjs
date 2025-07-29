@@ -1,13 +1,20 @@
+const SHARED_CREDENTIALS_TABLE = 'providers_shared_credentials';
+
+exports.config = { transaction: false };
+
 /**
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
-    return knex.schema.createTable('providers_shared_credentials', function (table) {
-        table.increments('id').primary();
-        table.string('name').notNullable().unique();
-        table.json('credentials').notNullable();
-        table.timestamps(true, true);
-    });
+    await knex.raw(`
+        CREATE TABLE IF NOT EXISTS ${SHARED_CREDENTIALS_TABLE} (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            credentials JSON NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
 };
 
 /**

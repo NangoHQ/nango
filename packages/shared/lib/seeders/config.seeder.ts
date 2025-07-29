@@ -67,7 +67,7 @@ export async function createConfigSeed(
             environment_id: env.id,
             ...rest,
             forward_webhooks: true,
-            user_defined: true
+            shared_credentials_id: null
         },
         provider
     );
@@ -84,7 +84,7 @@ export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationCon
         deleted: false,
         deleted_at: null,
         forward_webhooks: true,
-        user_defined: true,
+        shared_credentials_id: null,
         oauth_client_id: null,
         oauth_client_secret: null,
         oauth_scopes: null,
