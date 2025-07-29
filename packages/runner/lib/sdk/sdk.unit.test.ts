@@ -300,10 +300,10 @@ describe('Pagination', () => {
             const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
             const emptyBatch: any[] = [];
 
-            vi.spyOn(ProxyRequest.prototype, 'httpCall')
+            const spy = vi
+                .spyOn(ProxyRequest.prototype, 'httpCall')
                 .mockReturnValueOnce(Promise.resolve({ data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse))
                 .mockReturnValueOnce(Promise.resolve({ data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse));
-
             const endpoint = '/issues';
 
             const generator = nangoAction.paginate({ endpoint });
@@ -314,6 +314,7 @@ describe('Pagination', () => {
             }
 
             expect(actualRecords).toStrictEqual(firstBatch);
+            spy.mockRestore(); // If this test fails, the mock is not restored and the next test will fail
         }
     );
 
@@ -362,6 +363,7 @@ describe('Pagination', () => {
 
         const expectedRecords = [...firstBatch, ...secondBatch, ...thirdBatch];
         expect(actualRecords).toStrictEqual(expectedRecords);
+        spy.mockRestore(); // If this test fails, the mock is not restored and the next test will fail
     });
 
     const stubProviderTemplate = async (paginationConfig: Pagination) => {
