@@ -412,9 +412,14 @@ export class Scheduler {
                     return Err(`Error fetching tasks for schedule '${scheduleName}': ${stringifyError(runningTasks.error)}`);
                 }
                 for (const task of runningTasks.value) {
-                    const t = await tasks.transitionState(trx, { taskId: task.id, newState: 'CANCELLED', output: { reason: `schedule ${state}` } });
+                    const newState = 'CANCELLED';
+                    const t = await tasks.transitionState(trx, { taskId: task.id, newState, output: { reason: `schedule ${state}` } });
                     if (t.isErr()) {
                         return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
+                    }
+                    const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [task.id], taskState: newState });
+                    if (scheduleRes.isErr()) {
+                        return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
                     }
                     cancelledTasks.push(t.value);
                 }
