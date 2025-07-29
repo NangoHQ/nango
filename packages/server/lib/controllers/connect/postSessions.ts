@@ -47,6 +47,14 @@ export const bodySchema = z
                     })
                     .strict()
             )
+            .optional(),
+        metadata: z
+            // Please be careful when changing this:
+            // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for feature around that
+            // It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
+            // But they complained a lot about concatenation of string, so object solves that cleanly
+            .record(z.string(), z.string())
+            .refine((v) => Object.keys(v).length < 64, { message: 'Metadata can not contain more than 64 keys' })
             .optional()
     })
     .strict();

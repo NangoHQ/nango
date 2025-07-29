@@ -12,7 +12,8 @@ export async function createEndUser({ account, environment }: { account: DBTeam;
         environmentId: environment.id,
         endUserId: id,
         email: `${id}@example.com`,
-        organization: { organizationId: nanoid() }
+        organization: { organizationId: nanoid() },
+        metadata: { origin: 'test' }
     });
     if (endUser.isErr()) {
         throw new Error('failed_to_create_end_user');

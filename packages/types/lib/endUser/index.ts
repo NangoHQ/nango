@@ -5,6 +5,7 @@ export interface EndUser {
     readonly environmentId: number;
     readonly email: string | null;
     readonly displayName?: string | null;
+    readonly metadata: Record<string, string> | null;
     readonly organization?: {
         readonly organizationId: string;
         readonly displayName?: string | null;
@@ -22,6 +23,7 @@ export interface DBEndUser {
     readonly display_name: string | null;
     readonly organization_id: string | null;
     readonly organization_display_name: string | null;
+    readonly metadata: Record<string, string> | null;
     readonly created_at: Date;
     readonly updated_at: Date | null;
 }
