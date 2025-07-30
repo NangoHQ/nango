@@ -16,7 +16,8 @@ export const resourceCapping = asyncWrapper<Endpoint<{ Method: 'POST'; Path: '';
             res.status(400).send({
                 error: {
                     code: 'resource_capped',
-                    message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+                    message:
+                        'You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.'
                 }
             });
             return;
