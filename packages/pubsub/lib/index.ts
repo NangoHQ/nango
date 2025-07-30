@@ -5,5 +5,7 @@ import { LocalTransport } from './transport/local.js';
 export * from './publisher.js';
 export * from './subscriber.js';
 
-export const publisher = new Publisher(new LocalTransport());
-export const subscriber = new Subscriber(new LocalTransport());
+const transport = new LocalTransport();
+
+export const publisher = new Publisher(transport);
+export const subscriber = new Subscriber(transport);
