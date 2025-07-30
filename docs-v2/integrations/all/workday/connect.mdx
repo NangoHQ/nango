@@ -23,12 +23,12 @@ This guide will walk you through finding or generating these credentials within 
 2. In your Workday homepage, go to the search bar and type **View API Clients** then select it.
 3. Look for the **Workday REST API Endpoint** field.
 4. The **Hostname** is everything after `https://` and before `/ccx/api/v1/`.
-- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/yourtenant_abc`, the hostname is `wd2-impl-services1.workday.com`.
+- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/acme`, the hostname is `wd2-impl-services1.workday.com`.
 <img src="/integrations/all/workday/hostname.png" />
 
 #### Step 2: Finding your Tenant
 1. In the same **Workday REST API Endpoint** field from the **View API Clients** report, the **Tenant** is the final part of the URL after **/v1/**.
-- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/yourtenant_abc`, the **Tenant** is `yourtenant_abc`.
+- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/acme`, the **Tenant** is `acme`.
 
 
 #### Step 3: Create Integration System User (ISU)
