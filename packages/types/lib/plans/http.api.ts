@@ -55,9 +55,25 @@ export type GetPlan = Endpoint<{
     };
 }>;
 
+export interface MetricUsage {
+    metric: string;
+    label: string;
+    usage: number;
+    limit: number | null;
+}
+
 export type GetUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/usage';
+    Querystring: { env: string };
+    Success: {
+        data: MetricUsage[];
+    };
+}>;
+
+export type GetBillingUsage = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/billing-usage';
     Querystring: { env: string };
     Success: {
         data: {

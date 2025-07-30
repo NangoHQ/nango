@@ -25,7 +25,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z.object({}).catchall(z.any()).strict();
+const bodyValidation = z.looseObject({});
 
 const queryStringValidation = z
     .object({

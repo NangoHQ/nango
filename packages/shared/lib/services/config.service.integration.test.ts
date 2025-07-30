@@ -34,7 +34,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['oauth_client_id']);
@@ -52,7 +52,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['oauth_client_secret']);
@@ -71,7 +71,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['oauth_client_id']);
@@ -90,7 +90,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['oauth_client_secret']);
@@ -109,7 +109,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['app_link']);
@@ -132,7 +132,7 @@ describe('Config service integration tests', () => {
                     private_key: ''
                 },
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
 
             expect(maybeError).toEqual(['app_id', 'private_key']);

@@ -139,7 +139,7 @@ describe('Sync config create', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
-                user_defined: true
+                shared_credentials_id: null
             });
         });
 
