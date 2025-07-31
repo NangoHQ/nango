@@ -13,8 +13,8 @@ export class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
         const mailgun = new Mailgun(formData);
         this.client = mailgun.client({
             username: 'api',
-            key: process.env['MAILGUN_API_KEY'] || '',
-            url: process.env['MAILGUN_URL'] || ''
+            key: envs.MAILGUN_API_KEY || '',
+            url: envs.MAILGUN_URL || ''
         });
     }
 
