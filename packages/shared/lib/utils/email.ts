@@ -169,9 +169,9 @@ Team Nango
 
 function formatUsage(usage: MetricUsage[]) {
     const usageLines = usage.map((u) => {
-        const prefix = u.limit && u.usage >= u.limit ? '🚨 ' : u.limit && u.usage >= u.limit * 0.8 ? '⚠️ ' : '  ';
-        return `${prefix}${u.label}: ${u.usage} / ${u.limit}`;
+        const postFix = u.limit && u.usage >= u.limit ? '🚨' : u.limit && u.usage >= u.limit * 0.8 ? '⚠️' : '';
+        return `${u.label}: ${u.usage} / ${u.limit} ${postFix}`;
     });
 
-    return ['<ul>', ...usageLines.map((line) => `<li>${line}</li>`), '</ul>'].join('\n');
+    return ['<p>', usageLines.join('<br>'), '</p>'].join('\n');
 }

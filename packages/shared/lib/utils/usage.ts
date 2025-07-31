@@ -1,7 +1,10 @@
 import { getAccountUsageTracker } from '@nangohq/account-usage';
+import db from '@nangohq/database';
 
 import { sendUsageLimitReachedEmail, sendUsageNearLimitEmail } from './email.js';
+import accountService from '../services/account.service.js';
 import connectionService from '../services/connection.service.js';
+import { getPlan } from '../services/plans/plans.js';
 import userService from '../services/user.service.js';
 
 import type { AccountUsageMetric } from '@nangohq/account-usage';
@@ -39,36 +42,55 @@ export async function getAccountMetricsUsage(account: DBTeam, plan: DBPlan): Pro
     ];
 }
 
-export async function onUsageIncreased({ account, plan, metric, delta }: { account: DBTeam; plan: DBPlan; metric: AccountUsageMetric; delta: number }) {
+export async function onUsageIncreased({ accountId, metric, delta }: { accountId: number; metric: AccountUsageMetric | 'connections'; delta: number }) {
+    const planResult = await getPlan(db.knex, { accountId });
+
+    if (planResult.isErr()) {
+        return;
+    }
+
+    const plan = planResult.value;
+
     const accountUsageTracker = await getAccountUsageTracker();
-    const limit = accountUsageTracker.getLimit(plan, metric);
-    const currentUsage = await accountUsageTracker.getUsage({ accountId: account.id, metric });
+
+    let limit: number | null = null;
+    let currentUsage: number | null = null;
+    if (metric === 'connections') {
+        limit = plan.connections_max;
+        currentUsage = await connectionService.countByAccountId(accountId);
+    } else {
+        limit = accountUsageTracker.getLimit(plan, metric);
+        currentUsage = await accountUsageTracker.getUsage({ accountId: accountId, metric });
+    }
 
     if (limit === null || currentUsage === null || delta === 0) {
         return;
     }
 
-    // Check if usage just crossed the limit
-    if (currentUsage < limit && currentUsage >= limit) {
-        const usage = await getAccountMetricsUsage(account, plan);
-        const users = await userService.getUsersByAccountId(plan.account_id);
-        await Promise.all(
-            users.map((user) => {
-                return sendUsageLimitReachedEmail({ user, account, usage });
-            })
-        );
+    const crossedLimit = currentUsage - delta < limit && currentUsage >= limit;
+    const crossed80Percent = currentUsage - delta < limit * 0.8 && currentUsage >= limit * 0.8;
+
+    if (!crossedLimit && !crossed80Percent) {
         return;
     }
 
-    const nearLimit = limit * 0.8;
-    // Check if usage just crossed 80% of the limit
-    if (currentUsage - delta < nearLimit && currentUsage >= nearLimit) {
-        const usage = await getAccountMetricsUsage(account, plan);
-        const users = await userService.getUsersByAccountId(plan.account_id);
-        await Promise.all(
-            users.map((user) => {
-                return sendUsageNearLimitEmail({ user, account, usage });
-            })
-        );
+    const account = await accountService.getAccountById(db.knex, accountId);
+
+    if (!account) {
+        return;
     }
+
+    const usage = await getAccountMetricsUsage(account, plan);
+    const users = await userService.getUsersByAccountId(accountId);
+
+    await Promise.all(
+        users.map((user) => {
+            // Full limit reached prioritized in case usage jumps directly to it
+            if (crossedLimit) {
+                return sendUsageLimitReachedEmail({ user, account, usage });
+            }
+
+            return sendUsageNearLimitEmail({ user, account, usage });
+        })
+    );
 }
