@@ -16,10 +16,11 @@ export function requestLoggerMiddleware({ logger }: { logger: Logger }): Handler
             const route = req.route?.path || req.originalUrl;
             const msg = `${req.method} ${route} -> ${res.statusCode}`;
             const contentType = res.getHeader('content-type') as string | undefined;
+            const shouldLogBody = false;
             if (res.statusCode >= 500) {
-                logger.error(colors.red(msg), contentType && contentType.startsWith('application/json') ? resBody : '[buffer]');
+                logger.error(colors.red(msg), shouldLogBody && contentType && contentType.startsWith('application/json') ? resBody : '[buffer]');
             } else if (res.statusCode >= 400) {
-                logger.warning?.(colors.yellow(msg), contentType && contentType.startsWith('application/json') ? resBody : '[buffer]');
+                logger.warning?.(colors.yellow(msg), shouldLogBody && contentType && contentType.startsWith('application/json') ? resBody : '[buffer]');
             } else {
                 logger.info(msg);
             }

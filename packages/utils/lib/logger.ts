@@ -44,7 +44,12 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
-    formatters = [winston.format.timestamp(), winston.format.json()];
+    formatters = [
+        winston.format.printf((info) => {
+            const splat = info[SPLAT] && info[SPLAT].length > 0 ? JSON.stringify(info[SPLAT]) : '';
+            return `[${info.level.toUpperCase()}]${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
+        })
+    ];
 }
 
 const defaultLogger = winston.createLogger({
