@@ -225,7 +225,9 @@ class SyncController {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
             if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'actions'))) {
-                void logCtx.error('Usage limit exceeded for actions', {
+                const message =
+                    'Your monthly limit for action executions has been reached. No actions will run until you upgrade your account or the limit resets.';
+                void logCtx.error(message, {
                     usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
                     limit: accountUsageTracker.getLimit(plan, 'actions')
                 });
@@ -235,7 +237,7 @@ class SyncController {
                 res.status(400).send({
                     error: {
                         code: 'resource_capped',
-                        message: 'Usage limit exceeded for actions. Upgrade your plan to get rid of action limits.'
+                        message
                     }
                 });
 
