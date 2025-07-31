@@ -1,96 +1,126 @@
 ---
-
-title: Shopify
-sidebarTitle: Shopify
-
+title: 'Shopify (OAuth)'
+sidebarTitle: 'Shopify (OAuth)'
+description: 'Access the Shopify API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/shopify/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/shopify/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Shopify_.
+      </Step>
+      <Step title="Authorize Shopify">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Shopify. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Shopify API">
+        Let's make your first request to the Shopify API (fetch a list of customers). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/admin/api/2025-01/customers.json?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for a [Shopify Partner account](https://partners.shopify.com/signup/developer). |
-| Paid test account | ✅ Not required | Development stores can be created for free from your Partner account. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | Only required for public apps listed on the Shopify App Store. |
-| Security audit | ✅ Not required | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-<Steps>
-  <Step title="Create a Shopify Partner account">
-    Go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
-  </Step>
-  <Step title="Create a new app in your Partner account">
-    1. From your Partner Dashboard, navigate to **Apps** > **Create app**.
-    2. Choose **Create app manually** and provide a name for your app.
-    3. Click **Create app** to proceed.
-  </Step>
-  <Step title="Configure OAuth settings">
-    In the app you just created:
-    1. Navigate to the **Configuration** tab under **Build**.
-    2. In the **App URL** field, enter your application's URL.
-    3. Under **Allowed redirection URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
-    4. Save your changes.
-  </Step>
-  <Step title="Obtain API credentials">
-    1. Navigate to the created app's **Overview** tab.
-    2. Copy the **Client ID** (also called API key) and **Client secret** (also called API secret key) from Client credentials.
-    3. You will need these credentials when configuring your integration in Nango.
-  </Step>
-  <Step title="Create a development store for testing">
-    If you don't have a Shopify store already:
-    1. From your Partner Dashboard, go to **Stores** > **Add store**.
-    2. Select **Development store** and follow the prompts to create a test store.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
+            const res = await nango.get({
+                endpoint: '/admin/api/2025-01/customers.json',
+                params: {
+                  limit: 10
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
-## Useful links
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
 
-| Topic | Links |
-| - | - |
-| General | [Website](https://www.shopify.com/) |
-| | [Create a Partner account](https://partners.shopify.com/signup/developer) |
-| | [How to create a development store](https://help.shopify.com/en/partners/dashboard/development-stores) |
-| Developer | [API documentation](https://shopify.dev/docs/api/admin) |
-| | [Developer console](https://partners.shopify.com/) |
-| | [Authentication documentation](https://shopify.dev/docs/apps/auth/oauth) |
-| | [OAuth getting started guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant) |
-| | [How to register an OAuth app](https://shopify.dev/docs/apps/build/authentication-authorization/client-secrets) |
-| | [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes) |
-| | [Details on rate limits](https://shopify.dev/docs/api/usage/rate-limits) |
-| | [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim) |
+        </Tabs>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Connection configuration in Nango
+      </Step>
+    </Steps>
 
-- Shopify requires a user specific subdomain to run OAuth.
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Shopify stores.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Shopify Partner account">
+        Go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
+      </Step>
+      <Step title="Create a new app in your Partner account">
+        1. From your Partner Dashboard, navigate to **Apps** > **Create app**.
+        2. Choose **Create app manually** and provide a name for your app.
+        3. Click **Create app** to proceed.
+      </Step>
+      <Step title="Configure OAuth settings">
+        In the app you just created:
+        1. Navigate to the **Configuration** tab under **Build**.
+        2. In the **App URL** field, enter your application's URL.
+        3. Under **Allowed redirection URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
+        4. Save your changes.
+      </Step>
+      <Step title="Obtain API credentials">
+        1. Navigate to the created app's **Overview** tab.
+        2. Copy the **Client ID** (also called API key) and **Client secret** (also called API secret key) from Client credentials.
+        3. You will need these credentials when configuring your integration in Nango.
+      </Step>
+      <Step title="Create a development store for testing">
+        If you don't have a Shopify store already:
+        1. From your Partner Dashboard, go to **Stores** > **Add store**.
+        2. Select **Development store** and follow the prompts to create a test store.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Shopify using Connect UI](/integrations/all/shopify/connect) |
+    | General | [Website](https://www.shopify.com/) |
+    | | [Create a Partner account](https://partners.shopify.com/signup/developer) |
+    | | [How to create a development store](https://help.shopify.com/en/partners/dashboard/development-stores) |
+    | Developer | [API documentation](https://shopify.dev/docs/api/admin) |
+    | | [Developer console](https://partners.shopify.com/) |
+    | | [Authentication documentation](https://shopify.dev/docs/apps/auth/oauth) |
+    | | [OAuth getting started guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant) |
+    | | [How to register an OAuth app](https://shopify.dev/docs/apps/build/authentication-authorization/client-secrets) |
+    | | [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes) |
+    | | [Details on rate limits](https://shopify.dev/docs/api/usage/rate-limits) |
+    | | [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim) |
 
-- Shopify's API requires a shop-specific subdomain in the authorization URL.
-- Access tokens are shop-specific and cannot be used across different shops.
-- Some API endpoints have different rate limits than others. Check the [rate limits documentation](https://shopify.dev/docs/api/usage/rate-limits) for details.
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Shopify's API requires a shop-specific subdomain in the authorization URL.
+    - Access tokens are shop-specific and cannot be used across different shops.
+    - Some API endpoints have different rate limits than others. Check the [rate limits documentation](https://shopify.dev/docs/api/usage/rate-limits) for details.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
+  </Tab>
+</Tabs>
 
-## Going further
-
-<Card title="Connect to Shopify" icon="link" href="/integrations/all/shopify/connect" horizontal>
-  Guide to connect to Shopify using Connect UI
-</Card>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
