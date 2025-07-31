@@ -16,12 +16,12 @@ function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is
     return 'encryptedValue' in data;
 }
 
-export function decryptRecordData(record: FormattedRecord): UnencryptedRecordData {
+export async function decryptRecordData(record: FormattedRecord): Promise<UnencryptedRecordData> {
     const encryptionManager = getEncryption();
     const { json } = record;
     if (isEncrypted(json)) {
         const { encryptedValue, iv, authTag } = json;
-        const decryptedString = encryptionManager.decryptSync(encryptedValue, iv, authTag);
+        const decryptedString = await encryptionManager.decryptAsync(encryptedValue, iv, authTag);
         return JSON.parse(decryptedString) as UnencryptedRecordData;
     }
     return json;
