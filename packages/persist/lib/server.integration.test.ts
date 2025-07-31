@@ -429,7 +429,8 @@ const initDb = async () => {
             oauth_client_id: '',
             oauth_client_secret: '',
             missing_fields: [],
-            forward_webhooks: true
+            forward_webhooks: true,
+            shared_credentials_id: null
         },
         googleProvider
     );
