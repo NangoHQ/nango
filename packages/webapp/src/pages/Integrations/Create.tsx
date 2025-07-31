@@ -78,8 +78,7 @@ export default function Create() {
         } else {
             toast({ title: 'Integration created', variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
-            const settingsUrl = `/${env}/integrations/${created.json.data.unique_key}/settings`;
-            navigate(settingsUrl);
+            navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
         }
     };
 

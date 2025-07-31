@@ -37,7 +37,6 @@ export type PostPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        user_defined?: boolean | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
