@@ -33,6 +33,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/webhooks": "file:../webhooks",
+        "@nangohq/email": "file:../email",
         "@workos-inc/node": "6.2.0",
         "axios": "1.11.0",
         "body-parser": "2.2.0",

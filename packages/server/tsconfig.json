@@ -46,7 +46,10 @@
         },
         {
             "path": "../account-usage"
+        },
+        {
+            "path": "../email"
         }
     ],
-    "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts"]
+    "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts", "../shared/lib/utils/usage.ts"]
 }

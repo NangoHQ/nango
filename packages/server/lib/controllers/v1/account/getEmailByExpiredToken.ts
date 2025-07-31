@@ -1,9 +1,8 @@
 import * as z from 'zod';
 
-import { userService } from '@nangohq/shared';
+import { sendVerificationEmail, userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetEmailByExpiredToken } from '@nangohq/types';

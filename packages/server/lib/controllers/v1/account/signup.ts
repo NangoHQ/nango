@@ -3,10 +3,9 @@ import crypto from 'crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, pbkdf2, sendVerificationEmail, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 

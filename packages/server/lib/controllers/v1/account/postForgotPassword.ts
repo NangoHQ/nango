@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken';
 import * as z from 'zod';
 
-import { userService } from '@nangohq/shared';
+import { sendResetPasswordEmail, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { sendResetPasswordEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 

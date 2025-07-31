@@ -1,7 +1,7 @@
+import { getAccountMetricsUsage } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getAccountMetricsUsage } from '../../../../utils/usage.js';
 
 import type { GetUsage } from '@nangohq/types';
 
