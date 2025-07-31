@@ -90,6 +90,9 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
     )
     .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
 
+// don't allow global options to leak into sub commands
+program.enablePositionalOptions(true);
+
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
