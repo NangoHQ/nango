@@ -54,9 +54,9 @@ import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.j
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
+import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
@@ -66,11 +66,7 @@ const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
-const connectSessionOrPublicAuth: RequestHandler[] = [
-    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
-    resourceCapping,
-    rateLimiterMiddleware
-];
+const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 export const publicAPI = express.Router();
 
@@ -197,7 +193,7 @@ publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bi
 publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
-publicAPI.route('/connect/sessions').post(apiAuth, resourceCapping, postConnectSessions);
+publicAPI.route('/connect/sessions').post(apiAuth, connectionCapping, postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
