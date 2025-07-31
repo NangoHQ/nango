@@ -7,6 +7,7 @@ import {
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
+    onUsageIncreased,
     productTracking,
     syncManager
 } from '@nangohq/shared';
@@ -149,6 +150,8 @@ export const connectionCreated = async (
         providerConfig,
         account
     });
+
+    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
 };
 
 export const connectionCreationFailed = async (

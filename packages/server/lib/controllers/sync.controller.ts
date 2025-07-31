@@ -15,6 +15,7 @@ import {
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
+    onUsageIncreased,
     productTracking,
     syncCommandToOperation,
     syncManager,
@@ -248,6 +249,7 @@ class SyncController {
             }
 
             void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
+            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1 });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,

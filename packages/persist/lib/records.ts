@@ -4,7 +4,7 @@ import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, onUsageIncreased, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
@@ -176,6 +176,7 @@ export async function persistRecords({
         const accountUsageTracker = await getAccountUsageTracker();
         // Account usage tracking for capping
         void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar });
 
         // Datadog metrics
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
