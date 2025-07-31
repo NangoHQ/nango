@@ -21,7 +21,7 @@ export function decryptRecordData(record: FormattedRecord): UnencryptedRecordDat
     const { json } = record;
     if (isEncrypted(json)) {
         const { encryptedValue, iv, authTag } = json;
-        const decryptedString = encryptionManager.decrypt(encryptedValue, iv, authTag);
+        const decryptedString = encryptionManager.decryptSync(encryptedValue, iv, authTag);
         return JSON.parse(decryptedString) as UnencryptedRecordData;
     }
     return json;
@@ -32,7 +32,7 @@ export function encryptRecords(records: FormattedRecord[]): FormattedRecord[] {
     const encryptedDataRecords: FormattedRecord[] = Object.assign([], records);
 
     for (const record of encryptedDataRecords) {
-        const [encryptedValue, iv, authTag] = encryptionManager.encrypt(JSON.stringify(record.json));
+        const [encryptedValue, iv, authTag] = encryptionManager.encryptSync(JSON.stringify(record.json));
         record.json = { encryptedValue, iv, authTag };
     }
 
