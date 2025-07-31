@@ -77,7 +77,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         custom: null,
         missing_fields: [],
         forward_webhooks: body.forward_webhooks ?? true,
-        shared_credentials_id: null // to add logic later, right now we just have this as true since its user defined
+        shared_credentials_id: null
     };
 
     if (creds) {
