@@ -153,7 +153,7 @@ export async function sendUsageLimitReachedEmail({ user, account, usage }: { use
 ${formattedUsage}
 
 <p>
-Features that exceed their limit are blocked until you <a href="https://app.nango.dev/prod/team/billing">upgrade your account</a> or the limit resets.
+Features that exceed their limit are blocked until you <a href="https://app.nango.dev/prod/team/billing">upgrade your account</a> or the limit resets.<br>
 This may impact your customers if you are running integrations in production.
 </p>
 
