@@ -6,7 +6,7 @@ import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'user_defined'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
     ApiTimestamps
 > & {
     logo: string;
@@ -74,7 +74,7 @@ export type DeletePublicIntegration = Endpoint<{
     Success: { success: true };
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'shared_credentials_id'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
@@ -138,7 +138,7 @@ export type PatchIntegration = Endpoint<{
               clientId?: string | undefined;
               clientSecret?: string | undefined;
               scopes?: string | undefined;
-              userDefined: boolean;
+              sharedCredentials: boolean;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;

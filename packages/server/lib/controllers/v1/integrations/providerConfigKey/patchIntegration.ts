@@ -27,7 +27,7 @@ const validationBody = z
                         clientId: z.string().min(1).max(255).optional(),
                         clientSecret: z.string().min(1).optional(),
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
-                        userDefined: z.boolean().default(true)
+                        sharedCredentials: z.boolean().default(false)
                     })
                     .strict(),
                 z
@@ -94,16 +94,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const body: PatchIntegration['Body'] = valBody.data;
 
     if ('authType' in body && (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA')) {
-        const userDefined = body.userDefined ?? true;
-        const validateUserDefinedFields = (userDefined: boolean, body: any) => {
-            return userDefined && (!body.clientId || !body.clientSecret || body.scopes === undefined);
-        };
-
-        if (validateUserDefinedFields(userDefined, body)) {
+        const sharedCredentials = body.sharedCredentials ?? false;
+        if (!sharedCredentials && (!body.clientId || !body.clientSecret)) {
             res.status(400).send({
                 error: {
                     code: 'invalid_body',
-                    message: 'clientId, clientSecret, and scopes are required when userDefined is true'
+                    message: 'clientId and clientSecret are required when sharedCredentials is false'
                 }
             });
             return;
@@ -145,21 +141,19 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            const userDefined = body.userDefined ?? true;
+            const sharedCredentials = body.sharedCredentials ?? true;
 
-            if (!userDefined) {
-                const preConfigured = await configService.getPreConfiguredProviderCredentials(integration.provider);
-                if (preConfigured) {
-                    integration.oauth_client_id = preConfigured.client_id || '';
-                    integration.oauth_client_secret = preConfigured.client_secret || '';
-                    integration.oauth_scopes = preConfigured.scopes.join(',');
+            if (sharedCredentials) {
+                const sharedCredentialsId = await configService.getSharedCredentialsId(integration.provider);
+                if (sharedCredentialsId) {
+                    integration.shared_credentials_id = sharedCredentialsId;
                 }
             } else {
+                integration.shared_credentials_id = null;
                 if (body.clientId) integration.oauth_client_id = body.clientId;
                 if (body.clientSecret) integration.oauth_client_secret = body.clientSecret;
                 integration.oauth_scopes = body.scopes || '';
             }
-            integration.user_defined = userDefined;
         } else if (body.authType === 'APP') {
             integration.oauth_client_id = body.appId;
             // This is a legacy thing

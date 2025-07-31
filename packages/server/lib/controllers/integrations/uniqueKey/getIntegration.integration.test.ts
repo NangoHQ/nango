@@ -77,8 +77,7 @@ describe(`GET ${endpoint}`, () => {
                 logo: 'http://localhost:3003/images/template-logos/github.svg',
                 created_at: expect.toBeIsoDate(),
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true,
-                user_defined: true
+                forward_webhooks: true
             }
         });
     });

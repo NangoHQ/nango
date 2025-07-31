@@ -79,8 +79,7 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'algolia',
                 unique_key: 'foobar',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true,
-                user_defined: true
+                forward_webhooks: true
             }
         });
     });

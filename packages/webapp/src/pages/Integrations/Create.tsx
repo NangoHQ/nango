@@ -8,9 +8,7 @@ import { useSWRConfig } from 'swr';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { Switch } from '../../components/ui/Switch';
-import { Button } from '../../components/ui/button/Button';
-import { apiPostIntegration } from '../../hooks/useIntegration';
+import { apiPatchIntegration, apiPostIntegration } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
@@ -39,8 +37,8 @@ export default function Create() {
     const [providers, setProviders] = useState<Provider[] | null>(null);
     const [showConfigModal, setShowConfigModal] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
-    const [useOwnApp, setUseOwnApp] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [isCreatingShared, setIsCreatingShared] = useState(false);
+
     const getProvidersAPI = useGetProvidersAPI(env);
     const navigate = useNavigate();
 
@@ -66,14 +64,13 @@ export default function Create() {
             // show modal for preconfigured providers
             setSelectedProvider(provider);
             setShowConfigModal(true);
-            setUseOwnApp(false);
         } else {
             // go directly to create integration for non-preconfigured providers
             onCreateIntegrationDirect(provider.name);
         }
     };
 
-    const onCreateIntegrationDirect = async (providerName: string, configState?: { usePreConfigured: boolean; preConfiguredScopes: string[] }) => {
+    const onCreateIntegrationDirect = async (providerName: string) => {
         const created = await apiPostIntegration(env, { provider: providerName });
 
         if ('error' in created.json) {
@@ -82,22 +79,8 @@ export default function Create() {
             toast({ title: 'Integration created', variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
             const settingsUrl = `/${env}/integrations/${created.json.data.unique_key}/settings`;
-            navigate(settingsUrl, {
-                state: configState
-            });
+            navigate(settingsUrl);
         }
-    };
-
-    const onCreateIntegration = async () => {
-        if (!selectedProvider) return;
-        setLoading(true);
-        const configState = {
-            usePreConfigured: !useOwnApp,
-            preConfiguredScopes: selectedProvider.preConfiguredScopes
-        };
-        await onCreateIntegrationDirect(selectedProvider.name, configState);
-        setShowConfigModal(false);
-        setLoading(false);
     };
 
     const showDocs = (e: React.MouseEvent<SVGSVGElement>, provider: Provider) => {
@@ -131,6 +114,44 @@ export default function Create() {
         },
         [debouncedFilterProviders]
     );
+
+    const handleIntegrationCreation = async (useSharedCredentials: boolean) => {
+        if (!selectedProvider) return;
+
+        if (useSharedCredentials) {
+            setIsCreatingShared(true);
+
+            try {
+                const created = await apiPostIntegration(env, { provider: selectedProvider.name });
+
+                if ('error' in created.json) {
+                    toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
+                    return;
+                }
+                const updatePayload = {
+                    authType: selectedProvider.authMode as any,
+                    sharedCredentials: true
+                };
+
+                const updated = await apiPatchIntegration(env, created.json.data.unique_key, updatePayload);
+
+                if ('error' in updated.json) {
+                    toast({ title: updated.json.error.message || 'Failed to update integration', variant: 'error' });
+                    return;
+                }
+
+                toast({ title: 'Integration created with Nango credentials', variant: 'success' });
+                void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+                navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
+                setShowConfigModal(false);
+            } finally {
+                setIsCreatingShared(false);
+            }
+        } else {
+            await onCreateIntegrationDirect(selectedProvider.name);
+            setShowConfigModal(false);
+        }
+    };
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
@@ -175,13 +196,13 @@ export default function Create() {
                 </div>
             )}
             <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-                <DialogContent>
+                <DialogContent className="w-[550px] max-w-[550px]">
                     <DialogHeader>
                         <DialogTitle>Configure new integration:</DialogTitle>
                     </DialogHeader>
 
                     {selectedProvider && (
-                        <div className="space-y-3">
+                        <div className="space-y-8">
                             <div className="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
                                 <div className="flex items-center">
                                     <IntegrationLogo provider={selectedProvider.name} height={10} width={10} classNames="mr-2" />
@@ -192,7 +213,7 @@ export default function Create() {
                                     <span className="text-gray-300">{selectedProvider.authMode}</span>
                                 </div>
                             </div>
-                            <div className="relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-start min-h-10 bg-blue-base-35 border-blue-base text-blue-base mt-6">
+                            <div className="relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-start min-h-10 bg-blue-base-35 border-blue-base text-blue-base">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path
                                         fillRule="evenodd"
@@ -204,18 +225,25 @@ export default function Create() {
                                     <div className="text-sm">Nango provides developer apps for testing. Use your own for production.</div>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-white">Use your own developer app</div>
-                                <Switch checked={useOwnApp} onCheckedChange={setUseOwnApp} />
+                            <div className="flex justify-between">
+                                <button
+                                    type="button"
+                                    onClick={() => handleIntegrationCreation(true)}
+                                    disabled={isCreatingShared}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isCreatingShared ? 'Creating...' : "Use Nango's developer app"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleIntegrationCreation(false)}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-transparent border border-blue-base text-blue-base hover:bg-blue-base/10"
+                                >
+                                    Use your own developer app
+                                </button>
                             </div>
                         </div>
                     )}
-
-                    <div className="flex justify-start pt-4">
-                        <Button variant="primary" onClick={onCreateIntegration} isLoading={loading}>
-                            Create integration
-                        </Button>
-                    </div>
                 </DialogContent>
             </Dialog>
         </DashboardLayout>

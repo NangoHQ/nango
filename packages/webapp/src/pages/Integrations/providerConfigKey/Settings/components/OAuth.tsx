@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { mutate } from 'swr';
 
 import { DeleteIntegrationButton } from './Delete';
@@ -22,29 +21,11 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const location = useLocation();
-    const navigationState = location.state as { usePreConfigured: boolean; preConfiguredScopes: string[] } | null;
-    const hasExistingCredentials = !integration.missing_fields?.includes('oauth_client_id') && !integration.missing_fields?.includes('oauth_client_secret');
-
-    // Check if integration is completely locked (using pre-configured and has credentials (user has not yet saved to patch provider with the pre-configured credentials))
-    const isIntegrationLocked = !integration.user_defined && hasExistingCredentials;
 
     const [loading, setLoading] = useState(false);
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
     const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
-    const [scopes, setScopes] = useState(() => {
-        if (navigationState && navigationState.usePreConfigured && navigationState.preConfiguredScopes.length > 0) {
-            return navigationState.preConfiguredScopes.join(',');
-        }
-        return integration.oauth_scopes || '';
-    });
-    const [userDefined] = useState(() => {
-        if (navigationState) {
-            return !navigationState.usePreConfigured;
-        }
-        // if no state, direct access to settings, always show editable fields
-        return true;
-    });
+    const [scopes, setScopes] = useState(integration.oauth_scopes || '');
 
     const handleScopeChange = (newScopes: string) => setScopes(newScopes);
     const handleSave = async () => {
@@ -52,10 +33,10 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
         const payload: any = {
             authType: template.auth_mode as any,
-            userDefined: userDefined
+            sharedCredentials: false
         };
 
-        if (userDefined) {
+        if (!integration.shared_credentials_id) {
             payload.clientId = clientId;
             payload.clientSecret = clientSecret;
             payload.scopes = scopes;
@@ -76,7 +57,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
         await handleSave();
     };
 
-    const shouldShowCredentials = userDefined && integration.user_defined;
+    const shouldShowCredentials = !integration.shared_credentials_id;
     const isSaveDisabled = shouldShowCredentials && (!clientId || !clientSecret);
     return (
         <div className="mt-10">
@@ -157,7 +138,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
                 <div className="flex justify-between">
                     {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                    {!isIntegrationLocked && (
+                    {shouldShowCredentials && (
                         <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={isSaveDisabled}>
                             Save
                         </Button>

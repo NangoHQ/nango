@@ -69,8 +69,7 @@ describe(`PATCH ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true,
-                user_defined: true
+                forward_webhooks: true
             }
         });
     });
