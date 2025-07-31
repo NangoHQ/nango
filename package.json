@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.64.3",
+    "version": "0.64.4",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -60,7 +60,7 @@
         "@types/node": "22.15.29",
         "@typescript-eslint/eslint-plugin": "8.38.0",
         "@typescript-eslint/parser": "8.38.0",
-        "concurrently": "8.2.2",
+        "concurrently": "9.2.0",
         "eslint": "9.31.0",
         "eslint-config-prettier": "10.1.5",
         "eslint-plugin-import": "2.31.0",
@@ -72,13 +72,13 @@
         "husky": "8.0.3",
         "lint-staged": "15.5.1",
         "onchange": "7.1.0",
-        "prettier": "3.5.3",
+        "prettier": "3.6.2",
         "rimraf": "6.0.1",
         "testcontainers": "10.24.2",
-        "tsx": "4.19.4",
+        "tsx": "4.20.3",
         "typescript": "5.8.3",
         "typescript-eslint": "8.38.0",
-        "vitest": "3.1.2"
+        "vitest": "3.2.4"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,cjs}": [

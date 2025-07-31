@@ -12,21 +12,21 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useApiGetPlans, useApiGetUsage } from '../../../hooks/usePlan';
+import { useApiGetBillingUsage, useApiGetPlans } from '../../../hooks/usePlan';
 import { useStripePaymentMethods } from '../../../hooks/useStripe';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
 
 import type { PlanDefinitionList } from './types';
-import type { GetUsage, PlanDefinition } from '@nangohq/types';
+import type { GetBillingUsage, PlanDefinition } from '@nangohq/types';
 
 export const TeamBilling: React.FC = () => {
     const env = useStore((state) => state.env);
 
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
-    const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetUsage(env);
+    const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetBillingUsage(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
@@ -182,7 +182,7 @@ export const TeamBilling: React.FC = () => {
     );
 };
 
-const UsageTable: React.FC<{ data: GetUsage['Success'] | undefined; isLoading: boolean }> = ({ data, isLoading }) => {
+const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined; isLoading: boolean }> = ({ data, isLoading }) => {
     const currentMonth = useMemo(() => {
         return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
     }, []);

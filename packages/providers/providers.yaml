@@ -772,6 +772,7 @@ ashby:
             endpoints:
                 - apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
+    docs_connect: https://docs.nango.dev/integrations/all/ashby/connect
     credentials:
         username:
             type: string
@@ -7702,6 +7703,27 @@ paychex:
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
 
+paycom:
+    display_name: Paycom
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.paycomonline.net
+    docs: https://docs.nango.dev/integrations/all/paycom
+    docs_connect: https://docs.nango.dev/integrations/all/paycom/connect
+    credentials:
+        username:
+            type: string
+            title: SID
+            description: The SID of your Paycom account
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: API Token
+            description: The API token of your Paycom account
+            doc_section: '#step-1-finding-your-credentials'
+
 payfit:
     display_name: Payfit
     categories:
@@ -11306,14 +11328,16 @@ workday:
             type: string
             title: Tenant
             description: The tenant of your Workday account
-            example: yourtenant
+            example: acme
             order: 2
             doc_section: '#step-2-finding-your-tenant'
     credentials:
         username:
             type: string
+            example: ISU Nango@acme
             title: Username
             description: Workday API Username
+            pattern: '^[^@]+@[^@]+$'
             doc_section: '#step-4-generating-your-username'
         password:
             type: string
