@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../account-usage"
+        },
+        {
             "path": "../database"
         },
         {
@@ -31,6 +34,9 @@
         },
         {
             "path": "../providers"
+        },
+        {
+            "path": "../email"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

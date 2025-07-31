@@ -20,7 +20,9 @@
     "dependencies": {
         "@aws-sdk/client-s3": "3.796.0",
         "@hapi/boom": "10.0.1",
+        "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/database": "file:../database",
+        "@nangohq/email": "file:../email",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
@@ -34,6 +36,7 @@
         "exponential-backoff": "3.1.1",
         "fast-xml-parser": "4.5.0",
         "form-data": "4.0.4",
+        "he": "^1.2.0",
         "js-yaml": "4.1.0",
         "jsonwebtoken": "9.0.2",
         "lodash-es": "4.17.21",
