@@ -29,8 +29,7 @@ interface ValidationRule {
 
 class ConfigService {
     private sharedCredentialsCache: Record<string, { scopes: string[]; preConfigured: boolean }> | null = null;
-    private sharedCredentialsCacheTimestamp: number = 0;
-    private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    private lastTableUpdateWhenCacheLoaded: string | null = null;
     async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
         const result = await db.knex
             .select('id')
@@ -297,9 +296,17 @@ class ConfigService {
         return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 
-    private async loadSharedCredentialsCache(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
-        const now = Date.now();
-        if (this.sharedCredentialsCache && now - this.sharedCredentialsCacheTimestamp < this.CACHE_TTL) {
+    async loadSharedCredentialsCache(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
+        const latestUpdate = (await db.knex
+            .select('updated_at')
+            .from<SharedCredentials>('providers_shared_credentials')
+            .orderBy('updated_at', 'desc')
+            .first()) as Pick<SharedCredentials, 'updated_at'> | undefined;
+
+        const latestTimestamp = latestUpdate?.updated_at?.toISOString() || null;
+
+        // If cache exists and table hasn't changed since we loaded it, return cache
+        if (this.sharedCredentialsCache && this.lastTableUpdateWhenCacheLoaded === latestTimestamp) {
             return this.sharedCredentialsCache;
         }
         const sharedCredentials = (await db.knex.select('name', 'credentials').from<SharedCredentials>('providers_shared_credentials')) as Pick<
@@ -317,7 +324,7 @@ class ConfigService {
         }
 
         this.sharedCredentialsCache = cache;
-        this.sharedCredentialsCacheTimestamp = now;
+        this.lastTableUpdateWhenCacheLoaded = latestTimestamp;
 
         return cache;
     }

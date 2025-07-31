@@ -14,26 +14,26 @@ class ConfigController {
             return;
         }
 
-        const list = await Promise.all(
-            Object.entries(providers).map(async (providerProperties) => {
-                const [provider, properties] = providerProperties;
-                // check if provider has nango's preconfigured credentials
-                const preConfiguredInfo = await configService.getPreConfiguredProviderScopes(provider);
-                const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
-                const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
+        const sharedCredentialsCache = await configService.loadSharedCredentialsCache();
 
-                return {
-                    name: provider,
-                    displayName: properties.display_name,
-                    defaultScopes: properties.default_scopes,
-                    authMode: properties.auth_mode,
-                    categories: properties.categories,
-                    docs: properties.docs,
-                    preConfigured: isPreConfigured,
-                    preConfiguredScopes: preConfiguredScopes
-                };
-            })
-        );
+        const list = Object.entries(providers).map((providerProperties) => {
+            const [provider, properties] = providerProperties;
+            // check if provider has nango's preconfigured credentials
+            const preConfiguredInfo = sharedCredentialsCache[provider];
+            const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
+            const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
+
+            return {
+                name: provider,
+                displayName: properties.display_name,
+                defaultScopes: properties.default_scopes,
+                authMode: properties.auth_mode,
+                categories: properties.categories,
+                docs: properties.docs,
+                preConfigured: isPreConfigured,
+                preConfiguredScopes: preConfiguredScopes
+            };
+        });
         const sortedList = list.sort((a, b) => a.name.localeCompare(b.name));
         res.status(200).send(sortedList);
     }
