@@ -102,7 +102,8 @@ class ConfigService {
                 environment_id,
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
-                forward_webhooks: true
+                forward_webhooks: true,
+                shared_credentials_id: null
             },
             provider
         );
