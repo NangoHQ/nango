@@ -73,7 +73,7 @@ export type DeletePublicIntegration = Endpoint<{
     Success: { success: true };
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'shared_credentials_id'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
