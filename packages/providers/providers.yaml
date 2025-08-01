@@ -10914,7 +10914,7 @@ ukg-ready:
             type: string
             title: Company ID
             description: A unique identifier for your company.
-            example: 23444234
+            example: '23444234'
             doc_section: '#step-2-finding-your-company-id'
         hostname:
             type: string
