@@ -20106,9 +20106,10 @@ integrations:
                 runs: every hour
                 description: |
                     Fetches a list of current employees from Workday
-                version: 1.0.1
+                version: 1.0.2
                 output: Employee
                 sync_type: incremental
+                input: SyncConfiguration
                 endpoint:
                     method: GET
                     path: /employees
@@ -20141,11 +20142,14 @@ integrations:
                 output: StandardEmployee
                 version: 1.0.1
                 sync_type: incremental
+                input: SyncConfiguration
                 endpoint:
                     method: GET
                     path: /employees/unified
                     group: Unified HRIS API
         models:
+            SyncConfiguration:
+                lagMinutes?: number
             Employee:
                 id: string
                 user_name: string | null
