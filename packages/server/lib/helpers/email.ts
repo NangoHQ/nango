@@ -1,8 +1,7 @@
 import he from 'he';
 
+import { EmailClient } from '@nangohq/email';
 import { basePublicUrl } from '@nangohq/utils';
-
-import { EmailClient } from '../clients/email.client.js';
 
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 

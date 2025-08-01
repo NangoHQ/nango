@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
@@ -149,6 +150,8 @@ export const connectionCreated = async (
         providerConfig,
         account
     });
+
+    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
 };
 
 export const connectionCreationFailed = async (

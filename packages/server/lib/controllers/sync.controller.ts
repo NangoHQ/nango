@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -248,6 +248,7 @@ class SyncController {
             }
 
             void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
+            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1, plan: plan ?? undefined });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,
