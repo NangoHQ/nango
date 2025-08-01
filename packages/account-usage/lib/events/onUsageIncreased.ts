@@ -44,10 +44,10 @@ export async function onUsageIncreased({ accountId, metric, delta }: { accountId
         users.map((user) => {
             // Full limit reached prioritized in case usage jumps directly to it
             if (crossedLimit) {
-                return sendUsageLimitReachedEmail({ user, account, usage });
+                return sendUsageLimitReachedEmail({ user, account, usage, triggeringMetric: metric });
             }
 
-            return sendUsageNearLimitEmail({ user, account, usage });
+            return sendUsageNearLimitEmail({ user, account, usage, triggeringMetric: metric });
         })
     );
 }
