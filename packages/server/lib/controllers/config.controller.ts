@@ -16,7 +16,7 @@ class ConfigController {
         }
 
         try {
-            const sharedCredentialsCache = await configService.loadSharedCredentialsCache();
+            const sharedCredentialsCache = await configService.getPreConfiguredProviderScopes();
 
             const list = Object.entries(providers).map((providerProperties) => {
                 const [provider, properties] = providerProperties;

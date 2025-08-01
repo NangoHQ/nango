@@ -33,7 +33,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
         const payload: any = {
             authType: template.auth_mode as any,
-            sharedCredentials: false
+            useSharedCredentials: false
         };
 
         if (!integration.shared_credentials_id) {

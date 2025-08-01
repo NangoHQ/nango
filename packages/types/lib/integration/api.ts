@@ -137,7 +137,7 @@ export type PatchIntegration = Endpoint<{
               clientId?: string | undefined;
               clientSecret?: string | undefined;
               scopes?: string | undefined;
-              sharedCredentials: boolean;
+              useSharedCredentials: boolean;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;

@@ -129,7 +129,7 @@ export default function Create() {
                 }
                 const updatePayload = {
                     authType: selectedProvider.authMode as any,
-                    sharedCredentials: true
+                    useSharedCredentials: true
                 };
 
                 const updated = await apiPatchIntegration(env, created.json.data.unique_key, updatePayload);

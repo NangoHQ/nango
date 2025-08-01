@@ -27,7 +27,7 @@ const validationBody = z
                         clientId: z.string().min(1).max(255).optional(),
                         clientSecret: z.string().min(1).optional(),
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
-                        sharedCredentials: z.boolean().default(false)
+                        useSharedCredentials: z.boolean().default(false)
                     })
                     .strict(),
                 z
@@ -94,12 +94,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const body: PatchIntegration['Body'] = valBody.data;
 
     if ('authType' in body && (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA')) {
-        const sharedCredentials = body.sharedCredentials ?? false;
-        if (!sharedCredentials && (!body.clientId || !body.clientSecret)) {
+        const useSharedCredentials = body.useSharedCredentials ?? false;
+        if (!useSharedCredentials && (!body.clientId || !body.clientSecret)) {
             res.status(400).send({
                 error: {
                     code: 'invalid_body',
-                    message: 'clientId and clientSecret are required when sharedCredentials is false'
+                    message: 'clientId and clientSecret are required when providing your own credentials'
                 }
             });
             return;
@@ -141,17 +141,17 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            const sharedCredentials = body.sharedCredentials ?? true;
+            const useSharedCredentials = body.useSharedCredentials ?? true;
 
-            if (sharedCredentials) {
+            if (useSharedCredentials) {
                 const sharedCredentialsId = await configService.getSharedCredentialsId(integration.provider);
                 if (sharedCredentialsId) {
                     integration.shared_credentials_id = sharedCredentialsId;
                 }
             } else {
                 integration.shared_credentials_id = null;
-                if (body.clientId) integration.oauth_client_id = body.clientId;
-                if (body.clientSecret) integration.oauth_client_secret = body.clientSecret;
+                integration.oauth_client_id = body.clientId!;
+                integration.oauth_client_secret = body.clientSecret!;
                 integration.oauth_scopes = body.scopes || '';
             }
         } else if (body.authType === 'APP') {

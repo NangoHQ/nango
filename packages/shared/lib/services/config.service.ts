@@ -15,10 +15,10 @@ import type {
     DBConnection,
     DBCreateIntegration,
     DBIntegrationCrypted,
+    DBSharedCredentials,
     IntegrationConfig,
     Provider,
-    SharedCredentials,
-    SharedOAuth2Credentials
+    SharedCredentials
 } from '@nangohq/types';
 
 interface ValidationRule {
@@ -28,8 +28,6 @@ interface ValidationRule {
 }
 
 class ConfigService {
-    private sharedCredentialsCache: Record<string, { scopes: string[]; preConfigured: boolean }> | null = null;
-    private lastTableUpdateWhenCacheLoaded: string | null = null;
     async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
         const result = await db.knex
             .select('id')
@@ -48,11 +46,9 @@ class ConfigService {
         const result = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')
             .from<ProviderConfig>(`_nango_configs`)
-            .leftJoin('providers_shared_credentials', function () {
-                this.on('_nango_configs.shared_credentials_id', '=', 'providers_shared_credentials.id');
-            })
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-            .first()) as ProviderConfig & { credentials?: SharedOAuth2Credentials | null };
+            .first()) as ProviderConfig & { credentials?: SharedCredentials | null };
 
         if (!result) {
             return null;
@@ -74,12 +70,10 @@ class ConfigService {
         const results = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')
             .from<ProviderConfig>(`_nango_configs`)
-            .leftJoin('providers_shared_credentials', function () {
-                this.on('_nango_configs.shared_credentials_id', '=', 'providers_shared_credentials.id');
-            })
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
             .where({ environment_id, deleted: false })
             .orderBy('provider', 'asc')
-            .orderBy('created_at', 'asc')) as (ProviderConfig & { credentials?: SharedOAuth2Credentials | null })[];
+            .orderBy('created_at', 'asc')) as (ProviderConfig & { credentials?: SharedCredentials | null })[];
 
         return results
             .map((result) => {
@@ -187,11 +181,7 @@ class ConfigService {
 
     async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
         const encrypted = encryptionManager.encryptProviderConfig(config);
-        if (config.shared_credentials_id) {
-            encrypted.missing_fields = [];
-        } else {
-            encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
-        }
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
         encrypted.updated_at = new Date();
 
         const res = await db.knex
@@ -293,52 +283,36 @@ class ConfigService {
     ];
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        if (providerConfig.shared_credentials_id) {
+            return [];
+        }
         return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 
-    async loadSharedCredentialsCache(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
-        const latestUpdate = (await db.knex
-            .select('updated_at')
-            .from<SharedCredentials>('providers_shared_credentials')
-            .orderBy('updated_at', 'desc')
-            .first()) as Pick<SharedCredentials, 'updated_at'> | undefined;
-
-        const latestTimestamp = latestUpdate?.updated_at?.toISOString() || null;
-
-        // If cache exists and table hasn't changed since we loaded it, return cache
-        if (this.sharedCredentialsCache && this.lastTableUpdateWhenCacheLoaded === latestTimestamp) {
-            return this.sharedCredentialsCache;
-        }
-        const sharedCredentials = (await db.knex.select('name', 'credentials').from<SharedCredentials>('providers_shared_credentials')) as Pick<
-            SharedCredentials,
+    async getPreConfiguredProviderScopes(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
+        const sharedCredentials = (await db.knex.select('name', 'credentials').from<DBSharedCredentials>('providers_shared_credentials')) as Pick<
+            DBSharedCredentials,
             'name' | 'credentials'
         >[];
 
-        const cache: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
+        const preConfiguredProviders: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
 
         for (const cred of sharedCredentials) {
             if (cred.credentials) {
                 const scopes = cred.credentials.oauth_scopes ? cred.credentials.oauth_scopes.split(',').map((scope: string) => scope.trim()) : [];
-                cache[cred.name] = { scopes, preConfigured: true };
+                preConfiguredProviders[cred.name] = { scopes, preConfigured: true };
             }
         }
 
-        this.sharedCredentialsCache = cache;
-        this.lastTableUpdateWhenCacheLoaded = latestTimestamp;
-
-        return cache;
-    }
-
-    async getPreConfiguredProviderScopes(provider: string): Promise<{ scopes: string[]; preConfigured: boolean } | null> {
-        const cache = await this.loadSharedCredentialsCache();
-        return cache[provider] || null;
+        return preConfiguredProviders;
     }
 
     async getSharedCredentialsId(provider: string): Promise<number | null> {
-        const sharedCredentials = (await db.knex.select('id').from<SharedCredentials>('providers_shared_credentials').where('name', provider).first()) as Pick<
-            SharedCredentials,
-            'id'
-        >;
+        const sharedCredentials = (await db.knex
+            .select('id')
+            .from<DBSharedCredentials>('providers_shared_credentials')
+            .where('name', provider)
+            .first()) as Pick<DBSharedCredentials, 'id'>;
 
         return sharedCredentials?.id || null;
     }
