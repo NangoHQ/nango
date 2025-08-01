@@ -90,6 +90,9 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
     )
     .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
 
+// don't allow global options to leak into sub commands
+program.enablePositionalOptions(true);
+
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
@@ -258,7 +261,7 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .arguments('environment')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')

@@ -1,13 +1,13 @@
 ---
-title: Aircall - How do I link my account?
-sidebarTitle: Aircall
+title: Aircall (Basic Auth) - How do I link my account?
+sidebarTitle: Aircall (Basic Auth)
 ---
 
 
 # Overview
 
-To authenticate with Aircall, you need two key pieces of information:
-1. **Application ID** - A unique identifier for your application on Aircall.
+To authenticate with Aircall (Basic Auth), you need two key pieces of information:
+1. **API ID** - A unique identifier for your application on Aircall.
 2. **API Token** - A key that grants full access to all your application and configurations.
 
 This guide will walk you through finding or creating those credentials within Aircall.
@@ -20,29 +20,20 @@ This guide will walk you through finding or creating those credentials within Ai
 
 #### Step 1: Finding Your Admin API Key (API Token) and Application ID (API ID)
 1. Log into your admin aircall account and navigate to **Integrations & API**
-
 <img src="/integrations/all/aircall-basic/nango_aircall_integration_tab.png" />
-
-2. To generate an API key, navigate to the **API Key** tab
-
+2. To generate an API Key, navigate to the **API Key** tab
 <img src="/integrations/all/aircall-basic/nango_aircall_gen_key.png" />
-
-3. Upon creation, a modal window will display your API ID and API Token.
-
-Important: Copy and store your API Token securely, it will not be visible again once you close this modal.
-
-
+3. Upon creation, a modal window will display your **API ID** and **API Token**.
 <img src="/integrations/all/aircall-basic/nango_aircall_Token_API_ID.png" />
+<Tip>Copy and store them both securely, they will not be visible again once you close this modal.</Tip>
 
-#### Step 2: Connect Your Aircall Account
+#### Step 2: Enter credentials in the Connect UI
 
-<img src="/integrations/all/aircall-basic/nango_aircall-basic.png" />
+Once you have both the **API ID** and **API Token**:
+1. Open the form where you need to authenticate with Aircall (Basic Auth).
+2. Enter both **API ID** and **API Token** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
 
-To authenticate using your API credentials, navigate to the Aircall authentication form.
-Enter your credentials as follows:
-- User Name: Your API ID
-- Password: Your API Token
-Click "Connect" to complete the authentication.
+<img src="/integrations/all/aircall-basic/form.png" style={{maxWidth: "450px" }} />
 
-Note: Make sure to match the credentials exactly as shown above - the field names in the form may differ from your Aircall dashboard.
-
+You are now connected to Aircall (Basic Auth).

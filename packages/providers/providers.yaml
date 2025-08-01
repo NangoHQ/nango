@@ -11320,14 +11320,16 @@ workday:
             type: string
             title: Tenant
             description: The tenant of your Workday account
-            example: yourtenant
+            example: acme
             order: 2
             doc_section: '#step-2-finding-your-tenant'
     credentials:
         username:
             type: string
+            example: ISU Nango@acme
             title: Username
             description: Workday API Username
+            pattern: '^[^@]+@[^@]+$'
             doc_section: '#step-4-generating-your-username'
         password:
             type: string
