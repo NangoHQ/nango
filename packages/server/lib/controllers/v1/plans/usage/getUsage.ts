@@ -1,4 +1,4 @@
-import { getAccountMetricsUsage } from '@nangohq/shared';
+import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -18,7 +18,8 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
         return;
     }
 
-    const usage = await getAccountMetricsUsage(account, plan);
+    const accountUsageTracker = await getAccountUsageTracker();
+    const usage = await accountUsageTracker.getAccountMetricsUsage(account, plan);
 
     res.status(200).send({
         data: usage

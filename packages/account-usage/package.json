@@ -13,10 +13,13 @@
         "directory": "packages/account-usage"
     },
     "dependencies": {
-        "@nangohq/kvstore": "file:../kvstore",
-        "@nangohq/types": "file:../types",
         "@nangohq/database": "file:../database",
-        "@nangohq/utils": "file:../utils"
+        "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/shared": "file:../shared",
+        "@nangohq/types": "file:../types",
+        "@nangohq/utils": "file:../utils",
+        "@nangohq/email": "file:../email",
+        "he": "^1.2.0"
     },
     "files": [
         "dist/**/*"

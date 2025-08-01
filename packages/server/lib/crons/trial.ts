@@ -10,14 +10,13 @@ import {
     getExpiredTrials,
     getSyncsByEnvironmentId,
     getTrialsApproachingExpiration,
-    sendTrialAlmostOverEmail,
-    sendTrialHasExpired,
     syncManager,
     updatePlan,
     userService
 } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
+import { sendTrialAlmostOverEmail, sendTrialHasExpired } from '../helpers/email.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { Lock } from '@nangohq/kvstore';

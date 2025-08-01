@@ -48,8 +48,6 @@ export * from './constants.js';
 
 export * from './utils/utils.js';
 export * from './utils/error.js';
-export * from './utils/email.js';
-export * from './utils/usage.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 

@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -15,7 +15,6 @@ import {
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
-    onUsageIncreased,
     productTracking,
     syncCommandToOperation,
     syncManager,

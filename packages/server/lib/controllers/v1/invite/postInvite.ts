@@ -1,9 +1,10 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { expirePreviousInvitations, inviteEmail, sendInviteEmail, userService } from '@nangohq/shared';
+import { expirePreviousInvitations, inviteEmail, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { sendInviteEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostInvite } from '@nangohq/types';

@@ -1,10 +1,10 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, onUsageIncreased, updateSyncJobResult } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';

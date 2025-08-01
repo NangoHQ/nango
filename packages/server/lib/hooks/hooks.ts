@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
@@ -7,7 +8,6 @@ import {
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
-    onUsageIncreased,
     productTracking,
     syncManager
 } from '@nangohq/shared';
