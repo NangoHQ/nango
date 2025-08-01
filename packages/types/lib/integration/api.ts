@@ -73,7 +73,7 @@ export type DeletePublicIntegration = Endpoint<{
     Success: { success: true };
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'shared_credentials_id'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
@@ -134,9 +134,10 @@ export type PatchIntegration = Endpoint<{
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-              clientId: string;
-              clientSecret: string;
+              clientId?: string | undefined;
+              clientSecret?: string | undefined;
               scopes?: string | undefined;
+              useSharedCredentials: boolean;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;

@@ -7,8 +7,8 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         id: data.id,
         unique_key: data.unique_key,
         provider: data.provider,
-        oauth_client_id: data.oauth_client_id,
-        oauth_client_secret: data.oauth_client_secret,
+        oauth_client_id: data.shared_credentials_id ? '' : data.oauth_client_id,
+        oauth_client_secret: data.shared_credentials_id ? '' : data.oauth_client_secret,
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: data.app_link,
@@ -17,7 +17,8 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
         display_name: data.display_name,
-        forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks
+        forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
+        shared_credentials_id: data.shared_credentials_id
     };
 }
 
