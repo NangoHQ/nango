@@ -1,6 +1,7 @@
 import he from 'he';
 
 import { EmailClient } from '@nangohq/email';
+import { logger } from '@nangohq/email/lib/logger.js';
 
 import type { AccountUsageMetric } from './metrics.js';
 import type { DBTeam, DBUser, MetricUsage } from '@nangohq/types';
@@ -16,8 +17,17 @@ export async function sendUsageNearLimitEmail({
     usage: MetricUsage[];
     triggeringMetric: AccountUsageMetric;
 }) {
-    const formattedUsage = formatUsage(usage, triggeringMetric);
     const metricName = usage.find((u) => u.metric === triggeringMetric)?.label ?? triggeringMetric;
+
+    logger.info(`Sending usage near limit email for ${metricName} to ${user.email}`);
+
+    // TODO: Remove after testing
+    const dryRun = true;
+    if (dryRun) {
+        return;
+    }
+
+    const formattedUsage = formatUsage(usage, triggeringMetric);
 
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
@@ -25,22 +35,22 @@ export async function sendUsageNearLimitEmail({
         `Your Nango account has reached 80% of its free tier limits for ${metricName}`,
         `<p>Hi ${he.encode(user.name)},</p>
 
-<p>Your Nango account "${he.encode(account.name)}" has reached 80% of its free tier limits for ${metricName}:</p>
+    <p>Your Nango account "${he.encode(account.name)}" has reached 80% of its free tier limits for ${metricName}:</p>
 
-${formattedUsage}
+    ${formattedUsage}
 
-<p>
-Features that exceed their limits will be blocked.<br>
-To avoid disruptions, either reduce your usage or <a href="https://app.nango.dev/prod/team/billing">upgrade your account</a>.
-</p>
+    <p>
+    Features that exceed their limits will be blocked.<br>
+    To avoid disruptions, either reduce your usage or <a href="https://app.nango.dev/prod/team/billing">upgrade your account</a>.
+    </p>
 
-<p>If you have questions, reply to this email or <a href="https://nango.dev/demo">book a call</a> with us.</p>
+    <p>If you have questions, reply to this email or <a href="https://nango.dev/demo">book a call</a> with us.</p>
 
-<p>
-Thanks & best,<br>
-Team Nango
-</p>
-            `
+    <p>
+    Thanks & best,<br>
+    Team Nango
+    </p>
+                `
     );
 }
 
@@ -55,8 +65,17 @@ export async function sendUsageLimitReachedEmail({
     usage: MetricUsage[];
     triggeringMetric: AccountUsageMetric;
 }) {
-    const formattedUsage = formatUsage(usage, triggeringMetric);
     const metricName = usage.find((u) => u.metric === triggeringMetric)?.label ?? triggeringMetric;
+
+    logger.info(`Sending usage near limit email for ${metricName} to ${user.email}`);
+
+    // TODO: Remove after testing
+    const dryRun = true;
+    if (dryRun) {
+        return;
+    }
+
+    const formattedUsage = formatUsage(usage, triggeringMetric);
 
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
