@@ -10901,38 +10901,30 @@ ukg-ready:
     display_name: UKG Ready
     categories:
         - hr
-    auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.hostname}/api/v2/client/tokens
-    token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
-    scope_separator: ' '
-    authorization_params:
-        response_type: code
-        audience: https://${connectionConfig.hostname}/api
-        realm: ${connectionConfig.tenantName}
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ta/rest/v2/companies/${connectionConfig.realmId}/oauth2/token
     token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
+        grant_type: client_credentials
     proxy:
         base_url: https://${connectionConfig.hostname}
     docs: https://docs.nango.dev/integrations/all/ukg-ready
     docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
     connection_config:
+        realmId:
+            type: string
+            title: Company ID
+            description: A unique identifier for your company.
+            example: '23444234'
+            doc_section: '#step-2-finding-your-company-id'
         hostname:
             type: string
-            title: Tenant URL
-            description: The tenant URL of your UKG Ready instance
+            title: Hostname
+            description: The hostname to your UKG Ready instance
             format: hostname
-            example: wfm.us1.ukg.com
-            suffix: /api
+            example: secure.us.rdy.ukg
+            suffix: /ta
             prefix: https://
-            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
-        tenantName:
-            type: string
-            title: Tenant Name
-            description: The tenant name of your UKG Ready instance
-            example: wfm
-            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+            doc_section: '#step-3-finding-your-hostname'
 unanet:
     display_name: Unanet
     categories:
