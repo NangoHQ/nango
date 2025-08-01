@@ -248,7 +248,7 @@ class SyncController {
             }
 
             void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
-            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1 });
+            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1, plan: plan ?? undefined });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,

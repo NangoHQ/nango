@@ -176,7 +176,7 @@ export async function persistRecords({
         const accountUsageTracker = await getAccountUsageTracker();
         // Account usage tracking for capping
         void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
-        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar });
+        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
 
         // Datadog metrics
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
