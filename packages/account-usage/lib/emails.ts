@@ -94,7 +94,7 @@ function formatUsage(usage: MetricUsage[], triggeringMetric: AccountUsageMetric)
         const usageNumber = overLimit
             ? `<span style="color: #ef665b; font-weight: bold;">${u.usage}</span>`
             : over80Percent
-              ? `<span style="color: #f7c752; font-weight: bold;">${u.usage}</span>`
+              ? `<span style="color: #e6a70d; font-weight: bold;">${u.usage}</span>`
               : u.usage.toString();
 
         const line = `${u.label}: ${usageNumber}/${u.limit} ${postfix}`;
