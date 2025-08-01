@@ -1,7 +1,8 @@
 import he from 'he';
 
 import { EmailClient } from '@nangohq/email';
-import { logger } from '@nangohq/email/lib/logger.js';
+
+import { logger } from './logger.js';
 
 import type { AccountUsageMetric } from './metrics.js';
 import type { DBTeam, DBUser, MetricUsage } from '@nangohq/types';
