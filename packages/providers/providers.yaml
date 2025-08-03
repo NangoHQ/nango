@@ -352,6 +352,47 @@ autodesk:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
+autotask:
+    display_name: AutoTask
+    categories:
+        - support
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.autotask.net/ATServicesRest
+        headers:
+            apiintegrationcode: ${connectionConfig.apiIntegrationCode}
+            username: ${connectionConfig.username}
+            secret: ${credentials.apiKey}
+    verification:
+        method: GET
+        endpoints:
+            - /VersionInformation
+    verification_script: autotaskCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/autotask
+    connection_config:
+        subdomain:
+            type: string
+            title: AutoTask API Zone
+            description: The zone subdomain for your Autotask instance (e.g., webservices3, webservices1, etc.)
+            example: webservices3
+        apiIntegrationCode:
+            type: string
+            title: API Integration Code
+            description: The tracking identifier assigned to your API-only user (27-character string)
+            example: ASHJKLFDKAHKASLFH85LSA905H
+        username:
+            type: string
+            title: API Username
+            description: The email address of your API-only user account
+            example: apiuser@example.com
+    credentials:
+        apiKey:
+            type: string
+            title: API secret
+            description: The secret for your API-only user account
+            secret: true
+
 algolia:
     display_name: Algolia
     categories:
