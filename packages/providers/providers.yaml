@@ -5865,6 +5865,28 @@ jotform:
             title: API Key
             description: The API key for your Jotform account
 
+jumpcloud:
+    display_name: JumpCloud
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.jumpcloud.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/jumpcloud
+    docs_connect: https://docs.nango.dev/integrations/all/jumpcloud/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JumpCloud API Key. Generate this from your JumpCloud Admin Portal under My API Key.
+            secret: true
+
 helpscout-docs:
     display_name: Help Scout Docs
     auth_mode: BASIC
