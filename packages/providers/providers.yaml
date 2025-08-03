@@ -368,7 +368,6 @@ autotask:
         method: GET
         endpoints:
             - /VersionInformation
-    verification_script: autotaskCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/autotask
     connection_config:
         subdomain:
