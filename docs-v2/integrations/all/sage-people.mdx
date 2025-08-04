@@ -1,0 +1,115 @@
+---
+
+title: Sage People
+sidebarTitle: Sage People
+
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sage-people/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sage-people/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Salesforce Developer Edition](https://developer.salesforce.com/signup). |
+| Paid test account | ✅ Not required | Developer Edition can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for apps published on AppExchange. |
+| Security audit | ✅ Not required | |
+
+
+## Prerequisites
+   
+   Before setting up Sage People integration, you need to configure Salesforce OAuth which is managed via a Connected app as Sage People uses Salesforce credentials for authentication.
+
+   ## Salesforce Developer Account Setup
+
+   ### New Salesforce Users
+   
+   If you don't have a Salesforce account yet, follow these steps:
+
+   <Steps>
+     <Step title="Sign up for Salesforce Developer Edition">
+       1. Go to [Salesforce Developer Edition signup](https://developer.salesforce.com/signup)
+       2. Fill in your details and create a free Developer Edition account
+       3. Verify your email address
+       4. Complete the account setup process
+     </Step>
+     <Step title="Enable Connected Apps">
+       1. Log in to your Salesforce Developer Edition account
+       2. Navigate to **Setup** > **Apps** > **External Client App Manager** > **Settings**
+       3. Toggle the button for **Allow creation of connected apps**
+       4. Click **Enable**
+       <Note>Connected Apps are disabled by default in new Salesforce organizations</Note>
+     </Step>
+   </Steps>
+    ## Creating a Connected App
+    <Steps>
+      <Step title="Configure Connected App settings">
+        1. Click **New Connected App**.
+        2. Fill in the required basic information:
+           - **Connected App Name**: Your app's name
+           - **API Name**: Will auto-populate
+           - **Contact Email**: Your email address
+        3. Check the **Enable OAuth Settings** checkbox.
+        4. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
+        5. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
+           - "Access and manage your data (api)"
+           - "Perform requests on your behalf at any time (refresh_token, offline_access)"
+        6. Leave the rest of the default settings unchanged.
+        7. Click **Save**, then **Continue**.
+        <Note>Changes can take up to 10 minutes to take effect</Note>
+      </Step>
+      <Step title="Obtain API credentials">
+        1. After saving, you'll be redirected to the Connected App detail page.
+        2. You may need to wait a few minutes for the app to be fully created.
+        3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
+        4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
+        5. You will need these credentials when configuring your integration in Nango.
+      </Step>
+      <Step title="Configure token settings (recommended)">
+        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to your application.
+        2. Under **OAuth Policies**, set **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+        3. Click **Save**.
+      </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+
+## Useful links
+| Topic | Links |
+| - | - |
+| General | [Sage People Website](https://www.sage.com/en-us/sage-business-cloud/people/) |
+| | [Salesforce Website](https://www.salesforce.com/) |
+| | [Get a free Salesforce Developer Edition](https://developer.salesforce.com/signup) |
+| | [Sage People help center home](https://help-people.sage.com/Content/Home/_Home.htm?tocpath=_____1)
+| Developer | [Sage People API documentation](https://developer.sage.com/people/) |
+| | [Sage People API Getting Started Guide](https://developer.sage.com/people/get-started/) |
+| | [Create a Sage People API User](https://developer.sage.com/people/get-started/#create-a-sage-people-api-user) |
+| | [Obtain an Access Token](https://developer.sage.com/people/get-started/#obtain-an-access-token) |
+| | [Sage People API Reference](https://developer.sage.com/people/reference/) |
+| | [Salesforce Authentication Documentation](https://help.salesforce.com/articleView?id=remoteaccess_authenticate.htm) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-people.mdx)</Note>
+
+## API gotchas
+
+- **Salesforce Authentication**: Sage People uses Salesforce authentication, so you must set up a Salesforce OAuth app first.
+- **Sage People API User**: After setting up the Salesforce Connected App, you need to [create a new API user](#going-further) within Sage People with the necessary permission sets where we have the **Sage People API** package installed. This user will be used to authenticate with the Connected App you created above.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-people.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Sage People" icon="link" href="/integrations/all/sage-people/connect" horizontal>
+  Guide to connect to Sage People using Connect UI
+</Card>
