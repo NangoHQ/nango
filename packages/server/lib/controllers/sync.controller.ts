@@ -20,7 +20,7 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
@@ -35,6 +35,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
+const logger = getLogger('SyncController');
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -302,6 +303,11 @@ class SyncController {
         } finally {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
+            const contentLength = reqHeaders['content-length'];
+            const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
+            if (contentLength && lengthInMB > 0.5) {
+                logger.info(`Action DEBUGGING: contentLength is ${lengthInMB.toFixed(2)} MB`);
+            }
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
