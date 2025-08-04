@@ -303,7 +303,8 @@ class SyncController {
         } finally {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
-            const contentLength = reqHeaders['content-length'];
+            const responseHeaders = getHeaders(res.getHeaders());
+            const contentLength = responseHeaders['content-length'];
             const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
             if (contentLength && lengthInMB > 0.5) {
                 logger.info(`Action DEBUGGING: contentLength is ${lengthInMB.toFixed(2)} MB`);
@@ -316,7 +317,7 @@ class SyncController {
                 },
                 response: {
                     code: res.statusCode,
-                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
+                    headers: redactHeaders({ headers: responseHeaders })
                 }
             });
         }
