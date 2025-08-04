@@ -10,7 +10,8 @@ export type { AccountUsageStore } from './accountUsageStore/accountUsageStore.js
 export { DbAccountUsageStore } from './accountUsageStore/dbAccountUsageStore.js';
 export { HybridAccountUsageStore } from './accountUsageStore/hybridAccountUsageStore.js';
 export { KvAccountUsageStore } from './accountUsageStore/kvAccountUsageStore.js';
-export type { AccountUsageMetric } from './metrics.js';
+export type { AccountUsageIncrementableMetric, AccountUsageMetric } from './metrics.js';
+export { onUsageIncreased } from './events/onUsageIncreased.js';
 
 let usageTracker: AccountUsageTracker | undefined;
 

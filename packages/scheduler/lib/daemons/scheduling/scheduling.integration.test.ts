@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dueSchedules } from './scheduling.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
+import * as schedules from '../../models/schedules.js';
 import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
 
 import type { DBTask } from '../../models/tasks.js';
@@ -161,7 +162,13 @@ async function addTask(
         throw new Error('Failed to insert task');
     }
     if (params?.scheduleId) {
-        await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', params.scheduleId).update({ last_scheduled_task_id: inserted.id });
+        await schedules.setLastScheduledTask(db, [
+            {
+                id: params.scheduleId,
+                taskId: inserted.id,
+                taskState: inserted.state
+            }
+        ]);
     }
     return DbTask.from(inserted);
 }

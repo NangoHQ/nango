@@ -1,4 +1,5 @@
 import type { BillingCustomer, BillingUsageMetric } from '../billing/types.js';
+import type { MetricUsage } from '../usage/dto.js';
 import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api.js';
@@ -54,13 +55,6 @@ export type GetPlan = Endpoint<{
         data: ApiPlan;
     };
 }>;
-
-export interface MetricUsage {
-    metric: string;
-    label: string;
-    usage: number;
-    limit: number | null;
-}
 
 export type GetUsage = Endpoint<{
     Method: 'GET';
