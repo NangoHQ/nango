@@ -47,6 +47,14 @@ export const bodySchema = z
                     })
                     .strict()
             )
+            .optional(),
+        overrides: z
+            .record(
+                providerConfigKeySchema,
+                z.object({
+                    docs_connect: z.string().optional()
+                })
+            )
             .optional()
     })
     .strict();
@@ -74,24 +82,25 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
 });
 
 /**
- * Enforce that integrations exists in `integrations_config_defaults`
+ * Validate that all the integration keys exist
  */
-export function checkIntegrationsDefault(
-    body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>,
-    integrations: Config[]
+export function checkIntegrationsExist(
+    integrationRecords: Record<string, unknown> | undefined,
+    integrations: Config[],
+    path: string[]
 ): z.core.$ZodIssue[] | false {
-    if (!body.integrations_config_defaults) {
+    if (!integrationRecords) {
         return false;
     }
 
     const errors: z.core.$ZodIssue[] = [];
-    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+    for (const uniqueKey of Object.keys(integrationRecords)) {
         if (!integrations.find((v) => v.unique_key === uniqueKey)) {
             errors.push({
-                path: ['integrations_config_defaults', uniqueKey],
+                path: [...path, uniqueKey],
                 code: 'custom',
                 message: 'Integration does not exist',
-                input: body.integrations_config_defaults
+                input: integrationRecords
             });
         }
     }
@@ -128,10 +137,19 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 }
             }
 
-            // Enforce that integrations exists in `integrations_config_defaults`
-            const check = checkIntegrationsDefault(body, integrations);
-            if (check) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } } };
+            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist
+            const integrationConfigsDefaultsErrors = checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']);
+            const overridesErrors = checkIntegrationsExist(body.overrides, integrations, ['overrides']);
+            if (integrationConfigsDefaultsErrors || overridesErrors) {
+                return {
+                    status: 400,
+                    response: {
+                        error: {
+                            code: 'invalid_body',
+                            errors: zodErrorToHTTP({ issues: [...(integrationConfigsDefaultsErrors || []), ...(overridesErrors || [])] })
+                        }
+                    }
+                };
             }
         }
 
@@ -158,7 +176,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                       ])
                   )
                 : null,
-            operationId: logCtx.id
+            operationId: logCtx.id,
+            overrides: body.overrides || null
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
