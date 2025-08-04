@@ -206,6 +206,94 @@ describe('getProxyRetryFromErr', () => {
                     expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
                 });
             });
+
+            describe('minutely_rate_limit', () => {
+                it('should use minute rate limit when configured', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: { 'x-minute-reset': nowInSecs + 1 }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        minutely_rate_limit: {
+                                            reset_time_key: 'x-minute-reset',
+                                            strategy: 'at'
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'minutely_rate_limit_at', wait: 2000 });
+                });
+
+                it('should fallback to other retry mechanisms when minute rate limit not found', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: { 'x-rateLimit-reset': nowInSecs + 1 }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        minutely_rate_limit: {
+                                            reset_time_key: 'x-minute-reset',
+                                            strategy: 'at'
+                                        },
+                                        at: 'x-rateLimit-reset'
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
+                });
+
+                it('should prioritize minute rate limit when both are configured and available', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: {
+                                'x-minute-reset': nowInSecs + 1,
+                                'x-rateLimit-reset': nowInSecs + 5
+                            }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        minutely_rate_limit: {
+                                            reset_time_key: 'x-minute-reset',
+                                            strategy: 'at'
+                                        },
+                                        at: 'x-rateLimit-reset'
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'minutely_rate_limit_at', wait: 2000 });
+                });
+            });
         });
     });
 });

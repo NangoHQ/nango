@@ -3686,6 +3686,9 @@ exact-online:
             error_code:
                 - '429'
                 - '503'
+            minutely_rate_limit:
+                reset_time_key: 'x-ratelimit-minutely-reset'
+                strategy: at
         paginate:
             type: link
             link_path_in_response_body: d.__next

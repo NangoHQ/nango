@@ -60,6 +60,10 @@ export interface RetryHeaderConfig {
         value?: string;
         strategy: 'at' | 'after';
     };
+    minutely_rate_limit?: {
+        reset_time_key: string;
+        strategy: 'at' | 'after';
+    };
 }
 
 export enum PaginationType {
