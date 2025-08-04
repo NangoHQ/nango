@@ -1,0 +1,51 @@
+---
+title: Pax8
+sidebarTitle: Pax8
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/pax8/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/pax8/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Partner access required |
+| Paid test account | ❓ |  |
+| Partnership | ✅ | Pax8 Partner Program membership required |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pax8.mdx)</Note>
+
+
+## Useful links
+
+-   [Pax8 Developer Portal](https://devx.pax8.com/)
+-   [API Documentation](https://devx.pax8.com/docs/introduction)
+-   [Authentication Guide](https://devx.pax8.com/docs/authentication)
+-   [Partner Program](https://www.pax8.com/partners/)
+-   [Integrations Hub](https://app.pax8.com/integrations?tab=credentials)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pax8.mdx)</Note>
+
+## API gotchas
+
+- Uses Client Credentials OAuth2 flow, not traditional authorization code flow
+- Requires `audience` parameter in token requests, varies by endpoint (e.g., `https://api.pax8.com` for public APIs)
+- Access tokens have a 1-day lifetime (86,400 seconds)
+- Only Partner Admin and Primary Partner Admin roles can generate API credentials
+- All requests must use HTTPS
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pax8.mdx)</Note>
