@@ -5522,6 +5522,37 @@ instagram:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
 
+itglue:
+    display_name: IT Glue
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}.itglue.com
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/vnd.api+json
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/itglue
+    docs_connect: https://docs.nango.dev/integrations/all/itglue/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IT Glue API key
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your IT Glue domain (api, api.eu, or api.au)
+            example: api
+            doc_section: '#step-1-finding-your-domain-and-api-key'
+            order: 1
+
 intercom:
     display_name: Intercom
     categories:
