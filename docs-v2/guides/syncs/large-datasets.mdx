@@ -29,7 +29,8 @@ As datasets increase in size, full refresh syncs become unscalable, taking longe
 Here is an example of a sync script which refreshes the entire list of Slack user on each execution:
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // ...
     // Paginate API requests.
     while (nextPage) {
@@ -38,7 +39,8 @@ export default async function fetchData(nango: NangoSync) {
         // Save Slack users.
         await nango.batchSave(mapUsers(res.data.members), 'User');
     }
-}
+  },
+});
 ```
 
 # Incremental syncing
@@ -52,7 +54,8 @@ For example, if you are syncing tens of thousands of contacts from a Salesforce 
 Here is an example of a sync script that updates the list of Salesforce contact incrementally on each execution, leveraging `nango.lastSyncDate`:
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // ...
     // Paginate API requests.
     while (nextPage) {
@@ -62,7 +65,8 @@ export default async function fetchData(nango: NangoSync) {
         // Save Salesforce contacts.
         await nango.batchSave(mapContacts(res.data.records), 'Contact');
     }
-}
+  },
+});
 ```
 
 ### Initial sync execution
@@ -78,7 +82,8 @@ Nango integration scripts, which manage data syncing between external systems an
 The most common cause of excessive memory use is fetching a large number of records before saving them to the Nango cache, as shown below:
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // ...
     const responses: any[] = [];
     // Paginate API requests.
@@ -90,13 +95,15 @@ export default async function fetchData(nango: NangoSync) {
     }
     // Save all Salesforce contacts at once.
     await nango.batchSave(mapContacts(responses), 'Contact');
-}
+  },
+});
 ```
 
 A simple fix is to store records as you fetch them, allowing them to be released from memory:
 
 ```ts
-export default async function fetchData(nango: NangoSync) {
+export default createSync({
+  exec: async (nango) => {
     // ...
     // Paginate API requests.
     while (nextPage) {
@@ -106,7 +113,8 @@ export default async function fetchData(nango: NangoSync) {
         // Save Salesforce contacts after each page.
         await nango.batchSave(mapContacts(res.data.records), 'Contact');
     }
-}
+  },
+});
 ```
 
 Combining a large dataset with a full refresh sync while storing the entire dataset in memory will likely cause periodic VM crashes.

@@ -1,9 +1,19 @@
-import type { Timestamps } from '../db';
+import type { Timestamps } from '../db.js';
 
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: string;
+    name: 'free' | 'starter' | 'starter-legacy' | 'growth' | 'scale-legacy' | 'growth-legacy' | 'enterprise';
+
+    // Stripe
+    stripe_customer_id: string | null;
+    stripe_payment_id: string | null;
+
+    // Orb
+    orb_customer_id: string | null;
+    orb_subscription_id: string | null;
+    orb_future_plan: string | null;
+    orb_future_plan_at: Date | null;
 
     // Trial
     // Remove all values when you upgrade a customer
@@ -12,13 +22,6 @@ export interface DBPlan extends Timestamps {
     trial_extension_count: number;
     trial_end_notified_at: Date | null;
     trial_expired: boolean | null;
-
-    /**
-     * Limit the number of connections with active scripts
-     * Set to null to remove limit
-     * @default 3
-     */
-    connection_with_scripts_max: number | null;
 
     /**
      * Limit the number of total non-deleted connections
@@ -32,6 +35,18 @@ export interface DBPlan extends Timestamps {
      * @default 2
      */
     environments_max: number;
+
+    /**
+     * Limit the number of actions that can be triggered in a month
+     * @default 1000
+     */
+    monthly_actions_max: number | null;
+
+    /**
+     * Limit the amount of monthly active records (Records created or updated in a month)
+     * @default 5000
+     */
+    monthly_active_records_max: number | null;
 
     /**
      * Limit the minimum frequency of a sync
@@ -57,4 +72,22 @@ export interface DBPlan extends Timestamps {
      * @default "m"
      */
     api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
+
+    /**
+     * Enable or disable machine auto idling
+     * @default true
+     */
+    auto_idle: boolean;
+
+    /**
+     * Enable or disable webhooks script
+     * @default false
+     */
+    has_webhooks_script: boolean;
+
+    /**
+     * Enable or disable webhooks forward
+     * @default false
+     */
+    has_webhooks_forward: boolean;
 }

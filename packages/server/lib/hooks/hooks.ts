@@ -1,11 +1,12 @@
 import tracer from 'dd-trace';
 
+import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
+    connectionService,
     errorNotificationService,
     externalWebhookService,
-    getConnectionCountsByProviderConfigKey,
     getProxyConfiguration,
     productTracking,
     syncManager
@@ -44,51 +45,34 @@ const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
 
 export const connectionCreationStartCapCheck = async ({
-    providerConfigKey,
-    environmentId,
-    creationType,
     team,
-    plan
+    plan,
+    creationType
 }: {
-    providerConfigKey: string;
-    environmentId: number;
-    creationType: 'create' | 'import';
     team: DBTeam;
     plan: DBPlan;
-}): Promise<{ capped: false } | { capped: true; code: 'max' | 'max_with_scripts' }> => {
-    const connectionCount = await getConnectionCountsByProviderConfigKey(environmentId);
-    if (connectionCount.total <= 0) {
+    creationType: 'create' | 'import';
+}): Promise<{ capped: boolean }> => {
+    if (plan.connections_max === null) {
         return { capped: false };
     }
 
-    if (plan.connections_max && connectionCount.total >= plan.connections_max) {
-        logger.info(`Reached total cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
+    const connectionCount = await connectionService.countByAccountId(team.id);
+
+    if (connectionCount >= plan.connections_max) {
+        logger.info(
+            `You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.`,
+            {
+                connectionCount,
+                limit: plan.connections_max
+            }
+        );
         if (creationType === 'create') {
             productTracking.track({ name: 'server:resource_capped:connection_creation', team });
         } else {
             productTracking.track({ name: 'server:resource_capped:connection_imported', team });
         }
-        return { capped: true, code: 'max' };
-    }
-
-    if (plan.connection_with_scripts_max) {
-        for (const byProvider of connectionCount.data) {
-            const totalByProvider = parseInt(byProvider.connectionsWithScripts, 10);
-            if (byProvider.providerConfigKey !== providerConfigKey) {
-                continue;
-            }
-            if (totalByProvider < plan.connection_with_scripts_max) {
-                continue;
-            }
-
-            logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            if (creationType === 'create') {
-                productTracking.track({ name: 'server:resource_capped:connection_creation', team });
-            } else {
-                productTracking.track({ name: 'server:resource_capped:connection_imported', team });
-            }
-            return { capped: true, code: 'max_with_scripts' };
-        }
+        return { capped: true };
     }
 
     return { capped: false };
@@ -166,6 +150,8 @@ export const connectionCreated = async (
         providerConfig,
         account
     });
+
+    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
 };
 
 export const connectionCreationFailed = async (

@@ -77,7 +77,16 @@
             "path": "packages/billing"
         },
         {
+            "path": "packages/pubsub"
+        },
+        {
             "path": "packages/types"
+        },
+        {
+            "path": "packages/account-usage"
+        },
+        {
+            "path": "packages/email"
         }
     ]
 }

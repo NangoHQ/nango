@@ -1,12 +1,23 @@
-import { serializeError } from 'serialize-error';
 import * as Sentry from '@sentry/node';
+import { serializeError } from 'serialize-error';
+
 import { getLogger } from './logger.js';
 import { NANGO_VERSION } from './version.js';
+
+import type { ErrorObject } from 'serialize-error';
 
 /**
  * Transform any Error or primitive to a json object
  */
-export function errorToObject(err: unknown) {
+export function errorToObject(err: unknown): ErrorObject {
+    if (!err) {
+        return { message: 'Unknown error' };
+    }
+
+    if (typeof err === 'string' || typeof err === 'number' || typeof err === 'boolean') {
+        return { message: String(err) };
+    }
+
     return serializeError(err, { maxDepth: 5 });
 }
 
@@ -17,6 +28,7 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
     return JSON.stringify(serializeError(err), ['name', 'message', ...(opts?.stack ? ['stack', 'cause'] : [])], opts?.pretty ? 2 : undefined);
 }
 
+let sentry = false;
 export function initSentry({ dsn, hash, applicationName }: { dsn: string | undefined; hash?: string | undefined; applicationName: string }) {
     Sentry.init({
         dsn: dsn || '',
@@ -28,12 +40,18 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
         maxBreadcrumbs: 10
     });
     if (dsn) {
+        sentry = true;
         logger.info('Sentry configured');
     }
 }
 
-const logger = getLogger('[err]');
-export function report(err: unknown, extra?: Record<string, string | number | null | undefined>) {
+const logger = getLogger('err');
+export function report(err: unknown, extra?: Record<string, unknown>) {
+    if (!sentry) {
+        logger.error(stringifyError(err, { stack: true, pretty: true }), extra);
+        return;
+    }
+
     logger.error(err as any, extra);
 
     Sentry.withScope((scope) => {

@@ -1,6 +1,6 @@
+import type { AuthLocals } from '../middleware/auth.middleware.js';
 import type { Endpoint } from '@nangohq/types';
 import type { RouteHandler } from '@nangohq/utils';
-import type { AuthLocals } from '../middleware/auth.middleware';
 
 type Health = Endpoint<{
     Method: typeof method;

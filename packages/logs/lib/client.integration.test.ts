@@ -1,13 +1,16 @@
-import { describe, beforeAll, it, expect, vi } from 'vitest';
-import * as model from './models/messages.js';
-import { logger } from './utils.js';
-import { deleteIndex, migrateMapping } from './es/helpers.js';
-import type { ListOperations } from './models/messages.js';
-import { getOperation, listMessages, listOperations } from './models/messages.js';
-import type { OperationRowInsert } from '@nangohq/types';
 import { afterEach } from 'node:test';
-import { logContextGetter } from './models/logContextGetter.js';
+
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { deleteIndex, migrateMapping } from './es/helpers.js';
 import { indexMessages } from './es/schema.js';
+import { logContextGetter } from './models/logContextGetter.js';
+import * as modelMessages from './models/messages.js';
+import * as modelOperations from './models/operations.js';
+import { logger } from './utils.js';
+
+import type { ListOperations } from './models/operations.js';
+import type { OperationRowInsert } from '@nangohq/types';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -25,7 +28,7 @@ describe('client', () => {
     });
 
     it('should list nothing', async () => {
-        const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
+        const list = await modelOperations.listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
             cursor: null,
             count: 0,
@@ -34,12 +37,12 @@ describe('client', () => {
     });
 
     it('should insert an operation', async () => {
-        const spy = vi.spyOn(model, 'createOperation');
+        const spy = vi.spyOn(modelOperations, 'createOperation');
         const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
 
-        const list = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
+        const list = await modelOperations.listOperations({ accountId: account.id, limit: 1, states: ['all'] });
         expect(list).toStrictEqual<ListOperations>({
             cursor: null,
             count: 1,
@@ -67,7 +70,7 @@ describe('client', () => {
     });
 
     it('should respect dryRun=true', async () => {
-        const spyMsg = vi.spyOn(model, 'createMessage');
+        const spyMsg = vi.spyOn(modelMessages, 'createMessage');
         const spyLogInfo = vi.spyOn(logger, 'info');
         const spyLogError = vi.spyOn(logger, 'error');
 
@@ -106,7 +109,7 @@ describe('client', () => {
             const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.start();
 
-            const operation = await getOperation({ id: ctx.id });
+            const operation = await modelOperations.getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
                 id: ctx.id,
@@ -121,7 +124,7 @@ describe('client', () => {
             const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.cancel();
 
-            const operation = await getOperation({ id: ctx.id });
+            const operation = await modelOperations.getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
                 id: ctx.id,
@@ -136,7 +139,7 @@ describe('client', () => {
             const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.timeout();
 
-            const operation = await getOperation({ id: ctx.id });
+            const operation = await modelOperations.getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
                 id: ctx.id,
@@ -151,7 +154,7 @@ describe('client', () => {
             const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.success();
 
-            const operation = await getOperation({ id: ctx.id });
+            const operation = await modelOperations.getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
                 id: ctx.id,
@@ -166,7 +169,7 @@ describe('client', () => {
             const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false });
             await ctx.failed();
 
-            const operation = await getOperation({ id: ctx.id });
+            const operation = await modelOperations.getOperation({ id: ctx.id });
 
             expect(operation).toMatchObject({
                 id: ctx.id,
@@ -187,7 +190,7 @@ describe('client', () => {
             await ctx.warn('warn msg');
             await ctx.error('error msg');
 
-            const list = await listMessages({ parentId: ctx.id, limit: 5 });
+            const list = await modelMessages.listMessages({ parentId: ctx.id, limit: 5 });
             expect(list).toMatchObject({
                 count: 5,
                 items: [

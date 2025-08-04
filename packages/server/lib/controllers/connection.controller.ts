@@ -1,8 +1,8 @@
 import db from '@nangohq/database';
-import { logContextGetter } from '@nangohq/logs';
+import { envs, logContextGetter } from '@nangohq/logs';
 import { NangoError, accountService, configService, connectionService, errorManager, getProvider, githubAppClient } from '@nangohq/shared';
+import { flags } from '@nangohq/utils';
 
-import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -21,8 +21,8 @@ import type {
     OAuth1Credentials,
     OAuth2ClientCredentials,
     ProviderGithubApp,
-    TbaCredentials,
-    ProviderOAuth2
+    ProviderOAuth2,
+    TbaCredentials
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -31,6 +31,11 @@ const orchestrator = getOrchestrator();
 class ConnectionController {
     async deleteAdminConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
+            if (!flags.hasAdminCapabilities || !envs.NANGO_ADMIN_UUID) {
+                res.status(400).send({ error: { code: 'feature_disabled', message: 'Admin capabilities are not enabled' } });
+                return;
+            }
+
             const { environment, account: team } = res.locals;
             const connectionId = req.params['connectionId'] as string;
 
@@ -39,11 +44,10 @@ class ConnectionController {
                 return;
             }
 
-            const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-            const nangoAdminUUID = NANGO_ADMIN_UUID;
+            const integration_key = envs.NANGO_SLACK_INTEGRATION_KEY;
             const env = 'prod';
 
-            const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+            const info = await accountService.getAccountAndEnvironmentIdByUUID(envs.NANGO_ADMIN_UUID, env);
             const {
                 success,
                 error,
@@ -171,8 +175,6 @@ class ConnectionController {
 
             if (plan) {
                 const isCapped = await connectionCreationStartCapCheckHook({
-                    providerConfigKey: provider_config_key,
-                    environmentId: environment.id,
                     creationType: 'import',
                     team: account,
                     plan
@@ -181,10 +183,7 @@ class ConnectionController {
                     res.status(400).send({
                         error: {
                             code: 'resource_capped',
-                            message:
-                                isCapped.code === 'max'
-                                    ? 'Reached maximum number of allowed connections for your plan'
-                                    : 'Reached maximum number of connections with scripts enabled'
+                            message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
                         }
                     });
                     return;

@@ -1,6 +1,6 @@
 ---
-title: 'Migrating to Zero YAML (Beta)'
-sidebarTitle: 'Migrating to Zero YAML (Beta)'
+title: 'Migrating to Zero YAML'
+sidebarTitle: 'Migrating to Zero YAML'
 description: 'Guide on how to migrate to Zero YAML in Nango.'
 ---
 
@@ -21,7 +21,7 @@ Here's a quick example of the new syntax:
 
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const issueSchema = z.object({
     id: z.string(),
@@ -64,7 +64,7 @@ Three core functions that replace YAML configuration. You'll benefits from intel
 
 - **`createSync()`**: Defines data synchronization jobs
 - **`createAction()`**: Defines on-off jobs
-- **`createOnEvents()`**: Defines event-based jobs
+- **`createOnEvent()`**: Defines event-based jobs
 
 
 ----
@@ -91,7 +91,7 @@ This command will:
 
 ### Post-Migration Steps
 
-The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct. 
+The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct.
 
 <Note>Because the new format is stricter, some types issues can arise after the migration.</Note>
 
@@ -180,7 +180,7 @@ integrations:
 **After** (self-contained fetchIssues.ts):
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const issueSchema = z.object({
     id: z.string(),
@@ -215,7 +215,7 @@ export default async function runAction(nango: NangoAction, input: CreateIssueIn
 **After** (self-contained):
 ```typescript
 import { createAction } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const inputSchema = z.object({
     title: z.string(),
@@ -248,6 +248,12 @@ import './github/actions/createIssue.js';
 
 ## Migration Gotchas & FAQ
 
+### Nango.yaml EOL
+
+**Q: When will nango.yaml stop being supported?**
+
+**A:** nango.yaml integrations will be supported until the end of 2025. Zero YAML will be the only supported way to build integrations after that. An official roadmap will be published soon.
+
 ### Package.json Requirement
 
 **Q: Why is package.json now mandatory?**
@@ -258,6 +264,8 @@ import './github/actions/createIssue.js';
 - Better integration with modern development tools
 
 If you don't have one, the migration command will create it automatically.
+
+<Info>Note: Bundling custom dependencies is not yet possible but is now on our roadmap thanks to this update.</Info>
 
 ### Backward Compatibility
 

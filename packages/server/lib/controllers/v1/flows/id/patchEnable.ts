@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { configService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationBody, validationParams } from './patchDisable.js';
@@ -49,27 +49,12 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
 
     if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
-        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
+        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more scripts, upgrade or extend your auto idling period" } });
         return;
     }
-    if (plan && !plan.trial_end_at && plan.name === 'free') {
+    if (plan && !plan.trial_end_at && plan.auto_idle) {
         await startTrial(db.knex, plan);
         productTracking.track({ name: 'account:trial:started', team: account, user });
-    }
-
-    const isCapped = await connectionService.shouldCapUsage({
-        providerConfigKey: body.providerConfigKey,
-        environmentId: environment.id,
-        type: 'activate',
-        team: account,
-        user,
-        plan
-    });
-    if (isCapped) {
-        res.status(400).send({
-            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
-        });
-        return;
     }
 
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });

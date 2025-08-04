@@ -1,9 +1,11 @@
-import type { JsonValue } from 'type-fest';
 import { uuidv7 } from 'uuidv7';
-import type knex from 'knex';
+
 import { Err, Ok, stringifyError } from '@nangohq/utils';
+
+import type { Schedule, ScheduleProps, ScheduleState, TaskState } from '../types.js';
 import type { Result } from '@nangohq/utils';
-import type { Schedule, ScheduleProps, ScheduleState } from '../types.js';
+import type knex from 'knex';
+import type { JsonValue } from 'type-fest';
 
 export const SCHEDULES_TABLE = 'schedules';
 
@@ -47,6 +49,8 @@ export interface DbSchedule {
     updated_at: Date;
     deleted_at: Date | null;
     last_scheduled_task_id: string | null;
+    last_scheduled_task_state: TaskState | null;
+    next_execution_at: Date;
 }
 
 // knex uses https://github.com/bendrucker/postgres-interval
@@ -86,7 +90,9 @@ export const DbSchedule = {
         created_at: schedule.createdAt,
         updated_at: schedule.updatedAt,
         deleted_at: schedule.deletedAt,
-        last_scheduled_task_id: schedule.lastScheduledTaskId
+        last_scheduled_task_id: schedule.lastScheduledTaskId,
+        last_scheduled_task_state: schedule.lastScheduledTaskState,
+        next_execution_at: schedule.nextExecutionAt
     }),
     from: (dbSchedule: DbSchedule): Schedule => ({
         id: dbSchedule.id,
@@ -103,7 +109,9 @@ export const DbSchedule = {
         createdAt: dbSchedule.created_at,
         updatedAt: dbSchedule.updated_at,
         deletedAt: dbSchedule.deleted_at,
-        lastScheduledTaskId: dbSchedule.last_scheduled_task_id
+        lastScheduledTaskId: dbSchedule.last_scheduled_task_id,
+        lastScheduledTaskState: dbSchedule.last_scheduled_task_state,
+        nextExecutionAt: dbSchedule.next_execution_at
     })
 };
 
@@ -118,7 +126,8 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
         createdAt: now,
         updatedAt: now,
         deletedAt: null,
-        lastScheduledTaskId: null
+        lastScheduledTaskId: null,
+        nextExecutionAt: now
     };
     try {
         const inserted = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(DbSchedule.to(newSchedule)).returning('*');
@@ -169,15 +178,23 @@ export async function transitionState(db: knex.Knex, scheduleId: string, to: Sch
     }
 }
 
-export async function update(
-    db: knex.Knex,
-    props: Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload' | 'lastScheduledTaskId'>> & { id: string }
-): Promise<Result<Schedule>> {
+export async function update(db: knex.Knex, props: Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload'>> & { id: string }): Promise<Result<Schedule>> {
     try {
         const newValues = {
             ...(props.frequencyMs ? { frequency: `${props.frequencyMs} milliseconds` } : {}),
             ...(props.payload ? { payload: props.payload } : {}),
-            ...(props.lastScheduledTaskId ? { last_scheduled_task_id: props.lastScheduledTaskId } : {}),
+            ...(props.frequencyMs
+                ? {
+                      next_execution_at: db.raw(
+                          `starts_at + (
+                                CEILING(
+                                    EXTRACT(EPOCH FROM (NOW() - starts_at)) / (? / 1000.0)
+                                ) * INTERVAL '1 millisecond' * ?
+                          )`,
+                          [props.frequencyMs, props.frequencyMs]
+                      )
+                  }
+                : {}),
             updated_at: new Date()
         };
         const updated = await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', props.id).update(newValues).returning('*');
@@ -187,6 +204,60 @@ export async function update(
         return Ok(DbSchedule.from(updated[0]));
     } catch (err) {
         return Err(new Error(`Error updating schedule '${props.id}': ${stringifyError(err)}`));
+    }
+}
+
+export async function setLastScheduledTask(db: knex.Knex, updates: { id: string; taskId: string; taskState: TaskState }[]): Promise<Result<Schedule[]>> {
+    try {
+        if (updates.length === 0) {
+            return Ok([]);
+        }
+
+        const bindings = updates.flatMap((u) => [u.id, u.taskId, u.taskState]);
+        const values = updates.map(() => '(?, ?::uuid, ?::task_states)').join(', ');
+
+        const updated = await db.raw(
+            `UPDATE ${SCHEDULES_TABLE}
+            SET
+                last_scheduled_task_id = v.task_id,
+                last_scheduled_task_state = v.task_state,
+                updated_at = NOW()
+            FROM (VALUES ${values}) AS v(id, task_id, task_state)
+            WHERE ${SCHEDULES_TABLE}.id = v.id::uuid
+            RETURNING ${SCHEDULES_TABLE}.*`,
+            bindings
+        );
+
+        const result = updated.rows || updated;
+
+        if (result.length === 0) {
+            return Err(new Error(`Error: no schedules updated for tasks ${updates.map((u) => u.taskId).join(', ')}`));
+        }
+        return Ok(result.map(DbSchedule.from));
+    } catch (err) {
+        return Err(new Error(`Error setting last scheduled task ${JSON.stringify(updates)}: ${stringifyError(err)}`));
+    }
+}
+
+export async function updateLastScheduledTaskState(
+    db: knex.Knex,
+    { taskIds, taskState }: { taskIds: string[]; taskState: TaskState }
+): Promise<Result<Schedule[]>> {
+    try {
+        if (taskIds.length <= 0) {
+            return Ok([]);
+        }
+        const updated = await db(SCHEDULES_TABLE)
+            .update({
+                updated_at: db.fn.now(),
+                last_scheduled_task_state: taskState,
+                next_execution_at: db.raw('starts_at + CEILING(EXTRACT(EPOCH FROM (NOW() - starts_at)) / EXTRACT(EPOCH FROM frequency)) * frequency')
+            })
+            .whereIn('last_scheduled_task_id', taskIds)
+            .returning('*');
+        return Ok(updated.map(DbSchedule.from));
+    } catch (err) {
+        return Err(new Error(`Error updating last scheduled tasks ${taskIds.join(', ')}: ${stringifyError(err)}`));
     }
 }
 

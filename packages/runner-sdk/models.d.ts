@@ -64,7 +64,6 @@ export interface AuthModes {
     App: 'APP';
     None: 'NONE';
     TBA: 'TBA';
-    Tableau: 'TABLEAU';
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
@@ -128,14 +127,6 @@ interface TbaCredentials {
         client_secret?: string;
     };
 }
-interface TableauCredentials extends CredentialsCommon {
-    type: AuthModes['Tableau'];
-    pat_name: string;
-    pat_secret: string;
-    content_url?: string;
-    token?: string;
-    expires_at?: Date | undefined;
-}
 interface JwtCredentials {
     type: AuthModes['Jwt'];
     [key: string]: any;
@@ -179,7 +170,6 @@ type AuthCredentials =
     | AppStoreCredentials
     | UnauthCredentials
     | TbaCredentials
-    | TableauCredentials
     | JwtCredentials
     | BillCredentials
     | TwoStepCredentials
@@ -315,7 +305,6 @@ export declare class NangoAction {
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials
-        | TableauCredentials
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials

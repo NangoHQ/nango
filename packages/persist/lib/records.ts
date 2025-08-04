@@ -1,9 +1,10 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
@@ -21,7 +22,6 @@ export async function persistRecords({
     connectionId,
     plan,
     providerConfigKey,
-    nangoConnectionId,
     syncId,
     syncJobId,
     model,
@@ -32,10 +32,9 @@ export async function persistRecords({
     persistType: PersistType;
     accountId: number;
     environmentId: number;
-    connectionId: string;
+    connectionId: number;
     plan: DBPlan | null;
     providerConfigKey: string;
-    nangoConnectionId: number;
     syncId: string;
     syncJobId: number;
     model: string;
@@ -51,7 +50,6 @@ export async function persistRecords({
             environmentId,
             connectionId,
             providerConfigKey,
-            nangoConnectionId,
             syncId,
             syncJobId,
             model,
@@ -59,23 +57,31 @@ export async function persistRecords({
         }
     });
 
+    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
+
+    const connection = await connectionService.getConnectionById(connectionId);
+    if (!connection) {
+        const err = new Error(`Connection ${connectionId} not found`);
+        void logCtx.error('Connection not found', { error: err, persistType });
+        span.setTag('error', err).finish();
+        return Err(err);
+    }
+
     let persistFunction: (records: FormattedRecord[]) => Promise<Result<UpsertSummary>>;
     let softDelete: boolean;
     switch (persistType) {
         case 'save':
             softDelete = false;
-            persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete, merging });
+            persistFunction = async (records: FormattedRecord[]) => recordsService.upsert({ records, connectionId, environmentId, model, softDelete, merging });
             break;
         case 'delete':
             softDelete = true;
-            persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete, merging });
+            persistFunction = async (records: FormattedRecord[]) => recordsService.upsert({ records, connectionId, environmentId, model, softDelete, merging });
             break;
         case 'update':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) => {
-                return recordsService.update({ records, connectionId: nangoConnectionId, model, merging });
+                return recordsService.update({ records, connectionId, model, merging });
             };
             break;
     }
@@ -83,13 +89,13 @@ export async function persistRecords({
     const recordsData = records as UnencryptedRecordData[];
     const formatting = recordsFormatter.formatRecords({
         data: recordsData,
-        connectionId: nangoConnectionId,
+        connectionId,
         model,
         syncId,
         syncJobId,
         softDelete
     });
-    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
+
     if (formatting.isErr()) {
         void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
@@ -154,13 +160,26 @@ export async function persistRecords({
             return acc;
         }, 0);
 
-        const mar = new Set(summary.billedKeys).size;
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const isConnectionOlderThan30Days = new Date(connection.created_at) < thirtyDaysAgo;
+        const shouldBillMonthlyActiveRecords = isConnectionOlderThan30Days;
 
-        if (plan) {
+        const mar = new Set(summary.activatedKeys).size;
+
+        // Billing metrics
+        if (plan && shouldBillMonthlyActiveRecords) {
             billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
+            metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         }
 
-        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+        const accountUsageTracker = await getAccountUsageTracker();
+        // Account usage tracking for capping
+        void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
+
+        // Datadog metrics
+        metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
@@ -185,10 +204,9 @@ export async function persistRecords({
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,
             metadata: {
-                connectionId: connectionId,
+                connectionId,
                 providerConfigKey: providerConfigKey,
                 syncId: syncId,
-                nangoConnectionId: nangoConnectionId,
                 syncJobId: syncJobId
             }
         });

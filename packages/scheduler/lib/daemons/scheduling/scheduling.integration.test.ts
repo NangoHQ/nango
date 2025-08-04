@@ -1,11 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { uuidv7 } from 'uuidv7';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { dueSchedules } from './scheduling.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
-import { uuidv7 } from 'uuidv7';
-import type knex from 'knex';
+import * as schedules from '../../models/schedules.js';
+import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
+
+import type { DBTask } from '../../models/tasks.js';
 import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
-import { TASKS_TABLE, DbTask } from '../../models/tasks.js';
+import type knex from 'knex';
 
 describe('dueSchedules', () => {
     const dbClient = getTestDbClient();
@@ -109,7 +113,9 @@ async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; star
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: params?.state === 'DELETED' ? new Date() : null,
-        last_scheduled_task_id: null
+        last_scheduled_task_id: null,
+        last_scheduled_task_state: null,
+        next_execution_at: params?.startsAt || new Date()
     };
     const res = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(schedule).returning('*');
     const inserted = res[0];
@@ -128,7 +134,7 @@ async function addTask(
         startsAfter?: Date;
     }
 ): Promise<Task> {
-    const task: DbTask = {
+    const task: DBTask = {
         id: uuidv7(),
         schedule_id: params?.scheduleId || uuidv7(),
         group_key: Math.random().toString(36).substring(7),
@@ -150,13 +156,19 @@ async function addTask(
         retry_key: null,
         owner_key: null
     };
-    const res = await db.from<DbTask>(TASKS_TABLE).insert(task).returning('*');
+    const res = await db.from<DBTask>(TASKS_TABLE).insert(task).returning('*');
     const inserted = res[0];
     if (!inserted) {
         throw new Error('Failed to insert task');
     }
     if (params?.scheduleId) {
-        await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', params.scheduleId).update({ last_scheduled_task_id: inserted.id });
+        await schedules.setLastScheduledTask(db, [
+            {
+                id: params.scheduleId,
+                taskId: inserted.id,
+                taskState: inserted.state
+            }
+        ]);
     }
     return DbTask.from(inserted);
 }

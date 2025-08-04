@@ -201,7 +201,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
                 )}
             </div>
-            <Logs operationId={operationId} isLive={isLive} />
+            <Logs operation={operation} operationId={operationId} isLive={isLive} />
         </div>
     );
 };

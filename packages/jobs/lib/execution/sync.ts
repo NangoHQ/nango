@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker } from '@nangohq/account-usage';
 import db from '@nangohq/database';
 import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
@@ -18,13 +19,15 @@ import {
     getApiUrl,
     getEndUserByConnectionId,
     getLastSyncDate,
+    getPlan,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    productTracking,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, metrics, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
@@ -37,7 +40,7 @@ import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBPlan, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -76,9 +79,16 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
+            plan = planRes.isOk() ? planRes.value : null;
+        }
+
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
-        tagTraceUser(accountAndEnv);
+        tagTraceUser({ ...accountAndEnv, plan });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
@@ -99,6 +109,21 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation, startedAt));
+
+        const accountUsageTracker = await getAccountUsageTracker();
+        // We stop any sync from running if the active_records limit is reached
+        if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'active_records'))) {
+            const message =
+                'Your monthly limit for active records synced has been reached. No syncs will run until you upgrade your account or the limit resets.';
+            void logCtx.error(message, {
+                usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
+                limit: accountUsageTracker.getLimit(plan, 'active_records')
+            });
+
+            productTracking.track({ name: 'server:resource_capped:active_records', team });
+
+            throw new Error(message);
+        }
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
@@ -151,7 +176,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             runnerFlags: await getRunnerFlags(),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
-            endUser
+            endUser,
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
         if (task.debug) {

@@ -120,7 +120,7 @@ describe('Persist API', () => {
                     errors: [
                         {
                             code: 'too_small',
-                            message: 'Array must contain at least 1 element(s)',
+                            message: 'Too small: expected array to have >=1 items',
                             path: ['records']
                         }
                     ]
@@ -252,9 +252,9 @@ describe('Persist API', () => {
                 code: 'invalid_request',
                 errors: [
                     {
-                        code: 'too_big',
-                        message: 'String must contain at most 255 character(s)',
-                        path: ['records', 0, 'id']
+                        code: 'invalid_union',
+                        message: 'Invalid input',
+                        path: ['records', '0', 'id']
                     }
                 ]
             }
@@ -429,7 +429,8 @@ const initDb = async () => {
             oauth_client_id: '',
             oauth_client_secret: '',
             missing_fields: [],
-            forward_webhooks: true
+            forward_webhooks: true,
+            shared_credentials_id: null
         },
         googleProvider
     );
@@ -453,7 +454,6 @@ const initDb = async () => {
             created_at: now,
             updated_at: now,
             models: ['model'],
-            model_schema: [],
             sync_type: 'full'
         })
         .returning('*');
@@ -487,7 +487,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(0))!,
+        account: (await accountService.getAccountById(db.knex, 0))!,
         env,
         activityLogId: logCtx.id,
         connection,

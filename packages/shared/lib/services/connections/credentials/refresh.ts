@@ -10,8 +10,7 @@ import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
 import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
-import type { Config } from '../../../models';
-import type { Config as ProviderConfig } from '../../../models/index.js';
+import type { Config, Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
@@ -93,7 +92,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             case 'OAUTH2':
             case 'APP':
             case 'OAUTH2_CC':
-            case 'TABLEAU':
             case 'JWT':
             case 'BILL':
             case 'TWO_STEP':
@@ -405,7 +403,17 @@ export async function refreshCredentialsIfNeeded({
             return Err(error!);
         }
 
-        connectionToRefresh.credentials = newCredentials;
+        if ('user' in newCredentials && newCredentials.user && 'app' in newCredentials && newCredentials.app) {
+            connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
+            connectionToRefresh.credentials = newCredentials.app;
+        } else if ('user' in newCredentials && newCredentials.user) {
+            connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
+        } else if ('app' in newCredentials && newCredentials.app) {
+            connectionToRefresh.credentials = newCredentials.app;
+        } else {
+            // Use newCredentials as fallback when neither user nor app are specifically present
+            connectionToRefresh.credentials = newCredentials;
+        }
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
             last_fetched_at: new Date(),
@@ -417,7 +425,11 @@ export async function refreshCredentialsIfNeeded({
             updated_at: new Date()
         });
 
-        return Ok({ connection: connectionToRefresh, refreshed: true, credentials: newCredentials });
+        return Ok({
+            connection: connectionToRefresh,
+            refreshed: true,
+            credentials: newCredentials as RefreshableCredentials
+        });
     } catch (err) {
         const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
 

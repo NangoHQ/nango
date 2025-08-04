@@ -1,6 +1,6 @@
-import type { RunnerFlags } from '.';
-import type { DBSyncConfig } from '../syncConfigs/db';
-import type { DBTeam } from '../team/db';
+import type { RunnerFlags } from './index.js';
+import type { DBSyncConfig } from '../syncConfigs/db.js';
+import type { DBTeam } from '../team/db.js';
 import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export interface NangoProps {
@@ -30,6 +30,7 @@ export interface NangoProps {
     debug: boolean;
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
+    heartbeatTimeoutSecs?: number | undefined;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;

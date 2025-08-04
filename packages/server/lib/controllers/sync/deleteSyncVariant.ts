@@ -1,10 +1,13 @@
-import { z } from 'zod';
-import { zodErrorToHTTP, requireEmptyQuery } from '@nangohq/utils';
-import type { DeleteSyncVariant } from '@nangohq/types';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import * as z from 'zod';
+
 import { connectionService, getSync, syncManager } from '@nangohq/shared';
-import { variantSchema, connectionIdSchema, syncNameSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
+
+import type { DeleteSyncVariant } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 

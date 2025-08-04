@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';
@@ -44,7 +46,7 @@ describe(`DELETE ${route}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_uri_params',
-                errors: [{ code: 'invalid_type', message: 'Expected number, received nan', path: ['id'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected number, received NaN', path: ['id'] }]
             }
         });
         expect(res.res.status).toBe(400);

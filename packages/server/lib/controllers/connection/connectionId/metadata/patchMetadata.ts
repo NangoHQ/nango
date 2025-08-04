@@ -1,15 +1,18 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { ApiError, UpdateMetadata, MetadataBody, DBConnectionDecrypted } from '@nangohq/types';
+import * as z from 'zod';
+
 import { connectionService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { ApiError, DBConnectionDecrypted, MetadataBody, UpdateMetadata } from '@nangohq/types';
 
 const validation = z
     .object({
         connection_id: z.union([connectionIdSchema, z.array(connectionIdSchema)]),
         provider_config_key: providerConfigKeySchema,
-        metadata: z.record(z.unknown())
+        metadata: z.record(z.string(), z.unknown())
     })
     .strict();
 

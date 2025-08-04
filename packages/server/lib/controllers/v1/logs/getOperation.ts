@@ -1,8 +1,11 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import * as z from 'zod';
+
+import { ResponseError, envs, modelOperations, operationIdRegex } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { GetOperation } from '@nangohq/types';
-import { model, envs, operationIdRegex } from '@nangohq/logs';
 
 const validation = z
     .object({
@@ -32,7 +35,7 @@ export const getOperation = asyncWrapper<GetOperation>(async (req, res) => {
 
     const { environment, account } = res.locals;
     try {
-        const operation = await model.getOperation({ id: val.data.operationId });
+        const operation = await modelOperations.getOperation({ id: val.data.operationId });
         if (operation.accountId !== account.id || operation.environmentId !== environment.id || !operation.operation) {
             res.status(404).send({ error: { code: 'not_found' } });
             return;
@@ -40,7 +43,7 @@ export const getOperation = asyncWrapper<GetOperation>(async (req, res) => {
 
         res.status(200).send({ data: operation });
     } catch (err) {
-        if (err instanceof model.ResponseError && err.statusCode === 404) {
+        if (err instanceof ResponseError && err.statusCode === 404) {
             res.status(404).send({ error: { code: 'not_found' } });
             return;
         }

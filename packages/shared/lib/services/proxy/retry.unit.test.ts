@@ -1,8 +1,10 @@
-import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
-import { getProxyRetryFromErr, getRetryFromHeader, getRetryFromBody } from './retry.js';
+
+import { getProxyRetryFromErr, getRetryFromBody, getRetryFromHeader } from './retry.js';
 import { getDefaultProxy } from './utils.test.js';
+
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Merge } from 'type-fest';
 
 function getDefaultError(value: Merge<Partial<AxiosError>, { response?: Partial<AxiosResponse> }>): AxiosError {
@@ -114,9 +116,9 @@ describe('getProxyRetryFromErr', () => {
                 const mockAxiosError = getDefaultError({ response: { status: 200 } });
                 const res = getProxyRetryFromErr({
                     err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { error_code: 200 } } } })
+                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { error_code: ['200', '429'] } } } })
                 });
-                expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code' });
+                expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_200' });
             });
         });
 
@@ -137,6 +139,72 @@ describe('getProxyRetryFromErr', () => {
                     proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } })
                 });
                 expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
+            });
+        });
+        describe('status code retry', () => {
+            it('should NOT retry on 429 if error_code is defined and does NOT include 429', () => {
+                const mockAxiosError = getDefaultError({ response: { status: 429 } });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: '',
+                                retry: { error_code: ['500', '400'] }
+                            }
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
+            });
+
+            it('should retry on 429 if error_code is NOT defined', () => {
+                const mockAxiosError = getDefaultError({ response: { status: 429 } });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: ''
+                            }
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: true, reason: 'status_code_429' });
+            });
+
+            describe('5xx error code rule', () => {
+                it('should retry on 500 status code', () => {
+                    const mockAxiosError = getDefaultError({ response: { status: 500 } });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: { error_code: ['5xx'] }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
+                });
+
+                it('should retry on 502 status code', () => {
+                    const mockAxiosError = getDefaultError({ response: { status: 502 } });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: { error_code: ['5xx', '429'] }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
+                });
             });
         });
     });

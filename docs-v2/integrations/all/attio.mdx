@@ -1,97 +1,123 @@
 ---
-title: Attio
-sidebarTitle: Attio
+title: 'Attio'
+sidebarTitle: 'Attio'
+description: 'Access the Attio API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/attio/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/attio/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Attio_.
+      </Step>
+      <Step title="Authorize Attio">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Attio. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Attio API">
+        Let's make your first request to the Attio API (fetch a list of people). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl -X POST  "https://api.nango.dev/proxy/v2/objects/people/records/query" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Accept: application/json" \
+                  -H "Content-Type: application/json" \
+                  -d '{"limit": 10}'
+                ```
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+            </Tab>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for an [Attio account](https://app.attio.com/sign-up). |
-| Paid test account | ✅ Not required | Free account can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | |
-| Security audit | ✅ Not required | |
+            <Tab title="Node">
 
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-## Setup guide
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Steps>
-  <Step title="Create an Attio account">
-    1. Go to the [Attio sign-up page](https://app.attio.com/sign-up).
-    2. Enter your email address, name, and create a password.
-    3. Complete the account setup process.
-  </Step>
-  <Step title="Create a new integration">
-    1. Log in to your Attio account.
-    2. Navigate to **Settings > Developers** in your Attio workspace.
-    3. Click on **Create integration**.
-    4. Enter a name for your integration.
-    5. Click **Create** to generate your integration.
-  </Step>
-  <Step title="Configure OAuth settings">
-    1. In your integration settings page, locate the **OAuth 2.0** section.
-    2. Add `https://api.nango.dev/oauth/callback` as a redirect URI.
-    3. Save your changes.
-  </Step>
-  <Step title="Configure integration scopes">
-    1. In your integration settings, navigate to the **Scopes** section.
-    2. Select the appropriate scopes for your integration needs:
-       - **Object configuration**: For access to object configuration data
-       - **Record read**: For read access to records
-       - **Record write**: For write access to records
-       - **List read**: For read access to lists
-       - **List write**: For write access to lists
-    3. Save your scope configuration.
-  </Step>
-  <Step title="Obtain your OAuth credentials">
-    1. In your integration settings page, locate the **Client ID** and **Client Secret**.
-    2. Copy these values as you'll need them when configuring your integration in Nango.
-    
-    Note: Keep your Client Secret secure and never expose it in client-side code.
-  </Step>
-  <Step title="Configure your integration in Nango">
-    When setting up your Attio integration in Nango:
-    
-    - Use your **Client ID** and **Client Secret** from the previous step
-    - For the authorization URL, use: `https://app.attio.com/authorize`
-    - For the token URL, use: `https://app.attio.com/oauth/token`
-  </Step>
-  <Step title="Test the OAuth flow">
-    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
-    2. The authorization flow will redirect users to Attio where they can approve access to their workspace.
-    3. After approval, users will be redirected back to your application with an authorization code.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const res = await nango.post({
+                endpoint: '/v2/objects/people/records/query',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                data: {
+                  limit: 10
+                }
+              });
+            console.log(JSON.stringify(res.data, 2, null));
+            ```
+            </Tab>
 
+        </Tabs>
 
-## Useful links
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
--   [How to register an Application](https://developers.attio.com/docs/integrations)
--   [OAuth-related docs](https://developers.attio.com/reference/using-oauth)
+      </Step>
+    </Steps>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## Common Scopes
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Attio accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create an Attio account">
+        Go to the [Attio sign-up page](https://app.attio.com/sign-up) and create your account.
+      </Step>
+      <Step title="Create a new integration">
+        1. Log in to your Attio account.
+        2. Navigate to **Settings > Developers** in your Attio workspace.
+        3. Click on **Create integration**.
+        4. Enter a name for your integration.
+        5. Click **Create** to generate your integration.
+      </Step>
+      <Step title="Configure OAuth settings">
+        1. In your integration settings page, locate the **OAuth 2.0** section.
+        2. Add `https://api.nango.dev/oauth/callback` as a redirect URI.
+        3. Configure the appropriate scopes for your integration needs:
+           - **object_configuration**: Access to object configuration data
+           - **record_read**: Read access to records
+           - **record_write**: Write access to records
+           - **list_read**: Read access to lists
+           - **list_write**: Write access to lists
+        4. Save your changes.
+      </Step>
+      <Step title="Obtain your OAuth credentials">
+        1. In your integration settings page, copy your **Client ID** and **Client Secret**.
+        2. You'll need these when configuring your integration in Nango.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | General | [Attio Website](https://attio.com/) |
+    | | [Create an Attio account](https://app.attio.com/sign-up) |
+    | | [Attio Dashboard](https://app.attio.com/) |
+    | Developer | [API documentation](https://developers.attio.com/reference) |
+    | | [How to register an Application](https://developers.attio.com/docs/integrations) |
+    | | [OAuth documentation](https://developers.attio.com/reference/using-oauth) |
+    | | [Authentication guide](https://developers.attio.com/docs/authentication) |
+    | | [Rate limits](https://developers.attio.com/reference/rate-limits) |
 
-- **object_configuration**: Access to object configuration data
-- **record_read**: Read access to records
-- **record_write**: Write access to records
-- **list_read**: Read access to lists
-- **list_write**: Write access to lists
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Attio requires specific scopes to be configured during OAuth app setup to access different types of data.
+    - After authorization, make sure to test your scopes to ensure they provide the necessary access to your application.
+    - Attio's API uses object-based endpoints where you specify the object type (e.g., people, companies) in the URL path.
 
-## API gotchas
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
+  </Tab>
+</Tabs>
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

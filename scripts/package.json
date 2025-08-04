@@ -6,9 +6,10 @@
         "ajv": "8.17.1",
         "chalk": "5.4.1",
         "figures": "6.1.0",
-        "git-cliff": "2.8.0",
+        "git-cliff": "2.10.0",
         "js-yaml": "4.1.0",
-        "zx": "8.5.4",
-        "webflow-api": "3.0.1"
+        "semver": "^7.7.2",
+        "webflow-api": "3.1.3",
+        "zx": "8.7.1"
     }
 }

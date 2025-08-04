@@ -1,7 +1,9 @@
+import { OtlpSpan, defaultOperationExpiration } from '@nangohq/logs';
 import { onEventScriptService } from '@nangohq/shared';
-import type { LogContextGetter } from '@nangohq/logs';
-import { defaultOperationExpiration, OtlpSpan } from '@nangohq/logs';
+
 import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { LogContextGetter } from '@nangohq/logs';
 import type { RecentlyCreatedConnection } from '@nangohq/types';
 
 export async function postConnectionCreation(
@@ -42,15 +44,18 @@ export async function postConnectionCreation(
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
         const res = await getOrchestrator().triggerOnEventScript({
             accountId: account.id,
             connection: createdConnection.connection,
             version,
             name,
             fileLocation,
+            sdkVersion: script.sdk_version,
             async: true,
             logCtx
         });
+
         if (res.isErr()) {
             await logCtx.failed();
         }

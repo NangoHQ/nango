@@ -1,11 +1,11 @@
 import { isAxiosError } from 'axios';
+import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
-import type { RetryReason } from './utils';
+import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
-import get from 'lodash-es/get.js';
 
 /**
  * Determine if we can retry or not based on the error we are receiving
@@ -25,38 +25,42 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     }
 
     const status = err.response?.status || 0;
-
-    // We don't return straight away because headers are more important than status code
-    // If we find headers we will be able to adapt the wait time but we won't look for headers if it's not those status code
-    let isRetryable =
-        // Maybe: temporary error
-        status >= 500 ||
-        // Rate limit
-        status === 429 ||
-        // Maybe: token was refreshed
-        status === 401;
+    const customHeaderConf = proxyConfig.provider.proxy?.retry;
+    let isRetryable = false;
     let reason: string | undefined;
 
+    if (Array.isArray(customHeaderConf?.error_code)) {
+        for (const code of customHeaderConf.error_code) {
+            if (matchesStatusCode(status, code)) {
+                isRetryable = true;
+                reason = `provider_error_code_${code}`;
+                break;
+            }
+        }
+    } else {
+        // If error_code is not defined, we fall back to default retryable statuses
+        // We allow headers to override this later (e.g., remaining=0), so we don't return early
+        isRetryable =
+            // Maybe: temporary error
+            status >= 500 ||
+            // Rate limit
+            status === 429 ||
+            // Maybe: token was refreshed
+            status === 401;
+    }
     if (!isRetryable && proxyConfig.retryOn) {
         if (proxyConfig.retryOn?.includes(status)) {
             isRetryable = true;
             reason = `retry_on_${status}`;
         }
     }
-    if (!isRetryable) {
-        const customHeaderConf = proxyConfig.provider.proxy?.retry;
-        if (customHeaderConf) {
-            if (customHeaderConf.error_code && Number(customHeaderConf.error_code) === status) {
-                // Custom status code in providers.yaml
-                isRetryable = true;
-                reason = 'provider_error_code';
-            } else if (customHeaderConf.remaining && err.response && err.response.headers[customHeaderConf.remaining] === '0') {
-                // Custom header in providers.yaml
-                isRetryable = true;
-                reason = 'provider_remaining';
-            }
-        }
+
+    if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
+        // Custom header in providers.yaml
+        isRetryable = true;
+        reason = 'provider_remaining';
     }
+
     if (!isRetryable) {
         return { retry: false, reason: 'not_retryable' };
     }
@@ -213,4 +217,29 @@ function parseRetryValue({
     }
 
     return { found: false, reason: `unknown_type:${type}` };
+}
+function matchesStatusCode(status: number, rule: string): boolean {
+    if (!rule) return false;
+
+    // Handle exact match (e.g., "403")
+    if (!isNaN(Number(rule))) {
+        return status === Number(rule);
+    }
+
+    // Handle xx format (e.g., "5xx")
+    const xxMatch = rule.match(/^(\d)xx$/i);
+    if (xxMatch) {
+        const firstDigit = Number(xxMatch[1]);
+        return Math.floor(status / 100) === firstDigit;
+    }
+
+    // Handle range format (e.g., "500-502")
+    const rangeMatch = rule.match(/^(\d{3})-(\d{3})$/);
+    if (rangeMatch) {
+        const start = Number(rangeMatch[1]);
+        const end = Number(rangeMatch[2]);
+        return status >= start && status <= end;
+    }
+
+    return false;
 }

@@ -47,7 +47,6 @@ for (const file of files) {
         const provider = path.basename(file, '.mdx');
 
         if (!providers[provider]) {
-            // eslint-disable-next-line no-console
             console.error(`${file}: invalid provider ${provider}`);
             hasWarnings = true;
             continue;
@@ -83,7 +82,6 @@ const neededCategories = Object.values(neededProviders)
 
 const missingCategories = neededCategories.filter((category) => !categoriesBySlug[category]);
 if (missingCategories.length > 0) {
-    // eslint-disable-next-line no-console
     console.error(`Missing categories: ${missingCategories.join(', ')}`);
     process.exit(1);
 }

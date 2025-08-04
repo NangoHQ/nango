@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -54,7 +56,7 @@ describe('POST /logs/insights', () => {
                 errors: [
                     {
                         code: 'unrecognized_keys',
-                        message: "Unrecognized key(s) in object: 'foo'",
+                        message: 'Unrecognized key: "foo"',
                         path: []
                     }
                 ]

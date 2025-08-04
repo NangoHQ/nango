@@ -1,9 +1,12 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/tests.js';
-import { seeders } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
-import type { DBEnvironment } from '@nangohq/types';
+import { seeders } from '@nangohq/shared';
 import * as endUserService from '@nangohq/shared';
+
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+
+import type { DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -42,7 +45,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Required', path: ['end_user'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected object, received undefined', path: ['end_user'] }]
             }
         });
         expect(res.res.status).toBe(400);
@@ -62,7 +65,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['end_user', 'id'] }]
             }
         });
         expect(res.res.status).toBe(400);
@@ -146,7 +149,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['allowed_integrations', 0] }]
+                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['allowed_integrations', '0'] }]
             }
         });
     });

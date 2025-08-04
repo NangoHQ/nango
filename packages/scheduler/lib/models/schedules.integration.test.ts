@@ -1,10 +1,13 @@
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { setTimeout } from 'timers/promises';
+
+import { uuidv7 } from 'uuidv7';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
-import { uuidv7 } from 'uuidv7';
-import { setTimeout } from 'timers/promises';
 
 describe('Schedules', () => {
     const dbClient = getTestDbClient();
@@ -66,10 +69,20 @@ describe('Schedules', () => {
     it('should be successfully updated', async () => {
         const schedule = await createSchedule(db);
         await setTimeout(1);
-        const updated = (await schedules.update(db, { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 }, lastScheduledTaskId: uuidv7() })).unwrap();
-        expect(updated.frequencyMs).toBe(600_000);
+        const newFrequency = 600_000; // 10 minutes
+        const updated = (
+            await schedules.update(db, {
+                id: schedule.id,
+                frequencyMs: newFrequency,
+                payload: { i: 2 }
+            })
+        ).unwrap();
+        expect(updated.frequencyMs).toBe(newFrequency);
         expect(updated.payload).toMatchObject({ i: 2 });
         expect(updated.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
+        expect(updated.lastScheduledTaskId).toBeNull();
+        expect(updated.lastScheduledTaskState).toBeNull();
+        expect(updated.nextExecutionAt).toBeWithinMs(new Date(updated.startsAt.getTime() + newFrequency), 3_000);
     });
     it('should be searchable', async () => {
         const schedule = await createSchedule(db);
@@ -81,6 +94,32 @@ describe('Schedules', () => {
 
         const deleted = (await schedules.search(db, { state: 'DELETED', limit: 10 })).unwrap();
         expect(deleted).toEqual([]);
+    });
+    it('should set last scheduled task', async () => {
+        const schedule = await createSchedule(db);
+        await setTimeout(1);
+        const taskId = uuidv7();
+        const taskState = 'STARTED';
+
+        const [updated] = (await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState }])).unwrap();
+        expect(updated?.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
+        expect(updated?.lastScheduledTaskId).toBe(taskId);
+        expect(updated?.lastScheduledTaskState).toBe(taskState);
+        expect(updated?.nextExecutionAt).toEqual(schedule.nextExecutionAt);
+    });
+    it('should update last scheduled task state', async () => {
+        const schedule = await createSchedule(db);
+        await setTimeout(1);
+        const taskId = uuidv7();
+
+        await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
+
+        const taskState = 'SUCCEEDED';
+        const [updated] = (await schedules.updateLastScheduledTaskState(db, { taskIds: [taskId], taskState })).unwrap();
+        expect(updated?.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
+        expect(updated?.lastScheduledTaskState).toBe(taskState);
+        // The next execution should be set to the next due date based on the frequency
+        expect(updated?.nextExecutionAt).toBeWithinMs(new Date(schedule.startsAt.getTime() + schedule.frequencyMs), 3_000);
     });
 });
 
@@ -97,7 +136,8 @@ async function createSchedule(db: knex.Knex): Promise<Schedule> {
             createdToStartedTimeoutSecs: 1,
             startedToCompletedTimeoutSecs: 1,
             heartbeatTimeoutSecs: 1,
-            lastScheduledTaskId: null
+            lastScheduledTaskId: null,
+            lastScheduledTaskState: null
         })
     ).unwrap();
 }

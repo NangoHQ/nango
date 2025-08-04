@@ -55,12 +55,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [oAuthClientId, setOAuthClientId] = useState('');
     const [tokenId, setTokenId] = useState('');
     const [tokenSecret, setTokenSecret] = useState('');
-    const [patName, setpatName] = useState('');
-    const [patSecret, setpatSecret] = useState('');
-    const [contentUrl, setContentUrl] = useState('');
     const [organizationId, setOrganizationId] = useState('');
     const [devKey, setDevKey] = useState('');
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
+    const [clientCertificate, setClientCertificate] = useState('');
+    const [clientPrivateKey, setClientPrivateKey] = useState('');
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
@@ -126,7 +125,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
-        let credentials = {};
+        let credentials: Record<string, any> = {};
         let params = connectionConfigParams || {};
 
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -180,6 +179,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 client_secret: oAuthClientSecret
             };
 
+            if (clientCertificate && clientPrivateKey) {
+                credentials.client_certificate = clientCertificate;
+                credentials.client_private_key = clientPrivateKey;
+            }
+
             if (oauthccSelectedScopes.length > 0) {
                 params = {
                     ...params,
@@ -201,14 +205,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
                     oauth_scopes_override: oauthSelectedScopes.join(',')
                 };
             }
-        }
-
-        if (authMode === 'TABLEAU') {
-            credentials = {
-                pat_name: patName,
-                pat_secret: patSecret,
-                content_url: contentUrl
-            };
         }
 
         if (authMode === 'JWT') {
@@ -246,12 +242,14 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ...credentialsState
             };
         }
+        const shouldIncludeUserScope = authMode !== 'NONE' && !integration?.meta.installation;
         const connectionConfig = {
-            user_scope: authMode === 'NONE' ? undefined : selectedScopes || [],
+            ...(shouldIncludeUserScope && { user_scope: selectedScopes || [] }),
             params,
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
-            credentials
+            credentials,
+            ...(integration?.meta.installation && { installation: integration?.meta.installation })
         };
         const getConnection =
             authMode === 'NONE'
@@ -363,6 +361,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
 
+        let installationStr = '';
+        if (integration.meta.installation) {
+            installationStr = "installation: 'outbound'";
+        }
+
         if (authMode === 'OAUTH2' && oauthSelectedScopes.length > 0) {
             if (connectionConfigParamsStr) {
                 connectionConfigParamsStr += ', ';
@@ -469,19 +472,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
 
-        let tableauCredentialsString = '';
-        if (integration.meta.authMode === 'TABLEAU') {
-            if (patName && patSecret && contentUrl) {
-                tableauCredentialsString = `
-    credentials: {
-        pat_name: '${patName}',
-        pat_secret: '${patSecret}',
-        content_url: '${contentUrl}'
-    }
-  `;
-            }
-        }
-
         let jwtCredentialsString = '';
 
         if (integration.meta.authMode === 'JWT') {
@@ -544,6 +534,20 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
             }
 
+            if (clientCertificate || clientPrivateKey) {
+                const existingCredentials = oauth2ClientCredentialsString ? oauth2ClientCredentialsString.trim().slice(0, -1) : 'credentials: {';
+                const certParts = [];
+
+                if (clientCertificate) {
+                    certParts.push(`client_certificate: '${clientCertificate}'`);
+                }
+                if (clientPrivateKey) {
+                    certParts.push(`client_private_key: '${clientPrivateKey}'`);
+                }
+
+                oauth2ClientCredentialsString = `${existingCredentials}${existingCredentials === 'credentials: {' ? '' : ', '}${certParts.join(', ')} }`;
+            }
+
             if (authMode === 'OAUTH2_CC' && oauthccSelectedScopes.length > 0) {
                 connectionConfigParamsStr = connectionConfigParamsStr ? `${connectionConfigParamsStr.slice(0, -2)}, ` : 'params: { ';
                 connectionConfigParamsStr += `oauth_scopes: '${oauthccSelectedScopes.join(',')}' }`;
@@ -566,6 +570,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             }
         }
         const connectionConfigStr =
+            !installationStr &&
             !connectionConfigParamsStr &&
             !authorizationParamsStr &&
             !userScopesStr &&
@@ -574,7 +579,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             !appStoreAuthString &&
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
-            !tableauCredentialsString &&
             !jwtCredentialsString &&
             !tbaCredentialsString &&
             !billCredentialsString &&
@@ -582,6 +586,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
                 ? ''
                 : ', { ' +
                   [
+                      installationStr,
                       connectionConfigParamsStr,
                       authorizationParamsStr,
                       hmacKeyStr,
@@ -590,7 +595,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
                       appStoreAuthString,
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
-                      tableauCredentialsString,
                       jwtCredentialsString,
                       tbaCredentialsString,
                       billCredentialsString,
@@ -755,6 +759,43 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </>
                             )}
 
+                            {integration?.meta.requireClientCertificate && (
+                                <>
+                                    <div className="flex flex-col mt-4">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Client Certificate</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_certificate"
+                                                name="client_certificate"
+                                                placeholder="Paste the full PEM-encoded client certificate"
+                                                optionalValue={clientCertificate}
+                                                setOptionalValue={setClientCertificate}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col mt-4">
+                                        <div className="flex items-center mb-1">
+                                            <span className="text-gray-400 text-xs">Private Key</span>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_private_key"
+                                                name="client_private_key"
+                                                placeholder="Paste the full PEM-encoded private key"
+                                                optionalValue={clientPrivateKey}
+                                                setOptionalValue={setClientPrivateKey}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                             {integration?.provider.includes('netsuite') && (
                                 <div>
                                     <div className="flex mt-6">
@@ -835,52 +876,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             placeholder="Token secret"
                                             optionalValue={tokenSecret}
                                             setOptionalValue={setTokenSecret}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {integration?.meta.authMode === 'TABLEAU' && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="pat_name" className="text-text-light-gray block text-sm font-semibold">
-                                            PAT Name
-                                        </label>
-                                    </div>
-                                    <div className="mt-1">
-                                        <SecretInput
-                                            copy={true}
-                                            id="pat_name"
-                                            name="pat_name"
-                                            placeholder="PAT Name"
-                                            optionalValue={patName}
-                                            setOptionalValue={setpatName}
-                                        />
-                                    </div>
-                                    <div className="mt-4">
-                                        <label htmlFor="pat_secret" className="text-text-light-gray block text-sm font-semibold">
-                                            PAT Secret
-                                        </label>
-                                        <SecretInput
-                                            copy={true}
-                                            id="pat_secret"
-                                            name="pat_secret"
-                                            placeholder="PAT Secret"
-                                            optionalValue={patSecret}
-                                            setOptionalValue={setpatSecret}
-                                        />
-                                    </div>
-                                    <div className="mt-4">
-                                        <label htmlFor="content_url" className="text-text-light-gray block text-sm font-semibold">
-                                            Content Url
-                                        </label>
-                                        <SecretInput
-                                            copy={true}
-                                            id="content_url"
-                                            name="content_url"
-                                            placeholder="Content Url"
-                                            value={contentUrl}
-                                            setOptionalValue={setContentUrl}
                                         />
                                     </div>
                                 </div>

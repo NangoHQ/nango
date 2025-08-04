@@ -1,13 +1,14 @@
-import { z } from 'zod';
 import jwt from 'jsonwebtoken';
+import * as z from 'zod';
 
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { userService } from '@nangohq/shared';
-import type { PostForgotPassword } from '@nangohq/types';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { sendResetPasswordEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
-import { sendResetPasswordEmail } from '../../../helpers/email.js';
+
+import type { PostForgotPassword } from '@nangohq/types';
 
 const validation = z.object({ email: z.string().email() }).strict();
 

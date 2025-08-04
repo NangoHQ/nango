@@ -211,7 +211,6 @@ async function createPackage({
                     sync_type: sync.sync_type,
                     type: sync.type,
                     fileBody: files,
-                    model_schema: sync.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions
                 };
@@ -249,7 +248,6 @@ async function createPackage({
                     input: action.input || undefined,
                     type: action.type,
                     fileBody: files,
-                    model_schema: action.usedModels.map((name) => parsed.models.get(name)!),
                     endpoints: action.endpoint ? [action.endpoint] : [],
                     track_deletes: false
                 };
@@ -372,7 +370,11 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 
         const json = (await res.json()) as PostDeployConfirmation['Reply'];
         if ('error' in json) {
-            return Err(new Error(`Error checking state:\n${json.error.message} ${chalk.gray(`(${json.error.code})`)}`));
+            return Err(
+                new Error(
+                    `Error checking state:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}${json.error.errors ? `\n${json.error.errors.map((e) => `- ${e.message}`).join('\n')}` : ''}`
+                )
+            );
         }
 
         return Ok(json);

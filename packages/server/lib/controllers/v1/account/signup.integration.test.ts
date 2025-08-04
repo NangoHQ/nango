@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer } from '../../../utils/tests.js';
+
 import { nanoid } from '@nangohq/utils';
+
+import { isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -25,9 +27,9 @@ describe('POST /api/v1/account/signup', () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['email'] },
-                    { code: 'invalid_type', message: 'Required', path: ['password'] },
-                    { code: 'invalid_type', message: 'Required', path: ['name'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['email'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['password'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['name'] }
                 ]
             }
         });

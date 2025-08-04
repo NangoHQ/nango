@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2024 Nango, all rights reserved.
+ * Copyright (c) 2025 Nango, all rights reserved.
  */
 import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
 
-import type { ConnectUIProps } from './connectUI';
+import type { ConnectUIProps } from './connectUI.js';
 import type {
     ApiKeyCredentials,
     AppStoreCredentials,
     AuthErrorType,
     AuthOptions,
-    AuthResult,
+    AuthSuccess,
     BasicApiCredentials,
     BillCredentials,
     ConnectionConfig,
@@ -20,12 +20,10 @@ import type {
     OAuthCredentialsOverride,
     SignatureCredentials,
     TBACredentials,
-    TableauCredentials,
     TwoStepCredentials
-} from './types';
-import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
+} from './types.js';
 
-export type * from './types';
+export type * from './types.js';
 export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';
@@ -100,7 +98,7 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch {
-            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalid_host_url');
         }
     }
 
@@ -111,13 +109,13 @@ export default class Nango {
      * @param connectionConfig - Optional. Additional configuration for the connection
      * @returns A promise that resolves with the authentication result
      */
-    public async create(providerConfigKey: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult>;
+    public async create(providerConfigKey: string, connectionConfig?: ConnectionConfig): Promise<AuthSuccess>;
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthSuccess>;
     public async create(
         providerConfigKey: string,
         connectionIdOrConnectionConfig?: string | ConnectionConfig,
         moreConnectionConfig?: ConnectionConfig
-    ): Promise<AuthResult> {
+    ): Promise<AuthSuccess> {
         this.ensureCredentials();
 
         let connectionId: string | null = null;
@@ -133,7 +131,7 @@ export default class Nango {
             authUrl: url
         });
 
-        return res as PostPublicUnauthenticatedAuthorization['Success'];
+        return res;
     }
 
     /**
@@ -143,9 +141,9 @@ export default class Nango {
      * @param options - Optional. Additional options for authorization
      * @returns A promise that resolves with the authorization result
      */
-    public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
-    public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
-    public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+    public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthSuccess>;
+    public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthSuccess>;
+    public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthSuccess> {
         this.ensureCredentials();
 
         let connectionId: string | null = null;
@@ -164,16 +162,20 @@ export default class Nango {
         // -----------
         if (
             options &&
-            'credentials' in options &&
-            (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
-                !('oauth_client_id_override' in options.credentials) ||
-                !('oauth_client_secret_override' in options.credentials)) &&
-            Object.keys(options.credentials).length > 0
+            (('installation' in options && options.installation === 'outbound') ||
+                ('credentials' in options &&
+                    (('token_id' in options.credentials && 'token_secret' in options.credentials) ||
+                        !('oauth_client_id_override' in options.credentials) ||
+                        !('oauth_client_secret_override' in options.credentials)) &&
+                    Object.keys(options.credentials).length > 0))
         ) {
             const credentials = options.credentials;
+            if (!credentials) {
+                throw new AuthError('Credentials are required for custom auth', 'missing_credentials');
+            }
             const { credentials: _, ...connectionConfig } = options as ConnectionConfig;
 
-            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+            return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig, options.installation);
         }
 
         // -----------
@@ -187,10 +189,9 @@ export default class Nango {
         //
         const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
-        return new Promise<AuthResult>((resolve, reject) => {
-            const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
-                resolve({ providerConfigKey: providerConfigKey, connectionId: connectionId, isPending });
-                return;
+        return new Promise<AuthSuccess>((resolve, reject) => {
+            const successHandler = (authSuccess: AuthSuccess) => {
+                resolve(authSuccess);
             };
 
             const errorHandler: ErrorHandler = (errorType, errorDesc) => {
@@ -212,7 +213,7 @@ export default class Nango {
             try {
                 url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
             } catch {
-                errorHandler('invalidHostUrl', 'Invalid URL provided for the Nango host.');
+                errorHandler('invalid_host_url', 'Invalid URL provided for the Nango host.');
                 return;
             }
 
@@ -241,7 +242,7 @@ export default class Nango {
                     this.win.close();
 
                     this.win = null;
-                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
+                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'window_closed'));
                 }
             }, 500);
         }).finally(() => {
@@ -249,7 +250,7 @@ export default class Nango {
         });
     }
 
-    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult> {
+    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthSuccess> {
         if (!this.connectSessionToken) {
             throw new AuthError('Reconnect requires a session token', 'missing_connect_session_token');
         }
@@ -297,7 +298,6 @@ export default class Nango {
             | ApiKeyCredentials
             | AppStoreCredentials
             | TBACredentials
-            | TableauCredentials
             | JwtCredentials
             | OAuth2ClientCredentials
             | BillCredentials
@@ -359,7 +359,9 @@ export default class Nango {
         if ('client_id' in credentials && 'client_secret' in credentials) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
-                client_secret: credentials.client_secret
+                client_secret: credentials.client_secret,
+                client_certificate: credentials.client_certificate,
+                client_private_key: credentials.client_private_key
             };
 
             return { params: oauth2CCCredentials } as unknown as ConnectionConfig;
@@ -380,19 +382,6 @@ export default class Nango {
             }
 
             return { params: tbaCredentials } as unknown as ConnectionConfig;
-        }
-
-        if ('pat_name' in credentials && 'pat_secret' in credentials) {
-            const tableauCredentials: TableauCredentials = {
-                pat_name: credentials.pat_name,
-                pat_secret: credentials.pat_secret
-            };
-
-            if ('content_url' in credentials) {
-                tableauCredentials['content_url'] = credentials.content_url;
-            }
-
-            return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
         if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
@@ -425,14 +414,13 @@ export default class Nango {
             | BasicApiCredentials
             | AppStoreCredentials
             | TBACredentials
-            | TableauCredentials
             | JwtCredentials
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
             | SignatureCredentials
             | undefined;
-    }): Promise<AuthResult> {
+    }): Promise<AuthSuccess> {
         const res = await fetch(authUrl, {
             method: 'POST',
             headers: {
@@ -461,12 +449,13 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string | null,
         connectionConfigWithCredentials: ConnectionConfig,
-        connectionConfig?: ConnectionConfig
-    ): Promise<AuthResult> {
+        connectionConfig?: ConnectionConfig,
+        installation?: string
+    ): Promise<AuthSuccess> {
         const { params: credentials } = connectionConfigWithCredentials;
 
         if (!credentials) {
-            throw new AuthError('You must specify credentials.', 'missingCredentials');
+            throw new AuthError('You must specify credentials.', 'missing_credentials');
         }
 
         if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
@@ -525,17 +514,15 @@ export default class Nango {
             });
         }
 
-        if ('pat_name' in credentials && 'pat_secret' in credentials) {
-            return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/auth/tableau/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as TableauCredentials
-            });
-        }
-
         if ('client_id' in credentials && 'client_secret' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as OAuth2ClientCredentials
+            });
+        }
+        if (installation === 'outbound') {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/oauth-outbound/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`
             });
         }
 
@@ -567,7 +554,7 @@ export default class Nango {
             for (const param in connectionConfig.params) {
                 const val = connectionConfig.params[param];
                 if (typeof val === 'string') {
-                    query.push(`params[${param}]=${val}`);
+                    query.push(`params[${encodeURIComponent(param)}]=${encodeURIComponent(val)}`);
                 }
             }
 
@@ -616,7 +603,7 @@ export default class Nango {
      */
     private ensureCredentials() {
         if (!this.publicKey && !this.connectSessionToken) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missing_auth_token');
         }
     }
 }

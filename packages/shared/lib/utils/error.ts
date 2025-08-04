@@ -241,6 +241,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
+            case 'no_user_credentials':
+                this.status = 400;
+                this.message = `No user credentials found for GitHub (App OAuth)`;
+                break;
+
             case 'invalid_limit':
                 this.status = 400;
                 this.message = 'Invalid limit provided. The limit should be a number.';

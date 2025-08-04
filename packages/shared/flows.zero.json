@@ -1,0 +1,556 @@
+[
+    {
+        "providerConfigKey": "airtable",
+        "actions": [
+            {
+                "type": "action",
+                "description": "Fetch current user information",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/whoami",
+                    "group": "Users"
+                },
+                "input": "ActionInput_airtable_whoami",
+                "name": "whoami",
+                "output": ["ActionOutput_airtable_whoami"],
+                "scopes": ["user.email:read"],
+                "usedModels": ["ActionInput_airtable_whoami", "ActionOutput_airtable_whoami"],
+                "version": "1.0.0"
+            },
+            {
+                "type": "action",
+                "description": "Create a webhook for a particular base",
+                "endpoint": {
+                    "method": "POST",
+                    "path": "/webhooks",
+                    "group": "Webhooks"
+                },
+                "input": "ActionInput_airtable_createwebhook",
+                "name": "create-webhook",
+                "output": ["ActionOutput_airtable_createwebhook"],
+                "scopes": ["webhook:manage"],
+                "usedModels": ["ActionInput_airtable_createwebhook", "ActionOutput_airtable_createwebhook"],
+                "version": "1.0.0"
+            },
+            {
+                "type": "action",
+                "description": "List all the webhooks available for a base",
+                "endpoint": {
+                    "method": "GET",
+                    "path": "/webhooks",
+                    "group": "Webhooks"
+                },
+                "input": "ActionInput_airtable_listwebhooks",
+                "name": "list-webhooks",
+                "output": ["ActionOutput_airtable_listwebhooks"],
+                "scopes": ["webhook:manage"],
+                "usedModels": ["ActionInput_airtable_listwebhooks", "ActionOutput_airtable_listwebhooks"],
+                "version": "1.0.0"
+            },
+            {
+                "type": "action",
+                "description": "Delete a webhook",
+                "endpoint": {
+                    "method": "DELETE",
+                    "path": "/webhooks",
+                    "group": "Webhooks"
+                },
+                "input": "ActionInput_airtable_deletewebhook",
+                "name": "delete-webhook",
+                "output": ["ActionOutput_airtable_deletewebhook"],
+                "scopes": ["webhook:manage"],
+                "usedModels": ["ActionInput_airtable_deletewebhook", "ActionOutput_airtable_deletewebhook"],
+                "version": "1.0.0"
+            }
+        ],
+        "syncs": [
+            {
+                "type": "sync",
+                "description": "Lists all tables with their schema for all bases with a reference to the base id that\nthe table belongs to",
+                "auto_start": true,
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/tables"
+                    }
+                ],
+                "input": "SyncMetadata_airtable_tables",
+                "name": "tables",
+                "output": ["Table"],
+                "runs": "every day",
+                "scopes": ["schema.bases:read"],
+                "sync_type": "full",
+                "track_deletes": true,
+                "usedModels": ["Table", "SyncMetadata_airtable_tables"],
+                "version": "1.0.0",
+                "webhookSubscriptions": []
+            },
+            {
+                "type": "sync",
+                "description": "List all bases",
+                "auto_start": true,
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/bases"
+                    }
+                ],
+                "input": "SyncMetadata_airtable_bases",
+                "name": "bases",
+                "output": ["Base"],
+                "runs": "every day",
+                "scopes": ["schema.bases:read"],
+                "sync_type": "full",
+                "track_deletes": true,
+                "usedModels": ["Base", "SyncMetadata_airtable_bases"],
+                "version": "1.0.0",
+                "webhookSubscriptions": []
+            }
+        ],
+        "onEventScripts": {
+            "post-connection-creation": [],
+            "pre-connection-deletion": []
+        },
+        "jsonSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "definitions": {
+                "SyncMetadata_airtable_tables": {
+                    "type": "object",
+                    "additionalProperties": false
+                },
+                "Table": {
+                    "type": "object",
+                    "properties": {
+                        "baseId": {
+                            "type": "string"
+                        },
+                        "baseName": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "views": {
+                            "type": "array",
+                            "items": {
+                                "type": ["string"]
+                            }
+                        },
+                        "fields": {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        },
+                        "primaryFieldId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["baseId", "baseName", "id", "name", "views", "fields", "primaryFieldId"],
+                    "additionalProperties": false
+                },
+                "SyncMetadata_airtable_bases": {
+                    "type": "object",
+                    "additionalProperties": false
+                },
+                "Base": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "permissionLevel": {
+                            "type": "string",
+                            "enum": ["none", "read", "comment", "edit", "create"]
+                        }
+                    },
+                    "required": ["id", "name", "permissionLevel"],
+                    "additionalProperties": false
+                },
+                "ActionInput_airtable_whoami": {
+                    "type": "null",
+                    "deprecated": "It is recommended to use a Model"
+                },
+                "ActionOutput_airtable_whoami": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "email": {
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["id", "email"],
+                    "additionalProperties": false
+                },
+                "ActionInput_airtable_createwebhook": {
+                    "type": "object",
+                    "properties": {
+                        "baseId": {
+                            "type": "string"
+                        },
+                        "specification": {
+                            "type": "object",
+                            "properties": {
+                                "options": {
+                                    "type": "object",
+                                    "properties": {
+                                        "filters": {
+                                            "type": "object",
+                                            "properties": {
+                                                "recordChangeScope": {
+                                                    "type": "string"
+                                                },
+                                                "dataTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "changeTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "fromSources": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "sourceOptions": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "formPageSubmission": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "pageId": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["pageId"],
+                                                            "additionalProperties": false
+                                                        },
+                                                        "formSubmission": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "viewId": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["viewId"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "required": ["formPageSubmission", "formSubmission"],
+                                                    "additionalProperties": false
+                                                },
+                                                "watchDataInFieldIds": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "watchSchemasOfFieldIds": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "recordChangeScope",
+                                                "dataTypes",
+                                                "changeTypes",
+                                                "fromSources",
+                                                "sourceOptions",
+                                                "watchDataInFieldIds",
+                                                "watchSchemasOfFieldIds"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "includes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "includeCellValuesInFieldIds": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "all"
+                                                        }
+                                                    ]
+                                                },
+                                                "includePreviousCellValues:": {
+                                                    "type": "boolean"
+                                                },
+                                                "includePreviousFieldDefinitions": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["includeCellValuesInFieldIds", "includePreviousCellValues:", "includePreviousFieldDefinitions"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["filters", "includes"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["options"],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": ["baseId", "specification"],
+                    "additionalProperties": false
+                },
+                "ActionOutput_airtable_createwebhook": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "expirationTime": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["id", "expirationTime"],
+                    "additionalProperties": false
+                },
+                "ActionInput_airtable_listwebhooks": {
+                    "type": "object",
+                    "properties": {
+                        "baseId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["baseId"],
+                    "additionalProperties": false
+                },
+                "ActionOutput_airtable_listwebhooks": {
+                    "type": "object",
+                    "properties": {
+                        "webhooks": {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "options": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "filters": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "recordChangeScope": {
+                                                                "type": "string"
+                                                            },
+                                                            "dataTypes": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "changeTypes": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "fromSources": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "sourceOptions": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "formPageSubmission": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "pageId": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["pageId"],
+                                                                        "additionalProperties": false
+                                                                    },
+                                                                    "formSubmission": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "viewId": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["viewId"],
+                                                                        "additionalProperties": false
+                                                                    }
+                                                                },
+                                                                "required": ["formPageSubmission", "formSubmission"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            "watchDataInFieldIds": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "watchSchemasOfFieldIds": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "recordChangeScope",
+                                                            "dataTypes",
+                                                            "changeTypes",
+                                                            "fromSources",
+                                                            "sourceOptions",
+                                                            "watchDataInFieldIds",
+                                                            "watchSchemasOfFieldIds"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "includes": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "includeCellValuesInFieldIds": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "string",
+                                                                        "const": "all"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "includePreviousCellValues:": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "includePreviousFieldDefinitions": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "includeCellValuesInFieldIds",
+                                                            "includePreviousCellValues:",
+                                                            "includePreviousFieldDefinitions"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["filters", "includes"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["options"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {
+                                                "type": "boolean"
+                                            },
+                                            "error": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "message": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["message"],
+                                                "additionalProperties": false
+                                            },
+                                            "completionTimestamp": {
+                                                "type": "string"
+                                            },
+                                            "durationMs": {
+                                                "type": "number"
+                                            },
+                                            "retryNumber": {
+                                                "type": "number"
+                                            },
+                                            "willBeRetried": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["success", "error", "completionTimestamp", "durationMs", "retryNumber", "willBeRetried"],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": ["webhooks"],
+                    "additionalProperties": false
+                },
+                "ActionInput_airtable_deletewebhook": {
+                    "type": "object",
+                    "properties": {
+                        "baseId": {
+                            "type": "string"
+                        },
+                        "webhookId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["baseId", "webhookId"],
+                    "additionalProperties": false
+                },
+                "ActionOutput_airtable_deletewebhook": {
+                    "type": "object",
+                    "properties": {
+                        "success": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": ["success"],
+                    "additionalProperties": false
+                }
+            },
+            "$comment": "This file was generated by Nango (v0.61.3)"
+        },
+        "sdkVersion": "0.62.0"
+    }
+]

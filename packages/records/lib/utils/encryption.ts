@@ -1,6 +1,8 @@
-import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types';
 import { Encryption } from '@nangohq/utils';
+
 import { envs } from '../env.js';
+
+import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types.js';
 
 function getEncryption(): Encryption {
     const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
@@ -14,12 +16,12 @@ function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is
     return 'encryptedValue' in data;
 }
 
-export function decryptRecordData(record: FormattedRecord): UnencryptedRecordData {
+export async function decryptRecordData(record: FormattedRecord): Promise<UnencryptedRecordData> {
     const encryptionManager = getEncryption();
     const { json } = record;
     if (isEncrypted(json)) {
         const { encryptedValue, iv, authTag } = json;
-        const decryptedString = encryptionManager.decrypt(encryptedValue, iv, authTag);
+        const decryptedString = await encryptionManager.decryptAsync(encryptedValue, iv, authTag);
         return JSON.parse(decryptedString) as UnencryptedRecordData;
     }
     return json;
@@ -30,7 +32,7 @@ export function encryptRecords(records: FormattedRecord[]): FormattedRecord[] {
     const encryptedDataRecords: FormattedRecord[] = Object.assign([], records);
 
     for (const record of encryptedDataRecords) {
-        const [encryptedValue, iv, authTag] = encryptionManager.encrypt(JSON.stringify(record.json));
+        const [encryptedValue, iv, authTag] = encryptionManager.encryptSync(JSON.stringify(record.json));
         record.json = { encryptedValue, iv, authTag };
     }
 

@@ -17,6 +17,22 @@ export async function getPlan(db: Knex, { accountId }: { accountId: number }): P
     }
 }
 
+export async function getPlanBy(db: Knex, opts: Partial<Pick<DBPlan, 'stripe_customer_id'>>): Promise<Result<DBPlan>> {
+    if (Object.keys(opts).length <= 0) {
+        return Err(new Error('getPlanBy_missing_opts'));
+    }
+    try {
+        const query = db.from<DBPlan>('plans').select<DBPlan>('*');
+        if (opts.stripe_customer_id) {
+            query.where('stripe_customer_id', opts.stripe_customer_id);
+        }
+        const res = await query.first();
+        return res ? Ok(res) : Err(new Error('unknown_plan_for_condition'));
+    } catch (err) {
+        return Err(new Error('failed_to_get_plan', { cause: err }));
+    }
+}
+
 export async function createPlan(
     db: Knex,
     { account_id, ...rest }: Pick<DBPlan, 'account_id' | 'name'> & Partial<Omit<DBPlan, 'account_id' | 'created_at' | 'updated_at'>>
@@ -45,6 +61,21 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
             .from<DBPlan>('plans')
             .where('id', id)
             .update({ ...data, updated_at: new Date() });
+        return Ok(true);
+    } catch (err) {
+        return Err(new Error('failed_to_update_plan', { cause: err }));
+    }
+}
+
+export async function updatePlanByTeam(
+    db: Knex,
+    { account_id, ...data }: Pick<DBPlan, 'account_id'> & Partial<Omit<DBPlan, 'id' | 'account_id'>>
+): Promise<Result<boolean>> {
+    try {
+        await db
+            .from<DBPlan>('plans')
+            .where('account_id', account_id)
+            .update({ ...data, updated_at: db.fn.now() });
         return Ok(true);
     } catch (err) {
         return Err(new Error('failed_to_update_plan', { cause: err }));

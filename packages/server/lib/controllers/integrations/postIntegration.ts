@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -76,7 +76,8 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         unique_key: body.unique_key,
         custom: null,
         missing_fields: [],
-        forward_webhooks: body.forward_webhooks ?? true
+        forward_webhooks: body.forward_webhooks ?? true,
+        shared_credentials_id: null
     };
 
     if (creds) {

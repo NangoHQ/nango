@@ -1,10 +1,12 @@
+import { ArrowPathIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { forwardRef, useState } from 'react';
-import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { CopyButton } from '../button/CopyButton';
-import type { InputStyleProp, InputVariantProp } from './Input';
+
 import { Input } from './Input';
-import { Button } from '../button/Button';
 import { cn } from '../../../utils/utils';
+import { Button } from '../button/Button';
+import { CopyButton } from '../button/CopyButton';
+
+import type { InputStyleProp, InputVariantProp } from './Input';
 
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & {
     copy?: boolean;

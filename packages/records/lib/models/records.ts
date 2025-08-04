@@ -37,18 +37,18 @@ interface UpsertResult {
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
-function isBillable(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
+function isInactiveThisMonth(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
     const firstDayOfMonth = dayjs().utc().startOf('month');
     const previousLastModifiedAt = dayjs(record.previous_last_modified_at).utc();
     return previousLastModifiedAt.isBefore(firstDayOfMonth);
 }
 
-function billable(records: UpsertResult[]): UpsertResult[] {
+function getInactiveThisMonth(records: UpsertResult[]): UpsertResult[] {
     return records.filter((r) => {
         if (!r.previous_last_modified_at) {
             return true;
         }
-        return isBillable({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
+        return isInactiveThisMonth({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
     });
 }
 
@@ -223,9 +223,12 @@ export async function getRecords({
             return Ok({ records: [], next_cursor: null });
         }
 
-        const results = rawResults.map((item) => {
-            const decryptedData = decryptRecordData(item);
-            return {
+        const results: ReturnedRecord[] = [];
+
+        // TODO: decrypt in batch
+        for (const item of rawResults) {
+            const decryptedData = await decryptRecordData(item);
+            results.push({
                 ...decryptedData,
                 _nango_metadata: {
                     first_seen_at: item.first_seen_at,
@@ -234,8 +237,8 @@ export async function getRecords({
                     deleted_at: item.deleted_at,
                     cursor: Cursor.new(item)
                 }
-            } as ReturnedRecord;
-        });
+            });
+        }
 
         if (results.length > Number(limit || 100)) {
             results.pop();
@@ -318,7 +321,15 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [], unchangedKeys: [] };
+    const summary: UpsertSummary = {
+        addedKeys: [],
+        updatedKeys: [],
+        deletedKeys: [],
+        nonUniqueKeys,
+        nextMerging: merging,
+        activatedKeys: [],
+        unchangedKeys: []
+    };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -419,11 +430,11 @@ export async function upsert({
                     const undeletedKeys = undeletedRes.map((r) => r.external_id);
                     const addedKeys = insertedKeys.concat(undeletedKeys);
                     const updatedKeys = changedRes.map((r) => r.external_id);
-                    const billableKeys = [...insertedKeys, ...billable(changedRes).map((r) => r.external_id)];
+                    const activatedKeys = [...insertedKeys, ...getInactiveThisMonth(changedRes).map((r) => r.external_id)];
 
                     summary.addedKeys.push(...addedKeys);
                     summary.updatedKeys.push(...updatedKeys);
-                    summary.billedKeys.push(...billableKeys);
+                    summary.activatedKeys.push(...activatedKeys);
                     summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
                 }
 
@@ -511,7 +522,7 @@ export async function update({
 
     try {
         const updatedKeys: string[] = [];
-        const billedKeys: string[] = [];
+        const activatedKeys: string[] = [];
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent updates
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
@@ -525,7 +536,7 @@ export async function update({
 
                 const recordsToUpdate: FormattedRecord[] = [];
                 for (const oldRecord of oldRecords) {
-                    const oldRecordData = decryptRecordData(oldRecord);
+                    const oldRecordData = await decryptRecordData(oldRecord);
 
                     const inputRecord = chunk.find((record) => record.external_id === oldRecord.external_id);
                     if (!inputRecord) {
@@ -533,7 +544,7 @@ export async function update({
                     }
 
                     const { json, ...newRecordRest } = inputRecord;
-                    const newRecordData = decryptRecordData(inputRecord);
+                    const newRecordData = await decryptRecordData(inputRecord);
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,
@@ -586,8 +597,8 @@ export async function update({
                         if (!oldRecord?.updated_at) {
                             continue;
                         }
-                        if (isBillable({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
-                            billedKeys.push(record.external_id);
+                        if (isInactiveThisMonth({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
+                            activatedKeys.push(record.external_id);
                         }
                     }
 
@@ -605,7 +616,7 @@ export async function update({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
-            billedKeys,
+            activatedKeys,
             nonUniqueKeys,
             nextMerging,
             unchangedKeys: []
@@ -665,34 +676,56 @@ export async function markPreviousGenerationRecordsAsDeleted({
     connectionId,
     model,
     syncId,
-    generation
+    generation,
+    batchSize = 5000
 }: {
     connectionId: number;
     model: string;
     syncId: string;
     generation: number;
+    batchSize?: number;
 }): Promise<string[]> {
     const now = db.fn.now(6);
-    let res: string[] = [];
     return db.transaction(async (trx) => {
-        res = (await trx
-            .from<FormattedRecord>(RECORDS_TABLE)
-            .where({
-                connection_id: connectionId,
-                model,
-                sync_id: syncId,
-                deleted_at: null
-            })
-            .where('sync_job_id', '<', generation)
-            .update({
-                deleted_at: now,
-                updated_at: now,
-                sync_job_id: generation
-            })
-            .returning('id')) as unknown as string[];
+        const deletedIds: string[] = [];
+        let hasMore = true;
+        while (hasMore) {
+            const res = await trx
+                .from<FormattedRecord>(RECORDS_TABLE)
+                .whereIn('id', function (sub) {
+                    sub.select('id')
+                        .from(RECORDS_TABLE)
+                        .where({
+                            connection_id: connectionId,
+                            model,
+                            sync_id: syncId,
+                            deleted_at: null
+                        })
+                        .where('sync_job_id', '<', generation)
+                        .limit(batchSize);
+                })
+                .update({
+                    deleted_at: now,
+                    updated_at: now,
+                    sync_job_id: generation
+                })
+                // records table is partitioned by connection_id and model
+                // to avoid table scan, we must always filter by connection_id and model
+                .where({
+                    connection_id: connectionId,
+                    model
+                })
+                .returning('external_id');
+
+            if (res.length < batchSize) {
+                hasMore = false;
+            }
+
+            deletedIds.push(...res.map((r) => r.external_id));
+        }
 
         // update records count
-        const count = res.length;
+        const count = deletedIds.length;
         if (count > 0) {
             await trx(RECORD_COUNTS_TABLE)
                 .where({
@@ -703,7 +736,7 @@ export async function markPreviousGenerationRecordsAsDeleted({
                     count: trx.raw('GREATEST(0, count - ?)', [count])
                 });
         }
-        return res;
+        return deletedIds;
     });
 }
 

@@ -39,4 +39,22 @@ export class RedisKVStore implements KVStore {
     public async delete(key: string): Promise<void> {
         await this.client.del(key);
     }
+
+    public async incr(key: string, opts?: { ttlInMs?: number; delta?: number }): Promise<number> {
+        const multi = this.client.multi();
+        multi.incrBy(key, opts?.delta || 1);
+        if (opts?.ttlInMs) {
+            multi.pExpire(key, opts.ttlInMs);
+        }
+        const [count] = await multi.exec();
+        return count as number;
+    }
+
+    public async *scan(pattern: string): AsyncGenerator<string> {
+        for await (const key of this.client.scanIterator({
+            MATCH: pattern
+        })) {
+            yield key;
+        }
+    }
 }

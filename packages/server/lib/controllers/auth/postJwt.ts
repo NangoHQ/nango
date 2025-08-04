@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -33,7 +33,7 @@ const bodyValidation = z.object({}).catchall(z.any()).strict();
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
+        params: z.record(z.string(), z.any()).optional(),
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -207,7 +207,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
 
-        res.status(200).send({ providerConfigKey, connectionId });
+        res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

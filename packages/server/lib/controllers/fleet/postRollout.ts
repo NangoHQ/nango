@@ -1,8 +1,11 @@
-import { z } from 'zod';
+import * as z from 'zod';
+
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostRollout } from '@nangohq/types';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
 import { runnersFleet } from '../../fleet.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { PostRollout } from '@nangohq/types';
 
 const bodyValidation = z
     .object({

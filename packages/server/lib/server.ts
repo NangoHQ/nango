@@ -7,6 +7,7 @@ import express from 'express';
 import * as cron from 'node-cron';
 import { WebSocketServer } from 'ws';
 
+import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
@@ -17,6 +18,7 @@ import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddle
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
+import { persistAccountUsageCron } from './crons/persistAccountUsage.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
@@ -27,7 +29,6 @@ import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
-import { billing } from '@nangohq/billing';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -90,6 +91,7 @@ getProviders();
 
 refreshConnectionsCron();
 exportUsageCron();
+persistAccountUsageCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();

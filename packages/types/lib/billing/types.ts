@@ -1,10 +1,27 @@
-import type { Result } from '../result';
+import type { Result } from '../result.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
+    upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
+    linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
+    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
+    downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
+    applyPendingChanges: (opts: {
+        pendingChangeId: string;
+        /**
+         * format: dollar.cent = 0.00
+         */
+        amount: string;
+    }) => Promise<Result<BillingSubscription>>;
+    cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
+    verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
+    getPlanById(planId: string): Promise<Result<BillingPlan>>;
 }
 
 export interface BillingCustomer {
@@ -14,6 +31,8 @@ export interface BillingCustomer {
 
 export interface BillingSubscription {
     id: string;
+    pendingChangeId?: string | undefined;
+    planExternalId: string;
 }
 
 export interface BillingUsageMetric {
@@ -22,8 +41,13 @@ export interface BillingUsageMetric {
     quantity: number;
 }
 
+export interface BillingPlan {
+    id: string;
+    external_plan_id: string;
+}
+
 export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions';
+    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections';
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;

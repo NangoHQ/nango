@@ -2,6 +2,349 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.65.0] - 2025-07-31
+
+### Added
+
+- *(orchestrator)* Add next execution date and task state to schedules (#4383) by @TBonnin
+- *(webapp)* Refresh usage on connection deleted (#4403) by @kaposke
+- *(providers)* Add example of workday username to use in docs (#4405) by @hassan254-prog
+- *(providers)* Add migrations for pre-provisioning provider credentials (#4389) by @hassan254-prog
+
+### Changed
+
+- Use last_scheduled_task_state/next_execution_at in scheduling query (#4398) by @TBonnin
+- Change to new API docs layout  (#4396) by @hassan254-prog
+- Change to new API docs layout (#4401) by @hassan254-prog
+- Remove Koala tracking (#4400) by @rguldener
+- TrackDeletes clarifications (#4382) by @mintlify[bot]
+
+### Fixed
+
+- Cap from getting connect session (#4390) by @kaposke
+- *(connect-ui)* Use custom integration display name (#4399) by @kaposke
+- *(server)* Don't cap a connection from finishing (#4404) by @kaposke
+- *(cli)* Fix global override (#4409) by @khaliqgant
+- Introduce asynchronous encrypt/decrypt functions (#4407) by @TBonnin
+- Use special render instances for runners (#4402) by @TBonnin
+- Improve cap messages (#4406) by @kaposke
+
+## [v0.64.4] - 2025-07-29
+
+### Added
+
+- Cap syncs based on active records (#4366) by @kaposke
+- *(webapp)* Show usage on sidebar for free plans (#4369) by @kaposke
+- *(integrations)* Add support for paycom (#4386) by @hassan254-prog
+- Cap max connections globally (with UI work) (#4381) by @kaposke
+- Track action and active records being capped in posthog (#4384) by @kaposke
+- Update trial messaging to Auto Idling (#4385) by @kaposke
+- *(es)* Add warm tier (#4387) by @bodinsamuel
+
+### Changed
+
+- Change to new API docs layout (#4364) by @hassan254-prog
+- *(ashby)* Change to new API docs layout (#4392) by @hassan254-prog
+
+### Fixed
+
+- *(logs)* Split operations and messages index (#4371) by @bodinsamuel
+- *(deps)* Upgrade axios to 1.11.0 (#4379) by @bodinsamuel
+- *(two_step)* Migrate zod body validation (#4388) by @hassan254-prog
+- *(api)* Rollback /config/uniqueKey (#4391) by @bodinsamuel
+- *(es)* Change warm tier settings (#4394) by @bodinsamuel
+- Upgrade dependencies (#4393) by @bodinsamuel
+
+## [v0.64.3] - 2025-07-25
+
+### Added
+
+- Cap action usage (#4350) by @kaposke
+- *(integrations)* Add support for setmore (#4337) by @hassan254-prog
+- *(refresh)* Implement refresh logic for GitHub OAuth app user credentials (#4341) by @hassan254-prog
+- *(plans)* Add webhooks flags (#4374) by @bodinsamuel
+
+### Changed
+
+- Add deletion detection guide for syncs (#4367) by @rguldener
+- Update Salesforce documentation for recent transition from Connected Apps to External Client Apps (#4300) by @hassan254-prog
+- Track delete callout clarification (#4375) by @mintlify[bot]
+- *(docs)* Update webhooks-from-nango.mdx to describe working with `modifiedAfter` (#4165) by @CharlieDigital
+
+### Fixed
+
+- Allow orchestrator db to support ssl (#4365) by @rossmcewan
+- *(webapp)* Ignore sync input in snippets (#4361) by @kaposke
+- *(runner)* Untrack usage when aborting (#4362) by @bodinsamuel
+- Allow SSL for records database (#4370) by @rossmcewan
+- Temporarily add model_schema back to /scripts/config (#4373) by @kaposke
+- *(github-app-oauth)* Clean up docs and clarify (#4372) by @khaliqgant
+- *(logs)* Fine tune http sampling (#4368) by @bodinsamuel
+- *(refresh)* Fix github app refresh (#4377) by @hassan254-prog
+- *(sync)* Disallow incremental and trackDeletes (#4376) by @bodinsamuel
+- *(script)* Support array of objects in exports (#4378) by @bodinsamuel
+
+## [v0.64.2] - 2025-07-23
+
+### Added
+
+- *(post-connection-script)* Add mailchimp post connection script to get dc connection config value (#4348) by @hassan254-prog
+- *(webhook > metric)* Add breakdown per customer (#4355) by @bodinsamuel
+- *(gmail-webhook)* Add gmail webhook routing script with validation (#4347) by @khaliqgant
+- *(usage)* Create usage tracker (#4345) by @kaposke
+- *(integrations)* Add support for knowbe4 (#4363) by @hassan254-prog
+- *(integrations)* Add support for azure blob storage (#4358) by @hassan254-prog
+
+### Changed
+
+- *(deps)* Bump form-data from 4.0.0 to 4.0.4 in /packages/shared (#4353) by @dependabot[bot]
+- Remove service (#4322) by @mintlify[bot]
+
+### Fixed
+
+- *(plans)* Update flags (#4354) by @bodinsamuel
+- Upgrade node to 22.17.1 (#4356) by @bodinsamuel
+- *(deps)* Upgrade various (#4357) by @bodinsamuel
+- *(cli)* Correctly support optional in zod->json (#4359) by @bodinsamuel
+- *(sdk)* Sample successful http logs (#4360) by @bodinsamuel
+
+## [v0.64.1] - 2025-07-21
+
+### Added
+
+- Usage table migration (#4342) by @kaposke
+- Add more docs for zero yaml config (#4331) by @bodinsamuel
+
+### Changed
+
+- Specify the tenant type users should select when registering an Azure app (#4349) by @hassan254-prog
+
+### Fixed
+
+- *(api)* Remove deprecated /flow routes (#4307) by @bodinsamuel
+- *(api)* Remove deprecated endpoints  (#4319) by @bodinsamuel
+- *(billing)* Feedback (#4346) by @bodinsamuel
+- *(cli)* Replace depreciated endpoint (#4351) by @hassan254-prog
+- *(cli)* Correctly fix deprecated endpoint, remove leftover docs (#4352) by @bodinsamuel
+
+## [v0.64.0] - 2025-07-21
+
+### Added
+
+- *(integrations)* Add support for google chat (#4343) by @hassan254-prog
+
+### Fixed
+
+- *(billing)* Correctly compute initial base fee (#4340) by @bodinsamuel
+- *(proxy)* Retry only on specific error codes for some providers (#4305) by @hassan254-prog
+- Upgrade to zod v4 (#4328) by @bodinsamuel
+
+## [v0.63.1] - 2025-07-18
+
+### Added
+
+- *(pubsub)* Add pubsub package (#4313) by @TBonnin
+- *(webhooks)* Add support for attio webhooks (#4312) by @hassan254-prog
+- Replace NangoModel with json schema (#4177) by @kaposke
+- *(integrations)* Add support for google cloud storage (#4324) by @hassan254-prog
+- Add detailed usage button in billing (#4321) by @kaposke
+- Remove connection_with_scripts_max cap (#4329) by @kaposke
+- *(jobs)* Network policies for kubernetes runners (#4330) by @rossmcewan
+- Create new free-plan caps (#4334) by @kaposke
+- *(kvstore)* Add incr methods  (#4336) by @bodinsamuel
+- *(billing)* Self serve (#4220) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/11febd739d4d2d839cf8c3b31dbb1d7b2a00fda1 by Khaliq by @github-actions[bot]
+- *(orch)* Clean schedules and tasks older than 5 days (#4318) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9ee5e21f8497e8b3c72441353d6d38f3040787da by Khaliq by @github-actions[bot]
+- New API docs pages (#4316) by @hassan254-prog
+- *(deps)* Bump multer from 2.0.1 to 2.0.2 in /packages/server (#4338) by @dependabot[bot]
+- *(plans)* Update growth default flags (#4335) by @bodinsamuel
+
+### Fixed
+
+- *(billing)* Do not backfill sub for non-free plan (#4317) by @bodinsamuel
+- Migration to fix json schema in public flows (#4268) by @kaposke
+- *(github-app)* Handle update without auth code (#4320) by @khaliqgant
+- *(providers)* Move Figma SCIM tenantId from endpoint to base URL for proper SCIM API calls (#4277) by @yksolanki9
+- *(runner)* Prevent parallel run and zombie tasks (#4325) by @bodinsamuel
+- Heartbeat ms -> sec, set last_heartbeat_at on started (#4326) by @bodinsamuel
+- *(runner)* Allow webhooks and syncs to run in parallel (#4327) by @bodinsamuel
+- *(orb)* Do not override flags if same plan (#4332) by @bodinsamuel
+- *(zero)* Correctly support on-event execution (#4333) by @bodinsamuel
+- *(types)* Do not leak deprecate state for providerConfigKey (#4339) by @bodinsamuel
+
+## [v0.63.0] - 2025-07-11
+
+### Added
+
+- *(runner)* Create Kubernetes NodeProvider (#4295) by @rossmcewan
+- Show in-app usage for free plans (#4270) by @kaposke
+- Add resource request and limits as well as better error handling… (#4311) by @rossmcewan
+
+### Changed
+
+- Zero yaml (#4292) by @bodinsamuel
+- Eslint pass on import order 3 (#4296) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1d1d12dae0221dbab67615a003af2b4cc677860d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/48c5e68d77961e372d784798de96e852c08a1384 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(github-app-docs)* [nan-3564] update docs (#4302) by @khaliqgant
+- *(auth)* Various feedback (#4290) by @bodinsamuel
+- *(atlassian-admin-api)* [nan-3578] add in organization id as a connection config param (#4306) by @khaliqgant
+- *(api)* Import or reconnect sending incorrect webhooks (#4299) by @bodinsamuel
+- *(api)* POST /admin/impersonate new format (#4298) by @bodinsamuel
+- *(docs)* Update image and docs section link (#4309) by @khaliqgant
+- *(cli)* Init default to zero yaml (#4303) by @bodinsamuel
+- *(node)* Remove deprecated methods (#4310) by @bodinsamuel
+- *(jira-post-connection)* [nan-3592] wrap potential failing call in a try catch (#4315) by @khaliqgant
+
+## [v0.62.1] - 2025-07-08
+
+### Added
+
+- *(integrations)* Add support for fathom (#4276) by @aniruddhb
+- *(provider)* Added AWS scim integration (#4272) by @yksolanki9
+- *(integrations)* Improve sap successfactors and other documentation pages (#4279) by @hassan254-prog
+- Add index to sync_jobs (#4280) by @TBonnin
+- *(integrations)* Add support for atlassian cloud admin (#4287) by @hassan254-prog
+- *(api)* Unify auth response types (#4283) by @bodinsamuel
+- *(pre-connection-deletion)* Add linear token revocation (#4293) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/94d3e6ca338a44c4f885d80021362210713d77a6 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0f09aa12f862674f16c51254ad339c9c8c3e0ad7 by Khaliq by @github-actions[bot]
+- Eslint pass on import order (#4286) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ac898ed546cb0f2b98a7be7d7e8c4a2a2507842a by Samuel Bodin by @github-actions[bot]
+
+### Fixed
+
+- *(ramp)* Update ramp docs (#4278) by @khaliqgant
+- *(ci)* Mintlify broken links (#4285) by @bodinsamuel
+- *(frontend-sdk)* Encode connectionConfig params to preserve special characters in URL (#4288) by @hassan254-prog
+- *(endUser)* Missing forUpdate in transaction (#4281) by @bodinsamuel
+- *(zeroYaml)* Support zero yaml templates (#4274) by @bodinsamuel
+- *(api)* Migrate PUT /password to new format (#4297) by @bodinsamuel
+
+## [v0.62.0] - 2025-07-01
+
+### Added
+
+- Legacy model to json schema conversion (#4217) by @kaposke
+- *(node-client)* Add PUT method support for API consistency (#4232) by @yksolanki9
+- *(db)* Add fields in plans for self-serve billing (#4227) by @bodinsamuel
+- *(plans)* Add auto_idle flag (#4234) by @bodinsamuel
+- *(webapp)* Show year in connection dates (#4240) by @kaposke
+- *(api)* Add endpoints for stripe (#4244) by @bodinsamuel
+- *(integrations)* Remove tableau as an auth mode replace with two_step (#4233) by @hassan254-prog
+- *(jira-provider)* Add offline_access as a default scope (#4253) by @khaliqgant
+- *(provider)* Added Roam scim integration (#4250) by @yksolanki9
+- *(integrations)* Remove validation endpoint for ukg pro (#4263) by @hassan254-prog
+- Add guide about how to best use AI to create custom integrations (#4163) by @TBonnin
+- Add last_execution_at column to connection table (#4266) by @TBonnin
+- Add 'count of active connections' billing metric (#4267) by @TBonnin
+- *(integrations)* Add support for sentry public integration (#4225) by @hassan254-prog
+- Add primary key to _nango_oauth_sessions (#4273) by @rossmcewan
+- Add primary key to oauth_sessions without unique index (#4275) by @rossmcewan
+- *(integrations)* Support mTLS for secure API requests with certificate/key pair (#4258) by @hassan254-prog
+- *(frontend)* Match sdk error types casing (#4057) by @hassan254-prog
+
+### Changed
+
+- Move json-schema converters to utils (#4229) by @kaposke
+- Update version in manifest by @actions-user
+- Rename stripe to stripe connect adding setup guide (#4241) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a2c16668f471d3c1ddcd036f264ba0312878bd14 by Hassan_Wari by @github-actions[bot]
+- *(docs)* Update enterprise self-hosting docs to match announcement (#4256) by @rossmcewan
+- Clarify how to edit user/org data on connect session (#4215) by @mintlify[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2a4cef859bcdc41de1318f526a88f5995aa5d9cc by Victor Lang'at by @github-actions[bot]
+- Focus getting starter on auth & proxy (#4251) by @bastienbeurier
+- Add MCP demo video to docs (#4261) by @bastienbeurier
+- Use modern tsconfig, node16 and nodenext (#4271) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6568c2893369d35ed79329bc8b263bd4e139d87e by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9e7ba791c3762bc725c5951ea0b09b71b8b4ecba by Khaliq by @github-actions[bot]
+- Remove nango auth reference (#4269) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3165515ca221d72a4c44dd3fe68b88af5114cdee by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7919a3f9f5b835d7f183443fabae7d62fd9d47c3 by Hassan_Wari by @github-actions[bot]
+
+### Fixed
+
+- Commit hash added to success path tag (#4224) by @rossmcewan
+- GH_TOKEN required to interact with  CLI tool (#4226) by @rossmcewan
+- *(records)* Paginate markPreviousGenerationRecordsAsDeleted (#4230) by @TBonnin
+- Always filter partitioned records table by connection/model by @TBonnin
+- *(plans)* New types, store customer_id at creation (#4228) by @bodinsamuel
+- *(release)* Git push to master instead of PR (#4235) by @rossmcewan
+- *(db)* Remove some schema leftover (#4236) by @bodinsamuel
+- *(auth)* Handle csp in auth callback html (#4219) by @bodinsamuel
+- *(runner)* Implement MaxLifetimeAgent for persist client socket management (#4239) by @TBonnin
+- Handle nested inline models in nangoModelToJsonSchema (#4238) by @kaposke
+- Handle dynamic models in NangoModel to json-schema converter (#4245) by @kaposke
+- Do not send external facing connection id inside billing events (#4243) by @TBonnin
+- *(billing)* Listen to orb webhooks (#4242) by @bodinsamuel
+- *(webapp)* Only show first unit of time in grid (#4249) by @rossmcewan
+- Handle special types in json schema converter (#4246) by @kaposke
+- *(docs)* Fix netsuite link (#4255) by @khaliqgant
+- *(plan)* Use auto_idle flag (#4248) by @bodinsamuel
+- *(plan)* Modify free plan (#4260) by @bodinsamuel
+- More json schema cases (#4257) by @kaposke
+- *(es)* Disable refresh on operation creation (#4262) by @bodinsamuel
+- Improve LegacyModel to Json Schema conversion (#4265) by @kaposke
+- *(figma)* Fix Figma SCIM integration credential verification failure (#4252) by @yksolanki9
+
+## [v0.61.3] - 2025-06-20
+
+### Added
+
+- Add token revocation script for pre connection deletion (#4059) by @viictoo
+- *(integrations)* Add Trafft integration with documentation (#4190) by @viictoo
+- *(integrations)* Update Instantly documentation and add connection guide (#4194) by @viictoo
+- *(billing)* Don't bill first month of MAR for connection (#4192) by @kaposke
+- *(docs)* Add securityScheme to OpenAPI spec (#4200) by @kaposke
+- *(ukg-pro)* Ext-758 Updated auth and documentation for ukg-pro (#4205) by @ChoqueCastroLD
+- *(persist)* Add tracing in auth middleware (#4206) by @TBonnin
+- *(logs)* Add more error logs during oauth2 flow (#4195) by @hassan254-prog
+- *(release)* Managed release process for self-hosted images (#4210) by @rossmcewan
+- Added max width to ukg-pro form and fixed mint json sage-hr (#4213) by @ChoqueCastroLD
+- Add upload/download actions to share data across jobs (#4222) by @rossmcewan
+
+### Changed
+
+- Zero yaml migration (#4191) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/27cfef157c734920b68b341f225ddf4037702573 by Hassan_Wari. Commit message: feat(gong): improve gong scripts  (#347) by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/61945f659fdfa0f4aaacbfaf494b0016839d25c8 by Victor Lang'at by @github-actions[bot]
+- Clean up clickup, zoho and freshbook setup docs (#4182) by @viictoo
+- *(scheduler)* Migrate from workers to in-process execution (#4193) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7b57d93425d7d968ddfcfccaf5c34b8b87dd9cc4 by Victor Lang'at by @github-actions[bot]
+- *(orchestrator)* Move abort task logic to scheduler (#4196) by @TBonnin
+- Zeroyaml feedback, scripts credentials feedback (#4198) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ad38b1ee64f7ae3487f61fd3a23574c87617dcdf by Samuel Bodin by @github-actions[bot]
+- *(orchestrator)* Tasks events via pg LISTEN/NOTIFY (#4201) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ffdb7379ea98fd8c54689aabb037212863324d4d by Hassan_Wari by @github-actions[bot]
+- Setup guide for stripe app and stripe app sandbox (#4204) by @hassan254-prog
+- Clarify refresh webhook docs (#4208) by @mintlify[bot]
+- *(orch)* More tracing and prevent cleaning/expiring race condition (#4207) by @TBonnin
+- *(runner)* Remove input/output validation (#4216) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/966f69623fd232a5212b0d2b441816b2b03a9390 by Hassan_Wari by @github-actions[bot]
+
+### Fixed
+
+- Use nango.dev domain to send email (#4144) by @TBonnin
+- *(file)* Correctly zip from s3 (#4188) by @bodinsamuel
+- *(shared)* Remove explicit setting of AWS credentials (#4189) by @rossmcewan
+- *(proxy)* Fix build proxy headers (#4187) by @hassan254-prog
+- *(pagination)* Fix link pagination type (#4199) by @hassan254-prog
+- *(api)* Create billing customer on account creation (#4203) by @bodinsamuel
+- *(cli)* Tsconfig correct options, dev mode parallel error display (#4211) by @bodinsamuel
+- Helm command was failing (#4214) by @rossmcewan
+- Docker credentials secret names were incorrect (#4218) by @rossmcewan
+- *(cli)* Catch bad import earlier  (#4223) by @bodinsamuel
+
 ## [v0.61.2] - 2025-06-12
 
 ### Fixed
@@ -4172,6 +4515,17 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
+[v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
+[v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
+[v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
+[v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
+[v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
+[v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
+[v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
+[v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
+[v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0
+[v0.61.3]: https://github.com/NangoHQ/nango/compare/v0.61.2..v0.61.3
 [v0.61.2]: https://github.com/NangoHQ/nango/compare/v0.61.1..v0.61.2
 [v0.61.1]: https://github.com/NangoHQ/nango/compare/v0.61.0..v0.61.1
 [v0.61.0]: https://github.com/NangoHQ/nango/compare/v0.60.5..v0.61.0

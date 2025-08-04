@@ -1,8 +1,10 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
-import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/tests.js';
-import { linkConnection, seeders } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import db from '@nangohq/database';
+import { linkConnection, seeders } from '@nangohq/shared';
+
 import { getConnectSessionByToken } from '../../services/connectSession.service.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -40,8 +42,8 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['connection_id'] },
-                    { code: 'invalid_type', message: 'Required', path: ['integration_id'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['connection_id'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['integration_id'] }
                 ]
             }
         });

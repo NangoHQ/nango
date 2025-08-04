@@ -12,13 +12,11 @@ import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicOauthOutboundAuthorization } from './controllers/auth/postOauthOutbound.js';
 import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
-import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
-import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { deletePublicIntegrationDeprecated } from './controllers/config/providerConfigKey/deleteIntegration.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -39,7 +37,6 @@ import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIn
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
-import providerController from './controllers/provider.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import proxyController from './controllers/proxy.controller.js';
@@ -57,9 +54,9 @@ import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.j
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
+import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
@@ -69,11 +66,7 @@ const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
-const connectSessionOrPublicAuth: RequestHandler[] = [
-    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
-    resourceCapping,
-    rateLimiterMiddleware
-];
+const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 export const publicAPI = express.Router();
 
@@ -129,6 +122,7 @@ publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthC
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
 publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.route('/auth/oauth-outbound/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicOauthOutboundAuthorization);
 publicAPI.use('/api-auth', jsonContentTypeMiddleware);
 publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
@@ -136,42 +130,19 @@ publicAPI.use('/app-store-auth', jsonContentTypeMiddleware);
 publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAppStoreAuthorization);
 publicAPI.use('/auth', jsonContentTypeMiddleware);
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
-publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
 publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
 publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.use('/unauth', jsonContentTypeMiddleware);
-// @deprecated use /auth/unauthenticated
-publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
-
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
-
-// API routes (Secret key auth).
-publicAPI.use('/provider', jsonContentTypeMiddleware);
-// @deprecated use /providers
-publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
-// @deprecated use /providers
-publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
-// @deprecated
-publicAPI.use('/config', jsonContentTypeMiddleware);
-// @deprecated
-publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
-// @deprecated
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
-// @deprecated
-publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegrationDeprecated);
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
@@ -214,11 +185,6 @@ publicAPI.use('/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/mcp').post(apiAuth, postMcp);
 publicAPI.route('/mcp').get(apiAuth, getMcp);
 
-publicAPI.use('/flow', jsonContentTypeMiddleware);
-publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-// @deprecated use /scripts/configs
-publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
-
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
@@ -227,7 +193,7 @@ publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bi
 publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
-publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
+publicAPI.route('/connect/sessions').post(apiAuth, connectionCapping, postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);

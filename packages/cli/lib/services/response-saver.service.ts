@@ -1,9 +1,11 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
-import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { GetPublicConnection, Metadata } from '@nangohq/types';
+
 import { BASE_VARIANT } from '@nangohq/runner-sdk';
+
+import type { GetPublicConnection, Metadata } from '@nangohq/types';
+import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const FILTER_HEADERS = [
     'authorization',

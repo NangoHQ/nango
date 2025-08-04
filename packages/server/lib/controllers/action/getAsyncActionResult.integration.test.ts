@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
+
 import { seeders } from '@nangohq/shared';
+
+import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -37,8 +39,8 @@ describe(`GET ${endpoint}`, () => {
                 code: 'invalid_uri_params',
                 errors: [
                     {
-                        code: 'invalid_string',
-                        message: 'Invalid uuid',
+                        code: 'invalid_format',
+                        message: 'Invalid UUID',
                         path: ['id']
                     }
                 ]

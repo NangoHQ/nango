@@ -1,5 +1,6 @@
-import type { RouteConfig } from '@nangohq/logs';
 import environmentService from '../services/environment.service.js';
+
+import type { RouteConfig } from '@nangohq/logs';
 
 export async function getRoutes(): Promise<RouteConfig[]> {
     const environments = await environmentService.getEnvironmentsWithOtlpSettings();

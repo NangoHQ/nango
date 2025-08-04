@@ -53,7 +53,6 @@ for (const file of files) {
 
         const docLink = maybeAliased.docs.split('/').slice(-1)[0];
         if (docLink !== provider) {
-            // eslint-disable-next-line no-console
             console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
         }
 
@@ -71,7 +70,6 @@ const allProviders = Object.keys(providers);
 const missingDocs = allProviders.filter((provider) => !providersHandled.includes(provider));
 
 if (missingDocs.length > 0) {
-    // eslint-disable-next-line no-console
     console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 

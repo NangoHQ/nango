@@ -1,19 +1,21 @@
-import type { SearchOperationsData } from '@nangohq/types';
 import {
-    IconX,
-    IconPlayerPlay,
-    IconClockPlay,
-    IconClockPause,
-    IconRefresh,
-    IconSettingsAutomation,
-    IconSettings,
     IconArrowForward,
+    IconClockPause,
+    IconClockPlay,
     IconLink,
     IconLock,
-    IconPlus
+    IconPlayerPlay,
+    IconPlus,
+    IconRefresh,
+    IconSettings,
+    IconSettingsAutomation,
+    IconX
 } from '@tabler/icons-react';
-import { Tag } from '../../../components/ui/label/Tag';
+
 import * as Tooltip from '../../../components/ui/Tooltip';
+import { Tag } from '../../../components/ui/label/Tag';
+
+import type { SearchOperationsData } from '@nangohq/types';
 
 export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
     return (

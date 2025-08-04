@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -9,14 +10,12 @@ import {
     configService,
     connectionService,
     errorManager,
-    flowService,
     getActionOrModelByEndpoint,
-    getAttributes,
     getSyncConfigRaw,
-    getSyncConfigsWithConnectionsByEnvironmentId,
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
+    productTracking,
     syncCommandToOperation,
     syncManager,
     verifyOwnership
@@ -35,6 +34,7 @@ import type { Span } from 'dd-trace';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
+const accountUsageTracker = await getAccountUsageTracker();
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -91,19 +91,6 @@ class SyncController {
         }
     }
 
-    public async getSyncs(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
-            const flows = flowService.getAllAvailableFlows();
-
-            res.send({ syncs, flows });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async actionOrModel(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
@@ -156,6 +143,7 @@ class SyncController {
 
         const { input, action_name } = req.body;
         const { account, environment, plan } = res.locals;
+
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
@@ -222,6 +210,7 @@ class SyncController {
                 .setTag('nango.connectionId', connectionId)
                 .setTag('nango.environmentId', environmentId)
                 .setTag('nango.providerConfigKey', providerConfigKey);
+
             logCtx = await logContextGetter.create(
                 { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
                 {
@@ -234,6 +223,32 @@ class SyncController {
                 }
             );
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
+            if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'actions'))) {
+                const message =
+                    'Your monthly limit for action executions has been reached. No actions will run until you upgrade your account or the limit resets.';
+                void logCtx.error(message, {
+                    usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
+                    limit: accountUsageTracker.getLimit(plan, 'actions')
+                });
+
+                productTracking.track({ name: 'server:resource_capped:action_triggered', team: account });
+
+                res.status(400).send({
+                    error: {
+                        code: 'resource_capped',
+                        message
+                    }
+                });
+
+                span.setTag('nango.usageLimitExceeded', true);
+                await logCtx.failed();
+                span.finish();
+                return;
+            }
+
+            void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
+            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1, plan: plan ?? undefined });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,
@@ -260,7 +275,7 @@ class SyncController {
                         idempotencyKey: logCtx.id,
                         environmentId: connection.environment_id,
                         providerConfigKey,
-                        connectionId,
+                        connectionId: connection.id,
                         actionName: action_name
                     });
                 }
@@ -525,30 +540,6 @@ class SyncController {
                 void logCtx.error('Failed to sync command', { error: err });
                 await logCtx.failed();
             }
-            next(err);
-        }
-    }
-
-    public async getFlowAttributes(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { sync_name, provider_config_key } = req.query;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            if (!sync_name) {
-                res.status(400).send({ message: 'Missing sync name' });
-
-                return;
-            }
-
-            const attributes = await getAttributes(provider_config_key as string, sync_name as string);
-
-            res.status(200).send(attributes);
-        } catch (err) {
             next(err);
         }
     }

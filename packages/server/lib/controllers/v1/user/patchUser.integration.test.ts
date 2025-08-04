@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const route = '/api/v1/user';
@@ -33,7 +35,7 @@ describe(`PATCH ${route}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
                 code: 'invalid_query_params',
-                errors: [{ code: 'unrecognized_keys', message: "Unrecognized key(s) in object: 'env'", path: [] }]
+                errors: [{ code: 'unrecognized_keys', message: 'Unrecognized key: "env"', path: [] }]
             }
         });
     });

@@ -10,6 +10,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
 
+import type { RenderPlan } from './render.api.js';
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
 import type { AxiosResponse } from 'axios';
@@ -61,7 +62,8 @@ export const renderNodeProvider: NodeProvider = {
                     ...(envs.DD_TRACE_AGENT_URL ? [{ key: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
                     { key: 'JOBS_SERVICE_URL', value: envs.JOBS_SERVICE_URL },
                     { key: 'PROVIDERS_URL', value: getProvidersUrl() },
-                    { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
+                    { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
+                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : [])
                 ]
             })
         );
@@ -151,23 +153,23 @@ async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'r
     }
 }
 
-function getPlan(node: Node): 'starter' | 'standard' | 'pro' | 'pro_plus' | 'pro_max' | 'pro_ultra' {
+function getPlan(node: Node): RenderPlan {
     if (node.cpuMilli >= 8000 && node.memoryMb >= 32000) {
         return 'pro_ultra';
     }
     if (node.cpuMilli >= 4000 && node.memoryMb >= 16000) {
-        return 'pro_max';
+        return 'Pro Max Nango';
     }
     if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
         return 'pro_plus';
     }
     if (node.cpuMilli > 2000 || node.memoryMb >= 4000) {
-        return 'pro';
+        return 'Pro Nango';
     }
     if (node.cpuMilli > 1000 || node.memoryMb >= 2000) {
-        return 'standard';
+        return 'Standard Nango';
     }
-    return 'starter';
+    return 'Starter Nango';
 }
 
 // Render has a hard limit of 1000 service creations per hour

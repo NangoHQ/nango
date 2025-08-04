@@ -1,6 +1,8 @@
-import { expect, describe, it, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
+
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
 describe('Runner client', () => {
@@ -28,7 +30,8 @@ describe('Runner client', () => {
         startedAt: new Date(),
         runnerFlags: {} as any,
         endUser: null,
-        team: { id: 1, name: 'team' }
+        team: { id: 1, name: 'team' },
+        heartbeatTimeoutSecs: 30
     };
 
     beforeAll(() => {

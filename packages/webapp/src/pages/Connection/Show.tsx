@@ -1,4 +1,5 @@
 import { IconTrash } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -20,6 +21,7 @@ import { Button } from '../../components/ui/button/Button';
 import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { clearIntegrationsCache } from '../../hooks/useIntegration';
+import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useSyncs } from '../../hooks/useSyncs';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -43,6 +45,7 @@ export const ConnectionShow: React.FC = () => {
     const { connectionId, providerConfigKey } = useParams();
     const [showSlackBanner, setShowSlackBanner] = useLocalStorage(`nango:connection:slack_banner_show`, true);
 
+    const queryClient = useQueryClient();
     const env = useStore((state) => state.env);
 
     const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
@@ -93,6 +96,7 @@ export const ConnectionShow: React.FC = () => {
             );
             clearConnectionsCache(cache, mutate);
             clearIntegrationsCache(cache, mutate);
+            queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
 
             navigate(`/${env}/connections`, { replace: true });
         } else {

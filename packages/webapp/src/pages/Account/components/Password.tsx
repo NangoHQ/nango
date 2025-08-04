@@ -1,8 +1,8 @@
+import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 
+import { HoverCard, HoverCardArrow, HoverCardContent, HoverCardTrigger } from '../../../components/ui/HoverCard';
 import { Input } from '../../../components/ui/input/Input';
-import { HoverCard, HoverCardContent, HoverCardTrigger, HoverCardArrow } from '../../../components/ui/HoverCard';
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { cn } from '../../../utils/utils';
 
 export const Password: React.FC<{ setPassword: (password: string, good: boolean) => void } & React.InputHTMLAttributes<HTMLInputElement>> = ({
