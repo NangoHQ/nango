@@ -11754,6 +11754,38 @@ zoominfo:
     docs: https://docs.nango.dev/integrations/all/zoominfo
     docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect
 
+snipe-it:
+    display_name: Snipe-IT
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/api/v1
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /version
+    docs: https://docs.nango.dev/integrations/all/snipe-it
+    docs_connect: https://docs.nango.dev/integrations/all/snipe-it/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Snipe-IT API token
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your Snipe-IT domain (e.g., yourcompany.snipe-it.io)
+            example: yourcompany.snipe-it.io
+            doc_section: '#step-1-finding-your-domain-and-api-token'
+            order: 1
+
 zuora:
     display_name: Zuora
     categories:

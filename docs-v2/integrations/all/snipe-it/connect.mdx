@@ -1,0 +1,41 @@
+---
+title: Snipe-IT - How do I link my account?
+sidebarTitle: Snipe-IT
+---
+
+# Overview
+
+To authenticate with Snipe-IT, you need:
+1. **API Token** - A token that grants Nango permission to interact with Snipe-IT's API resources and services.
+2. **Domain** - Your Snipe-IT instance URL (e.g., yourcompany.snipe-it.io).
+
+This guide will walk you through obtaining these credentials within Snipe-IT.
+
+### Prerequisites:
+
+- You must have an account with Snipe-IT (either self-hosted or cloud instance).
+- You must have admin privileges to generate API tokens.
+
+### Instructions:
+
+#### Step 1: Finding Your Domain and API Token
+
+1. Log in to your Snipe-IT instance (e.g., `https://yourcompany.snipe-it.io`).
+2. Navigate to **Account** > **API Keys** from the top-right user menu.
+3. Click **Create New Token**.
+4. Enter a **Name** for your token (e.g., "Nango Integration").
+5. Click **Save** to generate the token.
+6. Copy the generated API token immediately (it will only be shown once).
+7. Note your domain URL (the part before `/admin` in your browser URL).
+
+<Note>For the demo instance at [demo.snipe-it.io](https://demo.snipe-it.io), you can use username `admin` and password `password` to test the integration.</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Token** and **Domain**:
+1. Open the form where you need to authenticate with Snipe-IT.
+2. Enter your **Domain** (e.g., `yourcompany.snipe-it.io` - without `https://`).
+3. Enter your **API Token** in its respective field.
+4. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Snipe-IT.
