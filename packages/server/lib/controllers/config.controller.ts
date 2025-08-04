@@ -16,12 +16,12 @@ class ConfigController {
         }
 
         try {
-            const sharedCredentialsCache = await configService.getPreConfiguredProviderScopes();
+            const sharedCredentials = await configService.getPreConfiguredProviderScopes();
 
             const list = Object.entries(providers).map((providerProperties) => {
                 const [provider, properties] = providerProperties;
                 // check if provider has nango's preconfigured credentials
-                const preConfiguredInfo = sharedCredentialsCache[provider];
+                const preConfiguredInfo = sharedCredentials[provider];
                 const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
                 const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 

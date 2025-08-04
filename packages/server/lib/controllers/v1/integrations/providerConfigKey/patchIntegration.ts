@@ -24,10 +24,9 @@ const validationBody = z
                 z
                     .object({
                         authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                        clientId: z.string().min(1).max(255).optional(),
-                        clientSecret: z.string().min(1).optional(),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
-                        useSharedCredentials: z.boolean().default(false)
+                        clientId: z.string().min(1).max(255),
+                        clientSecret: z.string().min(1),
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
                     .strict(),
                 z
@@ -93,19 +92,6 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
-    if ('authType' in body && (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA')) {
-        const useSharedCredentials = body.useSharedCredentials ?? false;
-        if (!useSharedCredentials && (!body.clientId || !body.clientSecret)) {
-            res.status(400).send({
-                error: {
-                    code: 'invalid_body',
-                    message: 'clientId and clientSecret are required when providing your own credentials'
-                }
-            });
-            return;
-        }
-    }
-
     // Integration ID
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
@@ -141,19 +127,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            const useSharedCredentials = body.useSharedCredentials ?? true;
-
-            if (useSharedCredentials) {
-                const sharedCredentialsId = await configService.getSharedCredentialsId(integration.provider);
-                if (sharedCredentialsId) {
-                    integration.shared_credentials_id = sharedCredentialsId;
-                }
-            } else {
-                integration.shared_credentials_id = null;
-                integration.oauth_client_id = body.clientId!;
-                integration.oauth_client_secret = body.clientSecret!;
-                integration.oauth_scopes = body.scopes || '';
-            }
+            integration.oauth_client_id = body.clientId;
+            integration.oauth_client_secret = body.clientSecret;
+            integration.oauth_scopes = body.scopes || '';
         } else if (body.authType === 'APP') {
             integration.oauth_client_id = body.appId;
             // This is a legacy thing

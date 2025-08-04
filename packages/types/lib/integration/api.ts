@@ -101,7 +101,7 @@ export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
-    Body: { provider: string };
+    Body: { provider: string; useSharedCredentials: boolean };
     Success: {
         data: ApiIntegration;
     };
@@ -134,10 +134,9 @@ export type PatchIntegration = Endpoint<{
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-              clientId?: string | undefined;
-              clientSecret?: string | undefined;
+              clientId: string;
+              clientSecret: string;
               scopes?: string | undefined;
-              useSharedCredentials: boolean;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;

@@ -32,8 +32,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
         setLoading(true);
 
         const payload: any = {
-            authType: template.auth_mode as any,
-            useSharedCredentials: false
+            authType: template.auth_mode as any
         };
 
         if (!integration.shared_credentials_id) {

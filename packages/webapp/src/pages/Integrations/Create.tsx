@@ -8,7 +8,7 @@ import { useSWRConfig } from 'swr';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { apiPatchIntegration, apiPostIntegration } from '../../hooks/useIntegration';
+import { apiPostIntegration, clearIntegrationsCache } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
@@ -28,7 +28,7 @@ interface Provider {
 }
 
 export default function Create() {
-    const { mutate } = useSWRConfig();
+    const { mutate, cache } = useSWRConfig();
     const { toast } = useToast();
     const env = useStore((state) => state.env);
 
@@ -71,13 +71,16 @@ export default function Create() {
     };
 
     const onCreateIntegrationDirect = async (providerName: string) => {
-        const created = await apiPostIntegration(env, { provider: providerName });
+        const created = await apiPostIntegration(env, {
+            provider: providerName,
+            useSharedCredentials: false
+        });
 
         if ('error' in created.json) {
             toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
         } else {
             toast({ title: 'Integration created', variant: 'success' });
-            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+            clearIntegrationsCache(cache, mutate);
             navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
         }
     };
@@ -121,26 +124,15 @@ export default function Create() {
             setIsCreatingShared(true);
 
             try {
-                const created = await apiPostIntegration(env, { provider: selectedProvider.name });
+                const created = await apiPostIntegration(env, { provider: selectedProvider.name, useSharedCredentials: true });
 
                 if ('error' in created.json) {
                     toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
                     return;
                 }
-                const updatePayload = {
-                    authType: selectedProvider.authMode as any,
-                    useSharedCredentials: true
-                };
-
-                const updated = await apiPatchIntegration(env, created.json.data.unique_key, updatePayload);
-
-                if ('error' in updated.json) {
-                    toast({ title: updated.json.error.message || 'Failed to update integration', variant: 'error' });
-                    return;
-                }
 
                 toast({ title: 'Integration created with Nango credentials', variant: 'success' });
-                void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+                clearIntegrationsCache(cache, mutate);
                 navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
                 setShowConfigModal(false);
             } finally {

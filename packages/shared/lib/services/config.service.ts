@@ -145,6 +145,36 @@ class ConfigService {
         return config;
     }
 
+    async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
+        const sharedCredentialsId = await this.getSharedCredentialsId(providerName);
+        if (!sharedCredentialsId) {
+            throw new NangoError('shared_credentials_not_found');
+        }
+
+        const exists = await db.knex
+            .count<{ count: string }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider: providerName, environment_id, deleted: false })
+            .first();
+
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: providerName,
+                forward_webhooks: true,
+                shared_credentials_id: sharedCredentialsId
+            },
+            provider
+        );
+
+        if (!config) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        return config;
+    }
+
     async deleteProviderConfig({
         id,
         environmentId,
@@ -290,29 +320,27 @@ class ConfigService {
     }
 
     async getPreConfiguredProviderScopes(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
-        const sharedCredentials = (await db.knex.select('name', 'credentials').from<DBSharedCredentials>('providers_shared_credentials')) as Pick<
-            DBSharedCredentials,
-            'name' | 'credentials'
-        >[];
+        const sharedCredentials = await db.knex
+            .select<{ name: string; scopes: string[] | null }[]>(['name', db.knex.raw(`string_to_array(credentials->>'oauth_scopes', ',') as scopes`)])
+            .from<DBSharedCredentials>('providers_shared_credentials')
+            .whereNotNull('credentials');
 
         const preConfiguredProviders: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
 
         for (const cred of sharedCredentials) {
-            if (cred.credentials) {
-                const scopes = cred.credentials.oauth_scopes ? cred.credentials.oauth_scopes.split(',').map((scope: string) => scope.trim()) : [];
-                preConfiguredProviders[cred.name] = { scopes, preConfigured: true };
-            }
+            const scopes = cred.scopes ? cred.scopes.map((scope: string) => scope.trim()) : [];
+            preConfiguredProviders[cred.name] = { scopes, preConfigured: true };
         }
 
         return preConfiguredProviders;
     }
 
     async getSharedCredentialsId(provider: string): Promise<number | null> {
-        const sharedCredentials = (await db.knex
-            .select('id')
-            .from<DBSharedCredentials>('providers_shared_credentials')
+        const sharedCredentials = await db.knex
+            .select<Pick<DBSharedCredentials, 'id'>[]>('id')
+            .from('providers_shared_credentials')
             .where('name', provider)
-            .first()) as Pick<DBSharedCredentials, 'id'>;
+            .first();
 
         return sharedCredentials?.id || null;
     }
