@@ -289,6 +289,20 @@
                                             "enum": ["at", "after"]
                                         }
                                     }
+                                },
+                                "minutely_rate_limit": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": ["reset_time_key", "strategy"],
+                                    "properties": {
+                                        "reset_time_key": {
+                                            "type": "string"
+                                        },
+                                        "strategy": {
+                                            "type": "string",
+                                            "enum": ["at", "after"]
+                                        }
+                                    }
                                 }
                             }
                         },
