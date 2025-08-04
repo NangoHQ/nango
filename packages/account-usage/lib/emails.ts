@@ -22,12 +22,6 @@ export async function sendUsageNearLimitEmail({
 
     logger.info(`Sending usage near limit email for ${metricName} to ${user.email}`);
 
-    // TODO: Remove after testing
-    const dryRun = true;
-    if (dryRun) {
-        return;
-    }
-
     const formattedUsage = formatUsage(usage, triggeringMetric);
 
     const emailClient = EmailClient.getInstance();
@@ -68,13 +62,7 @@ export async function sendUsageLimitReachedEmail({
 }) {
     const metricName = usage.find((u) => u.metric === triggeringMetric)?.label ?? triggeringMetric;
 
-    logger.info(`Sending usage near limit email for ${metricName} to ${user.email}`);
-
-    // TODO: Remove after testing
-    const dryRun = true;
-    if (dryRun) {
-        return;
-    }
+    logger.info(`Sending usage limit reached email for ${metricName} to ${user.email}`);
 
     const formattedUsage = formatUsage(usage, triggeringMetric);
 
