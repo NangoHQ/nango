@@ -307,7 +307,7 @@ class SyncController {
             const contentLength = responseHeaders['content-length'];
             const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
             if (contentLength && lengthInMB > 0.5) {
-                logger.info(`Action DEBUGGING: contentLength is ${lengthInMB.toFixed(2)} MB`);
+                logger.info(`Action DEBUGGING: accountId: ${account.id} contentLength is ${lengthInMB.toFixed(2)} MB`);
             }
             await logCtx?.enrichOperation({
                 request: {
