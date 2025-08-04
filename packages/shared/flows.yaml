@@ -9295,7 +9295,7 @@ integrations:
                 description: |
                     Fetches a list of issues from Jira
                 output: Issue
-                version: 1.0.1
+                version: 1.0.2
                 sync_type: incremental
                 input: JiraIssueMetadata
                 auto_start: false
@@ -9349,6 +9349,7 @@ integrations:
                 projectIdsToSync: JiraProjectId[]
                 cloudId?: string
                 baseUrl?: string
+                timeZone?: string
             JiraProjectId:
                 id: string
             Timestamps:
