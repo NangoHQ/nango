@@ -1,74 +1,118 @@
 ---
-title: Workday (OAuth)
-sidebarTitle: Workday (OAuth)
+title: 'Workday (OAuth)'
+sidebarTitle: 'Workday (OAuth)'
+description: 'Access the Workday API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/workday-oauth/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/workday-oauth/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Workday (OAuth)_.
+      </Step>
+      <Step title="Authorize Workday">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Workday. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Workday API">
+        Let's make your first request to the Workday API (fetch worker information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/{connectionConfig.tenant}/workers" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Required   | You need to be a Workday customer to access developer resources. |
-| Paid test account | ✅ Required |  Test environments are typically provisioned by Workday for customers. |
-| App review | ✅ Not required | |
-| App review | ✅ Not required | |
-| Security audit | ✅ Not required | |
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
 
-## Setup guide
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Steps> 
-<Step title="Access the Workday API Client Registration"> 
-1. Log in to your **Workday tenant** as an administrator. 
-2. In the **Search bar**, type **Register API Client** and select it. 
-</Step> 
-<Step title="Create OAuth 2.0 credentials"> 
-1. On the **Register API Client** page, configure: 
-- **Client Name**: Enter a unique, descriptive name (e.g., `Nango HRIS Integration`).
-- **Client Grant Type**: Select **Authorization Code Grant** (required for OAuth 2.0 flows).
-- **Access Token Type**: Select **Bearer** (standard for API authentication).
-- **Redirection URI**: Set to https://api.nango.dev/oauth/callback.
-- **Non-Expiring Refresh Tokens**: ✅ Enable (recommended for long-lived access).
-- **Scope** (Functional Areas):
-    + **Custom Objects > System** (required for custom object operations).
-    + **System - Workday Query Language (WQL)** (required for WQL queries).
-    + **HRIS** (for core employee/personnel data).
-    + **Staffing** (for recruitment/hiring data).
-    + **Tenant Non-Configurable** (read-only tenant settings).
-- **Include Workday Owned Scope**: ⚠️ Optional, It grants access to API scopes that are owned and managed by Workday itself.
-2. Click **OK** to generate client credentials (**Client ID and Client Secret**), save these credentials securely as you'll need them when configuring your integration in Nango.
- </Step> 
- <Step title="Next">
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const connectionId = '<CONNECTION-ID>';
+            const providerConfigKey = '<INTEGRATION-ID>';
+            const connection = await nango.getConnection(providerConfigKey,connectionId)
+
+            const res = await nango.get({
+              endpoint: `/v1/${connection.connection_config['tenant']}/workers`,
+              providerConfigKey,
+              connectionId
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        <Note>
+        The `{connectionConfig.tenant}` in the URL represents the `tenant`. You can get this value from your connection configuration after creating the connection. 
+        </Note>
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Workday accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
+  <Step title="Access the Workday API Client Registration">
+    1. Log in to your **Workday tenant** as an administrator.
+    2. In the **Search bar**, type **Register API Client** and select it.
+  </Step>
+  <Step title="Create OAuth 2.0 credentials">
+      1. On the **Register API Client** page, configure:
+        - **Client Name**: Enter a unique, descriptive name (e.g., `Nango HRIS Integration`).
+        - **Client Grant Type**: Select **Authorization Code Grant** (required for OAuth 2.0 flows).
+        - **Access Token Type**: Select **Bearer** (standard for API authentication).
+        - **Redirection URI**: Set to `https://api.nango.dev/oauth/callback`.
+        - **Non-Expiring Refresh Tokens**: ✅ Enable (recommended for long-lived access).
+        - **Scope** (Functional Areas):
+          + **Custom Objects > System** (required for custom object operations).
+          + **System - Workday Query Language (WQL)** (required for WQL queries).
+          + **HRIS** (for core employee/personnel data).
+          + **Staffing** (for recruitment/hiring data).
+          + **Tenant Non-Configurable** (read-only tenant settings).
+        - **Include Workday Owned Scope**: ⚠️ Optional, It grants access to API scopes that are owned and managed by Workday itself.
+    2. Click **OK** to generate client credentials (**Client ID and Client Secret**), save these credentials securely as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Workday (OAuth) using Connect UI](/integrations/all/workday-oauth/connect) |
+    | General | [Website](https://www.workday.com/) |
+    | Developer | [Workday REST Services Directory](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html) |
+    | | [Workday Community](https://community.workday.com/) |
+    | | [Request Community Account](https://workday.my.site.com/customercenter/register) |
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday-oauth.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Workday provides two APIs, a REST and a SOAP one. Nango supports them both.
+    - Access to most Workday's API doc resources, including detailed documentation on OAuth authentication flows, is typically restricted to Workday customers and partners. To access these resources, you can:​
+    - **Sign In to Workday Community**: Visit the [Workday Community](https://community.workday.com/) and sign in with your Workday credentials. If you don't have an account, you can [request one](https://workday.my.site.com/customercenter/register).
+    - **Contact Workday Support**: If you are a customer, reach out to Workday Support for assistance in accessing specific documentation.
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday-oauth.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday-oauth.mdx)</Note>
+  </Tab>
+</Tabs>
 
-
-## Useful links
-- [Workday REST Services Directory](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html)
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday-oauth.mdx)</Note>
-
-## API gotchas
-- Access to most Workday's API doc resources, including detailed documentation on OAuth authentication flows, is typically restricted to Workday customers and partners. To access these resources, you can:​
-- **Sign In to Workday Community**: Visit the [Workday Community](https://community.workday.com/) and sign in with your Workday credentials. If you don't have an account, you can [request one](https://workday.my.site.com/customercenter/register).
-- **Contact Workday Support**: If you are a customer, reach out to Workday Support for assistance in accessing specific documentation.
-
-<Note>
-    Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday-oauth.mdx)
-</Note>
-
-## Going further
-
-<Card title="Connect to Workday (OAuth)" icon="link" href="/integrations/all/workday-oauth/connect" horizontal>
-  Guide to connect to Workday (OAuth) using Connect UI
-</Card>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

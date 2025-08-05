@@ -1,47 +1,29 @@
 ---
-title: Workday
-sidebarTitle: Workday
+title: 'Workday'
+sidebarTitle: 'Workday'
+description: 'Access the Workday SOAP API with custom integrations'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/workday/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/workday/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Workday using Connect UI](/integrations/all/workday/connect) |
+    | General | [Website](https://www.workday.com/) |
+    | Developer | [Workday REST Services Directory](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html) |
+    | | [Workday Community](https://community.workday.com/) |
+    | | [Request Community Account](https://workday.my.site.com/customercenter/register) |
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Workday provides two APIs, a REST and a SOAP one. Nango supports them both.
+    - Workday requires a user-specific `hostname` and `tenant` for the API base URL.
+    - Access to most Workday's API documentation is typically restricted to Workday customers and partners.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+  </Tab>
+</Tabs>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
-
-
-## Setup guide
-
-_No setup guide yet._
-
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
-
-
-## Useful links
-
-Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently supported.
-
-## Connection configuration in Nango
-
-- Workday requires a user specific hostname and tenant for the API base URL.
-
-## API gotchas
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
-
-<Card title="Connect to Workday" icon="link" href="/integrations/all/workday/connect" horizontal>
-  Guide to connect to Workday using Nango Connect.
-</Card>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
