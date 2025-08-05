@@ -170,15 +170,16 @@ export async function persistRecords({
         const mar = new Set(summary.activatedKeys).size;
 
         // Billing metrics
-        if (plan && shouldBillMonthlyActiveRecords) {
-            billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
-            metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+        if (shouldBillMonthlyActiveRecords) {
+            if (plan) {
+                billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
+                metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+            }
+            const accountUsageTracker = await getAccountUsageTracker();
+            // Account usage tracking for capping
+            void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+            void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
         }
-
-        const accountUsageTracker = await getAccountUsageTracker();
-        // Account usage tracking for capping
-        void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
-        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
 
         void pubsub.publisher.publish({
             subject: 'usage',
