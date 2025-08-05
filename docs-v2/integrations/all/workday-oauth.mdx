@@ -38,12 +38,12 @@ description: 'Access the Workday API in 2 minutes 💨'
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
             const connectionId = '<CONNECTION-ID>';
             const providerConfigKey = '<INTEGRATION-ID>';
-            const connection = await nango.getConnection(providerConfigKey,connectionId)
+            const connection = await nango.getConnection(providerConfigKey, connectionId);
 
             const res = await nango.get({
-              endpoint: `/v1/${connection.connection_config['tenant']}/workers`,
-              providerConfigKey,
-              connectionId
+                endpoint: `/v1/${connection.connection_config['tenant']}/workers`,
+                providerConfigKey,
+                connectionId
             });
 
             console.log(JSON.stringify(res.data, null, 2));
