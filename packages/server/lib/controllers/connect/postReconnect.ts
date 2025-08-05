@@ -19,7 +19,8 @@ const bodySchema = z
         integration_id: providerConfigKeySchema,
         end_user: originalBodySchema.shape.end_user.optional(),
         organization: originalBodySchema.shape.organization,
-        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults
+        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
+        overrides: originalBodySchema.shape.overrides.optional()
     })
     .strict();
 
@@ -41,7 +42,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
@@ -101,6 +102,15 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                             errors: zodErrorToHTTP({ issues: [...(integrationConfigDefaultsCheck || []), ...(overridesCheck || [])] })
                         }
                     }
+                };
+            }
+
+            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
+            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
+            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
+                return {
+                    status: 403,
+                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
                 };
             }
         }
