@@ -63,12 +63,12 @@ export default function UsageCard() {
                             <Skeleton className="h-[24px]" />
                         </>
                     ) : (
-                        usage?.data?.map((metric) => (
-                            <div key={metric.metric} className="flex flex-row justify-between items-center">
-                                <span className="text-text-secondary text-s">{metric.label}</span>
+                        Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
+                            <div key={metric} className="flex flex-row justify-between items-center">
+                                <span className="text-text-secondary text-s">{usage.label}</span>
                                 <div>
-                                    <span className={cn('text-s', getColorForUsage(metric.usage, metric.limit))}>{metric.usage}</span>
-                                    {metric.limit && <span className="text-text-tertiary text-s">/{formatLimit(metric.limit)}</span>}
+                                    <span className={cn('text-s', getColorForUsage(usage.usage, usage.limit))}>{usage.usage}</span>
+                                    {usage.limit && <span className="text-text-tertiary text-s">/{formatLimit(usage.limit)}</span>}
                                 </div>
                             </div>
                         ))
