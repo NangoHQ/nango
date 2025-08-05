@@ -23,6 +23,7 @@ on:
                     - runner
                     - persist
                     - orchestrator
+                    - metering
                     - connect_ui
 
 jobs:
@@ -106,6 +107,23 @@ jobs:
             - name: Deploy orchestrator
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cp6bhl0l6cac738i3dm0", "staging": "srv-cp5qedsf7o1s739kjqtg" }')[inputs.stage] }}
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
+
+    deploy_metering:
+        if: inputs.service == 'metering'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Deploy metering
+              run: |
+                  SERVICE_ID=${{ fromJson('{ "production": "srv-d28h9aali9vc73db203g", "staging": "srv-d28gt2mmcj7s73bnmb30" }')[inputs.stage] }}
                   IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"

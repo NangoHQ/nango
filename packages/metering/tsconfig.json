@@ -6,31 +6,16 @@
     },
     "references": [
         {
-            "path": "../database"
-        },
-        {
-            "path": "../logs"
-        },
-        {
-            "path": "../shared"
-        },
-        {
             "path": "../types"
         },
         {
             "path": "../utils"
         },
         {
-            "path": "../records"
+            "path": "../pubsub"
         },
         {
             "path": "../billing"
-        },
-        {
-            "path": "../account-usage"
-        },
-        {
-            "path": "../pubsub"
         }
     ],
     "include": ["lib/**/*"]

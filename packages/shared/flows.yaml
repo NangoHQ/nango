@@ -20141,7 +20141,7 @@ integrations:
                     Fetches a list of current employees from Workday and maps them to the
                     standard HRIS model
                 output: StandardEmployee
-                version: 1.0.1
+                version: 1.0.2
                 sync_type: incremental
                 input: SyncConfiguration
                 endpoint:

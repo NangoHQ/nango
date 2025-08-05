@@ -22,6 +22,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
+import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
 
@@ -280,6 +281,21 @@ class SyncController {
                         actionName: action_name
                     });
                 }
+                void pubsub.publisher.publish({
+                    subject: 'usage',
+                    type: 'usage.actions',
+                    idempotencyKey: logCtx.id,
+                    payload: {
+                        value: 1,
+                        accountId: account.id,
+                        properties: {
+                            environmentId: connection.environment_id,
+                            providerConfigKey,
+                            connectionId: connection.id,
+                            actionName: action_name
+                        }
+                    }
+                });
 
                 return;
             } else {
