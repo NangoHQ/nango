@@ -1,7 +1,9 @@
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
 import { useApiGetUsage } from '../hooks/usePlan.js';
 import { useStore } from '../store.js';
+import { SimpleTooltip } from './SimpleTooltip.js';
 import { Skeleton } from './ui/Skeleton.js';
 import { cn } from '../utils/utils.js';
 import { ButtonLink } from './ui/button/Button.js';
@@ -65,7 +67,18 @@ export default function UsageCard() {
                     ) : (
                         Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
                             <div key={metric} className="flex flex-row justify-between items-center">
-                                <span className="text-text-secondary text-s">{usage.label}</span>
+                                <div className="flex flex-row items-center gap-1">
+                                    <span className="text-text-secondary text-s">{usage.label}</span>
+                                    {metric === 'active_records' && (
+                                        <SimpleTooltip
+                                            className="text-text-secondary"
+                                            tooltipContent="Synced records are only counted for connections that are at least 1 month old"
+                                            side="bottom"
+                                        >
+                                            <IconInfoCircle className="w-3 h-3 text-text-tertiary" />
+                                        </SimpleTooltip>
+                                    )}
+                                </div>
                                 <div>
                                     <span className={cn('text-s', getColorForUsage(usage.usage, usage.limit))}>{usage.usage}</span>
                                     {usage.limit && <span className="text-text-tertiary text-s">/{formatLimit(usage.limit)}</span>}
