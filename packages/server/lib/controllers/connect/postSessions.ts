@@ -12,7 +12,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
-import type { PostConnectSessions } from '@nangohq/types';
+import type { DBPlan, PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
 
 export const bodySchema = z
@@ -77,8 +77,10 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
+    const { plan } = res.locals;
+
     const body: PostConnectSessions['Body'] = val.data;
-    await generateSession(res, body);
+    await generateSession(res, body, plan);
 });
 
 /**
@@ -108,7 +110,7 @@ export function checkIntegrationsExist(
     return errors.length > 0 ? errors : false;
 }
 
-export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body']) {
+export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
     const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
@@ -116,10 +118,10 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
         }
 
-        if (body.allowed_integrations || body.integrations_config_defaults) {
+        if (body.allowed_integrations || body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
 
-            // Enforce that integrations exists in `allowed_integrations`
+            // Enforce that integrations in `allowed_integrations` exist
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {
                 const errors: z.core.$ZodIssue[] = [];
                 for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
@@ -149,6 +151,15 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                             errors: zodErrorToHTTP({ issues: [...(integrationConfigsDefaultsErrors || []), ...(overridesErrors || [])] })
                         }
                     }
+                };
+            }
+
+            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
+            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
+            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
+                return {
+                    status: 403,
+                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
                 };
             }
         }
