@@ -9295,7 +9295,7 @@ integrations:
                 description: |
                     Fetches a list of issues from Jira
                 output: Issue
-                version: 1.0.1
+                version: 1.0.2
                 sync_type: incremental
                 input: JiraIssueMetadata
                 auto_start: false
@@ -9349,6 +9349,7 @@ integrations:
                 projectIdsToSync: JiraProjectId[]
                 cloudId?: string
                 baseUrl?: string
+                timeZone?: string
             JiraProjectId:
                 id: string
             Timestamps:
@@ -20106,9 +20107,10 @@ integrations:
                 runs: every hour
                 description: |
                     Fetches a list of current employees from Workday
-                version: 1.0.1
+                version: 1.0.2
                 output: Employee
                 sync_type: incremental
+                input: SyncConfiguration
                 endpoint:
                     method: GET
                     path: /employees
@@ -20139,13 +20141,16 @@ integrations:
                     Fetches a list of current employees from Workday and maps them to the
                     standard HRIS model
                 output: StandardEmployee
-                version: 1.0.1
+                version: 1.0.2
                 sync_type: incremental
+                input: SyncConfiguration
                 endpoint:
                     method: GET
                     path: /employees/unified
                     group: Unified HRIS API
         models:
+            SyncConfiguration:
+                lagMinutes?: number
             Employee:
                 id: string
                 user_name: string | null

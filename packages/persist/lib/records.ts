@@ -1,11 +1,13 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+
+import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import type { DBPlan, MergingStrategy } from '@nangohq/types';
@@ -168,14 +170,22 @@ export async function persistRecords({
         const mar = new Set(summary.activatedKeys).size;
 
         // Billing metrics
-        if (plan && shouldBillMonthlyActiveRecords) {
-            billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
-            metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+        if (shouldBillMonthlyActiveRecords) {
+            if (plan) {
+                billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
+                metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+            }
+            const accountUsageTracker = await getAccountUsageTracker();
+            // Account usage tracking for capping
+            void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+            void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
         }
 
-        const accountUsageTracker = await getAccountUsageTracker();
-        // Account usage tracking for capping
-        void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.monthly_active_records',
+            payload: { value: mar, accountId, properties: { environmentId, providerConfigKey, connectionId, syncId, model } }
+        });
 
         // Datadog metrics
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });

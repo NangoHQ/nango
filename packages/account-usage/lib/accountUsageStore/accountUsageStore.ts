@@ -1,19 +1,19 @@
-import type { AccountUsageMetric } from '../metrics.js';
+import type { AccountUsageIncrementableMetric } from '../metrics.js';
 
 export interface GetUsageParams {
     accountId: number;
-    metric: AccountUsageMetric;
+    metric: AccountUsageIncrementableMetric;
     month?: Date;
 }
 export interface SetUsageParams {
     accountId: number;
-    metric: AccountUsageMetric;
+    metric: AccountUsageIncrementableMetric;
     value: number;
     month?: Date;
 }
 export interface IncrementUsageParams {
     accountId: number;
-    metric: AccountUsageMetric;
+    metric: AccountUsageIncrementableMetric;
     delta?: number;
     month?: Date;
 }

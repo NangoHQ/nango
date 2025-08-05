@@ -8950,6 +8950,35 @@ sage-intacct:
             description: Your Sage Intacct User Password
             secret: true
 
+sage-people:
+    display_name: Sage People
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_params:
+        prompt: consent
+    default_scopes:
+        - offline_access
+        - api
+    proxy:
+        base_url: https://${connectionConfig.instance_url}/services/apexrest/spapi
+        headers:
+            accept: application/json
+    token_response_metadata:
+        - instance_url
+    docs: https://docs.nango.dev/integrations/all/sage-people
+    docs_connect: https://docs.nango.dev/integrations/all/sage-people/connect
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+            automated: true
+
 salesforce:
     display_name: Salesforce
     categories:
@@ -10901,38 +10930,30 @@ ukg-ready:
     display_name: UKG Ready
     categories:
         - hr
-    auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.hostname}/api/v2/client/tokens
-    token_url: https://${connectionConfig.hostname}/api/v2/client/tokens
-    scope_separator: ' '
-    authorization_params:
-        response_type: code
-        audience: https://${connectionConfig.hostname}/api
-        realm: ${connectionConfig.tenantName}
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ta/rest/v2/companies/${connectionConfig.realmId}/oauth2/token
     token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
+        grant_type: client_credentials
     proxy:
         base_url: https://${connectionConfig.hostname}
     docs: https://docs.nango.dev/integrations/all/ukg-ready
     docs_connect: https://docs.nango.dev/integrations/all/ukg-ready/connect
     connection_config:
+        realmId:
+            type: string
+            title: Company ID
+            description: A unique identifier for your company.
+            example: '23444234'
+            doc_section: '#step-2-finding-your-company-id'
         hostname:
             type: string
-            title: Tenant URL
-            description: The tenant URL of your UKG Ready instance
+            title: Hostname
+            description: The hostname to your UKG Ready instance
             format: hostname
-            example: wfm.us1.ukg.com
-            suffix: /api
+            example: secure.us.rdy.ukg
+            suffix: /ta
             prefix: https://
-            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
-        tenantName:
-            type: string
-            title: Tenant Name
-            description: The tenant name of your UKG Ready instance
-            example: wfm
-            doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+            doc_section: '#step-3-finding-your-hostname'
 unanet:
     display_name: Unanet
     categories:
@@ -11328,14 +11349,16 @@ workday:
             type: string
             title: Tenant
             description: The tenant of your Workday account
-            example: yourtenant
+            example: acme
             order: 2
             doc_section: '#step-2-finding-your-tenant'
     credentials:
         username:
             type: string
+            example: ISU Nango@acme
             title: Username
             description: Workday API Username
+            pattern: '^[^@]+@[^@]+$'
             doc_section: '#step-4-generating-your-username'
         password:
             type: string

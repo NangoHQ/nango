@@ -48,4 +48,13 @@ export class Locking {
     public async release(lock: Lock): Promise<void> {
         await this.store.delete(lock.key);
     }
+
+    public async withLock<T>(key: string, ttlInMs: number, acquisitionTimeoutMs: number, fn: () => Promise<T>): Promise<T> {
+        const lock = await this.tryAcquire(key, ttlInMs, acquisitionTimeoutMs);
+        try {
+            return await fn();
+        } finally {
+            await this.release(lock);
+        }
+    }
 }

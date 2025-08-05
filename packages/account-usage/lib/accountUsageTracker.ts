@@ -1,10 +1,11 @@
+import { connectionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import { metricFlags } from './metrics.js';
 
-import type { AccountUsageStore, GetUsageParams, IncrementUsageParams } from './accountUsageStore/accountUsageStore.js';
+import type { AccountUsageStore, IncrementUsageParams } from './accountUsageStore/accountUsageStore.js';
 import type { AccountUsageMetric } from './metrics.js';
-import type { DBPlan } from '@nangohq/types';
+import type { DBPlan, DBTeam, MetricUsage } from '@nangohq/types';
 
 /**
  * Tracks usage for an account. Prioritizes performance over precision.
@@ -47,9 +48,13 @@ export class AccountUsageTracker {
         }
     }
 
-    public async getUsage(params: GetUsageParams): Promise<number | null> {
+    public async getUsage(params: { accountId: number; metric: AccountUsageMetric }): Promise<number | null> {
         try {
-            return await this.usageStore.getUsage(params);
+            if (params.metric === 'connections') {
+                return await connectionService.countByAccountId(params.accountId);
+            }
+
+            return await this.usageStore.getUsage({ accountId: params.accountId, metric: params.metric });
         } catch (err) {
             report(new Error('Error getting usage', { cause: err }), { ...params });
 
@@ -60,5 +65,40 @@ export class AccountUsageTracker {
     public getLimit(plan: DBPlan, metric: AccountUsageMetric): number | null {
         const flag = metricFlags[metric];
         return plan[flag as keyof DBPlan] as number | null;
+    }
+
+    public async getAccountMetricsUsage(account: DBTeam, plan: DBPlan): Promise<MetricUsage[]> {
+        return [
+            {
+                metric: 'connections',
+                label: 'Connections',
+                usage:
+                    (await this.getUsage({
+                        accountId: account.id,
+                        metric: 'connections'
+                    })) ?? 0,
+                limit: plan.connections_max
+            },
+            {
+                metric: 'actions',
+                label: 'Actions',
+                usage:
+                    (await this.getUsage({
+                        accountId: account.id,
+                        metric: 'actions'
+                    })) ?? 0,
+                limit: plan.monthly_actions_max
+            },
+            {
+                metric: 'active_records',
+                label: 'Synced Records',
+                usage:
+                    (await this.getUsage({
+                        accountId: account.id,
+                        metric: 'active_records'
+                    })) ?? 0,
+                limit: plan.monthly_active_records_max
+            }
+        ];
     }
 }

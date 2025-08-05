@@ -1,4 +1,4 @@
-import type { BillingMetric, DBTeam, DBUser } from '@nangohq/types';
+import type { DBTeam, DBUser } from '@nangohq/types';
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue } | Record<string, any>;
 
@@ -23,6 +23,14 @@ type UserCreatedEvent = EventBase<
     }
 >;
 
-type BillingEvent = EventBase<'billing', 'billing.metric', BillingMetric[]>;
+type UsageEvent = EventBase<
+    'usage',
+    'usage.monthly_active_records' | 'usage.actions',
+    {
+        value: number;
+        accountId: number;
+        properties: Record<string, JsonValue>;
+    }
+>;
 
-export type Event = EnforceEventBase<UserCreatedEvent | BillingEvent>;
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent>;

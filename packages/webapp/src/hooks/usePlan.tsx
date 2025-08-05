@@ -63,7 +63,7 @@ export function useApiGetUsage(env: string) {
 
             return json;
         },
-        refetchInterval: 1000 * 60 // 1 minute
+        refetchInterval: 1000 * 10 // 10 seconds
     });
 }
 
