@@ -5,6 +5,83 @@ description: 'Access the Workday SOAP API with custom integrations'
 ---
 
 <Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Workday_.
+      </Step>
+      <Step title="Authorize Workday">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Workday. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Workday SOAP API">
+        Let's make your first request to the Workday SOAP API (fetch workers using Human_Resources service). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="Node">
+
+            Install Nango's backend SDK and SOAP library with `npm i @nangohq/node soap`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+            import soap from 'soap';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const connectionId = '<CONNECTION-ID>';
+            const providerConfigKey = '<INTEGRATION-ID>';
+            
+            const connection = await nango.getConnection(providerConfigKey, connectionId);
+            const { credentials, connection_config } = connection;
+
+            if (
+              credentials.type !== "BASIC" ||
+              !credentials.username ||
+              !credentials.password ||
+              !connection_config["hostname"] ||
+              !connection_config["tenant"]
+            ) {
+              throw new Error(
+                "Invalid credentials: BASIC auth, username, password, hostname, and tenant are all required."
+              );
+            }
+
+            // Example: Get workers using Human_Resources service
+            const serviceType = 'Human_Resources';
+            const version = '40.0';
+            const wsdlUrl = `https://community.workday.com/sites/default/files/file-hosting/productionapi/${serviceType}/v${version}/${serviceType}.wsdl`;
+            const endpointUrl = `https://${connection_config["hostname"]}/ccx/service/${connection_config["tenant"]}/${serviceType}/v${version}`;
+            
+
+            const client = await soap.createClientAsync(wsdlUrl, {});
+            client.addHttpHeader("Accept-Encoding", "gzip, deflate"); // Needed or some queries will fail https://github.com/axios/axios/issues/4806
+
+            client.setSecurity(
+              new soap.WSSecurity(credentials.username, credentials.password),
+            );
+            client.setEndpoint(endpointUrl);
+
+            // Make SOAP request to Get_WorkersAsync
+            const [res] = await client["Get_WorkersAsync"]({
+              Response_Filter: {
+                Page: 1,
+                Count: 100,
+              },
+            });
+
+            console.log('Workers Response:', JSON.stringify(res, null, 2));
+            ```
+            </Tab>
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Workday accounts.
+    </Tip>
+  </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links |
     | - | - |
