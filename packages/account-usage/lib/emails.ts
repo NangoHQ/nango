@@ -93,7 +93,7 @@ Team Nango
 function formatUsageSummary(usageSummary: AccountMetricsUsageSummary, triggeringMetric: AccountUsageMetric) {
     const usageLines = Object.entries(usageSummary).map(([metric, u]) => {
         const isPerMonth = metric !== 'connections';
-        const postfix = isPerMonth ? 'per month' : '';
+        const postfix = isPerMonth && u.limit ? 'per month' : '';
 
         const overLimit = u.limit && u.usage >= u.limit;
         const over80Percent = u.limit && u.usage >= u.limit * 0.8;
@@ -104,7 +104,7 @@ function formatUsageSummary(usageSummary: AccountMetricsUsageSummary, triggering
               ? `<span style="color: #e6a70d; font-weight: bold;">${u.usage}</span>`
               : u.usage.toString();
 
-        const line = `${u.label}: ${usageNumber}/${u.limit} ${postfix}`;
+        const line = `${u.label}: ${usageNumber}${u.limit ? `/${u.limit}` : ''} ${postfix}`;
 
         const isTriggeringMetric = metric === triggeringMetric;
         return isTriggeringMetric ? `<b>${line}</b>` : line;
