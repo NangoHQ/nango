@@ -38,20 +38,16 @@ describe('ActiveMQ Transport', () => {
         });
         it('should publish and consume event', async () => {
             const event: Event = {
-                idempotencyKey: 'test-idempotency-key',
-                subject: 'billing',
-                type: 'billing.metric',
-                payload: [
-                    {
-                        type: 'billable_actions',
-                        value: 10,
-                        properties: {
-                            accountId: 1,
-                            idempotencyKey: '12345',
-                            tag1: 'value1'
-                        }
+                idempotencyKey: '123456',
+                subject: 'usage',
+                type: 'usage.actions',
+                payload: {
+                    value: 10,
+                    accountId: 1,
+                    properties: {
+                        tag1: 'someTag1'
                     }
-                ],
+                },
                 createdAt: new Date()
             };
             const callback = vi.fn();
