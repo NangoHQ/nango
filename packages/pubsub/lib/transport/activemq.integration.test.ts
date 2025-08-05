@@ -46,8 +46,9 @@ describe('ActiveMQ Transport', () => {
                 type: 'usage.actions',
                 payload: {
                     value: 10,
-                    accountId: 1,
                     properties: {
+                        accountId: 1,
+                        connectionId: 2,
                         tag1: 'someTag1'
                     }
                 },
@@ -56,12 +57,8 @@ describe('ActiveMQ Transport', () => {
             const callback = vi.fn();
             consumer.subscribe({
                 consumerGroup: 'test-consumer-group',
-                subscriptions: [
-                    {
-                        subject: event.subject,
-                        callback
-                    }
-                ]
+                subject: event.subject,
+                callback
             });
 
             const published = await publisher.publish(event);
@@ -78,8 +75,9 @@ describe('ActiveMQ Transport', () => {
                 type: 'usage.actions',
                 payload: {
                     value: 20,
-                    accountId: 2,
                     properties: {
+                        accountId: 2,
+                        connectionId: 3,
                         tag2: 'someTag2'
                     }
                 },
@@ -88,12 +86,8 @@ describe('ActiveMQ Transport', () => {
             const callback = vi.fn();
             consumer.subscribe({
                 consumerGroup: 'test-consumer-group',
-                subscriptions: [
-                    {
-                        subject: event.subject,
-                        callback
-                    }
-                ]
+                subject: event.subject,
+                callback
             });
 
             await consumer.disconnect();
