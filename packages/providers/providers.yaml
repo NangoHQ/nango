@@ -9352,6 +9352,26 @@ rock-gym-pro:
             title: API Password
             description: Your Rock Gym Pro API password
 
+roller:
+    display_name: Roller
+    categories:
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.roller.app/token
+    body_format: json
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Roller client ID
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Roller client secret
+    proxy:
+        base_url: https://api.roller.app/venues/me
+    docs: https://docs.nango.dev/integrations/all/roller
+
 rootly:
     display_name: Rootly
     categories:
@@ -12450,26 +12470,3 @@ zuora:
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
-
-roller:
-    display_name: Roller
-    categories:
-        - ticketing
-        - productivity
-    auth_mode: OAUTH2_CC
-    token_url: https://api.roller.app/token
-    body_format: json
-    token_params:
-        grant_type: client_credentials
-    credentials:
-        client_id:
-            type: string
-            title: Client ID
-            description: Roller client ID
-        client_secret:
-            type: string
-            title: Client Secret
-            description: Roller client secret
-    proxy:
-        base_url: https://api.roller.app
-    docs: roller
