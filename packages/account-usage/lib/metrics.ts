@@ -1,6 +1,4 @@
-export type AccountUsageIncrementableMetric = 'actions' | 'active_records';
-
-export type AccountUsageMetric = AccountUsageIncrementableMetric | 'connections';
+import type { AccountUsageMetric } from '@nangohq/types';
 
 export const metricFlags: Record<AccountUsageMetric, string> = {
     actions: 'monthly_actions_max',

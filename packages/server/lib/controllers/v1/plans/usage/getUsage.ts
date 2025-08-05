@@ -19,7 +19,7 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
     }
 
     const accountUsageTracker = await getAccountUsageTracker();
-    const usage = await accountUsageTracker.getAccountMetricsUsage(account, plan);
+    const usage = await accountUsageTracker.getAccountMetricsUsageSummary(account, plan);
 
     res.status(200).send({
         data: usage
