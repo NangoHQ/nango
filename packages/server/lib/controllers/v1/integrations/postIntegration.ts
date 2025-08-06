@@ -11,7 +11,8 @@ import type { PostIntegration } from '@nangohq/types';
 
 const validationBody = z
     .object({
-        provider: providerSchema
+        provider: providerSchema,
+        useSharedCredentials: z.boolean()
     })
     .strict();
 
@@ -41,7 +42,9 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
 
     const { environment } = res.locals;
 
-    const integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+    const integration = body.useSharedCredentials
+        ? await configService.createPreprovisionedProvider(body.provider, environment.id, provider)
+        : await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
 
     res.status(200).send({
         data: integrationToApi(integration)
