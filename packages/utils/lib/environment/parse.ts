@@ -25,6 +25,7 @@ export const ENVS = z.object({
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
+    NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
