@@ -44,7 +44,7 @@ export interface BaseProvider {
     auth_mode: AuthModeType;
     installation?: 'outbound';
     proxy?: {
-        base_url?: string;
+        base_url: string;
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: {

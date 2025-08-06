@@ -8183,6 +8183,7 @@ private-api-bearer:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
+        base_url: https://my-private-api
     docs: https://docs.nango.dev/integrations/all/private-api-bearer
     docs_connect: https://docs.nango.dev/integrations/all/private-api-bearer/connect
     credentials:
@@ -8194,6 +8195,8 @@ private-api-bearer:
 private-api-basic:
     display_name: Private API (Basic Auth)
     auth_mode: BASIC
+    proxy:
+        base_url: https://my-private-api
     docs: https://docs.nango.dev/integrations/all/private-api-basic
     docs_connect: https://docs.nango.dev/integrations/all/private-api-basic/connect
     credentials:

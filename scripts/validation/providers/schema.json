@@ -187,6 +187,7 @@
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
+                    "required": ["base_url"],
                     "properties": {
                         "base_url": {
                             "type": "string"
