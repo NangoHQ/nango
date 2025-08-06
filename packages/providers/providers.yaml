@@ -5884,8 +5884,10 @@ jumpcloud:
         apiKey:
             type: string
             title: API Key
-            description: Your JumpCloud API Key. Generate this from your JumpCloud Admin Portal under My API Key.
-            secret: true
+            description: Your JumpCloud API Key.
+            example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
+            pattern: '^jca_[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generating-your-jumpcloud-api-key'
 
 helpscout-docs:
     display_name: Help Scout Docs
