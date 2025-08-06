@@ -12,7 +12,7 @@ export class DefaultTransport implements Transport {
     private isConnected = false;
 
     constructor() {
-        if (envs.NANGO_ACTIVEMQ_URL) {
+        if (envs.NANGO_PUBSUB_TRANSPORT === 'activemq') {
             this.transport = new ActiveMQ();
         } else {
             this.transport = new NoOpTransport();

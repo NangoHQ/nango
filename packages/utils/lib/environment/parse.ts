@@ -245,6 +245,7 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'none']).optional().default('none'),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
