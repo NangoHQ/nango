@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.64.4",
+    "version": "0.65.0",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -25,6 +25,7 @@
         "jobs:dev:watch": "npm run dev -w @nangohq/nango-jobs",
         "persist:dev:watch": "npm run dev -w @nangohq/nango-persist",
         "orchestrator:dev:watch": "npm run dev -w @nangohq/nango-orchestrator",
+        "metering:dev:watch": "npm run dev -w @nangohq/nango-metering",
         "webapp:dev:watch": "cd ./packages/webapp && npm run dev",
         "connect-ui:dev:watch": "cd ./packages/connect-ui && npm run dev",
         "connect-ui:build": "npm run -w @nangohq/connect-ui build",
@@ -32,8 +33,8 @@
         "build:watch": "tsc -b -w --preserveWatchOutput tsconfig.build.json",
         "dev:watch": "npm run -w nango copy:files && npm run build:watch",
         "watch:dev": "npm run dev:watch",
-        "dev:watch:apps": "concurrently --names 'srv,web,job,prs,orc,con' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run connect-ui:dev:watch\"",
-        "dev:watch:headless": "concurrently --names 'srv,job,prs,orc' --kill-others \"npm run server:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\"",
+        "dev:watch:apps": "concurrently --names 'srv,web,job,prs,orc,met,con' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\" \"npm run connect-ui:dev:watch\"",
+        "dev:watch:headless": "concurrently --names 'srv,job,prs,orc,met' --kill-others \"npm run server:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run metering:dev:watch\"",
         "dev:watch:web": "concurrently --names 'srv,web' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run connect-ui:dev:watch\"",
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",

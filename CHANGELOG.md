@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.65.0] - 2025-07-31
+
+### Added
+
+- *(orchestrator)* Add next execution date and task state to schedules (#4383) by @TBonnin
+- *(webapp)* Refresh usage on connection deleted (#4403) by @kaposke
+- *(providers)* Add example of workday username to use in docs (#4405) by @hassan254-prog
+- *(providers)* Add migrations for pre-provisioning provider credentials (#4389) by @hassan254-prog
+
+### Changed
+
+- Use last_scheduled_task_state/next_execution_at in scheduling query (#4398) by @TBonnin
+- Change to new API docs layout  (#4396) by @hassan254-prog
+- Change to new API docs layout (#4401) by @hassan254-prog
+- Remove Koala tracking (#4400) by @rguldener
+- TrackDeletes clarifications (#4382) by @mintlify[bot]
+
+### Fixed
+
+- Cap from getting connect session (#4390) by @kaposke
+- *(connect-ui)* Use custom integration display name (#4399) by @kaposke
+- *(server)* Don't cap a connection from finishing (#4404) by @kaposke
+- *(cli)* Fix global override (#4409) by @khaliqgant
+- Introduce asynchronous encrypt/decrypt functions (#4407) by @TBonnin
+- Use special render instances for runners (#4402) by @TBonnin
+- Improve cap messages (#4406) by @kaposke
+
 ## [v0.64.4] - 2025-07-29
 
 ### Added
@@ -4488,6 +4515,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
 [v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
 [v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
 [v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2

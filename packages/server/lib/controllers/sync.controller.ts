@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
@@ -20,8 +20,9 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
+import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
 
@@ -35,6 +36,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
+const logger = getLogger('SyncController');
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -225,7 +227,9 @@ class SyncController {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
             if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'actions'))) {
-                void logCtx.error('Usage limit exceeded for actions', {
+                const message =
+                    'Your monthly limit for action executions has been reached. No actions will run until you upgrade your account or the limit resets.';
+                void logCtx.error(message, {
                     usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
                     limit: accountUsageTracker.getLimit(plan, 'actions')
                 });
@@ -235,7 +239,7 @@ class SyncController {
                 res.status(400).send({
                     error: {
                         code: 'resource_capped',
-                        message: 'Usage limit exceeded for actions. Upgrade your plan to get rid of action limits.'
+                        message
                     }
                 });
 
@@ -246,6 +250,7 @@ class SyncController {
             }
 
             void accountUsageTracker.incrementUsage({ accountId: account.id, metric: 'actions' });
+            void onUsageIncreased({ accountId: account.id, metric: 'actions', delta: 1, plan: plan ?? undefined });
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,
@@ -276,6 +281,21 @@ class SyncController {
                         actionName: action_name
                     });
                 }
+                void pubsub.publisher.publish({
+                    subject: 'usage',
+                    type: 'usage.actions',
+                    idempotencyKey: logCtx.id,
+                    payload: {
+                        value: 1,
+                        accountId: account.id,
+                        properties: {
+                            environmentId: connection.environment_id,
+                            providerConfigKey,
+                            connectionId: connection.id,
+                            actionName: action_name
+                        }
+                    }
+                });
 
                 return;
             } else {
@@ -299,6 +319,12 @@ class SyncController {
         } finally {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
+            const responseHeaders = getHeaders(res.getHeaders());
+            const contentLength = responseHeaders['content-length'];
+            const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
+            if (contentLength && lengthInMB > 0.5) {
+                logger.info(`Action DEBUGGING: accountId: ${account.id} for the action name ${action_name} contentLength is ${lengthInMB.toFixed(2)} MB`);
+            }
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
@@ -307,7 +333,7 @@ class SyncController {
                 },
                 response: {
                     code: res.statusCode,
-                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
+                    headers: redactHeaders({ headers: responseHeaders })
                 }
             });
         }

@@ -143,7 +143,7 @@ export function decryptPrivateKey(key: PrivateKey): Result<string | null, Privat
 
 function encryptValue(keyValue: string): Buffer {
     const encryption = getEncryption();
-    const [encrypted, iv, tag] = encryption.encrypt(keyValue);
+    const [encrypted, iv, tag] = encryption.encryptSync(keyValue);
     return Buffer.from(`${encrypted}:${iv}:${tag}`);
 }
 
@@ -153,7 +153,7 @@ function decryptValue(encryptedValue: Buffer): Result<string, PrivateKeyError> {
     if (!encrypted || !iv || !tag) {
         return Err(new PrivateKeyError({ code: 'invalid', message: 'Invalid encrypted value' }));
     }
-    return Ok(encryption.decrypt(encrypted, iv, tag));
+    return Ok(encryption.decryptSync(encrypted, iv, tag));
 }
 
 export async function deleteExpiredPrivateKeys(db: knex.Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {

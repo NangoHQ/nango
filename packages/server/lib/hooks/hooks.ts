@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
@@ -59,10 +60,13 @@ export const connectionCreationStartCapCheck = async ({
     const connectionCount = await connectionService.countByAccountId(team.id);
 
     if (connectionCount >= plan.connections_max) {
-        logger.info(`Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.`, {
-            connectionCount,
-            limit: plan.connections_max
-        });
+        logger.info(
+            `You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.`,
+            {
+                connectionCount,
+                limit: plan.connections_max
+            }
+        );
         if (creationType === 'create') {
             productTracking.track({ name: 'server:resource_capped:connection_creation', team });
         } else {
@@ -146,6 +150,8 @@ export const connectionCreated = async (
         providerConfig,
         account
     });
+
+    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
 };
 
 export const connectionCreationFailed = async (
