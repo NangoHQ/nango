@@ -27,6 +27,8 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         return { name, value: 'boolean', tsType: true, optional };
     } else if (isZodNull(schema)) {
         return { name, value: null, tsType: true, optional };
+    } else if (isZodNullable(schema)) {
+        return { ...zodToNangoModelField(name, schema.def.innerType), optional: true };
     } else if (isZodEnum(schema)) {
         const values: NangoModelField['value'] = [];
         let i = 0;
@@ -128,4 +130,8 @@ function isZodVoid(schema: z.core.$ZodType): schema is z.ZodVoid {
 
 function isZodOptional(schema: z.core.$ZodType): schema is z.ZodOptional {
     return schema.constructor.name === 'ZodOptional';
+}
+
+function isZodNullable(schema: z.core.$ZodType): schema is z.ZodNullable {
+    return schema.constructor.name === 'ZodNullable';
 }
