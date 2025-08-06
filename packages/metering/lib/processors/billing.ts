@@ -1,7 +1,7 @@
 import { billing } from '@nangohq/billing';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
@@ -47,7 +47,9 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 if (connection.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
                     return Ok(undefined); // Skip MAR for connections younger than 30 days
                 }
-                return billing.add('monthly_active_records', event.payload.value, {
+                const mar = event.payload.value;
+                metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId: event.payload.properties.accountId });
+                return billing.add('monthly_active_records', mar, {
                     idempotencyKey: event.idempotencyKey,
                     timestamp: event.createdAt,
                     ...event.payload.properties

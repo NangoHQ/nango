@@ -190,7 +190,6 @@ export async function persistRecords({
         } catch (err) {
             logger.warning('Failed to calculate record sizes in bytes', { environmentId, connectionId, syncId, model, error: stringifyError(err) });
         }
-        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
