@@ -258,7 +258,8 @@ aircall:
     proxy:
         base_url: https://api.aircall.io
         retry:
-            at: 'x-aircallapi-reset'
+            at:
+                - 'x-aircallapi-reset'
         paginate:
             type: link
             link_path_in_response_body: meta.next_page_link
@@ -830,7 +831,8 @@ atlassian-admin:
     proxy:
         base_url: https://api.atlassian.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         headers:
             authorization: Bearer ${apiKey}
         connection_config:
@@ -1068,7 +1070,8 @@ aws-iam:
         connection_config:
             region: ${connectionConfig.region}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     credentials_verification_script: awsIamCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/aws-iam
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
@@ -1637,7 +1640,8 @@ braze:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/braze
     docs_connect: https://docs.nango.dev/integrations/all/braze/connect
     connection_config:
@@ -1876,7 +1880,8 @@ cal-com-v1:
         query:
             apiKey: ${apiKey}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
@@ -1906,7 +1911,8 @@ cal-com-v2:
             cursor_path_in_response: data.data.nextCursor
             limit_name_in_request: limit
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
@@ -1937,7 +1943,8 @@ calendly:
             type: link
             link_path_in_response_body: pagination.next_page
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
@@ -2188,7 +2195,8 @@ checkr-partner:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
@@ -2213,7 +2221,8 @@ checkr-partner-staging:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
@@ -3299,7 +3308,8 @@ dropbox-sign:
     refresh_url: https://app.hellosign.com/oauth/token?refresh
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.hellosign.com
     docs: https://docs.nango.dev/integrations/all/dropbox-sign
 
@@ -3374,7 +3384,8 @@ emarsys:
             endpoints:
                 - /api/v2/settings
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
@@ -3402,7 +3413,8 @@ emarsys-oauth:
     proxy:
         base_url: https://api.emarsys.net
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
     docs_connect: https://docs.nango.dev/integrations/all/emarsys-oauth/connect
 
@@ -3682,13 +3694,12 @@ exact-online:
         headers:
             accept: application/json
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-minutely-reset'
+                - 'x-ratelimit-reset'
             error_code:
                 - '429'
                 - '503'
-            minutely_rate_limit:
-                reset_time_key: 'x-ratelimit-minutely-reset'
-                strategy: at
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -4424,7 +4435,8 @@ github:
     proxy:
         base_url: https://api.github.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
@@ -4504,7 +4516,8 @@ github-pat:
     proxy:
         base_url: https://api.github.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
@@ -5333,7 +5346,8 @@ hibob-service-user:
             endpoints:
                 - /v1/company/named-lists
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     credentials:
         username:
             type: string
@@ -5539,7 +5553,8 @@ intercom:
     proxy:
         base_url: https://api.intercom.io
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
     pre_connection_deletion_script: intercomPreConnectionDeletion
 
@@ -6313,7 +6328,8 @@ linear:
     proxy:
         base_url: https://api.linear.app
         retry:
-            at: 'x-ratelimit-requests-reset'
+            at:
+                - 'x-ratelimit-requests-reset'
             remaining: 'x-ratelimit-requests-remaining'
             error_code:
                 - '400'
@@ -7393,7 +7409,8 @@ okta:
     proxy:
         base_url: https://${connectionConfig.subdomain}.okta.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
         paginate:
             type: 'link'
             limit_name_in_request: 'limit'
@@ -11257,7 +11274,8 @@ workable:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
     post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
     docs_connect: https://docs.nango.dev/integrations/all/workable/connect
@@ -11295,7 +11313,8 @@ workable-oauth:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/workable-oauth
     connection_config:
         subdomain:

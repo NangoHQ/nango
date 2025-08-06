@@ -207,13 +207,13 @@ describe('getProxyRetryFromErr', () => {
                 });
             });
 
-            describe('minutely_rate_limit', () => {
-                it('should use minute rate limit when configured', () => {
+            describe('at array', () => {
+                it('should use first header when at is an array and first header is available', () => {
                     const nowInSecs = Date.now() / 1000;
                     const mockAxiosError = getDefaultError({
                         response: {
                             status: 429,
-                            headers: { 'x-minute-reset': nowInSecs + 1 }
+                            headers: { 'x-primary-reset': nowInSecs + 1 }
                         }
                     });
                     const res = getProxyRetryFromErr({
@@ -223,38 +223,7 @@ describe('getProxyRetryFromErr', () => {
                                 proxy: {
                                     base_url: '',
                                     retry: {
-                                        minutely_rate_limit: {
-                                            reset_time_key: 'x-minute-reset',
-                                            strategy: 'at'
-                                        }
-                                    }
-                                }
-                            }
-                        })
-                    });
-                    expect(res).toStrictEqual({ retry: true, reason: 'minutely_rate_limit_at', wait: 2000 });
-                });
-
-                it('should fallback to other retry mechanisms when minute rate limit not found', () => {
-                    const nowInSecs = Date.now() / 1000;
-                    const mockAxiosError = getDefaultError({
-                        response: {
-                            status: 429,
-                            headers: { 'x-rateLimit-reset': nowInSecs + 1 }
-                        }
-                    });
-                    const res = getProxyRetryFromErr({
-                        err: mockAxiosError,
-                        proxyConfig: getDefaultProxy({
-                            provider: {
-                                proxy: {
-                                    base_url: '',
-                                    retry: {
-                                        minutely_rate_limit: {
-                                            reset_time_key: 'x-minute-reset',
-                                            strategy: 'at'
-                                        },
-                                        at: 'x-rateLimit-reset'
+                                        at: ['x-primary-reset', 'x-fallback-reset']
                                     }
                                 }
                             }
@@ -263,15 +232,12 @@ describe('getProxyRetryFromErr', () => {
                     expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
                 });
 
-                it('should prioritize minute rate limit when both are configured and available', () => {
+                it('should fallback to second header when first header is not available', () => {
                     const nowInSecs = Date.now() / 1000;
                     const mockAxiosError = getDefaultError({
                         response: {
                             status: 429,
-                            headers: {
-                                'x-minute-reset': nowInSecs + 1,
-                                'x-rateLimit-reset': nowInSecs + 5
-                            }
+                            headers: { 'x-fallback-reset': nowInSecs + 1 }
                         }
                     });
                     const res = getProxyRetryFromErr({
@@ -281,18 +247,54 @@ describe('getProxyRetryFromErr', () => {
                                 proxy: {
                                     base_url: '',
                                     retry: {
-                                        minutely_rate_limit: {
-                                            reset_time_key: 'x-minute-reset',
-                                            strategy: 'at'
-                                        },
-                                        at: 'x-rateLimit-reset'
+                                        at: ['x-primary-reset', 'x-fallback-reset']
                                     }
                                 }
                             }
                         })
                     });
-                    expect(res).toStrictEqual({ retry: true, reason: 'minutely_rate_limit_at', wait: 2000 });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
                 });
+            });
+        });
+
+        describe('retryHeader.at array', () => {
+            it('should use first header when retryHeader.at is an array and first header is available', () => {
+                const nowInSecs = Date.now() / 1000;
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'x-primary-reset': nowInSecs + 1 }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        retryHeader: {
+                            at: ['x-primary-reset', 'x-fallback-reset']
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 2000 });
+            });
+
+            it('should fallback to second header when retryHeader.at is an array and first header is not available', () => {
+                const nowInSecs = Date.now() / 1000;
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'x-fallback-reset': nowInSecs + 1 }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        retryHeader: {
+                            at: ['x-primary-reset', 'x-fallback-reset']
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 2000 });
             });
         });
     });

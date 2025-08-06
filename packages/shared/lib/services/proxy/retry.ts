@@ -65,34 +65,41 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         return { retry: false, reason: 'not_retryable' };
     }
 
-    // Check minute rate limit first if configured
-    if (proxyConfig.provider.proxy?.retry?.minutely_rate_limit) {
-        const minuteConfig = proxyConfig.provider.proxy.retry.minutely_rate_limit;
-        const res = getRetryFromMinuteRateLimit({ err, minuteConfig });
-        if (res.found) {
-            return { retry: true, reason: `minutely_rate_limit_${res.reason}`, wait: res.wait };
-        }
-    }
-
     if (proxyConfig.retryHeader && (proxyConfig.retryHeader.at || proxyConfig.retryHeader.after)) {
         // Headers configured on the fly
         const type = proxyConfig.retryHeader.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.retryHeader.at ? proxyConfig.retryHeader.at : proxyConfig.retryHeader.after;
+        let retryHeaders: string[];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader! });
-        if (res.found) {
-            return { retry: true, reason: `custom_${res.reason}`, wait: res.wait };
+        if (proxyConfig.retryHeader.at) {
+            retryHeaders = Array.isArray(proxyConfig.retryHeader.at) ? proxyConfig.retryHeader.at : [proxyConfig.retryHeader.at];
+        } else {
+            retryHeaders = [proxyConfig.retryHeader.after!];
+        }
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                return { retry: true, reason: `custom_${res.reason}`, wait: res.wait };
+            }
         }
     }
 
     if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && (proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after)) {
         // Headers configured in the providers.yaml
         const type = proxyConfig.provider.proxy.retry.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.provider.proxy.retry.at ? proxyConfig.provider.proxy.retry.at : proxyConfig.provider.proxy.retry.after;
+        let retryHeaders: string[];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader as string });
-        if (res.found) {
-            return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+        if (proxyConfig.provider.proxy.retry.at) {
+            retryHeaders = Array.isArray(proxyConfig.provider.proxy.retry.at) ? proxyConfig.provider.proxy.retry.at : [proxyConfig.provider.proxy.retry.at];
+        } else {
+            retryHeaders = [proxyConfig.provider.proxy.retry.after!];
+        }
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+            }
         }
     }
 
@@ -129,20 +136,6 @@ export function getRetryFromHeader({
 }): { found: false; reason: string } | { found: true; reason: string; wait: number } {
     const resetTimeEpoch = err.response?.headers[retryHeader] || err.response?.headers[retryHeader.toLowerCase()];
     return parseRetryValue({ type, rawValue: resetTimeEpoch, source: 'header' });
-}
-
-/**
- * Get possible retry and wait time from minute rate limit
- */
-export function getRetryFromMinuteRateLimit({
-    err,
-    minuteConfig
-}: {
-    err: AxiosError;
-    minuteConfig: { reset_time_key: string; strategy: 'at' | 'after' };
-}): ReturnType<typeof parseRetryValue> {
-    const resetTimeValue = err.response?.headers[minuteConfig.reset_time_key] || err.response?.headers[minuteConfig.reset_time_key.toLowerCase()];
-    return parseRetryValue({ type: minuteConfig.strategy, rawValue: resetTimeValue, source: 'minutely_rate_limit' });
 }
 
 /**
