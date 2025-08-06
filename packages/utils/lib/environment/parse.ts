@@ -25,6 +25,7 @@ export const ENVS = z.object({
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
+    NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -245,6 +246,7 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'none']).optional().default('none'),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
