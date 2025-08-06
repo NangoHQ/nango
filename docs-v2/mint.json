@@ -613,6 +613,8 @@
                 "integrations/all/pingboard",
                 "integrations/all/pinterest",
                 "integrations/all/pipedrive",
+                "integrations/all/private-api-basic",
+                "integrations/all/private-api-bearer",
                 "integrations/all/pivotaltracker",
                 "integrations/all/plain",
                 "integrations/all/podium",

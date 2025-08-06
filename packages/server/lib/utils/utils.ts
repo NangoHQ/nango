@@ -134,7 +134,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
             ? Object.values(provider.token_params).flatMap((param) => (typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []))
             : [];
 
-        const proxyBaseUrlMatches = provider.proxy?.base_url.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const proxyBaseUrlMatches = provider.proxy?.base_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
         const proxyHeaderMatches = provider.proxy?.headers
             ? Array.from(new Set(Object.values(provider.proxy.headers).flatMap((header) => header.match(/\${connectionConfig\.([^{}]*)}/g) || [])))
             : [];

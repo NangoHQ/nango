@@ -181,4 +181,20 @@ describe('Utils unit tests', () => {
         result = getAdditionalAuthorizationParams(undefined);
         expect(result).toEqual({});
     });
+
+    it('Should handle undefined proxy.base_url without throwing error', () => {
+        const params = parseConnectionConfigParamsFromTemplate({
+            display_name: 'test',
+            docs: '',
+            auth_mode: 'OAUTH2',
+            authorization_url: 'n/a',
+            token_url: 'n/a',
+            proxy: {
+                headers: {
+                    'X-Another-Header': 'testtoken'
+                }
+            }
+        });
+        expect(params).toEqual([]);
+    });
 });
