@@ -23,6 +23,7 @@ export type * from './syncConfigs/db.js';
 export type * from './syncConfigs/api.js';
 export type * from './team/api.js';
 export type * from './team/db.js';
+export type * from './sharedCredentials/db.js';
 export type * from './billing/types.js';
 export type * from './billing/http.api.js';
 export type * from './usage/dto.js';
