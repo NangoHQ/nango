@@ -3,7 +3,7 @@ import { EndUserMapper } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
-import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, DBEndUser, EndUser } from '@nangohq/types';
+import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, ConnectSessionOverrides, DBEndUser, EndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
 
@@ -20,6 +20,7 @@ export interface DBConnectSession {
     readonly updated_at: Date | null;
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
+    readonly overrides: Record<string, ConnectSessionOverrides> | null;
 }
 type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
@@ -35,7 +36,8 @@ const ConnectSessionMapper = {
             created_at: session.createdAt,
             updated_at: session.updatedAt,
             allowed_integrations: session.allowedIntegrations || null,
-            integrations_config_defaults: session.integrationsConfigDefaults || null
+            integrations_config_defaults: session.integrationsConfigDefaults || null,
+            overrides: session.overrides || null
         };
     },
     from: (dbSession: DBConnectSession): ConnectSession => {
@@ -49,7 +51,8 @@ const ConnectSessionMapper = {
             createdAt: dbSession.created_at,
             updatedAt: dbSession.updated_at,
             allowedIntegrations: dbSession.allowed_integrations || null,
-            integrationsConfigDefaults: dbSession.integrations_config_defaults || null
+            integrationsConfigDefaults: dbSession.integrations_config_defaults || null,
+            overrides: dbSession.overrides || null
         };
     }
 };
@@ -79,11 +82,12 @@ export async function createConnectSession(
         connectionId,
         allowedIntegrations,
         integrationsConfigDefaults,
-        operationId
+        operationId,
+        overrides
     }: SetOptional<
         Pick<
             ConnectSession,
-            'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId'
+            'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId' | 'overrides'
         >,
         'connectionId'
     >
@@ -95,7 +99,8 @@ export async function createConnectSession(
         connection_id: connectionId || null,
         allowed_integrations: allowedIntegrations,
         integrations_config_defaults: integrationsConfigDefaults,
-        operation_id: operationId
+        operation_id: operationId,
+        overrides: overrides || null
     };
     const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {

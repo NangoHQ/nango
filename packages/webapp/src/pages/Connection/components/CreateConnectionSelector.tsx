@@ -57,7 +57,7 @@ export const CreateConnectionSelector: React.FC = () => {
         if (usageLoading) {
             return false;
         }
-        const connectionsUsage = usage?.data.find((v) => v.metric === 'connections');
+        const connectionsUsage = usage?.data.connections;
         return connectionsUsage && connectionsUsage.limit && connectionsUsage.usage >= connectionsUsage.limit;
     }, [usage, usageLoading]);
 

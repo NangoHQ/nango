@@ -4,8 +4,7 @@ import { report } from '@nangohq/utils';
 import { metricFlags } from './metrics.js';
 
 import type { AccountUsageStore, IncrementUsageParams } from './accountUsageStore/accountUsageStore.js';
-import type { AccountUsageMetric } from './metrics.js';
-import type { DBPlan, DBTeam, MetricUsage } from '@nangohq/types';
+import type { AccountMetricsUsageSummary, AccountUsageMetric, DBPlan, DBTeam } from '@nangohq/types';
 
 /**
  * Tracks usage for an account. Prioritizes performance over precision.
@@ -67,10 +66,9 @@ export class AccountUsageTracker {
         return plan[flag as keyof DBPlan] as number | null;
     }
 
-    public async getAccountMetricsUsage(account: DBTeam, plan: DBPlan): Promise<MetricUsage[]> {
-        return [
-            {
-                metric: 'connections',
+    public async getAccountMetricsUsageSummary(account: DBTeam, plan: DBPlan): Promise<AccountMetricsUsageSummary> {
+        return {
+            connections: {
                 label: 'Connections',
                 usage:
                     (await this.getUsage({
@@ -79,8 +77,7 @@ export class AccountUsageTracker {
                     })) ?? 0,
                 limit: plan.connections_max
             },
-            {
-                metric: 'actions',
+            actions: {
                 label: 'Actions',
                 usage:
                     (await this.getUsage({
@@ -89,8 +86,7 @@ export class AccountUsageTracker {
                     })) ?? 0,
                 limit: plan.monthly_actions_max
             },
-            {
-                metric: 'active_records',
+            active_records: {
                 label: 'Synced Records',
                 usage:
                     (await this.getUsage({
@@ -99,6 +95,6 @@ export class AccountUsageTracker {
                     })) ?? 0,
                 limit: plan.monthly_active_records_max
             }
-        ];
+        };
     }
 }
