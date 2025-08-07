@@ -3777,7 +3777,7 @@ fairing:
             description: The Secret Token for your Fairing account
             pattern: '^[A-Za-z0-9_-]{64}$'
             example: '3UjYpDjuk70Lt7AxC4M1x_7XvxoxkeX-OV7uTahJowilqLb2eLLvrtlvCGZgku1q'
-            doc_section: '#step-1-finding-your-api-key'
+            doc_section: '#step-1-finding-your-secret-token'
 
 facebook:
     display_name: Facebook
