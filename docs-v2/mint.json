@@ -602,6 +602,7 @@
                 "integrations/all/paypal-sandbox",
                 "integrations/all/paycom",
                 "integrations/all/paycor",
+                "integrations/all/paycor-sandbox",
                 "integrations/all/paychex",
                 "integrations/all/pendo",
                 "integrations/all/pennylane",
