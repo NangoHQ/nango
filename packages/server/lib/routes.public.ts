@@ -51,6 +51,7 @@ import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
@@ -70,7 +71,7 @@ const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSess
 
 export const publicAPI = express.Router();
 
-const bodyLimit = '75mb';
+const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
 
 if (flagEnforceCLIVersion) {
     publicAPI.use(cliMaxVersion());

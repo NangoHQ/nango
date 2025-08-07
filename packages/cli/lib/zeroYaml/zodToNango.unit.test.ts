@@ -22,6 +22,8 @@ describe('zodToNango', () => {
                     any: z.any(),
                     reco: z.record(z.string(), z.date()),
                     opt: z.any().optional(),
+                    nullable: z.string().nullable(),
+                    nullish: z.string().nullish(),
                     ref: ref,
                     void: z.void(),
                     never: z.never(),
@@ -79,6 +81,8 @@ describe('zodToNango', () => {
                     value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'Date' }]
                 },
                 { name: 'opt', optional: true, tsType: true, value: 'any' },
+                { name: 'nullable', optional: true, tsType: true, value: 'string' },
+                { name: 'nullish', optional: true, tsType: true, value: 'string' },
                 {
                     name: 'ref',
                     optional: false,
