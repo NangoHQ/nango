@@ -73,14 +73,23 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         if (proxyConfig.retryHeader.at) {
             retryHeaders = Array.isArray(proxyConfig.retryHeader.at) ? proxyConfig.retryHeader.at : [proxyConfig.retryHeader.at];
         } else {
-            retryHeaders = [proxyConfig.retryHeader.after!];
+            retryHeaders = Array.isArray(proxyConfig.retryHeader.after) ? proxyConfig.retryHeader.after : [proxyConfig.retryHeader.after!];
         }
+
+        // Check all headers and find the most restrictive retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
 
         for (const retryHeader of retryHeaders) {
             const res = getRetryFromHeader({ err, type, retryHeader });
             if (res.found) {
-                return { retry: true, reason: `custom_${res.reason}`, wait: res.wait };
+                if (!bestRetry || res.wait < bestRetry.wait) {
+                    bestRetry = { reason: res.reason, wait: res.wait };
+                }
             }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `custom_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
@@ -92,14 +101,25 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         if (proxyConfig.provider.proxy.retry.at) {
             retryHeaders = Array.isArray(proxyConfig.provider.proxy.retry.at) ? proxyConfig.provider.proxy.retry.at : [proxyConfig.provider.proxy.retry.at];
         } else {
-            retryHeaders = [proxyConfig.provider.proxy.retry.after!];
+            retryHeaders = Array.isArray(proxyConfig.provider.proxy.retry.after)
+                ? proxyConfig.provider.proxy.retry.after
+                : [proxyConfig.provider.proxy.retry.after!];
         }
+
+        // Check all headers and find the most restrictive retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
 
         for (const retryHeader of retryHeaders) {
             const res = getRetryFromHeader({ err, type, retryHeader });
             if (res.found) {
-                return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+                if (!bestRetry || res.wait < bestRetry.wait) {
+                    bestRetry = { reason: res.reason, wait: res.wait };
+                }
             }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `preconfigured_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
@@ -190,7 +210,7 @@ function parseRetryValue({
 }: {
     type: 'at' | 'after';
     rawValue: string | undefined;
-    source: 'header' | 'body' | 'minutely_rate_limit';
+    source: 'header' | 'body';
 }): ReturnType<typeof getRetryFromHeader> {
     const prefix = `${type}:${source}`;
 

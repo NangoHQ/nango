@@ -255,8 +255,11 @@
                             "additionalProperties": false,
                             "properties": {
                                 "after": {
-                                    "type": "string",
-                                    "pattern": "^[a-z0-9-]+$"
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9-]+$"
+                                    }
                                 },
                                 "at": {
                                     "type": "array",

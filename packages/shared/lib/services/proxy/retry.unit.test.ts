@@ -207,32 +207,8 @@ describe('getProxyRetryFromErr', () => {
                 });
             });
 
-            describe('at array', () => {
-                it('should use first header when at is an array and first header is available', () => {
-                    const nowInSecs = Date.now() / 1000;
-                    const mockAxiosError = getDefaultError({
-                        response: {
-                            status: 429,
-                            headers: { 'x-primary-reset': nowInSecs + 1 }
-                        }
-                    });
-                    const res = getProxyRetryFromErr({
-                        err: mockAxiosError,
-                        proxyConfig: getDefaultProxy({
-                            provider: {
-                                proxy: {
-                                    base_url: '',
-                                    retry: {
-                                        at: ['x-primary-reset', 'x-fallback-reset']
-                                    }
-                                }
-                            }
-                        })
-                    });
-                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
-                });
-
-                it('should fallback to second header when first header is not available', () => {
+            describe('configured header arrays', () => {
+                it('should work when array is configured but only one header is present', () => {
                     const nowInSecs = Date.now() / 1000;
                     const mockAxiosError = getDefaultError({
                         response: {
@@ -255,35 +231,46 @@ describe('getProxyRetryFromErr', () => {
                     });
                     expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
                 });
+
+                it('should pick shortest wait time when multiple headers are present', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: {
+                                'x-primary-reset': nowInSecs + 3,
+                                'x-fallback-reset': nowInSecs + 1
+                            }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        at: ['x-primary-reset', 'x-fallback-reset']
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
+                });
             });
         });
 
-        describe('retryHeader.at array', () => {
-            it('should use first header when retryHeader.at is an array and first header is available', () => {
+        describe('custom Header arrays', () => {
+            it('should pick shortest wait time when multiple headers are present', () => {
                 const nowInSecs = Date.now() / 1000;
                 const mockAxiosError = getDefaultError({
                     response: {
                         status: 429,
-                        headers: { 'x-primary-reset': nowInSecs + 1 }
-                    }
-                });
-                const res = getProxyRetryFromErr({
-                    err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({
-                        retryHeader: {
-                            at: ['x-primary-reset', 'x-fallback-reset']
+                        headers: {
+                            'x-primary-reset': nowInSecs + 3,
+                            'x-fallback-reset': nowInSecs + 1
                         }
-                    })
-                });
-                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 2000 });
-            });
-
-            it('should fallback to second header when retryHeader.at is an array and first header is not available', () => {
-                const nowInSecs = Date.now() / 1000;
-                const mockAxiosError = getDefaultError({
-                    response: {
-                        status: 429,
-                        headers: { 'x-fallback-reset': nowInSecs + 1 }
                     }
                 });
                 const res = getProxyRetryFromErr({
