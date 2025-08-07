@@ -1,10 +1,10 @@
+import tracer from 'dd-trace';
 import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
 import { envs } from './envs.js';
-import { logger } from './logger.js';
 
 import type {
     BillingClient,
@@ -29,10 +29,8 @@ export class Billing {
         this.batcher = flagHasUsage
             ? new Batcher(
                   async (events) => {
-                      logger.info(`Sending ${events.length} billing events`);
                       const res = await this.ingest(events);
                       if (res.isErr()) {
-                          logger.error(`failed to send billing events: ${res.error}`);
                           throw res.error;
                       }
                   },
@@ -47,15 +45,22 @@ export class Billing {
     }
 
     async shutdown(): Promise<Result<void>> {
-        if (!this.batcher) {
-            return Ok(undefined);
+        const span = tracer.startSpan('billing.shutdown');
+        try {
+            if (!this.batcher) {
+                return Ok(undefined);
+            }
+            const result = await this.batcher.shutdown();
+            if (result.isErr()) {
+                throw result.error;
+            }
+            return result;
+        } catch (err: unknown) {
+            span.setTag('error', err);
+            return Err(err as Error);
+        } finally {
+            span.finish();
         }
-        const res = await this.batcher.shutdown();
-        if (res.isErr()) {
-            logger.error(`Shutdown failure: ${res.error}`);
-        }
-        logger.info(`Successful shutdown`);
-        return res;
     }
 
     add(type: BillingMetric['type'], value: number, props: BillingMetric['properties']): Result<void> {
@@ -137,13 +142,17 @@ export class Billing {
 
     // Note: Events are sent immediately
     private async ingest(events: BillingIngestEvent[]): Promise<Result<void>> {
+        const span = tracer.startSpan('billing.ingest');
         try {
             await this.client.ingest(events);
             return Ok(undefined);
         } catch (err: unknown) {
             const e = new Error(`Failed to send billing event`, { cause: err });
+            span.setTag('error', e);
             report(e);
             return Err(e);
+        } finally {
+            span.finish();
         }
     }
 }
