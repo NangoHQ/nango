@@ -8974,6 +8974,35 @@ sage-intacct:
             description: Your Sage Intacct User Password
             secret: true
 
+sage-people:
+    display_name: Sage People
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_params:
+        prompt: consent
+    default_scopes:
+        - offline_access
+        - api
+    proxy:
+        base_url: https://${connectionConfig.instance_url}/services/apexrest/spapi
+        headers:
+            accept: application/json
+    token_response_metadata:
+        - instance_url
+    docs: https://docs.nango.dev/integrations/all/sage-people
+    docs_connect: https://docs.nango.dev/integrations/all/sage-people/connect
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+            automated: true
+
 salesforce:
     display_name: Salesforce
     categories:

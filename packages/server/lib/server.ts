@@ -25,6 +25,7 @@ import { trialCron } from './crons/trial.js';
 import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
+import { pubsub } from './pubsub.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
@@ -97,6 +98,11 @@ deleteOldData();
 trialCron();
 void otlp.register(getOtlpRoutes);
 
+const pubsubConnect = await pubsub.connect();
+if (pubsubConnect.isErr()) {
+    logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
+}
+
 const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
@@ -121,6 +127,7 @@ const close = once(() => {
         otlp.stop();
         await destroyKvstore();
         await billing.shutdown();
+        await pubsub.disconnect();
 
         logger.close();
 

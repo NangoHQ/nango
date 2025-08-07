@@ -650,6 +650,7 @@
                 "integrations/all/sage-hr",
                 "integrations/all/sage-intacct",
                 "integrations/all/sage-intacct-oauth",
+                "integrations/all/sage-people",
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
                 "integrations/all/salesforce-cdp",

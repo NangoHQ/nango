@@ -21,15 +21,27 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
+
     const [loading, setLoading] = useState(false);
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
     const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
     const [scopes, setScopes] = useState(integration.oauth_scopes || '');
 
-    const onSave = async () => {
+    const handleScopeChange = (newScopes: string) => setScopes(newScopes);
+    const handleSave = async () => {
         setLoading(true);
 
-        const updated = await apiPatchIntegration(env, integration.unique_key, { authType: template.auth_mode as any, clientId, clientSecret, scopes });
+        const payload: any = {
+            authType: template.auth_mode as any
+        };
+
+        if (!integration.shared_credentials_id) {
+            payload.clientId = clientId;
+            payload.clientSecret = clientSecret;
+            payload.scopes = scopes;
+        }
+
+        const updated = await apiPatchIntegration(env, integration.unique_key, payload);
 
         setLoading(false);
         if ('error' in updated.json) {
@@ -38,10 +50,14 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`));
             toast({ title: 'Successfully updated integration', variant: 'success' });
         }
-
-        setLoading(false);
     };
 
+    const onSave = async () => {
+        await handleSave();
+    };
+
+    const shouldShowCredentials = !integration.shared_credentials_id;
+    const isSaveDisabled = shouldShowCredentials && (!clientId || !clientSecret);
     return (
         <div className="mt-10">
             <InfoBloc title="Callback URL">
@@ -51,45 +67,81 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
             <div className="flex flex-col gap-10 mt-10">
                 <InfoBloc title="Client ID">
-                    <Input
-                        id="client_id"
-                        name="client_id"
-                        type="text"
-                        value={clientId}
-                        onChange={(e) => setClientId(e.target.value)}
-                        autoComplete="one-time-code"
-                        placeholder="Find the Client ID on the developer portal of the external API provider."
-                        required
-                        minLength={1}
-                        variant={'flat'}
-                        after={<CopyButton text={integration.oauth_client_id || ''} />}
-                    />
+                    <div className="relative w-full">
+                        <Input
+                            className="w-full"
+                            id="client_id"
+                            name="client_id"
+                            type="text"
+                            value={shouldShowCredentials ? clientId : '••••••••••••••••••••••••••••••••'}
+                            onChange={(e) => setClientId(e.target.value)}
+                            autoComplete="one-time-code"
+                            placeholder="Find the Client ID on the developer portal of the external API provider."
+                            required
+                            minLength={1}
+                            variant={'flat'}
+                            disabled={!shouldShowCredentials}
+                            after={shouldShowCredentials ? <CopyButton text={clientId} /> : undefined}
+                        />
+                        {!shouldShowCredentials && (
+                            <div className="absolute top-2 right-2 bg-gray-700 text-gray-100 text-xs px-2 py-1 rounded-md font-medium z-10 pointer-events-none">
+                                Nango provided
+                            </div>
+                        )}
+                    </div>
                 </InfoBloc>
 
                 <InfoBloc title="Client Secret">
-                    <SecretInput
-                        copy={true}
-                        id="client_secret"
-                        name="client_secret"
-                        autoComplete="one-time-code"
-                        placeholder="Find the Client Secret on the developer portal of the external API provider."
-                        value={clientSecret}
-                        onChange={(e) => setClientSecret(e.target.value)}
-                        required
-                    />
+                    <div className="relative w-full">
+                        <SecretInput
+                            className="w-full"
+                            copy={shouldShowCredentials}
+                            view={shouldShowCredentials}
+                            id="client_secret"
+                            name="client_secret"
+                            autoComplete="one-time-code"
+                            placeholder="Find the Client Secret on the developer portal of the external API provider."
+                            value={shouldShowCredentials ? clientSecret : '••••••••••••••••••••••••••••••••••••••••••••••••'}
+                            onChange={(e) => setClientSecret(e.target.value)}
+                            required
+                            disabled={!shouldShowCredentials}
+                        />
+                        {!shouldShowCredentials && (
+                            <div className="absolute top-2 right-2 bg-gray-700 text-gray-100 text-xs px-2 py-1 rounded-md font-medium z-10 pointer-events-none">
+                                Nango provided
+                            </div>
+                        )}
+                    </div>
                 </InfoBloc>
 
                 {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                     <InfoBloc title="Scopes">
-                        <TagsInput id="scopes" name="scopes" type="text" defaultValue={scopes} onScopeChange={setScopes} minLength={1} />
+                        <TagsInput
+                            id="scopes"
+                            name="scopes"
+                            type="text"
+                            selectedScopes={
+                                scopes
+                                    ? scopes
+                                          .split(',')
+                                          .map((s) => s.trim())
+                                          .filter(Boolean)
+                                    : []
+                            }
+                            onScopeChange={handleScopeChange}
+                            minLength={1}
+                            readOnly={!shouldShowCredentials}
+                        />
                     </InfoBloc>
                 )}
 
                 <div className="flex justify-between">
                     {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                    <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={!clientId || !clientSecret}>
-                        Save
-                    </Button>
+                    {shouldShowCredentials && (
+                        <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={isSaveDisabled}>
+                            Save
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

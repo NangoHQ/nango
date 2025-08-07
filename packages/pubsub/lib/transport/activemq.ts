@@ -21,8 +21,21 @@ export class ActiveMQ implements Transport {
     private messageEncoding: BufferEncoding = 'binary';
 
     constructor(props?: { url: string; user: string; password: string }) {
+        const brokerUrl = props?.url ?? envs.NANGO_ACTIVEMQ_URL;
+        const brokerUrls = brokerUrl.split(',').map((url) => url.trim());
+        let currentUrlIndex = 0;
         const stompConfig: StompConfig = {
-            webSocketFactory: () => new WebSocket(props?.url ?? envs.NANGO_ACTIVEMQ_URL, ['stomp']),
+            beforeConnect: () => {
+                // Rotate through broker URLs if the current one fails
+                currentUrlIndex = (currentUrlIndex + 1) % brokerUrls.length;
+            },
+            webSocketFactory: () => {
+                const brokerUrl = brokerUrls[currentUrlIndex];
+                if (!brokerUrl) {
+                    throw new Error('No valid ActiveMQ broker URL available');
+                }
+                return new WebSocket(brokerUrl, ['stomp']);
+            },
             connectHeaders: {
                 login: props?.user ?? envs.NANGO_ACTIVEMQ_USER,
                 passcode: props?.password ?? envs.NANGO_ACTIVEMQ_PASSWORD
@@ -32,11 +45,11 @@ export class ActiveMQ implements Transport {
             reconnectDelay: 300,
             onConnect: () => {
                 this.isConnected = true;
-                logger.info('ActiveMQ publisher connected');
+                logger.info(`ActiveMQ: connected to ${brokerUrls[currentUrlIndex]}`);
             },
             onDisconnect: () => {
                 this.isConnected = false;
-                logger.warning('ActiveMQ publisher disconnected');
+                logger.warning(`ActiveMQ: disconnected from ${brokerUrls[currentUrlIndex]}`);
             },
             onStompError: (frame) => {
                 report(new Error(`ActiveMQ STOMP error`), { error: frame.body });
@@ -84,7 +97,6 @@ export class ActiveMQ implements Transport {
                 this.client.deactivate();
                 this.client = null;
                 this.isConnected = false;
-                logger.info('ActiveMQ publisher disconnected');
                 return Ok(undefined);
             } catch (err) {
                 report(new Error('Error disconnecting from ActiveMQ'), { error: err });

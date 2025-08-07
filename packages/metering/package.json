@@ -1,0 +1,27 @@
+{
+    "name": "@nangohq/nango-metering",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/app.js",
+    "private": true,
+    "scripts": {
+        "dev": "nodemon"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/metering"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "@nangohq/pubsub": "file:../pubsub",
+        "@nangohq/billing": "file:../billing",
+        "dd-trace": "5.52.0",
+        "zod": "4.0.5"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "vitest": "3.2.4"
+    }
+}

@@ -8,8 +8,7 @@ import { report, stringifyError } from '@nangohq/utils';
 import { sendUsageLimitReachedEmail, sendUsageNearLimitEmail } from '../emails.js';
 import { getAccountUsageTracker } from '../index.js';
 
-import type { AccountUsageMetric } from '../index.js';
-import type { DBPlan } from '@nangohq/types';
+import type { AccountUsageMetric, DBPlan } from '@nangohq/types';
 
 export async function onUsageIncreased({
     accountId,
@@ -72,17 +71,17 @@ export async function onUsageIncreased({
                 throw new Error(`Account not found for accountId ${accountId}`);
             }
 
-            const usage = await accountUsageTracker.getAccountMetricsUsage(account, resolvedPlan);
+            const usageSummary = await accountUsageTracker.getAccountMetricsUsageSummary(account, resolvedPlan);
             const users = await userService.getUsersByAccountId(accountId);
 
             await Promise.all(
                 users.map((user) => {
                     // Full limit reached prioritized in case usage jumps directly to it
                     if (crossedLimit) {
-                        return sendUsageLimitReachedEmail({ user, account, usage, triggeringMetric: metric });
+                        return sendUsageLimitReachedEmail({ user, account, usageSummary, triggeringMetric: metric });
                     }
 
-                    return sendUsageNearLimitEmail({ user, account, usage, triggeringMetric: metric });
+                    return sendUsageNearLimitEmail({ user, account, usageSummary, triggeringMetric: metric });
                 })
             );
 

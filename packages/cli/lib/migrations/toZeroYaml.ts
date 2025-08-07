@@ -656,6 +656,8 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     if (!packageJsonExists) {
         printDebug('package.json does not exist', debug);
         pkg = examplePkg;
+        pkg.devDependencies = pkg.devDependencies || {};
+        pkg.devDependencies['nango'] = NANGO_VERSION;
     } else {
         printDebug('package.json exists, updating', debug);
         const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
