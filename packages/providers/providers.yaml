@@ -7703,6 +7703,42 @@ paychex:
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
 
+paycor:
+    display_name: Paycor
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm.paycor.com/AppActivation/Authorize
+    token_url: https://apis.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor account
+            doc_section: '#step-1-finding-your-company-id'
+
 paycom:
     display_name: Paycom
     categories:
