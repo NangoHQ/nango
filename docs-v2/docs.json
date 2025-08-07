@@ -274,6 +274,7 @@
               "integrations/all/databricks-workspace",
               "integrations/all/datadog",
               "integrations/all/datev",
+              "integrations/all/dayforce",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "integrations/all/devin",
