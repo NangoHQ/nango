@@ -296,7 +296,7 @@ export const policyMessages = {
         phases: {
             hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
             warm: {
-                min_age: '25h',
+                min_age: envs.NANGO_LOGS_ES_WARM_MIN_AGE,
                 actions: {
                     set_priority: { priority: 50 },
                     shrink: { max_primary_shard_size: '8gb' },
