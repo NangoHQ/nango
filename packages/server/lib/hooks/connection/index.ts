@@ -26,3 +26,4 @@ export { default as sentryOauthPostConnection } from './providers/sentry-oauth/p
 export { default as linearPreConnectionDeletion } from './providers/linear/pre-connection-deletion.js';
 export { default as attioPostConnection } from './providers/attio/post-connection.js';
 export { default as mailchimpPostConnection } from './providers/mailchimp/post-connection.js';
+export { default as snipeItCredentialsVerification } from './providers/snipe-it/credentials-verification.js';

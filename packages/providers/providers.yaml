@@ -11761,15 +11761,12 @@ snipe-it:
         - other
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}/api/v1
+        base_url: https://${connectionConfig.hostname}/api/
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-        verification:
-            method: GET
-            endpoints:
-                - /version
+    credentials_verification_script: snipeItCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/snipe-it
     docs_connect: https://docs.nango.dev/integrations/all/snipe-it/connect
     credentials:
@@ -11777,13 +11774,18 @@ snipe-it:
             type: string
             title: API Token
             description: Your Snipe-IT API token
+            doc_section: '#step-1-create-an-api-token'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
     connection_config:
-        domain:
+        hostname:
             type: string
             title: Domain
-            description: Your Snipe-IT domain (e.g., yourcompany.snipe-it.io)
+            format: hostname
+            description: Your Snipe-IT hostname (e.g., yourcompany)
             example: yourcompany.snipe-it.io
-            doc_section: '#step-1-finding-your-domain-and-api-token'
+            suffix: .snipe-it.io
+            prefix: https://
+            doc_section: '#step-2-finding-your-domain'
             order: 1
 
 zuora:
