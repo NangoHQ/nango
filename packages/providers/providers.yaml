@@ -8251,6 +8251,38 @@ prive:
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
 
+private-api-bearer:
+    display_name: Private API (Bearer Auth)
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-bearer
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-bearer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
+
+private-api-basic:
+    display_name: Private API (Basic Auth)
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-basic
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your username
+        password:
+            type: string
+            title: Password
+            description: Your password
+
 precisefp:
     display_name: PreciseFP
     categories:

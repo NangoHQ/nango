@@ -1,4 +1,5 @@
-import type { Subscription, Transport } from './transport/transport.js';
+import type { Event } from './event.js';
+import type { SubscribeProps, Transport } from './transport/transport.js';
 
 export class Subscriber {
     private transport: Transport;
@@ -7,7 +8,7 @@ export class Subscriber {
         this.transport = transport;
     }
 
-    public subscribe({ consumerGroup, subscriptions }: { consumerGroup: string; subscriptions: Subscription[] }): void {
-        this.transport.subscribe({ consumerGroup, subscriptions });
+    subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void {
+        this.transport.subscribe(params);
     }
 }
