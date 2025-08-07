@@ -379,17 +379,20 @@ autotask:
             title: API Integration Code
             description: The tracking identifier assigned to your API-only user (27-character string)
             example: ASHJKLFDKAHKASLFH85LSA905H
+            pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-3-configure-the-api-user'
         username:
             type: string
             title: API Username
             description: The email address of your API-only user account
             example: apiuser@example.com
+            format: email
             doc_section: '#step-3-configure-the-api-user'
     credentials:
         apiKey:
             type: string
             title: API Secret
+            pattern: '^[A-Za-z0-9@#$~*]+$'
             description: The secret for your API-only user account
             doc_section: '#step-4-generate-api-secret'
 
