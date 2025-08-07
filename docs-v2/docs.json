@@ -500,6 +500,8 @@
               "integrations/all/podium",
               "integrations/all/posthog",
               "integrations/all/prive",
+              "integrations/all/private-api-basic",
+              "integrations/all/private-api-bearer",
               "integrations/all/productboard",
               "integrations/all/qualtrics",
               "integrations/all/quickbase",
