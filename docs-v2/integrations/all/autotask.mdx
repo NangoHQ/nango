@@ -52,12 +52,18 @@ To connect to AutoTask, you'll need:
 
 - AutoTask requires a zone-specific subdomain for API access
 - The API Integration Code is used for tracking and must be included in headers
-- Authentication uses Basic Auth with username/password credentials
+- Authentication uses API_KEY auth with username/password credentials
 
 ## API gotchas
 
 - AutoTask requires the API Integration Code to be passed in the `APIIntegrationCode` header for all requests
 - The API zone (subdomain) varies by account and must be determined for each customer
-- API rate limits apply and vary by account type
+- API [rate limits](https://www.autotask.net/help/developerhelp/Content/APIs/REST/General_Topics/REST_Thresholds_Limits.htm) apply and vary by account type
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/autotask.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to AutoTask" icon="link" href="/integrations/all/autotask/connect" horizontal>
+  Guide to connect to AutoTask using Nango Connect.
+</Card>

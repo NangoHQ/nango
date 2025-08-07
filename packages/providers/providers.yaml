@@ -364,33 +364,34 @@ autotask:
             apiintegrationcode: ${connectionConfig.apiIntegrationCode}
             username: ${connectionConfig.username}
             secret: ${credentials.apiKey}
-    verification:
-        method: GET
-        endpoints:
-            - /VersionInformation
+    credentials_verification_script: autotaskCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/autotask
+    docs_connect: https://docs.nango.dev/integrations/all/autotask/connect
     connection_config:
         subdomain:
             type: string
             title: AutoTask API Zone
             description: The zone subdomain for your Autotask instance (e.g., webservices3, webservices1, etc.)
             example: webservices3
+            doc_section: '#step-1-finding-your-autotask-api-zone'
         apiIntegrationCode:
             type: string
             title: API Integration Code
             description: The tracking identifier assigned to your API-only user (27-character string)
             example: ASHJKLFDKAHKASLFH85LSA905H
+            doc_section: '#step-3-configure-the-api-user'
         username:
             type: string
             title: API Username
             description: The email address of your API-only user account
             example: apiuser@example.com
+            doc_section: '#step-3-configure-the-api-user'
     credentials:
         apiKey:
             type: string
-            title: API secret
+            title: API Secret
             description: The secret for your API-only user account
-            secret: true
+            doc_section: '#step-4-generate-api-secret'
 
 algolia:
     display_name: Algolia
