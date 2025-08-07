@@ -7725,6 +7725,7 @@ paycor:
         headers:
             ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
     docs: https://docs.nango.dev/integrations/all/paycor
+    docs_connect: https://docs.nango.dev/integrations/all/paycor/connect
     connection_config:
         subscriptionKey:
             type: string
