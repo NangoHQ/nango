@@ -145,8 +145,61 @@ class ConfigService {
         return config;
     }
 
-    async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
+    async createPreprovisionedProvider({
+        providerName,
+        environment_id,
+        provider,
+        display_name,
+        unique_key
+    }: {
+        providerName: string;
+        environment_id: number;
+        provider: Provider;
+        display_name?: string;
+        unique_key?: string;
+    }): Promise<IntegrationConfig> {
         const sharedCredentialsId = await this.getSharedCredentialsId(providerName);
+        if (!sharedCredentialsId) {
+            throw new NangoError('shared_credentials_not_found');
+        }
+
+        let finalUniqueKey = unique_key ?? providerName;
+
+        const exists = await db.knex
+            .count<{ count: string }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: finalUniqueKey, environment_id, deleted: false })
+            .first();
+
+        finalUniqueKey = exists?.count === '0' ? finalUniqueKey : `${finalUniqueKey}-${nanoid(4).toLocaleLowerCase()}`;
+
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: finalUniqueKey,
+                provider: providerName,
+                forward_webhooks: true,
+                shared_credentials_id: sharedCredentialsId,
+                display_name: display_name ?? providerName
+            },
+            provider
+        );
+
+        if (!config) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        return config;
+    }
+
+    async createCustomPreprovisionedProvider(
+        originalProviderName: string,
+        customProviderName: string,
+        customDisplayName: string,
+        environment_id: number,
+        provider: Provider
+    ): Promise<IntegrationConfig> {
+        const sharedCredentialsId = await this.getSharedCredentialsId(originalProviderName);
         if (!sharedCredentialsId) {
             throw new NangoError('shared_credentials_not_found');
         }
@@ -154,16 +207,17 @@ class ConfigService {
         const exists = await db.knex
             .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ provider: providerName, environment_id, deleted: false })
+            .where({ provider: customProviderName, environment_id, deleted: false })
             .first();
 
         const config = await this.createProviderConfig(
             {
                 environment_id,
-                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
-                provider: providerName,
+                unique_key: exists?.count === '0' ? customProviderName : `${customProviderName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: customProviderName,
                 forward_webhooks: true,
-                shared_credentials_id: sharedCredentialsId
+                shared_credentials_id: sharedCredentialsId,
+                display_name: customDisplayName
             },
             provider
         );
