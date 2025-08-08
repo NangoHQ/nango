@@ -11,8 +11,9 @@ import type {
     DBGettingStartedMeta,
     DBGettingStartedProgress,
     DBUser,
-    GettingStartedOutput,
-    IntegrationConfig
+    GettingStartedOutput as GettingStartedProgressOutput,
+    IntegrationConfig,
+    PatchGettingStartedInput
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -52,7 +53,7 @@ export async function createGettingStartedProgress(userId: number, metaId: numbe
     }
 }
 
-export async function getByUserId(userId: number): Promise<Result<GettingStartedOutput>> {
+export async function getByUserId(userId: number): Promise<Result<GettingStartedProgressOutput>> {
     const result = await db.knex
         .select<{
             getting_started_progress: DBGettingStartedProgress;
@@ -89,7 +90,7 @@ export function updateByUserId(userId: number, data: Partial<DBGettingStartedPro
 /**
  * Gets getting started progress for the user, or creates it if it doesn't exist.
  */
-export async function getOrCreateByUser(user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedOutput>> {
+export async function getOrCreateProgressByUser(user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
     const existingResult = await getByUserId(user.id);
 
     if (existingResult.isOk()) {
@@ -109,6 +110,69 @@ export async function getOrCreateByUser(user: DBUser, currentEnvironmentId: numb
     }
 
     return getByUserId(createdResult.value.user_id);
+}
+
+/**
+ * Update getting started progress for a user and return the updated object.
+ */
+export async function patchProgressByUser(user: DBUser, currentEnvironmentId: number, input: PatchGettingStartedInput): Promise<Result<void>> {
+    // Ensure meta/progress exist and fetch meta information (environment, integration)
+    const existing = await getOrCreateProgressByUser(user, currentEnvironmentId);
+    if (existing.isErr()) {
+        return Err(existing.error);
+    }
+
+    const { meta } = existing.value;
+
+    const update: Partial<DBGettingStartedProgress> = {};
+
+    if (typeof input.step !== 'undefined') {
+        update.step = input.step;
+    }
+    if (typeof input.complete !== 'undefined') {
+        update.complete = input.complete;
+    }
+
+    if (typeof input.connection_id !== 'undefined') {
+        if (input.connection_id === null || input.connection_id === '') {
+            update.connection_id = null;
+        } else {
+            try {
+                const configId = meta.integration.id;
+                if (!configId) {
+                    // Should never happen
+                    return Err(new Error('invalid_integration_id'));
+                }
+
+                const connection = await db.knex
+                    .from<DBConnection>('_nango_connections')
+                    .select<{ id: number }[]>('id')
+                    .where({
+                        connection_id: input.connection_id,
+                        deleted: false
+                    })
+                    .first();
+
+                if (!connection) {
+                    return Err(new Error('connection_not_found'));
+                }
+
+                update.connection_id = connection.id;
+            } catch (err) {
+                return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
+            }
+        }
+    }
+
+    try {
+        if (Object.keys(update).length > 0) {
+            await updateByUserId(user.id, update);
+        }
+    } catch (err) {
+        return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
+    }
+
+    return Ok(undefined);
 }
 
 async function getOrCreateGettingStartedMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
