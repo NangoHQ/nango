@@ -279,7 +279,7 @@ export function buildProxyHeaders({
             const hasCustomAuthHeader =
                 'proxy' in config.provider &&
                 'headers' in config.provider.proxy &&
-                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('{accessToken}'));
+                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('${accessToken}'));
 
             if (!hasCustomAuthHeader) {
                 headers['authorization'] = `Bearer ${connection.credentials.token}`;
