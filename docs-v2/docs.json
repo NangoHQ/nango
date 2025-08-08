@@ -154,6 +154,12 @@
         "icon": "bars",
         "groups": [
           {
+            "group": "Review Guides",
+            "pages": [
+              "integrations/google-security-review"
+            ]
+          },
+          {
             "group": "APIs & Integrations",
             "pages": [
               "integrations/overview",
