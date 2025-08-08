@@ -17,4 +17,5 @@ export type PatchGettingStarted = Endpoint<{
         data: GettingStartedOutput;
     };
     Body: PatchGettingStartedInput;
+    Error: ApiError<'connection_not_found'> | ApiError<'failed_to_update_getting_started_progress'>;
 }>;
