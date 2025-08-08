@@ -1,0 +1,47 @@
+---
+title: Datto RMM - How do I link my account?
+sidebarTitle: Datto RMM
+---
+
+# Overview
+
+To authenticate with Datto RMM, you need:
+1. **API URL** – Your region-specific API base (e.g., `https://merlot-api.centrastage.net`).
+
+This guide walks you through enabling API access and finding your API URL in Datto RMM.
+
+### Prerequisites:
+
+- Admin access to your Datto RMM tenant.
+
+### Step 1: Enable API access and generate API keys
+
+1. In Datto RMM, go to **Setup > Global Settings > Access Control** and enable **Enable API Access**.
+2. Go to **Setup > Users**, select your user, then click **Generate API Keys** to create an **API Key** and **API Secret Key** for the user.
+3. Click **Save User**.
+
+See: [Datto RMM API v2 docs](https://rmm.datto.com/help/en/Content/2SETUP/APIv2.htm)
+
+### Step 2: Obtain the platform API URL
+
+The API URL appears on the user page after keys are generated. It looks like:
+
+- `https://merlot-api.centrastage.net`
+- `https://pinotage-api.centrastage.net`
+- `https://concord-api.centrastage.net`
+- `https://vidal-api.centrastage.net`
+- `https://zinfandel-api.centrastage.net`
+- `https://syrah-api.centrastage.net`
+
+You can also verify Swagger at `https://<platform>-api.centrastage.net/api/swagger-ui/index.html`.
+
+### Step 3: Enter your details in the Connect UI
+
+Once you have the **API URL**:
+1. Open the form where you connect to Datto RMM.
+2. Enter the **API URL** (e.g., `https://merlot-api.centrastage.net`).
+3. Continue to the OAuth consent and complete authorization.
+
+<Tip>Datto RMM uses OAuth 2.0. Access tokens expire after 100 hours. The integration will refresh tokens as needed.</Tip>
+
+
