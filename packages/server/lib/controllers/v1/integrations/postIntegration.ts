@@ -43,7 +43,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     const { environment } = res.locals;
 
     const integration = body.useSharedCredentials
-        ? await configService.createPreprovisionedProvider(body.provider, environment.id, provider)
+        ? await configService.createPreprovisionedProvider({ providerName: body.provider, environment_id: environment.id, provider })
         : await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
 
     res.status(200).send({
