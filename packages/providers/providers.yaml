@@ -11795,8 +11795,8 @@ datto-rmm:
     categories:
         - support
     auth_mode: OAUTH2
-    authorization_url: ${connectionConfig.apiUrl}/auth/oauth/authorize
-    token_url: ${connectionConfig.apiUrl}/auth/oauth/token
+    authorization_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/authorize
+    token_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -11804,8 +11804,9 @@ datto-rmm:
     refresh_params:
         grant_type: refresh_token
     token_request_auth_method: basic
+    disable_pkce: true
     proxy:
-        base_url: ${connectionConfig.apiUrl}/api
+        base_url: https://${connectionConfig.platform}-api.centrastage.net/api
         verification:
             method: GET
             endpoints:
@@ -11813,13 +11814,16 @@ datto-rmm:
     docs: https://docs.nango.dev/integrations/all/datto-rmm
     docs_connect: https://docs.nango.dev/integrations/all/datto-rmm/connect
     connection_config:
-        apiUrl:
+        platform:
             type: string
-            title: API URL
-            description: The region-specific API URL for your Datto RMM account (e.g. https://merlot-api.centrastage.net)
-            format: uri
-            example: https://merlot-api.centrastage.net
-            doc_section: '#step-2-obtain-the-platform-api-url'
+            title: Platform
+            description: The Datto RMM platform (region) for your account
+            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
+            example: merlot
+            prefix: https://
+            suffix: -api.centrastage.net
+            order: 1
+            doc_section: '#step-2-select-your-platform'
 
 zoho-books:
     display_name: Zoho Books

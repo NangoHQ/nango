@@ -6,7 +6,7 @@ sidebarTitle: Datto RMM
 # Overview
 
 To authenticate with Datto RMM, you need:
-1. **API URL** – Your region-specific API base (e.g., `https://merlot-api.centrastage.net`).
+1. **Platform (Region)** – Your Datto RMM platform (e.g., `merlot`, `pinotage`, `concord`, `vidal`, `zinfandel`, `syrah`). This determines your API base URL like `https://<platform>-api.centrastage.net`.
 
 This guide walks you through enabling API access and finding your API URL in Datto RMM.
 
@@ -22,26 +22,30 @@ This guide walks you through enabling API access and finding your API URL in Dat
 
 See: [Datto RMM API v2 docs](https://rmm.datto.com/help/en/Content/2SETUP/APIv2.htm)
 
-### Step 2: Obtain the platform API URL
+<img src="/integrations/all/datto-rmm/api-key.png" style={{maxWidth: "450px" }}/>
 
-The API URL appears on the user page after keys are generated. It looks like:
+### Step 2: Select your platform
 
-- `https://merlot-api.centrastage.net`
-- `https://pinotage-api.centrastage.net`
-- `https://concord-api.centrastage.net`
-- `https://vidal-api.centrastage.net`
-- `https://zinfandel-api.centrastage.net`
-- `https://syrah-api.centrastage.net`
+Your platform corresponds to your region and defines your base URL:
+
+- `merlot` → `https://merlot-api.centrastage.net`
+- `pinotage` → `https://pinotage-api.centrastage.net`
+- `concord` → `https://concord-api.centrastage.net`
+- `vidal` → `https://vidal-api.centrastage.net`
+- `zinfandel` → `https://zinfandel-api.centrastage.net`
+- `syrah` → `https://syrah-api.centrastage.net`
 
 You can also verify Swagger at `https://<platform>-api.centrastage.net/api/swagger-ui/index.html`.
 
 ### Step 3: Enter your details in the Connect UI
 
-Once you have the **API URL**:
+Once you have the **Platform**:
 1. Open the form where you connect to Datto RMM.
-2. Enter the **API URL** (e.g., `https://merlot-api.centrastage.net`).
+2. Enter the **Platform** (e.g., `merlot`). The base URL is derived automatically.
 3. Continue to the OAuth consent and complete authorization.
 
-<Tip>Datto RMM uses OAuth 2.0. Access tokens expire after 100 hours. The integration will refresh tokens as needed.</Tip>
+<img src="/integrations/all/datto-rmm/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Datto RMM.
 
 
