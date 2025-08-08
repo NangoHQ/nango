@@ -13,6 +13,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     <Steps>
       <Step title="Create an integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Gmail_.
+
+      <Note>
+        Nango has credentials you can use for testing. Activate them in the dashboard.
+      </Note>
+
       </Step>
       <Step title="Authorize Gmail">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app.
@@ -65,6 +70,14 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
+
+    <Info>
+      You will need to pass a security review to go live with your integration.
+
+      [Follow our guide](/integrations/google-security-review) to get approved as fast as possible.
+    </Info>
+
+    ## Create your OAuth App
     <Steps>
       <Step title="Create a Google Cloud account">
         If you don't already have one, sign up for a [Google Cloud account](https://console.cloud.google.com/).
@@ -106,33 +119,31 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         6. Click **Create**.
         7. A dialog will appear with your client ID and client secret. Save these credentials securely as you'll need them when configuring your integration in Nango.
       </Step>
-        <Step title="Publish your app (switch from Testing to Production)">
+      <Step title="Start building your integration">
+        Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
+      </Step>
+      <Step title="Verify your app">
+       Most Gmail scopes are marked "restricted" by Google.
+
+       You can develop your integration in test mode, but you need to pass a security review to go live.
+
+       [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
+      </Step>
+      <Step title="Publish your app (switch from Testing to Production)">
         To move your OAuth app from testing to production:
         1. Go to **APIs & Services** > **OAuth consent screen** > **Audience**.
         2. Click **Publish App** to switch your app from testing to production.
       </Step>
-
-      <Step title="Verify your app (if required)">
-        If your app uses sensitive or restricted scopes, you'll need to verify it with Google:
-        1. Once published to production, click **Prepare for Verification** to start the verification process.
-        2. Review and confirm all app details, then click **Save and Continue**.
-        3. Justify your use of any sensitive or restricted scopes.
-        4. Upload a demo video showing your app's OAuth flow and scope usage.
-        5. Click **Submit for Verification** to begin Google's review.
-      </Step>
-      <Step title="Next">
-        Follow the [_Quickstart_](/getting-started/quickstart).
-      </Step>
+      
     </Steps>
   ## Common Scopes
   | Scope | Description |
   | ----- | ----------- |
-  | openid | Access to basic profile information |
   | profile | Access to user's basic profile information |
   | email | Access to user's email address |
-  | `https://mail.google.com/` | Read, compose, send, and permanently delete all your email from Gmail |
-  | `https://www.googleapis.com/auth/gmail.readonly` | View your email messages and settings |
-  | `https://www.googleapis.com/auth/gmail.send` | Send email on your behalf |
+  | `https://mail.google.com/` | Read, compose, send, and permanently delete all emails from Gmail |
+  | `https://www.googleapis.com/auth/gmail.readonly` | View email messages and settings |
+  | `https://www.googleapis.com/auth/gmail.send` | Send email on the user's behalf |
   | `https://www.googleapis.com/auth/gmail.compose` | Manage drafts and send emails |
 
   </Tab>
