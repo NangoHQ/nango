@@ -8,10 +8,10 @@ import { Err, Ok, getLogger, report } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
 
-import type { Subscription, Transport } from './transport.js';
+import type { SubscribeProps, Transport } from './transport.js';
 import type { Event } from '../event.js';
 import type { Result } from '@nangohq/utils';
-import type { StompConfig } from '@stomp/stompjs';
+import type { StompConfig, StompSubscription } from '@stomp/stompjs';
 
 const logger = getLogger('pubsub.activemq');
 
@@ -19,6 +19,7 @@ export class ActiveMQ implements Transport {
     private client: Client | null = null;
     private isConnected = false;
     private messageEncoding: BufferEncoding = 'binary';
+    private activeSubscriptions = new Map<StompSubscription, SubscribeProps<any>>();
 
     constructor(props?: { url: string; user: string; password: string }) {
         const brokerUrl = props?.url ?? envs.NANGO_ACTIVEMQ_URL;
@@ -40,12 +41,18 @@ export class ActiveMQ implements Transport {
                 login: props?.user ?? envs.NANGO_ACTIVEMQ_USER,
                 passcode: props?.password ?? envs.NANGO_ACTIVEMQ_PASSWORD
             },
-            heartbeatIncoming: 10000,
-            heartbeatOutgoing: 10000,
-            reconnectDelay: 300,
+            heartbeatIncoming: 10_000,
+            heartbeatOutgoing: 10_000,
+            reconnectDelay: 1_000,
             onConnect: () => {
                 this.isConnected = true;
                 logger.info(`ActiveMQ: connected to ${brokerUrls[currentUrlIndex]}`);
+                // subscriptions don't persist across reconnects, so we need to resubscribe
+                const copy = new Map(this.activeSubscriptions);
+                this.unsubscribeAll();
+                for (const [_, subscribeProps] of copy) {
+                    this.subscribe(subscribeProps);
+                }
             },
             onDisconnect: () => {
                 this.isConnected = false;
@@ -90,20 +97,26 @@ export class ActiveMQ implements Transport {
         }
     }
 
+    public unsubscribeAll(): void {
+        for (const [sub] of this.activeSubscriptions) {
+            sub.unsubscribe();
+        }
+        this.activeSubscriptions.clear();
+    }
+
     // eslint-disable-next-line @typescript-eslint/require-await
     public async disconnect(): Promise<Result<void>> {
-        if (this.client) {
+        if (this.client && this.isConnected) {
             try {
-                this.client.deactivate();
-                this.client = null;
                 this.isConnected = false;
+                this.client.deactivate();
                 return Ok(undefined);
             } catch (err) {
                 report(new Error('Error disconnecting from ActiveMQ'), { error: err });
                 return Err(new Error('Failed to disconnect from ActiveMQ', { cause: err }));
             }
         }
-        return Ok(undefined); // no client to disconnect
+        return Ok(undefined);
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -134,26 +147,26 @@ export class ActiveMQ implements Transport {
         }
     }
 
-    public subscribe({ consumerGroup, subscriptions }: { consumerGroup: string; subscriptions: Subscription[] }): void {
+    subscribe<TSubject extends Event['subject']>(props: SubscribeProps<TSubject>): void {
+        const { consumerGroup, subject, callback } = props;
         if (!this.client || !this.isConnected) {
-            report(new Error('ActiveMQ publisher not connected, cannot subscribe to events'), { consumerGroup });
+            report(new Error('ActiveMQ consumer not connected, cannot subscribe to events'), { consumerGroup });
             return;
         }
 
         // ActiveMQ supports virtual topics, which allows messages to be sent to multiple consumer groups
         // https://activemq.apache.org/components/classic/documentation/virtual-destinations
         // Consumers can subscribe to corresponding queues. ie: Consumer.${group}.VirtualTopic.${topic}
-        for (const { subject, callback } of subscriptions) {
-            this.client.subscribe(`/queue/Consumer.${consumerGroup}.VirtualTopic.${subject}`, (message) => {
-                if (message.body) {
-                    const decoded = serde.deserialize<Event>(Buffer.from(message.body, this.messageEncoding));
-                    if (decoded.isErr()) {
-                        report(new Error(`Failed to deserialize message`), { subject, error: decoded.error });
-                        return;
-                    }
-                    callback(decoded.value);
+        const sub = this.client.subscribe(`/queue/Consumer.${consumerGroup}.VirtualTopic.${subject}`, async (message) => {
+            if (message.body) {
+                const decoded = serde.deserialize<Extract<Event, { subject: TSubject }>>(Buffer.from(message.body, this.messageEncoding));
+                if (decoded.isErr()) {
+                    report(new Error(`Failed to deserialize message`), { subject: subject, error: decoded.error });
+                    return;
                 }
-            });
-        }
+                await Promise.resolve(callback(decoded.value));
+            }
+        });
+        this.activeSubscriptions.set(sub, props);
     }
 }

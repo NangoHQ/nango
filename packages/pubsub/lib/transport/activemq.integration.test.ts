@@ -1,4 +1,4 @@
-import { afterAll, assert, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ActiveMQ } from './activemq.js';
 
@@ -27,13 +27,16 @@ describe('ActiveMQ Transport', () => {
     describe('Publisher/Subscriber', () => {
         const publisher = new ActiveMQ();
         const consumer = new ActiveMQ();
-        beforeAll(async () => {
+
+        beforeEach(async () => {
             await publisher.connect({ timeoutMs: 1000 });
             await consumer.connect({ timeoutMs: 1000 });
         });
 
-        afterAll(async () => {
+        afterEach(async () => {
             await publisher.disconnect();
+
+            consumer.unsubscribeAll();
             await consumer.disconnect();
         });
         it('should publish and consume event', async () => {
@@ -43,8 +46,9 @@ describe('ActiveMQ Transport', () => {
                 type: 'usage.actions',
                 payload: {
                     value: 10,
-                    accountId: 1,
                     properties: {
+                        accountId: 1,
+                        connectionId: 2,
                         tag1: 'someTag1'
                     }
                 },
@@ -53,16 +57,44 @@ describe('ActiveMQ Transport', () => {
             const callback = vi.fn();
             consumer.subscribe({
                 consumerGroup: 'test-consumer-group',
-                subscriptions: [
-                    {
-                        subject: event.subject,
-                        callback
-                    }
-                ]
+                subject: event.subject,
+                callback
             });
 
             const published = await publisher.publish(event);
             assert(published.isOk(), 'Publishing event was not successful');
+            await vi.waitFor(() => {
+                expect(callback).toHaveBeenCalledTimes(1);
+            });
+            expect(callback).toHaveBeenCalledWith(event);
+        });
+        it('should persist subscription after reconnecting', async () => {
+            const event: Event = {
+                idempotencyKey: '1234567',
+                subject: 'usage',
+                type: 'usage.actions',
+                payload: {
+                    value: 20,
+                    properties: {
+                        accountId: 2,
+                        connectionId: 3,
+                        tag2: 'someTag2'
+                    }
+                },
+                createdAt: new Date()
+            };
+            const callback = vi.fn();
+            consumer.subscribe({
+                consumerGroup: 'test-consumer-group',
+                subject: event.subject,
+                callback
+            });
+
+            await consumer.disconnect();
+            await consumer.connect({ timeoutMs: 1000 });
+
+            const published = await publisher.publish(event);
+            assert(published.isOk(), 'Re-publishing event after reconnect was not successful');
             await vi.waitFor(() => {
                 expect(callback).toHaveBeenCalledTimes(1);
             });
