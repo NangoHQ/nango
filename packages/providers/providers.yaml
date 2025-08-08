@@ -5361,6 +5361,39 @@ health-gorilla:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/health-gorilla
 
+heap:
+    display_name: Heap
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://heapanalytics.com/api
+    token_url: https://heapanalytics.com/api/public/v0/auth_token
+    token_headers:
+        authorization: Basic ${base64(${credentials.appId}:${credentials.apiKey})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/heap
+    docs_connect: https://docs.nango.dev/integrations/all/heap/connect
+    credentials:
+        appId:
+            type: string
+            title: App ID
+            description: Your Heap application ID
+            example: '3207896401'
+            pattern: '^\d+$'
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Heap API Key
+            secret: true
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -5908,6 +5941,30 @@ jotform:
             type: string
             title: API Key
             description: The API key for your Jotform account
+
+jumpcloud:
+    display_name: JumpCloud
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.jumpcloud.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/jumpcloud
+    docs_connect: https://docs.nango.dev/integrations/all/jumpcloud/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JumpCloud API Key.
+            example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
+            pattern: '^jca_[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generate-your-jumpcloud-api-key'
 
 helpscout-docs:
     display_name: Help Scout Docs
