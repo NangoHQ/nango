@@ -7,7 +7,7 @@ export interface DBGettingStartedMeta extends Timestamps {
     id: number;
     account_id: number;
     environment_id: number;
-    integration_id: number | null;
+    integration_id: number;
 }
 
 /**
