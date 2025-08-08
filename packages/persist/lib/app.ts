@@ -1,12 +1,12 @@
 import './tracer.js';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { destroy as destroyRecords } from '@nangohq/records';
 import { getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { pubsub } from './pubsub.js';
 import { server } from './server.js';
 
 import type { Server } from 'node:http';
@@ -30,6 +30,11 @@ initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NA
 let api: Server;
 
 try {
+    const pubsubConnect = await pubsub.connect();
+    if (pubsubConnect.isErr()) {
+        logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
+    }
+
     const port = envs.NANGO_PERSIST_PORT;
     api = server.listen(port, () => {
         logger.info(`🚀 API ready at http://localhost:${port}`);
@@ -48,7 +53,7 @@ const close = once(() => {
         await db.knex.destroy();
         await db.readOnly.destroy();
         await destroyRecords();
-        await billing.shutdown();
+        await pubsub.disconnect();
 
         logger.close();
 

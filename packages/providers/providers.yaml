@@ -7703,6 +7703,80 @@ paychex:
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
 
+paycor:
+    display_name: Paycor
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm.paycor.com/AppActivation/Authorize
+    token_url: https://apis.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor
+    docs_connect: https://docs.nango.dev/integrations/all/paycor/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor account
+            doc_section: '#step-1-finding-your-company-id'
+
+paycor-sandbox:
+    display_name: Paycor (Sandbox)
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm-demo.paycor.com/AppActivation/Authorize
+    token_url: https://apis-sandbox.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis-sandbox.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/paycor-sandbox/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor sandbox account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor sandbox account
+            doc_section: '#step-1-finding-your-company-id'
+
 paycom:
     display_name: Paycom
     categories:
@@ -8176,6 +8250,38 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+private-api-bearer:
+    display_name: Private API (Bearer Auth)
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-bearer
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-bearer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
+
+private-api-basic:
+    display_name: Private API (Basic Auth)
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-basic
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your username
+        password:
+            type: string
+            title: Password
+            description: Your password
 
 precisefp:
     display_name: PreciseFP
@@ -8949,6 +9055,35 @@ sage-intacct:
             title: User Password
             description: Your Sage Intacct User Password
             secret: true
+
+sage-people:
+    display_name: Sage People
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_params:
+        prompt: consent
+    default_scopes:
+        - offline_access
+        - api
+    proxy:
+        base_url: https://${connectionConfig.instance_url}/services/apexrest/spapi
+        headers:
+            accept: application/json
+    token_response_metadata:
+        - instance_url
+    docs: https://docs.nango.dev/integrations/all/sage-people
+    docs_connect: https://docs.nango.dev/integrations/all/sage-people/connect
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+            automated: true
 
 salesforce:
     display_name: Salesforce

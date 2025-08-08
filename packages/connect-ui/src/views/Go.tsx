@@ -102,6 +102,13 @@ export const Go: React.FC = () => {
         return integration?.display_name ?? provider?.display_name ?? '';
     }, [integration, provider]);
 
+    const [docsConnectUrl, urlOverride] = useMemo(() => {
+        if (!integration?.unique_key) return [null, false];
+        const override = session?.overrides?.[integration?.unique_key]?.docs_connect;
+        if (override) return [override, true];
+        return [provider?.docs_connect, false];
+    }, [provider, integration, session]);
+
     useMount(() => {
         if (integration) {
             telemetry('view:integration', { integration: integration.unique_key });
@@ -386,10 +393,10 @@ export const Go: React.FC = () => {
                                                                 {isOptional && (
                                                                     <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-dark-500">optional</span>
                                                                 )}
-                                                                {definition?.doc_section && (
+                                                                {docsConnectUrl && (
                                                                     <Link
                                                                         target="_blank"
-                                                                        to={`${provider.docs_connect}${definition.doc_section}`}
+                                                                        to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
                                                                     >
                                                                         <IconInfoCircle size={16} />
@@ -446,10 +453,10 @@ export const Go: React.FC = () => {
                                     {t('go.invalidPreconfigured')}
                                 </div>
                             )}
-                            {provider.docs_connect && (
+                            {docsConnectUrl && (
                                 <p className="text-dark-500 text-center">
                                     {t('common.needHelp')}{' '}
-                                    <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect} onClick={() => telemetry('click:doc')}>
+                                    <Link className="underline text-dark-800" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
                                         {t('common.viewGuide')}
                                     </Link>
                                 </p>

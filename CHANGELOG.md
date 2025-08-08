@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.66.0] - 2025-08-07
+
+### Added
+
+- Usage notification emails (#4413) by @kaposke
+- *(action-usage)* [nan-3644] log action size (#4422) by @khaliqgant
+- Actually send usage emails (#4421) by @kaposke
+- *(integrations)* Add support for sage people (#4423) by @hassan254-prog
+- Add metering app (#4424) by @TBonnin
+- *(db)* Connect_sessions overrides (#4426) by @kaposke
+- Ability to override docs_connect in connect_sessions (#4427) by @kaposke
+- Mar for usage should be aligned with billing (#4432) by @kaposke
+- Add info to sync records usage (#4433) by @kaposke
+- Add env var for server public routes body limit (#4436) by @TBonnin
+- *(providers)* Allow for pre-provisioning of providers credentials (#4380) by @hassan254-prog
+- *(cli)* Add zod nullable method to zeroyaml definitions (#4440) by @hassan254-prog
+- *(integrations)* Add support for generic api providers (#4438) by @hassan254-prog
+- Ingest billing events from metering (#4435) by @TBonnin
+
+### Changed
+
+- Use decryptAsync for decrypting records (#4410) by @TBonnin
+- Improve workday docs (#4412) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f11ccca90f9f483844885e7f0d0abff40d6231d3 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/921e3f573401afdb3ebf2202861207a993416b2f by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/91e2ce80a1b127b1d02a88b0fe0f8598aef6fb50 by Khaliq by @github-actions[bot]
+- Change to new API docs layout (#4429) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/86292a88b8375cc9a5bfe063c03c7fdd0210f5f8 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/01ba37b8e243586fa8b8f314617982972be86802 by Khaliq by @github-actions[bot]
+- Upgrade config + enable LLM integrations (#4437) by @rguldener
+
+### Fixed
+
+- *(integrations)* Fix ukg ready auth mode (#4414) by @hassan254-prog
+- *(deploy-version)* If a version is passed in, don't attempt to bump (#4425) by @khaliqgant
+- Activemq should be optional if not cloud/local (#4439) by @TBonnin
+- *(integrations)* Change hibob logo (#4444) by @hassan254-prog
+- *(tests)* Fix failing integration test (#4447) by @khaliqgant
+- *(cron.exportUsage)* Prevent concurrent executions (#4441) by @TBonnin
+- Activermq subscriptions don't persist across reconnect (#4445) by @TBonnin
+- Move ES index to warm storage after 48h (instead of 24) (#4449) by @TBonnin
+
 ## [v0.65.0] - 2025-07-31
 
 ### Added
@@ -4515,6 +4557,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
 [v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
 [v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
 [v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3

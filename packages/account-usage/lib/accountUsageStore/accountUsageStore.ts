@@ -1,4 +1,4 @@
-import type { AccountUsageIncrementableMetric } from '../metrics.js';
+import type { AccountUsageIncrementableMetric } from '@nangohq/types';
 
 export interface GetUsageParams {
     accountId: number;
