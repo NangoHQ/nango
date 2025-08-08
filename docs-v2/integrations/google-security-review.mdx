@@ -40,14 +40,14 @@ If you prepare with this guide, you can expect **5-20 days** from requesting rev
 
 If you are already SOC 2 type II (or similarly) certified, you have probably done pentests before. 5 days for CASA Tier 2 verification is feasible.
 
-If you have never done a securicty audit, you may need to create the necessary documentation and patch vulnerabilities. Budget 10-20 days.
+If you have never done a security audit, you may need to create the necessary documentation and patch vulnerabilities. Budget 10-20 days.
 
 The speed also depends on you: If you fix vulnerabilities fast, and follow up daily with Google and your review vendor, you will be much faster than if you just let things run their course.
 
-If you are pressed for time and want more tips to speed things up, [reach out](https://nango.dev/slack). We are happy to help 1:1.
+If you are pressed for time and want more tips to speed things up, [reach out to us](https://nango.dev/slack). We are happy to help 1:1.
 
 <Info>
-    If you use restricted scopes, the CASA asseement and app verification need to be [renewed annually](https://support.google.com/cloud/answer/13463816?hl=en&ref_topic=13460882&sjid=6878633552635075588-EU). Unless you had major changes in your functionality, the renewal will be much easier.
+    If you use restricted scopes, the CASA assessment and app verification need to be [renewed annually](https://support.google.com/cloud/answer/13463816?hl=en&ref_topic=13460882&sjid=6878633552635075588-EU). Unless you had major changes in your functionality, the renewal will be much easier.
 </Info>
 
 # Recommended process
@@ -60,7 +60,7 @@ If you only need to do App verification, skip step 4 and 5.
     - 100 users can authorize your app before the review is required
 2. Prepare for the App verification (+ CASA assessment)
     - Pick a Google approved CASA vendor _(CASA assessment only)_
-    - Run a first security scan on yor app to fix low-hanging fruits _(CASA assessment only)_
+    - Run a first security scan on your app to fix low-hanging fruits _(CASA assessment only)_
 3. Start the app review verification with Google
     - You will need to submit a video walkthrough and answer some questions
     - Google will start reviewing your integration. Expect back & forth on details.
@@ -88,18 +88,18 @@ We recommend you start the app verification process as soon as the integration w
 ### Test mode restrictions
 Until your app is verified:
 
-- Users see a scarry "this app is unverified" step during the OAuth flow
+- Users see a scary "this app is unverified" step during the OAuth flow
 - Only 100 users may authorize your app in total. You cannot reset this counter or remove test users.
 - OAuth tokens always expire after 7 days, forcing users to re-authorize
 
 For apps that need both a Google review and CASA verification these restrictions are in place until both are done.
 
-### Tipps for development
+### Tips for development
 
 - Only request scopes you need right now. If you need additional scopes in the future, add them then.
     - Google reviewers will test this and reject your application if you ask for scopes you don't use
 - Use a separate OAuth app (on a different Google Cloud project) for your own development & testing. It gets its own 100 test users.
-- Kepp the restricted scopes count minimal and user-scoped.
+- Keep the restricted scopes count minimal and user-scoped.
     - If you ask for 10+ restricted scopes (anecdotal), or domain-wide delegation, Google may ask you to become CASA Tier 3 verified.
     - CASA Tier 3 is exponentially more work and costly, compared to Tier 2
 - Test users are permanent: You cannot reset the counter or remove test users. Make sure you use the 100 test users wisely.
@@ -122,7 +122,7 @@ Most importantly:
 * Prepare a [demo video](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=2.%20App%20functionality%20demonstration%20video) exactly as requested by Google (shows end to end flow, including OAuth flow, etc.)
 * For each scope you request, prepare a [detailed justification](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=Request%20narrowest%20scopes) which includes:
     * An explanation why narrower scopes would not work, including specifics on what functionality would not work as intended. Read Google's sample justification.
-    * This and the demo video are most frequent source of back & forths.
+    * This and the demo video are the most frequent sources of back-and-forth communication.
 
 ### Additional prep for CASA Tier 2 assessment
 
@@ -143,9 +143,9 @@ We have compiled a list of the most common vendors:
 **[TAC Security](https://tacsecurity.com/google-casa-cloud-application-security-assessment/) (recommended)** - $540 - $720  
 $540 gets you two revalidation. $720 will get you unlimited revalidations. Sometimes runs 10% discounts, check their website.
 
-A validations is a single scan and output of issues. If you do a pre-scan and fix issues first, you’ll probably only need the two validations to fix esoteric issues. Try to avoid scanning again without a fix or an accepted omission for everything picked up in the first scan.
+A validation is a single scan and output of issues. If you do a pre-scan and fix issues first, you’ll probably only need the two validations to fix remaining issues. Try to avoid scanning again without a fix or an accepted omission for everything picked up in the first scan.
 
-Many Nango customers have used them. They are ok, cheap, and have mostly automated the process. This makes them not the best at answering emails and dealing with human interactions. We heard stories where they drop the ball on emails from Google which has caused days of delay. We recommend following up with them daily and reminding them of all communication that requires their attention.
+Many Nango customers have used them. They are affordable and have mostly automated the process. This makes them not the best at answering emails and dealing with human interactions. We heard stories where they drop the ball on emails from Google which has caused days of delay. We recommend following up with them daily and reminding them of all communication that requires their attention.
 
 **[Netsentries](https://www.netsentries.com/service/casa)** - ~$700
 You need to fill in a form to get a full quote. We heard they have a more human-level touch. If you have used them please let us know, happy to add your experience here.
@@ -167,7 +167,7 @@ Under "Publishing status", click on "Publish app". Confirm the consent screen.
 
 Now go to _Verification Center_ in the navbar and you should see a form to start the app verification process.
 
-You may get emails from Google asking for more details. We recommend answering quickly, but dilligently. Google answers within 24-48h, the fewer loops you need, the faster your app will get verified.
+You may get emails from Google asking for more details. We recommend answering quickly, but diligently. Google answers within 24-48h, the fewer loops you need, the faster your app will get verified.
 
 Note that the [test mode restrictions](#test-mode-restrictions) remain until your verification is complete.
 
