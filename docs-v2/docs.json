@@ -484,6 +484,8 @@
               "integrations/all/paypal-sandbox",
               "integrations/all/paycom",
               "integrations/all/paychex",
+              "integrations/all/paycor",
+              "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
               "integrations/all/pennylane",
               "integrations/all/peopledatalabs",
