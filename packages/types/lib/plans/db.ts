@@ -90,4 +90,10 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     has_webhooks_forward: boolean;
+
+    /**
+     * Enable or disable the ability to override the docs connect url from the connect session
+     * @default false
+     */
+    can_override_docs_connect_url: boolean;
 }

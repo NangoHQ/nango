@@ -12,8 +12,13 @@ export interface UpdateAccountUsageDto {
     activeRecords?: DBAccountUsage['active_records'];
 }
 
-export interface MetricUsage {
-    metric: string;
+export type AccountUsageIncrementableMetric = 'actions' | 'active_records';
+
+export type AccountUsageMetric = AccountUsageIncrementableMetric | 'connections';
+
+export type AccountMetricsUsageSummary = Record<AccountUsageMetric, MetricUsageSummary>;
+
+export interface MetricUsageSummary {
     label: string;
     usage: number;
     limit: number | null;

@@ -11,7 +11,7 @@ import { getKVStore } from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
 import { flagHasPlan, getLogger, metrics, report, startOfMonth } from '@nangohq/utils';
 
-import type { AccountUsageIncrementableMetric } from '@nangohq/account-usage';
+import type { AccountUsageIncrementableMetric } from '@nangohq/types';
 
 const cronMinutes = envs.CRON_PERSIST_ACCOUNT_USAGE_MINUTES;
 const logger = getLogger('cron.persistAccountUsage');
