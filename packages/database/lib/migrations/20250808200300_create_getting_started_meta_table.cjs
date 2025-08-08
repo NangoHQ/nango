@@ -8,7 +8,7 @@ exports.up = async function (knex) {
         table.increments('id').primary();
         table.integer('account_id').references('id').inTable('_nango_accounts').onDelete('CASCADE').notNullable();
         table.integer('environment_id').references('id').inTable('_nango_environments').onDelete('CASCADE').notNullable();
-        table.integer('integration_id').references('id').inTable('_nango_configs').onDelete('SET NULL').nullable();
+        table.integer('integration_id').references('id').inTable('_nango_configs').onDelete('CASCADE').notNullable();
         table.timestamps(true, true);
 
         table.unique(['account_id']);
