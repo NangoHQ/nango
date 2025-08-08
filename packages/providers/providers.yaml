@@ -5317,6 +5317,39 @@ health-gorilla:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/health-gorilla
 
+heap:
+    display_name: Heap
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://heapanalytics.com/api
+    token_url: https://heapanalytics.com/api/public/v0/auth_token
+    token_headers:
+        authorization: Basic ${base64(${credentials.appId}:${credentials.apiKey})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/heap
+    docs_connect: https://docs.nango.dev/integrations/all/heap/connect
+    credentials:
+        appId:
+            type: string
+            title: App ID
+            description: Your Heap application ID
+            example: '3207896401'
+            pattern: '^\d+$'
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Heap API Key
+            secret: true
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -7703,6 +7736,80 @@ paychex:
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
 
+paycor:
+    display_name: Paycor
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm.paycor.com/AppActivation/Authorize
+    token_url: https://apis.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor
+    docs_connect: https://docs.nango.dev/integrations/all/paycor/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor account
+            doc_section: '#step-1-finding-your-company-id'
+
+paycor-sandbox:
+    display_name: Paycor (Sandbox)
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm-demo.paycor.com/AppActivation/Authorize
+    token_url: https://apis-sandbox.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis-sandbox.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/paycor-sandbox/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor sandbox account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor sandbox account
+            doc_section: '#step-1-finding-your-company-id'
+
 paycom:
     display_name: Paycom
     categories:
@@ -8176,6 +8283,38 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+private-api-bearer:
+    display_name: Private API (Bearer Auth)
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-bearer
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-bearer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
+
+private-api-basic:
+    display_name: Private API (Basic Auth)
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-basic
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your username
+        password:
+            type: string
+            title: Password
+            description: Your password
 
 precisefp:
     display_name: PreciseFP

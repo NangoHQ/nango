@@ -154,6 +154,12 @@
         "icon": "bars",
         "groups": [
           {
+            "group": "Review Guides",
+            "pages": [
+              "integrations/google-security-review"
+            ]
+          },
+          {
             "group": "APIs & Integrations",
             "pages": [
               "integrations/overview",
@@ -377,6 +383,7 @@
               "integrations/all/hackerrank-work",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
+              "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "integrations/all/hibob-service-user",
@@ -484,6 +491,8 @@
               "integrations/all/paypal-sandbox",
               "integrations/all/paycom",
               "integrations/all/paychex",
+              "integrations/all/paycor",
+              "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
               "integrations/all/pennylane",
               "integrations/all/peopledatalabs",
@@ -500,6 +509,8 @@
               "integrations/all/podium",
               "integrations/all/posthog",
               "integrations/all/prive",
+              "integrations/all/private-api-basic",
+              "integrations/all/private-api-bearer",
               "integrations/all/productboard",
               "integrations/all/qualtrics",
               "integrations/all/quickbase",
