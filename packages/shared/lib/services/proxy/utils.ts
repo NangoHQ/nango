@@ -269,9 +269,21 @@ export function buildProxyHeaders({
         }
         case 'OAUTH2_CC':
         case 'SIGNATURE':
-        case 'TWO_STEP':
         case 'JWT': {
             headers['authorization'] = `Bearer ${connection.credentials.token}`;
+            break;
+        }
+        case 'TWO_STEP': {
+            // For TWO_STEP, check if custom headers will handle authorization
+            // Only set default Bearer if no custom authorization header is configured
+            const hasCustomAuthHeader =
+                'proxy' in config.provider &&
+                'headers' in config.provider.proxy &&
+                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('{accessToken}'));
+
+            if (!hasCustomAuthHeader) {
+                headers['authorization'] = `Bearer ${connection.credentials.token}`;
+            }
             break;
         }
         case 'TBA': {

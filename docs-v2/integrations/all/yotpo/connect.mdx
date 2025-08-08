@@ -1,0 +1,45 @@
+---
+title: Yotpo - How do I link my account?
+sidebarTitle: Yotpo
+---
+
+# Overview
+
+To authenticate with Yotpo, you will need:
+1. **App Key** - Your Yotpo Store Key. This is a 40-character alphanumeric string that identifies your store in Yotpo.
+2. **Secret Key** - Your Yotpo app's secret key. This is a 40-character alphanumeric string used to generate a token which is used to authenticate API requests to Yotpo.
+
+This guide will walk you through generating and finding these credentials within Yotpo.
+
+### Prerequisites:
+
+- You must have a Yotpo account and have [installed](https://support.yotpo.com/docs/yotpo-api) Yotpo on your eCommerce platform.
+
+### Instructions:
+
+#### Step 1: Retrieving your App Key
+1. Login to your Yopto account.
+2. Click the **Profile** icon at the top right corner of the screen.
+3. Select **Settings** > **General Settings**. You’ll find your **App Key** at the bottom of the **General Settings** section.
+<img src="/integrations/all/yotpo/settings.png" />
+<img src="/integrations/all/yotpo/general_settings.png" />
+
+#### Step 2: Generating your Secret Key
+1. From your **General Settings**, click **Get secret key**. Yotpo will send an email with a verification code to the email address associated with your account.
+<img src="/integrations/all/yotpo/secret_key.png" />
+2. Enter this code in the **Enter the code** section and click **Submit**.
+3. Your **Secret Key** will be generated.
+<img src="/integrations/all/yotpo/generated_secret_key.png" />
+4. After copying it, click **Save Changes**
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **App Key** and **Secret Key**:
+1. Open the form where you need to authenticate with Yotpo.
+2. Enter both **App Key** and **Secret Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/yotpo/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Yotpo.
