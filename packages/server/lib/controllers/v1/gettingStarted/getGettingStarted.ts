@@ -12,7 +12,7 @@ import type { GetGettingStarted } from '@nangohq/types';
 export const getGettingStarted = asyncWrapper<GetGettingStarted>(async (_, res) => {
     const { user, environment } = res.locals;
 
-    const gettingStartedProgressResult = await gettingStartedService.getOrCreateByUser(user, environment.id);
+    const gettingStartedProgressResult = await gettingStartedService.getOrCreateProgressByUser(user, environment.id);
 
     if (gettingStartedProgressResult.isErr()) {
         report(gettingStartedProgressResult.error);
