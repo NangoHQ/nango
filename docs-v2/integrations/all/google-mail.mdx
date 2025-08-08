@@ -13,6 +13,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     <Steps>
       <Step title="Create an integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Gmail_.
+
+      <Note>
+        Nango has credentials you can use for testing. Activate them in the dashboard.
+      </Note>
+
       </Step>
       <Step title="Authorize Gmail">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app.
@@ -65,6 +70,14 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
+
+    <Info>
+      You will need to pass a security review to go live with your integration.
+
+      [Follow our guide](/integrations/google-security-review) to get approved as fast as possible.
+    </Info>
+
+    ## Create your OAuth App
     <Steps>
       <Step title="Create a Google Cloud account">
         If you don't already have one, sign up for a [Google Cloud account](https://console.cloud.google.com/).
@@ -127,13 +140,16 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   ## Common Scopes
   | Scope | Description |
   | ----- | ----------- |
-  | openid | Access to basic profile information |
   | profile | Access to user's basic profile information |
   | email | Access to user's email address |
-  | `https://mail.google.com/` | Read, compose, send, and permanently delete all your email from Gmail |
-  | `https://www.googleapis.com/auth/gmail.readonly` | View your email messages and settings |
-  | `https://www.googleapis.com/auth/gmail.send` | Send email on your behalf |
+  | `https://mail.google.com/` | Read, compose, send, and permanently delete all emails from Gmail |
+  | `https://www.googleapis.com/auth/gmail.readonly` | View email messages and settings |
+  | `https://www.googleapis.com/auth/gmail.send` | Send email on the user's behalf |
   | `https://www.googleapis.com/auth/gmail.compose` | Manage drafts and send emails |
+
+  ## Security review (CASA level 2)
+
+  More info here...
 
   </Tab>
   <Tab title="🔗 Useful links">
@@ -145,6 +161,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     <ApiGotchas />
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
+  </Tab>
+  <Tab title="🔐 Security review">
+    
+   
+
   </Tab>
 </Tabs>
 
