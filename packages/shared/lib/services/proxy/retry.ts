@@ -68,13 +68,8 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     if (proxyConfig.retryHeader && (proxyConfig.retryHeader.at || proxyConfig.retryHeader.after)) {
         // Headers configured on the fly
         const type = proxyConfig.retryHeader.at ? 'at' : 'after';
-        let retryHeaders: string[];
-
-        if (proxyConfig.retryHeader.at) {
-            retryHeaders = Array.isArray(proxyConfig.retryHeader.at) ? proxyConfig.retryHeader.at : [proxyConfig.retryHeader.at];
-        } else {
-            retryHeaders = Array.isArray(proxyConfig.retryHeader.after) ? proxyConfig.retryHeader.after : [proxyConfig.retryHeader.after!];
-        }
+        const retrySource = proxyConfig.retryHeader.at || proxyConfig.retryHeader.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
         // Check all headers and find the most restrictive retry time
         let bestRetry: { reason: string; wait: number } | null = null;
@@ -96,15 +91,8 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && (proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after)) {
         // Headers configured in the providers.yaml
         const type = proxyConfig.provider.proxy.retry.at ? 'at' : 'after';
-        let retryHeaders: string[];
-
-        if (proxyConfig.provider.proxy.retry.at) {
-            retryHeaders = Array.isArray(proxyConfig.provider.proxy.retry.at) ? proxyConfig.provider.proxy.retry.at : [proxyConfig.provider.proxy.retry.at];
-        } else {
-            retryHeaders = Array.isArray(proxyConfig.provider.proxy.retry.after)
-                ? proxyConfig.provider.proxy.retry.after
-                : [proxyConfig.provider.proxy.retry.after!];
-        }
+        const retrySource = proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
         // Check all headers and find the most restrictive retry time
         let bestRetry: { reason: string; wait: number } | null = null;
