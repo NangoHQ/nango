@@ -138,7 +138,8 @@ adobe-umapi:
         headers:
             x-api-key: ${connectionConfig.clientId}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         base_url: https://usermanagement.adobe.io
     docs: https://docs.nango.dev/integrations/all/adobe-umapi
     post_connection_script: adobeUmapiPostConnection
@@ -258,7 +259,8 @@ aircall:
     proxy:
         base_url: https://api.aircall.io
         retry:
-            at: 'x-aircallapi-reset'
+            at:
+                - 'x-aircallapi-reset'
         paginate:
             type: link
             link_path_in_response_body: meta.next_page_link
@@ -349,7 +351,8 @@ autodesk:
     proxy:
         base_url: https://developer.api.autodesk.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
 autotask:
@@ -561,7 +564,8 @@ anrok:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anrok
     docs_connect: https://docs.nango.dev/integrations/all/anrok/connect
     credentials:
@@ -608,7 +612,8 @@ anthropic:
             anthropic-version: ${connectionConfig.version}
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -640,7 +645,8 @@ anthropic-admin:
             anthropic-version: ${connectionConfig.version}
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -678,7 +684,8 @@ apaleo:
         headers:
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/apaleo
 
 apollo:
@@ -771,7 +778,8 @@ asana:
     proxy:
         base_url: https://app.asana.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -874,7 +882,8 @@ atlassian-admin:
     proxy:
         base_url: https://api.atlassian.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         headers:
             authorization: Bearer ${apiKey}
         connection_config:
@@ -915,7 +924,8 @@ attio:
     proxy:
         base_url: https://api.attio.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     post_connection_script: attioPostConnection
     webhook_routing_script: attioWebhookRouting
     webhook_user_defined_secret: true
@@ -1112,7 +1122,8 @@ aws-iam:
         connection_config:
             region: ${connectionConfig.region}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     credentials_verification_script: awsIamCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/aws-iam
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
@@ -1320,7 +1331,8 @@ basecamp:
         headers:
             user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/basecamp
     docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
     post_connection_script: basecampPostConnection
@@ -1470,7 +1482,8 @@ bitdefender:
     proxy:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     credentials_verification_script: bitdefenderCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
@@ -1681,7 +1694,8 @@ braze:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/braze
     docs_connect: https://docs.nango.dev/integrations/all/braze/connect
     connection_config:
@@ -1920,7 +1934,8 @@ cal-com-v1:
         query:
             apiKey: ${apiKey}
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
@@ -1950,7 +1965,8 @@ cal-com-v2:
             cursor_path_in_response: data.data.nextCursor
             limit_name_in_request: limit
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
@@ -1981,7 +1997,8 @@ calendly:
             type: link
             link_path_in_response_body: pagination.next_page
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
@@ -2141,7 +2158,8 @@ chargebee:
             endpoints:
                 - /api/v2/business_entities
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
     docs_connect: https://docs.nango.dev/integrations/all/chargebee/connect
     connection_config:
@@ -2232,7 +2250,8 @@ checkr-partner:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
@@ -2257,7 +2276,8 @@ checkr-partner-staging:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
@@ -2755,7 +2775,8 @@ confluence-data-center:
     alias: jira-data-center
     proxy:
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
     docs: https://docs.nango.dev/integrations/all/confluence-data-center
     docs_connect: https://docs.nango.dev/integrations/all/confluence-data-center/connect
@@ -2786,7 +2807,8 @@ contentful:
     proxy:
         base_url: https://${connectionConfig.subdomain}.contentful.com
         retry:
-            after: x-contentful-ratelimit-reset
+            after:
+                - x-contentful-ratelimit-reset
     docs: https://docs.nango.dev/integrations/all/contentful
     connection_config:
         subdomain:
@@ -2994,7 +3016,8 @@ datadog:
             endpoints:
                 - /v1/validate
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/datadog
     docs_connect: https://docs.nango.dev/integrations/all/datadog/connect
     connection_config:
@@ -3143,7 +3166,8 @@ discord:
     proxy:
         base_url: https://discord.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/discord
 
 discourse:
@@ -3154,7 +3178,8 @@ discourse:
     proxy:
         base_url: https://${connectionConfig.defaultHost}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         headers:
             api-username: ${connectionConfig.apiUsername}
             api-key: ${apiKey}
@@ -3343,7 +3368,8 @@ dropbox-sign:
     refresh_url: https://app.hellosign.com/oauth/token?refresh
     proxy:
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
         base_url: https://api.hellosign.com
     docs: https://docs.nango.dev/integrations/all/dropbox-sign
 
@@ -3418,7 +3444,8 @@ emarsys:
             endpoints:
                 - /api/v2/settings
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
@@ -3446,7 +3473,8 @@ emarsys-oauth:
     proxy:
         base_url: https://api.emarsys.net
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
     docs_connect: https://docs.nango.dev/integrations/all/emarsys-oauth/connect
 
@@ -3726,7 +3754,9 @@ exact-online:
         headers:
             accept: application/json
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-minutely-reset'
+                - 'x-ratelimit-reset'
             error_code:
                 - '429'
                 - '503'
@@ -4109,7 +4139,8 @@ freshsales:
         headers:
             authorization: Token token=${apiKey}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
     docs_connect: https://docs.nango.dev/integrations/all/freshsales/connect
     connection_config:
@@ -4143,7 +4174,8 @@ freshservice:
             endpoints:
                 - /api/v2/tickets
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
     docs_connect: https://docs.nango.dev/integrations/all/freshservice/connect
     connection_config:
@@ -4215,7 +4247,8 @@ front:
     proxy:
         base_url: https://api2.frontapp.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: link
             response_path: _results
@@ -4465,7 +4498,8 @@ github:
     proxy:
         base_url: https://api.github.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
@@ -4545,7 +4579,8 @@ github-pat:
     proxy:
         base_url: https://api.github.com
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
             remaining: 'x-ratelimit-remaining'
             error_code:
                 - '403'
@@ -4692,7 +4727,8 @@ gong:
     proxy:
         base_url: https://api.gong.io
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     docs_connect: https://docs.nango.dev/integrations/all/gong/connect
     credentials:
@@ -4734,7 +4770,8 @@ gong-oauth:
     proxy:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong-oauth
     connection_config:
         api_base_url_for_customer:
@@ -4920,7 +4957,8 @@ gorgias:
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gorgias
     connection_config:
         subdomain:
@@ -5044,7 +5082,8 @@ greenhouse:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -5068,7 +5107,8 @@ greenhouse-basic:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -5114,7 +5154,8 @@ greenhouse-harvest:
     proxy:
         base_url: https://harvest.greenhouse.io
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -5336,7 +5377,8 @@ harvest:
         headers:
             user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
     connection_config:
@@ -5407,7 +5449,8 @@ hibob-service-user:
             endpoints:
                 - /v1/company/named-lists
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     credentials:
         username:
             type: string
@@ -5613,7 +5656,8 @@ intercom:
     proxy:
         base_url: https://api.intercom.io
         retry:
-            at: 'x-ratelimit-reset'
+            at:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
     pre_connection_deletion_script: intercomPreConnectionDeletion
 
@@ -5761,7 +5805,8 @@ jira-basic:
     auth_mode: BASIC
     proxy:
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         base_url: https://${connectionConfig.subdomain}.atlassian.net
         verification:
             method: GET
@@ -5823,7 +5868,8 @@ jira-data-center-api-key:
     proxy:
         base_url: ${connectionConfig.baseUrl}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jira-data-center-api-key
@@ -5853,7 +5899,8 @@ jira-data-center-basic:
     proxy:
         base_url: ${connectionConfig.baseUrl}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/jira-data-center-basic
     docs_connect: https://docs.nango.dev/integrations/all/jira-data-center-basic/connect
     connection_config:
@@ -5971,7 +6018,8 @@ helpscout-docs:
     auth_mode: BASIC
     proxy:
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
         verification:
             method: GET
@@ -6006,7 +6054,8 @@ helpscout-mailbox:
         grant_type: refresh_token
     proxy:
         retry:
-            after: 'x-ratelimit-retry-after'
+            after:
+                - 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout-mailbox
 
@@ -6154,7 +6203,8 @@ klaviyo:
             endpoints:
                 - /api/accounts
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
     docs_connect: https://docs.nango.dev/integrations/all/klaviyo/connect
     credentials:
@@ -6184,7 +6234,8 @@ klaviyo-oauth:
         headers:
             revision: '2024-07-15'
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo-oauth
 
 kustomer:
@@ -6195,7 +6246,8 @@ kustomer:
     proxy:
         base_url: https://${connectionConfig.extension}.kustomerapp.com
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
@@ -6269,7 +6321,8 @@ lattice:
             accept: application/json
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/lattice
     docs_connect: https://docs.nango.dev/integrations/all/lattice/connect
     credentials:
@@ -6310,7 +6363,8 @@ lemlist:
             endpoints:
                 - /api/team
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/lemlist
     docs_connect: https://docs.nango.dev/integrations/all/lemlist/connect
     credentials:
@@ -6411,7 +6465,8 @@ linear:
     proxy:
         base_url: https://api.linear.app
         retry:
-            at: 'x-ratelimit-requests-reset'
+            at:
+                - 'x-ratelimit-requests-reset'
             remaining: 'x-ratelimit-requests-remaining'
             error_code:
                 - '400'
@@ -6558,7 +6613,8 @@ listmonk:
         headers:
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -6758,7 +6814,8 @@ medallia:
         grant_type: client_credentials
     proxy:
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
     docs_connect: https://docs.nango.dev/integrations/all/medallia/connect
@@ -6836,7 +6893,8 @@ microsoft:
     proxy:
         base_url: https://graph.microsoft.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 
@@ -7316,7 +7374,8 @@ netsuite:
     proxy:
         base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/netsuite
     connection_config:
         accountId:
@@ -7370,7 +7429,8 @@ notion:
     body_format: json
     proxy:
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         base_url: https://api.notion.com
         headers:
             'notion-version': '2022-06-28'
@@ -7491,7 +7551,8 @@ okta:
     proxy:
         base_url: https://${connectionConfig.subdomain}.okta.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
         paginate:
             type: 'link'
             limit_name_in_request: 'limit'
@@ -7558,7 +7619,8 @@ openai:
             endpoints:
                 - /v1/models
         retry:
-            after: 'x-ratelimit-reset-requests'
+            after:
+                - 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
     docs_connect: https://docs.nango.dev/integrations/all/openai/connect
     credentials:
@@ -7583,7 +7645,8 @@ openai-admin:
             endpoints:
                 - /v1/organization/users
         retry:
-            after: 'x-ratelimit-reset-requests'
+            after:
+                - 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai-admin
     docs_connect: https://docs.nango.dev/integrations/all/openai-admin/connect
     credentials:
@@ -8294,7 +8357,8 @@ podium:
             content-type: application/json
         base_url: https://api.podium.com
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/podium
     connection_config:
         apiVersion:
@@ -8641,7 +8705,8 @@ readwise:
             endpoints:
                 - /auth
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/readwise
     docs_connect: https://docs.nango.dev/integrations/all/readwise/connect
     credentials:
@@ -8668,7 +8733,8 @@ readwise-reader:
             endpoints:
                 - /api/v2/auth
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/readwise-reader
     docs_connect: https://docs.nango.dev/integrations/all/readwise-reader/connect
     credentials:
@@ -8874,7 +8940,8 @@ ring-central:
     proxy:
         base_url: https://platform.ringcentral.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central
 
 ring-central-sandbox:
@@ -8892,7 +8959,8 @@ ring-central-sandbox:
     proxy:
         base_url: https://platform.devtest.ringcentral.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central-sandbox
 
 rippling:
@@ -9745,7 +9813,8 @@ shipstation:
     proxy:
         base_url: https://ssapi.shipstation.com
         retry:
-            after: 'x-rate-limit-reset'
+            after:
+                - 'x-rate-limit-reset'
         verification:
             method: GET
             endpoints:
@@ -9870,7 +9939,8 @@ shopify-scim:
             endpoints:
                 - /v2/Users
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify-scim
     docs_connect: https://docs.nango.dev/integrations/all/shopify-scim/connect
     credentials:
@@ -9920,7 +9990,8 @@ slack:
     proxy:
         base_url: https://slack.com/api
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: response_metadata.next_cursor
@@ -9939,7 +10010,8 @@ smartlead-ai:
     proxy:
         base_url: https://server.smartlead.ai/api
         retry:
-            after: x-ratelimit-reset
+            after:
+                - x-ratelimit-reset
         query:
             api_key: ${apiKey}
         verification:
@@ -10447,7 +10519,8 @@ teamtailor:
     proxy:
         base_url: https://${connectionConfig.extension}.teamtailor.com
         retry:
-            after: 'x-rate-limit-reset'
+            after:
+                - 'x-rate-limit-reset'
         headers:
             authorization: Token token=${apiKey}
             x-api-version: '20210218'
@@ -10495,7 +10568,8 @@ terraform:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         verification:
             method: GET
             endpoints:
@@ -10924,7 +10998,8 @@ twenty-crm:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -10948,7 +11023,8 @@ twenty-crm-self-hosted:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -11392,7 +11468,8 @@ whoop:
     proxy:
         base_url: https://api.prod.whoop.com/
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         paginate:
             type: cursor
             offset_name_in_request: nextToken
@@ -11482,7 +11559,8 @@ workable:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
     post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
     docs_connect: https://docs.nango.dev/integrations/all/workable/connect
@@ -11520,7 +11598,8 @@ workable-oauth:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/workable-oauth
     connection_config:
         subdomain:
@@ -11689,7 +11768,8 @@ xero:
     proxy:
         base_url: https://api.xero.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     post_connection_script: xeroPostConnection
     webhook_routing_script: xeroWebhookRouting
     webhook_user_defined_secret: true
@@ -11708,7 +11788,8 @@ xero-oauth2-cc:
     proxy:
         base_url: https://api.xero.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/xero-oauth2-cc
     docs_connect: https://docs.nango.dev/integrations/all/xero-oauth2-cc/connect
 
@@ -11802,7 +11883,8 @@ zapier-scim:
             accept: application/json, application/scim+json
             content-type: application/json
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         verification:
             method: GET
             endpoints:
@@ -11828,7 +11910,8 @@ zendesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:
-            after: 'retry-after'
+            after:
+                - 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -11982,7 +12065,8 @@ zoominfo:
     auth_mode: OAUTH2_CC
     proxy:
         retry:
-            after: 'x-ratelimit-reset'
+            after:
+                - 'x-ratelimit-reset'
         base_url: https://api.zoominfo.com
     token_url: https://api.zoominfo.com/authenticate
     token_request_auth_method: custom
@@ -12001,7 +12085,8 @@ zuora:
     proxy:
         base_url: https://${connectionConfig.subdomain}.zuora.com
         retry:
-            after: 'ratelimit-reset'
+            after:
+                - 'ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/zuora
     docs_connect: https://docs.nango.dev/integrations/all/zuora/connect
     connection_config:
