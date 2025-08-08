@@ -1,47 +1,106 @@
 ---
-title: Workday
-sidebarTitle: Workday
+title: 'Workday'
+sidebarTitle: 'Workday'
+description: 'Access the Workday SOAP API with custom integrations'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/workday/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/workday/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Workday_.
+      </Step>
+      <Step title="Authorize Workday">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Workday. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Workday SOAP API">
+        Let's make your first request to the Workday SOAP API (fetch workers using Human_Resources service). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="Node">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+            Install Nango's backend SDK and SOAP library with `npm i @nangohq/node soap`. Then run:
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            ```typescript
+            import { Nango } from '@nangohq/node';
+            import soap from 'soap';
 
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const connectionId = '<CONNECTION-ID>';
+            const providerConfigKey = '<INTEGRATION-ID>';
+            
+            const connection = await nango.getConnection(providerConfigKey, connectionId);
+            const { credentials, connection_config } = connection;
 
-## Setup guide
+            if (
+              credentials.type !== "BASIC" ||
+              !credentials.username ||
+              !credentials.password ||
+              !connection_config["hostname"] ||
+              !connection_config["tenant"]
+            ) {
+              throw new Error(
+                "Invalid credentials: BASIC auth, username, password, hostname, and tenant are all required."
+              );
+            }
 
-_No setup guide yet._
+            // Example: Get workers using Human_Resources service
+            const serviceType = 'Human_Resources';
+            const version = '40.0';
+            const wsdlUrl = `https://community.workday.com/sites/default/files/file-hosting/productionapi/${serviceType}/v${version}/${serviceType}.wsdl`;
+            const endpointUrl = `https://${connection_config["hostname"]}/ccx/service/${connection_config["tenant"]}/${serviceType}/v${version}`;
+            
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const client = await soap.createClientAsync(wsdlUrl, {});
+            client.addHttpHeader("Accept-Encoding", "gzip, deflate"); // Needed or some queries will fail https://github.com/axios/axios/issues/4806
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+            client.setSecurity(
+              new soap.WSSecurity(credentials.username, credentials.password),
+            );
+            client.setEndpoint(endpointUrl);
 
+            // Make SOAP request to Get_WorkersAsync
+            const [res] = await client["Get_WorkersAsync"]({
+              Response_Filter: {
+                Page: 1,
+                Count: 100,
+              },
+            });
 
-## Useful links
+            console.log('Workers Response:', JSON.stringify(res, null, 2));
+            ```
+            </Tab>
+        </Tabs>
 
-Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently supported.
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Connection configuration in Nango
+      </Step>
+    </Steps>
 
-- Workday requires a user specific hostname and tenant for the API base URL.
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Workday accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Workday using Connect UI](/integrations/all/workday/connect) |
+    | General | [Website](https://www.workday.com/) |
+    | Developer | [Workday REST Services Directory](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html) |
+    | | [Workday Community](https://community.workday.com/) |
+    | | [Request Community Account](https://workday.my.site.com/customercenter/register) |
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Workday provides two APIs, a REST and a SOAP one. Nango supports them both.
+    - Workday requires a user-specific `hostname` and `tenant` for the API base URL.
+    - Access to most Workday's API documentation is typically restricted to Workday customers and partners.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+  </Tab>
+</Tabs>
 
-<Card title="Connect to Workday" icon="link" href="/integrations/all/workday/connect" horizontal>
-  Guide to connect to Workday using Nango Connect.
-</Card>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

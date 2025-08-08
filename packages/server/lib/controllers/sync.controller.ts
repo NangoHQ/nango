@@ -1,7 +1,6 @@
 import tracer from 'dd-trace';
 
 import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
-import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import {
@@ -20,8 +19,9 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
+import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getPublicRecords } from './records/getRecords.js';
 
@@ -35,6 +35,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
+const logger = getLogger('SyncController');
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -269,16 +270,21 @@ class SyncController {
                     res.status(200).json(actionResponse.value.data);
                 }
 
-                if (plan) {
-                    billing.add('billable_actions', 1, {
-                        accountId: account.id,
-                        idempotencyKey: logCtx.id,
-                        environmentId: connection.environment_id,
-                        providerConfigKey,
-                        connectionId: connection.id,
-                        actionName: action_name
-                    });
-                }
+                void pubsub.publisher.publish({
+                    subject: 'usage',
+                    type: 'usage.actions',
+                    idempotencyKey: logCtx.id,
+                    payload: {
+                        value: 1,
+                        properties: {
+                            accountId: account.id,
+                            connectionId: connection.id,
+                            environmentId: connection.environment_id,
+                            providerConfigKey,
+                            actionName: action_name
+                        }
+                    }
+                });
 
                 return;
             } else {
@@ -302,6 +308,12 @@ class SyncController {
         } finally {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
+            const responseHeaders = getHeaders(res.getHeaders());
+            const contentLength = responseHeaders['content-length'];
+            const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
+            if (contentLength && lengthInMB > 0.5) {
+                logger.info(`Action DEBUGGING: accountId: ${account.id} for the action name ${action_name} contentLength is ${lengthInMB.toFixed(2)} MB`);
+            }
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
@@ -310,7 +322,7 @@ class SyncController {
                 },
                 response: {
                     code: res.statusCode,
-                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
+                    headers: redactHeaders({ headers: responseHeaders })
                 }
             });
         }

@@ -76,6 +76,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     if (connectSession.connectionId) {
         response.data.isReconnecting = true;
     }
+    if (connectSession.overrides) {
+        response.data.overrides = connectSession.overrides;
+    }
 
     res.status(200).send(response);
 });

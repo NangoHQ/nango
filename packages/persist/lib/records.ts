@@ -1,11 +1,13 @@
 import tracer from 'dd-trace';
 
 import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
-import { billing } from '@nangohq/billing';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+
+import { logger } from './logger.js';
+import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import type { DBPlan, MergingStrategy } from '@nangohq/types';
@@ -152,14 +154,6 @@ export async function persistRecords({
             }
         );
 
-        const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
-        const modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {
-            if (allModifiedKeys.has(record.id)) {
-                return acc + Buffer.byteLength(JSON.stringify(record), 'utf8');
-            }
-            return acc;
-        }, 0);
-
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const isConnectionOlderThan30Days = new Date(connection.created_at) < thirtyDaysAgo;
@@ -167,23 +161,40 @@ export async function persistRecords({
 
         const mar = new Set(summary.activatedKeys).size;
 
-        // Billing metrics
-        if (plan && shouldBillMonthlyActiveRecords) {
-            billing.add('monthly_active_records', mar, { accountId, environmentId, providerConfigKey, connectionId, syncId, model });
-            metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
+        if (shouldBillMonthlyActiveRecords) {
+            // Account usage tracking for capping
+            const accountUsageTracker = await getAccountUsageTracker();
+            void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
+            void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
         }
 
-        const accountUsageTracker = await getAccountUsageTracker();
-        // Account usage tracking for capping
-        void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
-        void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
+        if (mar > 0) {
+            void pubsub.publisher.publish({
+                subject: 'usage',
+                type: 'usage.monthly_active_records',
+                payload: { value: mar, properties: { accountId, environmentId, providerConfigKey, connectionId, syncId, model } }
+            });
+        }
 
         // Datadog metrics
+        let recordsSizeInBytes = 0;
+        let modifiedRecordsSizeInBytes = 0;
+        try {
+            recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
+            modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {
+                if (allModifiedKeys.has(record.id)) {
+                    return acc + Buffer.byteLength(JSON.stringify(record), 'utf8');
+                }
+                return acc;
+            }, 0);
+        } catch (err) {
+            logger.warning('Failed to calculate record sizes in bytes', { environmentId, connectionId, syncId, model, error: stringifyError(err) });
+        }
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
-        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES, modifiedRecordsSizeInBytes);
+        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
 
         span.addTags({
             'records.in.count': records.length,
