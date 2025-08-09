@@ -1,0 +1,45 @@
+---
+title: Pax8 - How do I link my account?
+sidebarTitle: Pax8
+---
+
+
+# Overview
+
+To authenticate with Pax8, you need two key pieces of information:
+1. **Client ID** - Your Pax8 API Client ID from the Integrations Hub
+2. **Client Secret** - Your Pax8 API Client Secret from the Integrations Hub
+
+
+This guide will walk you through finding or creating those credentials within Pax8.
+
+
+### Prerequisites:
+
+- You must be a Pax8 Partner with Partner Admin or Primary Partner Admin role
+- Access to the Pax8 Partner Portal
+
+
+#### Step 1: Get Your Pax8 Credentials
+
+1. Log into your Pax8 Partner Portal at [https://app.pax8.com](https://app.pax8.com)
+
+2. Navigate to **Settings > Integrations** or go directly to [https://app.pax8.com/integrations?tab=credentials](https://app.pax8.com/integrations?tab=credentials)
+
+3. In the Credentials tab, you'll find your API credentials:
+   - **Client ID**: Your unique application identifier
+   - **Client Secret**: Your application secret (click to reveal)
+
+Important: Only Partner Admin and Primary Partner Admin roles can access and generate API credentials.
+
+
+#### Step 2: Connect Your Pax8 Account
+
+To authenticate using your API credentials, navigate to the Pax8 authentication form.
+Enter your credentials as follows:
+- **Client ID**: Your Pax8 API Client ID
+- **Client Secret**: Your Pax8 API Client Secret
+
+Click "Connect" to complete the authentication.
+
+Note: Pax8 uses OAuth2 Client Credentials flow, so no user authorization step is required - the integration will authenticate directly with your provided credentials.
