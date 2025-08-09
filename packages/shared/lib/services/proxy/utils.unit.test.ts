@@ -278,7 +278,6 @@ describe('buildProxyHeaders', () => {
         });
 
         expect(result).toEqual({
-            authorization: 'Bearer some-oauth-access-token',
             'authorization-token': 'some-oauth-access-token'
         });
     });
