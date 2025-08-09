@@ -3798,6 +3798,31 @@ factorial:
         base_url: https://api.factorialhr.com/api
     docs: https://docs.nango.dev/integrations/all/factorial
 
+fairing:
+    display_name: Fairing
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.fairing.co/api
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /questions
+    docs: https://docs.nango.dev/integrations/all/fairing
+    docs_connect: https://docs.nango.dev/integrations/all/fairing/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Token
+            description: The Secret Token for your Fairing account
+            pattern: '^[A-Za-z0-9_-]{64}$'
+            example: '3UjYpDjuk70Lt7AxC4M1x_7XvxoxkeX-OV7uTahJowilqLb2eLLvrtlvCGZgku1q'
+            doc_section: '#step-1-finding-your-secret-token'
+
 facebook:
     display_name: Facebook
     categories:
