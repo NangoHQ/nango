@@ -120,6 +120,7 @@
               "guides/data-validation",
               "guides/rate-limits",
               "guides/environments",
+              "guides/common-issues",
               "guides/resource-limits",
               {
                 "group": "Self-hosting",
