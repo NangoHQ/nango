@@ -48,7 +48,7 @@ The `error` and `error_description` fields may differ by API, but typically incl
 
 - This error means the external API (e.g., Google, Salesforce) rejected the refresh token as expired or revoked. Nango retries several times, but if the error persists, the credentials are considered permanently broken.
 - The only solution is to ask the user to re-authenticate. See: [How to trigger a re-authentication flow in Nango](https://docs.nango.dev/guides/authorize-in-your-app-default-ui#how-to-trigger-a-re-authentication-flow)
-- We recommend enabling [Nango's revoked token webhooks](http://localhost:3000/guides/webhooks/webhooks-from-nango#auth-webhooks) for real-time notifications.
+- We recommend enabling [Nango's revoked token webhooks](https://docs.nango.dev/guides/webhooks/webhooks-from-nango#auth-webhooks) for real-time notifications.
 
 Revoked refresh tokens are a normal part of integrations. Ensure your app provides a good re-auth experience for users.
 
