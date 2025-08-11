@@ -431,6 +431,51 @@ export class AccessMiddleware {
         }
     }
 
+    /**
+     * Test authentication that accepts both secret key and session authentication
+     * This allows tests to use either authentication method
+     */
+    async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        try {
+            // First try session authentication
+            if (req.isAuthenticated()) {
+                res.locals['authType'] = 'session';
+                await fillLocalsFromSession(req, res, next);
+                return;
+            }
+
+            // If no session, try secret key authentication
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const secret = authorizationHeader.split('Bearer ').pop();
+            if (!secret) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const result = await this.validateSecretKey(secret);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'secretKey';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            console.error(err);
+            res.status(401).send({ error: { code: 'unauthorized' } });
+        }
+    }
+
     admin(req: Request, res: Response, next: NextFunction) {
         if (!isCloud) {
             return errorManager.errRes(res, 'only_nango_cloud');
