@@ -1,9 +1,8 @@
 import { Ok } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
 
-const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler = async (nango, headers, body) => {
     // slack sometimes sends the payload as a form encoded string, so we need to parse it
     // it also sends json as a x-www-form-urlencoded string, so we need to handle that too
     let payload;
@@ -23,7 +22,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
         // the team.id is sometimes stored in the team_id field, and sometimes in the team.id field
         // so we need to check both
         const teamId = payload['team_id'] || payload['team']['id'];
-        const response = await nango.executeScriptForWebhooks(integration, { ...payload, teamId }, 'type', 'teamId', logContextGetter, 'team.id');
+        const response = await nango.executeScriptForWebhooks({
+            body: { ...payload, teamId },
+            webhookType: 'type',
+            connectionIdentifier: 'teamId',
+            propName: 'team.id'
+        });
 
         return Ok({
             content: { status: 'success' },

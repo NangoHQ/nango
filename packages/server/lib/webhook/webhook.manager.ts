@@ -5,12 +5,12 @@ import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
-import { internalNango } from './internal-nango.js';
+import { InternalNango } from './internal-nango.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.Manager');
@@ -22,6 +22,7 @@ export async function routeWebhook({
     account,
     integration,
     headers,
+    plan,
     body,
     rawBody,
     logContextGetter
@@ -29,6 +30,7 @@ export async function routeWebhook({
     environment: DBEnvironment;
     account: DBTeam;
     integration: Config;
+    plan: DBPlan;
     headers: Record<string, any>;
     body: any;
     rawBody: string;
@@ -58,9 +60,17 @@ export async function routeWebhook({
         };
     }
 
+    const internalNango = new InternalNango({
+        team: account,
+        environment,
+        plan,
+        integration,
+        logContextGetter
+    });
+
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            const handlerResult = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
+            const handlerResult = await handler(internalNango, headers, body, rawBody);
             return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
@@ -85,7 +95,7 @@ export async function routeWebhook({
     const res = result.value;
 
     // Only forward webhook if there was no error
-    if (res.statusCode === 200) {
+    if (res.statusCode === 200 && plan.has_webhooks_forward) {
         const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 

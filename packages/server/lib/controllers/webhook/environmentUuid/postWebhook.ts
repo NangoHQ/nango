@@ -1,8 +1,9 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, environmentService } from '@nangohq/shared';
+import { configService, environmentService, getPlan } from '@nangohq/shared';
 import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -60,6 +61,19 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
+            const resPlan = await getPlan(db.knex, { accountId: account.id });
+            if (resPlan.isErr()) {
+                res.status(404).send({ error: { code: 'unknown_plan' } });
+                return;
+            }
+
+            const plan = resPlan.value;
+
+            if (!plan.has_webhooks_forward && !plan.has_webhooks_script) {
+                res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });
+                return;
+            }
+
             const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!integration) {
                 res.status(404).send({ error: { code: 'unknown_provider_config' } });
@@ -68,7 +82,16 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            const response = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
+            const response = await routeWebhook({
+                environment,
+                account,
+                plan,
+                integration,
+                headers,
+                body: req.body,
+                rawBody: req.rawBody!,
+                logContextGetter
+            });
 
             if (!response) {
                 res.status(200).send();
