@@ -17,6 +17,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/shared": "file:../shared",
         "dd-trace": "5.52.0",
         "zod": "4.0.5"
     },

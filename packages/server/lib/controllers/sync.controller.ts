@@ -1,7 +1,6 @@
 import tracer from 'dd-trace';
 
 import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
-import { billing } from '@nangohq/billing';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import {
@@ -271,27 +270,17 @@ class SyncController {
                     res.status(200).json(actionResponse.value.data);
                 }
 
-                if (plan) {
-                    billing.add('billable_actions', 1, {
-                        accountId: account.id,
-                        idempotencyKey: logCtx.id,
-                        environmentId: connection.environment_id,
-                        providerConfigKey,
-                        connectionId: connection.id,
-                        actionName: action_name
-                    });
-                }
                 void pubsub.publisher.publish({
                     subject: 'usage',
                     type: 'usage.actions',
                     idempotencyKey: logCtx.id,
                     payload: {
                         value: 1,
-                        accountId: account.id,
                         properties: {
+                            accountId: account.id,
+                            connectionId: connection.id,
                             environmentId: connection.environment_id,
                             providerConfigKey,
-                            connectionId: connection.id,
                             actionName: action_name
                         }
                     }
