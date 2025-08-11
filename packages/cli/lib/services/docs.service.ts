@@ -265,10 +265,12 @@ function changelog(scriptPath: string) {
  */
 export function modelToJson({
     model,
-    models
+    models,
+    required = []
 }: {
     model: JSONSchema7Definition;
     models: { name: string; def: JSONSchema7Definition }[];
+    required?: string[];
 }): Record<string, unknown> | string | string[] | Record<string, unknown>[] {
     if (!model || typeof model !== 'object') {
         return '<unknown>';
@@ -282,7 +284,7 @@ export function modelToJson({
         const refName = ref.split('/').pop();
         const found = models.find((m) => m && m.name === refName);
         if (found) {
-            return modelToJson({ model: found.def, models });
+            return modelToJson({ model: found.def, models, required });
         }
         return `<${refName}>`;
     }
@@ -293,7 +295,7 @@ export function modelToJson({
         const unionTypes = of.map((subSchema) => {
             // Do not pass models for enum prop to make them readable
             // We can revisit later if we want
-            const val = modelToJson({ model: subSchema, models: [] });
+            const val = modelToJson({ model: subSchema, models: [], required });
             if (typeof val === 'string') {
                 return val;
             } else if (Array.isArray(val)) {
@@ -318,15 +320,22 @@ export function modelToJson({
             case 'object': {
                 const result: Record<string, unknown> = {};
                 const properties = model.properties || {};
+                const modelRequired = model.required || [];
+
                 for (const [key, prop] of Object.entries(properties)) {
-                    result[key] = modelToJson({ model: prop, models });
+                    const isRequired = modelRequired.includes(key);
+                    const propValue = modelToJson({ model: prop, models, required: modelRequired });
+
+                    // For optional properties, add a question mark suffix to the key
+                    const displayKey = isRequired ? key : `${key}?`;
+                    result[displayKey] = propValue;
                 }
                 return result;
             }
             case 'array': {
                 const items = model.items;
                 if (items) {
-                    const itemExample = modelToJson({ model: items as JSONSchema7Definition, models });
+                    const itemExample = modelToJson({ model: items as JSONSchema7Definition, models, required });
                     if (typeof itemExample === 'string') {
                         return `<${itemExample.replace(/[<>]/g, '')}[]>`;
                     }

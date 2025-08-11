@@ -359,12 +359,15 @@ autotask:
         - ticketing
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.subdomain}.autotask.net/ATServicesRest
+        base_url: https://${connectionConfig.subdomain}.autotask.net/atservicesrest
         headers:
             apiintegrationcode: ${connectionConfig.apiIntegrationCode}
             username: ${connectionConfig.username}
-            secret: ${credentials.apiKey}
-    credentials_verification_script: autotaskCredentialsVerification
+            secret: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1.0/Companies/entityinformation
     docs: https://docs.nango.dev/integrations/all/autotask
     docs_connect: https://docs.nango.dev/integrations/all/autotask/connect
     connection_config:
