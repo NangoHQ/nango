@@ -1,11 +1,14 @@
+import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, getPlan } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
 import type { Transport, UsageEvent } from '@nangohq/pubsub';
+import type { AccountUsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -49,6 +52,12 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 }
                 const mar = event.payload.value;
                 metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId: event.payload.properties.accountId });
+                void trackUsage({
+                    accountId: event.payload.properties.accountId,
+                    metric: 'active_records',
+                    delta: mar
+                });
+
                 return billing.add('monthly_active_records', mar, {
                     idempotencyKey: event.idempotencyKey,
                     timestamp: event.createdAt,
@@ -56,16 +65,56 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 });
             }
             case 'usage.actions': {
+                void trackUsage({
+                    accountId: event.payload.properties.accountId,
+                    metric: 'actions',
+                    delta: event.payload.value
+                });
                 return billing.add('billable_actions', event.payload.value, {
                     idempotencyKey: event.idempotencyKey,
                     timestamp: event.createdAt,
                     ...event.payload.properties
                 });
             }
+            case 'usage.connections': {
+                void trackUsage({
+                    accountId: event.payload.properties.accountId,
+                    metric: 'connections',
+                    delta: event.payload.value
+                });
+                // No billing action for connections, just tracking usage
+                return Ok(undefined);
+            }
             default:
                 return Err(`Unknown billing event type: ${event.type}`);
         }
     } catch (err) {
         return Err(`Error processing billing event: ${stringifyError(err)}`);
+    }
+}
+
+async function trackUsage({ accountId, metric, delta }: { accountId: number; metric: AccountUsageMetric; delta: number }): Promise<void> {
+    try {
+        if (metric !== 'connections') {
+            const accountUsageTracker = await getAccountUsageTracker();
+            void accountUsageTracker.incrementUsage({
+                accountId,
+                metric,
+                delta
+            });
+        }
+
+        const plan = await getPlan(db.knex, { accountId });
+        if (plan.isErr()) {
+            throw new Error(`Failed to get plan for account ${accountId}: ${plan.error.message}}`);
+        }
+        void onUsageIncreased({
+            accountId,
+            metric,
+            delta,
+            plan: plan.value
+        });
+    } catch (err) {
+        logger.error('Failed to track usage', { error: stringifyError(err) });
     }
 }

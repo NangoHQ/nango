@@ -23,7 +23,6 @@
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/pubsub": "file:../pubsub",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
