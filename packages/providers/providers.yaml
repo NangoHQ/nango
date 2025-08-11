@@ -5988,7 +5988,7 @@ jumpcloud:
             title: API Key
             description: Your JumpCloud API Key.
             example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
-            pattern: '^jca_[A-Za-z0-9]{32}$'
+            pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generate-your-jumpcloud-api-key'
 
 helpscout-docs:
