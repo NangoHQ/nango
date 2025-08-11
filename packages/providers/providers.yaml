@@ -11756,6 +11756,43 @@ yahoo:
             example: fantasysports.yahooapis.com
             prefix: https://
 
+yotpo:
+    display_name: Yotpo
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.yotpo.com
+        headers:
+            x-yotpo-token: ${accessToken}
+    token_url: https://api.yotpo.com/core/v3/stores/${connectionConfig.storeId}/access_tokens
+    token_params:
+        secret: ${credentials.apiSecret}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    docs: https://docs.nango.dev/integrations/all/yotpo
+    docs_connect: https://docs.nango.dev/integrations/all/yotpo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: App Key
+            description: Your Yotpo Store Key.
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-1-retrieving-your-app-key'
+            example: rvR3359XuCuuuEgCgcHNrQ9TE8zwC5dMzWMULHZm
+            order: 1
+    credentials:
+        apiSecret:
+            type: string
+            title: Secret Key
+            description: Your Yotpo app's secret key.
+            secret: true
+            example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
+            doc_section: '#step-2-generating-your-secret-key'
+            pattern: '^[A-Za-z0-9]{40}$'
+
 yandex:
     display_name: Yandex
     categories:

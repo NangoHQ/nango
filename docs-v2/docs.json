@@ -657,6 +657,7 @@
               "integrations/all/xero-oauth2-cc",
               "integrations/all/yahoo",
               "integrations/all/yandex",
+              "integrations/all/yotpo",
               "integrations/all/youtube",
               "integrations/all/zapier",
               "integrations/all/zapier-nla",
