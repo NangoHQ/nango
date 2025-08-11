@@ -17,7 +17,9 @@
         "@types/json-schema": "7.0.15",
         "axios": "1.11.0",
         "json-schema": "0.4.0",
-        "vitest": "3.2.4",
+        "vitest": "3.2.4"
+    },
+    "peerDependencies": {
         "zod": "4.0.5"
     },
     "files": [

@@ -312,3 +312,16 @@ export function slash(path: string) {
     }
     return path.replace(/\\/g, '/');
 }
+
+export function detectPackageManager({ fullPath }: { fullPath: string }) {
+    const dir = fs.readdirSync(fullPath);
+    if (dir.includes('pnpm-lock.yaml')) {
+        return 'pnpm';
+    } else if (dir.includes('yarn.lock')) {
+        return 'yarn';
+    } else if (dir.includes('bun.lockb') || dir.includes('bun.lock')) {
+        return 'bun';
+    } else {
+        return 'npm';
+    }
+}
