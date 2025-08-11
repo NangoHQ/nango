@@ -155,15 +155,15 @@
         "icon": "bars",
         "groups": [
           {
-            "group": "Review Guides",
+            "group": "API Guides",
             "pages": [
+              "integrations/overview",
               "integrations/google-security-review"
             ]
           },
           {
             "group": "APIs & Integrations",
             "pages": [
-              "integrations/overview",
               "integrations/all/1password-scim",
               "integrations/all/accelo",
               "integrations/all/acuity-scheduling",
@@ -319,6 +319,7 @@
               "integrations/all/facebook",
               "integrations/all/factorial",
               "integrations/all/falai",
+              "integrations/all/fairing",
               "integrations/all/fathom",
               "integrations/all/figjam",
               "integrations/all/figma",
@@ -657,6 +658,7 @@
               "integrations/all/xero-oauth2-cc",
               "integrations/all/yahoo",
               "integrations/all/yandex",
+              "integrations/all/yotpo",
               "integrations/all/youtube",
               "integrations/all/zapier",
               "integrations/all/zapier-nla",
