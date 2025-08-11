@@ -13,7 +13,7 @@ export interface GettingStartedOutput {
 }
 
 export interface PatchGettingStartedInput {
-    connection_id?: string | undefined;
+    connection_id?: string | null | undefined;
     step?: number | undefined;
     complete?: boolean | undefined;
 }

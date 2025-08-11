@@ -16,11 +16,11 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export async function createGettingStartedMeta(accountId: number, environmentId: number): Promise<Result<DBGettingStartedMeta>> {
+export async function createGettingStartedMeta(accountId: number, environmentId: number, integrationId: number): Promise<Result<DBGettingStartedMeta>> {
     try {
         const result = await db.knex
             .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: accountId, environment_id: environmentId })
+            .insert({ account_id: accountId, environment_id: environmentId, integration_id: integrationId })
             .returning('*');
 
         if (!result[0]) {
@@ -52,35 +52,45 @@ export async function createGettingStartedProgress(userId: number, metaId: numbe
     }
 }
 
-export async function getByUserId(userId: number): Promise<Result<GettingStartedProgressOutput>> {
-    const result = await db.knex
-        .select<{
-            getting_started_progress: DBGettingStartedProgress;
-            environment: DBEnvironment;
-            integration: IntegrationConfig;
-            connection: DBConnection | null;
-        }>('progress.* as progress', 'env.* as environment', 'config.* as integration', 'conn.* as connection')
-        .from('getting_started_progress as progress')
-        .leftJoin('getting_started_meta as meta', 'meta.id', 'progress.getting_started_meta_id')
-        .leftJoin('_nango_environments as env', 'env.id', 'meta.environment_id')
-        .leftJoin('_nango_configs as config', 'config.id', 'meta.integration_id')
-        .leftJoin('_nango_connections as conn', 'conn.id', 'progress.connection_id')
-        .where({ user_id: userId })
-        .first();
+export async function getProgressByUserId(userId: number): Promise<Result<GettingStartedProgressOutput | null>> {
+    try {
+        const result = await db.knex
+            .from<DBGettingStartedProgress>('getting_started_progress as progress')
+            .select<{
+                progress: DBGettingStartedProgress;
+                environment: DBEnvironment;
+                integration: IntegrationConfig;
+                connection: DBConnection | null;
+            }>(
+                db.knex.raw('row_to_json(progress.*) as progress'),
+                db.knex.raw('row_to_json(env.*) as environment'),
+                db.knex.raw('row_to_json(config.*) as integration'),
+                db.knex.raw('row_to_json(conn.*) as connection')
+            )
+            .leftJoin('getting_started_meta as meta', 'meta.id', 'progress.getting_started_meta_id')
+            .leftJoin('_nango_environments as env', 'env.id', 'meta.environment_id')
+            .leftJoin('_nango_configs as config', 'config.id', 'meta.integration_id')
+            .leftJoin('_nango_connections as conn', 'conn.id', 'progress.connection_id')
+            .where({ user_id: userId })
+            .first();
 
-    if (!result) {
-        return Err(new Error('getting_started_progress_not_found'));
+        if (!result) {
+            return Ok(null);
+        }
+
+        return Ok({
+            meta: {
+                integration: result.integration,
+                environment: result.environment
+            },
+            connection: result.connection ?? null,
+            step: result.progress.step,
+            complete: result.progress.complete
+        });
+    } catch (err) {
+        console.error('failed_to_get_getting_started_progress', err);
+        return Err(new Error('failed_to_get_getting_started_progress', { cause: err }));
     }
-
-    return Ok({
-        meta: {
-            integration: result.integration,
-            environment: result.environment
-        },
-        connection: result.connection ?? null,
-        step: result.getting_started_progress.step,
-        complete: result.getting_started_progress.complete
-    });
 }
 
 export function updateByUserId(userId: number, data: Partial<DBGettingStartedProgress>) {
@@ -91,9 +101,13 @@ export function updateByUserId(userId: number, data: Partial<DBGettingStartedPro
  * Gets getting started progress for the user, or creates it if it doesn't exist.
  */
 export async function getOrCreateProgressByUser(user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
-    const existingResult = await getByUserId(user.id);
+    const existingResult = await getProgressByUserId(user.id);
 
-    if (existingResult.isOk()) {
+    if (existingResult.isErr()) {
+        return Err(existingResult.error);
+    }
+
+    if (existingResult.value !== null) {
         return Ok(existingResult.value);
     }
 
@@ -109,20 +123,31 @@ export async function getOrCreateProgressByUser(user: DBUser, currentEnvironment
         return Err(createdResult.error);
     }
 
-    return getByUserId(createdResult.value.user_id);
+    const newProgress = await getProgressByUserId(createdResult.value.user_id);
+    if (newProgress.isErr()) {
+        return Err(newProgress.error);
+    }
+
+    if (newProgress.value === null) {
+        return Err(new Error('failed_to_get_getting_started_progress'));
+    }
+
+    return Ok(newProgress.value);
 }
 
 /**
  * Update getting started progress for a user and return the updated object.
  */
-export async function patchProgressByUser(user: DBUser, currentEnvironmentId: number, input: PatchGettingStartedInput): Promise<Result<void>> {
+export async function patchProgressByUser(user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
     // Ensure meta/progress exist and fetch meta information (environment, integration)
-    const existing = await getOrCreateProgressByUser(user, currentEnvironmentId);
+    const existing = await getProgressByUserId(user.id);
     if (existing.isErr()) {
         return Err(existing.error);
     }
 
-    const { meta } = existing.value;
+    if (existing.value === null) {
+        return Err(new Error('getting_started_progress_not_found'));
+    }
 
     const update: Partial<DBGettingStartedProgress> = {};
 
@@ -138,12 +163,6 @@ export async function patchProgressByUser(user: DBUser, currentEnvironmentId: nu
             update.connection_id = null;
         } else {
             try {
-                const configId = meta.integration.id;
-                if (!configId) {
-                    // Should never happen
-                    return Err(new Error('invalid_integration_id'));
-                }
-
                 const connection = await db.knex
                     .from<DBConnection>('_nango_connections')
                     .select<{ id: number }[]>('id')
@@ -189,7 +208,7 @@ async function getOrCreateGettingStartedMeta(accountId: number, currentEnvironme
     }
 
     try {
-        const newMeta = await createGettingStartedMeta(accountId, currentEnvironmentId);
+        const newMeta = await createGettingStartedMeta(accountId, currentEnvironmentId, googleCalendarIntegrationId.value);
 
         if (newMeta.isErr()) {
             return Err(new Error('failed_to_create_getting_started_meta'));
