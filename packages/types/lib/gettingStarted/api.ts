@@ -4,6 +4,7 @@ import type { ApiError, Endpoint } from '../api.js';
 export type GetGettingStarted = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/getting-started';
+    Querystring: { env: string };
     Success: {
         data: GettingStartedOutput;
     };
@@ -13,9 +14,10 @@ export type GetGettingStarted = Endpoint<{
 export type PatchGettingStarted = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/getting-started';
+    Querystring: { env: string };
     Success: {
         data: GettingStartedOutput;
     };
     Body: PatchGettingStartedInput;
-    Error: ApiError<'connection_not_found'> | ApiError<'failed_to_update_getting_started_progress'>;
+    Error: ApiError<'connection_not_found' | 'getting_started_progress_not_found' | 'failed_to_update_getting_started_progress'>;
 }>;
