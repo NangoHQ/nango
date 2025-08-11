@@ -154,15 +154,15 @@
         "icon": "bars",
         "groups": [
           {
-            "group": "Review Guides",
+            "group": "API Guides",
             "pages": [
+              "integrations/overview",
               "integrations/google-security-review"
             ]
           },
           {
             "group": "APIs & Integrations",
             "pages": [
-              "integrations/overview",
               "integrations/all/1password-scim",
               "integrations/all/accelo",
               "integrations/all/acuity-scheduling",
