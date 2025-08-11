@@ -112,7 +112,7 @@ jobs:
                   echo "commit_hash: ${{ inputs.commit_hash }}"
 
                   # Debug: Show the exact command
-                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
                   echo "Executing: $HELM_CMD"
 
                   # Execute the command
@@ -126,25 +126,67 @@ jobs:
                   helm list -n nango
                   helm status nango -n nango
 
-                  # Poll for deployment status
-                  DEPLOYMENT_RUNNING=false
+                  # Step 1: Wait for PostgreSQL to be ready
+                  echo "Step 1: Waiting for PostgreSQL deployment to be ready..."
+                  POSTGRES_READY=false
                   for i in {1..30}; do
-                    echo "Checking deployment status (attempt $i/30)..."
-                    if kubectl get pods -n nango | grep -q "Running"; then
-                      echo "Deployment is running"
-                      DEPLOYMENT_RUNNING=true
+                    echo "Checking PostgreSQL status (attempt $i/30)..."
+                    if kubectl get pods -n nango -l app.kubernetes.io/name=postgresql | grep -q "Running" && \
+                       kubectl get pods -n nango -l app.kubernetes.io/name=postgresql | grep -q "1/1"; then
+                      echo "PostgreSQL is running and ready"
+                      POSTGRES_READY=true
                       break
                     fi
                     sleep 10
                   done
 
-                  if [ "$DEPLOYMENT_RUNNING" = "false" ]; then
-                    echo "Deployment failed to start in time"
+                  if [ "$POSTGRES_READY" = "false" ]; then
+                    echo "PostgreSQL failed to start in time"
                     echo "status=failure" >> $GITHUB_OUTPUT
-                    echo "message=Deployment failed to start in time" >> $GITHUB_OUTPUT
+                    echo "message=PostgreSQL failed to start in time" >> $GITHUB_OUTPUT
+                    exit 1
+                  fi
+
+                  # Step 2: Perform rolling restart of nango-self-server deployment
+                  echo "Step 2: Performing rolling restart of nango-self-server deployment..."
+                  if kubectl get deployment nango-self-server -n nango >/dev/null 2>&1; then
+                    echo "Restarting nango-self-server deployment..."
+                    kubectl rollout restart deployment/nango-self-server -n nango
+                    
+                    # Wait for the restart to complete
+                    echo "Waiting for nango-self-server restart to complete..."
+                    kubectl rollout status deployment/nango-self-server -n nango --timeout=300s
+                    echo "nango-self-server restart completed"
+                  else
+                    echo "nango-self-server deployment not found, skipping restart"
+                  fi
+
+                  # Step 3: Wait for other pods to start successfully
+                  echo "Step 3: Waiting for other pods to start successfully..."
+                  OTHER_PODS_READY=false
+                  for i in {1..30}; do
+                    echo "Checking other pods status (attempt $i/30)..."
+                    # Check all pods except PostgreSQL (which we already confirmed is running)
+                    OTHER_PODS=$(kubectl get pods -n nango --field-selector=status.phase!=Running,status.phase!=Completed --ignore-not-found=true | grep -v "postgresql" | grep -v "NAME" | wc -l)
+                    
+                    if [ "$OTHER_PODS" -eq 0 ]; then
+                      echo "All other pods are running successfully"
+                      OTHER_PODS_READY=true
+                      break
+                    fi
+                    
+                    echo "Some pods still starting up, waiting..."
+                    kubectl get pods -n nango
+                    sleep 10
+                  done
+
+                  if [ "$OTHER_PODS_READY" = "false" ]; then
+                    echo "Other pods failed to start in time"
+                    echo "status=failure" >> $GITHUB_OUTPUT
+                    echo "message=Other pods failed to start in time" >> $GITHUB_OUTPUT
                   else
                     echo "status=success" >> $GITHUB_OUTPUT
-                    echo "message=Deployment started successfully" >> $GITHUB_OUTPUT
+                    echo "message=All pods started successfully after PostgreSQL and rolling restart" >> $GITHUB_OUTPUT
                   fi
 
             - name: Check cluster state
