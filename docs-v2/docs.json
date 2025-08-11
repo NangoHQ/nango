@@ -154,9 +154,15 @@
         "icon": "bars",
         "groups": [
           {
-            "group": "APIs & Integrations",
+            "group": "API Guides",
             "pages": [
               "integrations/overview",
+              "integrations/google-security-review"
+            ]
+          },
+          {
+            "group": "APIs & Integrations",
+            "pages": [
               "integrations/all/1password-scim",
               "integrations/all/accelo",
               "integrations/all/acuity-scheduling",
@@ -193,6 +199,7 @@
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
+              "integrations/all/autotask",
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
@@ -311,6 +318,7 @@
               "integrations/all/facebook",
               "integrations/all/factorial",
               "integrations/all/falai",
+              "integrations/all/fairing",
               "integrations/all/fathom",
               "integrations/all/figjam",
               "integrations/all/figma",
@@ -377,6 +385,7 @@
               "integrations/all/hackerrank-work",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
+              "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "integrations/all/hibob-service-user",
@@ -401,6 +410,7 @@
               "integrations/all/jobadder",
               "integrations/all/jobvite",
               "integrations/all/jotform",
+              "integrations/all/jumpcloud",
               "integrations/all/kandji",
               "integrations/all/keap",
               "integrations/all/keeper-scim",
