@@ -9,7 +9,7 @@ import type { PatchGettingStarted } from '@nangohq/types';
 
 const validationBody = z
     .object({
-        connection_id: z.string().optional(),
+        connection_id: z.string().optional().nullable(),
         step: z.number().int().nonnegative().optional(),
         complete: z.boolean().optional()
     })
@@ -29,13 +29,12 @@ export const patchGettingStarted = asyncWrapper<PatchGettingStarted>(async (req,
     }
 
     const body: PatchGettingStarted['Body'] = valBody.data;
-    const { user, environment } = res.locals;
+    const { user } = res.locals;
 
-    const updated = await gettingStartedService.patchProgressByUser(user, environment.id, body);
+    const updated = await gettingStartedService.patchProgressByUser(user, body);
     if (updated.isErr()) {
-        const isNotFound = updated.error.message === 'connection_not_found';
-        if (isNotFound) {
-            res.status(404).send({ error: { code: 'connection_not_found', message: updated.error.message } });
+        if (updated.error.message === 'connection_not_found' || updated.error.message === 'getting_started_progress_not_found') {
+            res.status(404).send({ error: { code: updated.error.message, message: updated.error.message } });
             return;
         }
         report(updated.error);
