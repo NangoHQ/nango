@@ -11917,7 +11917,7 @@ snipe-it:
             title: Domain
             format: hostname
             description: Your Snipe-IT hostname (e.g., yourcompany)
-            example: yourcompany.snipe-it.io
+            example: yourcompany
             suffix: .snipe-it.io
             prefix: https://
             doc_section: '#step-2-finding-your-domain'
