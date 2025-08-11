@@ -164,7 +164,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
     try {
-        const { plugin, bag } = nangoPlugin();
+        const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -294,7 +294,7 @@ export function tsToJsPath(filePath: string) {
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
-function nangoPlugin() {
+function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
@@ -413,13 +413,23 @@ function nangoPlugin() {
                         }
                     },
 
-                    ExportDefaultDeclaration(path) {
-                        if ((path.node as any).__transformedByRemoveCreateWrappers) {
+                    ExportDefaultDeclaration(astPath) {
+                        if ((astPath.node as any).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const decl = path.node.declaration;
+                        // Skip processing if the current file is not an entry point
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedEntryPoint = path.resolve(entryPoint);
+                            if (normalizedCurrentPath !== normalizedEntryPoint) {
+                                return;
+                            }
+                        }
+
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const decl = astPath.node.declaration;
                         let calleeName = null;
                         let arg = null;
 
@@ -448,11 +458,11 @@ function nangoPlugin() {
                             const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
                             (exportConst as any).__transformedByRemoveCreateWrappers = true;
                             (exportDefault as any).__transformedByRemoveCreateWrappers = true;
-                            path.replaceWithMultiple([exportConst, exportDefault]);
+                            astPath.replaceWithMultiple([exportConst, exportDefault]);
                         }
                         // Case 2: export default action; (or sync/onEvent)
                         else if (t.isIdentifier(decl)) {
-                            const binding = path.scope.getBinding(decl.name);
+                            const binding = astPath.scope.getBinding(decl.name);
                             if (!binding || !binding.path.isVariableDeclarator()) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
                             }
