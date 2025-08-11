@@ -9948,6 +9948,7 @@ snowflake:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.snowflake_account_url}
+    post_connection_script: snowflakePostConnection
     docs: https://docs.nango.dev/integrations/all/snowflake
     connection_config:
         snowflake_account_url:
