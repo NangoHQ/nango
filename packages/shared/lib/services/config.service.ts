@@ -18,7 +18,8 @@ import type {
     DBSharedCredentials,
     IntegrationConfig,
     Provider,
-    SharedCredentials
+    SharedCredentials,
+    SharedCredentialsBodyInput
 } from '@nangohq/types';
 
 interface ValidationRule {
@@ -146,8 +147,8 @@ class ConfigService {
     }
 
     async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
-        const sharedCredentialsId = await this.getSharedCredentialsId(providerName);
-        if (!sharedCredentialsId) {
+        const sharedCredentials = await this.getSharedCredentialsbyName(providerName);
+        if (!sharedCredentials) {
             throw new NangoError('shared_credentials_not_found');
         }
 
@@ -163,7 +164,7 @@ class ConfigService {
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
                 forward_webhooks: true,
-                shared_credentials_id: sharedCredentialsId
+                shared_credentials_id: sharedCredentials.id
             },
             provider
         );
@@ -335,14 +336,116 @@ class ConfigService {
         return preConfiguredProviders;
     }
 
-    async getSharedCredentialsId(provider: string): Promise<number | null> {
-        const sharedCredentials = await db.knex
-            .select<Pick<DBSharedCredentials, 'id'>[]>('id')
-            .from('providers_shared_credentials')
-            .where('name', provider)
-            .first();
+    async getSharedCredentialsbyName(provider: string): Promise<DBSharedCredentials | null> {
+        const sharedCredentials = await db.knex.select('*').from('providers_shared_credentials').where('name', provider).first();
 
-        return sharedCredentials?.id || null;
+        if (!sharedCredentials) {
+            return null;
+        }
+
+        const credentials = sharedCredentials.credentials;
+        let decryptedClientSecret = credentials.oauth_client_secret;
+
+        if (credentials.oauth_client_secret_iv && credentials.oauth_client_secret_tag) {
+            decryptedClientSecret = encryptionManager.decryptSync(
+                credentials.oauth_client_secret,
+                credentials.oauth_client_secret_iv,
+                credentials.oauth_client_secret_tag
+            );
+        }
+
+        return {
+            ...sharedCredentials,
+            credentials: {
+                ...credentials,
+                oauth_client_secret: decryptedClientSecret
+            }
+        };
+    }
+
+    async createSharedCredentials(config: SharedCredentialsBodyInput): Promise<number> {
+        const configForEncryption = {
+            oauth_client_id: config.client_id,
+            oauth_client_secret: config.client_secret,
+            oauth_scopes: config.scopes || ''
+        };
+
+        const configToInsert = encryptionManager.encryptProviderConfig(configForEncryption as ProviderConfig);
+
+        const result = await db.knex
+            .insert({
+                name: config.name,
+                credentials: configToInsert
+            })
+            .into('providers_shared_credentials')
+            .onConflict('name')
+            .ignore()
+            .returning('*');
+
+        if (result.length === 0) {
+            throw new NangoError('shared_credentials_already_exists');
+        }
+
+        const createdProvider: DBSharedCredentials = result[0];
+
+        return createdProvider.id;
+    }
+
+    async editSharedCredentials(id: number, config: SharedCredentialsBodyInput): Promise<number> {
+        const configForEncryption = {
+            oauth_client_id: config.client_id,
+            oauth_client_secret: config.client_secret,
+            oauth_scopes: config.scopes || ''
+        };
+
+        const existingWithName = await db.knex.select('id').from('providers_shared_credentials').where({ name: config.name }).whereNot('id', id).first();
+
+        if (existingWithName) {
+            throw new NangoError('shared_credentials_already_exists');
+        }
+        const configToUpdate = encryptionManager.encryptProviderConfig(configForEncryption as ProviderConfig);
+        const result = await db.knex
+            .from('providers_shared_credentials')
+            .where({ id: id })
+            .update({
+                name: config.name,
+                credentials: configToUpdate,
+                updated_at: new Date()
+            })
+            .returning('*');
+
+        if (result.length === 0) {
+            throw new NangoError('shared_credentials_provider_not_found');
+        }
+
+        const updatedProvider: DBSharedCredentials = result[0];
+
+        return updatedProvider.id;
+    }
+
+    async getSharedCredentials(): Promise<DBSharedCredentials[]> {
+        const result = await db.knex.select('*').from('providers_shared_credentials');
+
+        return result.map((provider: DBSharedCredentials) => {
+            const credentials = provider.credentials;
+            let decryptedClientSecret = credentials.oauth_client_secret;
+
+            if (credentials.oauth_client_secret_iv && credentials.oauth_client_secret_tag) {
+                decryptedClientSecret = encryptionManager.decryptSync(
+                    credentials.oauth_client_secret,
+                    credentials.oauth_client_secret_iv,
+                    credentials.oauth_client_secret_tag
+                );
+            }
+
+            return {
+                ...provider,
+                credentials: {
+                    ...credentials,
+                    oauth_client_secret: decryptedClientSecret
+                }
+            };
+        });
     }
 }
 

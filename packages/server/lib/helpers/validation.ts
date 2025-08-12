@@ -85,3 +85,12 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
     ],
     { error: () => ({ message: 'invalid credentials object' }) }
 );
+
+export const sharedCredentialsSchema = z
+    .object({
+        name: z.string().min(1).max(255),
+        client_id: z.string().min(1).max(255),
+        client_secret: z.string().min(1),
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+    })
+    .strict();
