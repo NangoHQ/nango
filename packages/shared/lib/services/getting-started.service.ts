@@ -71,7 +71,9 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
             .leftJoin('getting_started_meta as meta', 'meta.id', 'progress.getting_started_meta_id')
             .leftJoin('_nango_environments as env', 'env.id', 'meta.environment_id')
             .leftJoin('_nango_configs as config', 'config.id', 'meta.integration_id')
-            .leftJoin('_nango_connections as conn', 'conn.id', 'progress.connection_id')
+            .leftJoin('_nango_connections as conn', function () {
+                this.on('conn.id', '=', 'progress.connection_id').andOnNull('conn.deleted_at');
+            })
             .where({ user_id: userId })
             .first();
 
@@ -195,7 +197,7 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
     return Ok(undefined);
 }
 
-async function getOrCreateGettingStartedMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
+export async function getOrCreateGettingStartedMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
     const existingMeta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
     if (existingMeta) {
@@ -254,4 +256,14 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
     }
 
     return Ok(id);
+}
+
+export async function deleteMetaByIntegrationId(integrationId: number): Promise<Result<void>> {
+    const result = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
+
+    if (result === 0) {
+        return Err(new Error('failed_to_delete_getting_started_meta'));
+    }
+
+    return Ok(undefined);
 }

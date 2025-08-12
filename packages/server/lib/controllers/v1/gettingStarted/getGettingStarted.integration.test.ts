@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { getProvider, seeders } from '@nangohq/shared';
+import { configService, getProvider, gettingStartedService, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DBGettingStartedMeta, DBGettingStartedProgress } from '@nangohq/types';
 
@@ -151,18 +152,12 @@ describe(`GET ${endpoint}`, () => {
         expect(fresh?.connection_id).toBe(connection.id);
     });
 
-    it('returns connection as null when the linked connection is deleted', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
+    it('returns connection as null when the linked connection is soft deleted', async () => {
+        const { env, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
-        // Ensure integration exists
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
-
-        // Create meta and a progress row with a connection
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const gettingStartedProgress = await gettingStartedService.getOrCreateProgressByUser(user, env.id);
+        expect(gettingStartedProgress.isOk()).toBe(true);
 
         // Create a connection and link it to the progress
         const connection = await seeders.createConnectionSeed({
@@ -171,19 +166,11 @@ describe(`GET ${endpoint}`, () => {
             connectionId: 'test-conn-id'
         });
 
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 2, complete: false, connection_id: connection.id })
-            .returning('*');
-        if (!progress) throw new Error('Failed to create progress');
+        // Attach the connection to the progress
+        await gettingStartedService.updateByUserId(user.id, { connection_id: connection.id });
 
-        // Verify the connection is initially linked
-        const initialRes = await api.fetch(endpoint, { method: 'GET', query: { env: 'dev' }, session });
-        isSuccess(initialRes.json);
-        expect(initialRes.json.data.connection).toMatchObject({ id: connection.id, connection_id: 'test-conn-id' });
-
-        // Delete the connection
-        await db.knex.from('_nango_connections').where({ id: connection.id }).delete();
+        // Soft delete the connection (not using service because it has lots of dependencies)
+        await db.knex.from('_nango_connections').where({ id: connection.id }).update({ deleted: true, deleted_at: new Date() });
 
         // Verify the connection is now null in the response
         const res = await api.fetch(endpoint, { method: 'GET', query: { env: 'dev' }, session });
@@ -193,14 +180,9 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 meta: { environment: { id: env.id }, integration: { unique_key: 'google-calendar-getting-started' } },
                 connection: null,
-                step: 2,
+                step: 0,
                 complete: false
             }
         });
-
-        // Verify the progress row still exists but connection_id is null
-        const freshProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress.id }).first();
-        expect(freshProgress).toBeTruthy();
-        expect(freshProgress?.connection_id).toBeNull();
     });
 });
