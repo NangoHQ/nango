@@ -52,7 +52,7 @@ describe(`GET ${route}`, () => {
                     created_at: expect.toBeIsoDate(),
                     updated_at: expect.toBeIsoDate(),
                     uuid: account.uuid,
-                    found_us: ''
+                    found_us: null
                 },
                 users: [
                     {
