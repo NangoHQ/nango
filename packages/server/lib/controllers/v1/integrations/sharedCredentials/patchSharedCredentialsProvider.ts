@@ -47,24 +47,26 @@ export const patchSharedCredentialsProvider = asyncWrapper<PatchSharedCredential
 
         res.status(200).send({ success: true });
     } catch (err) {
-        if (err instanceof Error && err.message.includes('Shared credentials for the provider not found')) {
-            res.status(404).json({
-                error: {
-                    code: 'shared_credentials_provider_not_found',
-                    message: 'Shared credentials for the provider not found'
-                }
-            });
-            return;
-        }
+        if (err instanceof Error) {
+            if (err.message.includes('Shared credentials for the provider not found')) {
+                res.status(404).json({
+                    error: {
+                        code: 'shared_credentials_provider_not_found',
+                        message: 'Shared credentials for the provider not found'
+                    }
+                });
+                return;
+            }
 
-        if (err instanceof Error && err.message.includes('Shared credentials for the provider already exists')) {
-            res.status(400).json({
-                error: {
-                    code: 'shared_credentials_already_exists',
-                    message: 'Shared credentials for the provider already exists'
-                }
-            });
-            return;
+            if (err.message.includes('Shared credentials for the provider already exists')) {
+                res.status(400).json({
+                    error: {
+                        code: 'shared_credentials_already_exists',
+                        message: 'Shared credentials for the provider already exists'
+                    }
+                });
+                return;
+            }
         }
         throw err;
     }
