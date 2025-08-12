@@ -11840,10 +11840,6 @@ datto-rmm:
     disable_pkce: true
     proxy:
         base_url: https://${connectionConfig.platform}-api.centrastage.net/api
-        verification:
-            method: GET
-            endpoints:
-                - /v2/account
     docs: https://docs.nango.dev/integrations/all/datto-rmm
     docs_connect: https://docs.nango.dev/integrations/all/datto-rmm/connect
     connection_config:
