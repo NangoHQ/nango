@@ -216,6 +216,9 @@ export const ENVS = z.object({
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
+    RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
+    RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
+    RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),
