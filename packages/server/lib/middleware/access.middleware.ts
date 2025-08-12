@@ -436,6 +436,11 @@ export class AccessMiddleware {
      * This allows tests to use either authentication method
      */
     async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        if (!process.env['VITEST']) {
+            res.status(401).send({ error: { code: 'unauthorized', message: 'testAuth is only available in test environment' } });
+            return;
+        }
+
         try {
             // First try session authentication
             if (req.isAuthenticated()) {
