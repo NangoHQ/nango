@@ -232,7 +232,7 @@ describe('getProxyRetryFromErr', () => {
                     expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
                 });
 
-                it('should pick shortest wait time when multiple headers are present', () => {
+                it('should pick longest wait time when multiple headers are present', () => {
                     const nowInSecs = Date.now() / 1000;
                     const mockAxiosError = getDefaultError({
                         response: {
@@ -256,13 +256,13 @@ describe('getProxyRetryFromErr', () => {
                             }
                         })
                     });
-                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 4000 });
                 });
             });
         });
 
         describe('custom Header arrays', () => {
-            it('should pick shortest wait time when multiple headers are present', () => {
+            it('should pick longest wait time when multiple headers are present', () => {
                 const nowInSecs = Date.now() / 1000;
                 const mockAxiosError = getDefaultError({
                     response: {
@@ -281,7 +281,7 @@ describe('getProxyRetryFromErr', () => {
                         }
                     })
                 });
-                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 2000 });
+                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 4000 });
             });
         });
     });

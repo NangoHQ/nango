@@ -71,14 +71,14 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         const retrySource = proxyConfig.retryHeader.at || proxyConfig.retryHeader.after || [];
         const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        // Check all headers and find the most restrictive retry time
+        // Check all headers and find the most restrictive/ longest wait retry time
         let bestRetry: { reason: string; wait: number } | null = null;
 
         for (const retryHeader of retryHeaders) {
             const res = getRetryFromHeader({ err, type, retryHeader });
             if (res.found) {
-                if (!bestRetry || res.wait < bestRetry.wait) {
-                    bestRetry = { reason: res.reason, wait: res.wait };
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
                 }
             }
         }
@@ -94,14 +94,14 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         const retrySource = proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after || [];
         const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        // Check all headers and find the most restrictive retry time
+        // Check all headers and find the most restrictive/ longest wait retry time
         let bestRetry: { reason: string; wait: number } | null = null;
 
         for (const retryHeader of retryHeaders) {
             const res = getRetryFromHeader({ err, type, retryHeader });
             if (res.found) {
-                if (!bestRetry || res.wait < bestRetry.wait) {
-                    bestRetry = { reason: res.reason, wait: res.wait };
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
                 }
             }
         }
