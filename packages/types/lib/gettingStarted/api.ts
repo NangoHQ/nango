@@ -15,9 +15,7 @@ export type PatchGettingStarted = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/getting-started';
     Querystring: { env: string };
-    Success: {
-        data: GettingStartedOutput;
-    };
+    Success: never;
     Body: PatchGettingStartedInput;
     Error: ApiError<'connection_not_found' | 'getting_started_progress_not_found' | 'failed_to_update_getting_started_progress'>;
 }>;
