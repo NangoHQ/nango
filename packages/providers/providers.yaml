@@ -352,6 +352,53 @@ autodesk:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
+autotask:
+    display_name: AutoTask
+    categories:
+        - support
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.autotask.net/atservicesrest
+        headers:
+            apiintegrationcode: ${connectionConfig.apiIntegrationCode}
+            username: ${connectionConfig.username}
+            secret: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1.0/Companies/entityinformation
+    docs: https://docs.nango.dev/integrations/all/autotask
+    docs_connect: https://docs.nango.dev/integrations/all/autotask/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: AutoTask API Zone
+            description: The zone subdomain for your Autotask instance (e.g., webservices3, webservices1, etc.)
+            example: webservices3
+            doc_section: '#step-1-finding-your-autotask-api-zone'
+        apiIntegrationCode:
+            type: string
+            title: API Integration Code
+            description: The tracking identifier assigned to your API-only user (27-character string)
+            example: ASHJKLFDKAHKASLFH85LSA905H
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-3-configure-the-api-user'
+        username:
+            type: string
+            title: API Username
+            description: The email address of your API-only user account
+            example: apiuser@example.com
+            format: email
+            doc_section: '#step-3-configure-the-api-user'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            pattern: '^[A-Za-z0-9@#$~*]+$'
+            description: The secret for your API-only user account
+            doc_section: '#step-4-generate-api-secret'
+
 algolia:
     display_name: Algolia
     categories:
@@ -3754,6 +3801,31 @@ factorial:
         base_url: https://api.factorialhr.com/api
     docs: https://docs.nango.dev/integrations/all/factorial
 
+fairing:
+    display_name: Fairing
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.fairing.co/api
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /questions
+    docs: https://docs.nango.dev/integrations/all/fairing
+    docs_connect: https://docs.nango.dev/integrations/all/fairing/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Token
+            description: The Secret Token for your Fairing account
+            pattern: '^[A-Za-z0-9_-]{64}$'
+            example: '3UjYpDjuk70Lt7AxC4M1x_7XvxoxkeX-OV7uTahJowilqLb2eLLvrtlvCGZgku1q'
+            doc_section: '#step-1-finding-your-secret-token'
+
 facebook:
     display_name: Facebook
     categories:
@@ -5897,6 +5969,30 @@ jotform:
             type: string
             title: API Key
             description: The API key for your Jotform account
+
+jumpcloud:
+    display_name: JumpCloud
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.jumpcloud.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/jumpcloud
+    docs_connect: https://docs.nango.dev/integrations/all/jumpcloud/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JumpCloud API Key.
+            example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
+            pattern: '^jca_[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generate-your-jumpcloud-api-key'
 
 helpscout-docs:
     display_name: Help Scout Docs
@@ -9948,6 +10044,7 @@ snowflake:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.snowflake_account_url}
+    post_connection_script: snowflakePostConnection
     docs: https://docs.nango.dev/integrations/all/snowflake
     connection_config:
         snowflake_account_url:
@@ -11662,6 +11759,43 @@ yahoo:
             format: hostname
             example: fantasysports.yahooapis.com
             prefix: https://
+
+yotpo:
+    display_name: Yotpo
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.yotpo.com
+        headers:
+            x-yotpo-token: ${accessToken}
+    token_url: https://api.yotpo.com/core/v3/stores/${connectionConfig.storeId}/access_tokens
+    token_params:
+        secret: ${credentials.apiSecret}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    docs: https://docs.nango.dev/integrations/all/yotpo
+    docs_connect: https://docs.nango.dev/integrations/all/yotpo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: App Key
+            description: Your Yotpo Store Key.
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-1-retrieving-your-app-key'
+            example: rvR3359XuCuuuEgCgcHNrQ9TE8zwC5dMzWMULHZm
+            order: 1
+    credentials:
+        apiSecret:
+            type: string
+            title: Secret Key
+            description: Your Yotpo app's secret key.
+            secret: true
+            example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
+            doc_section: '#step-2-generating-your-secret-key'
+            pattern: '^[A-Za-z0-9]{40}$'
 
 yandex:
     display_name: Yandex
