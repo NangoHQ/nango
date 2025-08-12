@@ -6,6 +6,7 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
+import { envs } from '../env.js';
 import { deepMergeRecordData } from '../helpers/merge.js';
 import { getUniqueId, removeDuplicateKey } from '../helpers/uniqueKey.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
@@ -27,7 +28,7 @@ import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
 interface UpsertResult {
     external_id: string;
