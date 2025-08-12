@@ -21,7 +21,8 @@ describe('modelToJson', () => {
                         enum: { type: 'string', enum: ['a', true, 'c'] },
                         union: { anyOf: [{ type: 'string' }, { type: 'number' }] },
                         width: { type: ['number', 'null'] }
-                    }
+                    },
+                    required: ['id', 'name', 'arr', 'arr2', 'ref', 'obj', 'enum', 'union']
                 }
             },
             {
@@ -30,7 +31,8 @@ describe('modelToJson', () => {
                     type: 'object',
                     properties: {
                         bio: { type: 'string' }
-                    }
+                    },
+                    required: ['bio']
                 }
             }
         ];
@@ -38,15 +40,15 @@ describe('modelToJson', () => {
         expect(result).toEqual({
             id: '<string>',
             arr: '<string[]>',
-            arr2: [{ name: '<string>' }],
+            arr2: [{ ['name?']: '<string>' }],
             name: '<string>',
             enum: "<enum: 'a' | 'true' | 'c'>",
             union: '<<string> | <number>>',
             ref: { bio: '<string>' },
             obj: {
-                name: '<string>'
+                ['name?']: '<string>'
             },
-            width: '<number | null>'
+            ['width?']: '<number | null>'
         });
     });
 });
