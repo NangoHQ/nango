@@ -129,20 +129,20 @@ export default {
                 'primary-9': '#b6faf8',
                 'primary-10': '#e5fefd',
 
-                'grayscale-1': '#0D0D0D',
-                'grayscale-2': '#161616',
-                'grayscale-3': '#1C1C1C',
-                'grayscale-4': '#2A2A2A',
-                'grayscale-5': '#333333',
-                'grayscale-6': '#444444',
-                'grayscale-7': '#555555',
-                'grayscale-8': '#666666',
-                'grayscale-9': '#888888',
-                'grayscale-10': '#9FA2A9',
-                'grayscale-11': '#B3B7BF',
-                'grayscale-12': '#C7CCD5',
-                'grayscale-13': '#E4E9F2',
-                'grayscale-14': '#F8FAFE',
+                'grayscale-1': '#0B0B0C',
+                'grayscale-2': '#121212',
+                'grayscale-3': '#18191B',
+                'grayscale-4': '#202124',
+                'grayscale-5': '#2A2B2F',
+                'grayscale-6': '#35363A',
+                'grayscale-7': '#424347',
+                'grayscale-8': '#505155',
+                'grayscale-9': '#626366',
+                'grayscale-10': '#76777A',
+                'grayscale-11': '#8B8C8F',
+                'grayscale-12': '#A1A2A5',
+                'grayscale-13': '#C4C5C7',
+                'grayscale-14': '#E7E7E7',
 
                 'info-1': '#f0fafe',
                 'info-2': '#d7f1fd',
@@ -195,6 +195,7 @@ export default {
                 'text-10': '#a0a8b1',
                 'text-11': '#c7ccd1',
                 'text-12': '#e3e5e8',
+                'text-primary': '#F5F5F5',
                 'text-secondary': '#cccccc',
                 'text-tertiary': '#999999',
 
@@ -228,6 +229,11 @@ export default {
             boxShadow: {
                 card: '0px 2px 50px 5px rgba(51, 51, 51, 0.30), 0px 8px 10px 0px rgba(0, 0, 0, 0.30)'
             },
+            backgroundImage: {
+                'dark-glow': 'linear-gradient(141deg, theme(colors.grayscale-5) 0%, theme(colors.black) 100%)',
+                'dark-glow-reverse': 'linear-gradient(135deg, theme(colors.grayscale-3) 0%, theme(colors.grayscale-5) 94.23%)'
+            },
+
             keyframes: {
                 'accordion-down': {
                     from: { height: '0' },
