@@ -29,7 +29,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z.object({}).catchall(z.any()).strict();
+const bodyValidation = z.looseObject({});
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),

@@ -359,12 +359,15 @@ autotask:
         - ticketing
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.subdomain}.autotask.net/ATServicesRest
+        base_url: https://${connectionConfig.subdomain}.autotask.net/atservicesrest
         headers:
             apiintegrationcode: ${connectionConfig.apiIntegrationCode}
             username: ${connectionConfig.username}
-            secret: ${credentials.apiKey}
-    credentials_verification_script: autotaskCredentialsVerification
+            secret: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1.0/Companies/entityinformation
     docs: https://docs.nango.dev/integrations/all/autotask
     docs_connect: https://docs.nango.dev/integrations/all/autotask/connect
     connection_config:
@@ -10041,6 +10044,7 @@ snowflake:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.snowflake_account_url}
+    post_connection_script: snowflakePostConnection
     docs: https://docs.nango.dev/integrations/all/snowflake
     connection_config:
         snowflake_account_url:
@@ -11952,6 +11956,37 @@ zoho:
             prefix: https://accounts.zoho.
             example: com
             suffix: /
+
+datto-rmm:
+    display_name: Datto RMM
+    categories:
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/authorize
+    token_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    disable_pkce: true
+    proxy:
+        base_url: https://${connectionConfig.platform}-api.centrastage.net/api
+    docs: https://docs.nango.dev/integrations/all/datto-rmm
+    docs_connect: https://docs.nango.dev/integrations/all/datto-rmm/connect
+    connection_config:
+        platform:
+            type: string
+            title: Platform
+            description: The Datto RMM platform (region) for your account
+            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
+            example: merlot
+            prefix: https://
+            suffix: -api.centrastage.net
+            order: 1
+            doc_section: '#step-2-select-your-platform'
 
 zoho-books:
     display_name: Zoho Books
