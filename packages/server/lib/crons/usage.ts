@@ -46,7 +46,6 @@ export async function exec(): Promise<void> {
 
         try {
             await billing.exportBillableConnections();
-            await billing.exportProratedConnections();
             await billing.exportActiveConnections();
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
@@ -99,31 +98,8 @@ const billing = {
     exportBillableConnections: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.connections', async (span) => {
             try {
-                const res = await connectionService.billableConnections();
-                if (res.isErr()) {
-                    throw res.error;
-                }
-
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'total_connections', value: count, properties: { accountId } };
-                });
-
-                const sendRes = usageBilling.addAll(events);
-                if (sendRes.isErr()) {
-                    throw sendRes.error;
-                }
-            } catch (err) {
-                span.setTag('error', err);
-                report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
-            }
-        });
-    },
-    // TODO: remove once we confirmed the total connections metric (proration done by Orb) above is correct
-    exportProratedConnections: async (): Promise<void> => {
-        await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.proratedconnections', async (span) => {
-            try {
                 const now = new Date();
-                const res = await connectionService.proratedConnections(now);
+                const res = await connectionService.billableConnections(now);
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -138,7 +114,7 @@ const billing = {
                 }
             } catch (err) {
                 span.setTag('error', err);
-                report(new Error('cron_failed_to_export_prorated_connections', { cause: err }));
+                report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
             }
         });
     },
