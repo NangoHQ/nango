@@ -62,25 +62,39 @@ description: 'Access the Salesforce API in 2 minutes 💨'
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
-  ## Key Changes: Connected Apps vs External Client Apps
-  
-  **Important:** Salesforce is transitioning from **Connected Apps** to **External Client Apps** as the next generation of connected apps. Both Salesforce and Nango recommend using **External Client Apps** for new integrations. Here's are a [few points](https://help.salesforce.com/s/articleView?id=xcloud.connected_apps_and_external_client_apps_features.htm&type=5) you need to know between the two:
-  
-  - **Connected Apps**: Disabled by default in newly created Salesforce organizations, but can be enabled in the **External Client Apps** settings.
-  - **External Client Apps** (recommended): You must choose the **Distribution State** upfront:
-    - **Local**: For internal use within your Salesforce organization only
-    - **Packaged**: For distribution to other Salesforce organizations (requires packaging and installation process)
+  ## Connected Apps vs External Client Apps
+    **Important:** Salesforce is transitioning from **Connected Apps** to **External Client Apps** as the next generation of Connected Apps. Nango supports both options, but for the most frictionless integration experience, **we recommend using Connected Apps** for most use cases.
+
+
+  **Connected Apps** (Recommended for most users):
+  - ✅ **Easier setup** - Just enable in settings and create directly from your org
+  - ✅ **No packaging required** - Works immediately after creation
+  - ⚠️ **Disabled by default** in newly created Salesforce organizations, but can be easily enabled
+
+  **External Client Apps** (Advanced option):
+  - ❌ **Requires packaging** - Must be packaged and distributed
+  - ❌ **End-users must install** - Customers need to install the package in their org for this to work
+  - ❌ **Higher technical complexity** - Requires Dev Hub setup and namespace management
 
   ### Prerequisites 
   - Salesforce **External Client Apps** are only available in the following editions: Professional, Performance, Unlimited and Developer. 
   - A user account with the **Create, Edit, and Delete External Client Apps** permission is also required.
-
-  ## Creating a Connected App
   
-  **Note:** Connected Apps are disabled by default in new Salesforce organizations. To enable them:
-  1. Navigate to **Setup** → **Apps** → **External Client App Manager** → **Settings**
-  2. Toggle the button for **Allow creation of connected apps**
-  3. Then proceed with creating a **Connected App** using the steps below.
+  ## Creating a Connected App (Recommended)
+  
+  **Note:** Connected Apps are disabled by default in new Salesforce organizations. Follow these steps to enable them first:
+  
+  ### Step 1: Enable Connected Apps in Your Salesforce Org
+  
+  <Steps>
+    <Step title="Enable Connected Apps">
+      1. Log in to your Salesforce account
+      2. Navigate to **Setup** → **Apps** → **External Client App Manager** → **Settings**
+      3. Find the **Allow creation of connected apps** option then toggle it to enable **Connected Apps**
+    </Step>
+  </Steps>
+  
+  Once Connected Apps are enabled, proceed with creating your Connected App below:
 
     <Steps>
       <Step title="Configure Connected App settings">
@@ -115,6 +129,10 @@ description: 'Access the Salesforce API in 2 minutes 💨'
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
+
+  <Info>
+    **Alternative: External Client Apps** - Nango also supports Salesforce's newer External Client Apps, but they require packaging and end-users must install them in their Salesforce org. For the most frictionless integration experience, we recommend using Connected Apps above. Only use External Client Apps if you need to distribute your app to multiple Salesforce organizations.
+  </Info>
 
   ## Creating an External Client App for Internal Use (Local Distribution)
   
@@ -340,7 +358,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
 
   ## Already using a Connected App? Migrate to External Client App
   
-  If you previously created a **Connected App**, you can migrate it to an **External Client App** that Salesforce recommends.
+  If you previously created a **Connected App**, you can migrate it to an **External Client App**.
 
   1. Click on the **Setup** menu, then search for and select **App Manager** and open your connected app you would wish to migrate.
   2. If eligible, click the **Migrate to External Client App** button.
