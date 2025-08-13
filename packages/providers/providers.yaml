@@ -5719,26 +5719,23 @@ jazzhr:
     display_name: JazzHR
     categories:
         - hr
-    auth_mode: CUSTOM
+    auth_mode: API_KEY
     proxy:
-        base_url: https://api.resumatorapi.com/
+        base_url: https://api.resumatorapi.com
         verification:
             method: GET
             endpoints:
-                - /users?apikey=${connectionConfig.apiKey}
-            base_url_override: https://api.resumatorapi.com/v1
+                - /v1/users?apikey=${credentials.apiKey}
         query:
-            apikey: ${connectionConfig.apiKey}
+            apikey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jazzhr
     docs_connect: https://docs.nango.dev/integrations/all/jazzhr/connect
-    connection_config:
+    credentials:
         apiKey:
             type: string
             title: API Key
             description: Your JazzHR API Key
-            pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
-            optional: false
 
 jira:
     display_name: Jira (OAuth)
