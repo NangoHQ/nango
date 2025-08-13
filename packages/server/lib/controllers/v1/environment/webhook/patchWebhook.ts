@@ -16,7 +16,7 @@ const urlValidation = z
         (url) => {
             if (!url || url.trim() === '') return true;
             const inputUrl = new URL(url);
-            return inputUrl.origin !== 'nango.dev';
+            return !inputUrl.host.endsWith('nango.dev');
         },
         { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
     );
