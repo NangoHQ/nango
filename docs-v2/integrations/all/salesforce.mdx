@@ -66,19 +66,19 @@ description: 'Access the Salesforce API in 2 minutes 💨'
   
   **Important:** Salesforce is transitioning from **Connected Apps** to **External Client Apps** as the next generation of connected apps. Both Salesforce and Nango recommend using **External Client Apps** for new integrations. Here's are a [few points](https://help.salesforce.com/s/articleView?id=xcloud.connected_apps_and_external_client_apps_features.htm&type=5) you need to know between the two:
   
-  - **Connected Apps**: Disabled by default in new Salesforce organizations but can be enabled from **External Client Apps** settings.
-  - **External Client Apps** (recommended): Must choose the **Distribution State** upfront:
+  - **Connected Apps**: Disabled by default in newly created Salesforce organizations, but can be enabled in the **External Client Apps** settings.
+  - **External Client Apps** (recommended): You must choose the **Distribution State** upfront:
     - **Local**: For internal use within your Salesforce organization only
     - **Packaged**: For distribution to other Salesforce organizations (requires packaging and installation process)
 
   ### Prerequisites 
-  - Salesforce **External Client Apps** are only available in the following editions: Professional, Performance, Unlimited, Developer. 
+  - Salesforce **External Client Apps** are only available in the following editions: Professional, Performance, Unlimited and Developer. 
   - A user account with the **Create, Edit, and Delete External Client Apps** permission is also required.
 
   ## Creating a Connected App
   
   **Note:** Connected Apps are disabled by default in new Salesforce organizations. To enable them:
-  1. Navigate to **Setup** > **External Client App Manager** > **Settings**
+  1. Navigate to **Setup** → **Apps** → **External Client App Manager** → **Settings**
   2. Toggle the button for **Allow creation of connected apps**
   3. Then proceed with creating a **Connected App** using the steps below.
 
@@ -87,27 +87,28 @@ description: 'Access the Salesforce API in 2 minutes 💨'
         1. Click **New Connected App**.
         2. Fill in the required basic information:
            - **Connected App Name**: Your app's name
-           - **API Name**: Will auto-populate
+           - **API Name**: This will auto-populate
            - **Contact Email**: Your email address
         3. Check the **Enable OAuth Settings** checkbox.
         4. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
         5. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
-           - "Access and manage your data (api)"
-           - "Perform requests on your behalf at any time (refresh_token, offline_access)"
-        6. Leave the rest of the default settings unchanged.
-        7. Click **Save**, then **Continue**.
+           - `Access and manage your data (api)`
+           - `Perform requests on your behalf at any time (refresh_token, offline_access)`
+        6. Check the **Introspect All Tokens** option
+        7. Leave the rest of the default settings unchanged.
+        8. Click **Save**, then **Continue**.
         <Note>Changes can take up to 10 minutes to take effect</Note>
       </Step>
       <Step title="Obtain API credentials">
-        1. After saving, you'll be redirected to the Connected App detail page.
+        1. After saving your changes, you'll be redirected to the Connected App detail page.
         2. You may need to wait a few minutes for the app to be fully created.
         3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
         4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
         5. You will need these credentials when configuring your integration in Nango.
       </Step>
-      <Step title="Configure token settings (recommended)">
-        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to your application.
-        2. Under **OAuth Policies**, set **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+      <Step title="Configure token settings">
+        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to the application you just created.
+        2. Under **OAuth Policies**, set **Refresh Token Policy** to **Refresh token is valid until revoked** for long-lived access.
         3. Click **Save**.
       </Step>
       <Step title="Next">
@@ -122,31 +123,32 @@ description: 'Access the Salesforce API in 2 minutes 💨'
     <Steps>
       <Step title="Create an External Client App">
         1. Log in to your Salesforce account.
-        2. Click on the **Setup** menu, in the **Quick Find** box, enter **App Manager**, and then select **App Manager**.
+        2. Click on the **Setup** menu then search for and select **App Manager** in the Quick Find box.
         3. Click **New External Client App**.
       </Step>
       <Step title="Configure External Client App settings">
       1. Fill in the required **Basic information**:
        - **External Client App Name**: The display name of your app as it will appear in Salesforce.
-       - **API Name**: Auto-filled based on the app name; used internally by Salesforce.
+       - **API Name**: This is auto-filled based on the app name; used internally by Salesforce.
        - **Contact Email**: The email address Salesforce can use to contact the app owner.
-       - **Distribution State**: Select **Local** for internal use within your Salesforce organization.
+       - **Distribution State**: Select **Local**.
        - **Contact Phone (Optional)**: A phone number for reaching the app's designated point of contact.
        - **Info URL (Optional)**: A link to your app's website or documentation.
        - **Logo Image URL (Optional)**: A direct URL to an image that will be used as the app's logo.
        - **Icon URL (Optional)**: A direct URL to a smaller icon representing the app.
-       - **Description (Optional)**: A short summary describing what the app does.
+       - **Description (Optional)**: A short summary describing what the app does. 
       2. Check the **API (Enable Oauth Settings)** checkbox.
       3. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
       4. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
-        - "Access and manage your data (api)"
-        - "Perform requests on your behalf at any time (refresh_token, offline_access)"
-      5. Under **Flow Enablement**, check **Enable Authorization Code and Credentials Flow**.
-      6. Under **Security**, leave the default options selected:
+        - `Access and manage your data (api)`
+        - `Perform requests on your behalf at any time (refresh_token, offline_access)`
+      6. Check the **Introspect all Tokens** option
+      7. Under **Flow Enablement**, check **Enable Authorization Code and Credentials Flow**.
+      8. Under **Security**, leave the default options selected:
           - ✅ Require secret for Web Server Flow
           - ✅ Require secret for Refresh Token Flow
           - ✅ Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows
-      7. Click **Create**.
+      8. Click **Create**.
       </Step>
       <Step title="Obtain API credentials">
         1. After saving, navigate to your app **Settings** tab.
@@ -155,8 +157,8 @@ description: 'Access the Salesforce API in 2 minutes 💨'
         4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
         5. You will need these credentials when configuring your integration in Nango.
       </Step>
-      <Step title="Configure token settings (recommended)">
-       1. Click your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+      <Step title="Configure token settings">
+       1. Click on your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to **Refresh token is valid until revoked** for long-lived access.
        2. Click **Save**.
       </Step>
     </Steps>
@@ -174,16 +176,16 @@ description: 'Access the Salesforce API in 2 minutes 💨'
   You cannot have both Dev Hub enabled and register a namespace in the same organization.
 
     <Steps>
-      <Step title="Set up two Salesforce accounts">
+      <Step title="Setting up two Salesforce accounts">
         1. **Create Developer Hub Account**: 
            - Go to [Salesforce Developer Edition signup](https://developer.salesforce.com/signup) and create your first account
-           - Enable Dev Hub: **Setup** → **Dev Hub** → **Enable Dev Hub**
-           - Enable 2GP: **Setup** → **Dev Hub** → **Enable Dev Hub** → **Enable Unlocked Packages and Second-Generation Managed Packages**
+           - Enable Dev Hub: Click on the **Setup** menu, then search for and select **Dev Hub** in the Quick Find box then toggle the **Enable Dev Hub** option
+           - Enable 2GP: On the same page, toggle the **Enable Unlocked Packages and Second-Generation Managed Packages** option
            <Note>Please note that this change is irreversible</Note>
         
         2. **Create Namespace Account**: 
-           - Create a second Salesforce Developer Edition account
-           - Register a namespace: **Setup** → **Package Manager** → **Register Namespace**
+           - Create a second [Salesforce Developer Edition](https://developer.salesforce.com/signup) account
+           - Register a namespace: Click on the Setup menu, then search for and select **Package Manager**, and finally click on **Register Namespace**
            - Choose a unique namespace (this will be part of your package identity)
         
         3. **Link the namespace to your Dev Hub account**:
@@ -198,10 +200,10 @@ description: 'Access the Salesforce API in 2 minutes 💨'
       </Step>
       <Step title="Create External Client App in Developer Hub (Dev Hub)">
         1. Log in to your **Developer Hub (Dev Hub)** (the first account).
-        2. Click on **Setup** → **App Manager** → **New External Client App**.
+        2. Click on the **Setup** menu, then search for and select **External Client App**, and finally click on **New External Client App**.
         3. Configure the app settings:
             - **External Client App Name**: The display name of your app as it will appear in Salesforce.
-            - **API Name**: Auto-filled based on the app name; used internally by Salesforce.
+            - **API Name**: This is auto-filled based on the app name; used internally by Salesforce.
             - **Contact Email**: The email address Salesforce can use to contact the app owner.
             - **Distribution State**: Select **Packaged**.
             - **Contact Phone (Optional)**: A phone number for reaching the app's designated point of contact.
@@ -212,7 +214,8 @@ description: 'Access the Salesforce API in 2 minutes 💨'
         4. Enable OAuth settings:
            - Check **API (Enable Oauth Settings)**
            - **Callback URL**: `https://api.nango.dev/oauth/callback`
-           - **Selected OAuth Scopes**: Add required scopes (minimum: "api", "refresh_token, offline_access")
+           - **Selected OAuth Scopes**: Add required scopes (minimum: `api`, `refresh_token, offline_access`)
+           - **Introspect all Tokens**: Enable this option by checking the box
            - **Flow Enablement**: Enable Authorization Code and Credentials Flow
            - Under **Security**, leave the default options selected:
              . ✅ Require secret for Web Server Flow
@@ -224,8 +227,8 @@ description: 'Access the Salesforce API in 2 minutes 💨'
         8. Click **Consumer Key and Secret** to view your credentials. You may be required to verify your identity.
         9. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret). You will need these credentials when configuring your integration in Nango.
       </Step>
-      <Step title="Configure token settings (recommended)">
-       1. Click your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+      <Step title="Configure token settings">
+       1. Click your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to **Refresh token is valid until revoked** for long-lived access.
        2. Click **Save**.
       </Step>
       <Step title="Install and set up Salesforce CLI">
@@ -274,7 +277,6 @@ description: 'Access the Salesforce API in 2 minutes 💨'
                    <members>*</members>
                    <name>ExtlClntAppOauthSettings</name>
                </types>
-               <!--  Add this section if you Configured token settings policies above. -->
                <types>
                 <members>*</members>
                 <name>ExtlClntAppOauthConfigurablePolicies</name>
@@ -289,7 +291,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
            ```bash
            sf project retrieve start --manifest package.xml --target-org johndoe@example.com
            ```
-           Replace `johndoe@example.com` with the username of your authenticated Dev Hub account. This command retrieves the External Client App metadata and OAuth settings into your local project. This will add 2 folders **(externalClientApps and extlClntAppOauthSettings)** in your `force-app/main/default/` folder of the project you are working on. If you enabled ExtlClntAppOauthConfigurablePolicies in the XML, you will get 3 folders instead, with the third being **extlClntAppOauthConfigurablePolicies**.
+           Replace `johndoe@example.com` with the username of your authenticated Dev Hub account. This command retrieves the External Client App metadata and OAuth settings into your local project. This will add 3 folders **(externalClientApps, extlClntAppOauthSettings and extlClntAppOauthConfigurablePolicies)** in your `force-app/main/default/` folder of the project you are working on.
            
            <Note>If you have more external client apps registered, they will also be added. You can remove them by deleting the specific files inside those folders to remain with the packaged one we created earlier.</Note>
         
@@ -340,7 +342,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
   
   If you previously created a **Connected App**, you can migrate it to an **External Client App** that Salesforce recommends.
 
-  1. From **Setup**, go to **App Manager** and open the connected app.
+  1. Click on the **Setup** menu, then search for and select **App Manager** and open your connected app you would wish to migrate.
   2. If eligible, click the **Migrate to External Client App** button.
   3. Confirm that the app is local and doesn't use the username-password flow.
   4. Click **Migrate**.
@@ -357,12 +359,6 @@ description: 'Access the Salesforce API in 2 minutes 💨'
     | ----- | ----------- |
     | api | Access and manage your data |
     | refresh_token, offline_access | Perform requests on your behalf at any time |
-    | chatter_api | Access Chatter API |
-    | custom_permissions | Access custom permissions |
-    | wave_api | Access Analytics REST API |
-    | eclair_api | Access Einstein Analytics API |
-    | pardot_api | Access Pardot services |
-    | lightning | Access Lightning applications |
   </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links |
