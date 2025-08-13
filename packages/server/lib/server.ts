@@ -22,7 +22,6 @@ import { persistAccountUsageCron } from './crons/persistAccountUsage.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
-import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
 import { pubsub } from './pubsub.js';
@@ -91,7 +90,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 getProviders();
 
 refreshConnectionsCron();
-exportUsageCron();
 persistAccountUsageCron();
 timeoutLogsOperations();
 deleteOldData();

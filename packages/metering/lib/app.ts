@@ -4,6 +4,7 @@ import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { initSentry, once, report } from '@nangohq/utils';
 
+import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { Billing } from './processors/billing.js';
 import { logger } from './utils.js';
@@ -32,6 +33,9 @@ try {
     // Billing processor
     const billingProc = new Billing(pubsubTransport);
     billingProc.start();
+
+    // Crons
+    exportUsageCron();
 
     // Graceful shutdown
     const close = once(async () => {
