@@ -1,0 +1,14 @@
+<svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_34_4)">
+    <!-- Blue circle -->
+    <circle cx="31" cy="31" r="22" fill="#27A9E1"/>
+    <!-- White zig-zag -->
+    <path d="M10.5 31H18.2L22.6 40.5L30.8 22.8L38.6 43.2L44 31H51.5"
+          stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_34_4">
+      <rect width="44" height="44" fill="white" transform="translate(9 9)"/>
+    </clipPath>
+  </defs>
+</svg>
