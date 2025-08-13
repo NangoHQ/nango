@@ -29,22 +29,29 @@ export const getSharedCredentialsProvider = asyncWrapper<GetSharedCredentialsPro
     const providerResult = await sharedCredentialsService.getSharedCredentialsbyName(name);
 
     if (providerResult.isErr()) {
-        res.status(404).json({
+        if (providerResult.error.message === 'not_found') {
+            res.status(404).json({
+                success: false,
+                error: {
+                    code: 'not_found',
+                    message: 'Shared credentials for the provider not found'
+                }
+            });
+            return;
+        }
+
+        res.status(500).json({
             success: false,
             error: {
-                code: 'not_found',
-                message: 'Shared credentials for the provider not found'
+                code: 'server_error',
+                message: providerResult.error.message
             }
         });
         return;
     }
 
-    const provider = providerResult.value;
-
-    const formattedProvider = sharedCredentialstoApi(provider);
-
     res.status(200).json({
         success: true,
-        data: formattedProvider
+        data: sharedCredentialstoApi(providerResult.value)
     });
 });

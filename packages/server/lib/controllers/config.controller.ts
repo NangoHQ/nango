@@ -29,7 +29,7 @@ class ConfigController {
             const list = Object.entries(providers).map((providerProperties) => {
                 const [provider, properties] = providerProperties;
                 // check if provider has nango's preconfigured credentials
-                const preConfiguredInfo = sharedCredentials[provider];
+                const preConfiguredInfo = sharedCredentials.isOk() ? sharedCredentials.value[provider] : undefined;
                 const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
                 const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 

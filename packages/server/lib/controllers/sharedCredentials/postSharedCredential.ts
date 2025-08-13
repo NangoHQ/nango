@@ -28,7 +28,7 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
     });
 
     if (result.isErr()) {
-        if (result.error.message.includes('shared_credentials_already_exists')) {
+        if (result.error.message === 'shared_credentials_already_exists') {
             res.status(400).json({
                 error: {
                     code: 'shared_credentials_already_exists',
@@ -38,7 +38,7 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
             return;
         }
 
-        if (result.error.message.includes('invalid_provider')) {
+        if (result.error.message === 'invalid_provider') {
             res.status(404).json({
                 error: {
                     code: 'invalid_provider',
@@ -47,6 +47,12 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
             });
             return;
         }
+        res.status(500).json({
+            error: {
+                code: 'server_error',
+                message: result.error.message
+            }
+        });
     }
 
     res.status(200).send({ success: true });
