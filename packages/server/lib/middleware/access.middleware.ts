@@ -4,7 +4,19 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
+import {
+    Err,
+    Ok,
+    flagHasPlan,
+    getLogger,
+    isBasicAuthEnabled,
+    isCloud,
+    isTest,
+    metrics,
+    stringTimingSafeEqual,
+    stringifyError,
+    tagTraceUser
+} from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
@@ -436,7 +448,7 @@ export class AccessMiddleware {
      * This allows tests to use either authentication method
      */
     async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        if (!process.env['VITEST']) {
+        if (!isTest) {
             res.status(401).send({ error: { code: 'unauthorized', message: 'testAuth is only available in test environment' } });
             return;
         }
