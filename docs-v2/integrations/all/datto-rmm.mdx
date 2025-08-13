@@ -1,0 +1,30 @@
+---
+title: Datto RMM
+sidebarTitle: Datto RMM
+---
+import Overview from "/snippets/overview.mdx"
+
+# Overview
+
+Datto RMM provides a REST API using OAuth 2.0. Tokens expire after 100 hours and requests are rate-limited to 600 requests per 60 seconds per account.
+
+<Overview />
+
+## Useful Links
+
+-   API Overview and OAuth details: [Datto RMM API v2 docs](https://rmm.datto.com/help/en/Content/2SETUP/APIv2.htm)
+-   Swagger per region (replace with your platform URL): `https://<platform>-api.centrastage.net/api/swagger-ui/index.html`
+
+## API gotchas
+
+-   OAuth 2.0 Authorization Code flow. Use `Client ID: public-client` and `Client Secret: public` when exchanging the auth code for tokens as per Datto docs.
+-   Tokens expire after 100 hours; refresh tokens should be used to obtain new access tokens.
+-   Rate limit: 600 requests in 60 seconds. Breaching returns 429 and persistent retries may yield 403 with temporary IP block.
+
+## Going further
+
+<Card title="Connect to Datto RMM" icon="link" href="/integrations/all/datto-rmm/connect" horizontal>
+  Guide to connect to Datto RMM using Connect UI
+</Card>
+
+
