@@ -1,6 +1,14 @@
 import crypto from 'crypto';
 
-import { configService, connectionService, errorManager, getGlobalWebhookReceiveUrl, getProvider, getProviders } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    errorManager,
+    getGlobalWebhookReceiveUrl,
+    getProvider,
+    getProviders,
+    sharedCredentialsService
+} from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -16,7 +24,7 @@ class ConfigController {
         }
 
         try {
-            const sharedCredentials = await configService.getPreConfiguredProviderScopes();
+            const sharedCredentials = await sharedCredentialsService.getPreConfiguredProviderScopes();
 
             const list = Object.entries(providers).map((providerProperties) => {
                 const [provider, properties] = providerProperties;

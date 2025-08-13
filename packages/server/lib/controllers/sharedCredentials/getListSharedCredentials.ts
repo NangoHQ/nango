@@ -1,12 +1,12 @@
-import { configService } from '@nangohq/shared';
+import { sharedCredentialsService } from '@nangohq/shared';
 
-import { sharedCredentialstoApi } from '../../../../formatters/sharedCredentials.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { sharedCredentialstoApi } from '../../formatters/sharedCredentials.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProviders } from '@nangohq/types/lib/sharedCredentials/api.js';
 
 export const getSharedCredentialsProviders = asyncWrapper<GetSharedCredentialsProviders>(async (_, res) => {
-    const providers = await configService.getSharedCredentials();
+    const providers = await sharedCredentialsService.listSharedCredentials();
 
     const formattedProviders = providers.map((provider) => sharedCredentialstoApi(provider));
 

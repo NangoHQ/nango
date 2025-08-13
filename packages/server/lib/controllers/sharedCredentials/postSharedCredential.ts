@@ -1,8 +1,8 @@
-import { configService } from '@nangohq/shared';
+import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { sharedCredentialsSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { sharedCredentialsSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { PostSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
@@ -20,16 +20,15 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
 
     const providerData: PostSharedCredentialsProvider['Body'] = valBody.data;
 
-    try {
-        await configService.createSharedCredentials({
-            name: providerData.name,
-            client_id: providerData.client_id,
-            client_secret: providerData.client_secret,
-            scopes: providerData.scopes || ''
-        });
-        res.status(200).send({ success: true });
-    } catch (err) {
-        if (err instanceof Error && err.message.includes('Shared credentials for the provider already exists')) {
+    const result = await sharedCredentialsService.createSharedCredentials({
+        name: providerData.name,
+        client_id: providerData.client_id,
+        client_secret: providerData.client_secret,
+        scopes: providerData.scopes || ''
+    });
+
+    if (result.isErr()) {
+        if (result.error.message.includes('shared_credentials_already_exists')) {
             res.status(400).json({
                 error: {
                     code: 'shared_credentials_already_exists',
@@ -39,6 +38,16 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
             return;
         }
 
-        throw err;
+        if (result.error.message.includes('invalid_provider')) {
+            res.status(404).json({
+                error: {
+                    code: 'invalid_provider',
+                    message: 'The Provider name provided is not found'
+                }
+            });
+            return;
+        }
     }
+
+    res.status(200).send({ success: true });
 });

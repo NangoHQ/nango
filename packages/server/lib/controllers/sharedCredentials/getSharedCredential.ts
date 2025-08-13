@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { configService } from '@nangohq/shared';
+import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { sharedCredentialstoApi } from '../../../../formatters/sharedCredentials.js';
-import { providerNameSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { sharedCredentialstoApi } from '../../formatters/sharedCredentials.js';
+import { providerNameSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
@@ -26,18 +26,20 @@ export const getSharedCredentialsProvider = asyncWrapper<GetSharedCredentialsPro
 
     const { name }: GetSharedCredentialsProvider['Params'] = paramsVal.data;
 
-    const provider = await configService.getSharedCredentialsbyName(name);
+    const providerResult = await sharedCredentialsService.getSharedCredentialsbyName(name);
 
-    if (!provider) {
+    if (providerResult.isErr()) {
         res.status(404).json({
             success: false,
             error: {
                 code: 'not_found',
-                message: 'Provider not found'
+                message: 'Shared credentials for the provider not found'
             }
         });
         return;
     }
+
+    const provider = providerResult.value;
 
     const formattedProvider = sharedCredentialstoApi(provider);
 

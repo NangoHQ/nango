@@ -524,16 +524,6 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Unknown provider';
                 break;
 
-            case 'shared_credentials_provider_not_found':
-                this.status = 400;
-                this.message = 'Shared credentials for the provider not found';
-                break;
-
-            case 'shared_credentials_already_exists':
-                this.status = 400;
-                this.message = 'Shared credentials for the provider already exists';
-                break;
-
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
