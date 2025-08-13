@@ -19,5 +19,4 @@ export interface DBGettingStartedProgress extends Timestamps {
     user_id: number;
     connection_id: number | null;
     step: number;
-    complete: boolean;
 }
