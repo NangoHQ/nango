@@ -4,14 +4,13 @@ import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { sharedCredentialstoApi } from '../../formatters/sharedCredentials.js';
-import { providerNameSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
 const paramsValidation = z
     .object({
-        name: providerNameSchema
+        id: z.string().min(1)
     })
     .strict();
 
@@ -24,9 +23,9 @@ export const getSharedCredentialsProvider = asyncWrapper<GetSharedCredentialsPro
         return;
     }
 
-    const { name }: GetSharedCredentialsProvider['Params'] = paramsVal.data;
+    const { id }: GetSharedCredentialsProvider['Params'] = paramsVal.data;
 
-    const providerResult = await sharedCredentialsService.getSharedCredentialsbyName(name);
+    const providerResult = await sharedCredentialsService.getSharedCredentialsById(id);
 
     if (providerResult.isErr()) {
         if (providerResult.error.message === 'not_found') {

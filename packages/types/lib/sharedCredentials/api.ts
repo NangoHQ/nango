@@ -11,8 +11,8 @@ export type GetSharedCredentialsProviders = Endpoint<{
 
 export type GetSharedCredentialsProvider = Endpoint<{
     Method: 'GET';
-    Path: '/internal/shared-credentials/:name';
-    Params: { name: string };
+    Path: '/internal/shared-credentials/:id';
+    Params: { id: string };
     Success: {
         success: boolean;
         data: SharedCredentialsOutput;
@@ -31,8 +31,8 @@ export type PostSharedCredentialsProvider = Endpoint<{
 
 export type PatchSharedCredentialsProvider = Endpoint<{
     Method: 'PATCH';
-    Path: '/internal/shared-credentials/:name';
-    Params: { name: string };
+    Path: '/internal/shared-credentials/:id';
+    Params: { id: string };
     Body: SharedCredentialsBodyInput;
     Success: {
         success: boolean;

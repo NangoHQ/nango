@@ -3,14 +3,14 @@ import { z } from 'zod';
 import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerNameSchema, sharedCredentialsSchema } from '../../helpers/validation.js';
+import { sharedCredentialsSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { PatchSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
 const paramsValidation = z
     .object({
-        name: providerNameSchema
+        id: z.string().min(1)
     })
     .strict();
 
@@ -34,10 +34,10 @@ export const patchSharedCredentialsProvider = asyncWrapper<PatchSharedCredential
         return;
     }
 
-    const { name }: PatchSharedCredentialsProvider['Params'] = paramsVal.data;
+    const { id }: PatchSharedCredentialsProvider['Params'] = paramsVal.data;
     const providerData: PatchSharedCredentialsProvider['Body'] = valBody.data;
 
-    const result = await sharedCredentialsService.editSharedCredentials(name, {
+    const result = await sharedCredentialsService.editSharedCredentials(id, {
         name: providerData.name,
         client_id: providerData.client_id,
         client_secret: providerData.client_secret,

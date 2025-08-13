@@ -22,6 +22,6 @@ const interalApiAuth: RequestHandler[] = [rateLimiterMiddleware, authMiddleware.
 internalApi.route('/fleet/:fleetId/rollout').post(interalApiAuth, postRollout);
 
 internalApi.route('/shared-credentials').get(interalApiAuth, getSharedCredentialsProviders);
-internalApi.route('/shared-credentials/:name').get(interalApiAuth, getSharedCredentialsProvider);
+internalApi.route('/shared-credentials/:id').get(interalApiAuth, getSharedCredentialsProvider);
 internalApi.route('/shared-credentials').post(interalApiAuth, postSharedCredentialsProvider);
-internalApi.route('/shared-credentials/:name').patch(interalApiAuth, patchSharedCredentialsProvider);
+internalApi.route('/shared-credentials/:id').patch(interalApiAuth, patchSharedCredentialsProvider);

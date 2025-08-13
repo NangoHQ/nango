@@ -10,40 +10,39 @@ import type { DBSharedCredentials, IntegrationConfig, Provider, Result, SharedCr
 
 class SharedCredentialsService {
     async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<Result<IntegrationConfig>> {
-        const sharedCredentialsResult = await this.getSharedCredentialsbyName(providerName);
-        if (sharedCredentialsResult.isErr()) {
-            return Err(new Error('shared_credentials_not_found'));
-        }
-
-        const sharedCredentials = sharedCredentialsResult.value;
-
-        let exists: { count: string } | undefined;
         try {
-            exists = await db.knex
+            const sharedCredentialsResult = await this.getSharedCredentialsbyName(providerName);
+            if (sharedCredentialsResult.isErr()) {
+                return Err(new Error('shared_credentials_not_found'));
+            }
+
+            const sharedCredentials = sharedCredentialsResult.value;
+
+            const exists = await db.knex
                 .count<{ count: string }>('*')
                 .from<ProviderConfig>(`_nango_configs`)
                 .where({ provider: providerName, environment_id, deleted: false })
                 .first();
+
+            const config = await configService.createProviderConfig(
+                {
+                    environment_id,
+                    unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                    provider: providerName,
+                    forward_webhooks: true,
+                    shared_credentials_id: sharedCredentials.id
+                },
+                provider
+            );
+
+            if (!config) {
+                return Err(new Error('unknown_provider_config'));
+            }
+
+            return Ok(config);
         } catch (err) {
             return Err(new Error(`Failed to create shared credentials: ${err instanceof Error ? err.message : 'Unknown error'}`));
         }
-
-        const config = await configService.createProviderConfig(
-            {
-                environment_id,
-                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
-                provider: providerName,
-                forward_webhooks: true,
-                shared_credentials_id: sharedCredentials.id
-            },
-            provider
-        );
-
-        if (!config) {
-            return Err(new Error('unknown_provider_config'));
-        }
-
-        return Ok(config);
     }
 
     async getPreConfiguredProviderScopes(): Promise<Result<Record<string, { scopes: string[]; preConfigured: boolean }>>> {
@@ -68,6 +67,20 @@ class SharedCredentialsService {
     async getSharedCredentialsbyName(provider: string): Promise<Result<DBSharedCredentials>> {
         try {
             const sharedCredentials = await db.knex.select('*').from('providers_shared_credentials').where('name', provider).first();
+
+            if (!sharedCredentials) {
+                return Err(new Error('not_found'));
+            }
+
+            return Ok(sharedCredentials);
+        } catch (err) {
+            return Err(new Error(`Failed to get shared credentials: ${err instanceof Error ? err.message : 'Unknown error'}`));
+        }
+    }
+
+    async getSharedCredentialsById(id: string): Promise<Result<DBSharedCredentials>> {
+        try {
+            const sharedCredentials = await db.knex.select('*').from('providers_shared_credentials').where('id', parseInt(id)).first();
 
             if (!sharedCredentials) {
                 return Err(new Error('not_found'));
@@ -134,49 +147,58 @@ class SharedCredentialsService {
         return Ok(createdProvider.id);
     }
 
-    async editSharedCredentials(name: string, config: SharedCredentialsBodyInput): Promise<Result<number>> {
-        const provider = getProvider(config.name);
-        if (!provider) {
-            return Err(new Error('invalid_provider'));
-        }
-
-        const configForEncryption = {
-            oauth_client_id: config.client_id,
-            oauth_client_secret: config.client_secret,
-            oauth_scopes: config.scopes || ''
-        };
-
-        if (config.name !== name) {
-            const existingWithNewName = await db.knex.select('id').from('providers_shared_credentials').where({ name: config.name }).first();
-
-            if (existingWithNewName) {
-                return Err(new Error('shared_credentials_already_exists'));
-            }
-        }
-
-        const configToUpdate = encryptionManager.encryptProviderConfig(configForEncryption as ProviderConfig);
-        let result: DBSharedCredentials[];
+    async editSharedCredentials(id: string, config: SharedCredentialsBodyInput): Promise<Result<number>> {
         try {
-            result = await db.knex
+            const provider = getProvider(config.name);
+            if (!provider) {
+                return Err(new Error('invalid_provider'));
+            }
+
+            const configForEncryption = {
+                oauth_client_id: config.client_id,
+                oauth_client_secret: config.client_secret,
+                oauth_scopes: config.scopes || ''
+            };
+
+            const existingRecord = await db.knex
+                .select('name')
                 .from('providers_shared_credentials')
-                .where({ name: name })
+                .where({ id: parseInt(id) })
+                .first();
+            if (!existingRecord) {
+                return Err(new Error('shared_credentials_provider_not_found'));
+            }
+
+            if (config.name !== existingRecord.name) {
+                const existingWithNewName = await db.knex.select('id').from('providers_shared_credentials').where({ name: config.name }).first();
+
+                if (existingWithNewName) {
+                    return Err(new Error('shared_credentials_already_exists'));
+                }
+            }
+
+            const configToUpdate = encryptionManager.encryptProviderConfig(configForEncryption as ProviderConfig);
+
+            const result = await db.knex
+                .from('providers_shared_credentials')
+                .where({ id: parseInt(id) })
                 .update({
                     name: config.name,
                     credentials: configToUpdate,
                     updated_at: new Date()
                 })
                 .returning('*');
+
+            if (result.length === 0) {
+                return Err(new Error('shared_credentials_provider_not_found'));
+            }
+
+            const updatedProvider: DBSharedCredentials = result[0];
+
+            return Ok(updatedProvider.id);
         } catch (err) {
             return Err(new Error(`Failed to edit shared credentials: ${err instanceof Error ? err.message : 'Unknown error'}`));
         }
-
-        if (result.length === 0) {
-            return Err(new Error('shared_credentials_provider_not_found'));
-        }
-
-        const updatedProvider: DBSharedCredentials = result[0]!;
-
-        return Ok(updatedProvider.id);
     }
 
     async listSharedCredentials(): Promise<Result<DBSharedCredentials[]>> {
