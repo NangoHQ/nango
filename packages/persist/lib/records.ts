@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { logger } from './logger.js';
@@ -56,6 +56,14 @@ export async function persistRecords({
     });
 
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
+
+    const connection = await connectionService.getConnectionById(connectionId);
+    if (!connection) {
+        const err = new Error(`Connection ${connectionId} not found`);
+        void logCtx.error('Connection not found', { error: err, persistType });
+        span.setTag('error', err).finish();
+        return Err(err);
+    }
 
     let persistFunction: (records: FormattedRecord[]) => Promise<Result<UpsertSummary>>;
     let softDelete: boolean;

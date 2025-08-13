@@ -3,7 +3,7 @@ import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService, getPlan } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
@@ -30,7 +30,7 @@ export class Billing {
                 logger.info(`Processing billing event`, { event });
                 const result = await process(event);
                 if (result.isErr()) {
-                    logger.error(`Failed to process billing event: ${result.error}`, { event });
+                    report(new Error(`Failed to process billing event: ${result.error}`), { event });
                     return;
                 }
             }
@@ -52,7 +52,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 }
                 const mar = event.payload.value;
                 metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId: event.payload.properties.accountId });
-                void trackUsage({
+                await trackUsage({
                     accountId: event.payload.properties.accountId,
                     metric: 'active_records',
                     delta: mar
@@ -65,7 +65,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 });
             }
             case 'usage.actions': {
-                void trackUsage({
+                await trackUsage({
                     accountId: event.payload.properties.accountId,
                     metric: 'actions',
                     delta: event.payload.value
@@ -77,7 +77,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 });
             }
             case 'usage.connections': {
-                void trackUsage({
+                await trackUsage({
                     accountId: event.payload.properties.accountId,
                     metric: 'connections',
                     delta: event.payload.value
@@ -97,7 +97,7 @@ async function trackUsage({ accountId, metric, delta }: { accountId: number; met
     try {
         if (metric !== 'connections') {
             const accountUsageTracker = await getAccountUsageTracker();
-            void accountUsageTracker.incrementUsage({
+            await accountUsageTracker.incrementUsage({
                 accountId,
                 metric,
                 delta
@@ -108,13 +108,13 @@ async function trackUsage({ accountId, metric, delta }: { accountId: number; met
         if (plan.isErr()) {
             throw new Error(`Failed to get plan for account ${accountId}: ${plan.error.message}}`);
         }
-        void onUsageIncreased({
+        await onUsageIncreased({
             accountId,
             metric,
             delta,
             plan: plan.value
         });
     } catch (err) {
-        logger.error('Failed to track usage', { error: stringifyError(err) });
+        report(new Error('Failed to track usage', { cause: err }), { accountId, metric, delta });
     }
 }
