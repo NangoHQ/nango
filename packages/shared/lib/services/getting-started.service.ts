@@ -87,8 +87,7 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
                 environment: result.environment
             },
             connection: result.connection ?? null,
-            step: result.progress.step,
-            complete: result.progress.complete
+            step: result.progress.step
         });
     } catch (err) {
         console.error('failed_to_get_getting_started_progress', err);
@@ -156,9 +155,6 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
 
     if (typeof input.step !== 'undefined') {
         update.step = input.step;
-    }
-    if (typeof input.complete !== 'undefined') {
-        update.complete = input.complete;
     }
 
     if (typeof input.connection_id !== 'undefined') {
