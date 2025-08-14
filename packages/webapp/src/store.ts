@@ -22,7 +22,7 @@ interface State {
 }
 
 export const useStore = create<State>((set, get) => ({
-    env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
+    env: storage.getItem(LocalStorageKeys.LastEnvironment) || PROD_ENVIRONMENT_NAME,
     envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
     baseUrl: 'https://api.nango.dev',
     showGettingStarted: true,
