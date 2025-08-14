@@ -135,29 +135,30 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     return (
         <div>
             <h3 className="text-text-primary text-lg font-semibold mb-3">Use Nango as a proxy to make requests to Google Calendar</h3>
-            <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
-            <CodeBlock
-                className="mt-5"
-                onExecute={onExecute}
-                snippets={[
-                    {
-                        displayLanguage: 'Node Client',
-                        language: 'typescript',
-                        code: nodeClientCode
-                    },
-                    {
-                        displayLanguage: 'cURL',
-                        language: 'bash',
-                        code: curlCode
-                    }
-                ]}
-            />
-            <div className="flex flex-row items-center justify-between mt-5">
-                {completed && (
-                    <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
-                        Explore the logs from this demo
-                    </LinkWithIcon>
-                )}
+            <div className="flex flex-col gap-5">
+                <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
+                <CodeBlock
+                    onExecute={onExecute}
+                    snippets={[
+                        {
+                            displayLanguage: 'Node Client',
+                            language: 'typescript',
+                            code: nodeClientCode
+                        },
+                        {
+                            displayLanguage: 'cURL',
+                            language: 'bash',
+                            code: curlCode
+                        }
+                    ]}
+                />
+                <div className="flex flex-row items-center justify-between">
+                    {completed && (
+                        <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
+                            Explore the logs from this demo
+                        </LinkWithIcon>
+                    )}
+                </div>
             </div>
         </div>
     );
