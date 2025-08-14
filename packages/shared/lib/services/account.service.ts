@@ -81,10 +81,10 @@ class AccountService {
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount({ name, email }: { name: string; email?: string | undefined }): Promise<DBTeam | null> {
+    async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
         // TODO: use transaction
         const teamName = parseTeamName({ name, email });
-        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName }).returning('*');
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
         if (!result[0]) {
             return null;
