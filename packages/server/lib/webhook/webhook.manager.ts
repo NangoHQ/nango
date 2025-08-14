@@ -30,7 +30,7 @@ export async function routeWebhook({
     environment: DBEnvironment;
     account: DBTeam;
     integration: Config;
-    plan: DBPlan;
+    plan?: DBPlan | undefined;
     headers: Record<string, any>;
     body: any;
     rawBody: string;
@@ -95,7 +95,7 @@ export async function routeWebhook({
     const res = result.value;
 
     // Only forward webhook if there was no error
-    if (res.statusCode === 200 && plan.has_webhooks_forward) {
+    if (res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
         const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 

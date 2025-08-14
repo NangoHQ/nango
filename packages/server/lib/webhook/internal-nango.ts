@@ -11,11 +11,17 @@ import type { DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPl
 export class InternalNango {
     readonly team: DBTeam;
     readonly environment: DBEnvironment;
-    readonly plan: DBPlan;
+    readonly plan?: DBPlan | undefined;
     readonly integration: DBIntegrationDecrypted;
     readonly logContextGetter: LogContextGetter;
 
-    constructor(opts: { team: DBTeam; environment: DBEnvironment; plan: DBPlan; integration: DBIntegrationDecrypted; logContextGetter: LogContextGetter }) {
+    constructor(opts: {
+        team: DBTeam;
+        environment: DBEnvironment;
+        plan?: DBPlan | undefined;
+        integration: DBIntegrationDecrypted;
+        logContextGetter: LogContextGetter;
+    }) {
         this.team = opts.team;
         this.environment = opts.environment;
         this.plan = opts.plan;
@@ -74,7 +80,7 @@ export class InternalNango {
         }
 
         // Disable executions of webhooks but we still need to return the connection ids
-        if (!this.plan.has_webhooks_script) {
+        if (this.plan && !this.plan.has_webhooks_script) {
             return { connectionIds: connections.map((connection) => connection.connection_id) };
         }
 
