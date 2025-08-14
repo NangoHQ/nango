@@ -92,7 +92,7 @@ let webAuth: RequestHandler[] = flagHasAuth
 
 // For integration test, we want to bypass session auth
 if (isTest) {
-    webAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware];
 }
 
 const web = express.Router();
