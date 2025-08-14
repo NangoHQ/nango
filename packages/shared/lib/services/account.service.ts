@@ -10,6 +10,51 @@ import { createPlan } from './plans/plans.js';
 import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
+const freeEmailDomains = [
+    'gmail.com',
+    'duck.com',
+    'anonaddy.me',
+    'me.com',
+    'hey.com',
+    'icloud.com',
+    'hotmail.com',
+    'outlook.com',
+    'aol.com',
+    'yahoo.com',
+    'gmx.com',
+    'protonmail.com',
+    'proton.me',
+    'googlemail.com',
+    'sina.com',
+    'mail.com',
+    'zoho.com',
+    'zohomail.com',
+    'fastmail.com',
+    'tutanota.com',
+    'tuta.io',
+    'yandex.com',
+    'yandex.ru',
+    'inbox.com',
+    'hushmail.com',
+    'rediffmail.com',
+    '163.com',
+    '126.com',
+    'yeah.net',
+    'qq.com',
+    'seznam.cz',
+    'web.de',
+    'mail.ru',
+    'lycos.com',
+    'excite.com',
+    'rocketmail.com',
+    'blueyonder.co.uk',
+    'btinternet.com',
+    'talktalk.net',
+    'shaw.ca',
+    'rogers.com',
+    'sympatico.ca'
+];
+
 class AccountService {
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
@@ -83,7 +128,8 @@ class AccountService {
      */
     async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
         // TODO: use transaction
-        const teamName = parseTeamName({ name, email });
+        const emailTeamName = emailToTeamName({ email });
+        const teamName = `${emailTeamName || name}'s Team'`;
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
         if (!result[0]) {
@@ -112,84 +158,18 @@ class AccountService {
     }
 }
 
-function parseTeamName({ name, email }: { name: string; email?: string | undefined }): string {
-    if (!email) {
-        return `${name}'s Team`;
-    }
+function emailToTeamName({ email }: { email?: string | undefined }): string | false {
+    const parts = email?.split('@');
+    const emailDomain = parts?.[parts.length - 1]?.toLowerCase();
+    const domainName = emailDomain?.split('.').slice(0, -1).join('.');
 
-    const freeEmailDomains = [
-        'gmail.com',
-        'duck.com',
-        'anonaddy.me',
-        'me.com',
-        'hey.com',
-        'icloud.com',
-        'hotmail.com',
-        'outlook.com',
-        'aol.com',
-        'yahoo.com',
-        'gmx.com',
-        'protonmail.com',
-        'proton.me',
-        'googlemail.com',
-        'sina.com',
-        'mail.com',
-        'zoho.com',
-        'zohomail.com',
-        'fastmail.com',
-        'tutanota.com',
-        'tuta.io',
-        'yandex.com',
-        'yandex.ru',
-        'inbox.com',
-        'hushmail.com',
-        'rediffmail.com',
-        '163.com',
-        '126.com',
-        'yeah.net',
-        'qq.com',
-        'seznam.cz',
-        'web.de',
-        'mail.ru',
-        'lycos.com',
-        'excite.com',
-        'rocketmail.com',
-        'blueyonder.co.uk',
-        'btinternet.com',
-        'talktalk.net',
-        'shaw.ca',
-        'rogers.com',
-        'sympatico.ca'
-    ];
-
-    // Handle multiple @ symbols by taking the last part after @
-    const atSymbols = email.split('@');
-    if (atSymbols.length < 2) {
-        return `${name}'s Team`;
-    }
-
-    const emailDomain = atSymbols[atSymbols.length - 1];
-
-    // Validate email domain format
-    if (!emailDomain || !emailDomain.includes('.')) {
-        return `${name}'s Team`;
-    }
-
-    const domainParts = emailDomain.split('.').slice(0, -1);
-    const domainName = domainParts.length > 0 ? domainParts.join('.') : '';
-
-    // If domain name is empty after processing, fall back to team name
-    if (!domainName) {
-        return `${name}'s Team`;
-    }
-
-    if (freeEmailDomains.includes(emailDomain)) {
-        return `${name}'s Team`;
-    } else {
+    if (email && parts && parts.length >= 2 && emailDomain?.includes('.') && !freeEmailDomains.includes(emailDomain) && domainName) {
         return domainName.charAt(0).toUpperCase() + domainName.slice(1);
     }
+
+    return false;
 }
 
-export { parseTeamName };
+export { emailToTeamName };
 
 export default new AccountService();

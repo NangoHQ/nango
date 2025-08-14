@@ -1,39 +1,34 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseTeamName } from './account.service.js';
+import { emailToTeamName } from './account.service.js';
 
-describe('parseTeamName', () => {
+describe('emailToTeamName', () => {
     describe('when no email is provided', () => {
-        it('should return name with "s Team" suffix', () => {
-            const result = parseTeamName({ name: 'John' });
-            expect(result).toBe("John's Team");
+        it('should return false', () => {
+            const result = emailToTeamName({ email: undefined });
+            expect(result).toBe(false);
         });
 
-        it('should handle names with special characters', () => {
-            const result = parseTeamName({ name: 'John-Doe' });
-            expect(result).toBe("John-Doe's Team");
-        });
-
-        it('should handle empty name', () => {
-            const result = parseTeamName({ name: '' });
-            expect(result).toBe("'s Team");
+        it('should return false for empty email', () => {
+            const result = emailToTeamName({ email: '' });
+            expect(result).toBe(false);
         });
     });
 
     describe('when email has no domain', () => {
-        it('should return name with "s Team" suffix', () => {
-            const result = parseTeamName({ name: 'John', email: 'john' });
-            expect(result).toBe("John's Team");
+        it('should return false for email without @ symbol', () => {
+            const result = emailToTeamName({ email: 'john' });
+            expect(result).toBe(false);
         });
 
-        it('should handle email with only @ symbol', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@' });
-            expect(result).toBe("John's Team");
+        it('should return false for email with only @ symbol', () => {
+            const result = emailToTeamName({ email: 'john@' });
+            expect(result).toBe(false);
         });
 
-        it('should handle email with domain without dots', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@invalid' });
-            expect(result).toBe("John's Team");
+        it('should return false for email with domain without dots', () => {
+            const result = emailToTeamName({ email: 'john@invalid' });
+            expect(result).toBe(false);
         });
     });
 
@@ -84,53 +79,53 @@ describe('parseTeamName', () => {
         ];
 
         freeEmailDomains.forEach((domain) => {
-            it(`should return name with "s Team" suffix for ${domain}`, () => {
-                const result = parseTeamName({ name: 'John', email: `john@${domain}` });
-                expect(result).toBe("John's Team");
+            it(`should return false for ${domain}`, () => {
+                const result = emailToTeamName({ email: `john@${domain}` });
+                expect(result).toBe(false);
             });
         });
     });
 
     describe('when email is from business domains', () => {
         it('should return capitalized domain name for simple domain', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@acme.com' });
+            const result = emailToTeamName({ email: 'john@acme.com' });
             expect(result).toBe('Acme');
         });
 
         it('should return capitalized domain name for multi-part domain', () => {
             // Note: The function takes all parts except the TLD, so .co.uk becomes .co
-            const result = parseTeamName({ name: 'John', email: 'john@mycompany.co.uk' });
+            const result = emailToTeamName({ email: 'john@mycompany.co.uk' });
             expect(result).toBe('Mycompany.co');
         });
 
         it('should handle domain with multiple subdomains', () => {
             // Note: The function takes all parts except the TLD, so dev.mycompany.com becomes dev.mycompany
-            const result = parseTeamName({ name: 'John', email: 'john@dev.mycompany.com' });
+            const result = emailToTeamName({ email: 'john@dev.mycompany.com' });
             expect(result).toBe('Dev.mycompany');
         });
 
         it('should handle domain with numbers', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@company123.com' });
+            const result = emailToTeamName({ email: 'john@company123.com' });
             expect(result).toBe('Company123');
         });
 
         it('should handle domain with hyphens', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@my-company.com' });
+            const result = emailToTeamName({ email: 'john@my-company.com' });
             expect(result).toBe('My-company');
         });
 
         it('should handle domain with underscores', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@my_company.com' });
+            const result = emailToTeamName({ email: 'john@my_company.com' });
             expect(result).toBe('My_company');
         });
 
         it('should handle single character domain', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@a.com' });
+            const result = emailToTeamName({ email: 'john@a.com' });
             expect(result).toBe('A');
         });
 
         it('should handle domain with special characters', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@company-name.com' });
+            const result = emailToTeamName({ email: 'john@company-name.com' });
             expect(result).toBe('Company-name');
         });
     });
@@ -138,36 +133,46 @@ describe('parseTeamName', () => {
     describe('edge cases', () => {
         it('should handle email with multiple @ symbols', () => {
             // Note: When there are multiple @ symbols, we take the last part after @
-            const result = parseTeamName({ name: 'John', email: 'john@test@example.com' });
+            const result = emailToTeamName({ email: 'john@test@example.com' });
             expect(result).toBe('Example');
         });
 
         it('should handle domain with only TLD', () => {
-            // Note: When domain doesn't include a dot, it's invalid and falls back to team name
-            const result = parseTeamName({ name: 'John', email: 'john@.com' });
-            expect(result).toBe("John's Team");
+            // Note: When domain doesn't include a dot, it's invalid and returns false
+            const result = emailToTeamName({ email: 'john@.com' });
+            expect(result).toBe(false);
         });
 
         it('should handle domain with trailing dot', () => {
             // Note: Trailing dot is preserved in the domain parts
-            const result = parseTeamName({ name: 'John', email: 'john@company.com.' });
+            const result = emailToTeamName({ email: 'john@company.com.' });
             expect(result).toBe('Company.com');
         });
 
         it('should handle domain with leading dot', () => {
             // Note: Leading dot is preserved in the domain parts
-            const result = parseTeamName({ name: 'John', email: 'john@.company.com' });
+            const result = emailToTeamName({ email: 'john@.company.com' });
             expect(result).toBe('.company');
         });
 
         it('should handle email with no @ symbol', () => {
-            const result = parseTeamName({ name: 'John', email: 'invalid-email' });
-            expect(result).toBe("John's Team");
+            const result = emailToTeamName({ email: 'invalid-email' });
+            expect(result).toBe(false);
         });
 
         it('should handle email with multiple @ symbols and complex domain', () => {
-            const result = parseTeamName({ name: 'John', email: 'john@test@sub.example.com' });
+            const result = emailToTeamName({ email: 'john@test@sub.example.com' });
             expect(result).toBe('Sub.example');
+        });
+
+        it('should handle case insensitive domain matching', () => {
+            const result = emailToTeamName({ email: 'john@ACME.COM' });
+            expect(result).toBe('Acme');
+        });
+
+        it('should handle domain with empty parts', () => {
+            const result = emailToTeamName({ email: 'john@..com' });
+            expect(result).toBe('.');
         });
     });
 });
