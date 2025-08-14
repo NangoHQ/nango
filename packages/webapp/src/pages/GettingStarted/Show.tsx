@@ -1,6 +1,7 @@
 import { IconAnchor, IconKey, IconLockOpen } from '@tabler/icons-react';
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
 import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
@@ -15,18 +16,23 @@ import { useStore } from '../../store';
 export const GettingStarted: React.FC = () => {
     // const analyticsTrack = useAnalyticsTrack();
     const env = useStore((state) => state.env);
-    const { data: gettingStarted, error, mutate, isLoading } = useGettingStarted(env);
+    const { data: gettingStartedResult, error, mutate, isLoading } = useGettingStarted(env);
+    const gettingStarted = gettingStartedResult?.data;
 
+    const navigate = useNavigate();
     const { toast } = useToast();
 
     useEffect(() => {
         if (error) {
             toast({ title: 'Failed to get getting started', variant: 'error' });
+            navigate('/');
         }
-    }, [error]);
+    }, [error, navigate, toast]);
 
+    let currentStep = gettingStarted?.connection ? (gettingStarted?.step ?? 0) : 0;
     if (isLoading || !gettingStarted) {
-        return <div>Loading...</div>;
+        // Just disable every step while loading.
+        currentStep = -1;
     }
 
     return (
@@ -39,14 +45,14 @@ export const GettingStarted: React.FC = () => {
             </header>
             <VerticalSteps
                 className="w-full"
-                currentStep={gettingStarted.data.connection ? gettingStarted.data.step : 0}
+                currentStep={currentStep}
                 steps={[
                     {
                         id: 'authorize-google-calendar',
                         content: (
                             <FirstStep
-                                connection={gettingStarted.data.connection}
-                                integration={gettingStarted.data.meta.integration}
+                                connection={gettingStarted?.connection ?? null}
+                                integration={gettingStarted?.meta.integration ?? null}
                                 onConnected={async (connectionId) => {
                                     await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
                                     await mutate();
@@ -62,18 +68,18 @@ export const GettingStarted: React.FC = () => {
                         id: 'access-google-calendar-api',
                         content: (
                             <SecondStep
-                                connectionId={gettingStarted.data.connection?.connection_id}
-                                providerConfigKey={gettingStarted.data.meta.integration?.unique_key}
+                                connectionId={gettingStarted?.connection?.connection_id}
+                                providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                 onExecuted={async () => {
                                     await patchGettingStarted(env, { step: 2 });
                                     await mutate();
                                 }}
-                                completed={gettingStarted.data.step >= 2}
+                                completed={currentStep >= 2}
                             />
                         ),
                         icon: IconLockOpen
                     },
-                    ...(gettingStarted.data.step === 2
+                    ...(gettingStarted?.step === 2
                         ? [
                               {
                                   id: 'go-deeper',

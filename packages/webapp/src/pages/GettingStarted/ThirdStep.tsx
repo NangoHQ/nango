@@ -1,8 +1,21 @@
+import { useEffect, useRef } from 'react';
+
 import LinkWithIcon from '../../components/LinkWithIcon';
 
 export const ThirdStep = () => {
+    const componentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (componentRef.current) {
+            componentRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }, []);
+
     return (
-        <div>
+        <div ref={componentRef}>
             <h3 className="text-text-primary text-lg font-semibold mb-3">Go deeper</h3>
             <p className="text-text-secondary text-sm">Add nango to your app in less than an hour.</p>
 
