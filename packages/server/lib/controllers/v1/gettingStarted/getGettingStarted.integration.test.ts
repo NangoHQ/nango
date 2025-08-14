@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { getProvider, gettingStartedService, seeders } from '@nangohq/shared';
@@ -39,8 +39,13 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json).toMatchObject({
             data: {
                 meta: {
-                    environment: { id: env.id },
-                    integration: { unique_key: 'google-calendar-getting-started', environment_id: env.id }
+                    environment: { id: env.id, name: env.name },
+                    integration: {
+                        id: expect.any(Number),
+                        unique_key: 'google-calendar-getting-started',
+                        provider: 'google-calendar',
+                        display_name: 'Google Calendar (Getting Started)'
+                    }
                 },
                 connection: null,
                 step: 0
@@ -48,11 +53,14 @@ describe(`GET ${endpoint}`, () => {
         });
 
         // Validate DB state: meta and progress exist
-        const meta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: account.id }).first();
-        if (!meta) {
-            throw new Error('Failed to create getting_started_meta');
-        }
-        const progress = await db.knex
+        const meta: DBGettingStartedMeta | undefined = await db.knex
+            .from<DBGettingStartedMeta>('getting_started_meta')
+            .where({ account_id: account.id })
+            .first();
+        expect(meta).toBeTruthy();
+        assert(meta, 'Failed to get getting_started_meta');
+
+        const progress: DBGettingStartedProgress | undefined = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
             .where({ user_id: user.id, getting_started_meta_id: meta.id })
             .first();
@@ -66,14 +74,16 @@ describe(`GET ${endpoint}`, () => {
         // Ensure pre-provisioned integration exists
         const provider = getProvider('google-calendar');
         expect(provider).toBeTruthy();
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
+        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar', {
+            display_name: 'Google Calendar (Getting Started)'
+        });
 
         // Create meta without progress
         const [meta] = await db.knex
             .from<DBGettingStartedMeta>('getting_started_meta')
             .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
             .returning('*');
-        if (!meta) throw new Error('Failed to create getting_started_meta');
+        assert(meta, 'Failed to create getting_started_meta');
 
         // Sanity: no progress for this user
         const existingProgress = await db.knex
@@ -88,7 +98,10 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toMatchObject({
             data: {
-                meta: { environment: { id: env.id }, integration: { environment_id: env.id } },
+                meta: {
+                    environment: { id: env.id, name: env.name },
+                    integration: { display_name: integration.display_name, unique_key: integration.unique_key, provider: integration.provider }
+                },
                 connection: null,
                 step: 0
             }
@@ -106,7 +119,9 @@ describe(`GET ${endpoint}`, () => {
         const session = await authenticateUser(api, user);
 
         // Ensure integration exists
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
+        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar', {
+            display_name: 'Google Calendar (Getting Started)'
+        });
 
         // Create meta and a progress row with some data
         const [meta] = await db.knex
@@ -125,7 +140,7 @@ describe(`GET ${endpoint}`, () => {
             .from<DBGettingStartedProgress>('getting_started_progress')
             .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 3, connection_id: connection.id })
             .returning('*');
-        if (!progress) throw new Error('Failed to create progress');
+        assert(progress, 'Failed to create progress');
         const progressId = progress.id;
 
         const res = await api.fetch(endpoint, { method: 'GET', query: { env: 'dev' }, session });
@@ -133,7 +148,15 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toMatchObject({
             data: {
-                meta: { environment: { id: env.id }, integration: { unique_key: 'google-calendar-getting-started' } },
+                meta: {
+                    environment: { id: env.id, name: env.name },
+                    integration: {
+                        id: integration.id,
+                        unique_key: integration.unique_key,
+                        provider: integration.provider,
+                        display_name: integration.display_name
+                    }
+                },
                 connection: { id: connection.id, connection_id: 'demo-conn-id' },
                 step: 3
             }
@@ -173,9 +196,8 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toMatchObject({
             data: {
-                meta: { environment: { id: env.id }, integration: { unique_key: 'google-calendar-getting-started' } },
-                connection: null,
-                step: 0
+                ...gettingStartedProgress.unwrap(),
+                connection: null
             }
         });
     });
