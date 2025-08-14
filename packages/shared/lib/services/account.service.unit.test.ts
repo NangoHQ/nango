@@ -30,6 +30,11 @@ describe('parseTeamName', () => {
             const result = parseTeamName({ name: 'John', email: 'john@' });
             expect(result).toBe("John's Team");
         });
+
+        it('should handle email with domain without dots', () => {
+            const result = parseTeamName({ name: 'John', email: 'john@invalid' });
+            expect(result).toBe("John's Team");
+        });
     });
 
     describe('when email is from free email domains', () => {
@@ -132,15 +137,15 @@ describe('parseTeamName', () => {
 
     describe('edge cases', () => {
         it('should handle email with multiple @ symbols', () => {
-            // Note: When there are multiple @ symbols, split('@')[1] returns undefined, leading to empty domain
+            // Note: When there are multiple @ symbols, we take the last part after @
             const result = parseTeamName({ name: 'John', email: 'john@test@example.com' });
-            expect(result).toBe('');
+            expect(result).toBe('Example');
         });
 
         it('should handle domain with only TLD', () => {
-            // Note: When domain is just .com, split('.') results in empty parts, leading to empty domain
+            // Note: When domain doesn't include a dot, it's invalid and falls back to team name
             const result = parseTeamName({ name: 'John', email: 'john@.com' });
-            expect(result).toBe('');
+            expect(result).toBe("John's Team");
         });
 
         it('should handle domain with trailing dot', () => {
@@ -153,6 +158,16 @@ describe('parseTeamName', () => {
             // Note: Leading dot is preserved in the domain parts
             const result = parseTeamName({ name: 'John', email: 'john@.company.com' });
             expect(result).toBe('.company');
+        });
+
+        it('should handle email with no @ symbol', () => {
+            const result = parseTeamName({ name: 'John', email: 'invalid-email' });
+            expect(result).toBe("John's Team");
+        });
+
+        it('should handle email with multiple @ symbols and complex domain', () => {
+            const result = parseTeamName({ name: 'John', email: 'john@test@sub.example.com' });
+            expect(result).toBe('Sub.example');
         });
     });
 });

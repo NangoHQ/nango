@@ -162,11 +162,24 @@ function parseTeamName({ name, email }: { name: string; email?: string | undefin
         'sympatico.ca'
     ];
 
-    const emailDomain = email.split('@')[1];
-    const domainParts = emailDomain ? emailDomain.split('.').slice(0, -1) : [];
+    // Handle multiple @ symbols by taking the last part after @
+    const atSymbols = email.split('@');
+    if (atSymbols.length < 2) {
+        return `${name}'s Team`;
+    }
+
+    const emailDomain = atSymbols[atSymbols.length - 1];
+
+    // Validate email domain format
+    if (!emailDomain || !emailDomain.includes('.')) {
+        return `${name}'s Team`;
+    }
+
+    const domainParts = emailDomain.split('.').slice(0, -1);
     const domainName = domainParts.length > 0 ? domainParts.join('.') : '';
 
-    if (!emailDomain) {
+    // If domain name is empty after processing, fall back to team name
+    if (!domainName) {
         return `${name}'s Team`;
     }
 
