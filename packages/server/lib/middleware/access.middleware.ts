@@ -4,7 +4,19 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
+import {
+    Err,
+    Ok,
+    flagHasPlan,
+    getLogger,
+    isBasicAuthEnabled,
+    isCloud,
+    isTest,
+    metrics,
+    stringTimingSafeEqual,
+    stringifyError,
+    tagTraceUser
+} from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
@@ -428,6 +440,56 @@ export class AccessMiddleware {
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY, Date.now() - start);
             span.finish();
+        }
+    }
+
+    /**
+     * Test authentication that accepts both secret key and session authentication
+     * This allows tests to use either authentication method
+     */
+    async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        if (!isTest) {
+            res.status(401).send({ error: { code: 'unauthorized', message: 'testAuth is only available in test environment' } });
+            return;
+        }
+
+        try {
+            // First try session authentication
+            if (req.isAuthenticated()) {
+                res.locals['authType'] = 'session';
+                await fillLocalsFromSession(req, res, next);
+                return;
+            }
+
+            // If no session, try secret key authentication
+            const authorizationHeader = req.get('authorization');
+
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const secret = authorizationHeader.split('Bearer ').pop();
+            if (!secret) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const result = await this.validateSecretKey(secret);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'secretKey';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            console.error(err);
+            res.status(401).send({ error: { code: 'unauthorized' } });
         }
     }
 
