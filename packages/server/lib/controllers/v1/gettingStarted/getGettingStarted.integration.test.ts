@@ -1,10 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { configService, getProvider, gettingStartedService, seeders } from '@nangohq/shared';
+import { getProvider, gettingStartedService, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
-import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DBGettingStartedMeta, DBGettingStartedProgress } from '@nangohq/types';
 
@@ -44,8 +43,7 @@ describe(`GET ${endpoint}`, () => {
                     integration: { unique_key: 'google-calendar-getting-started', environment_id: env.id }
                 },
                 connection: null,
-                step: 0,
-                complete: false
+                step: 0
             }
         });
 
@@ -92,8 +90,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 meta: { environment: { id: env.id }, integration: { environment_id: env.id } },
                 connection: null,
-                step: 0,
-                complete: false
+                step: 0
             }
         });
 
@@ -126,7 +123,7 @@ describe(`GET ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 3, complete: true, connection_id: connection.id })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 3, connection_id: connection.id })
             .returning('*');
         if (!progress) throw new Error('Failed to create progress');
         const progressId = progress.id;
@@ -138,8 +135,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 meta: { environment: { id: env.id }, integration: { unique_key: 'google-calendar-getting-started' } },
                 connection: { id: connection.id, connection_id: 'demo-conn-id' },
-                step: 3,
-                complete: true
+                step: 3
             }
         });
 
@@ -148,7 +144,6 @@ describe(`GET ${endpoint}`, () => {
             | DBGettingStartedProgress
             | undefined;
         expect(fresh?.step).toBe(3);
-        expect(fresh?.complete).toBe(true);
         expect(fresh?.connection_id).toBe(connection.id);
     });
 
@@ -180,8 +175,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 meta: { environment: { id: env.id }, integration: { unique_key: 'google-calendar-getting-started' } },
                 connection: null,
-                step: 0,
-                complete: false
+                step: 0
             }
         });
     });

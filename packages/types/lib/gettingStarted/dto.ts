@@ -9,11 +9,9 @@ export interface GettingStartedOutput {
     };
     connection: DBConnection | null;
     step: number;
-    complete: boolean;
 }
 
 export interface PatchGettingStartedInput {
     connection_id?: string | null | undefined;
     step?: number | undefined;
-    complete?: boolean | undefined;
 }
