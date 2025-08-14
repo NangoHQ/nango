@@ -13,7 +13,7 @@ export async function createEndUser({ account, environment }: { account: DBTeam;
         endUserId: id,
         email: `${id}@example.com`,
         organization: { organizationId: nanoid() },
-        metadata: { origin: 'test' }
+        tags: { origin: 'test' }
     });
     if (endUser.isErr()) {
         throw new Error('failed_to_create_end_user');

@@ -17,7 +17,7 @@ export const EndUserMapper = {
             display_name: endUser.displayName || null,
             organization_id: endUser.organization?.organizationId || null,
             organization_display_name: endUser.organization?.displayName || null,
-            metadata: endUser.metadata || null,
+            tags: endUser.tags || null,
             created_at: endUser.createdAt,
             updated_at: endUser.updatedAt
         };
@@ -36,7 +36,7 @@ export const EndUserMapper = {
                       displayName: dbEndUser.organization_display_name || null
                   }
                 : null,
-            metadata: dbEndUser.metadata || null,
+            tags: dbEndUser.tags || null,
             createdAt: dbEndUser.created_at,
             updatedAt: dbEndUser.updated_at
         };
@@ -63,8 +63,8 @@ export async function createEndUser(
         organization,
         accountId,
         environmentId,
-        metadata
-    }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'metadata'>
+        tags
+    }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'tags'>
 ): Promise<Result<EndUser, EndUserError>> {
     const dbEndUser: DBInsertEndUser = {
         end_user_id: endUserId,
@@ -74,7 +74,7 @@ export async function createEndUser(
         display_name: displayName || null,
         organization_id: organization?.organizationId || null,
         organization_display_name: organization?.displayName || null,
-        metadata
+        tags
     };
     const [endUser] = await db.insert<DBEndUser>(dbEndUser).into(END_USERS_TABLE).returning('*');
     if (!endUser) {
@@ -128,8 +128,8 @@ export async function updateEndUser(
         email,
         displayName,
         organization,
-        metadata
-    }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'metadata'>
+        tags
+    }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'tags'>
 ): Promise<Result<EndUser, EndUserError>> {
     const [updated] = await db<DBEndUser>(END_USERS_TABLE)
         .where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId })
@@ -138,7 +138,7 @@ export async function updateEndUser(
             display_name: displayName || null,
             organization_id: organization?.organizationId || null,
             organization_display_name: organization?.displayName || null,
-            metadata: metadata || null,
+            tags: tags || null,
             updated_at: new Date()
         })
         .returning('*');
@@ -221,7 +221,7 @@ export async function upsertEndUser(
                 : null,
             accountId: account.id,
             environmentId: environment.id,
-            metadata: endUserPayload.metadata || null
+            tags: endUserPayload.tags || null
         });
         if (createdEndUser.isErr()) {
             return createdEndUser;
@@ -237,7 +237,7 @@ export async function upsertEndUser(
         endUser.displayName !== endUserPayload.display_name ||
         endUser.organization?.organizationId !== organization?.id ||
         endUser.organization?.displayName !== organization?.display_name ||
-        JSON.stringify(endUser.metadata) !== JSON.stringify(endUserPayload.metadata);
+        JSON.stringify(endUser.tags) !== JSON.stringify(endUserPayload.tags);
     if (!shouldUpdate) {
         return Ok(endUser);
     }
@@ -248,7 +248,7 @@ export async function upsertEndUser(
         environmentId: environment.id,
         email: endUserPayload.email || null,
         displayName: endUserPayload.display_name || null,
-        metadata: endUserPayload.metadata || null,
+        tags: endUserPayload.tags || null,
         organization: organization?.id
             ? {
                   organizationId: organization.id,
