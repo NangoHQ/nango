@@ -16,6 +16,12 @@
         },
         {
             "path": "../billing"
+        },
+        {
+            "path": "../database"
+        },
+        {
+            "path": "../account-usage"
         }
     ],
     "include": ["lib/**/*"]
