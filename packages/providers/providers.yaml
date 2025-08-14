@@ -2978,7 +2978,7 @@ datadog:
             doc_section: '#step-2-datadog-api-key'
 
 dayforce:
-    display_name: dayforce
+    display_name: Dayforce
     categories:
         - hr
     auth_mode: TWO_STEP
@@ -3005,18 +3005,18 @@ dayforce:
             type: string
             title: Company ID
             order: 1
-            description: The company ID for your Paylocity account.
+            description: The company ID for your Dayforce account.
             doc_section: '#step-1-finding-your-company-id'
     credentials:
         username:
             type: string
             title: Username
-            description: Your Paylocity account username.
+            description: Your Dayforce account username.
             doc_section: '#step-2-configure-your-dayforce-user'
         password:
             type: string
             title: Password
-            description: Your Paylocity account password.
+            description: Your Dayforce account password.
             doc_section: '#step-2-configure-your-dayforce-user'
 
 deel:
