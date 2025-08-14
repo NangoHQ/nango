@@ -1,3 +1,5 @@
+import { pick } from 'lodash-es';
+
 import db from '@nangohq/database';
 import { getProvider } from '@nangohq/providers';
 import { Err, Ok } from '@nangohq/utils';
@@ -83,10 +85,10 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
 
         return Ok({
             meta: {
-                integration: result.integration,
-                environment: result.environment
+                integration: pick(result.integration, ['id', 'unique_key', 'provider', 'display_name']),
+                environment: pick(result.environment, ['id', 'name'])
             },
-            connection: result.connection ?? null,
+            connection: result.connection ? pick(result.connection, ['id', 'connection_id']) : null,
             step: result.progress.step
         });
     } catch (err) {

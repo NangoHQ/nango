@@ -4,10 +4,10 @@ import type { IntegrationConfig } from '../integration/db.js';
 
 export interface GettingStartedOutput {
     meta: {
-        environment: DBEnvironment;
-        integration: IntegrationConfig;
+        environment: Pick<DBEnvironment, 'id' | 'name'>;
+        integration: Pick<IntegrationConfig, 'id' | 'unique_key' | 'provider' | 'display_name'>;
     };
-    connection: DBConnection | null;
+    connection: Pick<DBConnection, 'id' | 'connection_id'> | null;
     step: number;
 }
 
