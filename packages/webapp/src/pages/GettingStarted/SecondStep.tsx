@@ -20,7 +20,7 @@ interface CalendarEvent {
     };
 }
 
-function getNodeClientCode(calendarEvent: CalendarEvent) {
+function getNodeClientCode(calendarEvent: CalendarEvent, connectionId?: string, providerConfigKey?: string) {
     return `
 import { Nango } from "@nangohq/node";
 
@@ -28,8 +28,8 @@ const nango = new Nango({ secretKey: "<NANGO-SECRET-KEY>" });
 
 await nango.put({
     endpoint: "/calendar/v3/calendars/primary/events",
-    connectionId: "<CONNECTION-ID>",
-    providerConfigKey: "<PROVIDER-CONFIG-KEY>",
+    connectionId: "${connectionId ?? '<CONNECTION-ID>'}",
+    providerConfigKey: "${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}",
     data: {
         summary: "Getting started with Nango",
         description: "Created with Nango from the getting started page!",
@@ -46,13 +46,13 @@ console.log("✅ Created calendar event for tomorrow at 12:00!");
 `.trim();
 }
 
-function getCurlCode(calendarEvent: CalendarEvent) {
+function getCurlCode(calendarEvent: CalendarEvent, connectionId?: string, providerConfigKey?: string) {
     return `
 curl -X POST https://api.nango.dev/proxy/calendar/v3/calendars/primary/events \\
     -H "Authorization: Bearer <NANGO-SECRET-KEY>" \\
     -H "Content-Type: application/json" \\
-    -H "Connection-Id: <CONNECTION-ID>" \\
-    -H "Provider-Config-Key: <CONNECTION-ID>" \\
+    -H "Connection-Id: ${connectionId ?? '<CONNECTION-ID>'}" \\
+    -H "Provider-Config-Key: ${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}" \\
     -d '${JSON.stringify(calendarEvent)}'
 `.trim();
 }
@@ -88,12 +88,12 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     }, []);
 
     const nodeClientCode = useMemo(() => {
-        return getNodeClientCode(calendarEvent);
-    }, [calendarEvent]);
+        return getNodeClientCode(calendarEvent, connectionId, providerConfigKey);
+    }, [calendarEvent, connectionId, providerConfigKey]);
 
     const curlCode = useMemo(() => {
-        return getCurlCode(calendarEvent);
-    }, [calendarEvent]);
+        return getCurlCode(calendarEvent, connectionId, providerConfigKey);
+    }, [calendarEvent, connectionId, providerConfigKey]);
 
     const onClickExecute = async () => {
         if (!connectionId || !providerConfigKey || !environmentAndAccount) {
@@ -145,7 +145,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
             <CodeBlock
                 className="mt-5"
-                title=""
                 snippets={[
                     {
                         displayLanguage: 'Node Client',

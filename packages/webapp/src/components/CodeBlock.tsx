@@ -22,7 +22,7 @@ export type CodeBlockProps = {
 } & HTMLAttributes<HTMLDivElement>;
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, ...props }) => {
-    const [selectedSnippet, setSelectedSnippet] = useState(snippets[0]);
+    const [selectedSnippetIndex, setSelectedSnippetIndex] = useState(0);
 
     return (
         <div {...props} className={cn('border border-grayscale-7 rounded-md', props.className)}>
@@ -32,7 +32,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, ...props 
                     {snippets.length > 1 ? (
                         <Select
                             defaultValue={snippets[0].language}
-                            onValueChange={(language) => setSelectedSnippet(snippets.find((s) => s.language === language) ?? snippets[0])}
+                            onValueChange={(language) => setSelectedSnippetIndex(snippets.findIndex((s) => s.language === language) ?? 0)}
                         >
                             <SelectTrigger className="text-text-primary bg-grayscale-2 text-sm px-1.5 py-1 h-auto">
                                 <SelectValue placeholder="Language" />
@@ -48,11 +48,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, ...props 
                     ) : (
                         <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
-                    <CopyButton text={selectedSnippet.code} />
+                    <CopyButton text={snippets[selectedSnippetIndex].code} />
                 </div>
             </header>
-            <Prism language={selectedSnippet.language} colorScheme="dark" noCopy={true}>
-                {selectedSnippet.code}
+            <Prism language={snippets[selectedSnippetIndex].language} colorScheme="dark" noCopy={true}>
+                {snippets[selectedSnippetIndex].code}
             </Prism>
         </div>
     );
