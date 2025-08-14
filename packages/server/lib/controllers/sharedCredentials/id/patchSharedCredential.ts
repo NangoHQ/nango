@@ -1,16 +1,17 @@
 import { z } from 'zod';
 
+import { getProvider } from '@nangohq/providers';
 import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { sharedCredentialsSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { sharedCredentialsSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PatchSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
 const paramsValidation = z
     .object({
-        id: z.string().min(1)
+        id: z.coerce.number()
     })
     .strict();
 
@@ -36,6 +37,17 @@ export const patchSharedCredentialsProvider = asyncWrapper<PatchSharedCredential
 
     const { id }: PatchSharedCredentialsProvider['Params'] = paramsVal.data;
     const providerData: PatchSharedCredentialsProvider['Body'] = valBody.data;
+
+    const provider = getProvider(providerData.name);
+    if (!provider) {
+        res.status(404).json({
+            error: {
+                code: 'invalid_provider',
+                message: 'The Provider name provided is not found'
+            }
+        });
+        return;
+    }
 
     const result = await sharedCredentialsService.editSharedCredentials(id, {
         name: providerData.name,
@@ -65,15 +77,6 @@ export const patchSharedCredentialsProvider = asyncWrapper<PatchSharedCredential
             return;
         }
 
-        if (result.error.message === 'invalid_provider') {
-            res.status(404).json({
-                error: {
-                    code: 'invalid_provider',
-                    message: 'The Provider name provided is not found'
-                }
-            });
-            return;
-        }
         res.status(500).json({
             error: {
                 code: 'server_error',

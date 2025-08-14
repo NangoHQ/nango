@@ -1,3 +1,4 @@
+import { getProvider } from '@nangohq/providers';
 import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -20,6 +21,17 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
 
     const providerData: PostSharedCredentialsProvider['Body'] = valBody.data;
 
+    const provider = getProvider(providerData.name);
+    if (!provider) {
+        res.status(404).json({
+            error: {
+                code: 'invalid_provider',
+                message: 'The Provider name provided is not found'
+            }
+        });
+        return;
+    }
+
     const result = await sharedCredentialsService.createSharedCredentials({
         name: providerData.name,
         client_id: providerData.client_id,
@@ -38,15 +50,6 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
             return;
         }
 
-        if (result.error.message === 'invalid_provider') {
-            res.status(404).json({
-                error: {
-                    code: 'invalid_provider',
-                    message: 'The Provider name provided is not found'
-                }
-            });
-            return;
-        }
         res.status(500).json({
             error: {
                 code: 'server_error',

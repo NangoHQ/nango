@@ -3,14 +3,14 @@ import { z } from 'zod';
 import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { sharedCredentialstoApi } from '../../formatters/sharedCredentials.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { sharedCredentialstoApi } from '../../../formatters/sharedCredentials.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
 
 const paramsValidation = z
     .object({
-        id: z.string().min(1)
+        id: z.coerce.number()
     })
     .strict();
 

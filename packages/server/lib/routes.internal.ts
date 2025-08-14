@@ -3,8 +3,8 @@ import express from 'express';
 
 import { postRollout } from './controllers/fleet/postRollout.js';
 import { getSharedCredentialsProviders } from './controllers/sharedCredentials/getListSharedCredentials.js';
-import { getSharedCredentialsProvider } from './controllers/sharedCredentials/getSharedCredential.js';
-import { patchSharedCredentialsProvider } from './controllers/sharedCredentials/patchSharedCredential.js';
+import { getSharedCredentialsProvider } from './controllers/sharedCredentials/id/getSharedCredential.js';
+import { patchSharedCredentialsProvider } from './controllers/sharedCredentials/id/patchSharedCredential.js';
 import { postSharedCredentialsProvider } from './controllers/sharedCredentials/postSharedCredential.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
