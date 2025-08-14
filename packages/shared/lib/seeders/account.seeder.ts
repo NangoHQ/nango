@@ -17,6 +17,7 @@ export function getTestTeam(override?: Partial<DBTeam>): DBTeam {
         id: 1,
         name: 'test',
         uuid: '8d49e079-aa61-44ae-b0cf-823662523527',
+        found_us: '',
         created_at: new Date(),
         updated_at: new Date(),
         ...override
