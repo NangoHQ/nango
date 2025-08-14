@@ -1,9 +1,7 @@
-import { IconLoader2, IconPlayerPlay } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { CodeBlock } from '../../components/CodeBlock';
 import LinkWithIcon from '../../components/LinkWithIcon';
-import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
@@ -70,8 +68,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
 
-    const [isExecuting, setIsExecuting] = useState(false);
-
     const calendarEvent: CalendarEvent = useMemo(() => {
         const tomorrowNoon = new Date(new Date().setHours(12, 0, 0, 0) + 24 * 60 * 60 * 1000);
 
@@ -95,12 +91,10 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
         return getCurlCode(calendarEvent, connectionId, providerConfigKey);
     }, [calendarEvent, connectionId, providerConfigKey]);
 
-    const onClickExecute = async () => {
+    const onExecute = async () => {
         if (!connectionId || !providerConfigKey || !environmentAndAccount) {
             return;
         }
-
-        setIsExecuting(true);
 
         try {
             const res = await publicApiFetch(
@@ -134,7 +128,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 variant: 'error'
             });
         } finally {
-            setIsExecuting(false);
             onExecuted?.();
         }
     };
@@ -145,6 +138,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
             <CodeBlock
                 className="mt-5"
+                onExecute={onExecute}
                 snippets={[
                     {
                         displayLanguage: 'Node Client',
@@ -158,15 +152,12 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                     }
                 ]}
             />
-            <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center justify-between mt-5">
                 {completed && (
                     <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                         Explore the logs from this demo
                     </LinkWithIcon>
                 )}
-                <Button variant="primary" className="mt-5 ml-auto" onClick={onClickExecute} disabled={isExecuting}>
-                    {isExecuting ? <IconLoader2 className="w-4 h-4 animate-spin" /> : <IconPlayerPlay className="w-4 h-4" />} Execute
-                </Button>
             </div>
         </div>
     );
