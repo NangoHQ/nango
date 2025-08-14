@@ -1,6 +1,6 @@
 import type { DBSharedCredentials, SharedCredentialsOutput } from '@nangohq/types';
 
-export function sharedCredentialstoApi(provider: DBSharedCredentials): SharedCredentialsOutput {
+export function sharedCredentialsToApi(provider: DBSharedCredentials): SharedCredentialsOutput {
     return {
         id: provider.id,
         name: provider.name,

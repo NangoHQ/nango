@@ -48,7 +48,7 @@ class SharedCredentialsService {
 
             return Ok(config);
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_create_preprovisioned_provider', { cause: err }));
         }
     }
 
@@ -67,7 +67,7 @@ class SharedCredentialsService {
             }
             return Ok(preConfiguredProviders);
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_list_preconfigured_provider_scopes', { cause: err }));
         }
     }
 
@@ -81,7 +81,7 @@ class SharedCredentialsService {
 
             return Ok(sharedCredentials);
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_get_shared_credentials_by_name', { cause: err }));
         }
     }
 
@@ -112,7 +112,7 @@ class SharedCredentialsService {
                 }
             });
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_get_shared_credentials_by_id', { cause: err }));
         }
     }
 
@@ -144,7 +144,7 @@ class SharedCredentialsService {
                 .ignore()
                 .returning('*');
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_create_shared_credentials', { cause: err }));
         }
 
         if (result.length === 0) {
@@ -211,7 +211,7 @@ class SharedCredentialsService {
 
             return txResult;
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_edit_shared_credentials', { cause: err }));
         }
     }
 
@@ -242,7 +242,7 @@ class SharedCredentialsService {
 
             return Ok(mappedResult);
         } catch (err) {
-            return Err(new Error('message', { cause: err }));
+            return Err(new Error('failed_to_list_shared_credentials', { cause: err }));
         }
     }
 }

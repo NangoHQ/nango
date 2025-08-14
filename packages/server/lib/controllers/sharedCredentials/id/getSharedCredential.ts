@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { sharedCredentialsService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { sharedCredentialstoApi } from '../../../formatters/sharedCredentials.js';
+import { sharedCredentialsToApi } from '../../../formatters/sharedCredentials.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
@@ -51,6 +51,6 @@ export const getSharedCredentialsProvider = asyncWrapper<GetSharedCredentialsPro
 
     res.status(200).json({
         success: true,
-        data: sharedCredentialstoApi(providerResult.value)
+        data: sharedCredentialsToApi(providerResult.value)
     });
 });

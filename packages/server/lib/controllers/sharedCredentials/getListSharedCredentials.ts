@@ -1,6 +1,6 @@
 import { sharedCredentialsService } from '@nangohq/shared';
 
-import { sharedCredentialstoApi } from '../../formatters/sharedCredentials.js';
+import { sharedCredentialsToApi } from '../../formatters/sharedCredentials.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetSharedCredentialsProviders } from '@nangohq/types';
@@ -21,6 +21,6 @@ export const getSharedCredentialsProviders = asyncWrapper<GetSharedCredentialsPr
 
     res.status(200).json({
         success: true,
-        data: providersResult.value.map((provider) => sharedCredentialstoApi(provider))
+        data: providersResult.value.map((provider) => sharedCredentialsToApi(provider))
     });
 });
