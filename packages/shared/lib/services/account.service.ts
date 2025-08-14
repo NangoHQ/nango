@@ -71,7 +71,7 @@ class AccountService {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount(name);
+            return await this.createAccount({ name });
         }
 
         return account[0];
@@ -81,9 +81,10 @@ class AccountService {
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount(name: string): Promise<DBTeam | null> {
+    async createAccount({ name, email }: { name: string; email?: string | undefined }): Promise<DBTeam | null> {
         // TODO: use transaction
-        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
+        const teamName = parseTeamName({ name, email });
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName }).returning('*');
 
         if (!result[0]) {
             return null;
@@ -110,5 +111,72 @@ class AccountService {
         return result[0] || null;
     }
 }
+
+function parseTeamName({ name, email }: { name: string; email?: string | undefined }): string {
+    if (!email) {
+        return `${name}'s Team`;
+    }
+
+    const freeEmailDomains = [
+        'gmail.com',
+        'duck.com',
+        'anonaddy.me',
+        'me.com',
+        'hey.com',
+        'icloud.com',
+        'hotmail.com',
+        'outlook.com',
+        'aol.com',
+        'yahoo.com',
+        'gmx.com',
+        'protonmail.com',
+        'proton.me',
+        'googlemail.com',
+        'sina.com',
+        'mail.com',
+        'zoho.com',
+        'zohomail.com',
+        'fastmail.com',
+        'tutanota.com',
+        'tuta.io',
+        'yandex.com',
+        'yandex.ru',
+        'inbox.com',
+        'hushmail.com',
+        'rediffmail.com',
+        '163.com',
+        '126.com',
+        'yeah.net',
+        'qq.com',
+        'seznam.cz',
+        'web.de',
+        'mail.ru',
+        'lycos.com',
+        'excite.com',
+        'rocketmail.com',
+        'blueyonder.co.uk',
+        'btinternet.com',
+        'talktalk.net',
+        'shaw.ca',
+        'rogers.com',
+        'sympatico.ca'
+    ];
+
+    const emailDomain = email.split('@')[1];
+    const domainParts = emailDomain ? emailDomain.split('.').slice(0, -1) : [];
+    const domainName = domainParts.length > 0 ? domainParts.join('.') : '';
+
+    if (!emailDomain) {
+        return `${name}'s Team`;
+    }
+
+    if (freeEmailDomains.includes(emailDomain)) {
+        return `${name}'s Team`;
+    } else {
+        return domainName.charAt(0).toUpperCase() + domainName.slice(1);
+    }
+}
+
+export { parseTeamName };
 
 export default new AccountService();
