@@ -78,7 +78,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0, complete: false })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
             .returning('*');
 
         const res = await api.fetch(endpoint, {
@@ -94,41 +94,6 @@ describe(`PATCH ${endpoint}`, () => {
         const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
 
         expect(updatedProgress?.step).toBe(2);
-        expect(updatedProgress?.complete).toBe(false); // Should remain unchanged
-    });
-
-    it('should update completed status', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        // Ensure integration exists
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
-
-        // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
-
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1, complete: false })
-            .returning('*');
-
-        const res = await api.fetch(endpoint, {
-            method: 'PATCH',
-            session,
-            query: { env: env.name },
-            body: { complete: true }
-        });
-
-        expect(res.res.status).toBe(204);
-
-        // Verify the complete status was updated in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
-
-        expect(updatedProgress?.complete).toBe(true);
-        expect(updatedProgress?.step).toBe(1); // Should remain unchanged
     });
 
     it('should update multiple fields at once', async () => {
@@ -146,14 +111,14 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0, complete: false })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
             .returning('*');
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             session,
             query: { env: env.name },
-            body: { step: 3, complete: true }
+            body: { step: 3 }
         });
 
         expect(res.res.status).toBe(204);
@@ -162,7 +127,6 @@ describe(`PATCH ${endpoint}`, () => {
         const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
 
         expect(updatedProgress?.step).toBe(3);
-        expect(updatedProgress?.complete).toBe(true);
     });
 
     it('should attach a connection', async () => {
@@ -180,7 +144,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0, complete: false })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
             .returning('*');
 
         // Create a connection to attach
@@ -225,7 +189,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1, complete: false, connection_id: connection.id })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1, connection_id: connection.id })
             .returning('*');
 
         const res = await api.fetch(endpoint, {
@@ -264,7 +228,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 2, complete: false, connection_id: connection.id })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 2, connection_id: connection.id })
             .returning('*');
 
         const res = await api.fetch(endpoint, {
@@ -295,9 +259,7 @@ describe(`PATCH ${endpoint}`, () => {
             .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
             .returning('*');
 
-        await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0, complete: false });
+        await db.knex.from<DBGettingStartedProgress>('getting_started_progress').insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 });
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
@@ -331,7 +293,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const [progress] = await db.knex
             .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1, complete: false })
+            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1 })
             .returning('*');
 
         // Send request with no actual changes
@@ -348,7 +310,6 @@ describe(`PATCH ${endpoint}`, () => {
         const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
 
         expect(updatedProgress?.step).toBe(1);
-        expect(updatedProgress?.complete).toBe(false);
     });
 
     it('should fail if getting_started_progress does not exist', async () => {
