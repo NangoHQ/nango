@@ -23,7 +23,12 @@ export const Model = z.object({
     nes: z.literal("ted")
   }),
 
-  dynamicObj: z.object({}).catchall(z.literal("date")),
+  dynamicObj: z.record(z.string(), z.literal("date")),
+
+  dynamicObjWithProps: z.object({
+    bool: z.boolean()
+  }).catchall(z.string()),
+
   union2: z.union([Model, Model.array()]),
   dateOrNull: z.date().optional()
 });

@@ -2,7 +2,7 @@ import { URL } from 'url';
 
 import * as z from 'zod';
 
-import { externalWebhookService, getApiUrl } from '@nangohq/shared';
+import { externalWebhookService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -10,17 +10,15 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 
 const urlValidation = z
-    .string()
-    .url()
-    .or(z.literal(''))
+    .union([z.url(), z.literal('')])
     .optional()
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
             const inputUrl = new URL(url);
-            return inputUrl.origin !== new URL(getApiUrl()).origin;
+            return !inputUrl.host.endsWith('nango.dev');
         },
-        { message: `Webhook URLs cannot point to domain (${new URL(getApiUrl()).origin}).` }
+        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
     );
 
 const validation = z

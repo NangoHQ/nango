@@ -17,6 +17,7 @@ export interface Config extends TimestampsAndDeleted {
     missing_fields: string[];
     display_name: string | null;
     forward_webhooks: boolean;
+    shared_credentials_id: number | null;
 }
 
 export interface IntegrationWithCreds extends Integration {

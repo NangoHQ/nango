@@ -25,6 +25,7 @@ export const ENVS = z.object({
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
+    NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -170,6 +171,7 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_INDEX_MESSAGES: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
+    NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
 
     // Koala
     PUBLIC_KOALA_API_URL: z.url().optional(),
@@ -214,6 +216,10 @@ export const ENVS = z.object({
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
+    RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
+    RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
+    RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
+    RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),
@@ -245,7 +251,8 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
-    NANGO_ACTIVEMQ_URL: z.url().optional().default('ws://localhost:61614/ws'),
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'none']).optional().default('none'),
+    NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),

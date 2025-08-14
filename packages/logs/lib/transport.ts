@@ -37,14 +37,16 @@ export class ESTransport implements LogTransportAbstract {
         }
 
         const start = Date.now();
+        let success: boolean = false;
         try {
             await createMessage(getFormattedMessage({ ...data, parentId: operationId, accountId }));
+            success = true;
             return true;
         } catch (err) {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId });
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId, success: String(success) });
         }
     }
 

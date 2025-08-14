@@ -51,12 +51,13 @@ import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
+import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
@@ -66,15 +67,11 @@ const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
-const connectSessionOrPublicAuth: RequestHandler[] = [
-    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
-    resourceCapping,
-    rateLimiterMiddleware
-];
+const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 export const publicAPI = express.Router();
 
-const bodyLimit = '75mb';
+const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
 
 if (flagEnforceCLIVersion) {
     publicAPI.use(cliMaxVersion());
@@ -197,7 +194,7 @@ publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bi
 publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
-publicAPI.route('/connect/sessions').post(apiAuth, resourceCapping, postConnectSessions);
+publicAPI.route('/connect/sessions').post(apiAuth, connectionCapping, postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);

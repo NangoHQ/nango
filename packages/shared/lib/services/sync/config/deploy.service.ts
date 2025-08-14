@@ -248,7 +248,9 @@ async function compileDeployInfo({
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
-        bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+        if (!optionalVersion) {
+            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+        }
 
         if (debug) {
             void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });

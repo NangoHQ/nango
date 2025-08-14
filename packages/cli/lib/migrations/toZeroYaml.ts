@@ -8,7 +8,7 @@ import jscodeshift from 'jscodeshift';
 import ora from 'ora';
 
 import { Err, Ok } from '../utils/result.js';
-import { printDebug } from '../utils.js';
+import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { compileAll } from '../zeroYaml/compile.js';
 import { compileAllFiles } from '../services/compile.service.js';
@@ -133,8 +133,8 @@ export async function migrateToZeroYaml({ fullPath, debug }: { fullPath: string;
     }
 
     {
-        const spinner = ora({ text: 'Running npm install' }).start();
-        await runNpmInstall(fullPath);
+        const spinner = ora({ text: 'Installing dependencies' }).start();
+        await runPackageManagerInstall(fullPath);
         spinner.succeed();
     }
 
@@ -166,11 +166,12 @@ async function getContent({ targetFile }: { targetFile: string }): Promise<strin
 }
 
 /**
- * Runs npm install in the given directory
+ * Runs package manager install in the given directory
  */
-export async function runNpmInstall(fullPath: string): Promise<void> {
+export async function runPackageManagerInstall(fullPath: string): Promise<void> {
     await new Promise((resolve, reject) => {
-        const proc = spawn('npm', ['install', '--no-audit', '--no-fund', '--no-progress'], {
+        const packageManager = detectPackageManager({ fullPath });
+        const proc = spawn(packageManager, ['install', ...(packageManager === 'npm' ? ['--no-audit', '--no-fund', '--no-progress'] : [])], {
             cwd: fullPath,
             stdio: 'inherit',
             shell: true
@@ -179,7 +180,7 @@ export async function runNpmInstall(fullPath: string): Promise<void> {
             if (code === 0) {
                 resolve(undefined);
             } else {
-                reject(new Error(`npm install failed with exit code ${code}`));
+                reject(new Error(`"${packageManager} install" failed with exit code ${code}`));
             }
         });
     });
@@ -656,6 +657,8 @@ async function addPackageJson({ fullPath, debug }: { fullPath: string; debug: bo
     if (!packageJsonExists) {
         printDebug('package.json does not exist', debug);
         pkg = examplePkg;
+        pkg.devDependencies = pkg.devDependencies || {};
+        pkg.devDependencies['nango'] = NANGO_VERSION;
     } else {
         printDebug('package.json exists, updating', debug);
         const pkgRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
@@ -807,11 +810,20 @@ export function nangoModelToZod({
         return false;
     });
     if (isDynamic) {
-        // z.object({ ... }).catchall(valueType)
         const valueType = nangoTypeToZodAst({ j, field: isDynamic, referencedModels: referencedModels || [] });
         const safeValueType = valueType ?? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
         // All other fields
         const otherFields = model.fields.filter((f) => f !== isDynamic);
+
+        // If there are no other fields, use z.record(z.string(), safeValueType)
+        if (otherFields.length === 0) {
+            return j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [
+                j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('string')), []),
+                safeValueType
+            ]);
+        }
+
+        // Otherwise, use z.object({ ... }).catchall(valueType)
         const otherProps = otherFields
             .map((field) => {
                 const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });

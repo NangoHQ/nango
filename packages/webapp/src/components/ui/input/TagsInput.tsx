@@ -1,6 +1,6 @@
 import { X } from '@geist-ui/icons';
 import { PlusSmallIcon } from '@heroicons/react/24/outline';
-import { forwardRef, useEffect, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Input } from './Input';
 import useSet from '../../../hooks/useSet';
@@ -37,29 +37,47 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
 
     const [scopes, setScopes] = useState(selectedScopes);
 
+    const prevOptionalScopesRef = useRef<string>('');
+    const lastSentToParentRef = useRef<string>('');
+
+    const isControlled = optionalSelectedScopes !== undefined;
+
     const readOnly = props.readOnly || false;
 
     useEffect(() => {
+        const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes || []);
         const selectedScopesStr = JSON.stringify(selectedScopes);
-        const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
 
-        if (optionalSelectedScopesStr !== JSON.stringify(scopes)) {
-            setScopes(optionalSelectedScopes ?? JSON.parse(selectedScopesStr));
+        if (isControlled && optionalSelectedScopesStr !== prevOptionalScopesRef.current && optionalSelectedScopesStr !== lastSentToParentRef.current) {
+            prevOptionalScopesRef.current = optionalSelectedScopesStr;
+            setScopes(optionalSelectedScopes);
+        } else if (!isControlled && selectedScopesStr !== JSON.stringify(scopes)) {
+            setScopes(selectedScopes);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(optionalSelectedScopes), JSON.stringify(selectedScopes)]);
+    }, [optionalSelectedScopes, selectedScopes, scopes, isControlled]);
 
     useEffect(() => {
         if (defaultScopes.length) {
             defaultScopes.forEach((scope) => {
-                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());
+                if (isControlled) {
+                    const trimmedScope = scope.trim();
+                    if (!scopes.includes(trimmedScope)) {
+                        setScopes((prev) => [...prev, trimmedScope]);
+                    }
+                } else {
+                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());
+                }
             });
         }
-    }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
+    }, [defaultScopes, addToScopesSet, optionalAddToScopesSet, isControlled, scopes]);
 
     useEffect(() => {
         if (onScopeChange) {
-            onScopeChange(scopes.join(','));
+            const scopeString = scopes.join(',');
+            if (scopeString !== lastSentToParentRef.current) {
+                lastSentToParentRef.current = scopeString;
+                onScopeChange(scopeString);
+            }
         }
     }, [scopes, onScopeChange]);
 
@@ -74,22 +92,42 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     function handleAdd() {
         if (enteredValue.trim()) {
             if (enteredValue.includes(',')) {
-                const enteredScopes = enteredValue.split(',');
-                enteredScopes.forEach((scope) => {
-                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());
-                });
+                const enteredScopes = enteredValue
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter((s) => s);
+
+                if (isControlled) {
+                    setScopes((prev) => [...prev, ...enteredScopes.filter((scope) => !prev.includes(scope))]);
+                } else {
+                    enteredScopes.forEach((scope) => {
+                        typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope) : addToScopesSet(scope);
+                    });
+                }
                 setEnteredValue('');
                 setError('');
                 return;
             }
-            typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(enteredValue.trim()) : addToScopesSet(enteredValue.trim());
+
+            const trimmedScope = enteredValue.trim();
+            if (isControlled) {
+                if (!scopes.includes(trimmedScope)) {
+                    setScopes((prev) => [...prev, trimmedScope]);
+                }
+            } else {
+                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(trimmedScope) : addToScopesSet(trimmedScope);
+            }
             setEnteredValue('');
             setError('');
         }
     }
 
     function removeScope(scopeToBeRemoved: string) {
-        typeof optionalRemoveFromSelectedSet === 'function' ? optionalRemoveFromSelectedSet(scopeToBeRemoved) : removeFromSelectedSet(scopeToBeRemoved);
+        if (isControlled) {
+            setScopes((prev) => prev.filter((scope) => scope !== scopeToBeRemoved));
+        } else {
+            typeof optionalRemoveFromSelectedSet === 'function' ? optionalRemoveFromSelectedSet(scopeToBeRemoved) : removeFromSelectedSet(scopeToBeRemoved);
+        }
     }
 
     function showInvalid() {
@@ -132,7 +170,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                         return (
                             <span
                                 key={selectedScope + i}
-                                className={`${!readOnly ? 'cursor-pointer ' : ''}flex flex-wrap gap-1 pl-4 pr-2 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg bg-green-600 bg-opacity-20 text-green-600`}
+                                className={`${!readOnly ? 'cursor-pointer pl-4 pr-2' : 'px-3'} flex flex-wrap gap-1 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg bg-green-600 bg-opacity-20 text-green-600`}
                             >
                                 {selectedScope}
                                 {!readOnly && <X onClick={() => removeScope(selectedScope)} className="h-5 w-5" />}

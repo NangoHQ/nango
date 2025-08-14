@@ -10,7 +10,16 @@ import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfi
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Knex } from '@nangohq/database';
-import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider } from '@nangohq/types';
+import type {
+    AuthModeType,
+    DBConnection,
+    DBCreateIntegration,
+    DBIntegrationCrypted,
+    DBSharedCredentials,
+    IntegrationConfig,
+    Provider,
+    SharedCredentials
+} from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -34,29 +43,50 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
-        const result = await trx
-            .select('*')
+        const result = (await trx
+            .select('_nango_configs.*', 'providers_shared_credentials.credentials')
             .from<ProviderConfig>(`_nango_configs`)
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-            .first();
+            .first()) as ProviderConfig & { credentials?: SharedCredentials | null };
 
         if (!result) {
             return null;
         }
 
+        if (result.shared_credentials_id && result.credentials) {
+            result.oauth_client_id = result.credentials.oauth_client_id;
+            result.oauth_client_secret = result.credentials.oauth_client_secret;
+            result.oauth_scopes = result.credentials.oauth_scopes;
+            result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
+            result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+        }
+        delete result.credentials;
+
         return encryptionManager.decryptProviderConfig(result);
     }
 
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
-        return (
-            await trx
-                .select('*')
-                .from<ProviderConfig>(`_nango_configs`)
-                .where({ environment_id, deleted: false })
-                .orderBy('provider', 'asc')
-                .orderBy('created_at', 'asc')
-        )
-            .map((config) => encryptionManager.decryptProviderConfig(config))
+        const results = (await trx
+            .select('_nango_configs.*', 'providers_shared_credentials.credentials')
+            .from<ProviderConfig>(`_nango_configs`)
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
+            .where({ environment_id, deleted: false })
+            .orderBy('provider', 'asc')
+            .orderBy('created_at', 'asc')) as (ProviderConfig & { credentials?: SharedCredentials | null })[];
+
+        return results
+            .map((result) => {
+                if (result.shared_credentials_id && result.credentials) {
+                    result.oauth_client_id = result.credentials.oauth_client_id;
+                    result.oauth_client_secret = result.credentials.oauth_client_secret;
+                    result.oauth_scopes = result.credentials.oauth_scopes;
+                    result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
+                    result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                }
+                delete result.credentials;
+                return encryptionManager.decryptProviderConfig(result);
+            })
             .filter(Boolean) as ProviderConfig[];
     }
 
@@ -102,7 +132,38 @@ class ConfigService {
                 environment_id,
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
-                forward_webhooks: true
+                forward_webhooks: true,
+                shared_credentials_id: null
+            },
+            provider
+        );
+
+        if (!config) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        return config;
+    }
+
+    async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
+        const sharedCredentialsId = await this.getSharedCredentialsId(providerName);
+        if (!sharedCredentialsId) {
+            throw new NangoError('shared_credentials_not_found');
+        }
+
+        const exists = await db.knex
+            .count<{ count: string }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider: providerName, environment_id, deleted: false })
+            .first();
+
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: providerName,
+                forward_webhooks: true,
+                shared_credentials_id: sharedCredentialsId
             },
             provider
         );
@@ -252,7 +313,36 @@ class ConfigService {
     ];
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        if (providerConfig.shared_credentials_id) {
+            return [];
+        }
         return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
+    }
+
+    async getPreConfiguredProviderScopes(): Promise<Record<string, { scopes: string[]; preConfigured: boolean }>> {
+        const sharedCredentials = await db.knex
+            .select<{ name: string; scopes: string[] | null }[]>(['name', db.knex.raw(`string_to_array(credentials->>'oauth_scopes', ',') as scopes`)])
+            .from<DBSharedCredentials>('providers_shared_credentials')
+            .whereNotNull('credentials');
+
+        const preConfiguredProviders: Record<string, { scopes: string[]; preConfigured: boolean }> = {};
+
+        for (const cred of sharedCredentials) {
+            const scopes = cred.scopes ? cred.scopes.map((scope: string) => scope.trim()) : [];
+            preConfiguredProviders[cred.name] = { scopes, preConfigured: true };
+        }
+
+        return preConfiguredProviders;
+    }
+
+    async getSharedCredentialsId(provider: string): Promise<number | null> {
+        const sharedCredentials = await db.knex
+            .select<Pick<DBSharedCredentials, 'id'>[]>('id')
+            .from('providers_shared_credentials')
+            .where('name', provider)
+            .first();
+
+        return sharedCredentials?.id || null;
     }
 }
 

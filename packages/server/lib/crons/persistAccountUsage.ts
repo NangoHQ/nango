@@ -11,7 +11,7 @@ import { getKVStore } from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
 import { flagHasPlan, getLogger, metrics, report, startOfMonth } from '@nangohq/utils';
 
-import type { AccountUsageMetric } from '@nangohq/account-usage';
+import type { AccountUsageIncrementableMetric } from '@nangohq/types';
 
 const cronMinutes = envs.CRON_PERSIST_ACCOUNT_USAGE_MINUTES;
 const logger = getLogger('cron.persistAccountUsage');
@@ -74,7 +74,7 @@ async function exec(): Promise<void> {
             }
 
             logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
-            await dbStore.setUsage({ accountId: Number(accountId), metric: metric as AccountUsageMetric, value: Number(usage), month: monthDate });
+            await dbStore.setUsage({ accountId: Number(accountId), metric: metric as AccountUsageIncrementableMetric, value: Number(usage), month: monthDate });
             summary.persisted++;
 
             // Delete keys from past months since they shouldn't change anymore. Makes this cron faster.
