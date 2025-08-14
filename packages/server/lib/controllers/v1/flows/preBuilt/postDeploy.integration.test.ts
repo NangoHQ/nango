@@ -95,15 +95,27 @@ describe(`POST ${endpoint}`, () => {
                             },
                             fields: {
                                 items: {
-                                    anyOf: [
-                                        {
+                                    additionalProperties: false,
+                                    properties: {
+                                        description: {
                                             type: 'string'
                                         },
-                                        {
+                                        id: {
+                                            type: 'string'
+                                        },
+                                        name: {
+                                            type: 'string'
+                                        },
+                                        options: {
                                             additionalProperties: false,
                                             type: 'object'
+                                        },
+                                        type: {
+                                            type: 'string'
                                         }
-                                    ]
+                                    },
+                                    required: ['id', 'description', 'name', 'type'],
+                                    type: 'object'
                                 },
                                 type: 'array'
                             },
@@ -118,7 +130,20 @@ describe(`POST ${endpoint}`, () => {
                             },
                             views: {
                                 items: {
-                                    type: ['string']
+                                    additionalProperties: false,
+                                    properties: {
+                                        id: {
+                                            type: 'string'
+                                        },
+                                        name: {
+                                            type: 'string'
+                                        },
+                                        type: {
+                                            type: 'string'
+                                        }
+                                    },
+                                    required: ['id', 'name', 'type'],
+                                    type: 'object'
                                 },
                                 type: 'array'
                             }
