@@ -5719,26 +5719,23 @@ jazzhr:
     display_name: JazzHR
     categories:
         - hr
-    auth_mode: CUSTOM
+    auth_mode: API_KEY
     proxy:
-        base_url: https://api.resumatorapi.com/
+        base_url: https://api.resumatorapi.com
         verification:
             method: GET
             endpoints:
-                - /users?apikey=${connectionConfig.apiKey}
-            base_url_override: https://api.resumatorapi.com/v1
+                - /v1/users?apikey=${credentials.apiKey}
         query:
-            apikey: ${connectionConfig.apiKey}
+            apikey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jazzhr
     docs_connect: https://docs.nango.dev/integrations/all/jazzhr/connect
-    connection_config:
+    credentials:
         apiKey:
             type: string
             title: API Key
             description: Your JazzHR API Key
-            pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
-            optional: false
 
 jira:
     display_name: Jira (OAuth)
@@ -5991,7 +5988,7 @@ jumpcloud:
             title: API Key
             description: Your JumpCloud API Key.
             example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
-            pattern: '^jca_[A-Za-z0-9]{32}$'
+            pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generate-your-jumpcloud-api-key'
 
 helpscout-docs:
@@ -11956,6 +11953,37 @@ zoho:
             prefix: https://accounts.zoho.
             example: com
             suffix: /
+
+datto-rmm:
+    display_name: Datto RMM
+    categories:
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/authorize
+    token_url: https://${connectionConfig.platform}-api.centrastage.net/auth/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    disable_pkce: true
+    proxy:
+        base_url: https://${connectionConfig.platform}-api.centrastage.net/api
+    docs: https://docs.nango.dev/integrations/all/datto-rmm
+    docs_connect: https://docs.nango.dev/integrations/all/datto-rmm/connect
+    connection_config:
+        platform:
+            type: string
+            title: Platform
+            description: The Datto RMM platform (region) for your account
+            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
+            example: merlot
+            prefix: https://
+            suffix: -api.centrastage.net
+            order: 1
+            doc_section: '#step-2-select-your-platform'
 
 zoho-books:
     display_name: Zoho Books

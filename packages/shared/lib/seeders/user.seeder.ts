@@ -7,12 +7,14 @@ import userService from '../services/user.service.js';
 
 import type { DBUser } from '@nangohq/types';
 
+const password = 'Password123!';
+
 const promisePdkdf2 = promisify(crypto.pbkdf2);
 export async function seedUser(accountId: number): Promise<DBUser> {
     const uniqueId = nanoid();
 
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await promisePdkdf2(uniqueId, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await promisePdkdf2(password, salt, 310000, 32, 'sha256')).toString('base64');
 
     const user = await userService.createUser({
         email: `${uniqueId}@example.com`,
@@ -20,7 +22,7 @@ export async function seedUser(accountId: number): Promise<DBUser> {
         hashed_password: hashedPassword,
         salt,
         account_id: accountId,
-        email_verified: false
+        email_verified: true
     });
     if (!user) {
         throw new Error('Failed to create user');
