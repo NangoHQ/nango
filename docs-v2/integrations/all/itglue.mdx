@@ -1,0 +1,57 @@
+---
+title: IT Glue
+sidebarTitle: IT Glue
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/itglue/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/itglue/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❌ Required | IT Glue requires a paid subscription. |
+| Paid test account | ❌ Required | IT Glue requires a paid subscription for API access.  | 
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/itglue.mdx)</Note>
+
+
+## Useful links
+
+-   [IT Glue API Developer Documentation](https://api.itglue.com/developer/)
+-   [IT Glue API Reference](https://api.itglue.com/developer/#operation/getOrganizations)
+-   [Generate API Keys in IT Glue](https://api.itglue.com/developer/#section/Getting-Started/Generating-API-Keys)
+-   [API Rate Limiting Information](https://api.itglue.com/developer/#section/Getting-Started/Rate-Limiting)
+ 
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/itglue.mdx)</Note>
+
+## API gotchas
+
+- IT Glue uses API_KEY auth mode with `x-api-key: API_KEY` in the request header.
+- All requests must include `Content-Type: application/vnd.api+json` header.
+- API conforms to JSON API Spec with structured response format.
+- Rate limit of 3000 requests per 5-minute window.
+- Different base URLs for different domains: business.itglue.com.
+- Maximum payload size is 10 MB.
+- Dates are returned in RFC3339 format (UTC).
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/itglue.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to IT Glue" icon="link" href="/integrations/all/itglue/connect" horizontal>
+  Guide to connect to IT Glue using Connect UI
+</Card>
