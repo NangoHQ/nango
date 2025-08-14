@@ -75,6 +75,8 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     })
                                 );
                                 const res = await Promise.allSettled(createTasks);
+                                const scheduleUpdates = [];
+                                const scheduledTasks = [];
                                 for (const taskRes of res) {
                                     if (taskRes.status === 'rejected') {
                                         logger.error(`Failed to schedule task: ${taskRes.reason}`);
@@ -83,11 +85,20 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     } else {
                                         const task = taskRes.value.value;
                                         if (task.scheduleId) {
-                                            await schedules.update(trx, { id: task.scheduleId, lastScheduledTaskId: task.id });
+                                            scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
                                         }
-                                        this.onScheduling(task);
+                                        scheduledTasks.push(task);
                                     }
                                 }
+
+                                // Update the last scheduled task for each schedule
+                                const scheduleRes = await schedules.setLastScheduledTask(trx, scheduleUpdates);
+                                if (scheduleRes.isErr()) {
+                                    logger.error(`Error updating schedules with last scheduled task: ${stringifyError(scheduleRes.error)}`);
+                                }
+
+                                // Notify the listeners about the scheduled tasks
+                                scheduledTasks.forEach((task) => this.onScheduling(task));
                             });
                         }
                     });

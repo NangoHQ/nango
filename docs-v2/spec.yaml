@@ -2481,6 +2481,16 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+                overrides:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        description: The unique name of an integration
+                        additionalProperties: false
+                        properties:
+                            docs_connect:
+                                type: string
+                                description: Override the url of the docs we point to in the connect flow
 
         ConnectSessionReconnectInput:
             type: object
@@ -2498,6 +2508,8 @@ components:
                     $ref: '#/components/schemas/ConnectSessionInput/properties/organization'
                 integrations_config_defaults:
                     $ref: '#/components/schemas/ConnectSessionInput/properties/integrations_config_defaults'
+                overrides:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/overrides'
 
         ConnectSession:
             type: object

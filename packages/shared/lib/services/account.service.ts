@@ -81,9 +81,9 @@ class AccountService {
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount(name: string): Promise<DBTeam | null> {
+    async createAccount(name: string, foundUs = ''): Promise<DBTeam | null> {
         // TODO: use transaction
-        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name, found_us: foundUs }).returning('*');
 
         if (!result[0]) {
             return null;

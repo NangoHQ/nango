@@ -28,6 +28,9 @@
         },
         {
             "path": "../account-usage"
+        },
+        {
+            "path": "../pubsub"
         }
     ],
     "include": ["lib/**/*"]

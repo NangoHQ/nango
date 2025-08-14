@@ -1,51 +1,127 @@
 ---
-title: Facebook
-sidebarTitle: Facebook
+title: 'Facebook'
+sidebarTitle: 'Facebook'
+description: 'Access the Facebook API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/facebook/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/facebook/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Facebook_.
+      </Step>
+      <Step title="Authorize Facebook">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Facebook. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Facebook API">
+        Let's make your first request to the Facebook API (fetch authenticated user profile information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/me?fields=id,name,email" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-_No setup guide yet._
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+            const res = await nango.get({
+                endpoint: '/me',
+                params: {
+                  fields: 'id,name,email'
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
+            console.log(res.data);
+            ```
+            </Tab>
 
-## Useful links
+        </Tabs>
 
-- [How to register an Application](https://developers.facebook.com/docs/development/create-an-app/)
-- [OAuth-related docs](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow#confirm)
-- [List of OAuth scopes](https://developers.facebook.com/docs/permissions/reference)
-- [API](https://developers.facebook.com/docs/)
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-To setup Facebook OAuth with Nango, create a new app in the Meta developer portal. Then register the Nango callback URL:
-1. Go to the Dashboard of your Meta app. From there, add the "Facebook Login" product to your app by clicking "Set Up".
-2. In the left side bar, you should see a new item "Facebook Login". Open "Facebook Login" > "**Settings**".
-3. In "**Valid OAuth Redirect URIs**", paste the Nango callback URL (default: `https://api.nango.dev/oauth/callback`).
-4. Click on "**Save changes**".
+      </Step>
+    </Steps>
 
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Facebook accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Facebook Developer account">
+        If you don't already have one, go to [Meta for Developers](https://developers.facebook.com/) and create a developer account.
+      </Step>
+        <Step title="Create a new app">
+          1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/apps/).
+          2. Click **Create App**, enter your **App name** then click **Next**.
+          3. Select the appropriate **Use cases** then click **Next**.
+          4. Select which Business portfolio you want to associate with the app, then click **Next**.
+          5. Review the **Publishing requirements**, then click **Next** if you agree. Finally, click **Go to dashboard** to complete the setup.
+        </Step>
+      <Step title="Configure OAuth settings">
+        1. In the left sidebar, navigate to **Facebook Login for Business** > **Settings**.
+        2. In **Valid OAuth Redirect URIs**, add: `https://api.nango.dev/oauth/callback`, leave the other fields default.
+        3. Click **Save Changes**.
+      </Step>
+      <Step title="Add Platform">
+        1. Go to **App Settings** > **Basic** in the left sidebar.
+        2. Click **Add Platform** > **Website**.
+        3. Enter the site URL (e.g. `https://api.nango.dev/`).
+      </Step>
+      <Step title="Obtain your App credentials">
+        1. Go to **App Settings** > **Basic** in the left sidebar.
+        2. Copy your **App ID** this is your **Client ID** and **App Secret** which is your **Client Secret**.
+        3. You will need these credentials when configuring your integration in Nango.
+      </Step>
+      <Step title="Configure permissions">
+        1. In the left sidebar, navigate to **Use cases**.
+        2. Find your use case and click **Customize** to configure permissions and features.
+        3. In the **Permissions** section, you'll see `public_profile` is automatically added.
+        4. Click **Add** for additional permissions needed for your app (e.g., `email`, `pages_read_user_content`, `pages_manage_posts`).
+        <Note> Some permissions may require App Review before going live</Note>
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
 
-## API gotchas
+    <Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Meta for Developers](https://developers.facebook.com/) |
+    | | [Meta Developer Dashboard](https://developers.facebook.com/apps/) |
+    | Developer | [API documentation](https://developers.facebook.com/docs/) |
+    | | [How to create an Application](https://developers.facebook.com/docs/development/create-an-app/) |
+    | | [OAuth documentation](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow#confirm) |
+    | | [List of OAuth scopes](https://developers.facebook.com/docs/permissions/reference) |
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _No reported gotchas._
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/facebook.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

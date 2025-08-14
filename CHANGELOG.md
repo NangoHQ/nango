@@ -2,6 +2,101 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.66.0] - 2025-08-07
+
+### Added
+
+- Usage notification emails (#4413) by @kaposke
+- *(action-usage)* [nan-3644] log action size (#4422) by @khaliqgant
+- Actually send usage emails (#4421) by @kaposke
+- *(integrations)* Add support for sage people (#4423) by @hassan254-prog
+- Add metering app (#4424) by @TBonnin
+- *(db)* Connect_sessions overrides (#4426) by @kaposke
+- Ability to override docs_connect in connect_sessions (#4427) by @kaposke
+- Mar for usage should be aligned with billing (#4432) by @kaposke
+- Add info to sync records usage (#4433) by @kaposke
+- Add env var for server public routes body limit (#4436) by @TBonnin
+- *(providers)* Allow for pre-provisioning of providers credentials (#4380) by @hassan254-prog
+- *(cli)* Add zod nullable method to zeroyaml definitions (#4440) by @hassan254-prog
+- *(integrations)* Add support for generic api providers (#4438) by @hassan254-prog
+- Ingest billing events from metering (#4435) by @TBonnin
+
+### Changed
+
+- Use decryptAsync for decrypting records (#4410) by @TBonnin
+- Improve workday docs (#4412) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f11ccca90f9f483844885e7f0d0abff40d6231d3 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/921e3f573401afdb3ebf2202861207a993416b2f by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/91e2ce80a1b127b1d02a88b0fe0f8598aef6fb50 by Khaliq by @github-actions[bot]
+- Change to new API docs layout (#4429) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/86292a88b8375cc9a5bfe063c03c7fdd0210f5f8 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/01ba37b8e243586fa8b8f314617982972be86802 by Khaliq by @github-actions[bot]
+- Upgrade config + enable LLM integrations (#4437) by @rguldener
+
+### Fixed
+
+- *(integrations)* Fix ukg ready auth mode (#4414) by @hassan254-prog
+- *(deploy-version)* If a version is passed in, don't attempt to bump (#4425) by @khaliqgant
+- Activemq should be optional if not cloud/local (#4439) by @TBonnin
+- *(integrations)* Change hibob logo (#4444) by @hassan254-prog
+- *(tests)* Fix failing integration test (#4447) by @khaliqgant
+- *(cron.exportUsage)* Prevent concurrent executions (#4441) by @TBonnin
+- Activermq subscriptions don't persist across reconnect (#4445) by @TBonnin
+- Move ES index to warm storage after 48h (instead of 24) (#4449) by @TBonnin
+
+## [v0.65.0] - 2025-07-31
+
+### Added
+
+- *(orchestrator)* Add next execution date and task state to schedules (#4383) by @TBonnin
+- *(webapp)* Refresh usage on connection deleted (#4403) by @kaposke
+- *(providers)* Add example of workday username to use in docs (#4405) by @hassan254-prog
+- *(providers)* Add migrations for pre-provisioning provider credentials (#4389) by @hassan254-prog
+
+### Changed
+
+- Use last_scheduled_task_state/next_execution_at in scheduling query (#4398) by @TBonnin
+- Change to new API docs layout  (#4396) by @hassan254-prog
+- Change to new API docs layout (#4401) by @hassan254-prog
+- Remove Koala tracking (#4400) by @rguldener
+- TrackDeletes clarifications (#4382) by @mintlify[bot]
+
+### Fixed
+
+- Cap from getting connect session (#4390) by @kaposke
+- *(connect-ui)* Use custom integration display name (#4399) by @kaposke
+- *(server)* Don't cap a connection from finishing (#4404) by @kaposke
+- *(cli)* Fix global override (#4409) by @khaliqgant
+- Introduce asynchronous encrypt/decrypt functions (#4407) by @TBonnin
+- Use special render instances for runners (#4402) by @TBonnin
+- Improve cap messages (#4406) by @kaposke
+
+## [v0.64.4] - 2025-07-29
+
+### Added
+
+- Cap syncs based on active records (#4366) by @kaposke
+- *(webapp)* Show usage on sidebar for free plans (#4369) by @kaposke
+- *(integrations)* Add support for paycom (#4386) by @hassan254-prog
+- Cap max connections globally (with UI work) (#4381) by @kaposke
+- Track action and active records being capped in posthog (#4384) by @kaposke
+- Update trial messaging to Auto Idling (#4385) by @kaposke
+- *(es)* Add warm tier (#4387) by @bodinsamuel
+
+### Changed
+
+- Change to new API docs layout (#4364) by @hassan254-prog
+- *(ashby)* Change to new API docs layout (#4392) by @hassan254-prog
+
+### Fixed
+
+- *(logs)* Split operations and messages index (#4371) by @bodinsamuel
+- *(deps)* Upgrade axios to 1.11.0 (#4379) by @bodinsamuel
+- *(two_step)* Migrate zod body validation (#4388) by @hassan254-prog
+- *(api)* Rollback /config/uniqueKey (#4391) by @bodinsamuel
+- *(es)* Change warm tier settings (#4394) by @bodinsamuel
+- Upgrade dependencies (#4393) by @bodinsamuel
+
 ## [v0.64.3] - 2025-07-25
 
 ### Added
@@ -4462,6 +4557,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
+[v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
+[v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
 [v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
 [v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
 [v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1

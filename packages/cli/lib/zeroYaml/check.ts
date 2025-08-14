@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 
 import { exampleFolder } from './constants.js';
-import { runNpmInstall } from '../migrations/toZeroYaml.js';
+import { runPackageManagerInstall } from '../migrations/toZeroYaml.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
@@ -51,7 +51,7 @@ export async function checkAndSyncPackageJson({ fullPath, debug }: { fullPath: s
         console.log(chalk.yellow('Your dependencies are out of date. Updating...'));
         const spinner = ora({ text: 'Updating package.json' }).start();
         await fs.promises.writeFile(packageJsonPath, JSON.stringify(newPkg, null, 2));
-        await runNpmInstall(fullPath);
+        await runPackageManagerInstall(fullPath);
         spinner.succeed();
     } else {
         printDebug('Package.json is up to date', debug);

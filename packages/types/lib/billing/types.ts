@@ -47,7 +47,7 @@ export interface BillingPlan {
 }
 
 export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections';
+    type: 'monthly_active_records' | 'billable_connections' | 'total_connections' | 'billable_actions' | 'billable_active_connections';
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;

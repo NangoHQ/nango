@@ -101,7 +101,7 @@ export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
-    Body: { provider: string };
+    Body: { provider: string; useSharedCredentials: boolean };
     Success: {
         data: ApiIntegration;
     };

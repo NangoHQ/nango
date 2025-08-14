@@ -280,6 +280,7 @@ export const indexOperations: estypes.IndicesCreateRequest = {
             'sort.order': ['desc', 'desc']
         },
         // They are recommending 1 shard per 20gb-40gb
+        // but it's not true for us with the current throughput it's working better with more shards
         number_of_shards: envs.NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS
     },
     mappings: {
@@ -295,11 +296,10 @@ export const policyMessages = {
         phases: {
             hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
             warm: {
-                min_age: '25h',
+                min_age: envs.NANGO_LOGS_ES_WARM_MIN_AGE,
                 actions: {
-                    allocate: { require: { data: 'warm' } },
                     set_priority: { priority: 50 },
-                    shrink: { max_primary_shard_size: '10gb' },
+                    shrink: { max_primary_shard_size: '8gb' },
                     readonly: {}
                 }
             },

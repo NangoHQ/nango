@@ -1,10 +1,12 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { linkConnection, seeders } from '@nangohq/shared';
 
 import { getConnectSessionByToken } from '../../services/connectSession.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+
+import type { DBConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -123,6 +125,129 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 message: 'ConnectionID or IntegrationId does not exists'
             }
+        });
+    });
+
+    describe('docs connect url override validation', () => {
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+        let connection: DBConnection;
+        beforeEach(async () => {
+            seed = await seeders.seedAccountEnvAndUser();
+            const endUser = await seeders.createEndUser({ environment: seed.env, account: seed.account });
+
+            // Create an initial connection
+            await seeders.createConfigSeed(seed.env, 'github', 'github');
+            connection = await seeders.createConnectionSeed({ env: seed.env, provider: 'github' });
+            await linkConnection(db.knex, { endUserId: endUser.id, connection });
+        });
+
+        it('should allow docs connect url override when plan has can_override_docs_connect_url enabled', async () => {
+            // Update the plan to enable the feature flag
+            await db.knex('plans').where('id', seed.plan.id).update({ can_override_docs_connect_url: true });
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    overrides: {
+                        github: {
+                            docs_connect: 'https://custom-docs.example.com'
+                        }
+                    }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    expires_at: expect.toBeIsoDate(),
+                    token: expect.any(String)
+                }
+            });
+        });
+
+        it('should reject docs connect url override when plan has can_override_docs_connect_url disabled', async () => {
+            // Ensure the plan has the feature flag disabled
+            await db.knex('plans').where('id', seed.plan.id).update({ can_override_docs_connect_url: false });
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    overrides: {
+                        github: {
+                            docs_connect: 'https://custom-docs.example.com'
+                        }
+                    }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: {
+                    code: 'forbidden',
+                    message: 'You are not allowed to override the docs connect url'
+                }
+            });
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should allow request when overrides exist but no docs_connect override is present', async () => {
+            // Ensure the plan has the feature flag disabled
+            await db.knex('plans').where('id', seed.plan.id).update({ can_override_docs_connect_url: false });
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    overrides: {
+                        github: {
+                            // No docs_connect override
+                        }
+                    }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    expires_at: expect.toBeIsoDate(),
+                    token: expect.any(String)
+                }
+            });
+        });
+
+        it('should allow request when overrides exist but docs_connect is undefined', async () => {
+            // Ensure the plan has the feature flag disabled
+            await db.knex('plans').where('id', seed.plan.id).update({ can_override_docs_connect_url: false });
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    overrides: {
+                        github: {
+                            docs_connect: undefined
+                        }
+                    }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    expires_at: expect.toBeIsoDate(),
+                    token: expect.any(String)
+                }
+            });
         });
     });
 });
