@@ -12,9 +12,10 @@ import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingSt
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
+import { useAnalyticsTrack } from '../../utils/analytics';
 
 export const GettingStarted: React.FC = () => {
-    // const analyticsTrack = useAnalyticsTrack();
+    const analyticsTrack = useAnalyticsTrack();
     const env = useStore((state) => state.env);
     const { data: gettingStartedResult, error, mutate, isLoading } = useGettingStarted(env);
     const gettingStarted = gettingStartedResult?.data;
@@ -53,11 +54,14 @@ export const GettingStarted: React.FC = () => {
                             <FirstStep
                                 connection={gettingStarted?.connection ?? null}
                                 integration={gettingStarted?.meta.integration ?? null}
+                                onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
                                 onConnected={async (connectionId) => {
+                                    analyticsTrack('web:getting_started:connection-created');
                                     await patchGettingStarted(env, { connection_id: connectionId });
                                     await mutate();
                                 }}
                                 onDisconnected={async () => {
+                                    analyticsTrack('web:getting_started:connection-disconnected');
                                     await mutate();
                                 }}
                             />
@@ -71,6 +75,7 @@ export const GettingStarted: React.FC = () => {
                                 connectionId={gettingStarted?.connection?.connection_id}
                                 providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                 onExecuted={async () => {
+                                    analyticsTrack('web:getting_started:code-snippet-executed');
                                     await patchGettingStarted(env, { step: 2 });
                                     await mutate();
                                 }}
@@ -83,7 +88,12 @@ export const GettingStarted: React.FC = () => {
                         ? [
                               {
                                   id: 'go-deeper',
-                                  content: <ThirdStep />,
+                                  content: (
+                                      <ThirdStep
+                                          onDocumentationLinkClicked={(link) => analyticsTrack(`web:getting_started:documentation-link-clicked`, { link })}
+                                          onSlackLinkClicked={() => analyticsTrack('web:getting_started:slack-community-link-clicked')}
+                                      />
+                                  ),
                                   icon: IconAnchor
                               }
                           ]
