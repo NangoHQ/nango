@@ -17,11 +17,11 @@ import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
-import type { DBConnection, IntegrationConfig } from '@nangohq/types';
+import type { GettingStartedOutput } from '@nangohq/types';
 
 interface FirstStepProps {
-    connection: DBConnection | null;
-    integration: IntegrationConfig;
+    connection: GettingStartedOutput['connection'] | null;
+    integration: GettingStartedOutput['meta']['integration'] | null;
     onConnected: (connectionId: string) => void;
     onDisconnected: () => void;
 }
@@ -110,7 +110,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 </Button>
                 <p className="mt-5 text-text-primary text-sm flex flex-row gap-1">
                     A connection was created with the connection id:{' '}
-                    <LinkWithIcon to={`/${env}/connections/${integration.unique_key}/${connection.connection_id}`}>{connection.connection_id}</LinkWithIcon>
+                    <LinkWithIcon to={`/${env}/connections/${integration?.unique_key}/${connection.connection_id}`}>{connection.connection_id}</LinkWithIcon>
                 </p>
             </div>
         );

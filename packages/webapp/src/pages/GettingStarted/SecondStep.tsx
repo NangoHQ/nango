@@ -118,19 +118,19 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
 
             if (!res.ok) {
                 toast({
-                    title: '❌ Something went wrong while running the code',
+                    title: 'Something went wrong while running the code',
                     variant: 'error'
                 });
                 return;
             }
 
             toast({
-                title: '✅ Created calendar event for tomorrow at 12:00!',
+                title: 'Created calendar event for tomorrow at 12:00. Check your calendar!',
                 variant: 'success'
             });
         } catch {
             toast({
-                title: '❌ Something went wrong while running the code',
+                title: 'Something went wrong while running the code',
                 variant: 'error'
             });
         } finally {
@@ -160,7 +160,11 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 ]}
             />
             <div className="flex flex-row items-center justify-between">
-                {completed && <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}`}>Explore the logs from this demo</LinkWithIcon>}
+                {completed && (
+                    <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
+                        Explore the logs from this demo
+                    </LinkWithIcon>
+                )}
                 <Button variant="primary" className="mt-5 ml-auto" onClick={onClickExecute} disabled={isExecuting}>
                     {isExecuting ? <IconLoader2 className="w-4 h-4 animate-spin" /> : <IconPlayerPlay className="w-4 h-4" />} Execute
                 </Button>

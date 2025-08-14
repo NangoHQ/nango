@@ -1,5 +1,5 @@
 import { IconChecks } from '@tabler/icons-react';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 import { cn } from '../utils/utils.js';
 
@@ -18,18 +18,6 @@ export type VerticalStepsProps = {
 } & HTMLAttributes<HTMLDivElement>;
 
 export default function VerticalSteps({ steps, currentStep, ...props }: VerticalStepsProps) {
-    const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-    // Scroll to current step when it changes
-    useEffect(() => {
-        if (stepRefs.current[currentStep]) {
-            stepRefs.current[currentStep]?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    }, [currentStep]);
-
     return (
         <div {...props} className={cn('flex flex-col', props.className)}>
             {steps.map((step, index) => {
@@ -42,7 +30,6 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                 return (
                     <div
                         key={step.id}
-                        ref={(el) => (stepRefs.current[index] = el)}
                         className="flex scroll-mt-12"
                         {...(isBlocked && {
                             onClick: (e: React.MouseEvent) => e.stopPropagation(),
