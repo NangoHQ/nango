@@ -129,7 +129,7 @@ class AccountService {
     async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
         // TODO: use transaction
         const emailTeamName = emailToTeamName({ email });
-        const teamName = `${emailTeamName || name}'s Team'`;
+        const teamName = `${emailTeamName || name}'s Team`;
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
         if (!result[0]) {
