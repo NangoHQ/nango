@@ -54,7 +54,7 @@ export const GettingStarted: React.FC = () => {
                                 connection={gettingStarted?.connection ?? null}
                                 integration={gettingStarted?.meta.integration ?? null}
                                 onConnected={async (connectionId) => {
-                                    await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
+                                    await patchGettingStarted(env, { connection_id: connectionId });
                                     await mutate();
                                 }}
                                 onDisconnected={async () => {
@@ -79,7 +79,7 @@ export const GettingStarted: React.FC = () => {
                         ),
                         icon: IconLockOpen
                     },
-                    ...(gettingStarted?.step === 2
+                    ...(currentStep === 2
                         ? [
                               {
                                   id: 'go-deeper',
