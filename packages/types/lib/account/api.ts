@@ -9,7 +9,7 @@ export type PostSignup = Endpoint<{
         name: string;
         password: string;
         token?: string | undefined;
-        foundUs?: string;
+        foundUs?: string | undefined;
     };
     Error:
         | ApiError<'email_already_verified'>
