@@ -1541,10 +1541,10 @@ class ConnectionService {
 
     /**
      * Note:
-     * a prorated connection is a connection that is not deleted and has not been deleted during the month
+     * a billable connection is a connection that is not deleted and has not been deleted during the month
      * connections are pro-rated based on the number of seconds they were existing in the month
      */
-    async proratedConnections(referenceDate: Date): Promise<
+    async billableConnections(referenceDate: Date): Promise<
         Result<
             {
                 accountId: number;
@@ -1657,34 +1657,6 @@ class ConnectionService {
         } catch (err: unknown) {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
-    }
-
-    /**
-     * Total number of connections that are not deleted per account
-     * Note: The proration is done by Orb
-     */
-    async billableConnections(): Promise<
-        Result<
-            {
-                accountId: number;
-                count: number;
-            }[],
-            NangoError
-        >
-    > {
-        const res = await db.readOnly
-            .select('e.account_id as accountId')
-            .count('c.id as count')
-            .from('_nango_connections as c')
-            .join('_nango_environments as e', 'c.environment_id', 'e.id')
-            .where('c.deleted_at', null)
-            .groupBy('e.account_id')
-            .havingRaw('count(c.id) > 0');
-
-        if (res) {
-            return Ok(res);
-        }
-        return Err(new NangoError('failed_to_get_billable_active_connections'));
     }
 
     /**

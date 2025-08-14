@@ -16,11 +16,14 @@
     "dependencies": {
         "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/database": "file:../database",
-        "@nangohq/utils": "file:../utils",
-        "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/pubsub": "file:../pubsub",
+        "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
+        "@nangohq/utils": "file:../utils",
         "dd-trace": "5.52.0",
+        "node-cron": "3.0.2",
         "zod": "4.0.5"
     },
     "devDependencies": {
