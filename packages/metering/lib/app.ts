@@ -1,5 +1,6 @@
 import './tracer.js';
 
+import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { initSentry, once, report } from '@nangohq/utils';
 
@@ -29,8 +30,8 @@ try {
     }
 
     // Billing processor
-    const billing = new Billing(pubsubTransport);
-    billing.start();
+    const billingProc = new Billing(pubsubTransport);
+    billingProc.start();
 
     // Graceful shutdown
     const close = once(async () => {
@@ -38,6 +39,8 @@ try {
         if (disconnect.isErr()) {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);
         }
+        await billing.shutdown();
+        process.exit();
     });
 
     process.on('SIGINT', () => {

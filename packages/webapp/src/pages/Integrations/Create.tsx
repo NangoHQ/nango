@@ -8,6 +8,7 @@ import { useSWRConfig } from 'swr';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { Button } from '../../components/ui/button/Button';
 import { apiPostIntegration, clearIntegrationsCache } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -187,7 +188,7 @@ export default function Create() {
                 </div>
             )}
             <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-                <DialogContent className="w-[550px] max-w-[550px]">
+                <DialogContent className="w-[570px] max-w-[570px]">
                     <DialogHeader>
                         <DialogTitle>Configure new integration:</DialogTitle>
                     </DialogHeader>
@@ -204,7 +205,7 @@ export default function Create() {
                                     <span className="text-gray-300">{selectedProvider.authMode}</span>
                                 </div>
                             </div>
-                            <div className="relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-start min-h-10 bg-blue-base-35 border-blue-base text-blue-base">
+                            <div className="relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-center min-h-10 bg-blue-base-35 border-blue-base text-blue-base">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path
                                         fillRule="evenodd"
@@ -213,25 +214,19 @@ export default function Create() {
                                     />
                                 </svg>
                                 <div className="flex flex-col gap-2">
-                                    <div className="text-sm">Nango provides developer apps for testing. Use your own for production.</div>
+                                    <div className="text-sm">
+                                        Nango provides a developer app for testing. They may get reset occasionally. Always use your own developer app for
+                                        production.
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex justify-between">
-                                <button
-                                    type="button"
-                                    onClick={() => handleIntegrationCreation(true)}
-                                    disabled={isCreatingShared}
-                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isCreatingShared ? 'Creating...' : "Use Nango's developer app"}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleIntegrationCreation(false)}
-                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-transparent border border-blue-base text-blue-base hover:bg-blue-base/10"
-                                >
-                                    Use your own developer app
-                                </button>
+                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} disabled={isCreatingShared} variant="primary">
+                                    {isCreatingShared ? 'Creating...' : env === 'prod' ? 'Use your own developer app' : "Use Nango's developer app"}
+                                </Button>
+                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} variant="secondary">
+                                    {env === 'prod' ? "Use Nango's developer app" : 'Use your own developer app'}
+                                </Button>
                             </div>
                         </div>
                     )}

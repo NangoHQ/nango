@@ -4,7 +4,8 @@ import { ActiveMQ } from './activemq.js';
 import { NoOpTransport } from './noop.js';
 import { envs } from '../env.js';
 
-import type { Transport } from './transport.js';
+import type { Event } from '../event.js';
+import type { SubscribeProps, Transport } from './transport.js';
 import type { Result } from '@nangohq/utils';
 
 export class DefaultTransport implements Transport {
@@ -40,11 +41,11 @@ export class DefaultTransport implements Transport {
         return Ok(undefined);
     }
 
-    async publish(event: any): Promise<Result<void>> {
+    async publish(event: Event): Promise<Result<void>> {
         return this.transport.publish(event);
     }
 
-    subscribe(subscription: any): void {
-        return this.transport.subscribe(subscription);
+    subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void {
+        return this.transport.subscribe(params);
     }
 }

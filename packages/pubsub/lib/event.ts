@@ -1,8 +1,8 @@
 import type { DBTeam, DBUser } from '@nangohq/types';
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue } | Record<string, any>;
+type Serializable = string | number | boolean | Date | null | undefined | Serializable[] | { [key: string]: Serializable };
 
-interface EventBase<TSubject extends string, TType extends string, TPayload extends JsonValue> {
+interface EventBase<TSubject extends string, TType extends string, TPayload extends Serializable> {
     idempotencyKey: string;
     subject: TSubject;
     type: TType;
@@ -14,22 +14,24 @@ interface EventBase<TSubject extends string, TType extends string, TPayload exte
 // Enforce that all events extend the base Event type
 type EnforceEventBase<T extends EventBase<any, any, any>> = T;
 
-type UserCreatedEvent = EventBase<
+export type UserCreatedEvent = EventBase<
     'user',
     'user.created',
     {
-        user: DBUser;
-        team: DBTeam;
+        userId: DBUser['id'];
+        teamId: DBTeam['id'];
     }
 >;
 
-type UsageEvent = EventBase<
+export type UsageEvent = EventBase<
     'usage',
     'usage.monthly_active_records' | 'usage.actions',
     {
         value: number;
-        accountId: number;
-        properties: Record<string, JsonValue>;
+        properties: {
+            accountId: number;
+            connectionId: number;
+        } & Record<string, Serializable>;
     }
 >;
 

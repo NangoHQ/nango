@@ -1,6 +1,5 @@
 import './tracer.js';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { destroy as destroyRecords } from '@nangohq/records';
@@ -54,7 +53,6 @@ const close = once(() => {
         await db.knex.destroy();
         await db.readOnly.destroy();
         await destroyRecords();
-        await billing.shutdown();
         await pubsub.disconnect();
 
         logger.close();
