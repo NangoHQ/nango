@@ -213,6 +213,10 @@ class PaginationService {
     }
 
     private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse, paginationConfig: Pagination) {
+        if (!linkPagination.link_rel_in_response_header && !linkPagination.link_path_in_response_body) {
+            throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);
+        }
+
         let nextPageLink: string | undefined;
         if (linkPagination.link_rel_in_response_header) {
             const linkHeader = parseLinksHeader(response.headers['link']);
@@ -221,10 +225,6 @@ class PaginationService {
 
         if (!nextPageLink && linkPagination.link_path_in_response_body) {
             nextPageLink = get(response.data, linkPagination.link_path_in_response_body);
-        }
-
-        if (!linkPagination.link_rel_in_response_header && !linkPagination.link_path_in_response_body) {
-            throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);
         }
 
         return nextPageLink;
