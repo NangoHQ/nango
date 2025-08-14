@@ -1,4 +1,5 @@
 import './tracer.js';
+import * as cron from 'node-cron';
 
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
@@ -44,6 +45,7 @@ try {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);
         }
         await billing.shutdown();
+        cron.getTasks().forEach((task) => task.stop());
         process.exit();
     });
 
