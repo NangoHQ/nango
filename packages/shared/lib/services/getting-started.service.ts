@@ -9,6 +9,8 @@ import connectionService from './connection.service.js';
 import sharedCredentialsService from './shared-credentials.service.js';
 
 import type {
+    CreateGettingStartedMeta,
+    CreateGettingStartedProgress,
     DBConnection,
     DBEnvironment,
     DBGettingStartedMeta,
@@ -20,12 +22,9 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export async function createGettingStartedMeta(accountId: number, environmentId: number, integrationId: number): Promise<Result<DBGettingStartedMeta>> {
+export async function createMeta(input: CreateGettingStartedMeta): Promise<Result<DBGettingStartedMeta>> {
     try {
-        const [gettingStartedMeta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: accountId, environment_id: environmentId, integration_id: integrationId })
-            .returning('*');
+        const [gettingStartedMeta] = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
 
         if (!gettingStartedMeta) {
             return Err(new Error('failed_to_create_getting_started_meta'));
@@ -37,12 +36,9 @@ export async function createGettingStartedMeta(accountId: number, environmentId:
     }
 }
 
-export async function createGettingStartedProgress(userId: number, metaId: number): Promise<Result<DBGettingStartedProgress>> {
+export async function createProgress(input: CreateGettingStartedProgress): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const [gettingStartedProgress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: userId, getting_started_meta_id: metaId })
-            .returning('*');
+        const [gettingStartedProgress] = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
 
         if (!gettingStartedProgress) {
             return Err(new Error('failed_to_create_getting_started_progress'));
@@ -95,9 +91,9 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
     }
 }
 
-async function getGettingStartedMetaByAccountId(accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
+async function getMetaByAccountId(accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
     try {
-        const [gettingStartedMeta] = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
+        const gettingStartedMeta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
         if (!gettingStartedMeta) {
             return Ok(null);
@@ -136,13 +132,18 @@ export async function getOrCreateProgressByUser(user: DBUser, currentEnvironment
         return Ok(existingResult.value);
     }
 
-    const gettingStartedMeta = await getOrCreateGettingStartedMeta(user.account_id, currentEnvironmentId);
+    const gettingStartedMeta = await getOrCreateMeta(user.account_id, currentEnvironmentId);
 
     if (gettingStartedMeta.isErr()) {
         return Err(gettingStartedMeta.error);
     }
 
-    const createdResult = await createGettingStartedProgress(user.id, gettingStartedMeta.value.id);
+    const createdResult = await createProgress({
+        user_id: user.id,
+        getting_started_meta_id: gettingStartedMeta.value.id,
+        step: 0,
+        connection_id: null
+    });
 
     if (createdResult.isErr()) {
         return Err(createdResult.error);
@@ -213,8 +214,8 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
     return Ok(undefined);
 }
 
-export async function getOrCreateGettingStartedMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
-    const existingMeta = await getGettingStartedMetaByAccountId(accountId);
+export async function getOrCreateMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
+    const existingMeta = await getMetaByAccountId(accountId);
 
     if (existingMeta.isErr()) {
         return Err(existingMeta.error);
@@ -230,7 +231,7 @@ export async function getOrCreateGettingStartedMeta(accountId: number, currentEn
         return Err(googleCalendarIntegrationId.error);
     }
 
-    const newMeta = await createGettingStartedMeta(accountId, currentEnvironmentId, googleCalendarIntegrationId.value);
+    const newMeta = await createMeta({ account_id: accountId, environment_id: currentEnvironmentId, integration_id: googleCalendarIntegrationId.value });
 
     if (newMeta.isErr()) {
         return Err(new Error('failed_to_create_getting_started_meta'));

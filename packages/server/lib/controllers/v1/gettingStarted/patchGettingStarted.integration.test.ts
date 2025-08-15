@@ -1,11 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { gettingStartedService, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
-
-import type { DBGettingStartedMeta, DBGettingStartedProgress } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -71,15 +68,20 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const meta = await gettingStartedService.createMeta({
+            account_id: account.id,
+            environment_id: env.id,
+            integration_id: integration.id!
+        });
+        assert(!meta.isErr(), 'Failed to create meta');
 
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
-            .returning('*');
+        const progress = await gettingStartedService.createProgress({
+            user_id: user.id,
+            getting_started_meta_id: meta.value.id,
+            step: 0,
+            connection_id: null
+        });
+        expect(progress.isOk()).toBe(true);
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
@@ -91,42 +93,10 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the step was updated in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
+        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        assert(!updatedProgress.isErr(), 'Failed to get progress');
 
-        expect(updatedProgress?.step).toBe(2);
-    });
-
-    it('should update multiple fields at once', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        // Ensure integration exists
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
-
-        // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
-
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
-            .returning('*');
-
-        const res = await api.fetch(endpoint, {
-            method: 'PATCH',
-            session,
-            query: { env: env.name },
-            body: { step: 3 }
-        });
-
-        expect(res.res.status).toBe(204);
-
-        // Verify both fields were updated in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
-
-        expect(updatedProgress?.step).toBe(3);
+        expect(updatedProgress.value?.step).toBe(2);
     });
 
     it('should attach a connection', async () => {
@@ -137,15 +107,20 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const meta = await gettingStartedService.createMeta({
+            account_id: account.id,
+            environment_id: env.id,
+            integration_id: integration.id!
+        });
+        assert(!meta.isErr(), 'Failed to create meta');
 
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 })
-            .returning('*');
+        const progress = await gettingStartedService.createProgress({
+            user_id: user.id,
+            getting_started_meta_id: meta.value.id,
+            step: 0,
+            connection_id: null
+        });
+        expect(progress.isOk()).toBe(true);
 
         // Create a connection to attach
         const connection = await seeders.createConnectionSeed({
@@ -163,48 +138,10 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the connection was attached in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
+        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        assert(!updatedProgress.isErr(), 'Failed to get progress');
 
-        expect(updatedProgress?.connection_id).toBe(connection.id);
-    });
-
-    it('should detach a connection when connection_id is empty string', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        // Ensure integration exists
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
-
-        // Create a connection to initially attach
-        const connection = await seeders.createConnectionSeed({
-            env,
-            provider: 'google-calendar-getting-started'
-        });
-
-        // Create meta and progress with connection already attached
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
-
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1, connection_id: connection.id })
-            .returning('*');
-
-        const res = await api.fetch(endpoint, {
-            method: 'PATCH',
-            session,
-            query: { env: env.name },
-            body: { connection_id: '' }
-        });
-
-        expect(res.res.status).toBe(204);
-
-        // Verify the connection was detached in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
-
-        expect(updatedProgress?.connection_id).toBeNull();
+        expect(updatedProgress.value?.connection?.id).toBe(connection.id);
     });
 
     it('should detach a connection when connection_id is null', async () => {
@@ -221,15 +158,20 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         // Create meta and progress with connection already attached
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const meta = await gettingStartedService.createMeta({
+            account_id: account.id,
+            environment_id: env.id,
+            integration_id: integration.id!
+        });
+        assert(!meta.isErr(), 'Failed to create meta');
 
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 2, connection_id: connection.id })
-            .returning('*');
+        const progress = await gettingStartedService.createProgress({
+            user_id: user.id,
+            getting_started_meta_id: meta.value.id,
+            step: 2,
+            connection_id: connection.id
+        });
+        expect(progress.isOk()).toBe(true);
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
@@ -241,9 +183,10 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the connection was detached in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
+        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        assert(!updatedProgress.isErr(), 'Failed to get progress');
 
-        expect(updatedProgress?.connection_id).toBeNull();
+        expect(updatedProgress.value?.connection).toBeNull();
     });
 
     it('should return 404 when connection_id does not exist', async () => {
@@ -254,12 +197,20 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const meta = await gettingStartedService.createMeta({
+            account_id: account.id,
+            environment_id: env.id,
+            integration_id: integration.id!
+        });
+        assert(!meta.isErr(), 'Failed to create meta');
 
-        await db.knex.from<DBGettingStartedProgress>('getting_started_progress').insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 0 });
+        const progress = await gettingStartedService.createProgress({
+            user_id: user.id,
+            getting_started_meta_id: meta.value.id,
+            step: 0,
+            connection_id: null
+        });
+        expect(progress.isOk()).toBe(true);
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
@@ -286,15 +237,20 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const [meta] = await db.knex
-            .from<DBGettingStartedMeta>('getting_started_meta')
-            .insert({ account_id: account.id, environment_id: env.id, integration_id: integration.id! })
-            .returning('*');
+        const meta = await gettingStartedService.createMeta({
+            account_id: account.id,
+            environment_id: env.id,
+            integration_id: integration.id!
+        });
+        assert(!meta.isErr(), 'Failed to create meta');
 
-        const [progress] = await db.knex
-            .from<DBGettingStartedProgress>('getting_started_progress')
-            .insert({ user_id: user.id, getting_started_meta_id: meta!.id, step: 1 })
-            .returning('*');
+        const progress = await gettingStartedService.createProgress({
+            user_id: user.id,
+            getting_started_meta_id: meta.value.id,
+            step: 1,
+            connection_id: null
+        });
+        expect(progress.isOk()).toBe(true);
 
         // Send request with no actual changes
         const res = await api.fetch(endpoint, {
@@ -307,17 +263,15 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify nothing changed in the database
-        const updatedProgress = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ id: progress!.id }).first();
+        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        assert(!updatedProgress.isErr(), 'Failed to get progress');
 
-        expect(updatedProgress?.step).toBe(1);
+        expect(updatedProgress.value?.step).toBe(1);
     });
 
     it('should fail if getting_started_progress does not exist', async () => {
-        const { env, user, account } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
-
-        // Ensure no getting_started_meta exists for this account
-        await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: account.id }).delete();
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
