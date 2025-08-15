@@ -6,7 +6,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { sharedCredentialsToApi } from '../../../formatters/sharedCredentials.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { GetSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
+import type { GetSharedCredentialsProvider } from '@nangohq/types';
 
 const paramsValidation = z
     .object({

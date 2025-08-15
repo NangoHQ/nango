@@ -7,7 +7,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { sharedCredentialsSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PatchSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
+import type { PatchSharedCredentialsProvider } from '@nangohq/types';
 
 const paramsValidation = z
     .object({

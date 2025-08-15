@@ -5,7 +5,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { sharedCredentialsSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { PostSharedCredentialsProvider } from '@nangohq/types/lib/sharedCredentials/api.js';
+import type { PostSharedCredentialsProvider } from '@nangohq/types';
 
 export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsProvider>(async (req, res) => {
     const valBody = sharedCredentialsSchema.safeParse(req.body);
