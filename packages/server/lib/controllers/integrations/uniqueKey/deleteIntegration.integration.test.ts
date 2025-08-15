@@ -48,7 +48,7 @@ describe(`DELETE ${endpoint}`, () => {
             oauth_scopes: 'hello, world'
         });
 
-        const metaResult = await gettingStartedService.getOrCreateGettingStartedMeta(account.id, env.id);
+        const metaResult = await gettingStartedService.getOrCreateMeta(account.id, env.id);
         expect(metaResult.isOk()).toBe(true);
         const meta = metaResult.unwrap();
 
