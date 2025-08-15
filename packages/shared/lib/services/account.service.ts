@@ -10,7 +10,7 @@ import { createPlan } from './plans/plans.js';
 import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
-const freeEmailDomains = [
+const freeEmailDomains = new Set([
     'gmail.com',
     'duck.com',
     'anonaddy.me',
@@ -53,7 +53,7 @@ const freeEmailDomains = [
     'shaw.ca',
     'rogers.com',
     'sympatico.ca'
-];
+]);
 
 class AccountService {
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
@@ -163,15 +163,7 @@ function emailToTeamName({ email }: { email?: string | undefined }): string | fa
     const emailDomain = parts?.[parts.length - 1]?.toLowerCase();
     const domainParts = emailDomain?.split('.');
 
-    if (
-        !email ||
-        !parts ||
-        parts.length < 2 ||
-        !emailDomain?.includes('.') ||
-        freeEmailDomains.includes(emailDomain) ||
-        !domainParts ||
-        domainParts.length < 2
-    ) {
+    if (!email || !parts || parts.length < 2 || !emailDomain?.includes('.') || freeEmailDomains.has(emailDomain) || !domainParts || domainParts.length < 2) {
         return false;
     }
 
@@ -182,16 +174,20 @@ function emailToTeamName({ email }: { email?: string | undefined }): string | fa
     const secondToLastPart = domainParts[domainParts.length - 2];
     const lastPart = domainParts[domainParts.length - 1];
 
+    // Create Sets for domain lookups
+    const secondLevelDomains = new Set(['co', 'com', 'net', 'org', 'edu', 'gov', 'ac', 'mil', 'int']);
+    const genericTLDs = new Set(['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'name', 'pro', 'aero', 'coop', 'museum']);
+
     const hasTwoPartTLD =
         domainParts.length >= 3 &&
         secondToLastPart &&
         lastPart &&
         // Check if second-to-last part is a common second-level domain
-        ['co', 'com', 'net', 'org', 'edu', 'gov', 'ac', 'mil', 'int'].includes(secondToLastPart) &&
+        secondLevelDomains.has(secondToLastPart) &&
         // Check if last part is a country code (2-3 letters, not a generic TLD)
         lastPart.length >= 2 &&
         lastPart.length <= 3 &&
-        !['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'name', 'pro', 'aero', 'coop', 'museum'].includes(lastPart);
+        !genericTLDs.has(lastPart);
 
     // Extract domain name excluding TLD(s)
     const domainName = hasTwoPartTLD
