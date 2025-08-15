@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
@@ -10,7 +9,7 @@ import { logger } from './logger.js';
 import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import type { DBPlan, MergingStrategy } from '@nangohq/types';
+import type { MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -22,7 +21,6 @@ export async function persistRecords({
     accountId,
     environmentId,
     connectionId,
-    plan,
     providerConfigKey,
     syncId,
     syncJobId,
@@ -35,7 +33,6 @@ export async function persistRecords({
     accountId: number;
     environmentId: number;
     connectionId: number;
-    plan: DBPlan | null;
     providerConfigKey: string;
     syncId: string;
     syncJobId: number;
@@ -50,7 +47,6 @@ export async function persistRecords({
         tags: {
             persistType,
             environmentId,
-            connectionId,
             providerConfigKey,
             syncId,
             syncJobId,
@@ -154,19 +150,7 @@ export async function persistRecords({
             }
         );
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const isConnectionOlderThan30Days = new Date(connection.created_at) < thirtyDaysAgo;
-        const shouldBillMonthlyActiveRecords = isConnectionOlderThan30Days;
-
         const mar = new Set(summary.activatedKeys).size;
-
-        if (shouldBillMonthlyActiveRecords) {
-            // Account usage tracking for capping
-            const accountUsageTracker = await getAccountUsageTracker();
-            void accountUsageTracker.incrementUsage({ accountId, metric: 'active_records', delta: mar });
-            void onUsageIncreased({ accountId, metric: 'active_records', delta: mar, plan: plan ?? undefined });
-        }
 
         if (mar > 0) {
             void pubsub.publisher.publish({
