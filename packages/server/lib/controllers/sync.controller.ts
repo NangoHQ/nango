@@ -19,7 +19,7 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -35,7 +35,8 @@ import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
-const logger = getLogger('SyncController');
+
+const actionPayloadAllowList = [662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254];
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -265,15 +266,26 @@ class SyncController {
                 const payloadSizeInMb = payloadSize / (1024 * 1024);
 
                 if (payloadSizeInMb > 2) {
-                    void logCtx.warn(
-                        `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large wil soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
-                        {
+                    if (actionPayloadAllowList.includes(account.id)) {
+                        void logCtx.warn(
+                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large wil soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
+                            {
+                                payloadSize,
+                                actionName: action_name,
+                                connectionId: connection.id,
+                                environmentId: environment.id
+                            }
+                        );
+                    }
+
+                    if (!actionPayloadAllowList.includes(account.id)) {
+                        void logCtx.error('Action payload is larger than 2 MB and will be blocked in the near future. Please use the proxy', {
                             payloadSize,
                             actionName: action_name,
                             connectionId: connection.id,
                             environmentId: environment.id
-                        }
-                    );
+                        });
+                    }
                 }
 
                 if ('statusUrl' in actionResponse.value) {
@@ -321,11 +333,6 @@ class SyncController {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
             const responseHeaders = getHeaders(res.getHeaders());
-            const contentLength = responseHeaders['content-length'];
-            const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
-            if (contentLength && lengthInMB > 0.5) {
-                logger.info(`Action DEBUGGING: accountId: ${account.id} for the action name ${action_name} contentLength is ${lengthInMB.toFixed(2)} MB`);
-            }
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
