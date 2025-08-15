@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.66.1] - 2025-08-14
+
+### Added
+
+- *(integrations)* Add support for paycor (#4446) by @hassan254-prog
+- *(integrations)* Add support for heap (#4455) by @hassan254-prog
+- *(providers)* Few tweaks based on feedback (#4453) by @hassan254-prog
+- *(integrations)* Add jumpcloud integration (#4416) by @gonzalde97
+- *(integrations)* Add autotask psa (#4415) by @gonzalde97
+- *(logs)* Add success dimension to metric (#4452) by @TBonnin
+- *(integrations)* Add support for fairing (#4450) by @hassan254-prog
+- *(integrations)* Add support for yotpo (#4456) by @hassan254-prog
+- *(providers)* Add post connection script for snowflake (#4463) by @hassan254-prog
+- *(integrations)* Add support for datto rmm (#4459) by @gonzalde97
+- Add more context to the prompt authorization parameter for Microsoft (#4488) by @hassan254-prog
+- *(signup)* Add found us string to an account (#4475) by @khaliqgant
+
+### Changed
+
+- Add Google review guide (#4454) by @rguldener
+- Small Google review improvements (#4457) by @rguldener
+- Fix APIs nav (#4460) by @rguldener
+- *(deps)* Bump tmp from 0.2.3 to 0.2.4 (#4442) by @dependabot[bot]
+- Update version in manifest by @actions-user
+- Add common issues page (#4461) by @rguldener
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/13eb2c88fdc232afa09e3c29fef2a723eae73a3a by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/55dba247cc3809931e9a1278effc3b4fe4725c48 by Khaliq by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b0e2b01c8bb3b0eac2f39355de4098b381e8618b by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ebea1712324b0f473d7d0a1572227cafecf62e76 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6282a5fce11b072d9377fcf2e599eee4c2b37076 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(billing)* Send the total connections count to Orb (#4458) by @TBonnin
+- Managed release logic (#4464) by @rossmcewan
+- *(cli)* Support multiple package managers (#4462) by @bodinsamuel
+- *(providers)* Fix autotask credentials verification (#4467) by @hassan254-prog
+- *(cli-generate-docs)* Handle optional props (#4465) by @khaliqgant
+- Lower records batch size (#4473) by @rossmcewan
+- *(records)* Poll min and max, statement timeout moved to env vars (#4476) by @rossmcewan
+- *(jwt)* Migrate zod body validation (#4474) by @hassan254-prog
+- *(integrations)* Loosen restrictions on jumpcloud api key pattern (#4470) by @gonzalde97
+- *(docs-for-zero-yaml)* Fix docs generation for zero yaml produced JSON file (#4477) by @khaliqgant
+- Update test with zero yaml template (#4482) by @bodinsamuel
+- *(server)* Allow other domains for webhook urls (#4480) by @kaposke
+- `can_override_docs_connect_url` true if not present (#4479) by @kaposke
+- *(zero)* Allow default export outside script files (#4466) by @bodinsamuel
+- *(server)* Testing setup for session auth (#4468) by @kaposke
+- *(integrations)* Use proper auth mode for jazzhr (#4486) by @hassan254-prog
+- *(zero)* Various feedback (#4489) by @bodinsamuel
+
 ## [v0.66.0] - 2025-08-07
 
 ### Added
@@ -4557,6 +4609,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.66.1]: https://github.com/NangoHQ/nango/compare/v0.66.0..v0.66.1
 [v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
 [v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
 [v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
