@@ -93,13 +93,11 @@ describe('emailToTeamName', () => {
         });
 
         it('should return capitalized domain name for multi-part domain', () => {
-            // Note: The function takes all parts except the TLD, so .co.uk becomes .co
             const result = emailToTeamName({ email: 'john@mycompany.co.uk' });
-            expect(result).toBe('Mycompany.co');
+            expect(result).toBe('Mycompany');
         });
 
         it('should handle domain with multiple subdomains', () => {
-            // Note: The function takes all parts except the TLD, so dev.mycompany.com becomes dev.mycompany
             const result = emailToTeamName({ email: 'john@dev.mycompany.com' });
             expect(result).toBe('Dev.mycompany');
         });
@@ -127,6 +125,63 @@ describe('emailToTeamName', () => {
         it('should handle domain with special characters', () => {
             const result = emailToTeamName({ email: 'john@company-name.com' });
             expect(result).toBe('Company-name');
+        });
+    });
+
+    describe('when email is from domains with two-part TLDs', () => {
+        it('should handle .co.uk domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.co.uk' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle .com.au domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.com.au' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle .co.nz domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.co.nz' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle .com.br domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.com.br' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle .net.au domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.net.au' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle .org.uk domains', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.org.uk' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle subdomains with two-part TLDs', () => {
+            const result = emailToTeamName({ email: 'john@dev.mycompany.co.uk' });
+            expect(result).toBe('Dev.mycompany');
+        });
+
+        it('should handle multiple subdomains with two-part TLDs', () => {
+            const result = emailToTeamName({ email: 'john@api.dev.mycompany.com.au' });
+            expect(result).toBe('Api.dev.mycompany');
+        });
+
+        it('should handle domains with hyphens and two-part TLDs', () => {
+            const result = emailToTeamName({ email: 'john@my-company.co.uk' });
+            expect(result).toBe('My-company');
+        });
+
+        it('should handle domains with numbers and two-part TLDs', () => {
+            const result = emailToTeamName({ email: 'john@company123.co.nz' });
+            expect(result).toBe('Company123');
+        });
+
+        it('should handle single character domains with two-part TLDs', () => {
+            const result = emailToTeamName({ email: 'john@a.co.uk' });
+            expect(result).toBe('A');
         });
     });
 
@@ -173,6 +228,36 @@ describe('emailToTeamName', () => {
         it('should handle domain with empty parts', () => {
             const result = emailToTeamName({ email: 'john@..com' });
             expect(result).toBe('.');
+        });
+
+        it('should handle two-part TLD with multiple @ symbols', () => {
+            const result = emailToTeamName({ email: 'john@test@mycompany.co.uk' });
+            expect(result).toBe('Mycompany');
+        });
+
+        it('should handle domain with only two-part TLD', () => {
+            const result = emailToTeamName({ email: 'john@.co.uk' });
+            expect(result).toBe(false);
+        });
+
+        it('should handle domain with trailing dot and two-part TLD', () => {
+            const result = emailToTeamName({ email: 'john@company.co.uk.' });
+            expect(result).toBe('Company.co.uk');
+        });
+
+        it('should handle domain with leading dot and two-part TLD', () => {
+            const result = emailToTeamName({ email: 'john@.company.co.uk' });
+            expect(result).toBe('.company');
+        });
+
+        it('should handle domain that looks like two-part TLD but is not in the list', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.xy.zw' });
+            expect(result).toBe('Mycompany.xy');
+        });
+
+        it('should handle domain with three parts that is not a two-part TLD', () => {
+            const result = emailToTeamName({ email: 'john@mycompany.sub.domain' });
+            expect(result).toBe('Mycompany.sub');
         });
     });
 });

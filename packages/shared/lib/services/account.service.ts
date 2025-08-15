@@ -161,13 +161,49 @@ class AccountService {
 function emailToTeamName({ email }: { email?: string | undefined }): string | false {
     const parts = email?.split('@');
     const emailDomain = parts?.[parts.length - 1]?.toLowerCase();
-    const domainName = emailDomain?.split('.').slice(0, -1).join('.');
+    const domainParts = emailDomain?.split('.');
 
-    if (email && parts && parts.length >= 2 && emailDomain?.includes('.') && !freeEmailDomains.includes(emailDomain) && domainName) {
-        return domainName.charAt(0).toUpperCase() + domainName.slice(1);
+    if (
+        !email ||
+        !parts ||
+        parts.length < 2 ||
+        !emailDomain?.includes('.') ||
+        freeEmailDomains.includes(emailDomain) ||
+        !domainParts ||
+        domainParts.length < 2
+    ) {
+        return false;
     }
 
-    return false;
+    // Check if the domain has at least 3 parts and follows two-part TLD pattern
+    // Common two-part TLDs follow the pattern: .{second-level}.{country-code}
+    // Second-level domains are typically: co, com, net, org, edu, gov, ac, etc.
+    // Country codes are typically 2-3 letters
+    const secondToLastPart = domainParts[domainParts.length - 2];
+    const lastPart = domainParts[domainParts.length - 1];
+
+    const hasTwoPartTLD =
+        domainParts.length >= 3 &&
+        secondToLastPart &&
+        lastPart &&
+        // Check if second-to-last part is a common second-level domain
+        ['co', 'com', 'net', 'org', 'edu', 'gov', 'ac', 'mil', 'int'].includes(secondToLastPart) &&
+        // Check if last part is a country code (2-3 letters, not a generic TLD)
+        lastPart.length >= 2 &&
+        lastPart.length <= 3 &&
+        !['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'name', 'pro', 'aero', 'coop', 'museum'].includes(lastPart);
+
+    // Extract domain name excluding TLD(s)
+    const domainName = hasTwoPartTLD
+        ? domainParts.slice(0, -2).join('.') // Remove two parts for two-part TLDs
+        : domainParts.slice(0, -1).join('.'); // Remove one part for single TLDs
+
+    // Return false for invalid domains (e.g., .com, .co.uk)
+    if (!domainName || domainName === '') {
+        return false;
+    }
+
+    return domainName.charAt(0).toUpperCase() + domainName.slice(1);
 }
 
 export { emailToTeamName };
