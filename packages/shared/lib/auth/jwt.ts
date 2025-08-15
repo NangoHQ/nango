@@ -98,7 +98,7 @@ export async function createCredentialsFromURL({
     payload: Record<string, string | number>;
     additionalApiHeaders: Record<string, string> | null;
     options: object;
-}): Promise<Result<JwtCredentials, AuthCredentialsError>> {
+}): Promise<Result<{ token: JwtCredentials; jwtToken: string }, AuthCredentialsError>> {
     const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
 
     if (!hasLineBreak) {
@@ -125,7 +125,7 @@ export async function createCredentialsFromURL({
             }
         );
 
-        return Ok(tokenResponse.data);
+        return Ok({ token: tokenResponse.data, jwtToken: token });
     } catch (err) {
         const error = new AuthCredentialsError('refresh_token_external_error', { cause: err });
         return Err(error);
