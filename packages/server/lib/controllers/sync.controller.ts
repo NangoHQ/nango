@@ -261,6 +261,21 @@ class SyncController {
             if (actionResponse.isOk()) {
                 span.finish();
 
+                const payloadSize = Buffer.byteLength(JSON.stringify(actionResponse.value), 'utf8');
+                const payloadSizeInMb = payloadSize / (1024 * 1024);
+
+                if (payloadSizeInMb > 2) {
+                    void logCtx.warn(
+                        `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large wil soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
+                        {
+                            payloadSize,
+                            actionName: action_name,
+                            connectionId: connection.id,
+                            environmentId: environment.id
+                        }
+                    );
+                }
+
                 if ('statusUrl' in actionResponse.value) {
                     res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
                 } else {
