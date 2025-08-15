@@ -4,8 +4,7 @@ import { NangoError } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import type { IntegrationConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Checkr');
 
@@ -19,7 +18,7 @@ interface CheckrBody {
     createdAt: string;
 }
 
-function validate(integration: ProviderConfig, headerSignature: string, rawBody: string): boolean {
+function validate(integration: IntegrationConfig, headerSignature: string, rawBody: string): boolean {
     if (!integration.custom?.['webhookSecret']) {
         return false;
     }
@@ -28,25 +27,30 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
 }
 
-const route: WebhookHandler<CheckrBody> = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) => {
     const signature = headers['x-checkr-signature'];
     if (!signature) {
-        logger.error('missing signature', { configId: integration.id });
+        logger.error('missing signature', { configId: nango.integration.id });
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    logger.info('received', { configId: integration.id });
+    logger.info('received', { configId: nango.integration.id });
 
-    if (!validate(integration, signature, rawBody)) {
-        logger.error('invalid signature', { configId: integration.id });
+    if (!validate(nango.integration, signature, rawBody)) {
+        logger.error('invalid signature', { configId: nango.integration.id });
         // TODO the verification should use the API key
         //return;
     }
 
     const parsedBody = body;
-    logger.info(`valid ${parsedBody.type}`, { configId: integration.id });
+    logger.info(`valid ${parsedBody.type}`, { configId: nango.integration.id });
 
-    const response = await nango.executeScriptForWebhooks(integration, parsedBody, 'type', 'account_id', logContextGetter, 'checkr_account_id');
+    const response = await nango.executeScriptForWebhooks({
+        body: parsedBody,
+        webhookType: 'type',
+        connectionIdentifier: 'account_id',
+        propName: 'checkr_account_id'
+    });
 
     return Ok({
         content: { status: 'success' },
