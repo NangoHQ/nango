@@ -67,6 +67,12 @@ import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { GetPublicRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
+import type {
+    GetSharedCredentialsProvider,
+    GetSharedCredentialsProviders,
+    PatchSharedCredentialsProvider,
+    PostSharedCredentialsProvider
+} from './sharedCredentials/api.js';
 import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
@@ -156,7 +162,11 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | PatchWebhook
     | PostEnvironmentVariables
-    | PostImpersonate;
+    | PostImpersonate
+    | GetSharedCredentialsProviders
+    | GetSharedCredentialsProvider
+    | PostSharedCredentialsProvider
+    | PatchSharedCredentialsProvider;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
