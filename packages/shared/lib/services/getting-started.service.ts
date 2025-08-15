@@ -91,7 +91,7 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
     }
 }
 
-async function getMetaByAccountId(accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
+export async function getMetaByAccountId(accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
     try {
         const gettingStartedMeta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
