@@ -145,7 +145,6 @@ describe(`GET ${endpoint}`, () => {
         const session = await authenticateUser(api, user);
 
         const gettingStartedProgress = await gettingStartedService.getOrCreateProgressByUser(user, env.id);
-        console.log(gettingStartedProgress.isErr() && gettingStartedProgress.error);
         expect(gettingStartedProgress.isOk()).toBe(true);
 
         // Create a connection and link it to the progress
