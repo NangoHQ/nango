@@ -93,7 +93,7 @@ const syncSchema = z.object({
     ...commonSchemaFields,
     payload: syncArgsSchema
 });
-const syncAbortschema = z.object({
+const syncAbortSchema = z.object({
     ...commonSchemaFields,
     payload: syncAbortArgsSchema
 });
@@ -133,7 +133,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    const syncAbort = syncAbortschema.safeParse(task);
+    const syncAbort = syncAbortSchema.safeParse(task);
     if (syncAbort.success) {
         return Ok(
             TaskSyncAbort({
