@@ -41,7 +41,12 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
-            { isSync: false, dryRun: isTest, ...props },
+            {
+                isScript: true,
+                isSync: false,
+                dryRun: isTest,
+                ...props
+            },
             {
                 interceptors: {
                     request: (config) => {
@@ -269,7 +274,12 @@ export class NangoSyncRunner extends NangoSyncBase {
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
-            { isSync: true, dryRun: isTest, ...props },
+            {
+                isScript: true,
+                isSync: true,
+                dryRun: isTest,
+                ...props
+            },
             {
                 interceptors: {
                     request: (config) => {

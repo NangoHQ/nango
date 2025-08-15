@@ -281,6 +281,7 @@ describe('Exec', () => {
                             'Content-Type': 'application/json',
                             'Nango-Is-Dry-Run': 'true',
                             'Nango-Is-Sync': 'true',
+                            'Nango-Is-Script': 'true',
                             'User-Agent': expect.any(String)
                         },
                         maxBodyLength: -1,
