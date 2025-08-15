@@ -8,8 +8,9 @@ import * as cron from 'node-cron';
 
 import { DbAccountUsageStore } from '@nangohq/account-usage';
 import { getKVStore } from '@nangohq/kvstore';
-import { envs } from '@nangohq/logs';
 import { flagHasPlan, getLogger, metrics, report, startOfMonth } from '@nangohq/utils';
+
+import { envs } from '../env.js';
 
 import type { AccountUsageIncrementableMetric } from '@nangohq/types';
 

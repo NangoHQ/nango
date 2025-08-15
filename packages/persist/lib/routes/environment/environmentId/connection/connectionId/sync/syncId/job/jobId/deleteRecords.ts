@@ -36,9 +36,8 @@ const validate = validateRequest<DeleteRecords>(recordsRequestParser);
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteRecords, AuthLocals>) => {
     const { environmentId, nangoConnectionId, syncId, syncJobId }: DeleteRecords['Params'] = res.locals.parsedParams;
     const { model, records, providerConfigKey, activityLogId, merging }: DeleteRecords['Body'] = res.locals.parsedBody;
-    const { account, plan } = res.locals;
+    const { account } = res.locals;
     const result = await persistRecords({
-        plan,
         persistType: 'delete',
         environmentId,
         accountId: account.id,
