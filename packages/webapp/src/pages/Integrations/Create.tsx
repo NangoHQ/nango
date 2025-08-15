@@ -228,7 +228,7 @@ export default function Create() {
                                           ? "Use Nango's developer app"
                                           : 'Use your own developer app'}
                                 </Button>
-                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} variant="secondary">
+                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} disabled={isCreatingShared} variant="secondary">
                                     {isCreatingShared && env === 'prod'
                                         ? 'Creating...'
                                         : env === 'prod'
