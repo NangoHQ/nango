@@ -152,7 +152,7 @@ jobs:
                   if kubectl get deployment nango-self-server -n nango >/dev/null 2>&1; then
                     echo "Restarting nango-self-server deployment..."
                     kubectl rollout restart deployment/nango-self-server -n nango
-                    
+
                     # Wait for the restart to complete
                     echo "Waiting for nango-self-server restart to complete..."
                     kubectl rollout status deployment/nango-self-server -n nango --timeout=300s
@@ -168,13 +168,13 @@ jobs:
                     echo "Checking other pods status (attempt $i/30)..."
                     # Check all pods except PostgreSQL (which we already confirmed is running)
                     OTHER_PODS=$(kubectl get pods -n nango --field-selector=status.phase!=Running,status.phase!=Completed --ignore-not-found=true | grep -v "postgresql" | grep -v "NAME" | wc -l)
-                    
+
                     if [ "$OTHER_PODS" -eq 0 ]; then
                       echo "All other pods are running successfully"
                       OTHER_PODS_READY=true
                       break
                     fi
-                    
+
                     echo "Some pods still starting up, waiting..."
                     kubectl get pods -n nango
                     sleep 10
