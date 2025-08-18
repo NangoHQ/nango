@@ -1,15 +1,11 @@
 import type { InternalNango } from './internal-nango.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
-    integration: ProviderConfig,
     headers: Record<string, string>,
     body: T,
-    rawBody: string,
-    logContextGetter: LogContextGetter
+    rawBody: string
 ) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
