@@ -1,37 +1,49 @@
 import get from 'lodash-es/get.js';
 
-import { connectionService, environmentService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
+import { connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
 
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
+import type { DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam } from '@nangohq/types';
 
-export interface InternalNango {
-    getWebhooks: (environment_id: number, nango_config_id: number) => Promise<DBSyncConfig[]>;
-    executeScriptForWebhooks(
-        integration: ProviderConfig,
-        body: Record<string, any>,
-        webhookType: string,
-        connectionIdentifier: string,
-        logContextGetter: LogContextGetter,
-        propName?: string
-    ): Promise<{ connectionIds: string[] }>;
-}
+export class InternalNango {
+    readonly team: DBTeam;
+    readonly environment: DBEnvironment;
+    readonly plan?: DBPlan | undefined;
+    readonly integration: DBIntegrationDecrypted;
+    readonly logContextGetter: LogContextGetter;
 
-export const internalNango: InternalNango = {
-    getWebhooks: async (environment_id, nango_config_id) => {
-        return await getSyncConfigsByConfigIdForWebhook(environment_id, nango_config_id);
-    },
-    executeScriptForWebhooks: async (
-        integration,
+    constructor(opts: {
+        team: DBTeam;
+        environment: DBEnvironment;
+        plan?: DBPlan | undefined;
+        integration: DBIntegrationDecrypted;
+        logContextGetter: LogContextGetter;
+    }) {
+        this.team = opts.team;
+        this.environment = opts.environment;
+        this.plan = opts.plan;
+        this.integration = opts.integration;
+        this.logContextGetter = opts.logContextGetter;
+    }
+
+    async getWebhooks() {
+        return await getSyncConfigsByConfigIdForWebhook(this.environment.id, this.integration.id!);
+    }
+
+    async executeScriptForWebhooks({
         body,
         webhookType,
         connectionIdentifier,
-        logContextGetter,
         propName
-    ): Promise<{ connectionIds: string[] }> => {
+    }: {
+        body: Record<string, any>;
+        webhookType: string;
+        connectionIdentifier: string;
+        propName?: string;
+    }): Promise<{ connectionIds: string[] }> {
         if (!get(body, connectionIdentifier)) {
             return { connectionIds: [] };
         }
@@ -40,8 +52,8 @@ export const internalNango: InternalNango = {
         if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(
                 get(body, connectionIdentifier),
-                integration.unique_key,
-                integration.environment_id
+                this.integration.unique_key,
+                this.environment.id
             );
 
             if (success && connection) {
@@ -52,14 +64,14 @@ export const internalNango: InternalNango = {
             connections = await connectionService.findConnectionsByMetadataValue({
                 metadataProperty: strippedMetadata,
                 payloadIdentifier: get(body, connectionIdentifier),
-                configId: integration.id,
-                environmentId: integration.environment_id
+                configId: this.integration.id,
+                environmentId: this.environment.id
             });
         } else {
             connections = await connectionService.findConnectionsByConnectionConfigValue(
                 propName || connectionIdentifier,
                 get(body, connectionIdentifier),
-                integration.environment_id
+                this.environment.id
             );
         }
 
@@ -67,13 +79,16 @@ export const internalNango: InternalNango = {
             return { connectionIds: [] };
         }
 
-        const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
+        // Disable executions of webhooks but we still need to return the connection ids
+        if (this.plan && !this.plan.has_webhooks_script) {
+            return { connectionIds: connections.map((connection) => connection.connection_id) };
+        }
+
+        const syncConfigsWithWebhooks = await this.getWebhooks();
 
         if (syncConfigsWithWebhooks.length <= 0) {
             return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
-
-        const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id }))!;
 
         const type = get(body, webhookType);
 
@@ -87,18 +102,23 @@ export const internalNango: InternalNango = {
             }
 
             for (const webhook of webhook_subscriptions) {
-                if (type === webhook) {
+                if (type === webhook || webhook === '*') {
                     for (const connection of connections) {
                         await orchestrator.triggerWebhook({
-                            account,
-                            environment,
-                            integration,
+                            account: this.team,
+                            environment: this.environment,
+                            integration: this.integration as Config,
                             connection,
                             webhookName: webhook,
                             syncConfig,
                             input: body,
-                            logContextGetter
+                            logContextGetter: this.logContextGetter
                         });
+                    }
+
+                    if (webhook === '*') {
+                        // Only trigger once since it will match all webhooks
+                        break;
                     }
                 }
             }
@@ -106,4 +126,4 @@ export const internalNango: InternalNango = {
 
         return { connectionIds: connections.map((connection) => connection.connection_id) };
     }
-};
+}

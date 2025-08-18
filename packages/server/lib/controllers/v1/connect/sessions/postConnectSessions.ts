@@ -34,7 +34,7 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
 
     const emulatedBody = {
         allowed_integrations: body.allowed_integrations,
-        end_user: body.end_user,
+        end_user: { ...body.end_user, tags: { origin: 'nango_dashboard' } },
         organization: body.organization
     } satisfies PostConnectSessions['Body'];
 
