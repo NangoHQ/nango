@@ -105,7 +105,7 @@ class AppAuthController {
                 return;
             }
 
-            const connectionConfig = {
+            const connectionConfig: Record<string, string | undefined> = {
                 installation_id,
                 app_id: config.oauth_client_id
             };
@@ -134,10 +134,14 @@ class AppAuthController {
                 return;
             }
 
+            const { value: parsedRawCredentials } = credentialsRes;
+            const { jwtToken } = parsedRawCredentials;
+            connectionConfig['jwtToken'] = jwtToken;
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                parsedRawCredentials: credentialsRes.value,
+                parsedRawCredentials,
                 connectionConfig,
                 environmentId: environment.id
             });
