@@ -21,10 +21,12 @@ import type {
     PatchGettingStartedInput
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
-export async function createMeta(input: CreateGettingStartedMeta): Promise<Result<DBGettingStartedMeta>> {
+export async function createMeta(input: CreateGettingStartedMeta, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta>> {
     try {
-        const [gettingStartedMeta] = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
+        const dbInstance = trx || db.knex;
+        const [gettingStartedMeta] = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Err('failed_to_create_getting_started_meta');
     } catch (err) {
@@ -32,9 +34,10 @@ export async function createMeta(input: CreateGettingStartedMeta): Promise<Resul
     }
 }
 
-export async function createProgress(input: CreateGettingStartedProgress): Promise<Result<DBGettingStartedProgress>> {
+export async function createProgress(input: CreateGettingStartedProgress, trx?: Knex.Transaction): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const [gettingStartedProgress] = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
+        const dbInstance = trx || db.knex;
+        const [gettingStartedProgress] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
 
         return gettingStartedProgress ? Ok(gettingStartedProgress) : Err('failed_to_create_getting_started_progress');
     } catch (err) {
@@ -42,9 +45,10 @@ export async function createProgress(input: CreateGettingStartedProgress): Promi
     }
 }
 
-export async function getProgressByUserId(userId: number): Promise<Result<GettingStartedProgressOutput | null>> {
+export async function getProgressByUserId(userId: number, trx?: Knex.Transaction): Promise<Result<GettingStartedProgressOutput | null>> {
     try {
-        const result = await db.knex
+        const dbInstance = trx || db.knex;
+        const result = await dbInstance
             .from<DBGettingStartedProgress>('getting_started_progress as progress')
             .select<{
                 progress: DBGettingStartedProgress;
@@ -52,10 +56,10 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
                 integration: IntegrationConfig;
                 connection: DBConnection | null;
             }>(
-                db.knex.raw('row_to_json(progress.*) as progress'),
-                db.knex.raw('row_to_json(env.*) as environment'),
-                db.knex.raw('row_to_json(config.*) as integration'),
-                db.knex.raw('row_to_json(conn.*) as connection')
+                dbInstance.raw('row_to_json(progress.*) as progress'),
+                dbInstance.raw('row_to_json(env.*) as environment'),
+                dbInstance.raw('row_to_json(config.*) as integration'),
+                dbInstance.raw('row_to_json(conn.*) as connection')
             )
             .leftJoin('getting_started_meta as meta', 'meta.id', 'progress.getting_started_meta_id')
             .leftJoin('_nango_environments as env', 'env.id', 'meta.environment_id')
@@ -83,9 +87,10 @@ export async function getProgressByUserId(userId: number): Promise<Result<Gettin
     }
 }
 
-export async function getMetaByAccountId(accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
+export async function getMetaByAccountId(accountId: number, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta | null>> {
     try {
-        const gettingStartedMeta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
+        const dbInstance = trx || db.knex;
+        const gettingStartedMeta = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Ok(null);
     } catch (err) {
@@ -93,9 +98,14 @@ export async function getMetaByAccountId(accountId: number): Promise<Result<DBGe
     }
 }
 
-export async function updateByUserId(userId: number, data: Partial<DBGettingStartedProgress>): Promise<Result<DBGettingStartedProgress>> {
+export async function updateByUserId(
+    userId: number,
+    data: Partial<DBGettingStartedProgress>,
+    trx?: Knex.Transaction
+): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const [updated] = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
+        const dbInstance = trx || db.knex;
+        const [updated] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
 
         return updated ? Ok(updated) : Err('failed_to_update_getting_started_progress');
     } catch (err) {
@@ -107,100 +117,107 @@ export async function updateByUserId(userId: number, data: Partial<DBGettingStar
  * Gets getting started progress for the user, or creates it if it doesn't exist.
  */
 export async function getOrCreateProgressByUser(user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
-    const existingResult = await getProgressByUserId(user.id);
+    return await db.knex.transaction(async (trx) => {
+        const existingResult = await getProgressByUserId(user.id, trx);
 
-    if (existingResult.isErr()) {
-        return Err(existingResult.error);
-    }
+        if (existingResult.isErr()) {
+            return Err(existingResult.error);
+        }
 
-    if (existingResult.value !== null) {
-        return Ok(existingResult.value);
-    }
+        if (existingResult.value !== null) {
+            return Ok(existingResult.value);
+        }
 
-    const gettingStartedMeta = await getOrCreateMeta(user.account_id, currentEnvironmentId);
+        const gettingStartedMeta = await getOrCreateMeta(user.account_id, currentEnvironmentId, trx);
 
-    if (gettingStartedMeta.isErr()) {
-        return Err(gettingStartedMeta.error);
-    }
+        if (gettingStartedMeta.isErr()) {
+            return Err(gettingStartedMeta.error);
+        }
 
-    const createdResult = await createProgress({
-        user_id: user.id,
-        getting_started_meta_id: gettingStartedMeta.value.id,
-        step: 0,
-        connection_id: null
+        const createdResult = await createProgress(
+            {
+                user_id: user.id,
+                getting_started_meta_id: gettingStartedMeta.value.id,
+                step: 0,
+                connection_id: null
+            },
+            trx
+        );
+
+        if (createdResult.isErr()) {
+            return Err(createdResult.error);
+        }
+
+        const newProgress = await getProgressByUserId(createdResult.value.user_id, trx);
+        if (newProgress.isErr()) {
+            return Err(newProgress.error);
+        }
+
+        if (newProgress.value === null) {
+            return Err('failed_to_get_getting_started_progress');
+        }
+
+        return Ok(newProgress.value);
     });
-
-    if (createdResult.isErr()) {
-        return Err(createdResult.error);
-    }
-
-    const newProgress = await getProgressByUserId(createdResult.value.user_id);
-    if (newProgress.isErr()) {
-        return Err(newProgress.error);
-    }
-
-    if (newProgress.value === null) {
-        return Err('failed_to_get_getting_started_progress');
-    }
-
-    return Ok(newProgress.value);
 }
 
 /**
  * Update getting started progress for a user and return the updated object.
  */
 export async function patchProgressByUser(user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
-    // Ensure meta/progress exist and fetch meta information (environment, integration)
-    const existing = await getProgressByUserId(user.id);
-    if (existing.isErr()) {
-        return Err(existing.error);
-    }
+    return await db.knex.transaction(async (trx) => {
+        // Ensure meta/progress exist and fetch meta information (environment, integration)
+        const existing = await getProgressByUserId(user.id, trx);
+        if (existing.isErr()) {
+            return Err(existing.error);
+        }
 
-    if (existing.value === null) {
-        return Err('getting_started_progress_not_found');
-    }
+        if (existing.value === null) {
+            return Err('getting_started_progress_not_found');
+        }
 
-    const update: Partial<DBGettingStartedProgress> = {};
+        const update: Partial<DBGettingStartedProgress> = {};
 
-    if (typeof input.step !== 'undefined') {
-        update.step = input.step;
-    }
+        if (typeof input.step !== 'undefined') {
+            update.step = input.step;
+        }
 
-    if (typeof input.connection_id !== 'undefined') {
-        if (input.connection_id === null || input.connection_id === '') {
-            update.connection_id = null;
-        } else {
-            try {
-                const { error, response: connection } = await connectionService.getConnection(
-                    input.connection_id,
-                    existing.value.meta.integration.unique_key,
-                    existing.value.meta.environment.id
-                );
+        if (typeof input.connection_id !== 'undefined') {
+            if (input.connection_id === null || input.connection_id === '') {
+                update.connection_id = null;
+            } else {
+                try {
+                    const { error, response: connection } = await connectionService.getConnection(
+                        input.connection_id,
+                        existing.value.meta.integration.unique_key,
+                        existing.value.meta.environment.id
+                    );
 
-                if (error || !connection) {
-                    return Err(new Error('connection_not_found', { ...(error ? { cause: error } : {}) }));
+                    if (error || !connection) {
+                        return Err(new Error('connection_not_found', { ...(error ? { cause: error } : {}) }));
+                    }
+
+                    update.connection_id = connection.id;
+                } catch (err) {
+                    return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
                 }
-
-                update.connection_id = connection.id;
-            } catch (err) {
-                return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
             }
         }
-    }
 
-    try {
-        if (Object.keys(update).length > 0) {
-            await updateByUserId(user.id, update);
+        try {
+            if (Object.keys(update).length > 0) {
+                await updateByUserId(user.id, update, trx);
+            }
+        } catch (err) {
+            return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
         }
-    } catch (err) {
-        return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
-    }
 
-    return Ok(undefined);
+        return Ok(undefined);
+    });
 }
 
-export async function getOrCreateMeta(accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
-    const existingMeta = await getMetaByAccountId(accountId);
+export async function getOrCreateMeta(accountId: number, currentEnvironmentId: number, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta>> {
+    const existingMeta = await getMetaByAccountId(accountId, trx);
 
     if (existingMeta.isErr()) {
         return Err(existingMeta.error);
@@ -216,7 +233,7 @@ export async function getOrCreateMeta(accountId: number, currentEnvironmentId: n
         return Err(googleCalendarIntegrationId.error);
     }
 
-    const newMeta = await createMeta({ account_id: accountId, environment_id: currentEnvironmentId, integration_id: googleCalendarIntegrationId.value });
+    const newMeta = await createMeta({ account_id: accountId, environment_id: currentEnvironmentId, integration_id: googleCalendarIntegrationId.value }, trx);
 
     if (newMeta.isErr()) {
         return Err('failed_to_create_getting_started_meta');
