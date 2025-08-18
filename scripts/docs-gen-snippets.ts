@@ -233,7 +233,7 @@ function buildEndpoints(type: string, syncOrAction: any, integration: string, sy
                     path: endpoint?.path,
                     description: item?.description?.trim(),
                     group: endpoint?.group,
-                    script: `${integration}/${type}s/${symLinkTargetName || item.name}`
+                    script: `${symLinkTargetName || integration}/${type}s/${item.name}`
                 });
             }
         }
