@@ -30,6 +30,7 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/nango-yaml": "file:../nango-yaml",
+        "@nangohq/providers": "file:.../providers",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
