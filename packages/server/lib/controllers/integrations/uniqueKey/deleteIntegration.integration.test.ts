@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 
 import { gettingStartedService, seeders } from '@nangohq/shared';
 
@@ -52,6 +52,7 @@ describe(`DELETE ${endpoint}`, () => {
         isSuccess(res.json);
 
         const metaAfter = await gettingStartedService.getMetaByAccountId(account.id);
-        expect(metaAfter).toBeNull();
+        assert(!metaAfter.isErr(), 'Meta should be deleted');
+        expect(metaAfter.value).toBeNull();
     });
 });
