@@ -26,11 +26,7 @@ export async function createMeta(input: CreateGettingStartedMeta): Promise<Resul
     try {
         const [gettingStartedMeta] = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
 
-        if (!gettingStartedMeta) {
-            return Err(new Error('failed_to_create_getting_started_meta'));
-        }
-
-        return Ok(gettingStartedMeta);
+        return gettingStartedMeta ? Ok(gettingStartedMeta) : Err('failed_to_create_getting_started_meta');
     } catch (err) {
         return Err(new Error('failed_to_create_getting_started_meta', { cause: err }));
     }
@@ -40,11 +36,7 @@ export async function createProgress(input: CreateGettingStartedProgress): Promi
     try {
         const [gettingStartedProgress] = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
 
-        if (!gettingStartedProgress) {
-            return Err(new Error('failed_to_create_getting_started_progress'));
-        }
-
-        return Ok(gettingStartedProgress);
+        return gettingStartedProgress ? Ok(gettingStartedProgress) : Err('failed_to_create_getting_started_progress');
     } catch (err) {
         return Err(new Error('failed_to_create_getting_started_progress', { cause: err }));
     }
@@ -95,11 +87,7 @@ export async function getMetaByAccountId(accountId: number): Promise<Result<DBGe
     try {
         const gettingStartedMeta = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
-        if (!gettingStartedMeta) {
-            return Ok(null);
-        }
-
-        return Ok(gettingStartedMeta);
+        return gettingStartedMeta ? Ok(gettingStartedMeta) : Ok(null);
     } catch (err) {
         return Err(new Error('failed_to_get_getting_started_meta', { cause: err }));
     }
@@ -109,10 +97,7 @@ export async function updateByUserId(userId: number, data: Partial<DBGettingStar
     try {
         const [updated] = await db.knex.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
 
-        if (!updated) {
-            return Err(new Error('failed_to_update_getting_started_progress'));
-        }
-        return Ok(updated);
+        return updated ? Ok(updated) : Err('failed_to_update_getting_started_progress');
     } catch (err) {
         return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
     }
@@ -155,7 +140,7 @@ export async function getOrCreateProgressByUser(user: DBUser, currentEnvironment
     }
 
     if (newProgress.value === null) {
-        return Err(new Error('failed_to_get_getting_started_progress'));
+        return Err('failed_to_get_getting_started_progress');
     }
 
     return Ok(newProgress.value);
@@ -172,7 +157,7 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
     }
 
     if (existing.value === null) {
-        return Err(new Error('getting_started_progress_not_found'));
+        return Err('getting_started_progress_not_found');
     }
 
     const update: Partial<DBGettingStartedProgress> = {};
@@ -234,7 +219,7 @@ export async function getOrCreateMeta(accountId: number, currentEnvironmentId: n
     const newMeta = await createMeta({ account_id: accountId, environment_id: currentEnvironmentId, integration_id: googleCalendarIntegrationId.value });
 
     if (newMeta.isErr()) {
-        return Err(new Error('failed_to_create_getting_started_meta'));
+        return Err('failed_to_create_getting_started_meta');
     }
 
     return Ok(newMeta.value);
@@ -251,7 +236,7 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
 
     const provider = getProvider(PROVIDER_NAME);
     if (!provider) {
-        return Err(new Error('google_calendar_provider_not_found'));
+        return Err('google_calendar_provider_not_found');
     }
 
     const newIntegration = await sharedCredentialsService.createPreprovisionedProvider({
@@ -269,7 +254,7 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
     const id = newIntegration.value.id ?? null;
 
     if (!id) {
-        return Err(new Error('failed_to_create_google_calendar_integration'));
+        return Err('failed_to_create_google_calendar_integration');
     }
 
     return Ok(id);
@@ -279,11 +264,7 @@ export async function deleteMetaByIntegrationId(integrationId: number): Promise<
     try {
         const result = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
 
-        if (result === 0) {
-            return Err(new Error('failed_to_delete_getting_started_meta'));
-        }
-
-        return Ok(undefined);
+        return result && result > 0 ? Ok(undefined) : Err('failed_to_delete_getting_started_meta');
     } catch (err) {
         return Err(new Error('failed_to_delete_getting_started_meta', { cause: err }));
     }
