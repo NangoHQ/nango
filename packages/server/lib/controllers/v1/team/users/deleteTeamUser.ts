@@ -46,7 +46,7 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
     }
 
     // Account ID is not nullable until we change the way we deal with default account so we create a temp one
-    const newTeam = await accountService.createAccount(`${user.name}'s Team`);
+    const newTeam = await accountService.createAccount({ name: user.name });
     if (!newTeam) {
         res.status(500).send({ error: { code: 'server_error' } });
         return;

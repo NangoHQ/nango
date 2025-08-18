@@ -1,13 +1,13 @@
 import * as z from 'zod';
 
-import { configService, getProvider } from '@nangohq/shared';
+import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { providerSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PostIntegration } from '@nangohq/types';
+import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -42,9 +42,19 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
 
     const { environment } = res.locals;
 
-    const integration = body.useSharedCredentials
-        ? await configService.createPreprovisionedProvider(body.provider, environment.id, provider)
-        : await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+    let integration: IntegrationConfig;
+    if (body.useSharedCredentials) {
+        const result = await sharedCredentialsService.createPreprovisionedProvider(body.provider, environment.id, provider);
+        if (result.isErr()) {
+            res.status(400).send({
+                error: { code: 'invalid_body', message: result.error.message }
+            });
+            return;
+        }
+        integration = result.value;
+    } else {
+        integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+    }
 
     res.status(200).send({
         data: integrationToApi(integration)

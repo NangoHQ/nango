@@ -18,6 +18,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
     const [showResendEmail, setShowResendEmail] = useState(false);
     const [email, setEmail] = useState(() => invitation?.email || '');
     const [name, setName] = useState('');
+    const [foundUs, setFoundUs] = useState('');
     const [password, setPassword] = useState('');
     const [passwordStrength, setPasswordStrength] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
         setShowResendEmail(false);
         setLoading(true);
 
-        const res = await signupAPI({ name, email, password, token });
+        const res = await signupAPI({ name, email, password, token, foundUs });
 
         if (res?.status === 200) {
             const response: PostSignup['Success'] = await res.json();
@@ -111,6 +112,19 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                                 setPasswordStrength(tmpStrength);
                             }}
                         />
+                        <Input
+                            id="found_us"
+                            name="found_us"
+                            type="text"
+                            autoComplete="off"
+                            placeholder="How did you hear about Nango?"
+                            inputSize="lg"
+                            value={foundUs}
+                            required
+                            onChange={(e) => setFoundUs(e.target.value)}
+                            disabled={Boolean(invitation?.email)}
+                            className="border-border-gray bg-dark-600"
+                        />
                     </div>
 
                     <div className="grid">
@@ -118,7 +132,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             type="submit"
                             size={'lg'}
                             className="justify-center disabled:bg-dark-700"
-                            disabled={!name || !email || !password || !passwordStrength}
+                            disabled={!name || !email || !password || !passwordStrength || !foundUs}
                             isLoading={loading}
                         >
                             Sign up

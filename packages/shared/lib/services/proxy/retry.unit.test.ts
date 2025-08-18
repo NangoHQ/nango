@@ -206,6 +206,83 @@ describe('getProxyRetryFromErr', () => {
                     expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
                 });
             });
+
+            describe('configured header arrays', () => {
+                it('should work when array is configured but only one header is present', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: { 'x-fallback-reset': nowInSecs + 1 }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        at: ['x-primary-reset', 'x-fallback-reset']
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
+                });
+
+                it('should pick longest wait time when multiple headers are present', () => {
+                    const nowInSecs = Date.now() / 1000;
+                    const mockAxiosError = getDefaultError({
+                        response: {
+                            status: 429,
+                            headers: {
+                                'x-primary-reset': nowInSecs + 3,
+                                'x-fallback-reset': nowInSecs + 1
+                            }
+                        }
+                    });
+                    const res = getProxyRetryFromErr({
+                        err: mockAxiosError,
+                        proxyConfig: getDefaultProxy({
+                            provider: {
+                                proxy: {
+                                    base_url: '',
+                                    retry: {
+                                        at: ['x-primary-reset', 'x-fallback-reset']
+                                    }
+                                }
+                            }
+                        })
+                    });
+                    expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 4000 });
+                });
+            });
+        });
+
+        describe('custom Header arrays', () => {
+            it('should pick longest wait time when multiple headers are present', () => {
+                const nowInSecs = Date.now() / 1000;
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: {
+                            'x-primary-reset': nowInSecs + 3,
+                            'x-fallback-reset': nowInSecs + 1
+                        }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        retryHeader: {
+                            at: ['x-primary-reset', 'x-fallback-reset']
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 4000 });
+            });
         });
     });
 });

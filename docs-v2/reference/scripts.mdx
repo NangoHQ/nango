@@ -10,10 +10,10 @@ icon: "code"
   <Tab title="Sync script">
     ```ts
     import { createSync } from 'nango';
-    
+
     const githubIssueDemoSchema = z.object({ ... });
     type GithubIssueDemo = z.infer<typeof githubIssueDemoSchema>;
-    
+
     export default createSync({
       description: `Fetches the Github issues from all a user's repositories.`,
       version: '1.0.0',
@@ -22,23 +22,23 @@ icon: "code"
       autoStart: true,
       syncType: 'full',
       trackDeletes: true,
-    
+
       metadata: z.void(),
       models: {
         GithubIssueDemo: githubIssueDemoSchema
       },
-    
+
       exec: async (nango) => {
         // Fetch issues from GitHub.
         const res = await nango.get({
             endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
         });
-    
+
         // Map issues to your preferred schema.
         const issues: GithubIssueDemo[] = res.data.map(({ id, title, html_url }: any) => {
             return { id, title, url: html_url };
         });
-    
+
         // Persist issues to the Nango cache.
         await nango.batchSave(issues, 'GithubIssueDemo');
       },
@@ -49,15 +49,15 @@ icon: "code"
     ```ts
     import { createAction } from 'nango';
     import { GithubCreateIssueInput, GithubCreateIssueResult } from '../../models.js';
-    
+
     export default createAction({
       description: `Create an issue in GitHub`,
       version: '1.0.0',
       endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
-    
+
       input: GithubCreateIssueInput,
       output: GithubCreateIssueResult,
-      
+
       exec: async (nango, input) => {
         // Create a GitHub issue.
         const res = await nango.post({
@@ -68,7 +68,7 @@ icon: "code"
                 labels: ['automatic']
             }
         });
-    
+
         // Send response.
         return { url: res.data.html_url, status: res.status };
       },
