@@ -21,6 +21,7 @@ export interface ConnectSessionInput {
         id: string;
         email?: string | undefined;
         display_name?: string | undefined;
+        tags?: Record<string, string> | undefined;
     };
     organization?:
         | {

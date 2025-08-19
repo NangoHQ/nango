@@ -76,6 +76,7 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     dryRun = false;
+    isScript = false;
     activityLogId?: string | undefined;
     userAgent: string;
     http: AxiosInstance;
@@ -104,6 +105,10 @@ export class Nango {
 
         if (config.isSync) {
             this.isSync = config.isSync;
+        }
+
+        if (config.isScript) {
+            this.isScript = config.isScript;
         }
 
         if (config.dryRun) {
@@ -348,10 +353,7 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, {
-            'Nango-Is-Sync': true,
-            'Nango-Is-Dry-Run': this.dryRun
-        });
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false);
 
         return response.data.metadata as T;
     }
@@ -881,8 +883,6 @@ export class Nango {
             'Connection-Id': connectionId!,
             'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customPrefixedHeaders
         };
@@ -1063,9 +1063,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun
+            'Content-Type': 'application/json'
         };
 
         if (additionalHeader) {
@@ -1082,12 +1080,15 @@ export class Nango {
     }
 
     /**
-     * Enriches the headers with the Authorization token
+     * Enriches the headers with the Authorization token and internal flags
      * @param headers - Optional. The headers to enrich
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
         headers['Authorization'] = 'Bearer ' + this.secretKey;
+        headers['Nango-Is-Sync'] = this.isSync;
+        headers['Nango-Is-Script'] = this.isScript;
+        headers['Nango-Is-Dry-Run'] = this.dryRun;
 
         return headers;
     }

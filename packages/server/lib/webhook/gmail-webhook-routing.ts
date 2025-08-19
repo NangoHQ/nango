@@ -6,8 +6,7 @@ import { Err, Ok, getLogger, report } from '@nangohq/utils';
 import { getGoogleJWKS } from './cache.js';
 
 import type { WebhookHandler } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import type { IntegrationConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Gmail');
 
@@ -16,7 +15,7 @@ interface DecodedDataObject {
     historyId: string;
 }
 
-export async function validate(integration: ProviderConfig, headers: Record<string, any>): Promise<boolean> {
+export async function validate(integration: IntegrationConfig, headers: Record<string, any>): Promise<boolean> {
     try {
         const authHeader: string | undefined = headers['authorization'];
 
@@ -85,11 +84,11 @@ export async function validate(integration: ProviderConfig, headers: Record<stri
     }
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, _rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
 
     if (authHeader) {
-        const valid = await validate(integration, headers);
+        const valid = await validate(nango.integration, headers);
 
         if (!valid) {
             logger.error('webhook signature invalid');
@@ -108,14 +107,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, _rawBody
     }
     const editedBodyWithCatchAll = { ...body, type: '*', emailAddress: decodedBody?.emailAddress };
 
-    const response = await nango.executeScriptForWebhooks(
-        integration,
-        editedBodyWithCatchAll,
-        'type',
-        'emailAddress',
-        logContextGetter,
-        'metadata.emailAddress'
-    );
+    const response = await nango.executeScriptForWebhooks({
+        body: editedBodyWithCatchAll,
+        webhookType: 'type',
+        connectionIdentifier: 'emailAddress',
+        propName: 'metadata.emailAddress'
+    });
 
     return Ok({
         content: { status: 'success' },
