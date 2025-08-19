@@ -1,3 +1,4 @@
+import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
 import { CodeBlock } from '../../components/CodeBlock';
@@ -142,11 +143,13 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                     snippets={[
                         {
                             displayLanguage: 'Node Client',
+                            icon: <IconBrandNodejs className="w-4 h-4" />,
                             language: 'typescript',
                             code: nodeClientCode
                         },
                         {
                             displayLanguage: 'cURL',
+                            icon: <IconTerminal2 className="w-4 h-4" />,
                             language: 'bash',
                             code: curlCode
                         }

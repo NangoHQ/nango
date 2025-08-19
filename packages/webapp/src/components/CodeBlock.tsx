@@ -14,8 +14,8 @@ import type { HTMLAttributes } from 'react';
 export interface Snippet {
     language: PrismProps['language'];
     displayLanguage: string;
+    icon: React.ReactNode;
     code: string;
-    copy?: string;
 }
 
 export type CodeBlockProps = {
@@ -34,8 +34,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
         }
 
         setIsExecuting(true);
-        await onExecute();
-        setIsExecuting(false);
+        try {
+            await onExecute();
+        } finally {
+            setIsExecuting(false);
+        }
     };
 
     return (
@@ -52,9 +55,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
                                 <SelectValue placeholder="Language" />
                             </SelectTrigger>
                             <SelectContent>
-                                {snippets.map(({ language, displayLanguage }) => (
-                                    <SelectItem key={language} value={language} className="text-s">
-                                        {displayLanguage}
+                                {snippets.map(({ language, displayLanguage, icon }) => (
+                                    <SelectItem key={language} value={language}>
+                                        <div className="text-s flex flex-row items-center gap-2">
+                                            {icon}
+                                            {displayLanguage}
+                                        </div>
                                     </SelectItem>
                                 ))}
                             </SelectContent>

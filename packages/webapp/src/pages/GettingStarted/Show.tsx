@@ -31,6 +31,8 @@ export const GettingStarted: React.FC = () => {
     }, [error, navigate, toast]);
 
     let currentStep = gettingStarted?.connection ? (gettingStarted?.step ?? 0) : 0;
+    console.log('currentStep', currentStep);
+    console.log('gettingStarted', gettingStarted);
     if (isLoading || !gettingStarted) {
         // Just disable every step while loading.
         currentStep = -1;
@@ -57,7 +59,7 @@ export const GettingStarted: React.FC = () => {
                                 onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
                                 onConnected={async (connectionId) => {
                                     analyticsTrack('web:getting_started:connection-created');
-                                    await patchGettingStarted(env, { connection_id: connectionId });
+                                    await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
                                     await mutate();
                                 }}
                                 onDisconnected={async () => {
