@@ -481,7 +481,7 @@ export class NangoError extends NangoInternalError {
 
             case 'script_api_rate_limit_error':
                 this.status = 424;
-                this.message = `Too many operations performed against the Nango API. Reduce the number of actions and/or the frequency of your syncs. Contact Nango support to increase your limits.`; //TODO
+                this.message = `Script API rate limit exceeded. Your Nango scripts made too many calls to the Nango API within the allowed window. Mitigation: reduce how often scripts run (e.g. lower sync frequency, fewer actions). Need higher limits? Contact Nango support.`;
                 break;
 
             case 'script_internal_error':
