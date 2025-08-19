@@ -10,6 +10,7 @@ export type Metadata = Record<string, unknown>;
 
 export interface ConnectionConfig {
     [key: string]: any;
+    oauth_scopes_override?: string[];
     oauth_scopes?: string;
     authorization_params?: Record<string, string>;
 }

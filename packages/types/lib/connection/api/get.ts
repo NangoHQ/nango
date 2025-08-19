@@ -1,9 +1,17 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
-import type { AllAuthCredentials } from '../../auth/api.js';
+import type {
+    AllAuthCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
+    TbaCredentials
+} from '../../auth/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
-import type { DBConnection, DBConnectionDecrypted } from '../db.js';
+import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
@@ -57,6 +65,27 @@ export type GetPublicConnections = Endpoint<{
     Success: {
         connections: ApiPublicConnection[];
     };
+}>;
+
+export type PostPublicConnection = Endpoint<{
+    Method: 'POST';
+    Path: '/connections';
+    Body: {
+        connection_id?: string | undefined;
+        provider_config_key: string;
+        metadata?: Record<string, unknown> | undefined;
+        connection_config?: ConnectionConfig | undefined;
+        credentials:
+            | OAuth2Credentials
+            | OAuth2ClientCredentials
+            | OAuth1Credentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | TbaCredentials
+            | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'NONE' };
+    };
+    Success: ApiPublicConnectionFull;
 }>;
 
 export type ApiConnectionFull = Omit<

@@ -62,7 +62,7 @@ export function connectionSimpleToPublicApi({
 }: {
     data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
-    activeLog: [{ type: string; log_id: string }];
+    activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
 }): ApiPublicConnection {
     return {
@@ -73,7 +73,7 @@ export function connectionSimpleToPublicApi({
         errors: activeLog,
         end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
-        created: String(data.created_at)
+        created: typeof data.created_at === 'object' ? data.created_at.toISOString() : String(data.created_at)
     };
 }
 
@@ -85,7 +85,7 @@ export function connectionFullToPublicApi({
 }: {
     data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
-    activeLog: [{ type: string; log_id: string }];
+    activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
 }): ApiPublicConnectionFull {
     return {
@@ -97,9 +97,13 @@ export function connectionFullToPublicApi({
         end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
-        created_at: String(data.created_at),
-        updated_at: String(data.updated_at),
-        last_fetched_at: data.last_fetched_at ? String(data.last_fetched_at) : null,
+        created_at: typeof data.created_at === 'object' ? data.created_at.toISOString() : String(data.created_at),
+        updated_at: typeof data.updated_at === 'object' ? data.updated_at.toISOString() : String(data.updated_at),
+        last_fetched_at: data.last_fetched_at
+            ? typeof data.last_fetched_at === 'object'
+                ? data.last_fetched_at.toISOString()
+                : String(data.last_fetched_at)
+            : null,
         credentials: data.credentials
     };
 }

@@ -46,8 +46,17 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
-import type { Config as ProviderConfig, ConnectionUpsertResponse, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
-import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderCustom, ProviderGithubApp, ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
+import type {
+    ConnectionConfig,
+    ConnectionUpsertResponse,
+    DBEnvironment,
+    DBTeam,
+    Provider,
+    ProviderCustom,
+    ProviderGithubApp,
+    ProviderOAuth2
+} from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class OAuthController {
@@ -1131,7 +1140,7 @@ class OAuthController {
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
 
-        let connectionConfig: ConnectionConfig = {
+        let connectionConfig: Record<string, any> = {
             ...webhookMetadata,
             ...session.connectionConfig
         };
