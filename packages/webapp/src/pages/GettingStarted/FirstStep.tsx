@@ -56,22 +56,24 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         // We defer the token creation so the iframe can open and display a loading screen
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
-            const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.unique_key] : undefined,
-                end_user: {
-                    id: user.id.toString(),
-                    email: user.email,
-                    display_name: user.name
-                },
-                organization: undefined
-            });
-            if ('error' in res.json) {
-                if (connectUI.current) {
-                    connectUI.current.close();
+            try {
+                const res = await apiConnectSessions(env, {
+                    allowed_integrations: integration ? [integration.unique_key] : undefined,
+                    end_user: {
+                        id: user.id.toString(),
+                        email: user.email,
+                        display_name: user.name
+                    },
+                    organization: undefined
+                });
+                if ('error' in res.json) {
+                    connectUI.current?.close();
+                    return;
                 }
-                return;
+                connectUI.current!.setSessionToken(res.json.data.token);
+            } catch {
+                connectUI.current?.close();
             }
-            connectUI.current!.setSessionToken(res.json.data.token);
         }, 10);
     };
 

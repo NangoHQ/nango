@@ -31,8 +31,6 @@ export const GettingStarted: React.FC = () => {
     }, [error, navigate, toast]);
 
     let currentStep = gettingStarted?.connection ? (gettingStarted?.step ?? 0) : 0;
-    console.log('currentStep', currentStep);
-    console.log('gettingStarted', gettingStarted);
     if (isLoading || !gettingStarted) {
         // Just disable every step while loading.
         currentStep = -1;
