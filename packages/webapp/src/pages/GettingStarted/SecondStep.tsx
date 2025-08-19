@@ -1,12 +1,14 @@
-import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
-import { useMemo } from 'react';
+import { IconBrandNodejs, IconLoader, IconPlayerPlay, IconTerminal2 } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
 
 import { CodeBlock } from '../../components/CodeBlock';
 import LinkWithIcon from '../../components/LinkWithIcon';
+import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
+import { cn } from '../../utils/utils';
 
 interface CalendarEvent {
     summary: string;
@@ -69,6 +71,8 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
 
+    const [isExecuting, setIsExecuting] = useState(false);
+
     const calendarEvent: CalendarEvent = useMemo(() => {
         const tomorrowNoon = new Date(new Date().setHours(12, 0, 0, 0) + 24 * 60 * 60 * 1000);
 
@@ -97,6 +101,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             return;
         }
 
+        setIsExecuting(true);
         try {
             const res = await publicApiFetch(
                 '/proxy/calendar/v3/calendars/primary/events',
@@ -130,6 +135,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             });
         } finally {
             onExecuted?.();
+            setIsExecuting(false);
         }
     };
 
@@ -139,7 +145,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             <div className="flex flex-col gap-5">
                 <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
                 <CodeBlock
-                    onExecute={onExecute}
                     snippets={[
                         {
                             displayLanguage: 'Node Client',
@@ -155,12 +160,25 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         }
                     ]}
                 />
-                <div className="flex flex-row items-center justify-between">
+                <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
                     {completed && (
                         <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                             Explore the logs from this demo
                         </LinkWithIcon>
                     )}
+                    <Button variant="primary" onClick={onExecute} disabled={isExecuting}>
+                        {isExecuting ? (
+                            <>
+                                <IconLoader className="w-4 h-4 animate-spin" />
+                                Running...
+                            </>
+                        ) : (
+                            <>
+                                <IconPlayerPlay className="w-4 h-4" />
+                                Run
+                            </>
+                        )}
+                    </Button>
                 </div>
             </div>
         </div>
