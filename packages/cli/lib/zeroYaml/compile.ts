@@ -354,9 +354,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         }
                     },
 
-                    CallExpression(path) {
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const callee = path.node.callee;
+                    CallExpression(astPath) {
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const callee = astPath.node.callee;
                         if (!('object' in callee) || !('property' in callee)) {
                             return;
                         }
@@ -364,14 +364,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             return;
                         }
 
-                        const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
-                        const isThenOrCatch = path.findParent(
+                        const isAwaited = astPath.findParent((parentPath) => parentPath.isAwaitExpression());
+                        const isThenOrCatch = astPath.findParent(
                             (parentPath) =>
                                 t.isMemberExpression(parentPath.node) &&
                                 (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
                         );
 
-                        const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+                        const isReturned = Boolean(astPath.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
 
                         if (!isAwaited && !isThenOrCatch && !isReturned && needsAwait.includes(callee.property.name)) {
                             throw new CompileError(
@@ -381,7 +381,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             );
                         }
 
-                        const callArguments = path.node.arguments;
+                        const callArguments = astPath.node.arguments;
                         if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
                             let retriesPropertyFound = false;
                             let retryOnPropertyFound = false;
@@ -402,14 +402,34 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             }
                         }
 
-                        if (callsProxy.includes(callee.property.name)) {
-                            proxyLines.push(lineNumber);
-                        }
-                        if (callsBatchingRecords.includes(callee.property.name)) {
-                            batchingRecordsLines.push(lineNumber);
-                        }
-                        if (callee.property.name === 'setMergingStrategy') {
-                            setMergingStrategyLines.push(lineNumber);
+                        // Check the main file and only the exec method for common errors
+                        // If you abstract those calls in functions then it's not checking since it's quite hard to determine order
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedEntryPoint = path.resolve(entryPoint);
+                            if (normalizedCurrentPath === normalizedEntryPoint) {
+                                // Check if we're inside a createSync's exec function
+                                const isInCreateSyncExec = astPath.findParent((parentPath) => {
+                                    if (!parentPath.isObjectProperty()) {
+                                        return false;
+                                    }
+                                    const prop = parentPath.node;
+                                    return t.isIdentifier(prop.key) && prop.key.name === 'exec';
+                                });
+
+                                if (isInCreateSyncExec) {
+                                    if (callsProxy.includes(callee.property.name)) {
+                                        proxyLines.push(lineNumber);
+                                    }
+                                    if (callsBatchingRecords.includes(callee.property.name)) {
+                                        batchingRecordsLines.push(lineNumber);
+                                    }
+                                    if (callee.property.name === 'setMergingStrategy') {
+                                        setMergingStrategyLines.push(lineNumber);
+                                    }
+                                }
+                            }
                         }
                     },
 
