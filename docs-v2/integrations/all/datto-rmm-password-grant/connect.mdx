@@ -1,12 +1,14 @@
 ---
-title: Datto RMM - How do I link my account?
-sidebarTitle: Datto RMM
+title: Datto RMM (Password Grant) - How do I link my account?
+sidebarTitle: Datto RMM (Password Grant)
 ---
 
 # Overview
 
 To authenticate with Datto RMM, you need:
 1. **Platform** – Your Datto RMM platform (e.g., `merlot`, `pinotage`, `concord`, `vidal`, `zinfandel`, `syrah`). This determines your API base URL like `https://<platform>-api.centrastage.net`.
+2. **API Key** - A unique identifier used to generate an access token for requests associated with your account.
+3. **API Secret Key** - A secret token used alongside the **API Key** to generate an access token for authenticating requests. 
 
 This guide walks you through enabling API access and finding your **Platform (Region)** in Datto RMM.
 
@@ -20,7 +22,7 @@ This guide walks you through enabling API access and finding your **Platform (Re
 <img src="/integrations/all/datto-rmm/access_control.png"/>
 2. Go to **Setup** > **Users**, select your user, then click **Generate API Keys** to create an **API Key** and **API Secret Key** for the user.
 <img src="/integrations/all/datto-rmm/generate_api_key.png"/>
-3. The **API Key** and **API Secret** Key will be displayed. You will need to use these keys to fill out the login form: enter the **API Key** in the `Access Key` field and the **API Secret Key** in the `Secret Key` field.
+3. The **API Key** and **API Secret Key** will be displayed. 
 <img src="/integrations/all/datto-rmm/api_key.png"/>
 4. Click **Save User**.
 
@@ -37,13 +39,13 @@ Your platform corresponds to your region and defines your base URL:
 
 You can also verify Swagger at `https://<platform>-api.centrastage.net/api/swagger-ui/index.html`.
 
-### Step 3: Enter your details in the Connect UI
+#### Step 3: Enter credentials in the Connect UI
 
-Once you have the **Platform**:
-1. Open the form where you need to authenticate with Datto RMM.
-2. Enter the **Platform** (e.g., `merlot`) in the appropriate field.
-3. Submit the form to proceed to the OAuth consent, complete the authorization, and you should be successfully authenticated.
+Once you have your **Platform**, **API Key** and **API Secret Key**:
+1. Open the form where you need to authenticate with Datto RMM (Password Grant).
+2. Enter **Platform**, **API Key** and **API Secret Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-<img src="/integrations/all/datto-rmm/form.png" style={{maxWidth: "450px" }}/>
+<img src="/integrations/all/datto-rmm-password-grant/form.png" style={{maxWidth: "450px" }}/>
 
-You are now connected to Datto RMM.
+You are now connected to Datto RMM (Password Grant).
