@@ -97,12 +97,15 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         if (!connection || !integration) {
             return;
         }
-        const { res } = await apiDeleteConnection({ connectionId: connection.connection_id }, { env, provider_config_key: integration.unique_key });
-        if (!res.ok) {
+        try {
+            const { res } = await apiDeleteConnection({ connectionId: connection.connection_id }, { env, provider_config_key: integration.unique_key });
+            if (!res.ok) {
+                throw new Error('Failed to delete connection');
+            }
+            onDisconnected();
+        } catch {
             toast({ title: 'Failed to delete connection', variant: 'error' });
-            return;
         }
-        onDisconnected();
     };
 
     if (connection) {

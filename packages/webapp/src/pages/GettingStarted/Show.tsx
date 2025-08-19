@@ -56,13 +56,24 @@ export const GettingStarted: React.FC = () => {
                                 integration={gettingStarted?.meta.integration ?? null}
                                 onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
                                 onConnected={async (connectionId) => {
-                                    analyticsTrack('web:getting_started:connection-created');
-                                    await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
-                                    await mutate();
+                                    try {
+                                        analyticsTrack('web:getting_started:connection-created');
+                                        const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
+                                        if (!res.ok) {
+                                            throw new Error('Failed to patch getting started');
+                                        }
+                                        await mutate();
+                                    } catch {
+                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                    }
                                 }}
                                 onDisconnected={async () => {
-                                    analyticsTrack('web:getting_started:connection-disconnected');
-                                    await mutate();
+                                    try {
+                                        analyticsTrack('web:getting_started:connection-disconnected');
+                                        await mutate();
+                                    } catch {
+                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                    }
                                 }}
                             />
                         ),
@@ -75,9 +86,16 @@ export const GettingStarted: React.FC = () => {
                                 connectionId={gettingStarted?.connection?.connection_id}
                                 providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                 onExecuted={async () => {
-                                    analyticsTrack('web:getting_started:code-snippet-executed');
-                                    await patchGettingStarted(env, { step: 2 });
-                                    await mutate();
+                                    try {
+                                        analyticsTrack('web:getting_started:code-snippet-executed');
+                                        const { res } = await patchGettingStarted(env, { step: 2 });
+                                        if (!res.ok) {
+                                            throw new Error('Failed to patch getting started');
+                                        }
+                                        await mutate();
+                                    } catch {
+                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                    }
                                 }}
                                 completed={currentStep >= 2}
                             />
