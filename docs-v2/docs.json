@@ -283,6 +283,7 @@
               "integrations/all/datadog",
               "integrations/all/datev",
               "integrations/all/datto-rmm",
+              "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "integrations/all/devin",
@@ -835,7 +836,7 @@
       }
     }
   },
-  
+
   "navbar": {
     "links": [
       {

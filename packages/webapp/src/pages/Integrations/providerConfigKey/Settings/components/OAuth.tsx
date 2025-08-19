@@ -136,6 +136,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                             onScopeChange={handleScopeChange}
                             minLength={1}
                             readOnly={!shouldShowCredentials}
+                            clipboard={true}
                         />
                     </InfoBloc>
                 )}

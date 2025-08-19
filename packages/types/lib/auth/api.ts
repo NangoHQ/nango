@@ -77,6 +77,7 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
+    jwtToken?: string;
 }
 
 export interface AppStoreCredentials {
