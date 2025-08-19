@@ -1,3 +1,7 @@
+import { setTimeout } from 'node:timers/promises';
+
+import { isAxiosError } from 'axios';
+
 import { Nango } from '@nangohq/node';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
@@ -40,23 +44,25 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
-        this.nango = new Nango(
-            {
-                isScript: true,
-                isSync: false,
-                dryRun: isTest,
-                ...props
-            },
-            {
-                interceptors: {
-                    request: (config) => {
-                        // @ts-expect-error yes it's internal
-                        config.metadata = { startTime: new Date() };
-                        return config;
-                    },
-                    response: { onFulfilled: this.logAPICall.bind(this) }
+        this.nango = withRetry(
+            new Nango(
+                {
+                    isScript: true,
+                    isSync: false,
+                    dryRun: isTest,
+                    ...props
+                },
+                {
+                    interceptors: {
+                        request: (config) => {
+                            // @ts-expect-error yes it's internal
+                            config.metadata = { startTime: new Date() };
+                            return config;
+                        },
+                        response: { onFulfilled: this.logAPICall.bind(this) }
+                    }
                 }
-            }
+            )
         );
 
         if (!this.activityLogId) throw new Error('Parameter activityLogId is required');
@@ -273,23 +279,25 @@ export class NangoSyncRunner extends NangoSyncBase {
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
-        this.nango = new Nango(
-            {
-                isScript: true,
-                isSync: true,
-                dryRun: isTest,
-                ...props
-            },
-            {
-                interceptors: {
-                    request: (config) => {
-                        // @ts-expect-error yes it's internal
-                        config.metadata = { startTime: new Date() };
-                        return config;
-                    },
-                    response: { onFulfilled: this.logAPICall.bind(this) }
+        this.nango = withRetry(
+            new Nango(
+                {
+                    isScript: true,
+                    isSync: true,
+                    dryRun: isTest,
+                    ...props
+                },
+                {
+                    interceptors: {
+                        request: (config) => {
+                            // @ts-expect-error yes it's internal
+                            config.metadata = { startTime: new Date() };
+                            return config;
+                        },
+                        response: { onFulfilled: this.logAPICall.bind(this) }
+                    }
                 }
-            }
+            )
         );
 
         if (!this.syncId) throw new Error('Parameter syncId is required');
@@ -569,6 +577,49 @@ class Locking {
     public async releaseAllLocks(): Promise<void> {
         await this.locks.releaseAllLocks({ owner: this.owner });
     }
+}
+
+// This function wraps the Nango instance to add retry logic for 429 status codes
+// It retries the request up to maxRetries times, waiting for the specified retry-after time if provided in the response headers.
+function withRetry(nango: Nango, maxRetries = 3): Nango {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const retryWrapper = async (fn: Function, args: any[], attempt = 0): Promise<any> => {
+        try {
+            return await fn.apply(nango, args);
+        } catch (err: unknown) {
+            if (isAxiosError(err)) {
+                if (err.response?.status === 429 && attempt < maxRetries) {
+                    const retryAfter = err.response.headers['retry-after'];
+                    if (retryAfter) {
+                        const delayMs = parseInt(retryAfter) * 1000;
+                        await setTimeout(delayMs);
+                        return retryWrapper(fn, args, attempt + 1);
+                    }
+                }
+            }
+            throw err;
+        }
+    };
+
+    return new Proxy(nango, {
+        get(target, prop, receiver) {
+            const value = Reflect.get(target, prop, receiver);
+
+            if (typeof value === 'function') {
+                return function (...args: any[]) {
+                    const result = value.apply(target, args);
+
+                    if (result && typeof result.then === 'function') {
+                        return retryWrapper(() => value.apply(target, args), []);
+                    }
+
+                    return result;
+                };
+            }
+
+            return value;
+        }
+    });
 }
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
