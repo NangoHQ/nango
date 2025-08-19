@@ -9369,7 +9369,8 @@ roller:
             title: Client Secret
             description: Roller client secret
     proxy:
-        base_url: https://api.roller.app/venues/me
+        base_url: https://api.roller.app
+
     docs: https://docs.nango.dev/integrations/all/roller
 
 rootly:
