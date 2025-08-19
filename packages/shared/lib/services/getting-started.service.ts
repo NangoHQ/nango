@@ -22,9 +22,9 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-export async function createMeta(dbInstance: Knex, input: CreateGettingStartedMeta): Promise<Result<DBGettingStartedMeta>> {
+export async function createMeta(db: Knex, input: CreateGettingStartedMeta): Promise<Result<DBGettingStartedMeta>> {
     try {
-        const [gettingStartedMeta] = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
+        const [gettingStartedMeta] = await db.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Err('failed_to_create_getting_started_meta');
     } catch (err) {
@@ -32,9 +32,9 @@ export async function createMeta(dbInstance: Knex, input: CreateGettingStartedMe
     }
 }
 
-export async function createProgress(dbInstance: Knex, input: CreateGettingStartedProgress): Promise<Result<DBGettingStartedProgress>> {
+export async function createProgress(db: Knex, input: CreateGettingStartedProgress): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const [gettingStartedProgress] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
+        const [gettingStartedProgress] = await db.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
 
         return gettingStartedProgress ? Ok(gettingStartedProgress) : Err('failed_to_create_getting_started_progress');
     } catch (err) {
@@ -42,9 +42,9 @@ export async function createProgress(dbInstance: Knex, input: CreateGettingStart
     }
 }
 
-export async function getProgressByUserId(dbInstance: Knex, userId: number): Promise<Result<GettingStartedProgressOutput | null>> {
+export async function getProgressByUserId(db: Knex, userId: number): Promise<Result<GettingStartedProgressOutput | null>> {
     try {
-        const result = await dbInstance
+        const result = await db
             .from<DBGettingStartedProgress>('getting_started_progress as progress')
             .select<{
                 progress: DBGettingStartedProgress;
@@ -52,10 +52,10 @@ export async function getProgressByUserId(dbInstance: Knex, userId: number): Pro
                 integration: IntegrationConfig;
                 connection: DBConnection | null;
             }>(
-                dbInstance.raw('row_to_json(progress.*) as progress'),
-                dbInstance.raw('row_to_json(env.*) as environment'),
-                dbInstance.raw('row_to_json(config.*) as integration'),
-                dbInstance.raw('row_to_json(conn.*) as connection')
+                db.raw('row_to_json(progress.*) as progress'),
+                db.raw('row_to_json(env.*) as environment'),
+                db.raw('row_to_json(config.*) as integration'),
+                db.raw('row_to_json(conn.*) as connection')
             )
             .leftJoin('getting_started_meta as meta', 'meta.id', 'progress.getting_started_meta_id')
             .leftJoin('_nango_environments as env', 'env.id', 'meta.environment_id')
@@ -83,9 +83,9 @@ export async function getProgressByUserId(dbInstance: Knex, userId: number): Pro
     }
 }
 
-export async function getMetaByAccountId(dbInstance: Knex, accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
+export async function getMetaByAccountId(db: Knex, accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
     try {
-        const gettingStartedMeta = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
+        const gettingStartedMeta = await db.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Ok(null);
     } catch (err) {
@@ -93,9 +93,9 @@ export async function getMetaByAccountId(dbInstance: Knex, accountId: number): P
     }
 }
 
-export async function updateByUserId(dbInstance: Knex, userId: number, data: Partial<DBGettingStartedProgress>): Promise<Result<DBGettingStartedProgress>> {
+export async function updateByUserId(db: Knex, userId: number, data: Partial<DBGettingStartedProgress>): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const [updated] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
+        const [updated] = await db.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
 
         return updated ? Ok(updated) : Err('failed_to_update_getting_started_progress');
     } catch (err) {
@@ -106,8 +106,8 @@ export async function updateByUserId(dbInstance: Knex, userId: number, data: Par
 /**
  * Gets getting started progress for the user, or creates it if it doesn't exist.
  */
-export async function getOrCreateProgressByUser(dbInstance: Knex, user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
-    return await dbInstance.transaction(async (trx) => {
+export async function getOrCreateProgressByUser(db: Knex, user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
+    return db.transaction(async (trx) => {
         const existingResult = await getProgressByUserId(trx, user.id);
 
         if (existingResult.isErr()) {
@@ -151,8 +151,8 @@ export async function getOrCreateProgressByUser(dbInstance: Knex, user: DBUser, 
 /**
  * Update getting started progress for a user and return the updated object.
  */
-export async function patchProgressByUser(dbInstance: Knex, user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
-    return await dbInstance.transaction(async (trx) => {
+export async function patchProgressByUser(db: Knex, user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
+    return db.transaction(async (trx) => {
         // Ensure meta/progress exist and fetch meta information (environment, integration)
         const existing = await getProgressByUserId(trx, user.id);
         if (existing.isErr()) {
@@ -203,8 +203,8 @@ export async function patchProgressByUser(dbInstance: Knex, user: DBUser, input:
     });
 }
 
-export async function getOrCreateMeta(dbInstance: Knex, accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
-    return await dbInstance.transaction(async (trx) => {
+export async function getOrCreateMeta(db: Knex, accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
+    return db.transaction(async (trx) => {
         const existingMeta = await getMetaByAccountId(trx, accountId);
 
         if (existingMeta.isErr()) {
@@ -274,9 +274,9 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
     }
 }
 
-export async function deleteMetaByIntegrationId(dbInstance: Knex, integrationId: number): Promise<Result<void>> {
+export async function deleteMetaByIntegrationId(db: Knex, integrationId: number): Promise<Result<void>> {
     try {
-        const result = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
+        const result = await db.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
 
         return result && result > 0 ? Ok(undefined) : Err('failed_to_delete_getting_started_meta');
     } catch (err) {
