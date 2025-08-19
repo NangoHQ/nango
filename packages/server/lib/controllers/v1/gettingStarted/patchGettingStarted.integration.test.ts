@@ -1,5 +1,6 @@
 import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { gettingStartedService, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -68,14 +69,14 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
         });
         assert(!meta.isErr(), 'Failed to create meta');
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
@@ -93,7 +94,7 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the step was updated in the database
-        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        const updatedProgress = await gettingStartedService.getProgressByUserId(db.knex, user.id);
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.step).toBe(2);
@@ -107,14 +108,14 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
         });
         assert(!meta.isErr(), 'Failed to create meta');
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
@@ -138,7 +139,7 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the connection was attached in the database
-        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        const updatedProgress = await gettingStartedService.getProgressByUserId(db.knex, user.id);
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.connection?.id).toBe(connection.id);
@@ -158,14 +159,14 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         // Create meta and progress with connection already attached
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
         });
         assert(!meta.isErr(), 'Failed to create meta');
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 2,
@@ -183,7 +184,7 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify the connection was detached in the database
-        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        const updatedProgress = await gettingStartedService.getProgressByUserId(db.knex, user.id);
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.connection).toBeNull();
@@ -197,14 +198,14 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
         });
         assert(!meta.isErr(), 'Failed to create meta');
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
@@ -237,14 +238,14 @@ describe(`PATCH ${endpoint}`, () => {
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar');
 
         // Create meta and progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
         });
         assert(!meta.isErr(), 'Failed to create meta');
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 1,
@@ -263,7 +264,7 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(204);
 
         // Verify nothing changed in the database
-        const updatedProgress = await gettingStartedService.getProgressByUserId(user.id);
+        const updatedProgress = await gettingStartedService.getProgressByUserId(db.knex, user.id);
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.step).toBe(1);

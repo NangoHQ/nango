@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { gettingStartedService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -31,7 +32,7 @@ export const patchGettingStarted = asyncWrapper<PatchGettingStarted>(async (req,
     const body: PatchGettingStarted['Body'] = valBody.data;
     const { user } = res.locals;
 
-    const updated = await gettingStartedService.patchProgressByUser(user, body);
+    const updated = await gettingStartedService.patchProgressByUser(db.knex, user, body);
     if (updated.isErr()) {
         if (updated.error.message === 'connection_not_found' || updated.error.message === 'getting_started_progress_not_found') {
             res.status(404).send({ error: { code: updated.error.message, message: updated.error.message } });

@@ -1,3 +1,4 @@
+import db from '@nangohq/database';
 import { gettingStartedService } from '@nangohq/shared';
 import { report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -24,7 +25,7 @@ export const getGettingStarted = asyncWrapper<GetGettingStarted>(async (req, res
 
     const { user, environment } = res.locals;
 
-    const gettingStartedProgressResult = await gettingStartedService.getOrCreateProgressByUser(user, environment.id);
+    const gettingStartedProgressResult = await gettingStartedService.getOrCreateProgressByUser(db.knex, user, environment.id);
 
     if (gettingStartedProgressResult.isErr()) {
         report(gettingStartedProgressResult.error);

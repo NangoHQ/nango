@@ -1,6 +1,5 @@
 import { pick } from 'lodash-es';
 
-import db from '@nangohq/database';
 import { getProvider } from '@nangohq/providers';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -23,9 +22,8 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-export async function createMeta(input: CreateGettingStartedMeta, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta>> {
+export async function createMeta(dbInstance: Knex, input: CreateGettingStartedMeta): Promise<Result<DBGettingStartedMeta>> {
     try {
-        const dbInstance = trx || db.knex;
         const [gettingStartedMeta] = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').insert(input).returning('*');
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Err('failed_to_create_getting_started_meta');
@@ -34,9 +32,8 @@ export async function createMeta(input: CreateGettingStartedMeta, trx?: Knex.Tra
     }
 }
 
-export async function createProgress(input: CreateGettingStartedProgress, trx?: Knex.Transaction): Promise<Result<DBGettingStartedProgress>> {
+export async function createProgress(dbInstance: Knex, input: CreateGettingStartedProgress): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const dbInstance = trx || db.knex;
         const [gettingStartedProgress] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').insert(input).returning('*');
 
         return gettingStartedProgress ? Ok(gettingStartedProgress) : Err('failed_to_create_getting_started_progress');
@@ -45,9 +42,8 @@ export async function createProgress(input: CreateGettingStartedProgress, trx?: 
     }
 }
 
-export async function getProgressByUserId(userId: number, trx?: Knex.Transaction): Promise<Result<GettingStartedProgressOutput | null>> {
+export async function getProgressByUserId(dbInstance: Knex, userId: number): Promise<Result<GettingStartedProgressOutput | null>> {
     try {
-        const dbInstance = trx || db.knex;
         const result = await dbInstance
             .from<DBGettingStartedProgress>('getting_started_progress as progress')
             .select<{
@@ -87,9 +83,8 @@ export async function getProgressByUserId(userId: number, trx?: Knex.Transaction
     }
 }
 
-export async function getMetaByAccountId(accountId: number, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta | null>> {
+export async function getMetaByAccountId(dbInstance: Knex, accountId: number): Promise<Result<DBGettingStartedMeta | null>> {
     try {
-        const dbInstance = trx || db.knex;
         const gettingStartedMeta = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').where({ account_id: accountId }).first();
 
         return gettingStartedMeta ? Ok(gettingStartedMeta) : Ok(null);
@@ -98,13 +93,8 @@ export async function getMetaByAccountId(accountId: number, trx?: Knex.Transacti
     }
 }
 
-export async function updateByUserId(
-    userId: number,
-    data: Partial<DBGettingStartedProgress>,
-    trx?: Knex.Transaction
-): Promise<Result<DBGettingStartedProgress>> {
+export async function updateByUserId(dbInstance: Knex, userId: number, data: Partial<DBGettingStartedProgress>): Promise<Result<DBGettingStartedProgress>> {
     try {
-        const dbInstance = trx || db.knex;
         const [updated] = await dbInstance.from<DBGettingStartedProgress>('getting_started_progress').where({ user_id: userId }).update(data).returning('*');
 
         return updated ? Ok(updated) : Err('failed_to_update_getting_started_progress');
@@ -116,9 +106,9 @@ export async function updateByUserId(
 /**
  * Gets getting started progress for the user, or creates it if it doesn't exist.
  */
-export async function getOrCreateProgressByUser(user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
-    return await db.knex.transaction(async (trx) => {
-        const existingResult = await getProgressByUserId(user.id, trx);
+export async function getOrCreateProgressByUser(dbInstance: Knex, user: DBUser, currentEnvironmentId: number): Promise<Result<GettingStartedProgressOutput>> {
+    return await dbInstance.transaction(async (trx) => {
+        const existingResult = await getProgressByUserId(trx, user.id);
 
         if (existingResult.isErr()) {
             return Err(existingResult.error);
@@ -128,27 +118,24 @@ export async function getOrCreateProgressByUser(user: DBUser, currentEnvironment
             return Ok(existingResult.value);
         }
 
-        const gettingStartedMeta = await getOrCreateMeta(user.account_id, currentEnvironmentId, trx);
+        const gettingStartedMeta = await getOrCreateMeta(trx, user.account_id, currentEnvironmentId);
 
         if (gettingStartedMeta.isErr()) {
             return Err(gettingStartedMeta.error);
         }
 
-        const createdResult = await createProgress(
-            {
-                user_id: user.id,
-                getting_started_meta_id: gettingStartedMeta.value.id,
-                step: 0,
-                connection_id: null
-            },
-            trx
-        );
+        const createdResult = await createProgress(trx, {
+            user_id: user.id,
+            getting_started_meta_id: gettingStartedMeta.value.id,
+            step: 0,
+            connection_id: null
+        });
 
         if (createdResult.isErr()) {
             return Err(createdResult.error);
         }
 
-        const newProgress = await getProgressByUserId(createdResult.value.user_id, trx);
+        const newProgress = await getProgressByUserId(trx, createdResult.value.user_id);
         if (newProgress.isErr()) {
             return Err(newProgress.error);
         }
@@ -164,10 +151,10 @@ export async function getOrCreateProgressByUser(user: DBUser, currentEnvironment
 /**
  * Update getting started progress for a user and return the updated object.
  */
-export async function patchProgressByUser(user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
-    return await db.knex.transaction(async (trx) => {
+export async function patchProgressByUser(dbInstance: Knex, user: DBUser, input: PatchGettingStartedInput): Promise<Result<void>> {
+    return await dbInstance.transaction(async (trx) => {
         // Ensure meta/progress exist and fetch meta information (environment, integration)
-        const existing = await getProgressByUserId(user.id, trx);
+        const existing = await getProgressByUserId(trx, user.id);
         if (existing.isErr()) {
             return Err(existing.error);
         }
@@ -206,7 +193,7 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
 
         try {
             if (Object.keys(update).length > 0) {
-                await updateByUserId(user.id, update, trx);
+                await updateByUserId(trx, user.id, update);
             }
         } catch (err) {
             return Err(new Error('failed_to_update_getting_started_progress', { cause: err }));
@@ -216,70 +203,80 @@ export async function patchProgressByUser(user: DBUser, input: PatchGettingStart
     });
 }
 
-export async function getOrCreateMeta(accountId: number, currentEnvironmentId: number, trx?: Knex.Transaction): Promise<Result<DBGettingStartedMeta>> {
-    const existingMeta = await getMetaByAccountId(accountId, trx);
+export async function getOrCreateMeta(dbInstance: Knex, accountId: number, currentEnvironmentId: number): Promise<Result<DBGettingStartedMeta>> {
+    return await dbInstance.transaction(async (trx) => {
+        const existingMeta = await getMetaByAccountId(trx, accountId);
 
-    if (existingMeta.isErr()) {
-        return Err(existingMeta.error);
-    }
+        if (existingMeta.isErr()) {
+            return Err(existingMeta.error);
+        }
 
-    if (existingMeta.value !== null) {
-        return Ok(existingMeta.value);
-    }
+        if (existingMeta.value !== null) {
+            return Ok(existingMeta.value);
+        }
 
-    const googleCalendarIntegrationId = await getOrCreateGoogleCalendarIntegration(currentEnvironmentId);
+        const googleCalendarIntegrationId = await getOrCreateGoogleCalendarIntegration(currentEnvironmentId);
 
-    if (googleCalendarIntegrationId.isErr()) {
-        return Err(googleCalendarIntegrationId.error);
-    }
+        if (googleCalendarIntegrationId.isErr()) {
+            return Err(googleCalendarIntegrationId.error);
+        }
 
-    const newMeta = await createMeta({ account_id: accountId, environment_id: currentEnvironmentId, integration_id: googleCalendarIntegrationId.value }, trx);
+        const newMeta = await createMeta(trx, {
+            account_id: accountId,
+            environment_id: currentEnvironmentId,
+            integration_id: googleCalendarIntegrationId.value
+        });
 
-    if (newMeta.isErr()) {
-        return Err('failed_to_create_getting_started_meta');
-    }
+        if (newMeta.isErr()) {
+            return Err('failed_to_create_getting_started_meta');
+        }
 
-    return Ok(newMeta.value);
+        return Ok(newMeta.value);
+    });
 }
 
 async function getOrCreateGoogleCalendarIntegration(environmentId: number): Promise<Result<number>> {
-    const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, 'google-calendar-getting-started');
+    try {
+        const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, 'google-calendar-getting-started');
 
-    if (existingIntegrationId) {
-        return Ok(existingIntegrationId);
+        if (existingIntegrationId) {
+            return Ok(existingIntegrationId);
+        }
+
+        const PROVIDER_NAME = 'google-calendar';
+
+        const provider = getProvider(PROVIDER_NAME);
+        if (!provider) {
+            return Err('google_calendar_provider_not_found');
+        }
+
+        const newIntegration = await sharedCredentialsService.createPreprovisionedProvider({
+            providerName: PROVIDER_NAME,
+            environment_id: environmentId,
+            provider,
+            display_name: 'Google Calendar (Getting Started)',
+            unique_key: 'google-calendar-getting-started'
+        });
+
+        if (newIntegration.isErr()) {
+            return Err(newIntegration.error);
+        }
+
+        const id = newIntegration.value.id ?? null;
+
+        if (!id) {
+            return Err('failed_to_create_google_calendar_integration');
+        }
+
+        return Ok(id);
+    } catch (err) {
+        return Err(new Error('failed_to_get_or_create_google_calendar_integration', { cause: err }));
     }
-
-    const PROVIDER_NAME = 'google-calendar';
-
-    const provider = getProvider(PROVIDER_NAME);
-    if (!provider) {
-        return Err('google_calendar_provider_not_found');
-    }
-
-    const newIntegration = await sharedCredentialsService.createPreprovisionedProvider({
-        providerName: PROVIDER_NAME,
-        environment_id: environmentId,
-        provider,
-        display_name: 'Google Calendar (Getting Started)',
-        unique_key: 'google-calendar-getting-started'
-    });
-
-    if (newIntegration.isErr()) {
-        return Err(newIntegration.error);
-    }
-
-    const id = newIntegration.value.id ?? null;
-
-    if (!id) {
-        return Err('failed_to_create_google_calendar_integration');
-    }
-
-    return Ok(id);
 }
 
-export async function deleteMetaByIntegrationId(integrationId: number): Promise<Result<void>> {
+export async function deleteMetaByIntegrationId(dbInstance: Knex, integrationId: number): Promise<Result<void>> {
     try {
-        const result = await db.knex.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
+        const result = await dbInstance.from<DBGettingStartedMeta>('getting_started_meta').where({ integration_id: integrationId }).delete();
 
         return result && result > 0 ? Ok(undefined) : Err('failed_to_delete_getting_started_meta');
     } catch (err) {

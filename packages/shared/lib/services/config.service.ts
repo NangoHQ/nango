@@ -158,7 +158,7 @@ class ConfigService {
         // TODO: might be useless since we are dropping the data after a while
         await deleteSyncConfigByConfigId(id);
 
-        await gettingStartedService.deleteMetaByIntegrationId(id);
+        await gettingStartedService.deleteMetaByIntegrationId(db.knex, id);
 
         const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
         if (updated <= 0) {

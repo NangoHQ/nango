@@ -60,7 +60,7 @@ describe(`GET ${endpoint}`, () => {
         });
 
         // Create meta without progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
@@ -68,7 +68,7 @@ describe(`GET ${endpoint}`, () => {
         expect(meta.isOk()).toBe(true);
 
         // Sanity: no progress for this user
-        const existingProgress = await gettingStartedService.getProgressByUserId(user.id);
+        const existingProgress = await gettingStartedService.getProgressByUserId(db.knex, user.id);
         assert(!existingProgress.isErr());
         expect(existingProgress.value).toBeNull();
 
@@ -98,7 +98,7 @@ describe(`GET ${endpoint}`, () => {
         });
 
         // Create meta and and progress
-        const meta = await gettingStartedService.createMeta({
+        const meta = await gettingStartedService.createMeta(db.knex, {
             account_id: account.id,
             environment_id: env.id,
             integration_id: integration.id!
@@ -112,7 +112,7 @@ describe(`GET ${endpoint}`, () => {
             connectionId: 'demo-conn-id'
         });
 
-        const progress = await gettingStartedService.createProgress({
+        const progress = await gettingStartedService.createProgress(db.knex, {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             connection_id: connection.id,
@@ -144,7 +144,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
-        const gettingStartedProgress = await gettingStartedService.getOrCreateProgressByUser(user, env.id);
+        const gettingStartedProgress = await gettingStartedService.getOrCreateProgressByUser(db.knex, user, env.id);
         expect(gettingStartedProgress.isOk()).toBe(true);
 
         // Create a connection and link it to the progress
@@ -155,7 +155,7 @@ describe(`GET ${endpoint}`, () => {
         });
 
         // Attach the connection to the progress
-        await gettingStartedService.updateByUserId(user.id, { connection_id: connection.id });
+        await gettingStartedService.updateByUserId(db.knex, user.id, { connection_id: connection.id });
 
         // Soft delete the connection (not using service because it has lots of dependencies)
         await db.knex.from('_nango_connections').where({ id: connection.id }).update({ deleted: true, deleted_at: new Date() });

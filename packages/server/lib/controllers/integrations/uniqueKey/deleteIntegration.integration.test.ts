@@ -1,5 +1,6 @@
 import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { gettingStartedService, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -45,13 +46,13 @@ describe(`DELETE ${endpoint}`, () => {
             oauth_scopes: 'hello, world'
         });
 
-        const metaResult = await gettingStartedService.getOrCreateMeta(account.id, env.id);
+        const metaResult = await gettingStartedService.getOrCreateMeta(db.knex, account.id, env.id);
         expect(metaResult.isOk()).toBe(true);
 
         const res = await api.fetch(endpoint, { method: 'DELETE', token: env.secret_key, params: { uniqueKey: 'google-calendar-getting-started' } });
         isSuccess(res.json);
 
-        const metaAfter = await gettingStartedService.getMetaByAccountId(account.id);
+        const metaAfter = await gettingStartedService.getMetaByAccountId(db.knex, account.id);
         assert(!metaAfter.isErr(), 'Meta should be deleted');
         expect(metaAfter.value).toBeNull();
     });
