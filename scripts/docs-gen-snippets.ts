@@ -19,17 +19,24 @@ const prettyAuthModes: Record<string, string> = {
     TABLEAU: 'Tableau'
 };
 
-const flowsPath = 'packages/shared/flows.yaml';
+const flowsPath = 'packages/shared/flows.zero.json';
 const providersPath = 'packages/providers/providers.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
-const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8')) as any;
+const flowsString = await fs.readFile(flowsPath, 'utf-8');
+const flows = JSON.parse(flowsString);
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};
-for (const [integration, config] of Object.entries<any>(flows.integrations)) {
-    useCases[integration] = buildEndpoints('action', config.actions, integration).concat(buildEndpoints('sync', config.syncs, integration));
+for (const flow of flows) {
+    const integration = flow.providerConfigKey;
+    const actions = flow.actions;
+    const syncs = flow.syncs;
+    const symLinkTargetName = flow.symLinkTargetName;
+    useCases[integration] = buildEndpoints('action', actions, integration, symLinkTargetName).concat(
+        buildEndpoints('sync', syncs, integration, symLinkTargetName)
+    );
 }
 
 const providersHandled: string[] = [];
@@ -210,22 +217,23 @@ interface Endpoint {
     script: string;
 }
 
-function buildEndpoints(type: string, syncOrAction: any, integration: string) {
+function buildEndpoints(type: string, syncOrAction: any, integration: string, symLinkTargetName: string | null) {
     const endpoints: Endpoint[] = [];
     if (syncOrAction) {
-        for (const [key, item] of Object.entries<any>(syncOrAction)) {
-            if (!item?.endpoint) {
+        for (const item of syncOrAction) {
+            if (!item?.endpoints && !item?.endpoint) {
                 continue;
             }
 
-            const currentEndpoints = Array.isArray(item.endpoint) ? item?.endpoint : [item?.endpoint];
+            const endpointOrEndpoints = item?.endpoint || item?.endpoints;
+            const currentEndpoints = Array.isArray(endpointOrEndpoints) ? endpointOrEndpoints : [endpointOrEndpoints];
             for (const endpoint of currentEndpoints) {
                 endpoints.push({
                     method: endpoint?.method,
                     path: endpoint?.path,
                     description: item?.description?.trim(),
                     group: endpoint?.group,
-                    script: `${integration}/${type}s/${key}`
+                    script: `${symLinkTargetName || integration}/${type}s/${item.name}`
                 });
             }
         }

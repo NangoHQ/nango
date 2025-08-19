@@ -106,6 +106,7 @@ export interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     dryRun?: boolean;
+    isScript?: boolean;
     activityLogId?: string | undefined;
 }
 
