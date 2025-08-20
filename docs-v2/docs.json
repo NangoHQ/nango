@@ -831,7 +831,8 @@
           {
             "group": "Changelog",
             "pages": [
-              "changelog/overview"
+              "changelog/overview",
+              "changelog/dev-updates"
             ]
           }
         ]
