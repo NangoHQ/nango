@@ -44,7 +44,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
 
     let integration: IntegrationConfig;
     if (body.useSharedCredentials) {
-        const result = await sharedCredentialsService.createPreprovisionedProvider(body.provider, environment.id, provider);
+        const result = await sharedCredentialsService.createPreprovisionedProvider({ providerName: body.provider, environment_id: environment.id, provider });
         if (result.isErr()) {
             res.status(400).send({
                 error: { code: 'invalid_body', message: result.error.message }

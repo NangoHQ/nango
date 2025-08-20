@@ -357,6 +357,7 @@ export class DryRunService {
                 version: '0.0.1'
             };
             const nangoProps: NangoProps = {
+                isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,

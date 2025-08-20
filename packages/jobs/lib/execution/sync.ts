@@ -590,6 +590,8 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             throw new Error(`Sync is disabled: ${task.id}`);
         }
 
+        await updateSyncJobStatus(syncJob.id, SyncStatus.STOPPED);
+
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
 
         const isCancel = task.abortedTask.state === 'CANCELLED';
