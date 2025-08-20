@@ -4,7 +4,6 @@ import { Err, Ok, nanoid } from '@nangohq/utils';
 import configService from './config.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import type {
     DBSharedCredentials,
     IntegrationConfig,
@@ -16,7 +15,19 @@ import type {
 } from '@nangohq/types';
 
 class SharedCredentialsService {
-    async createPreprovisionedProvider(providerName: string, environment_id: number, provider: Provider): Promise<Result<IntegrationConfig>> {
+    async createPreprovisionedProvider({
+        providerName,
+        environment_id,
+        provider,
+        display_name,
+        unique_key
+    }: {
+        providerName: string;
+        environment_id: number;
+        provider: Provider;
+        display_name?: string;
+        unique_key?: string;
+    }): Promise<Result<IntegrationConfig>> {
         try {
             const config = await db.knex.transaction(async (trx) => {
                 const sharedCredentials = await trx.select('*').from<DBSharedCredentials>('providers_shared_credentials').where('name', providerName).first();
@@ -25,18 +36,21 @@ class SharedCredentialsService {
                     throw new Error('shared_credentials_not_found');
                 }
 
+                const resolvedUniqueKey = unique_key ?? providerName;
+
                 const exists = await trx
                     .count<{ count: string }>('*')
-                    .from<ProviderConfig>(`_nango_configs`)
-                    .where({ provider: providerName, environment_id, deleted: false })
+                    .from<IntegrationConfig>(`_nango_configs`)
+                    .where({ unique_key: resolvedUniqueKey, environment_id, deleted: false })
                     .first();
 
                 return await configService.createProviderConfig(
                     {
                         environment_id,
-                        unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                        unique_key: exists?.count === '0' ? resolvedUniqueKey : `${resolvedUniqueKey}-${nanoid(4).toLocaleLowerCase()}`,
                         provider: providerName,
                         forward_webhooks: true,
+                        display_name: display_name ?? null,
                         shared_credentials_id: sharedCredentials.id
                     },
                     provider
