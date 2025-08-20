@@ -31,7 +31,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                 return (
                     <div
                         key={step.id}
-                        className="flex scroll-mt-12"
+                        className="flex flex-col scroll-mt-12"
                         {...(isBlocked && {
                             onClick: (e: React.MouseEvent) => e.stopPropagation(),
                             onMouseDown: (e: React.MouseEvent) => e.preventDefault(),
@@ -40,8 +40,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                             'aria-disabled': true
                         })}
                     >
-                        {/* Left side - Steps and connectors */}
-                        <div className="flex flex-col items-center mr-5">
+                        <div className="flex flex-row items-center gap-5">
                             {/* Step */}
                             <div
                                 className={cn(
@@ -54,22 +53,34 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                                     {isDone ? <IconChecks className="w-5 h-5 text-success-4" /> : <IconComponent className="w-5 h-5 text-text-secondary" />}
                                 </div>
                             </div>
-
-                            {/* Connector line */}
-                            {!isLast && <div className={cn('w-[1px] h-full bg-grayscale-5', isCurrent && 'bg-grayscale-10', isDone && 'bg-success-4')} />}
+                            {/* Title */}
+                            <div className={cn('flex flex-col', isBlocked && 'opacity-50')}>
+                                {step.renderTitle(isDone ? 'completed' : isCurrent ? 'active' : 'inactive')}
+                            </div>
                         </div>
 
                         {/* Right side - Content */}
-                        <div
-                            className={cn(
-                                'flex-1 max-w-full opacity-100 flex flex-col gap-3 pb-10',
-                                !isBlocked && 'pb-14',
-                                isLast && 'pb-0',
-                                isBlocked && 'opacity-50 pointer-events-none'
-                            )}
-                        >
-                            {step.renderTitle(isDone ? 'completed' : isCurrent ? 'active' : 'inactive')}
-                            {!isBlocked && step.content}
+                        <div className="flex flex-row ml-5">
+                            {/* Connector line - Render it transparent if the step is blocked (to keep spacing consistent) */}
+                            <div
+                                className={cn(
+                                    'mr-10 w-[1px] h-auto bg-grayscale-5',
+                                    isCurrent && 'bg-grayscale-10',
+                                    isDone && 'bg-success-4',
+                                    isLast && 'opacity-0'
+                                )}
+                            />
+
+                            <div
+                                className={cn(
+                                    'flex-1 max-w-full opacity-100 flex flex-col gap-3 pb-10 mt-3',
+                                    !isBlocked && 'pb-14',
+                                    isLast && 'pb-0',
+                                    isBlocked && 'opacity-50 pointer-events-none'
+                                )}
+                            >
+                                {!isBlocked && step.content}
+                            </div>
                         </div>
                     </div>
                 );

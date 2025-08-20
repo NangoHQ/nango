@@ -110,7 +110,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     if (connection) {
         return (
             <div className="text-text-secondary text-sm">
-                <Button variant="primary" className="mt-5" onClick={onClickDisconnect}>
+                <Button variant="primary" onClick={onClickDisconnect}>
                     <IconX className="w-4 h-4 mr-2" />
                     Disconnect from Google Calendar
                 </Button>
