@@ -11342,7 +11342,7 @@ ukg-ready:
             title: Company ID
             description: A unique identifier for your company.
             example: '23444234'
-            doc_section: '#step-2-finding-your-company-id'
+            doc_section: '#step-3-finding-your-company-id'
         hostname:
             type: string
             title: Hostname
@@ -11351,7 +11351,7 @@ ukg-ready:
             example: secure.us.rdy.ukg
             suffix: /ta
             prefix: https://
-            doc_section: '#step-3-finding-your-hostname'
+            doc_section: '#step-4-finding-your-hostname'
 unanet:
     display_name: Unanet
     categories:

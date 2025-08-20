@@ -20,13 +20,22 @@ This guide will walk you through obtaining these within UKG Ready.
 
 ### Instructions:
 
-#### Step 1: Generating Your Client Credentials
+#### Step 1: Setting Up OAuth Client Credentials Permissions
 1. Sign in to your [UKG Ready](https://www.ukg.com/ukg-login) account.
-2. Go to **Settings** > **Global Setup** > **Company Setup**.
-3. Find the **OAuth Applications** widget.
-4. Choose the **Machine to Machine** type, and generate a **Client ID** and **Client Secret**.
+2. Navigate to **Settings** > **Profiles/Policies** > **Security**.
+3. Click on the **New Security Profile** button.
+<img src="/integrations/all/ukg-ready/create_security_profile.png"/>
+4. Fill in the **Name**, add an optional **Description**, and mark the profile as **Active**.
+<img src="/integrations/all/ukg-ready/security_profile_form.png"/>
+5. In the **Security Items** section configure the required permissions across various sections depending on your specific use cases like Global, HR, and Modules.
+6. Click **Save** to apply the security profile changes.
 
-#### Step 2: Finding Your Company ID
+#### Step 2: Generating Your Client Credentials
+1. Go to **Settings** > **Global Setup** > **Company Setup**.
+2. Find the **OAuth Applications** widget.
+3. Choose the **Machine to Machine** type, and generate a **Client ID** and **Client Secret**.
+
+#### Step 3: Finding Your Company ID
 1. Click the hamburger ☰ button.
 2. Navigate to **My team** > **My employees** > **Employee info**.
 3. Click **Select columns**. For detailed information, see [Get company ID](https://ukg.cloudapper.ai/ukg-help/how-to-get-company-id-and-company-name-in-ukg-ready/).
@@ -35,14 +44,14 @@ This guide will walk you through obtaining these within UKG Ready.
 6. Click **Apply**.
 7. Your **Company ID** will be displayed for you.
 
-#### Step 3: Finding Your Hostname
+#### Step 4: Finding Your Hostname
 1. Click the hamburger ☰ button on the top left.
 2. Click **Settings** menu option, then click **Global Setup** to expand the menu.
 3. Click **Company Setup**.
 4. This page will display your **Hostname**. This value is contained in your domain's URL login.
    - **Example:** If your login service URL is listed as `https://secure.us.rdy.ukg/ta/company.login`, then your Hostname is `secure.us.rdy.ukg`
 
-#### Step 4: Enter credentials in the Connect UI
+#### Step 5: Enter credentials in the Connect UI
 
 Once you have your credentials:
 1. Open the form where you need to authenticate with UKG Ready.
