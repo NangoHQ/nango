@@ -58,6 +58,25 @@ curl -X POST https://api.nango.dev/proxy/calendar/v3/calendars/primary/events \\
 `.trim();
 }
 
+/**
+ * Returns the next 15-minute interval from the current time
+ * @returns A Date object representing the next 15-minute interval
+ * @example now: 12:08 -> 12:15
+ */
+function dateNext15Minutes() {
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.ceil(minutes / 15) * 15;
+    if (roundedMinutes === 60) {
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0, 0, 0);
+    } else {
+        now.setMinutes(roundedMinutes, 0, 0);
+    }
+
+    return now;
+}
+
 interface SecondStepProps {
     connectionId?: string;
     providerConfigKey?: string;
@@ -74,16 +93,16 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     const [isExecuting, setIsExecuting] = useState(false);
 
     const calendarEvent: CalendarEvent = useMemo(() => {
-        const tomorrowNoon = new Date(new Date().setHours(12, 0, 0, 0) + 24 * 60 * 60 * 1000);
+        const next15Minutes = dateNext15Minutes();
 
         return {
             summary: 'Getting started with Nango',
             description: 'Created with Nango from the getting started page!',
             start: {
-                dateTime: tomorrowNoon
+                dateTime: next15Minutes
             },
             end: {
-                dateTime: new Date(tomorrowNoon.getTime() + 15 * 60 * 1000)
+                dateTime: new Date(next15Minutes.getTime() + 15 * 60 * 1000)
             }
         };
     }, []);
@@ -160,9 +179,14 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             />
             <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
                 {completed && (
-                    <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
-                        Explore the logs from this demo
-                    </LinkWithIcon>
+                    <div>
+                        <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
+                            Explore the logs from this demo
+                        </LinkWithIcon>
+                        <LinkWithIcon to="https://calendar.google.com/calendar/r/day" type="external">
+                            Open Google Calendar to see the event
+                        </LinkWithIcon>
+                    </div>
                 )}
                 <Button variant="primary" onClick={onExecute} disabled={isExecuting}>
                     {isExecuting ? (
