@@ -246,10 +246,19 @@ export async function exec({
                         errorResponse && typeof errorResponse === 'object' ? (errorResponse as Record<string, unknown>) : { message: errorResponse }
                     );
 
+                    let type = 'script_http_error';
+                    // If the error is a rate limit error from Nango API, we return a specific type/message
+                    if (err.response.status === 429 && err.response.config.url) {
+                        const url = new URL(err.response.config.url);
+                        if (url.hostname === 'api.nango.dev' || url.hostname === 'localhost') {
+                            type = 'script_api_rate_limit_error';
+                        }
+                    }
+
                     return {
                         success: false,
                         error: {
-                            type: 'script_http_error',
+                            type,
                             payload: responseBody,
                             status: err.response.status,
                             additional_properties: {

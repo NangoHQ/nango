@@ -1,0 +1,77 @@
+---
+title: 'Dev Updates'
+sidebarTitle: 'Dev Updates'
+description: "Updates and breaking changes for developers."
+---
+
+<Info>
+[Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
+</Info>
+
+<Update label="August 2025" description="v0.66.2" tags={["Breaking changes"]}>
+
+  ## August 2025 API Breaking changes
+
+  In this release, we've made some changes to the API that are breaking for some users.
+
+  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead.
+  They all, except one, take and return the same data. Only the base path has changed.
+
+  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body, but returns the same data as previously.
+  This new body is more flexible and ensure stricter typings on your side and validation on our side.
+
+  - The endpoint `POST /connection/:connectionId/metadata` and `PATCH /connection/:connectionId/metadata` who have been deprecated for a while will not be migrated to /connections and will be removed at the end of the grace period.
+
+  ### 🗓️ Timeline
+
+  - **August 20, 2025**: We will start deprecating the `/connection` endpoints.
+  - **January 20, 2026**: All `/connection` endpoints will be removed.
+
+  ### 🧐 Am I impacted?
+
+  - If you manually use any endpoint under `/connection`
+  - If you use the CLI
+  - If you use the official Nango SDKs
+
+  ### 💡 What should I do?
+
+  - If you use the CLI, you should upgrade to `>=0.67.0`
+  - If you use the official Nango SDKs, you should upgrade to `>=0.67.0`
+  - If you manually use any endpoint under `/connection`, you should migrate to `/connections`
+  - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints, you should migrate to `/connections/metadata`
+  - If you specifically use the `POST /connection` endpoint to import connections, check the migration section below.
+
+
+  ### Migrating to `POST /connections`
+
+  Only this endpoint requires a manual migration.
+  Previously, the credentials were all at the root of the body.
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connection \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "access_token": "some-access-token",
+    [...]
+  }'
+  ```
+
+  Now they are nested under the `credentials` key:
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connections \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "credentials": {
+      "type": "OAUTH2",
+      "access_token": "some-access-token",
+      [...]
+    }
+  }'
+  ```
+
+  Please report any inconsistencies or issues with the new endpoints to support@nango.dev or in our slack community.
+
+</Update>

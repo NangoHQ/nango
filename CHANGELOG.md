@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.0] - 2025-08-20
+
+### Added
+
+- *(integrations)* Add support for dayforce (#4448) by @hassan254-prog
+- Error message when 429s from nango API in scripts (#4499) by @TBonnin
+- *(api)* /connections endpoints (#4500) by @bodinsamuel
+
+### Fixed
+
+- *(invitation)* FoundUs is not required (#4507) by @bodinsamuel
+- *(billing)* Downgrading to free should not require a card (#4508) by @bodinsamuel
+- *(fleet)* Always idle node when finishing timeout (#4506) by @TBonnin
+
+## [v0.66.2] - 2025-08-20
+
+### Added
+
+- *(proxy)* Handle minutely rate limit (#4428) by @hassan254-prog
+- *(providers)* Provisioned apps endpoints (#4472) by @hassan254-prog
+- *(team-name)* Add email parsing for team name (#4490) by @khaliqgant
+- *(endUser)* Add free-form tagging (#4395) by @bodinsamuel
+- *(webhooks)* Add feature flags, revamp method signature (#4469) by @bodinsamuel
+- *(github-app)* Expose jwt token (#4493) by @khaliqgant
+- *(rate-limit)* Separate rate limit buckets for scripts and direct calls (#4496) by @TBonnin
+- *(integrations)* Add support for datto rmm password grant (#4501) by @hassan254-prog
+- *(UI-scopes)* Add copy button for scopes to be comma delimited (#4502) by @khaliqgant
+- Getting started table migration (#4487) by @kaposke
+- *(server)* New getting started backend (#4491) by @kaposke
+
+### Changed
+
+- Improve salesforce docs (#4481) by @hassan254-prog
+- Move usage export cron to metering (#4485) by @TBonnin
+- *(records)* Better index for track delete query (#4484) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/8a3df491283cec84eccc5f3bb92f2a779dc954c2 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/25923bbed10f9c8827be315cdc2e75370e586af6 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ac9ff8cd942e3440a4dbc38e4aefab467cd0e318 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- Move usage tracking to metering (#4471) by @TBonnin
+- Better index for scheduler scheduling query (#4492) by @TBonnin
+- *(ui)* Fix button text logic when creating integrations with provisioned apps (#4494) by @hassan254-prog
+- *(docs)* Fix symlinks for docs if the scripts are an alias (#4497) by @khaliqgant
+- *(docs)* Actually write docupdates (#4498) by @khaliqgant
+- Sync status after runner crash (#4495) by @TBonnin
+- *(zero)* Various feedback (#4503) by @bodinsamuel
+
 ## [v0.66.1] - 2025-08-14
 
 ### Added
@@ -4609,6 +4658,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0
+[v0.66.2]: https://github.com/NangoHQ/nango/compare/v0.66.1..v0.66.2
 [v0.66.1]: https://github.com/NangoHQ/nango/compare/v0.66.0..v0.66.1
 [v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
 [v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
