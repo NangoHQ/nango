@@ -303,7 +303,7 @@ describe('Exec', () => {
                             forcedJSONParsing: true,
                             silentJSONParsing: true
                         },
-                        url: 'http://localhost:3003/connection/connection-id',
+                        url: 'http://localhost:3003/connections/connection-id',
                         xsrfCookieName: 'XSRF-TOKEN',
                         xsrfHeaderName: 'X-XSRF-TOKEN'
                     },

@@ -1,5 +1,5 @@
 import type { ServiceResponse } from './Generic.js';
-import type { AuthModeType, AuthOperationType, DBConnection } from '@nangohq/types';
+import type { AuthModeType } from '@nangohq/types';
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -9,11 +9,6 @@ export enum OAuthAuthorizationMethod {
 export enum OAuthBodyFormat {
     FORM = 'form',
     JSON = 'json'
-}
-
-export interface ConnectionUpsertResponse {
-    connection: DBConnection;
-    operation: AuthOperationType;
 }
 
 export interface OAuthSession {
