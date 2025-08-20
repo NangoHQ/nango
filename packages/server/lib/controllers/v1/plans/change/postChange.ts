@@ -50,8 +50,9 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     }
 
     const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
 
-    if (!plan.stripe_payment_id || !plan.stripe_customer_id) {
+    if ((isUpgrade && (!plan.stripe_payment_id || !plan.stripe_customer_id)) || (!isUpgrade && newPlan.code !== 'free')) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
         return;
     }
@@ -73,8 +74,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         report(err);
         return;
     }
-
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
 
     // -- Upgrade
     if (isUpgrade) {

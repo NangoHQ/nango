@@ -198,7 +198,7 @@ export const PlanCard: React.FC<{
                     )}
                 </footer>
             </div>
-            {!hasPaymentMethod ? (
+            {!hasPaymentMethod && !def.isDowngrade && def.plan.code === 'free' ? (
                 <DialogContent className="w-[550px] max-h-[800px]">
                     <DialogTitle>Add a payment method first</DialogTitle>
                     <StripeForm onSuccess={() => {}} />
