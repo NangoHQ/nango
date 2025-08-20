@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.0] - 2025-08-20
+
+### Added
+
+- *(integrations)* Add support for dayforce (#4448) by @hassan254-prog
+- Error message when 429s from nango API in scripts (#4499) by @TBonnin
+- *(api)* /connections endpoints (#4500) by @bodinsamuel
+
+### Fixed
+
+- *(invitation)* FoundUs is not required (#4507) by @bodinsamuel
+- *(billing)* Downgrading to free should not require a card (#4508) by @bodinsamuel
+- *(fleet)* Always idle node when finishing timeout (#4506) by @TBonnin
+
 ## [v0.66.2] - 2025-08-20
 
 ### Added
@@ -4644,6 +4658,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0
 [v0.66.2]: https://github.com/NangoHQ/nango/compare/v0.66.1..v0.66.2
 [v0.66.1]: https://github.com/NangoHQ/nango/compare/v0.66.0..v0.66.1
 [v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
