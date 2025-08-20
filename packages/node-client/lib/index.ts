@@ -243,7 +243,7 @@ export class Nango {
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
-        const url = new URL(`${this.serverUrl}/connection`);
+        const url = new URL(`${this.serverUrl}/connections`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
@@ -378,7 +378,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -407,7 +407,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -419,7 +419,7 @@ export class Nango {
      * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connections/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
             'Content-Type': 'application/json'
@@ -1060,7 +1060,7 @@ export class Nango {
         refreshToken: boolean = false,
         additionalHeader: Record<string, any> = {}
     ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
-        const url = `${this.serverUrl}/connection/${connectionId}`;
+        const url = `${this.serverUrl}/connections/${connectionId}`;
 
         const headers = {
             'Content-Type': 'application/json'

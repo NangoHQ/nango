@@ -39,7 +39,8 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
-    PostConnectionRefresh
+    PostConnectionRefresh,
+    PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
@@ -115,7 +116,8 @@ export type PublicApiEndpoints =
     | PostPublicIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
-    | PostPublicOauthOutboundAuthorization;
+    | PostPublicOauthOutboundAuthorization
+    | PostPublicConnection;
 
 export type PrivateApiEndpoints =
     | PostSignup
