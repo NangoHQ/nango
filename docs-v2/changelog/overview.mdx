@@ -13,10 +13,11 @@ description: "New updates and improvements."
   ## August 2025 API Breaking changes
 
   In this release, we've made some changes to the API that are breaking for some users.
-  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead.
-  They all, except one, take and return the same data. Just the path has changed.
 
-  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body and return the same data as previously.
+  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead.
+  They all, except one, take and return the same data. Only the base path has changed.
+
+  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body, but returns the same data as previously.
   This new body is more flexible and ensure stricter typings on your side and validation on our side.
 
   - The endpoint `POST /connection/:connectionId/metadata` and `PATCH /connection/:connectionId/metadata` who have been deprecated for a while will not be migrated to /connections and will be removed at the end of the grace period.
@@ -31,15 +32,14 @@ description: "New updates and improvements."
   - If you manually use any endpoint under `/connection`
   - If you use the CLI
   - If you use the official Nango SDKs
-  - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints
 
   ### 💡 What should I do?
 
-  - If you use the CLI, you should upgrade to `>0.67.0`
-  - If you use the official Nango SDKs, you should upgrade to `>0.67.0`
+  - If you use the CLI, you should upgrade to `>=0.67.0`
+  - If you use the official Nango SDKs, you should upgrade to `>=0.67.0`
   - If you manually use any endpoint under `/connection`, you should migrate to `/connections`
   - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints, you should migrate to `/connections/metadata`
-  - If you specifically use the `POST /connection` endpoint to import a connection, check the migration section below.
+  - If you specifically use the `POST /connection` endpoint to import connections, check the migration section below.
 
 
   ### Migrating to `POST /connections`
