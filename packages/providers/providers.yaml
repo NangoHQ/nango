@@ -2427,6 +2427,32 @@ clickup:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
 
+clerk:
+    display_name: Clerk
+    categories:
+        - dev-tools
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clerk.com/v1
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /jwks
+    docs: https://docs.nango.dev/integrations/all/clerk
+    docs_connect: https://docs.nango.dev/integrations/all/clerk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Clerk Secret Key (starts with sk_test_ or sk_live_)
+            secret: true
+            pattern: '^sk_(test|live)_[a-zA-Z0-9]+$'
+            example: 'sk_test_abcdefghijklmnop123456789'
+            doc_section: '#step-1-retrieve-your-clerk-secret-key'
+
 cloudentity:
     display_name: Cloudentity
     auth_mode: OAUTH2_CC

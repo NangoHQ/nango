@@ -258,6 +258,7 @@
               "integrations/all/clari-copilot",
               "integrations/all/clicksend",
               "integrations/all/clickup",
+              "integrations/all/clerk",
               "integrations/all/close",
               "integrations/all/cloudentity",
               "integrations/all/coda",
