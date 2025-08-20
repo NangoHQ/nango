@@ -159,6 +159,7 @@ publicAPI.use('/connection', jsonContentTypeMiddleware);
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
 // @deprecated
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
+// @deprecated
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 // @deprecated
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));

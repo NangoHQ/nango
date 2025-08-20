@@ -82,8 +82,6 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     const { environment, account, plan } = res.locals;
     const body: PostPublicConnection['Body'] = req.body;
 
-    const connectionId = body.connection_id ?? connectionService.generateConnectionId();
-
     const integration = await configService.getProviderConfig(body.provider_config_key, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
@@ -134,6 +132,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             logContextGetter
         );
     };
+
+    const connectionId = body.connection_id ?? connectionService.generateConnectionId();
 
     switch (body.credentials.type) {
         case 'OAUTH2':

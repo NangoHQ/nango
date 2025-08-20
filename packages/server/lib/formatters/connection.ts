@@ -73,7 +73,7 @@ export function connectionSimpleToPublicApi({
         errors: activeLog,
         end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
-        created: typeof data.created_at === 'object' ? data.created_at.toISOString() : String(data.created_at)
+        created: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at)
     };
 }
 
@@ -97,10 +97,10 @@ export function connectionFullToPublicApi({
         end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
-        created_at: typeof data.created_at === 'object' ? data.created_at.toISOString() : String(data.created_at),
-        updated_at: typeof data.updated_at === 'object' ? data.updated_at.toISOString() : String(data.updated_at),
+        created_at: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at),
+        updated_at: data.updated_at instanceof Date ? data.updated_at.toISOString() : String(data.updated_at),
         last_fetched_at: data.last_fetched_at
-            ? typeof data.last_fetched_at === 'object'
+            ? data.last_fetched_at instanceof Date
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
