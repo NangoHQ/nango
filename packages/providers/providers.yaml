@@ -3047,6 +3047,43 @@ datadog:
             example: '4f3c12efb9659a0b5c123b568745dbf9'
             doc_section: '#step-2-datadog-api-key'
 
+dayforce:
+    display_name: Dayforce
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    proxy:
+        base_url: https://www.dayforcehcm.com/api
+    token_url: https://dfid.dayforcehcm.com/connect/token
+    token_params:
+        grant_type: password
+        companyId: ${connectionConfig.companyId}
+        username: ${credentials.username}
+        password: ${credentials.password}
+        client_id: Dayforce.HCMAnywhere.Client
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    docs: https://docs.nango.dev/integrations/all/dayforce
+    docs_connect: https://docs.nango.dev/integrations/all/dayforce/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            order: 1
+            description: The company ID for your Dayforce account.
+            doc_section: '#step-1-finding-your-company-id'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Dayforce account username.
+            doc_section: '#step-2-configure-your-dayforce-user'
+        password:
+            type: string
+            title: Password
+            description: Your Dayforce account password.
+            doc_section: '#step-2-configure-your-dayforce-user'
 datto-rmm:
     display_name: Datto RMM
     categories:
