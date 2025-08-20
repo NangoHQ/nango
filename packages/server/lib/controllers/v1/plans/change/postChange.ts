@@ -50,12 +50,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     }
 
     const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
-
-    if ((isUpgrade && (!plan.stripe_payment_id || !plan.stripe_customer_id)) || (!isUpgrade && newPlan.code !== 'free')) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
-        return;
-    }
 
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
@@ -75,8 +69,15 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
+
     // -- Upgrade
     if (isUpgrade) {
+        if (!plan.stripe_payment_id || !plan.stripe_customer_id) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+            return;
+        }
+
         let hasPending: string | undefined;
         try {
             logger.info(`Upgrading ${account.id} to ${body.orbId}`);
@@ -129,6 +130,11 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     } else {
         // -- Downgrade
+        if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+            return;
+        }
+
         logger.info(`Downgrading ${account.id} to ${body.orbId}`);
 
         const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
