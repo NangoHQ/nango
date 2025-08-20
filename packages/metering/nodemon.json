@@ -1,5 +1,16 @@
 {
-    "watch": ["dist", "../utils/dist", "../types/dist", "../pubsub/dist", "../billing/dist", "../../.env"],
+    "watch": [
+        "dist",
+        "..shared/dist",
+        "../utils/dist",
+        "../types/dist",
+        "../pubsub/dist",
+        "../billing/dist",
+        "../kvstore/dist",
+        "../records/dist",
+        "../account-usage/dist",
+        "../../.env"
+    ],
     "ext": "js,ts,json",
     "ignore": ["lib/**/*.test.ts"],
     "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env"

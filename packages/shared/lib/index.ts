@@ -12,6 +12,7 @@ import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
+import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
 import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
@@ -32,12 +33,14 @@ export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
 export * from './services/onboarding.service.js';
+export * as gettingStartedService from './services/getting-started.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
+export * from './services/shared-credentials.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
@@ -71,6 +74,7 @@ export {
     providerClientManager,
     remoteFileService,
     seeders,
+    sharedCredentialsService,
     syncCommandToOperation,
     syncManager,
     userService

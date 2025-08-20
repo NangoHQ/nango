@@ -6,9 +6,9 @@ sidebarTitle: Datto RMM
 # Overview
 
 To authenticate with Datto RMM, you need:
-1. **Platform (Region)** – Your Datto RMM platform (e.g., `merlot`, `pinotage`, `concord`, `vidal`, `zinfandel`, `syrah`). This determines your API base URL like `https://<platform>-api.centrastage.net`.
+1. **Platform** – Your Datto RMM platform (e.g., `merlot`, `pinotage`, `concord`, `vidal`, `zinfandel`, `syrah`). This determines your API base URL like `https://<platform>-api.centrastage.net`.
 
-This guide walks you through enabling API access and finding your API URL in Datto RMM.
+This guide walks you through enabling API access and finding your **Platform (Region)** in Datto RMM.
 
 ### Prerequisites:
 
@@ -16,13 +16,13 @@ This guide walks you through enabling API access and finding your API URL in Dat
 
 ### Step 1: Enable API access and generate API keys
 
-1. In Datto RMM, go to **Setup > Global Settings > Access Control** and enable **Enable API Access**.
-2. Go to **Setup > Users**, select your user, then click **Generate API Keys** to create an **API Key** and **API Secret Key** for the user.
-3. Click **Save User**.
-
-See: [Datto RMM API v2 docs](https://rmm.datto.com/help/en/Content/2SETUP/APIv2.htm)
-
-<img src="/integrations/all/datto-rmm/api-key.png" style={{maxWidth: "450px" }}/>
+1. Login to your Datto RMM instance, go to **Setup** > **Global Settings** > **Access Control** and toggle the **Enable API Access** button.
+<img src="/integrations/all/datto-rmm/access_control.png"/>
+2. Go to **Setup** > **Users**, select your user, then click **Generate API Keys** to create an **API Key** and **API Secret Key** for the user.
+<img src="/integrations/all/datto-rmm/generate_api_key.png"/>
+3. The **API Key** and **API Secret** Key will be displayed. You will need to use these keys to fill out the login form: enter the **API Key** in the `Access Key` field and the **API Secret Key** in the `Secret Key` field.
+<img src="/integrations/all/datto-rmm/api_key.png"/>
+4. Click **Save User**.
 
 ### Step 2: Select your platform
 
@@ -40,12 +40,10 @@ You can also verify Swagger at `https://<platform>-api.centrastage.net/api/swagg
 ### Step 3: Enter your details in the Connect UI
 
 Once you have the **Platform**:
-1. Open the form where you connect to Datto RMM.
-2. Enter the **Platform** (e.g., `merlot`). The base URL is derived automatically.
-3. Continue to the OAuth consent and complete authorization.
+1. Open the form where you need to authenticate with Datto RMM.
+2. Enter the **Platform** (e.g., `merlot`) in the appropriate field.
+3. Submit the form to proceed to the OAuth consent, complete the authorization, and you should be successfully authenticated.
 
 <img src="/integrations/all/datto-rmm/form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Datto RMM.
-
-

@@ -284,6 +284,7 @@
               "integrations/all/datev",
               "integrations/all/dayforce",
               "integrations/all/datto-rmm",
+              "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "integrations/all/devin",
@@ -836,7 +837,7 @@
       }
     }
   },
-  
+
   "navbar": {
     "links": [
       {

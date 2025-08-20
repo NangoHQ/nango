@@ -16,6 +16,21 @@
         },
         {
             "path": "../billing"
+        },
+        {
+            "path": "../database"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
+            "path": "../records"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../account-usage"
         }
     ],
     "include": ["lib/**/*"]
