@@ -144,7 +144,10 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             }
 
             toast({
-                title: 'Created calendar event for tomorrow at 12:00. Check your calendar!',
+                title: `Created calendar event for ${calendarEvent.start.dateTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}. Check your calendar!`,
                 variant: 'success'
             });
         } catch {
