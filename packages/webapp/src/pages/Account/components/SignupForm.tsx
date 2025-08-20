@@ -112,19 +112,20 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                                 setPasswordStrength(tmpStrength);
                             }}
                         />
-                        <Input
-                            id="found_us"
-                            name="found_us"
-                            type="text"
-                            autoComplete="off"
-                            placeholder="How did you hear about Nango?"
-                            inputSize="lg"
-                            value={foundUs}
-                            required
-                            onChange={(e) => setFoundUs(e.target.value)}
-                            disabled={Boolean(invitation?.email)}
-                            className="border-border-gray bg-dark-600"
-                        />
+                        {!invitation && (
+                            <Input
+                                id="found_us"
+                                name="found_us"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="How did you hear about Nango?"
+                                inputSize="lg"
+                                value={foundUs}
+                                required
+                                onChange={(e) => setFoundUs(e.target.value)}
+                                className="border-border-gray bg-dark-600"
+                            />
+                        )}
                     </div>
 
                     <div className="grid">
@@ -132,7 +133,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             type="submit"
                             size={'lg'}
                             className="justify-center disabled:bg-dark-700"
-                            disabled={!name || !email || !password || !passwordStrength || !foundUs}
+                            disabled={!name || !email || !password || !passwordStrength || (!invitation && !foundUs)}
                             isLoading={loading}
                         >
                             Sign up
