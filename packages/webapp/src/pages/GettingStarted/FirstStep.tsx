@@ -111,7 +111,6 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     if (connection) {
         return (
             <div className="text-text-secondary text-sm">
-                <h3 className="text-success-4 text-lg font-semibold mb-3">Google Calendar Authorized!</h3>
                 <Button variant="primary" className="mt-5" onClick={onClickDisconnect}>
                     <IconX className="w-4 h-4 mr-2" />
                     Disconnect from Google Calendar
@@ -125,22 +124,19 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     }
 
     return (
-        <div>
-            <h3 className="text-text-primary text-lg font-semibold mb-3">Experience the user&apos;s auth flow</h3>
-            <div className="flex flex-col gap-5">
-                <p className="text-text-secondary text-sm">Connect your account just like your users would in your app.</p>
-                <Button variant="primary" className="w-fit" onClick={onClickConnect}>
-                    <IconBrandGoogleFilled className="w-4 h-4 mr-2" />
-                    Connect to Google Calendar
-                </Button>
-                <p className="text-text-secondary text-sm">
-                    This will create a connection for your{' '}
-                    <Link to={`/${env}/integrations/${integration?.unique_key}`} className="underline">
-                        Google Calendar integration
-                    </Link>
-                    , which we have setup for you.
-                </p>
-            </div>
+        <div className="flex flex-col gap-5">
+            <p className="text-text-secondary text-sm">Connect your account just like your users would in your app.</p>
+            <Button variant="primary" className="w-fit" onClick={onClickConnect}>
+                <IconBrandGoogleFilled className="w-4 h-4 mr-2" />
+                Connect to Google Calendar
+            </Button>
+            <p className="text-text-secondary text-sm">
+                This will create a connection for your{' '}
+                <Link to={`/${env}/integrations/${integration?.unique_key}`} className="underline">
+                    Google Calendar integration
+                </Link>
+                , which we have setup for you.
+            </p>
         </div>
     );
 };

@@ -50,6 +50,12 @@ export const GettingStarted: React.FC = () => {
                 steps={[
                     {
                         id: 'authorize-google-calendar',
+                        renderTitle: (status) => {
+                            if (status === 'completed') {
+                                return <h3 className="text-success-4 text-lg font-semibold">Google Calendar Authorized!</h3>;
+                            }
+                            return <h3 className="text-text-primary text-lg font-semibold">Experience the user&apos;s auth flow</h3>;
+                        },
                         content: (
                             <FirstStep
                                 connection={gettingStarted?.connection ?? null}
@@ -81,6 +87,9 @@ export const GettingStarted: React.FC = () => {
                     },
                     {
                         id: 'access-google-calendar-api',
+                        renderTitle: () => {
+                            return <h3 className="text-text-primary text-lg font-semibold">Use Nango as a proxy to make requests to Google Calendar</h3>;
+                        },
                         content: (
                             <SecondStep
                                 connectionId={gettingStarted?.connection?.connection_id}
@@ -102,20 +111,19 @@ export const GettingStarted: React.FC = () => {
                         ),
                         icon: IconLockOpen
                     },
-                    ...(currentStep === 2
-                        ? [
-                              {
-                                  id: 'go-deeper',
-                                  content: (
-                                      <ThirdStep
-                                          onDocumentationLinkClicked={(link) => analyticsTrack(`web:getting_started:documentation-link-clicked`, { link })}
-                                          onSlackLinkClicked={() => analyticsTrack('web:getting_started:slack-community-link-clicked')}
-                                      />
-                                  ),
-                                  icon: IconAnchor
-                              }
-                          ]
-                        : [])
+                    {
+                        id: 'go-deeper',
+                        renderTitle: () => {
+                            return <h3 className="text-text-primary text-lg font-semibold">Go deeper</h3>;
+                        },
+                        content: (
+                            <ThirdStep
+                                onDocumentationLinkClicked={(link) => analyticsTrack(`web:getting_started:documentation-link-clicked`, { link })}
+                                onSlackLinkClicked={() => analyticsTrack('web:getting_started:slack-community-link-clicked')}
+                            />
+                        ),
+                        icon: IconAnchor
+                    }
                 ]}
             />
         </DashboardLayout>

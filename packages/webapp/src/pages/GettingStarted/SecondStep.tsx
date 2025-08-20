@@ -140,46 +140,43 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     };
 
     return (
-        <div>
-            <h3 className="text-text-primary text-lg font-semibold mb-3">Use Nango as a proxy to make requests to Google Calendar</h3>
-            <div className="flex flex-col gap-5">
-                <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
-                <CodeBlock
-                    snippets={[
-                        {
-                            displayLanguage: 'Node Client',
-                            icon: <IconBrandNodejs className="w-4 h-4" />,
-                            language: 'typescript',
-                            code: nodeClientCode
-                        },
-                        {
-                            displayLanguage: 'cURL',
-                            icon: <IconTerminal2 className="w-4 h-4" />,
-                            language: 'bash',
-                            code: curlCode
-                        }
-                    ]}
-                />
-                <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
-                    {completed && (
-                        <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
-                            Explore the logs from this demo
-                        </LinkWithIcon>
+        <div className="flex flex-col gap-5">
+            <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
+            <CodeBlock
+                snippets={[
+                    {
+                        displayLanguage: 'Node Client',
+                        icon: <IconBrandNodejs className="w-4 h-4" />,
+                        language: 'typescript',
+                        code: nodeClientCode
+                    },
+                    {
+                        displayLanguage: 'cURL',
+                        icon: <IconTerminal2 className="w-4 h-4" />,
+                        language: 'bash',
+                        code: curlCode
+                    }
+                ]}
+            />
+            <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
+                {completed && (
+                    <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
+                        Explore the logs from this demo
+                    </LinkWithIcon>
+                )}
+                <Button variant="primary" onClick={onExecute} disabled={isExecuting}>
+                    {isExecuting ? (
+                        <>
+                            <IconLoader className="w-4 h-4 animate-spin" />
+                            Running...
+                        </>
+                    ) : (
+                        <>
+                            <IconPlayerPlay className="w-4 h-4" />
+                            Run
+                        </>
                     )}
-                    <Button variant="primary" onClick={onExecute} disabled={isExecuting}>
-                        {isExecuting ? (
-                            <>
-                                <IconLoader className="w-4 h-4 animate-spin" />
-                                Running...
-                            </>
-                        ) : (
-                            <>
-                                <IconPlayerPlay className="w-4 h-4" />
-                                Run
-                            </>
-                        )}
-                    </Button>
-                </div>
+                </Button>
             </div>
         </div>
     );

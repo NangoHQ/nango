@@ -21,7 +21,6 @@ export const ThirdStep = ({ onDocumentationLinkClicked, onSlackLinkClicked }: Th
 
     return (
         <div ref={componentRef}>
-            <h3 className="text-text-primary text-lg font-semibold mb-3">Go deeper</h3>
             <p className="text-text-secondary text-sm">Add nango to your app in less than an hour.</p>
 
             <div className="mt-5 flex flex-col">

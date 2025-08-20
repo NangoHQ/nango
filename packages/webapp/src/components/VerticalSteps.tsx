@@ -8,6 +8,7 @@ import type { HTMLAttributes } from 'react';
 
 export interface Step {
     id: string;
+    renderTitle: (status: 'completed' | 'active' | 'inactive') => React.ReactNode;
     content: React.ReactNode;
     icon: Icon;
 }
@@ -59,8 +60,16 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                         </div>
 
                         {/* Right side - Content */}
-                        <div className={cn('flex-1 pb-20 max-w-full opacity-100', isLast && 'pb-0', isBlocked && 'opacity-50 pointer-events-none')}>
-                            {step.content}
+                        <div
+                            className={cn(
+                                'flex-1 max-w-full opacity-100 flex flex-col gap-3 pb-10',
+                                !isBlocked && 'pb-14',
+                                isLast && 'pb-0',
+                                isBlocked && 'opacity-50 pointer-events-none'
+                            )}
+                        >
+                            {step.renderTitle(isDone ? 'completed' : isCurrent ? 'active' : 'inactive')}
+                            {!isBlocked && step.content}
                         </div>
                     </div>
                 );
