@@ -1,7 +1,7 @@
 import { IconChecks } from '@tabler/icons-react';
 import React from 'react';
 
-import { cn } from '../utils/utils.js';
+import { cn } from '../../../utils/utils.js';
 
 import type { Icon } from '@tabler/icons-react';
 import type { HTMLAttributes } from 'react';

@@ -1,24 +1,32 @@
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type { GetGettingStarted, PatchGettingStarted } from '@nangohq/types';
 
 export function useGettingStarted(env: string) {
-    const { data, error, mutate, isLoading } = useSWR<GetGettingStarted['Success'], SWRError<GetGettingStarted['Errors']>>(
-        `/api/v1/getting-started?env=${env}`,
-        swrFetcher,
-        {
-            revalidateIfStale: true
-        }
-    );
+    const { data, error, isLoading, refetch } = useQuery<GetGettingStarted['Success'], APIError>({
+        queryKey: ['getting-started', env],
+        queryFn: async (): Promise<GetGettingStarted['Success']> => {
+            const res = await apiFetch(`/api/v1/getting-started?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetGettingStarted['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        enabled: Boolean(env)
+    });
 
     return {
         data,
-        isLoading,
         error,
-        mutate
+        isLoading,
+        refetch
     };
 }
 

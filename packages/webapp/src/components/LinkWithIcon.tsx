@@ -2,6 +2,8 @@ import { IconExternalLink, IconLink } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { cn } from '../utils/utils';
+
 interface LinkWithIconProps {
     to: string;
     children: React.ReactNode;
@@ -15,7 +17,7 @@ export default function LinkWithIcon({ to, children, type = 'internal', classNam
         return (
             <a
                 href={to}
-                className={`text-text-primary text-sm underline flex items-center ${className}`}
+                className={cn(`text-text-primary text-sm underline inline-flex items-center`, className)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClick}
@@ -26,7 +28,7 @@ export default function LinkWithIcon({ to, children, type = 'internal', classNam
     }
 
     return (
-        <Link to={to} className={`text-text-primary text-sm underline flex items-center ${className}`} onClick={onClick}>
+        <Link to={to} className={cn(`text-text-primary text-sm underline inline-flex items-center`, className)} onClick={onClick}>
             {children} <IconLink className="w-4 h-4 ml-1" />
         </Link>
     );

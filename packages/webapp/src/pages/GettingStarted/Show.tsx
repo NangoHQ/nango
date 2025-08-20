@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
+import VerticalSteps from './components/VerticalSteps';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import VerticalSteps from '../../components/VerticalSteps';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -17,7 +17,7 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
     const env = useStore((state) => state.env);
-    const { data: gettingStartedResult, error, mutate, isLoading } = useGettingStarted(env);
+    const { data: gettingStartedResult, error, refetch, isLoading } = useGettingStarted(env);
     const gettingStarted = gettingStartedResult?.data;
 
     const navigate = useNavigate();
@@ -68,7 +68,7 @@ export const GettingStarted: React.FC = () => {
                                         if (!res.ok) {
                                             throw new Error('Failed to patch getting started');
                                         }
-                                        await mutate();
+                                        await refetch();
                                     } catch {
                                         toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                     }
@@ -76,7 +76,7 @@ export const GettingStarted: React.FC = () => {
                                 onDisconnected={async () => {
                                     try {
                                         analyticsTrack('web:getting_started:connection-disconnected');
-                                        await mutate();
+                                        await refetch();
                                     } catch {
                                         toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                     }
@@ -101,7 +101,7 @@ export const GettingStarted: React.FC = () => {
                                         if (!res.ok) {
                                             throw new Error('Failed to patch getting started');
                                         }
-                                        await mutate();
+                                        await refetch();
                                     } catch {
                                         toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                     }

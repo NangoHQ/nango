@@ -27,7 +27,7 @@ import { Nango } from "@nangohq/node";
 
 const nango = new Nango({ secretKey: "<NANGO-SECRET-KEY>" });
 
-await nango.put({
+await nango.post({
     endpoint: "/calendar/v3/calendars/primary/events",
     connectionId: "${connectionId ?? '<CONNECTION-ID>'}",
     providerConfigKey: "${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}",
@@ -43,7 +43,7 @@ await nango.put({
     }
 });
 
-console.log("✅ Created calendar event for tomorrow at 12:00!");
+console.log("Created calendar event!");
 `.trim();
 }
 
@@ -144,7 +144,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             }
 
             toast({
-                title: `Created calendar event for ${calendarEvent.start.dateTime.toLocaleTimeString('en-US', {
+                title: `Created calendar event at ${calendarEvent.start.dateTime.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit'
                 })}. Check your calendar!`,
@@ -182,7 +182,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             />
             <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
                 {completed && (
-                    <div>
+                    <div className="flex flex-col">
                         <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                             Explore the logs from this demo
                         </LinkWithIcon>

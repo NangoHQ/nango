@@ -1,6 +1,5 @@
 import { IconBrandGoogleFilled, IconX } from '@tabler/icons-react';
 import { useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 
 import Nango from '@nangohq/frontend';
@@ -132,10 +131,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
             </Button>
             <p className="text-text-secondary text-sm">
                 This will create a connection for your{' '}
-                <Link to={`/${env}/integrations/${integration?.unique_key}`} className="underline">
-                    Google Calendar integration
-                </Link>
-                , which we have setup for you.
+                <LinkWithIcon to={`/${env}/integrations/${integration?.unique_key}`}>Google Calendar integration</LinkWithIcon>, which we have set up for you.
             </p>
         </div>
     );
