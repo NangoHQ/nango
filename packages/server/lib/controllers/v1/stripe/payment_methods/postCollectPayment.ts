@@ -39,6 +39,7 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
     let stripeCustomerId = plan.stripe_customer_id;
     if (!stripeCustomerId) {
         const customer = await stripe.customers.create({
+            name: account.name,
             email: user.email,
             metadata: {
                 accountUuid: account.uuid

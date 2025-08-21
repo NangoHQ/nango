@@ -1,10 +1,12 @@
 import * as z from 'zod';
 
+import { billing } from '@nangohq/billing';
 import { accountService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { teamToApi } from '../../../formatters/team.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getStripe } from '../../../utils/stripe.js';
 
 import type { PutTeam } from '@nangohq/types';
 
@@ -29,10 +31,20 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     const body: PutTeam['Body'] = val.data;
 
     await accountService.editAccount({ id: account.id, ...body });
+
+    if (plan?.stripe_customer_id && plan?.orb_customer_id) {
+        const stripe = getStripe();
+        await Promise.all([
+            stripe.customers.update(plan.stripe_customer_id, {
+                name: body.name
+            }),
+            billing.updateCustomer(plan.orb_customer_id, body.name)
+        ]);
+    }
 
     res.status(200).send({
         data: teamToApi({

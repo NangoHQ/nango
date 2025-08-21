@@ -82,6 +82,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
         // payment method was updated through our UI
         // we replicate to the customer to keep it in sync and to be able to generate invoices
         // It might be incorrect in some cases, but it's better than nothing
+        case 'payment_method.attached':
         case 'payment_method.updated': {
             const data = event.data.object;
             if (typeof data.customer !== 'string') {
@@ -92,8 +93,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             const billingDetails = paymentMethod.billing_details;
 
             await stripe.customers.update(data.customer, {
-                address: billingDetails.address as any,
-                name: billingDetails.name || ''
+                address: billingDetails.address as any
             });
             return Ok(undefined);
         }
