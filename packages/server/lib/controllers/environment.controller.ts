@@ -70,29 +70,6 @@ class EnvironmentController {
         }
     }
 
-    async getEnvironmentVariables(_req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const environmentVariables = await environmentService.getEnvironmentVariables(environmentId);
-
-            if (!environmentVariables) {
-                res.status(200).send([]);
-                return;
-            }
-
-            const envs = environmentVariables.map((env) => {
-                return {
-                    name: env.name,
-                    value: env.value
-                };
-            });
-
-            res.status(200).send(envs);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async rotateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             if (!req.body.type) {

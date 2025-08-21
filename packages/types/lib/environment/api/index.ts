@@ -60,3 +60,9 @@ export type DeleteEnvironment = Endpoint<{
     Success: never;
     Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
+
+export type GetPublicEnvironmentVariables = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/environment-variables';
+    Success: { name: string; value: string }[];
+}>;
