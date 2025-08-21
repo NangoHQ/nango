@@ -518,6 +518,8 @@
               "integrations/all/pingboard",
               "integrations/all/pinterest",
               "integrations/all/pipedrive",
+              "integrations/all/pipedream",
+              "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "integrations/all/podium",
