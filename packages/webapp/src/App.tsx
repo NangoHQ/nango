@@ -22,6 +22,7 @@ import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
 import { EnvironmentSettings } from './pages/Environment/Settings/Show';
+import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
 import CreateIntegration from './pages/Integrations/Create';
@@ -96,11 +97,12 @@ const App = () => {
                         <Route path="/" element={<Root />} />
                         <Route element={<PrivateRoute />} key={env}>
                             <Route path="/:env" element={<Homepage />} />
-                            {showGettingStarted && (
-                                <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                            {showGettingStarted &&
+                                (globalEnv.isCloud ? (
                                     <Route path="/dev/getting-started" element={<GettingStarted />} />
-                                </Route>
-                            )}
+                                ) : (
+                                    <Route path="/dev/getting-started" element={<ClassicGettingStarted />} />
+                                ))}
                             <Route path="/:env/integrations" element={<IntegrationList />} />
                             <Route path="/:env/integrations/create" element={<CreateIntegration />} />
                             <Route path="/:env/integration/:providerConfigKey" element={<Navigate to={'/integrations'} />} />
