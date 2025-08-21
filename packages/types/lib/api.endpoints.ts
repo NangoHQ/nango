@@ -39,7 +39,8 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
-    PostConnectionRefresh
+    PostConnectionRefresh,
+    PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
@@ -47,6 +48,7 @@ import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './env
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
+import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -114,7 +116,8 @@ export type PublicApiEndpoints =
     | PostPublicIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
-    | PostPublicOauthOutboundAuthorization;
+    | PostPublicOauthOutboundAuthorization
+    | PostPublicConnection;
 
 export type PrivateApiEndpoints =
     | PostSignup
@@ -166,7 +169,9 @@ export type PrivateApiEndpoints =
     | GetSharedCredentialsProviders
     | GetSharedCredentialsProvider
     | PostSharedCredentialsProvider
-    | PatchSharedCredentialsProvider;
+    | PatchSharedCredentialsProvider
+    | GetGettingStarted
+    | PatchGettingStarted;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

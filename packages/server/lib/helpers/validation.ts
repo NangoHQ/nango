@@ -94,3 +94,54 @@ export const sharedCredentialsSchema = z
         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
     })
     .strict();
+
+export const connectionCredentialsOauth2Schema = z.strictObject({
+    access_token: z.string().min(1).max(2048),
+    refresh_token: z.string().min(1).max(2048).optional(),
+    expires_at: z.iso.datetime().optional(),
+    config_override: z
+        .strictObject({
+            client_id: z.string().min(1).max(255).optional(),
+            client_secret: z.string().min(1).max(2048).optional()
+        })
+        .optional()
+});
+
+export const connectionCredentialsOauth2CCSchema = z.strictObject({
+    token: z.string().min(1).max(2048),
+    client_id: z.string().min(1).max(255),
+    client_secret: z.string().min(1).max(2048),
+    client_certificate: z.string().min(1).max(10000).optional(),
+    client_private_key: z.string().min(1).max(10000).optional(),
+    expires_at: z.iso.datetime().optional()
+});
+
+export const connectionCredentialsOauth1Schema = z.strictObject({
+    oauth_token: z.string().min(1).max(2048),
+    oauth_token_secret: z.string().min(1).max(2048)
+});
+
+export const connectionCredentialsBasicSchema = z.strictObject({
+    username: z.string().max(1024), // no .min() because some providers do not require password (ashby, bitdefender)
+    password: z.string().max(1024) // no .min() because some providers do not require username (affinity)
+});
+
+export const connectionCredentialsApiKeySchema = z.strictObject({
+    api_key: z.string().min(1).max(255)
+});
+
+export const connectionCredentialsTBASchema = z.strictObject({
+    token_id: z.string().min(1),
+    token_secret: z.string().min(1),
+    config_override: z
+        .strictObject({
+            client_id: z.string().min(1).max(255).optional(),
+            client_secret: z.string().min(1).max(2048).optional()
+        })
+        .optional()
+});
+
+export const connectionCredentialsGithubAppSchema = z.strictObject({
+    app_id: z.string().min(1).max(255),
+    installation_id: z.string().min(1).max(255)
+});

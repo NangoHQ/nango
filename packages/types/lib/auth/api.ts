@@ -1,3 +1,5 @@
+import type { DBConnection } from '../connection/db.js';
+
 export interface AuthModes {
     OAuth1: 'OAUTH1';
     OAuth2: 'OAUTH2';
@@ -17,14 +19,7 @@ export interface AuthModes {
 
 export type AuthModeType = AuthModes[keyof AuthModes];
 
-export interface AuthOperation {
-    CREATION: 'creation';
-    OVERRIDE: 'override';
-    REFRESH: 'refresh';
-    UNKNOWN: 'unknown';
-}
-
-export type AuthOperationType = AuthOperation[keyof AuthOperation];
+export type AuthOperationType = 'creation' | 'override' | 'refresh' | 'unknown';
 
 export interface OAuthAuthorizationMethod {
     BODY: 'body';
@@ -41,8 +36,8 @@ export interface OAuthBodyFormat {
 }
 
 export interface ConnectionUpsertResponse {
-    id: number;
-    operation: AuthOperation;
+    connection: DBConnection;
+    operation: AuthOperationType;
 }
 
 export interface OAuth1RequestTokenResult {
@@ -77,6 +72,7 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
+    jwtToken?: string;
 }
 
 export interface AppStoreCredentials {

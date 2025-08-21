@@ -17,7 +17,13 @@
   },
   "favicon": "/favicon.png",
   "contextual": {
-    "options": ["copy", "cursor", "vscode", "chatgpt", "claude"]
+    "options": [
+      "copy",
+      "cursor",
+      "vscode",
+      "chatgpt",
+      "claude"
+    ]
   },
   "navigation": {
     "anchors": [
@@ -282,7 +288,9 @@
               "integrations/all/databricks-workspace",
               "integrations/all/datadog",
               "integrations/all/datev",
+              "integrations/all/dayforce",
               "integrations/all/datto-rmm",
+              "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "integrations/all/devin",
@@ -720,7 +728,7 @@
                     ]
                   },
                   {
-                    "group": "Connections",
+                    "group": "Connections (deprecated)",
                     "pages": [
                       "reference/api/connection/list",
                       "reference/api/connection/get",
@@ -730,6 +738,17 @@
                       "reference/api/connection/update-metadata",
                       "reference/api/connection/update-metadata-legacy",
                       "reference/api/connection/delete"
+                    ]
+                  },
+                  {
+                    "group": "Connections",
+                    "pages": [
+                      "reference/api/connections/list",
+                      "reference/api/connections/get",
+                      "reference/api/connections/post",
+                      "reference/api/connections/set-metadata",
+                      "reference/api/connections/update-metadata",
+                      "reference/api/connections/delete"
                     ]
                   },
                   {
@@ -812,7 +831,8 @@
           {
             "group": "Changelog",
             "pages": [
-              "changelog/overview"
+              "changelog/overview",
+              "changelog/dev-updates"
             ]
           }
         ]
@@ -835,7 +855,6 @@
       }
     }
   },
-  
   "navbar": {
     "links": [
       {

@@ -76,6 +76,7 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     dryRun = false;
+    isScript = false;
     activityLogId?: string | undefined;
     userAgent: string;
     http: AxiosInstance;
@@ -104,6 +105,10 @@ export class Nango {
 
         if (config.isSync) {
             this.isSync = config.isSync;
+        }
+
+        if (config.isScript) {
+            this.isScript = config.isScript;
         }
 
         if (config.dryRun) {
@@ -238,7 +243,7 @@ export class Nango {
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
-        const url = new URL(`${this.serverUrl}/connection`);
+        const url = new URL(`${this.serverUrl}/connections`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
@@ -348,10 +353,7 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, {
-            'Nango-Is-Sync': true,
-            'Nango-Is-Dry-Run': this.dryRun
-        });
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false);
 
         return response.data.metadata as T;
     }
@@ -376,7 +378,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -405,7 +407,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -417,7 +419,7 @@ export class Nango {
      * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connections/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
             'Content-Type': 'application/json'
@@ -881,8 +883,6 @@ export class Nango {
             'Connection-Id': connectionId!,
             'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customPrefixedHeaders
         };
@@ -1060,12 +1060,10 @@ export class Nango {
         refreshToken: boolean = false,
         additionalHeader: Record<string, any> = {}
     ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
-        const url = `${this.serverUrl}/connection/${connectionId}`;
+        const url = `${this.serverUrl}/connections/${connectionId}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun
+            'Content-Type': 'application/json'
         };
 
         if (additionalHeader) {
@@ -1082,12 +1080,15 @@ export class Nango {
     }
 
     /**
-     * Enriches the headers with the Authorization token
+     * Enriches the headers with the Authorization token and internal flags
      * @param headers - Optional. The headers to enrich
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
         headers['Authorization'] = 'Bearer ' + this.secretKey;
+        headers['Nango-Is-Sync'] = this.isSync;
+        headers['Nango-Is-Script'] = this.isScript;
+        headers['Nango-Is-Dry-Run'] = this.dryRun;
 
         return headers;
     }

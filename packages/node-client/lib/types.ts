@@ -8,7 +8,6 @@ import type {
     AppStoreCredentials,
     AuthModeType,
     AuthModes,
-    AuthOperation,
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
@@ -64,7 +63,6 @@ export type {
     AppStoreCredentials,
     AuthModeType,
     AuthModes,
-    AuthOperation,
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
@@ -106,6 +104,7 @@ export interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     dryRun?: boolean;
+    isScript?: boolean;
     activityLogId?: string | undefined;
 }
 

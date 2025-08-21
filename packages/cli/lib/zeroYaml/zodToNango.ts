@@ -63,6 +63,8 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         return { name, value: 'void', tsType: true }; // No optional on purpose because void | undefined is not valid
     } else if (isZodOptional(schema)) {
         return { ...zodToNangoModelField(name, schema.def.innerType), optional };
+    } else if (isZodUndefined(schema)) {
+        throw new Error('z.undefined() is not supported, please use z.null() or z.optional() instead');
     } else {
         throw new Error(`not handled, ${JSON.stringify(schema)}`);
     }
@@ -134,4 +136,8 @@ function isZodOptional(schema: z.core.$ZodType): schema is z.ZodOptional {
 
 function isZodNullable(schema: z.core.$ZodType): schema is z.ZodNullable {
     return schema.constructor.name === 'ZodNullable';
+}
+
+function isZodUndefined(schema: z.core.$ZodType): schema is z.ZodUndefined {
+    return schema.constructor.name === 'ZodUndefined';
 }

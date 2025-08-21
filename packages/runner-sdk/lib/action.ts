@@ -61,6 +61,7 @@ export abstract class NangoActionBase<
     runnerFlags: NangoProps['runnerFlags'];
     scriptType: NangoProps['scriptType'];
 
+    public isCLI: NangoProps['isCLI'];
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -77,6 +78,7 @@ export abstract class NangoActionBase<
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
+        this.isCLI = config.isCLI;
 
         if (config.syncId) {
             this.syncId = config.syncId;
