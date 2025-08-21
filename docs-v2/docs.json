@@ -346,6 +346,7 @@
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
+              "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
               "integrations/all/google-gemini",
