@@ -92,6 +92,7 @@ describe(`GET ${endpoint}`, () => {
                 display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
+                tags: null,
                 organization: {
                     display_name: null,
                     id: endUser.organization!.organizationId
@@ -150,6 +151,7 @@ describe(`GET ${endpoint}`, () => {
                 display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
+                tags: null,
                 organization: {
                     display_name: null,
                     id: endUser.organization!.organizationId

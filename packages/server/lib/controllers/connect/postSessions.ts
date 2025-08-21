@@ -6,7 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { configService, upsertEndUser } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -17,13 +17,7 @@ import type { Response } from 'express';
 
 export const bodySchema = z
     .object({
-        end_user: z
-            .object({
-                id: z.string().max(255).min(1),
-                email: z.string().email().min(5).optional(),
-                display_name: z.string().max(255).optional()
-            })
-            .strict(),
+        end_user: endUserSchema,
         organization: z
             .object({
                 id: z.string().max(255).min(0),
@@ -47,14 +41,6 @@ export const bodySchema = z
                     })
                     .strict()
             )
-            .optional(),
-        tags: z
-            // Please be careful when changing this:
-            // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for feature around that
-            // It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
-            // But they complained a lot about concatenation of string, so object solves that cleanly
-            .record(z.string(), z.string())
-            .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' })
             .optional(),
         overrides: z
             .record(
