@@ -1072,6 +1072,30 @@ avalara-sandbox:
             description: The Avalara client for your Avalara account
             doc_section: '#step-2-generating-an-avalara-client'
 
+avoma:
+    display_name: Avoma
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.avoma.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users
+    docs: https://docs.nango.dev/integrations/all/avoma
+    docs_connect: https://docs.nango.dev/integrations/all/avoma/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Avoma account
+            pattern: '^[a-z0-9]{10,}:[a-z0-9]{10,}$'
+            example: '1awcbx0njh:02k6er2pld4q5irffn23'
+            doc_section: '#step-1-generating-your-api-key'
+
 aws:
     display_name: AWS
     categories:
