@@ -99,7 +99,7 @@ export const ENVS = z.object({
     FLEET_TIMEOUT_FINISHING_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000), // 24 hours
+        .default(25 * 60 * 60 * 1000), // 25 hours
     FLEET_TIMEOUT_IDLE_MS: z.coerce
         .number()
         .optional()

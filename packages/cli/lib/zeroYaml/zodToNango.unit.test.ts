@@ -27,8 +27,10 @@ describe('zodToNango', () => {
                     ref: ref,
                     void: z.void(),
                     never: z.never(),
-                    date: z.date()
-                    // Not supported
+                    date: z.date(),
+                    emptyObject: z.object({})
+                    // Not supported on purpose
+                    // undefined: z.undefined()
                     // lazy: z.lazy(() => ref)
                 })
             )
@@ -90,7 +92,8 @@ describe('zodToNango', () => {
                 },
                 { name: 'void', tsType: true, value: 'void' },
                 { name: 'never', optional: false, tsType: true, value: 'never' },
-                { name: 'date', optional: false, tsType: true, value: 'Date' }
+                { name: 'date', optional: false, tsType: true, value: 'Date' },
+                { name: 'emptyObject', optional: false, value: [] }
             ]
         });
     });

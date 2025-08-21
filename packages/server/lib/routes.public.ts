@@ -28,6 +28,7 @@ import { getPublicConnection } from './controllers/connection/connectionId/getCo
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
+import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
@@ -152,15 +153,32 @@ publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, patchPublicIntegratio
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, deletePublicIntegration);
 
+// @deprecated
 publicAPI.use('/connection', jsonContentTypeMiddleware);
+// @deprecated
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
+// @deprecated
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
+// @deprecated
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
+// @deprecated
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
+// @deprecated
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
+// @deprecated
 publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
+// @deprecated
 publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
+// @deprecated
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
+
+publicAPI.use('/connections', jsonContentTypeMiddleware);
+publicAPI.route('/connections').post(apiAuth, postPublicConnection);
+publicAPI.route('/connections').get(apiAuth, getPublicConnections);
+publicAPI.route('/connections/metadata').post(apiAuth, postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(apiAuth, patchPublicMetadata);
+publicAPI.route('/connections/:connectionId').get(apiAuth, getPublicConnection);
+publicAPI.route('/connections/:connectionId').delete(apiAuth, deletePublicConnection);
 
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
