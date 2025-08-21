@@ -4209,6 +4209,38 @@ fitbit:
         base_url: https://api.fitbit.com
     docs: https://docs.nango.dev/integrations/all/fitbit
 
+float:
+    display_name: Float
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+        base_url: https://api.float.com
+        verification:
+            method: GET
+            endpoints:
+                - /v3/tasks
+    docs: https://docs.nango.dev/integrations/all/float
+    docs_connect: https://docs.nango.dev/integrations/all/float/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Float account
+            pattern: '^[a-f0-9]{16}[a-zA-Z0-9+/]+=$'
+            example: c9b38e5af69912d0rq9tE/fbT5/RPLk8Ua7tfHo9s6xMiCKvmCOvenR/Krc=
+            doc_section: '#step-1-finding-your-api-key'
+
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+
 fortnox:
     display_name: Fortnox
     categories:
