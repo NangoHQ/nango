@@ -5,8 +5,6 @@ import get from 'lodash-es/get.js';
 
 import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
 
-import { DEFAULT_INFINITE_EXPIRES_AT_MS } from '../services/connections/utils.js';
-
 import type { DBConnection, Provider } from '@nangohq/types';
 
 export enum NodeEnv {
@@ -81,13 +79,15 @@ export function parseTokenExpirationDate(expirationDate: any): Date | undefined 
         return expirationDate;
     }
 
-    // Handle "99years"
-    if (expirationDate === DEFAULT_INFINITE_EXPIRES_AT_MS) {
-        return new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
-    }
-
-    // UNIX timestamp
     if (typeof expirationDate === 'number') {
+        const dateFromValue = new Date(expirationDate);
+        // Check if expirationDate is in milliseconds
+        const isMs = dateFromValue.getFullYear() > 1971;
+        const currentTime = Date.now();
+        if (isMs) {
+            return new Date(currentTime + expirationDate);
+        }
+        // UNIX timestamp
         return new Date(expirationDate * 1000);
     }
 
