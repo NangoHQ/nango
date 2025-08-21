@@ -6067,7 +6067,7 @@ jobdiva:
     proxy:
         base_url: https://api.jobdiva.com
     token_response:
-        token:
+        token: ''
     docs: https://docs.nango.dev/integrations/all/jobdiva
     docs_connect: https://docs.nango.dev/integrations/all/jobdiva/connect
     credentials:
@@ -6077,7 +6077,7 @@ jobdiva:
             description: Your JobDiva Client ID
             example: '3050'
             doc_section: '#step-1-obtaining-your-client-id'
-            pattern: '^[A-Za-z0-9]{4}$'
+            pattern: '^[0-9]{4}$'
         username:
             type: string
             title: Username

@@ -931,7 +931,7 @@ class ConnectionService {
                     throw new NangoError(`Token response structure is missing for TWO_STEP.`);
                 }
 
-                const tokenPath = template.token_response?.token;
+                const tokenPath = template.token_response.token;
                 const expirationPath = template.token_response?.token_expiration;
                 const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
