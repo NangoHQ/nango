@@ -14,7 +14,12 @@ import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -926,13 +931,12 @@ class ConnectionService {
                     throw new NangoError(`Token response structure is missing for TWO_STEP.`);
                 }
 
-                const tokenPath = template.token_response.token;
-                const expirationPath = template.token_response.token_expiration;
-                const expirationStrategy = template.token_response.token_expiration_strategy;
+                const tokenPath = template.token_response?.token;
+                const expirationPath = template.token_response?.token_expiration;
+                const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
-                const token = extractValueByPath(rawCreds, tokenPath);
-                const expiration = extractValueByPath(rawCreds, expirationPath);
-
+                const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
