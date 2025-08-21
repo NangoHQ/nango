@@ -8444,6 +8444,45 @@ pipedrive:
             format: uri
             pattern: '^https?://.*$'
 
+pipedream:
+    display_name: Pipedream (API Key)
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.pipedream.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/pipedream
+    docs_connect: https://docs.nango.dev/integrations/all/pipedream/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Pipedream account
+            pattern: '^[a-f0-9]{32}$'
+            example: 9a1b2c3d4e5f67890abcdeffedcba123
+            doc_section: '#step-1-finding-your-api-key'
+
+pipedream-oauth2-cc:
+    display_name: Pipedream (Client Credentials)
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://api.pipedream.com/v1/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.pipedream.com
+    docs: https://docs.nango.dev/integrations/all/pipedream-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/pipedream-oauth2-cc/connect
+
 pivotaltracker:
     display_name: Pivotal Tracker
     categories:
