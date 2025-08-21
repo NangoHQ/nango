@@ -19,7 +19,7 @@ import {
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Err, Ok, baseUrl, getHeaders, isCloud, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -36,7 +36,7 @@ import type { NextFunction, Request, Response } from 'express';
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
 
-const actionPayloadAllowList = [662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254];
+const actionPayloadAllowList = isCloud ? [662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254] : [];
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
