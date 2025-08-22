@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PaginationService from './paginate.service.js';
 
-import type { CursorPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { CursorPagination, LinkPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('PaginationService', () => {
     describe('cursor pagination', () => {
@@ -231,6 +231,120 @@ describe('PaginationService', () => {
 
                 const second = await generator.next();
                 expect(second.done).toBe(true);
+            });
+        });
+    });
+
+    describe('link pagination', () => {
+        let config: UserProvidedProxyConfiguration;
+        let paginationConfig: LinkPagination;
+        let proxy: ReturnType<typeof vi.fn>;
+
+        beforeEach(() => {
+            config = {
+                endpoint: '/test',
+                method: 'GET',
+                providerConfigKey: 'test-provider-key'
+            };
+
+            proxy = vi.fn();
+        });
+
+        describe('link pagination fallback logic', () => {
+            it('should use header link when available', async () => {
+                paginationConfig = {
+                    type: 'link',
+                    link_rel_in_response_header: 'next',
+                    link_path_in_response_body: 'pagination.next_url',
+                    response_path: 'data',
+                    limit_name_in_request: 'limit'
+                };
+
+                proxy.mockResolvedValueOnce({
+                    headers: {
+                        link: '<https://api.example.com/next>; rel="next"'
+                    },
+                    data: {
+                        data: [{ id: 1 }],
+                        pagination: {
+                            next_url: 'https://api.example.com/next-body'
+                        }
+                    }
+                });
+
+                const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
+                const firstPage = await generator.next();
+
+                expect(firstPage.value).toEqual([{ id: 1 }]);
+                expect(proxy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        endpoint: '/test'
+                    })
+                );
+            });
+
+            it('should fallback to body link when header link is undefined', async () => {
+                paginationConfig = {
+                    type: 'link',
+                    link_rel_in_response_header: 'next',
+                    link_path_in_response_body: 'pagination.next_url',
+                    response_path: 'data',
+                    limit_name_in_request: 'limit'
+                };
+
+                proxy.mockResolvedValueOnce({
+                    headers: {
+                        link: undefined
+                    },
+                    data: {
+                        data: [{ id: 1 }],
+                        pagination: {
+                            next_url: 'https://api.example.com/next-body'
+                        }
+                    }
+                });
+
+                const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
+                const firstPage = await generator.next();
+
+                expect(firstPage.value).toEqual([{ id: 1 }]);
+                expect(proxy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        endpoint: '/test'
+                    })
+                );
+            });
+
+            it('should fallback to body link when header link is empty', async () => {
+                paginationConfig = {
+                    type: 'link',
+                    link_rel_in_response_header: 'next',
+                    link_path_in_response_body: 'pagination.next_url',
+                    response_path: 'data',
+                    limit_name_in_request: 'limit'
+                };
+
+                proxy.mockResolvedValueOnce({
+                    headers: {
+                        link: ''
+                    },
+                    data: {
+                        data: [{ id: 1 }],
+                        pagination: {
+                            next_url: 'https://api.example.com/next-body'
+                        }
+                    }
+                });
+
+                const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
+                const firstPage = await generator.next();
+
+                expect(firstPage.value).toEqual([{ id: 1 }]);
+                expect(proxy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        endpoint: '/test'
+                    })
+                );
             });
         });
     });
