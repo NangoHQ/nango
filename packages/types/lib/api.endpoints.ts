@@ -64,7 +64,6 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PatchOnboarding } from './onboarding/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { GetPublicRecords } from './record/api.js';
@@ -138,7 +137,6 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | PatchOnboarding
     | PostInternalConnectSessions
     | GetIntegrationFlows
     | DeleteIntegration

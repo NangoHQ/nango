@@ -62,7 +62,6 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
-import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -208,8 +207,6 @@ web.route('/flows/:id/disable').patch(webAuth, patchFlowDisable);
 web.route('/flows/:id/enable').patch(webAuth, patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
-
-web.route('/onboarding').patch(webAuth, patchOnboarding);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
