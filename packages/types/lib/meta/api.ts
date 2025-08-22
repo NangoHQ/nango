@@ -12,7 +12,7 @@ export type GetMeta = Endpoint<{
             version: string;
             baseUrl: string;
             debugMode: boolean;
-            onboardingComplete: boolean;
+            gettingStartedClosed: boolean;
         };
     };
 }>;
