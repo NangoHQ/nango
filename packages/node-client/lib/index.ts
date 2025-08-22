@@ -27,6 +27,7 @@ import type {
     DeleteSyncVariant,
     GetPublicConnection,
     GetPublicConnections,
+    GetPublicEnvironmentVariables,
     GetPublicIntegration,
     GetPublicListIntegrations,
     GetPublicProvider,
@@ -747,7 +748,7 @@ export class Nango {
      * Retrieve the environment variables as added in the Nango dashboard
      * @returns A promise that resolves with an array of environment variables
      */
-    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+    public async getEnvironmentVariables(): Promise<GetPublicEnvironmentVariables['Success']> {
         const url = `${this.serverUrl}/environment-variables`;
 
         const headers = {
