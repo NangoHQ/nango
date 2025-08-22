@@ -212,6 +212,7 @@
               "integrations/all/aws",
               "integrations/all/aws-iam",
               "integrations/all/aws-scim",
+              "integrations/all/avoma",
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
               "integrations/all/bamboohr",
