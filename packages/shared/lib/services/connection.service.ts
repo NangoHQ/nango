@@ -935,7 +935,7 @@ class ConnectionService {
                 const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
-                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : DEFAULT_INFINITE_EXPIRES_AT_MS;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
