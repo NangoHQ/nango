@@ -30,7 +30,7 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
-import environmentController from './controllers/environment.controller.js';
+import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -144,6 +144,7 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
+// @deprecated rollbacked for one customer, to delete asap
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
@@ -181,7 +182,7 @@ publicAPI.route('/connections/:connectionId').get(apiAuth, getPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(apiAuth, deletePublicConnection);
 
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
+publicAPI.route('/environment-variables').get(apiAuth, getPublicEnvironmentVariables);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
