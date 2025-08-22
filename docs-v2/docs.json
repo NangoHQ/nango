@@ -17,7 +17,13 @@
   },
   "favicon": "/favicon.png",
   "contextual": {
-    "options": ["copy", "cursor", "vscode", "chatgpt", "claude"]
+    "options": [
+      "copy",
+      "cursor",
+      "vscode",
+      "chatgpt",
+      "claude"
+    ]
   },
   "navigation": {
     "anchors": [
@@ -282,6 +288,7 @@
               "integrations/all/databricks-workspace",
               "integrations/all/datadog",
               "integrations/all/datev",
+              "integrations/all/dayforce",
               "integrations/all/datto-rmm",
               "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
@@ -339,6 +346,7 @@
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
+              "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
               "integrations/all/google-gemini",
@@ -510,6 +518,8 @@
               "integrations/all/pingboard",
               "integrations/all/pinterest",
               "integrations/all/pipedrive",
+              "integrations/all/pipedream",
+              "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "integrations/all/podium",
@@ -670,6 +680,7 @@
               "integrations/all/zoho",
               "integrations/all/zoho-bigin",
               "integrations/all/zoho-books",
+              "integrations/all/zoho-calendar",
               "integrations/all/zoho-crm",
               "integrations/all/zoho-desk",
               "integrations/all/zoho-inventory",
@@ -721,7 +732,7 @@
                     ]
                   },
                   {
-                    "group": "Connections",
+                    "group": "Connections (deprecated)",
                     "pages": [
                       "reference/api/connection/list",
                       "reference/api/connection/get",
@@ -731,6 +742,17 @@
                       "reference/api/connection/update-metadata",
                       "reference/api/connection/update-metadata-legacy",
                       "reference/api/connection/delete"
+                    ]
+                  },
+                  {
+                    "group": "Connections",
+                    "pages": [
+                      "reference/api/connections/list",
+                      "reference/api/connections/get",
+                      "reference/api/connections/post",
+                      "reference/api/connections/set-metadata",
+                      "reference/api/connections/update-metadata",
+                      "reference/api/connections/delete"
                     ]
                   },
                   {
@@ -813,7 +835,8 @@
           {
             "group": "Changelog",
             "pages": [
-              "changelog/overview"
+              "changelog/overview",
+              "changelog/dev-updates"
             ]
           }
         ]
@@ -836,7 +859,6 @@
       }
     }
   },
-
   "navbar": {
     "links": [
       {

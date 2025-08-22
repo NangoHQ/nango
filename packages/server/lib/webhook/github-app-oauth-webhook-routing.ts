@@ -9,8 +9,8 @@ import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
 import type { InternalNango } from './internal-nango.js';
 import type { WebhookHandler } from './types.js';
-import type { Config, ConnectionUpsertResponse } from '@nangohq/shared';
-import type { ConnectionConfig, IntegrationConfig, ProviderGithubApp } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionConfig, ConnectionUpsertResponse, IntegrationConfig, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.GithubAppOauth');

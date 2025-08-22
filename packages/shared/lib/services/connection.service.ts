@@ -38,7 +38,6 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     BasicApiCredentials,
-    ConnectionUpsertResponse,
     OAuth2ClientCredentials,
     OAuth2Credentials
 } from '../models/Auth.js';
@@ -54,6 +53,7 @@ import type {
     CombinedOauth2AppCredentials,
     ConnectionConfig,
     ConnectionInternal,
+    ConnectionUpsertResponse,
     DBConnection,
     DBConnectionAsJSONRow,
     DBConnectionDecrypted,
@@ -328,7 +328,6 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
