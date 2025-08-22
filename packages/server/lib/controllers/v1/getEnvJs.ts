@@ -15,8 +15,6 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicPosthogKey: envs.PUBLIC_POSTHOG_KEY || '',
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
-        publicKoalaApiUrl: envs.PUBLIC_KOALA_API_URL || '',
-        publicKoalaCdnUrl: envs.PUBLIC_KOALA_CDN_URL || '',
         publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
         isCloud,
         features: {
