@@ -1,11 +1,10 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, getPlanBy, plansList, productTracking, updatePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../utils/stripe.js';
 
 import type { DBPlan, PostStripeWebhooks, Result } from '@nangohq/types';
 import type Stripe from 'stripe';

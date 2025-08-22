@@ -1,11 +1,10 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
 import { report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 

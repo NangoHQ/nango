@@ -1,12 +1,11 @@
 import * as z from 'zod';
 
-import { billing } from '@nangohq/billing';
 import { accountService } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { teamToApi } from '../../../formatters/team.js';
+import { pubsub } from '../../../pubsub.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../utils/stripe.js';
 
 import type { PutTeam } from '@nangohq/types';
 
@@ -37,17 +36,7 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
     await accountService.editAccount({ id: account.id, ...body });
 
     if (plan?.stripe_customer_id && plan?.orb_customer_id) {
-        const stripe = getStripe();
-        try {
-            await Promise.all([
-                stripe.customers.update(plan.stripe_customer_id, {
-                    name: body.name
-                }),
-                billing.updateCustomer(plan.orb_customer_id, body.name)
-            ]);
-        } catch (err) {
-            report(new Error('Failed to update customer name', { cause: err }), { accountId: account.id });
-        }
+        void pubsub.publisher.publish({ subject: 'team', type: 'team.updated', payload: { id: account.id } });
     }
 
     res.status(200).send({

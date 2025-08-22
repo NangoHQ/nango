@@ -35,4 +35,12 @@ export type UsageEvent = EventBase<
     }
 >;
 
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent>;
+export type TeamEvent = EventBase<
+    'team',
+    'team.updated',
+    {
+        id: DBTeam['id'];
+    }
+>;
+
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamEvent>;
