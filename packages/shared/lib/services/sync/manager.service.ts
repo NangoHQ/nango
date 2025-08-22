@@ -261,8 +261,8 @@ export class SyncManagerService {
         initiator: string;
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
-        const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider to the orchestrator
-        const account = (await environmentService.getAccountFromEnvironment(environment.id))!; // Todo: pass account to the orchestrator
+        const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
+        const account = (await environmentService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: syncCommandToOperation[command] } },
