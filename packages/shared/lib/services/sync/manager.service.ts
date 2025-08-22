@@ -261,8 +261,8 @@ export class SyncManagerService {
         initiator: string;
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
-        const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
-        const account = (await environmentService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
+        const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
+        const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: syncCommandToOperation[command] } },
@@ -289,7 +289,7 @@ export class SyncManagerService {
             for (const { syncName, syncVariant } of syncs) {
                 const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doesn't exists.`); // Todo: return this error instead of throwing
+                    throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
 
                 await orchestrator.runSyncCommand({
