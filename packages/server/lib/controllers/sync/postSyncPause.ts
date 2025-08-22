@@ -39,7 +39,7 @@ export const postPublicSyncPause = asyncWrapper<PostPublicSyncPause>(async (req,
 
     const { environment } = res.locals;
 
-    await syncManager.runSyncCommand({
+    const resSyncCommand = await syncManager.runSyncCommand({
         recordsService,
         orchestrator,
         environment,
@@ -50,6 +50,10 @@ export const postPublicSyncPause = asyncWrapper<PostPublicSyncPause>(async (req,
         connectionId: body.connection_id,
         initiator: 'API call'
     });
+    if (!resSyncCommand.success) {
+        res.status(500).send({ error: { code: 'server_error', message: 'failed to pause syncs', errors: [resSyncCommand.error!] } });
+        return;
+    }
 
     res.status(200).send({ success: true });
 });
