@@ -74,7 +74,7 @@ import type {
     PatchSharedCredentialsProvider,
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
-import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type { PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -116,7 +116,9 @@ export type PublicApiEndpoints =
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
-    | PostPublicConnection;
+    | PostPublicConnection
+    | PostPublicSyncStart
+    | PostPublicSyncPause;
 
 export type PrivateApiEndpoints =
     | PostSignup

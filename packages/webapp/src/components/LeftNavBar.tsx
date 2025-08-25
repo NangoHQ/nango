@@ -215,7 +215,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                     })}
 
                                     <li
-                                        className={cn('flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400')}
+                                        className={cn(
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400 cursor-pointer'
+                                        )}
                                         onClick={async () => await signout()}
                                     >
                                         <IconLogout stroke={1} size={18} />

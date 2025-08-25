@@ -33,6 +33,7 @@ export interface ApiEndUser {
     id: string;
     display_name: string | null;
     email: string | null;
+    tags: Record<string, string> | null;
     organization: {
         id: string;
         display_name: string | null;
