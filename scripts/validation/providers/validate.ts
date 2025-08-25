@@ -7,7 +7,9 @@ import Ajv from 'ajv';
 import chalk from 'chalk';
 import { dump, load } from 'js-yaml';
 
-import type { Provider } from '@nangohq/types';
+import type { Provider, ProviderAlias } from '@nangohq/types';
+
+type ExtendedProvider = Provider & ProviderAlias;
 
 // Function to recursively search for connectionConfig in the provider value
 interface Ref {
@@ -87,7 +89,7 @@ console.log('✅ All providers are valid');
 /**
  * Validate one provider
  */
-function validateProvider(providerKey: string, provider: Provider) {
+function validateProvider(providerKey: string, provider: ExtendedProvider) {
     const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
@@ -207,7 +209,7 @@ function validateProvider(providerKey: string, provider: Provider) {
                 }
             }
         }
-    } else if (provider.connection_config) {
+    } else if (provider.connection_config && !provider.alias) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `"connection_config" is defined but not required`);
         error = true;
     }
