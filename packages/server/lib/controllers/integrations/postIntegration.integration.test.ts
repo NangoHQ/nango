@@ -7,6 +7,7 @@ import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/te
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/integrations';
+const getEndpoint = '/integrations/:uniqueKey';
 
 describe(`POST ${endpoint}`, () => {
     beforeAll(async () => {
@@ -82,5 +83,70 @@ describe(`POST ${endpoint}`, () => {
                 forward_webhooks: true
             }
         });
+    });
+
+    it('should add webhookSecret when creds.webhook_secret is present', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                provider: 'github',
+                unique_key: 'foobar',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    scopes: 'scope',
+                    webhook_secret: 'secret'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data).toHaveProperty('webhookSecret', 'secret');
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        const credentials = resGet.json.data.credentials as { webhook_secret?: string };
+        expect(credentials?.webhook_secret).toBe('new_secret');
+    });
+
+    it('should not add webhookSecret when creds.webhook_secret is not present', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                provider: 'github',
+                unique_key: 'foobar',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    scopes: 'scope'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data).not.toHaveProperty('webhookSecret');
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        const credentials = resGet.json.data.credentials as { webhookSecret?: string };
+        expect(credentials?.webhookSecret).toBeUndefined();
     });
 });
