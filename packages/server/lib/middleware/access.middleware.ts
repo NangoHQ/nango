@@ -426,6 +426,16 @@ export class AccessMiddleware {
                     return;
                 }
 
+                if (result.value.account.created_at > new Date('2025-08-25')) {
+                    res.status(401).send({
+                        error: {
+                            code: 'deprecated_authentication',
+                            message: 'Public key authentication is deprecated. Please connect session authentication instead.'
+                        }
+                    });
+                    return;
+                }
+
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
