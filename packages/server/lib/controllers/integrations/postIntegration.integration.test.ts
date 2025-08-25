@@ -92,19 +92,29 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 provider: 'github',
-                unique_key: 'foobar',
+                unique_key: 'github',
                 credentials: {
                     type: 'OAUTH2',
                     client_id: 'client-id',
                     client_secret: 'client-secret',
                     scopes: 'scope',
-                    webhook_secret: 'secret'
+                    webhook_secret: 'new_secret'
                 }
             }
         });
 
         isSuccess(res.json);
-        expect(res.json.data).toHaveProperty('webhookSecret', 'secret');
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                created_at: expect.toBeIsoDate(),
+                display_name: 'DISPLAY',
+                logo: 'http://localhost:3003/images/template-logos/github.svg',
+                provider: 'github',
+                unique_key: 'github',
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
+            }
+        });
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
@@ -114,8 +124,8 @@ describe(`POST ${endpoint}`, () => {
         });
 
         isSuccess(resGet.json);
-        const credentials = resGet.json.data.credentials as { webhook_secret?: string };
-        expect(credentials?.webhook_secret).toBe('new_secret');
+        const credentials = resGet.json.data.credentials as { webhook_secret: string | null };
+        expect(credentials.webhook_secret).toBe('new_secret');
     });
 
     it('should not add webhookSecret when creds.webhook_secret is not present', async () => {
@@ -125,7 +135,7 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 provider: 'github',
-                unique_key: 'foobar',
+                unique_key: 'github',
                 credentials: {
                     type: 'OAUTH2',
                     client_id: 'client-id',
@@ -136,7 +146,17 @@ describe(`POST ${endpoint}`, () => {
         });
 
         isSuccess(res.json);
-        expect(res.json.data).not.toHaveProperty('webhookSecret');
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                created_at: expect.toBeIsoDate(),
+                display_name: 'DISPLAY',
+                logo: 'http://localhost:3003/images/template-logos/github.svg',
+                provider: 'github',
+                unique_key: 'github',
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
+            }
+        });
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
@@ -146,7 +166,7 @@ describe(`POST ${endpoint}`, () => {
         });
 
         isSuccess(resGet.json);
-        const credentials = resGet.json.data.credentials as { webhookSecret?: string };
-        expect(credentials?.webhookSecret).toBeUndefined();
+        const credentials = resGet.json.data.credentials as { webhook_secret: string | null };
+        expect(credentials.webhook_secret).toBeNull();
     });
 });

@@ -142,11 +142,15 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         isSuccess(res.json);
-        expect(res.json.data).toMatchObject({
-            unique_key: 'github',
-            credentials: {
-                type: 'OAUTH2',
-                webhook_secret: 'new_secret'
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                created_at: expect.toBeIsoDate(),
+                display_name: 'DISPLAY',
+                logo: 'http://localhost:3003/images/template-logos/github.svg',
+                provider: 'github',
+                unique_key: 'github',
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
             }
         });
 
