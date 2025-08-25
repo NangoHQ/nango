@@ -430,7 +430,7 @@ export class AccessMiddleware {
                     res.status(401).send({
                         error: {
                             code: 'deprecated_authentication',
-                            message: 'Public key authentication is deprecated. Please connect session authentication instead.'
+                            message: 'Public key authentication is deprecated. Please use connect session authentication instead.'
                         }
                     });
                     return;
