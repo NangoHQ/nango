@@ -10,11 +10,13 @@ export interface GettingStartedOutput {
     };
     connection: Pick<DBConnection, 'id' | 'connection_id'> | null;
     step: number;
+    closed: boolean;
 }
 
 export interface PatchGettingStartedInput {
     connection_id?: string | null | undefined;
     step?: number | undefined;
+    closed?: boolean | undefined;
 }
 
 export type CreateGettingStartedMeta = Omit<DBGettingStartedMeta, 'id' | 'created_at' | 'updated_at'>;

@@ -61,7 +61,7 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
-    it('should update step', async () => {
+    it('should update step and closed', async () => {
         const { env, user, account } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -80,7 +80,8 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null
+            connection_id: null,
+            closed: false
         });
         expect(progress.isOk()).toBe(true);
 
@@ -88,7 +89,7 @@ describe(`PATCH ${endpoint}`, () => {
             method: 'PATCH',
             session,
             query: { env: env.name },
-            body: { step: 2 }
+            body: { step: 2, closed: true }
         });
 
         expect(res.res.status).toBe(204);
@@ -98,6 +99,7 @@ describe(`PATCH ${endpoint}`, () => {
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.step).toBe(2);
+        expect(updatedProgress.value?.closed).toBe(true);
     });
 
     it('should attach a connection', async () => {
@@ -119,7 +121,8 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null
+            connection_id: null,
+            closed: false
         });
         expect(progress.isOk()).toBe(true);
 
@@ -170,7 +173,8 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 2,
-            connection_id: connection.id
+            connection_id: connection.id,
+            closed: false
         });
         expect(progress.isOk()).toBe(true);
 
@@ -209,7 +213,8 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null
+            connection_id: null,
+            closed: false
         });
         expect(progress.isOk()).toBe(true);
 
@@ -249,7 +254,8 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 1,
-            connection_id: null
+            connection_id: null,
+            closed: false
         });
         expect(progress.isOk()).toBe(true);
 

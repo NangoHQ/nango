@@ -786,6 +786,7 @@ paths:
                             type: object
                             required:
                                 - provider_config_key
+                                - credentials
                             properties:
                                 provider_config_key:
                                     type: string
@@ -807,10 +808,22 @@ paths:
                                         - $ref: '#/components/schemas/OAuth2Credentials'
                                         - $ref: '#/components/schemas/BasicApiCredentials'
                                         - $ref: '#/components/schemas/ApiKeyCredentials'
-                                        - $ref: '#/components/schemas/AppCredentials'
                                         - $ref: '#/components/schemas/OAuth2ClientCredentials'
                                         - $ref: '#/components/schemas/UnauthCredentialsWithType'
                                         - $ref: '#/components/schemas/TbaCredentials'
+                                        - type: object
+                                          title: GitHub App
+                                          additionalProperties: false
+                                          required:
+                                              - app_id
+                                              - installation_id
+                                          properties:
+                                              app_id:
+                                                  type: string
+                                              installation_id:
+                                                  type: string
+                                end_user:
+                                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
             responses:
                 '200':
                     description: Successfully created an integrations
@@ -2812,6 +2825,10 @@ components:
                             type: string
                         display_name:
                             type: string
+                        tags:
+                            type: object
+                            additionalProperties: true
+                            description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
                 organization:
                     type: object
                     required:
@@ -2894,18 +2911,18 @@ components:
 
         AllAuthCredentials:
             anyOf:
-                - $ref: '#/components/schemas/OAuth1Credentials'
-                - $ref: '#/components/schemas/OAuth2Credentials'
+                - $ref: '#/components/schemas/OAuth1CredentialsWithRaw'
+                - $ref: '#/components/schemas/OAuth2CredentialsWithRaw'
                 - $ref: '#/components/schemas/BasicApiCredentials'
                 - $ref: '#/components/schemas/ApiKeyCredentials'
                 - $ref: '#/components/schemas/AppCredentials'
                 - $ref: '#/components/schemas/JwtCredentials'
-                - $ref: '#/components/schemas/OAuth2ClientCredentials'
-                - $ref: '#/components/schemas/AppStoreCredentials'
+                - $ref: '#/components/schemas/OAuth2ClientCredentialsWithRaw'
+                - $ref: '#/components/schemas/AppStoreCredentialsWithRaw'
                 - $ref: '#/components/schemas/UnauthCredentials'
                 - $ref: '#/components/schemas/CustomCredentials'
                 - $ref: '#/components/schemas/TbaCredentials'
-                - $ref: '#/components/schemas/BillCredentials'
+                - $ref: '#/components/schemas/BillCredentialsWithRaw'
                 - $ref: '#/components/schemas/TwoStepCredentials'
                 - $ref: '#/components/schemas/SignatureCredentials'
 
@@ -2954,15 +2971,23 @@ components:
                     format: date-time
                 private_key:
                     type: string
-                raw:
-                    type: object
                 type:
                     type: string
                     enum: [APP_STORE]
             required:
                 - access_token
-                - raw
                 - private_key
+        AppStoreCredentialsWithRaw:
+            title: App Store
+            allOf:
+                - $ref: '#/components/schemas/AppStoreCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         BasicApiCredentials:
             type: object
             title: Basic Auth
@@ -2993,8 +3018,6 @@ components:
                     type: string
                 password:
                     type: string
-                raw:
-                    type: object
                 session_id:
                     type: string
                 type:
@@ -3011,6 +3034,17 @@ components:
                 - raw
                 - type
                 - username
+        BillCredentialsWithRaw:
+            title: Bill
+            allOf:
+                - $ref: '#/components/schemas/BillCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         CustomCredentials:
             type: object
             title: Custom
@@ -3066,16 +3100,24 @@ components:
                     type: string
                 oauth_token_secret:
                     type: string
-                raw:
-                    type: object
                 type:
                     type: string
                     enum: [OAUTH1]
             required:
                 - oauth_token
                 - oauth_token_secret
-                - raw
                 - type
+        OAuth1CredentialsWithRaw:
+            title: OAuth1
+            allOf:
+                - $ref: '#/components/schemas/OAuth1Credentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         OAuth2ClientCredentials:
             type: object
             title: OAuth2 Client
@@ -3088,8 +3130,6 @@ components:
                 expires_at:
                     type: string
                     format: date-time
-                raw:
-                    type: object
                 token:
                     type: string
                 type:
@@ -3098,9 +3138,19 @@ components:
             required:
                 - client_id
                 - client_secret
-                - raw
                 - token
                 - type
+        OAuth2ClientCredentialsWithRaw:
+            title: OAuth2 Client
+            allOf:
+                - $ref: '#/components/schemas/OAuth2ClientCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         OAuth2Credentials:
             type: object
             title: OAuth2
@@ -3119,8 +3169,6 @@ components:
                 expires_at:
                     format: date-time
                     type: string
-                raw:
-                    type: object
                 refresh_token:
                     type: string
                 type:
@@ -3128,8 +3176,18 @@ components:
                     type: string
             required:
                 - access_token
-                - raw
                 - type
+        OAuth2CredentialsWithRaw:
+            title: OAuth2
+            allOf:
+                - $ref: '#/components/schemas/OAuth2Credentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         SignatureCredentials:
             type: object
             title: Signature

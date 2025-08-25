@@ -24,6 +24,7 @@ export const postLogout = asyncWrapper<PostLogout>((req, res) => {
             return;
         }
 
+        res.set('clear-site-data', 'cookies');
         res.status(200).send();
     });
 });
