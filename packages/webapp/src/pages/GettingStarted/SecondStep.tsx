@@ -1,5 +1,5 @@
 import { IconBrandNodejs, IconLoader, IconPlayerPlay, IconTerminal2 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { CodeBlock } from '../../components/CodeBlock';
 import LinkWithIcon from '../../components/LinkWithIcon';
@@ -10,71 +10,30 @@ import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
 import { cn } from '../../utils/utils';
 
-interface CalendarEvent {
-    summary: string;
-    description: string;
-    start: {
-        dateTime: Date;
-    };
-    end: {
-        dateTime: Date;
-    };
-}
-
-function getNodeClientCode(calendarEvent: CalendarEvent, connectionId?: string, providerConfigKey?: string) {
+function getNodeClientCode(connectionId?: string, providerConfigKey?: string) {
     return `
 import { Nango } from "@nangohq/node";
 
 const nango = new Nango({ secretKey: "<NANGO-SECRET-KEY>" });
 
-await nango.post({
-    endpoint: "/calendar/v3/calendars/primary/events",
+await nango.put({
+    endpoint: "/user/starred/nangohq/nango",
     connectionId: "${connectionId ?? '<CONNECTION-ID>'}",
-    providerConfigKey: "${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}",
-    data: {
-        summary: "Getting started with Nango",
-        description: "Created with Nango from the getting started page!",
-        start: {
-            dateTime: "${calendarEvent.start.dateTime.toISOString()}"
-        },
-        end: {
-            dateTime: "${calendarEvent.end.dateTime.toISOString()}"
-        }
-    }
+    providerConfigKey: "${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}"
 });
 
-console.log("Created calendar event!");
+console.log("Starred Nango's GitHub repo!");
 `.trim();
 }
 
-function getCurlCode(calendarEvent: CalendarEvent, connectionId?: string, providerConfigKey?: string) {
+function getCurlCode(connectionId?: string, providerConfigKey?: string) {
     return `
-curl -X POST https://api.nango.dev/proxy/calendar/v3/calendars/primary/events \\
+curl -X PUT https://api.nango.dev/proxy/user/starred/nangohq/nango \\
     -H "Authorization: Bearer <NANGO-SECRET-KEY>" \\
     -H "Content-Type: application/json" \\
     -H "Connection-Id: ${connectionId ?? '<CONNECTION-ID>'}" \\
-    -H "Provider-Config-Key: ${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}" \\
-    -d '${JSON.stringify(calendarEvent)}'
+    -H "Provider-Config-Key: ${providerConfigKey ?? '<PROVIDER-CONFIG-KEY>'}"
 `.trim();
-}
-
-/**
- * Returns the next 15-minute interval from the current time
- * @returns A Date object representing the next 15-minute interval
- * @example now: 12:08 -> 12:15
- */
-function dateNext15Minutes() {
-    const now = new Date();
-    const minutes = now.getMinutes();
-    const roundedMinutes = Math.ceil(minutes / 15) * 15;
-    if (roundedMinutes === 60) {
-        now.setHours(now.getHours() + 1);
-        now.setMinutes(0, 0, 0);
-    } else {
-        now.setMinutes(roundedMinutes, 0, 0);
-    }
-
-    return now;
 }
 
 interface SecondStepProps {
@@ -92,29 +51,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
 
     const [isExecuting, setIsExecuting] = useState(false);
 
-    const calendarEvent: CalendarEvent = useMemo(() => {
-        const next15Minutes = dateNext15Minutes();
-
-        return {
-            summary: 'Getting started with Nango',
-            description: 'Created with Nango from the getting started page!',
-            start: {
-                dateTime: next15Minutes
-            },
-            end: {
-                dateTime: new Date(next15Minutes.getTime() + 15 * 60 * 1000)
-            }
-        };
-    }, []);
-
-    const nodeClientCode = useMemo(() => {
-        return getNodeClientCode(calendarEvent, connectionId, providerConfigKey);
-    }, [calendarEvent, connectionId, providerConfigKey]);
-
-    const curlCode = useMemo(() => {
-        return getCurlCode(calendarEvent, connectionId, providerConfigKey);
-    }, [calendarEvent, connectionId, providerConfigKey]);
-
     const onExecute = async () => {
         if (!connectionId || !providerConfigKey || !environmentAndAccount) {
             return;
@@ -123,15 +59,14 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
         setIsExecuting(true);
         try {
             const res = await publicApiFetch(
-                '/proxy/calendar/v3/calendars/primary/events',
+                '/proxy/user/starred/nangohq/nango',
                 {
                     connectionId: connectionId,
                     providerConfigKey: providerConfigKey,
                     secretKey: environmentAndAccount?.environment.secret_key
                 },
                 {
-                    method: 'POST',
-                    body: JSON.stringify(calendarEvent)
+                    method: 'PUT'
                 }
             );
 
@@ -144,10 +79,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             }
 
             toast({
-                title: `Created calendar event at ${calendarEvent.start.dateTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}. Check your calendar!`,
+                title: `Starred Nango's GitHub repo!`,
                 variant: 'success'
             });
         } catch {
@@ -165,18 +97,19 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
         <div className="flex flex-col gap-5">
             <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
             <CodeBlock
+                title="Star Nango's GitHub repo as the authenticated user"
                 snippets={[
                     {
                         displayLanguage: 'Node Client',
                         icon: <IconBrandNodejs className="w-4 h-4" />,
                         language: 'typescript',
-                        code: nodeClientCode
+                        code: getNodeClientCode(connectionId, providerConfigKey)
                     },
                     {
                         displayLanguage: 'cURL',
                         icon: <IconTerminal2 className="w-4 h-4" />,
                         language: 'bash',
-                        code: curlCode
+                        code: getCurlCode(connectionId, providerConfigKey)
                     }
                 ]}
             />
@@ -186,8 +119,8 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                             Explore the logs from this demo
                         </LinkWithIcon>
-                        <LinkWithIcon to="https://calendar.google.com/calendar/r/day" type="external">
-                            Open Google Calendar to see the event
+                        <LinkWithIcon to="https://github.com/nangohq/nango" type="external">
+                            Open GitHub repo to see the star
                         </LinkWithIcon>
                     </div>
                 )}

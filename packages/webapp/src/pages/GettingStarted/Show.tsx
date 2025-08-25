@@ -42,17 +42,17 @@ export const GettingStarted: React.FC = () => {
                 <title>Getting Started - Nango</title>
             </Helmet>
             <header className="flex items-center mb-8">
-                <h2 className="flex text-left text-3xl font-semibold tracking-tight text-text-primary">Try Nango with Google Calendar</h2>
+                <h2 className="flex text-left text-3xl font-semibold tracking-tight text-text-primary">Demo: try Nango with GitHub</h2>
             </header>
             <VerticalSteps
                 className="w-full"
                 currentStep={currentStep}
                 steps={[
                     {
-                        id: 'authorize-google-calendar',
+                        id: 'authorize-github',
                         renderTitle: (status) => {
                             if (status === 'completed') {
-                                return <h3 className="text-success-4 text-lg font-semibold">Google Calendar Authorized!</h3>;
+                                return <h3 className="text-success-4 text-lg font-semibold">GitHub Authorized!</h3>;
                             }
                             return <h3 className="text-text-primary text-lg font-semibold">Experience the user&apos;s auth flow</h3>;
                         },
@@ -88,7 +88,7 @@ export const GettingStarted: React.FC = () => {
                     {
                         id: 'access-google-calendar-api',
                         renderTitle: () => {
-                            return <h3 className="text-text-primary text-lg font-semibold">Use Nango as a proxy to make requests to Google Calendar</h3>;
+                            return <h3 className="text-text-primary text-lg font-semibold">Use Nango as a proxy to make requests to GitHub</h3>;
                         },
                         content: (
                             <SecondStep
