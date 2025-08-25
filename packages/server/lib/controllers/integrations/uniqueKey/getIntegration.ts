@@ -72,7 +72,7 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
                 client_id: integration.shared_credentials_id ? '' : integration.oauth_client_id,
                 client_secret: integration.shared_credentials_id ? '' : integration.oauth_client_secret,
                 scopes: integration.oauth_scopes || null,
-                webhook_secret: integration.custom && 'webhookSecret' in integration.custom ? integration.custom['webhookSecret'] : null
+                webhook_secret: integration?.custom?.['webhookSecret'] || null
             };
         } else if (provider.auth_mode === 'APP') {
             include.credentials = {
