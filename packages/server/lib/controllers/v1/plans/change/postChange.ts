@@ -1,11 +1,10 @@
 import { z } from 'zod';
 
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import { plansList, productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostPlanChange } from '@nangohq/types';
 
