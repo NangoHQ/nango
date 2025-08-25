@@ -20,8 +20,8 @@ import { useClickAway } from 'react-use';
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useEnvironment } from '../hooks/useEnvironment';
+import { patchGettingStarted } from '../hooks/useGettingStarted';
 import { useMeta } from '../hooks/useMeta';
-import { apiPatchOnboarding } from '../hooks/useOnboarding';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 import UsageCard from './UsageCard';
@@ -77,14 +77,14 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const items = useMemo(() => {
         const list: MenuItem[] = [];
-        if (meta && showGettingStarted && !meta.onboardingComplete) {
+        if (meta && showGettingStarted && !meta.gettingStartedClosed) {
             list.push({
                 name: 'Getting Started',
                 icon: IconRocket,
                 value: LeftNavBarItems.GettingStarted,
                 link: `/${env}/getting-started`,
                 onClose: async () => {
-                    await apiPatchOnboarding(env);
+                    await patchGettingStarted(env, { closed: true });
                     void mutateMeta();
                 }
             });
@@ -114,7 +114,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             { link: `/${env}/team-settings`, name: 'Team', icon: IconUsersGroup, value: LeftNavBarItems.TeamSettings }
         ];
 
-        if (showGettingStarted && meta.onboardingComplete) {
+        if (showGettingStarted && meta.gettingStartedClosed) {
             list.push({ link: `/dev/getting-started`, name: 'Getting Started', icon: IconRocket, value: LeftNavBarItems.GettingStarted });
         }
 

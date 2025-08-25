@@ -284,4 +284,10 @@ describe('parseTokenExpirationDate', () => {
         expect(utils.parseTokenExpirationDate(undefined)).toBeUndefined();
         expect(utils.parseTokenExpirationDate({})).toBeUndefined();
     });
+
+    it('should handle a full timestamp in milliseconds', () => {
+        const millisecondsTimestamp = Date.now();
+        const expected = new Date(millisecondsTimestamp);
+        expect(utils.parseTokenExpirationDate(millisecondsTimestamp)?.getTime()).toBe(expected.getTime());
+    });
 });

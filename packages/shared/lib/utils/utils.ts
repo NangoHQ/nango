@@ -79,8 +79,14 @@ export function parseTokenExpirationDate(expirationDate: any): Date | undefined 
         return expirationDate;
     }
 
-    // UNIX timestamp
     if (typeof expirationDate === 'number') {
+        const dateFromValue = new Date(expirationDate);
+        // Check if expirationDate is a full timestamp in milliseconds
+        const isMs = dateFromValue.getFullYear() > 1971;
+        if (isMs) {
+            return new Date(expirationDate);
+        }
+        // UNIX timestamp
         return new Date(expirationDate * 1000);
     }
 

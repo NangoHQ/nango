@@ -12,7 +12,7 @@ const validationBody = z
     .object({
         connection_id: z.string().optional().nullable(),
         step: z.number().int().nonnegative().optional(),
-        complete: z.boolean().optional()
+        closed: z.boolean().optional()
     })
     .strict();
 
