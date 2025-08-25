@@ -41,8 +41,8 @@ export const MainSettings: React.FC = () => {
                     />
                     {env !== PROD_ENVIRONMENT_NAME && (
                         <Info>
-                            If you’re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable name
-                            is based on your Nango environment name, update it if you rename the environment.
+                            If you&apos;re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable
+                            name is based on your Nango environment name, update it if you rename the environment.
                         </Info>
                     )}
                 </div>
