@@ -20,9 +20,8 @@ import { useClickAway } from 'react-use';
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useEnvironment } from '../hooks/useEnvironment';
-import { patchGettingStarted } from '../hooks/useGettingStarted';
 import { useMeta } from '../hooks/useMeta';
-import { useUser } from '../hooks/useUser';
+import { apiPatchUser, useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 import UsageCard from './UsageCard';
 import { globalEnv } from '../utils/env';
@@ -84,7 +83,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 value: LeftNavBarItems.GettingStarted,
                 link: `/${env}/getting-started`,
                 onClose: async () => {
-                    await patchGettingStarted(env, { closed: true });
+                    await apiPatchUser({
+                        closedGettingStarted: true
+                    });
                     void mutateMeta();
                 }
             });

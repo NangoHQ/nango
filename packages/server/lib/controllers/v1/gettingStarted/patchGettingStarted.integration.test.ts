@@ -80,8 +80,7 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null,
-            closed: false
+            connection_id: null
         });
         expect(progress.isOk()).toBe(true);
 
@@ -89,7 +88,7 @@ describe(`PATCH ${endpoint}`, () => {
             method: 'PATCH',
             session,
             query: { env: env.name },
-            body: { step: 2, closed: true }
+            body: { step: 2 }
         });
 
         expect(res.res.status).toBe(204);
@@ -99,7 +98,6 @@ describe(`PATCH ${endpoint}`, () => {
         assert(!updatedProgress.isErr(), 'Failed to get progress');
 
         expect(updatedProgress.value?.step).toBe(2);
-        expect(updatedProgress.value?.closed).toBe(true);
     });
 
     it('should attach a connection', async () => {
@@ -121,8 +119,7 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null,
-            closed: false
+            connection_id: null
         });
         expect(progress.isOk()).toBe(true);
 
@@ -173,8 +170,7 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 2,
-            connection_id: connection.id,
-            closed: false
+            connection_id: connection.id
         });
         expect(progress.isOk()).toBe(true);
 
@@ -213,8 +209,7 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 0,
-            connection_id: null,
-            closed: false
+            connection_id: null
         });
         expect(progress.isOk()).toBe(true);
 
@@ -254,8 +249,7 @@ describe(`PATCH ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             step: 1,
-            connection_id: null,
-            closed: false
+            connection_id: null
         });
         expect(progress.isOk()).toBe(true);
 

@@ -11,7 +11,10 @@ export type GetUser = Endpoint<{
 export type PatchUser = Endpoint<{
     Method: 'PATCH';
     Path: `/api/v1/user`;
-    Body: { name: string };
+    Body: {
+        name?: string | undefined;
+        closedGettingStarted?: boolean | undefined;
+    };
     Success: {
         data: ApiUser;
     };
@@ -23,6 +26,7 @@ export interface ApiUser {
     email: string;
     name: string;
     uuid: string;
+    closedGettingStarted: boolean;
 }
 
 export type PutUserPassword = Endpoint<{

@@ -60,7 +60,8 @@ describe(`GET ${route}`, () => {
                         email: user.email,
                         id: user.id,
                         name: user.name,
-                        uuid: user.uuid
+                        uuid: user.uuid,
+                        closedGettingStarted: user.closed_getting_started
                     }
                 ]
             }
