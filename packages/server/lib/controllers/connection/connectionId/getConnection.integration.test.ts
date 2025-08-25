@@ -92,6 +92,7 @@ describe(`GET ${endpoint}`, () => {
                 display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
+                tags: { origin: 'test' },
                 organization: {
                     display_name: null,
                     id: endUser.organization!.organizationId
@@ -150,6 +151,7 @@ describe(`GET ${endpoint}`, () => {
                 display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
+                tags: { origin: 'test' },
                 organization: {
                     display_name: null,
                     id: endUser.organization!.organizationId
@@ -205,6 +207,7 @@ describe(`GET ${endpoint}`, () => {
                             display_name: null,
                             email: endUser.email,
                             id: endUser.endUserId,
+                            tags: { origin: 'test' },
                             organization: {
                                 display_name: null,
                                 id: endUser.organization!.organizationId
@@ -257,6 +260,7 @@ describe(`GET ${endpoint}`, () => {
                             display_name: null,
                             email: endUser.email,
                             id: endUser.endUserId,
+                            tags: { origin: 'test' },
                             organization: {
                                 display_name: null,
                                 id: endUser.organization!.organizationId
