@@ -14,7 +14,13 @@ export type ApiPublicIntegration = Merge<
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
     credentials?:
-        | { type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA']; client_id: string | null; client_secret: string | null; scopes: string | null }
+        | {
+              type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
+              client_id: string | null;
+              client_secret: string | null;
+              scopes: string | null;
+              webhook_secret: string | null;
+          }
         | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null }
         | null;
 }
@@ -187,6 +193,7 @@ export type ApiPublicIntegrationCredentials =
           client_id: string;
           client_secret: string;
           scopes?: string | undefined;
+          webhook_secret?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'APP'>;
