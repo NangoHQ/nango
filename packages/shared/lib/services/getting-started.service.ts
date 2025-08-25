@@ -215,16 +215,20 @@ export async function getOrCreateMeta(db: Knex, accountId: number, currentEnviro
             return Ok(existingMeta.value);
         }
 
-        const googleCalendarIntegrationId = await getOrCreateGoogleCalendarIntegration(currentEnvironmentId);
+        const integrationId = await getOrCreateGettingStartedIntegration(currentEnvironmentId, {
+            providerName: 'github',
+            uniqueKey: 'github-getting-started',
+            displayName: 'GitHub OAuth (Getting Started)'
+        });
 
-        if (googleCalendarIntegrationId.isErr()) {
-            return Err(googleCalendarIntegrationId.error);
+        if (integrationId.isErr()) {
+            return Err(integrationId.error);
         }
 
         const newMeta = await createMeta(trx, {
             account_id: accountId,
             environment_id: currentEnvironmentId,
-            integration_id: googleCalendarIntegrationId.value
+            integration_id: integrationId.value
         });
 
         if (newMeta.isErr()) {
@@ -235,27 +239,36 @@ export async function getOrCreateMeta(db: Knex, accountId: number, currentEnviro
     });
 }
 
-async function getOrCreateGoogleCalendarIntegration(environmentId: number): Promise<Result<number>> {
+async function getOrCreateGettingStartedIntegration(
+    environmentId: number,
+    {
+        providerName,
+        uniqueKey,
+        displayName
+    }: {
+        providerName: string;
+        uniqueKey: string;
+        displayName: string;
+    }
+): Promise<Result<number>> {
     try {
-        const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, 'google-calendar-getting-started');
+        const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, uniqueKey);
 
         if (existingIntegrationId) {
             return Ok(existingIntegrationId);
         }
 
-        const PROVIDER_NAME = 'google-calendar';
-
-        const provider = getProvider(PROVIDER_NAME);
+        const provider = getProvider(providerName);
         if (!provider) {
-            return Err('google_calendar_provider_not_found');
+            return Err('getting_started_provider_not_found');
         }
 
         const newIntegration = await sharedCredentialsService.createPreprovisionedProvider({
-            providerName: PROVIDER_NAME,
+            providerName,
             environment_id: environmentId,
             provider,
-            display_name: 'Google Calendar (Getting Started)',
-            unique_key: 'google-calendar-getting-started'
+            display_name: displayName,
+            unique_key: uniqueKey
         });
 
         if (newIntegration.isErr()) {
@@ -265,12 +278,12 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
         const id = newIntegration.value.id ?? null;
 
         if (!id) {
-            return Err('failed_to_create_google_calendar_integration');
+            return Err('failed_to_create_getting_started_integration');
         }
 
         return Ok(id);
     } catch (err) {
-        return Err(new Error('failed_to_get_or_create_google_calendar_integration', { cause: err }));
+        return Err(new Error('failed_to_get_or_create_getting_started_integration', { cause: err }));
     }
 }
 

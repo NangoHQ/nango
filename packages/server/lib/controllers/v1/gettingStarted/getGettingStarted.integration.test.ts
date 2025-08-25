@@ -37,9 +37,9 @@ describe(`GET ${endpoint}`, () => {
                     environment: { id: env.id, name: env.name },
                     integration: {
                         id: expect.any(Number),
-                        unique_key: 'google-calendar-getting-started',
-                        provider: 'google-calendar',
-                        display_name: 'Google Calendar (Getting Started)'
+                        unique_key: 'github-getting-started',
+                        provider: 'github',
+                        display_name: 'GitHub OAuth (Getting Started)'
                     }
                 },
                 connection: null,
@@ -55,8 +55,8 @@ describe(`GET ${endpoint}`, () => {
         // Ensure pre-provisioned integration exists
         const provider = getProvider('google-calendar');
         expect(provider).toBeTruthy();
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar', {
-            display_name: 'Google Calendar (Getting Started)'
+        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', {
+            display_name: 'GitHub OAuth (Getting Started)'
         });
 
         // Create meta without progress
@@ -93,8 +93,8 @@ describe(`GET ${endpoint}`, () => {
         const session = await authenticateUser(api, user);
 
         // Create integration
-        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar', {
-            display_name: 'Google Calendar (Getting Started)'
+        const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', {
+            display_name: 'GitHub OAuth (Getting Started)'
         });
 
         // Create meta and and progress
@@ -108,7 +108,7 @@ describe(`GET ${endpoint}`, () => {
         // Connection to link to progress
         const connection = await seeders.createConnectionSeed({
             env,
-            provider: 'google-calendar-getting-started',
+            provider: 'github-getting-started',
             connectionId: 'demo-conn-id'
         });
 
@@ -150,7 +150,7 @@ describe(`GET ${endpoint}`, () => {
         // Create a connection and link it to the progress
         const connection = await seeders.createConnectionSeed({
             env,
-            provider: 'google-calendar-getting-started',
+            provider: 'github-getting-started',
             connectionId: 'test-conn-id'
         });
 
