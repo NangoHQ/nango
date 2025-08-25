@@ -76,7 +76,8 @@ export async function getProgressByUserId(db: Knex, userId: number): Promise<Res
                 environment: pick(result.environment, ['id', 'name'])
             },
             connection: result.connection ? pick(result.connection, ['id', 'connection_id']) : null,
-            step: result.progress.step
+            step: result.progress.step,
+            closed: result.progress.closed
         });
     } catch (err) {
         return Err(new Error('failed_to_get_getting_started_progress', { cause: err }));
@@ -128,7 +129,8 @@ export async function getOrCreateProgressByUser(db: Knex, user: DBUser, currentE
             user_id: user.id,
             getting_started_meta_id: gettingStartedMeta.value.id,
             step: 0,
-            connection_id: null
+            connection_id: null,
+            closed: false
         });
 
         if (createdResult.isErr()) {
@@ -167,6 +169,10 @@ export async function patchProgressByUser(db: Knex, user: DBUser, input: PatchGe
 
         if (typeof input.step !== 'undefined') {
             update.step = input.step;
+        }
+
+        if (typeof input.closed !== 'undefined') {
+            update.closed = input.closed;
         }
 
         if (typeof input.connection_id !== 'undefined') {

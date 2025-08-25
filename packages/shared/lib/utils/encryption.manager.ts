@@ -126,11 +126,7 @@ export class EncryptionManager extends Encryption {
         return encryptedEnvironmentVariables;
     }
 
-    public decryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[] | null): DBEnvironmentVariable[] | null {
-        if (environmentVariables === null) {
-            return environmentVariables;
-        }
-
+    public decryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[]): DBEnvironmentVariable[] {
         const decryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
 
         for (const environmentVariable of decryptedEnvironmentVariables) {
