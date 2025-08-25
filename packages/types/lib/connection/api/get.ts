@@ -8,6 +8,7 @@ import type {
     OAuth2Credentials,
     TbaCredentials
 } from '../../auth/api.js';
+import type { ConnectSessionInput } from '../../connect/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
@@ -76,14 +77,15 @@ export type PostPublicConnection = Endpoint<{
         metadata?: Record<string, unknown> | undefined;
         connection_config?: ConnectionConfig | undefined;
         credentials:
-            | OAuth2Credentials
-            | OAuth2ClientCredentials
-            | OAuth1Credentials
-            | ApiKeyCredentials
-            | BasicApiCredentials
-            | TbaCredentials
+            | Omit<OAuth2Credentials, 'raw'>
+            | Omit<OAuth2ClientCredentials, 'raw'>
+            | Omit<OAuth1Credentials, 'raw'>
+            | Omit<ApiKeyCredentials, 'raw'>
+            | Omit<BasicApiCredentials, 'raw'>
+            | Omit<TbaCredentials, 'raw'>
             | { type: 'APP'; app_id: string; installation_id: string }
             | { type: 'NONE' };
+        end_user: ConnectSessionInput['end_user'];
     };
     Success: ApiPublicConnectionFull;
 }>;

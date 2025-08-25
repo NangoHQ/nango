@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 
-import { envs } from '../env.js';
+import { envs } from './envs.js';
 
 export function getStripe() {
     return new Stripe(envs.STRIPE_SECRET_KEY!, {

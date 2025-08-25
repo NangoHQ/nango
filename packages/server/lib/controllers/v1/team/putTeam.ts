@@ -4,6 +4,7 @@ import { accountService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { teamToApi } from '../../../formatters/team.js';
+import { pubsub } from '../../../pubsub.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PutTeam } from '@nangohq/types';
@@ -29,10 +30,14 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     const body: PutTeam['Body'] = val.data;
 
     await accountService.editAccount({ id: account.id, ...body });
+
+    if (plan?.stripe_customer_id && plan?.orb_customer_id) {
+        void pubsub.publisher.publish({ subject: 'team', type: 'team.updated', payload: { id: account.id } });
+    }
 
     res.status(200).send({
         data: teamToApi({

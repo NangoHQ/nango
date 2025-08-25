@@ -1,11 +1,10 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
 import { report, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 
@@ -39,6 +38,7 @@ export const postStripeCollectPayment = asyncWrapper<PostStripeCollectPayment>(a
     let stripeCustomerId = plan.stripe_customer_id;
     if (!stripeCustomerId) {
         const customer = await stripe.customers.create({
+            name: account.name,
             email: user.email,
             metadata: {
                 accountUuid: account.uuid
