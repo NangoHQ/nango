@@ -43,7 +43,7 @@ staticSite.use(
     ...[
         helmet.crossOriginOpenerPolicy({ policy: 'same-origin' }),
         helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' }),
-        helmet.crossOriginResourcePolicy({ policy: 'same-origin' })
+        helmet.crossOriginResourcePolicy({ policy: 'same-site' })
     ]
 );
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
