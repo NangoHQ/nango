@@ -39,13 +39,7 @@ router.use('/', publicAPI);
 // Webapp assets, static files and build.
 const webappBuildPath = '../../../webapp/dist';
 const staticSite = express.Router();
-staticSite.use(
-    ...[
-        helmet.crossOriginOpenerPolicy({ policy: 'same-origin' }),
-        helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' }),
-        helmet.crossOriginResourcePolicy({ policy: 'same-site' })
-    ]
-);
+staticSite.use(...[helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' }), helmet.crossOriginResourcePolicy({ policy: 'same-site' })]);
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
 staticSite.use(express.static(path.join(dirname(), webappBuildPath), { cacheControl: true, maxAge: '1h' }));
 staticSite.get('*splat', (_, res) => {
