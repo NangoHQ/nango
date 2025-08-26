@@ -1,22 +1,34 @@
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, encryptionManager, getProvider, githubAppClient } from '@nangohq/shared';
+import {
+    EndUserMapper,
+    configService,
+    connectionService,
+    encryptionManager,
+    getProvider,
+    githubAppClient,
+    linkConnection,
+    upsertEndUser
+} from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../formatters/connection.js';
 import {
+    connectionCredentialsApiKeySchema,
     connectionCredentialsBasicSchema,
     connectionCredentialsGithubAppSchema,
     connectionCredentialsOauth1Schema,
     connectionCredentialsOauth2CCSchema,
     connectionCredentialsOauth2Schema,
-    connectionCredentialsTBASchema
+    connectionCredentialsTBASchema,
+    endUserSchema
 } from '../../helpers/validation.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
+import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
 const schemaBody = z.object({
     provider_config_key: z.string(),
@@ -45,6 +57,11 @@ const schemaBody = z.object({
             .extend(connectionCredentialsOauth1Schema.shape),
         z
             .strictObject({
+                type: z.literal('API_KEY')
+            })
+            .extend(connectionCredentialsApiKeySchema.shape),
+        z
+            .strictObject({
                 type: z.literal('BASIC')
             })
             .extend(connectionCredentialsBasicSchema.shape),
@@ -63,7 +80,8 @@ const schemaBody = z.object({
                 type: z.literal('APP')
             })
             .extend(connectionCredentialsGithubAppSchema.shape)
-    ])
+    ]),
+    end_user: endUserSchema.optional()
 });
 
 export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
@@ -263,7 +281,24 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         return;
     }
 
+    let endUser: EndUser | undefined;
+    if (body.end_user) {
+        await db.knex.transaction(async (trx) => {
+            const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user });
+            if (endUserRes.isErr()) {
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
+                return;
+            }
+
+            endUser = endUserRes.value;
+
+            await linkConnection(trx, { endUserId: endUserRes.value.id, connection: updatedConnection.connection });
+        });
+    }
+
     const connection = encryptionManager.decryptConnection(updatedConnection.connection);
 
-    res.status(201).send(connectionFullToPublicApi({ data: connection, provider: providerName, activeLog: [], endUser: null }));
+    res.status(201).send(
+        connectionFullToPublicApi({ data: connection, provider: providerName, activeLog: [], endUser: endUser ? EndUserMapper.to(endUser) : null })
+    );
 });

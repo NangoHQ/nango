@@ -304,6 +304,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         setMergingStrategyLines
     };
 
+    const normalizedEntryPoint = path.resolve(entryPoint);
+    // Get actual path even if entryPoint is a symlink
+    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace('.js', '.ts')).replace('.ts', '.js');
+
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
         'batchSend',
@@ -407,8 +411,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
                             const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
-                            const normalizedEntryPoint = path.resolve(entryPoint);
-                            if (normalizedCurrentPath === normalizedEntryPoint) {
+                            if (normalizedCurrentPath === realEntryPoint) {
                                 // Check if we're inside a createSync's exec function
                                 const isInCreateSyncExec = astPath.findParent((parentPath) => {
                                     if (!parentPath.isObjectProperty()) {
@@ -442,8 +445,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
                             const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
-                            const normalizedEntryPoint = path.resolve(entryPoint);
-                            if (normalizedCurrentPath !== normalizedEntryPoint) {
+                            if (normalizedCurrentPath !== realEntryPoint) {
                                 return;
                             }
                         }
@@ -486,6 +488,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             if (!binding || !binding.path.isVariableDeclarator()) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
                             }
+
                             const init = binding.path.node.init;
                             if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
