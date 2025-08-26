@@ -72,9 +72,7 @@ export async function createCredentials({
                 raw: connection.credentials,
                 jwtToken: {
                     token: jwtToken,
-                    expires_at: expirationFromJwt
-                        ? expirationFromJwt * 1000 // convert seconds → ms
-                        : 0
+                    expires_at: expirationFromJwt ? expirationFromJwt * 1000 : 0
                 },
                 app: connection.credentials
             });
