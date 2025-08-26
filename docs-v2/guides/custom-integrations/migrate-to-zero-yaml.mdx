@@ -12,10 +12,11 @@ This guide will help you migrate your existing Nango integrations from the YAML-
 Zero YAML is Nango's new approach to building integrations that eliminates the need for separate `nango.yaml` configuration files. Instead, everything is defined in TypeScript using a configuration-as-code approach with full type safety.
 
 Key benefits:
-- **Type Safety**: Full TypeScript support with Zod schema validation
+- **Type Safety**: Full TypeScript support with Standard Schema validation (Zod, Valibot, and more)
 - **Better Developer Experience**: Modern tooling, enhanced CLI output, and better error messages
 - **Portability**: Self-contained files that can be easily shared and version controlled
 - **No Custom Syntax**: Pure TypeScript - no need to learn YAML-specific conventions and our previous custom model syntax
+- **Schema Flexibility**: Choose from multiple validation libraries while maintaining compatibility
 
 Here's a quick example of the new syntax:
 
@@ -37,6 +38,19 @@ const sync = createSync({
     exec: async (nango) => {
         await nango.batchSave([{ id: 'foobar' }], 'GithubIssue');
     }
+});
+```
+
+You can also use other Standard Schema compatible libraries like Valibot:
+
+```typescript
+import { createSync } from 'nango';
+import * as v from 'valibot';
+
+const issueSchema = v.object({
+    id: v.string(),
+    title: v.string(),
+    state: v.string()
 });
 ```
 
@@ -102,6 +116,40 @@ We recommend:
 2. Use your **dev env** to migrate to test the new format
 3. Deploy to **prod env** after your have assesed that everything works properly
 
+## Schema Validation with Standard Schema
+
+Zero YAML supports the Standard Schema specification, allowing you to use multiple validation libraries interchangeably. This provides flexibility in choosing the right tool for your project while maintaining consistent validation behavior.
+
+### Supported Libraries
+
+**Zod** (Recommended for most projects):
+```typescript
+import * as z from 'zod';
+
+const userSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    age: z.number().optional()
+});
+```
+
+**Valibot** (Lightweight alternative):
+```typescript
+import * as v from 'valibot';
+
+const userSchema = v.object({
+    id: v.string(),
+    name: v.string(),
+    email: v.pipe(v.string(), v.email()),
+    age: v.optional(v.number())
+});
+```
+
+### Runtime Validation
+
+Your schemas are automatically validated at runtime when data is processed through Nango. This ensures data integrity and provides clear error messages when validation fails:
+
 ## What Has Changed?
 
 ### Configuration: YAML → TypeScript Objects
@@ -133,7 +181,7 @@ const sync = createSync({
 });
 ```
 
-### Models: YAML Definitions → Zod Schemas
+### Models: YAML Definitions → Standard Schema
 
 **Before**:
 ```yaml
@@ -144,14 +192,29 @@ models:
     state: string
 ```
 
-**After**:
+**After (Zod)**:
 ```typescript
+import * as z from 'zod';
+
 const issueSchema = z.object({
     id: z.string(),
     title: z.string(),
     state: z.string()
 });
 ```
+
+**After (Valibot)**:
+```typescript
+import * as v from 'valibot';
+
+const issueSchema = v.object({
+    id: v.string(),
+    title: v.string(),
+    state: v.string()
+});
+```
+
+Zero YAML now supports Standard Schema, meaning you can use any compatible validation library including Zod, Valibot, and others. This gives you the flexibility to choose the schema library that best fits your project while maintaining full type safety and validation.
 
 ## Before and After Examples
 
@@ -262,8 +325,23 @@ import './github/actions/createIssue.js';
 - Consistent dependency versions across environments
 - Proper module resolution
 - Better integration with modern development tools
+- Support for schema validation libraries (Zod, Valibot, etc.)
 
-If you don't have one, the migration command will create it automatically.
+If you don't have one, the migration command will create it automatically with the necessary dependencies.
+
+**Example package.json:**
+```json
+{
+  "name": "my-nango-integrations",
+  "version": "1.0.0",
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@nangohq/runner-sdk": "*"
+  }
+}
+```
 
 <Info>Note: Bundling custom dependencies is not yet possible but is now on our roadmap thanks to this update.</Info>
 
@@ -284,6 +362,25 @@ If you don't have one, the migration command will create it automatically.
 nango dryrun <scriptName> <connectionId>
 ```
 
+### Schema Validation Issues
+
+**Q: What if I get schema validation errors after migration?**
+
+**A:** Common schema issues and solutions:
+- **Version conflicts**: Ensure you're using compatible versions (Zod 4.0+ recommended)
+- **Type mismatches**: Review your original YAML models and ensure schema types match
+- **Missing dependencies**: Add the required schema library to your `package.json`
+- **Runtime errors**: Check that your data structure matches the schema definition
+
+**Example debugging:**
+```typescript
+// Add explicit type checking for debugging
+const result = userSchema.safeParse(userData);
+if (!result.success) {
+    console.error('Validation failed:', result.error.issues);
+}
+```
+
 ### Rollback Process
 
 **Q: Can I rollback if something goes wrong?**
@@ -296,7 +393,7 @@ Keep your original files until you've fully validated the migration.
 
 ---
 
-The Zero YAML approach represents a significant step forward in Nango's developer experience. By eliminating custom syntax and embracing pure TypeScript, we've made integrations more maintainable, shareable, and enjoyable to work with. Many more features will be possible thanks to this new syntax.
+The Zero YAML approach represents a significant step forward in Nango's developer experience. By eliminating custom syntax and embracing pure TypeScript with Standard Schema support, we've made integrations more maintainable, shareable, and enjoyable to work with. The flexibility to choose your preferred validation library (Zod, Valibot, etc.) while maintaining type safety ensures your integration code scales with your project needs. Many more features will be possible thanks to this new syntax.
 
 If you encounter any issues during migration, our support team is ready to help. Happy integrating! 🚀
 
