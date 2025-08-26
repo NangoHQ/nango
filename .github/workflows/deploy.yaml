@@ -27,6 +27,36 @@ on:
                     - connect_ui
 
 jobs:
+    deploy_aws:
+        if: inputs.stage == 'staging'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            actions: write
+        steps:
+            - name: Checkout nango-environments
+              uses: actions/checkout@v4
+              with:
+                  repository: NangoHQ/nango-environments
+                  token: ${{ secrets.NANGO_ENVIRONMENTS_PAT }}
+                  path: nango-environments
+
+            - name: Deploy ${{ inputs.service }} (AWS)
+              run: |
+                  cd nango-environments
+
+                  # Configure git for the commit
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  # Update the nango-values.yaml file for the current stage and service
+                  yq eval '.spec.values.${{ inputs.service }}.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+
+                  # Commit and push the changes
+                  git add apps/${{ inputs.stage }}/nango-values.yaml
+                  git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
+                  git push origin main
+
     deploy_server:
         if: inputs.service == 'server'
         runs-on: ubuntu-latest
