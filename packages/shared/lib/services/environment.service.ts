@@ -278,7 +278,7 @@ class EnvironmentService {
         return res || null;
     }
 
-    async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[] | null> {
+    async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[]> {
         const result = await db.knex.select('*').from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ environment_id });
 
         if (result === null || result.length === 0) {

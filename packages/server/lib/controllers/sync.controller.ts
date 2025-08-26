@@ -5,7 +5,6 @@ import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq
 import { records as recordsService } from '@nangohq/records';
 import {
     NangoError,
-    SyncCommand,
     configService,
     connectionService,
     errorManager,
@@ -14,12 +13,13 @@ import {
     getSyncs,
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
+    normalizedSyncParams,
     productTracking,
     syncCommandToOperation,
     syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Err, Ok, baseUrl, getHeaders, getLogger, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { Ok, baseUrl, getHeaders, isCloud, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -27,15 +27,15 @@ import { getPublicRecords } from './records/getRecords.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { HTTP_METHOD, Sync } from '@nangohq/shared';
+import type { HTTP_METHOD, Sync, SyncCommand } from '@nangohq/shared';
 import type { DBConnectionDecrypted } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 const accountUsageTracker = await getAccountUsageTracker();
-const logger = getLogger('SyncController');
+
+const actionPayloadAllowList = isCloud ? [662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254] : [];
 
 class SyncController {
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -261,6 +261,32 @@ class SyncController {
             if (actionResponse.isOk()) {
                 span.finish();
 
+                const payloadSize = Buffer.byteLength(JSON.stringify(actionResponse.value), 'utf8');
+                const payloadSizeInMb = payloadSize / (1024 * 1024);
+
+                if (payloadSizeInMb > 2) {
+                    if (actionPayloadAllowList.includes(account.id)) {
+                        void logCtx.warn(
+                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large wil soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
+                            {
+                                payloadSize,
+                                actionName: action_name,
+                                connectionId: connection.id,
+                                environmentId: environment.id
+                            }
+                        );
+                    }
+
+                    if (!actionPayloadAllowList.includes(account.id)) {
+                        void logCtx.error('Action payload is larger than 2 MB and will be blocked in the near future. Please use the proxy', {
+                            payloadSize,
+                            actionName: action_name,
+                            connectionId: connection.id,
+                            environmentId: environment.id
+                        });
+                    }
+                }
+
                 if ('statusUrl' in actionResponse.value) {
                     res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
                 } else {
@@ -306,11 +332,6 @@ class SyncController {
             const reqHeaders = getHeaders(req.headers);
             reqHeaders['authorization'] = 'REDACTED';
             const responseHeaders = getHeaders(res.getHeaders());
-            const contentLength = responseHeaders['content-length'];
-            const lengthInMB = contentLength ? Number(contentLength) / (1024 * 1024) : 0;
-            if (contentLength && lengthInMB > 0.5) {
-                logger.info(`Action DEBUGGING: accountId: ${account.id} for the action name ${action_name} contentLength is ${lengthInMB.toFixed(2)} MB`);
-            }
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
@@ -325,78 +346,6 @@ class SyncController {
         }
     }
 
-    public async pause(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { syncs, provider_config_key, connection_id } = req.body;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            const syncIdentifiers = normalizedSyncParams(syncs);
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: syncIdentifiers.error.message });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await syncManager.runSyncCommand({
-                recordsService,
-                orchestrator,
-                environment,
-                providerConfigKey: provider_config_key as string,
-                syncIdentifiers: syncIdentifiers.value,
-                command: SyncCommand.PAUSE,
-                logContextGetter,
-                connectionId: connection_id,
-                initiator: 'API call'
-            });
-
-            res.status(200).send({ success: true });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    public async start(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { syncs, provider_config_key, connection_id } = req.body;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            const syncIdentifiers = normalizedSyncParams(syncs);
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: syncIdentifiers.error.message });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await syncManager.runSyncCommand({
-                recordsService,
-                orchestrator,
-                environment,
-                providerConfigKey: provider_config_key as string,
-                syncIdentifiers: syncIdentifiers.value,
-                command: SyncCommand.UNPAUSE,
-                logContextGetter,
-                connectionId: connection_id,
-                initiator: 'API call'
-            });
-
-            res.status(200).send({ success: true });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async getSyncStatus(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs, provider_config_key, connection_id } = req.query;
@@ -407,7 +356,7 @@ class SyncController {
                 return;
             }
 
-            let syncIdentifiers = syncs === '*' ? Ok([]) : normalizedSyncParams(typeof syncs === 'string' ? syncs.split(',') : syncs);
+            let syncIdentifiers = syncs === '*' ? Ok([]) : normalizedSyncParams(typeof syncs === 'string' ? syncs.split(',') : (syncs as string[]));
             if (syncIdentifiers.isErr()) {
                 res.status(400).send({ message: syncIdentifiers.error.message });
                 return;
@@ -552,36 +501,6 @@ class SyncController {
             next(err);
         }
     }
-}
-
-function normalizedSyncParams(syncs: any): Result<{ syncName: string; syncVariant: string }[]> {
-    if (!syncs) {
-        return Err('Missing sync names');
-    }
-    if (!Array.isArray(syncs)) {
-        return Err('syncs must be an array');
-    }
-
-    const syncIdentifiers = syncs.map((sync) => {
-        if (typeof sync === 'string') {
-            if (sync.includes('::')) {
-                const [name, variant] = sync.split('::');
-                return { syncName: name, syncVariant: variant };
-            }
-            return { syncName: sync, syncVariant: 'base' };
-        }
-
-        if (typeof sync === 'object' && sync !== null && typeof sync.name === 'string' && typeof sync.variant === 'string') {
-            return { syncName: sync.name, syncVariant: sync.variant };
-        }
-
-        return null; // Mark invalid entries
-    });
-
-    if (syncIdentifiers.some((sync) => sync === null)) {
-        return Err('syncs must be either strings or { name: string, variant: string } objects');
-    }
-    return Ok(syncIdentifiers as { syncName: string; syncVariant: string }[]);
 }
 
 export default new SyncController();

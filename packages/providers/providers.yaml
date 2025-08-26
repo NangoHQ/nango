@@ -6150,6 +6150,41 @@ jobadder:
                 - /v2/users/current
     docs: https://docs.nango.dev/integrations/all/jobadder
 
+jobdiva:
+    display_name: JobDiva
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_url: https://api.jobdiva.com/apiv2/authenticate?clientid=${credentials.clientId}&username=${credentials.username}&password=${credentials.password}
+    token_request_method: GET
+    proxy:
+        base_url: https://api.jobdiva.com
+    token_response:
+        token: ''
+    docs: https://docs.nango.dev/integrations/all/jobdiva
+    docs_connect: https://docs.nango.dev/integrations/all/jobdiva/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your JobDiva Client ID
+            example: '3050'
+            doc_section: '#step-1-obtaining-your-client-id'
+            pattern: '^[0-9]{4}$'
+        username:
+            type: string
+            title: Username
+            description: Your JobDiva API username
+            example: username
+            doc_section: '#step-2-creating-an-api-user'
+        password:
+            type: string
+            title: Password
+            description: Your JobDiva API password
+            secret: true
+            example: password
+            doc_section: '#step-2-creating-an-api-user'
+
 jobvite:
     display_name: Jobvite
     categories:

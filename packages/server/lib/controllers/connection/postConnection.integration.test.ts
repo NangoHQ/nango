@@ -87,6 +87,24 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should validate api_key credentials', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            // @ts-expect-error on purpose
+            body: { provider_config_key: 'github', credentials: { type: 'API_KEY' } }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['credentials', 'api_key'] }]
+            }
+        });
+    });
+
     it('should validate basic credentials', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
@@ -174,8 +192,11 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: env.secret_key,
-            // @ts-expect-error on purpose
-            body: { provider_config_key: 'github', credentials: { type: 'OAUTH2', access_token: '123' } }
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                end_user: { id: '123', display_name: 'John Doe', tags: { projectId: '123' } }
+            }
         });
 
         isSuccess(res.json);
@@ -191,7 +212,13 @@ describe(`POST ${endpoint}`, () => {
                 },
                 type: 'OAUTH2'
             },
-            end_user: null,
+            end_user: {
+                id: '123',
+                email: null,
+                display_name: 'John Doe',
+                organization: null,
+                tags: { projectId: '123' }
+            },
             errors: [],
             id: expect.any(Number),
             last_fetched_at: expect.toBeIsoDate(),

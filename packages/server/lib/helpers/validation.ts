@@ -128,7 +128,7 @@ export const connectionCredentialsBasicSchema = z.strictObject({
 });
 
 export const connectionCredentialsApiKeySchema = z.strictObject({
-    api_key: z.string().min(1).max(255)
+    api_key: z.string().min(1).max(1024)
 });
 
 export const connectionCredentialsTBASchema = z.strictObject({
@@ -145,4 +145,19 @@ export const connectionCredentialsTBASchema = z.strictObject({
 export const connectionCredentialsGithubAppSchema = z.strictObject({
     app_id: z.string().min(1).max(255),
     installation_id: z.string().min(1).max(255)
+});
+
+export const connectionTagsSchema = z
+    // Please be careful when changing this:
+    // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
+    // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
+    // But they complained a lot about concatenation of string, so an object solves that cleanly
+    .record(z.string(), z.string())
+    .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' });
+
+export const endUserSchema = z.strictObject({
+    id: z.string().max(255).min(1),
+    email: z.string().email().min(5).optional(),
+    display_name: z.string().max(255).optional(),
+    tags: connectionTagsSchema.optional()
 });

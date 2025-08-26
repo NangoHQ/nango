@@ -30,7 +30,7 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
-import environmentController from './controllers/environment.controller.js';
+import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -47,6 +47,8 @@ import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
+import { postPublicSyncPause } from './controllers/sync/postSyncPause.js';
+import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
@@ -144,6 +146,7 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
+// @deprecated rollbacked for one customer, to delete asap
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
@@ -181,7 +184,7 @@ publicAPI.route('/connections/:connectionId').get(apiAuth, getPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(apiAuth, deletePublicConnection);
 
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
+publicAPI.route('/environment-variables').get(apiAuth, getPublicEnvironmentVariables);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
@@ -194,8 +197,8 @@ publicAPI.route('/records').get(apiAuth, getPublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);
-publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
-publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
+publicAPI.route('/sync/pause').post(apiAuth, postPublicSyncPause);
+publicAPI.route('/sync/start').post(apiAuth, postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
