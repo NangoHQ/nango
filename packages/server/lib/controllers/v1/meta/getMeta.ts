@@ -23,7 +23,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            gettingStartedClosed: sessionUser.closed_getting_started
+            gettingStartedClosed: sessionUser.getting_started_closed
         }
     });
 });

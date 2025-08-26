@@ -41,8 +41,8 @@ export const patchUser = asyncWrapper<PatchUser, never>(async (req, res) => {
         update.name = body.name;
     }
 
-    if (body.closedGettingStarted !== undefined) {
-        update.closed_getting_started = body.closedGettingStarted;
+    if (body.gettingStartedClosed !== undefined) {
+        update.getting_started_closed = body.gettingStartedClosed;
     }
 
     const updated = await userService.update(update);

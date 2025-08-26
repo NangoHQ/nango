@@ -84,7 +84,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 link: `/${env}/getting-started`,
                 onClose: async () => {
                     await apiPatchUser({
-                        closedGettingStarted: true
+                        gettingStartedClosed: true
                     });
                     void mutateMeta();
                 }
