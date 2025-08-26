@@ -11,7 +11,7 @@ import type { DBUser, PatchUser } from '@nangohq/types';
 const validation = z
     .object({
         name: z.string().min(3).max(255).optional(),
-        closedGettingStarted: z.boolean().optional()
+        gettingStartedClosed: z.boolean().optional()
     })
     .strict();
 
