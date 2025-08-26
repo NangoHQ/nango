@@ -3425,6 +3425,10 @@ components:
                           type: string
                           pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
                           nullable: true
+                      webhook_secret:
+                          type: string
+                          maxLength: 255
+                          nullable: true
                 - type: object
                   required:
                       - type

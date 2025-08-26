@@ -30,14 +30,12 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
         return;
     }
 
-    const { account, plan } = res.locals;
+    const { account } = res.locals;
     const body: PutTeam['Body'] = val.data;
 
     await accountService.editAccount({ id: account.id, ...body });
 
-    if (plan?.stripe_customer_id && plan?.orb_customer_id) {
-        void pubsub.publisher.publish({ subject: 'team', type: 'team.updated', payload: { id: account.id } });
-    }
+    void pubsub.publisher.publish({ subject: 'team', type: 'team.updated', payload: { id: account.id } });
 
     res.status(200).send({
         data: teamToApi({

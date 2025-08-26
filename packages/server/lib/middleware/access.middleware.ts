@@ -32,6 +32,8 @@ const logger = getLogger('AccessMiddleware');
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
+const deprecatedPublicAuthenticationCutoffDate = new Date('2025-08-25');
+
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
         Result<{
@@ -97,7 +99,8 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
-            return errorManager.errRes(res, 'malformed_auth_header');
+            errorManager.errRes(res, 'malformed_auth_header');
+            return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
@@ -274,7 +277,8 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
             span.setTag('error', err);
-            return errorManager.errRes(res, 'unknown_account');
+            errorManager.errRes(res, 'unknown_account');
+            return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
             span.finish();
@@ -316,7 +320,8 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
             span.setTag('error', err);
-            return errorManager.errRes(res, 'unknown_account');
+            errorManager.errRes(res, 'unknown_account');
+            return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
             span.finish();
@@ -379,7 +384,8 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_connect_session_or_secret ${stringifyError(err)}`);
             span.setTag('error', err);
-            return errorManager.errRes(res, 'unknown_account');
+            errorManager.errRes(res, 'unknown_account');
+            return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY, Date.now() - start);
             span.finish();
@@ -409,15 +415,19 @@ export class AccessMiddleware {
                 res.locals['endUser'] = connectSessionResult.value.endUser;
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
+
+                metrics.increment(metrics.Types.AUTH_WITH_CONNECT_SESSION);
             } else {
                 const publicKey = req.query['public_key'] as string;
 
                 if (!publicKey) {
-                    return errorManager.errRes(res, 'missing_public_key');
+                    errorManager.errRes(res, 'missing_public_key');
+                    return;
                 }
 
                 if (!keyRegex.test(publicKey)) {
-                    return errorManager.errRes(res, 'invalid_public_key');
+                    errorManager.errRes(res, 'invalid_public_key');
+                    return;
                 }
 
                 const result = await this.validatePublicKey(publicKey);
@@ -426,17 +436,30 @@ export class AccessMiddleware {
                     return;
                 }
 
+                if (result.value.account.created_at > deprecatedPublicAuthenticationCutoffDate) {
+                    res.status(401).send({
+                        error: {
+                            code: 'deprecated_authentication',
+                            message: 'Public key authentication is deprecated. Please use connect session authentication instead.'
+                        }
+                    });
+                    return;
+                }
+
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
                 res.locals['plan'] = result.value.plan;
                 tagTraceUser(result.value);
+
+                metrics.increment(metrics.Types.AUTH_WITH_PUBLIC_KEY);
             }
             next();
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.INTERNAL_AUTHORIZATION });
             span.setTag('error', err);
-            return errorManager.errRes(res, 'unknown_account');
+            errorManager.errRes(res, 'unknown_account');
+            return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY, Date.now() - start);
             span.finish();
@@ -495,24 +518,28 @@ export class AccessMiddleware {
 
     admin(req: Request, res: Response, next: NextFunction) {
         if (!isCloud) {
-            return errorManager.errRes(res, 'only_nango_cloud');
+            errorManager.errRes(res, 'only_nango_cloud');
+            return;
         }
 
         const adminKey = process.env['NANGO_ADMIN_KEY'];
 
         if (!adminKey) {
-            return errorManager.errRes(res, 'admin_key_configuration');
+            errorManager.errRes(res, 'admin_key_configuration');
+            return;
         }
 
         const authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
-            return errorManager.errRes(res, 'missing_auth_header');
+            errorManager.errRes(res, 'missing_auth_header');
+            return;
         }
 
         const candidateKey = authorizationHeader.split('Bearer ').pop();
         if (candidateKey !== adminKey) {
-            return errorManager.errRes(res, 'invalid_admin_key');
+            errorManager.errRes(res, 'invalid_admin_key');
+            return;
         }
 
         next();
@@ -522,18 +549,21 @@ export class AccessMiddleware {
         const key = envs.NANGO_INTERNAL_API_KEY;
 
         if (!key) {
-            return errorManager.errRes(res, 'internal_private_key_configuration');
+            errorManager.errRes(res, 'internal_private_key_configuration');
+            return;
         }
 
         const authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
-            return errorManager.errRes(res, 'missing_auth_header');
+            errorManager.errRes(res, 'missing_auth_header');
+            return;
         }
 
         const receivedKey = authorizationHeader.split('Bearer ').pop();
         if (!receivedKey || !stringTimingSafeEqual(receivedKey, key)) {
-            return errorManager.errRes(res, 'invalid_internal_private_key');
+            errorManager.errRes(res, 'invalid_internal_private_key');
+            return;
         }
 
         next();
