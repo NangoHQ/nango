@@ -32,6 +32,8 @@ const logger = getLogger('AccessMiddleware');
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
+const deprecatedPublicAuthenticationCutoffDate = new Date('2025-08-25');
+
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
         Result<{
@@ -431,6 +433,16 @@ export class AccessMiddleware {
                 const result = await this.validatePublicKey(publicKey);
                 if (result.isErr()) {
                     errorManager.errRes(res, result.error.message);
+                    return;
+                }
+
+                if (result.value.account.created_at > deprecatedPublicAuthenticationCutoffDate) {
+                    res.status(401).send({
+                        error: {
+                            code: 'deprecated_authentication',
+                            message: 'Public key authentication is deprecated. Please use connect session authentication instead.'
+                        }
+                    });
                     return;
                 }
 
