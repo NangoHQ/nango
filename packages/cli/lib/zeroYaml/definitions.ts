@@ -20,6 +20,13 @@ import type { SchemaMetadata, SchemaModel } from '@nangohq/runner-sdk/lib/types.
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type * as z from 'zod';
 
+// Type aliases to avoid redundant type constituents
+type SyncScript = CreateSyncResponse<Record<string, SchemaModel>, z.ZodObject>;
+type ActionScript = CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>;
+type OnEventScript = CreateOnEventResponse;
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+type AnyScript = SyncScript | ActionScript | OnEventScript;
+
 const allowed = ['action', 'sync', 'onEvent'];
 
 export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
@@ -48,12 +55,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
         printDebug(`Parsing ${filePath}`, debug);
 
-        const script = moduleContent.default.default as  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-            | CreateSyncResponse<Record<string, SchemaModel>, z.ZodObject>
-            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>
-            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-            | CreateOnEventResponse;
+        const script = moduleContent.default.default as AnyScript;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace('.js', '.ts');

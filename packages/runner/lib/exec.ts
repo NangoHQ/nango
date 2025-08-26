@@ -20,10 +20,13 @@ import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js'
 import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
+// Type alias to avoid redundant type constituents
+type ScriptFunction = (nango: NangoActionBase, payload?: object) => Promise<unknown>;
+
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
+    default: ScriptFunction | CreateAnyResponse;
 }
 
 export async function exec({

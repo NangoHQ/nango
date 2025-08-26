@@ -39,6 +39,30 @@ import type * as z from 'zod';
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
+// Type aliases to avoid redundant type constituents
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
+type TokenCredentials =
+    | string
+    | OAuth1Token
+    | OAuth2ClientCredentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials
+    | CustomCredentials
+    | TbaCredentials
+    | JwtCredentials
+    | BillCredentials
+    | TwoStepCredentials
+    | SignatureCredentials;
+/* eslint-enable @typescript-eslint/no-redundant-type-constituents */
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+type LogOptions = UserLogParameters | { [key: string]: any; level?: never };
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+type TriggerSyncMode = PostPublicTrigger['Body']['sync_mode'] | boolean;
+
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
@@ -168,35 +192,7 @@ export abstract class NangoActionBase<
         });
     }
 
-    public async getToken(): Promise<
-        | string
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | OAuth1Token
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | OAuth2ClientCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | BasicApiCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | ApiKeyCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | AppCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | AppStoreCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | UnauthCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | CustomCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | TbaCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | JwtCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | BillCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | TwoStepCredentials
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | SignatureCredentials
-    > {
+    public async getToken(): Promise<TokenCredentials> {
         this.throwIfAborted();
         return await this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
@@ -289,8 +285,7 @@ export abstract class NangoActionBase<
      * await nango.log('This is a log message', { level: 'error' })
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    public abstract log(message: any, options?: UserLogParameters | { [key: string]: any; level?: never }): MaybePromise<void>;
+    public abstract log(message: any, options?: LogOptions): MaybePromise<void>;
     public abstract log(message: string, ...args: [any, UserLogParameters]): MaybePromise<void>;
     public abstract log(...args: [...any]): MaybePromise<void>;
 
@@ -372,8 +367,7 @@ export abstract class NangoActionBase<
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+        syncMode?: TriggerSyncMode
     ): Promise<void | string>;
 
     public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
