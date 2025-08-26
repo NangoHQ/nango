@@ -118,7 +118,6 @@ export async function createCredentialsFromURL({
     additionalApiHeaders,
     options
 }: {
-    justJwt?: boolean;
     privateKey: string;
     url: string;
     payload: Record<string, string | number>;
