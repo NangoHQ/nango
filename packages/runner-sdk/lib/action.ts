@@ -3,7 +3,7 @@ import { getProvider } from '@nangohq/providers';
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
-import type { ZodMetadata } from './types.js';
+import type { SchemaMetadata, StandardSchemaV1 } from './types.js';
 import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
@@ -45,8 +45,8 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 };
 
 export abstract class NangoActionBase<
-    TMetadata extends ZodMetadata = never,
-    TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
+    TMetadata extends SchemaMetadata = never,
+    TMetadataInferred = TMetadata extends never ? never : StandardSchemaV1.InferOutput<Exclude<TMetadata, undefined>>
 > {
     abstract nango: Nango;
     private attributes = {};
@@ -170,22 +170,35 @@ export abstract class NangoActionBase<
 
     public async getToken(): Promise<
         | string
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | OAuth1Token
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | OAuth2ClientCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | BasicApiCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | ApiKeyCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | AppCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | AppStoreCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | UnauthCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | CustomCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | TbaCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | JwtCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | BillCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | TwoStepCredentials
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         | SignatureCredentials
     > {
         this.throwIfAborted();
-        return this.nango.getToken(this.providerConfigKey, this.connectionId);
+        return await this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
     /**
@@ -245,7 +258,6 @@ export abstract class NangoActionBase<
      * @deprecated please use setMetadata instead.
      */
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<object>> {
-        console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return await this.setMetadata(fieldMapping as any);
     }
 
@@ -264,7 +276,6 @@ export abstract class NangoActionBase<
      * @deprecated please use getMetadata instead.
      */
     public async getFieldMapping(): Promise<Record<string, string>> {
-        console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = (await this.getMetadata()) as any;
         return (metadata['fieldMapping'] as Record<string, string>) || {};
     }
@@ -278,6 +289,7 @@ export abstract class NangoActionBase<
      * await nango.log('This is a log message', { level: 'error' })
      * ```
      */
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public abstract log(message: any, options?: UserLogParameters | { [key: string]: any; level?: never }): MaybePromise<void>;
     public abstract log(message: string, ...args: [any, UserLogParameters]): MaybePromise<void>;
     public abstract log(...args: [...any]): MaybePromise<void>;
@@ -360,6 +372,7 @@ export abstract class NangoActionBase<
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void | string>;
 

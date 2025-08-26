@@ -22,6 +22,7 @@ import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
@@ -120,6 +121,11 @@ export async function exec({
                         throw new Error(`Missing onWebhook function`);
                     }
 
+                    // Set models for StandardSchema validation if available
+                    if (payload.models && typeof (nango as any).setModels === 'function') {
+                        (nango as any).setModels(payload.models);
+                    }
+
                     const output = await payload.onWebhook(nango as any, codeParams);
                     return { success: true, response: output, error: null };
                 } else {
@@ -184,6 +190,11 @@ export async function exec({
                 }
                 if (!payload.exec) {
                     throw new Error(`Missing exec function`);
+                }
+
+                // Set models for StandardSchema validation if available
+                if (payload.models && typeof (nango as any).setModels === 'function') {
+                    (nango as any).setModels(payload.models);
                 }
 
                 await payload.exec(nango as any);

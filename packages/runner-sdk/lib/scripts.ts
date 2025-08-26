@@ -1,9 +1,8 @@
 import type { NangoActionBase } from './action.js';
 import type { NangoSyncBase } from './sync.js';
-import type { ZodMetadata, ZodModel } from './types.js';
+import type { SchemaMetadata, SchemaModel, StandardSchemaV1 } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
-import type * as z from 'zod';
 
 export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
 
@@ -12,7 +11,7 @@ export type { NangoActionBase as NangoAction, ProxyConfiguration } from './actio
 export type { NangoSyncBase as NangoSync } from './sync.js';
 
 // ----- Sync
-export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = never> {
+export interface CreateSyncProps<TModels extends Record<string, SchemaModel>, TMetadata extends SchemaMetadata = never> {
     /**
      * The version of the sync.
      * Use it to track changes to the sync inside Nango's UI.
@@ -148,7 +147,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
      */
     onWebhook?: (nango: NangoSyncBase<TModels, TMetadata>, payload: any) => MaybePromise<void>;
 }
-export interface CreateSyncResponse<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = undefined>
+export interface CreateSyncResponse<TModels extends Record<string, SchemaModel>, TMetadata extends SchemaMetadata = undefined>
     extends CreateSyncProps<TModels, TMetadata> {
     type: 'sync';
 }
@@ -169,14 +168,14 @@ export interface CreateSyncResponse<TModels extends Record<string, ZodModel>, TM
  * export default sync;
  * ```
  */
-export function createSync<TModels extends Record<string, ZodModel>, TMetadata extends ZodMetadata = undefined>(
+export function createSync<TModels extends Record<string, SchemaModel>, TMetadata extends SchemaMetadata = undefined>(
     params: CreateSyncProps<TModels, TMetadata>
 ): CreateSyncResponse<TModels, TMetadata> {
     return { type: 'sync', ...params };
 }
 
 // ----- Action
-export interface CreateActionProps<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined> {
+export interface CreateActionProps<TInput extends StandardSchemaV1, TOutput extends StandardSchemaV1, TMetadata extends SchemaMetadata = undefined> {
     /**
      * The version of the action.
      * Use it to track changes to the action inside Nango's UI.
@@ -270,9 +269,9 @@ export interface CreateActionProps<TInput extends z.ZodTypeAny, TOutput extends 
      * }
      * ```
      */
-    exec: (nango: NangoActionBase<TMetadata>, input: z.infer<TInput>) => MaybePromise<z.infer<TOutput>>;
+    exec: (nango: NangoActionBase<TMetadata>, input: StandardSchemaV1.InferInput<TInput>) => MaybePromise<StandardSchemaV1.InferOutput<TOutput>>;
 }
-export interface CreateActionResponse<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>
+export interface CreateActionResponse<TInput extends StandardSchemaV1, TOutput extends StandardSchemaV1, TMetadata extends SchemaMetadata = undefined>
     extends CreateActionProps<TInput, TOutput, TMetadata> {
     type: 'action';
 }
@@ -297,14 +296,14 @@ export interface CreateActionResponse<TInput extends z.ZodTypeAny, TOutput exten
  * export default action;
  * ```
  */
-export function createAction<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny, TMetadata extends ZodMetadata = undefined>(
+export function createAction<TInput extends StandardSchemaV1, TOutput extends StandardSchemaV1, TMetadata extends SchemaMetadata = undefined>(
     params: CreateActionProps<TInput, TOutput, TMetadata>
 ): CreateActionResponse<TInput, TOutput, TMetadata> {
     return { type: 'action', ...params };
 }
 
 // ----- On Event
-export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined> {
+export interface CreateOnEventProps<TMetadata extends SchemaMetadata = undefined> {
     /**
      * The version of the onEvent script.
      * Use it to track changes to the onEvent script inside Nango's UI.
@@ -350,12 +349,12 @@ export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined> {
      */
     exec: (nango: NangoActionBase<TMetadata>) => MaybePromise<void>;
 }
-export interface CreateOnEventResponse<TMetadata extends ZodMetadata = undefined> extends CreateOnEventProps<TMetadata> {
+export interface CreateOnEventResponse<TMetadata extends SchemaMetadata = undefined> extends CreateOnEventProps<TMetadata> {
     type: 'onEvent';
 }
 /**
  * Create an onEvent script
  */
-export function createOnEvent<TMetadata extends ZodMetadata = undefined>(params: CreateOnEventProps<TMetadata>): CreateOnEventResponse<TMetadata> {
+export function createOnEvent<TMetadata extends SchemaMetadata = undefined>(params: CreateOnEventProps<TMetadata>): CreateOnEventResponse<TMetadata> {
     return { type: 'onEvent', ...params };
 }

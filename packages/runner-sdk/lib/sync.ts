@@ -2,18 +2,18 @@ import { NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
-import type { RawModel, ZodMetadata, ZodModel } from './types.js';
+import type { RawModel, SchemaMetadata, SchemaModel, StandardSchemaV1 } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
-import type * as z from 'zod';
 
 export const BASE_VARIANT = 'base';
 
 export abstract class NangoSyncBase<
-    TModels extends Record<string, ZodModel> = never,
-    TMetadata extends ZodMetadata = never,
+    TModels extends Record<string, SchemaModel> = never,
+    TMetadata extends SchemaMetadata = never,
     TModelName extends keyof TModels = keyof TModels
 > extends NangoActionBase<TMetadata> {
     public variant = BASE_VARIANT;
+    protected models?: TModels;
 
     lastSyncDate?: Date;
     track_deletes = false;
@@ -44,28 +44,42 @@ export abstract class NangoSyncBase<
     /**
      * @deprecated please use batchSave
      */
-    public async batchSend<TModel extends RawModel = z.infer<TModels[TModelName]>>(results: TModel[], model: TModelName): Promise<boolean | null> {
-        return this.batchSave(results, model);
+    public async batchSend<TModel extends RawModel = StandardSchemaV1.InferOutput<TModels[TModelName]>>(
+        results: TModel[],
+        model: TModelName
+    ): Promise<boolean | null> {
+        return await this.batchSave(results, model);
     }
 
-    public abstract batchSave<TModel extends RawModel = z.infer<TModels[TModelName]>>(results: TModel[], model: TModelName): MaybePromise<boolean>;
+    public abstract batchSave<TModel extends RawModel = StandardSchemaV1.InferOutput<TModels[TModelName]>>(
+        results: TModel[],
+        model: TModelName
+    ): MaybePromise<boolean>;
 
-    public abstract batchDelete<TModel extends RawModel = z.infer<TModels[TModelName]>>(
+    public abstract batchDelete<TModel extends RawModel = StandardSchemaV1.InferOutput<TModels[TModelName]>>(
         results: (Pick<TModel, 'id'> & Partial<TModel>)[],
         model: TModelName
     ): MaybePromise<boolean>;
 
-    public abstract batchUpdate<TModel extends RawModel = z.infer<TModels[TModelName]>>(
+    public abstract batchUpdate<TModel extends RawModel = StandardSchemaV1.InferOutput<TModels[TModelName]>>(
         results: (Pick<TModel, 'id'> & Partial<TModel>)[],
         model: TModelName
     ): MaybePromise<boolean>;
 
-    public abstract getRecordsByIds<TKey = string | number, TModel extends RawModel = z.infer<TModels[TModelName]>>(
+    public abstract getRecordsByIds<TKey = string | number, TModel extends RawModel = StandardSchemaV1.InferOutput<TModels[TModelName]>>(
         ids: TKey[],
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
 
     public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
+
+    /**
+     * Set the models for validation using StandardSchema
+     * This is called by the runner when executing Zero YAML syncs
+     */
+    public setModels(models: TModels): void {
+        this.models = models;
+    }
 
     protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
         // Validate records

@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { zodToNangoModelField } from './zodToNango.js';
+import { schemaToNangoModelField } from './schemaToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
 import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
@@ -16,7 +16,7 @@ import {
 } from './utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
-import type { ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
+import type { SchemaMetadata, SchemaModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type * as z from 'zod';
 
@@ -48,9 +48,11 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
         printDebug(`Parsing ${filePath}`, debug);
 
-        const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, ZodModel>, z.ZodObject>
+        const script = moduleContent.default.default as  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+            | CreateSyncResponse<Record<string, SchemaModel>, z.ZodObject>
+            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>
+            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
@@ -60,6 +62,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         const integrationId = split[split.length - 3]!;
         const integrationIdClean = integrationId.replaceAll(/[^a-zA-Z0-9]/g, '_');
 
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         let integration: NangoYamlParsedIntegration | undefined = parsed.integrations.find((v) => v.providerConfigKey === integrationId);
         if (!integration) {
             integration = {
@@ -127,14 +130,14 @@ export function buildSync({
     basenameClean
 }: {
     filePath: string;
-    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata>;
+    params: CreateSyncResponse<Record<string, SchemaModel>, SchemaMetadata>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
 }): Result<{ sync: ParsedNangoSync; models: Map<string, NangoModel> }> {
     const models = new Map<string, NangoModel>();
     const usedModels = new Set(Object.keys(params.models));
-    const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
+    const metadata = params.metadata ? schemaToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
     if (metadata) {
         usedModels.add(metadata.name);
         if (!Array.isArray(metadata.value)) {
@@ -180,7 +183,7 @@ export function buildSync({
         input: metadata?.name || null,
         name: basename,
         output: Object.entries(params.models).map(([name, model]) => {
-            const to = zodToNangoModelField(name, model);
+            const to = schemaToNangoModelField(name, model);
             models.set(name, { name, fields: to['value'] as NangoModelField[] });
             usedModels.add(name);
             return name;
@@ -208,14 +211,14 @@ export function buildAction({
     basenameClean: string;
 }): { action: ParsedNangoAction; models: Map<string, NangoModel> } {
     const models = new Map<string, NangoModel>();
-    const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
+    const input = schemaToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
     if (!Array.isArray(input.value)) {
         models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true });
     } else {
         models.set(input.name, { name: input.name, fields: input.value });
     }
 
-    const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
+    const output = schemaToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
     if (!Array.isArray(output.value)) {
         models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true });
     } else {

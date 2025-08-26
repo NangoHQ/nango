@@ -7,6 +7,7 @@
     "dependencies": {
         "@nangohq/node": "0.66.2",
         "@nangohq/providers": "0.66.2",
+        "@standard-schema/spec": "^1.0.0",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "lodash-es": "4.17.21",
@@ -17,10 +18,8 @@
         "@types/json-schema": "7.0.15",
         "axios": "1.11.0",
         "json-schema": "0.4.0",
-        "vitest": "3.2.4"
-    },
-    "peerDependencies": {
-        "zod": "4.0.5"
+        "vitest": "3.2.4",
+        "zod": "^3.23.8"
     },
     "files": [
         "dist/",
