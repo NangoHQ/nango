@@ -182,6 +182,18 @@ adp:
             secret: true
             doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
+adp-run:
+    alias: adp
+    display_name: RUN Powered by ADP
+    docs: https://docs.nango.dev/integrations/all/adp-run
+    docs_connect: https://docs.nango.dev/integrations/all/adp-run/connect
+
+adp-workforce-now-next-gen:
+    alias: adp
+    display_name: ADP Workforce Now Next Generation
+    docs: https://docs.nango.dev/integrations/all/adp-workforce-now-next-gen
+    docs_connect: https://docs.nango.dev/integrations/all/adp-workforce-now-next-gen/connect
+
 adyen:
     display_name: Adyen
     categories:
