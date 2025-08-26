@@ -31,30 +31,30 @@ describe('CircuitBreaker', () => {
         it('should open circuit after failure threshold is reached', async () => {
             mockHealthCheckResult.mockResolvedValue(false);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
         });
 
         it('should reset failure counter on successful health check', async () => {
             // One failure
             mockHealthCheckResult.mockResolvedValue(false);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
 
             // Success should reset counter
             mockHealthCheckResult.mockResolvedValue(true);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
 
             // Another failure should not open yet (counter was reset)
             mockHealthCheckResult.mockResolvedValue(false);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
 
             // Second failure after reset should open
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
         });
 
         it('should treat health check rejection as unhealthy', async () => {
@@ -66,7 +66,7 @@ describe('CircuitBreaker', () => {
             });
 
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
         });
     });
 
@@ -81,34 +81,34 @@ describe('CircuitBreaker', () => {
                 healthCheck: mockHealthCheckResult
             });
             await vi.advanceTimersByTimeAsync(2000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
         });
 
         it('should close circuit after recovery threshold is reached', async () => {
             mockHealthCheckResult.mockResolvedValue(true);
             await vi.advanceTimersByTimeAsync(2000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
         });
 
         it('should reset recovery counter on failed health check', async () => {
             // One success
             mockHealthCheckResult.mockResolvedValue(true);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
 
             // Failure should reset counter
             mockHealthCheckResult.mockResolvedValue(false);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
 
             // Another success should not close yet (counter was reset)
             mockHealthCheckResult.mockResolvedValue(true);
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(true);
+            expect(circuitBreaker.isUnhealthy()).toBe(true);
 
             // Second success after reset should close
             await vi.advanceTimersByTimeAsync(1000);
-            expect(circuitBreaker.isOpen()).toBe(false);
+            expect(circuitBreaker.isUnhealthy()).toBe(false);
         });
     });
 });

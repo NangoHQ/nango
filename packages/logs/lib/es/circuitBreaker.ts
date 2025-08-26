@@ -1,5 +1,5 @@
 export class CircuitBreaker {
-    private state: 'open' | 'closed';
+    private state: 'healthy' | 'unhealthy';
     private healthCheckIntervalMs: number;
     private failureThreshold: number;
     private recoveryThreshold: number;
@@ -8,7 +8,7 @@ export class CircuitBreaker {
     private timer: NodeJS.Timeout | null = null;
 
     constructor(props: { healthCheckIntervalMs: number; failureThreshold: number; recoveryThreshold: number; healthCheck: () => Promise<boolean> }) {
-        this.state = 'closed';
+        this.state = 'healthy';
         this.counter = 0;
         this.healthCheckIntervalMs = props.healthCheckIntervalMs;
         this.failureThreshold = props.failureThreshold;
@@ -33,11 +33,11 @@ export class CircuitBreaker {
         } catch {
             isHealthy = false;
         }
-        if (this.state === 'open') {
+        if (this.state === 'unhealthy') {
             if (isHealthy) {
                 this.counter++;
                 if (this.counter >= this.recoveryThreshold) {
-                    this.state = 'closed';
+                    this.state = 'healthy';
                     this.counter = 0;
                 }
             } else {
@@ -47,7 +47,7 @@ export class CircuitBreaker {
             if (!isHealthy) {
                 this.counter++;
                 if (this.counter >= this.failureThreshold) {
-                    this.state = 'open';
+                    this.state = 'unhealthy';
                     this.counter = 0;
                 }
             } else {
@@ -56,8 +56,8 @@ export class CircuitBreaker {
         }
     }
 
-    isOpen(): boolean {
-        return this.state === 'open';
+    isUnhealthy(): boolean {
+        return this.state === 'unhealthy';
     }
 
     destroy() {

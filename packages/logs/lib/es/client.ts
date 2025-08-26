@@ -36,8 +36,8 @@ function withCircuitBreaker(target: Client): Client {
             }
 
             return async function (...args: any[]) {
-                if (circuitBreaker.isOpen()) {
-                    throw new Error('Elasticsearch circuit breaker is open - failing fast');
+                if (circuitBreaker.isUnhealthy()) {
+                    throw new Error('Elasticsearch circuit breaker is unhealthy  - failing fast');
                 }
 
                 if (prop === 'close') {
