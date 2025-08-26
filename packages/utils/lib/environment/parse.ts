@@ -70,6 +70,10 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    SYNC_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    ONEVENT_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),

@@ -116,8 +116,7 @@ describe(`GET ${endpoint}`, () => {
             user_id: user.id,
             getting_started_meta_id: meta.value.id,
             connection_id: connection.id,
-            step: 3,
-            closed: false
+            step: 3
         });
         expect(progress.isErr()).toBe(false);
 
