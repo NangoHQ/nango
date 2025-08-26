@@ -96,8 +96,8 @@ describe('schemaToNango', () => {
                 });
 
                 // Check user field (nested object)
-                expect(result.value[1].name).toBe('user');
-                expect(Array.isArray(result.value[1].value)).toBe(true);
+                expect(result.value[1]?.name).toBe('user');
+                expect(Array.isArray(result.value[1]?.value)).toBe(true);
 
                 // Check tags field (array)
                 expect(result.value[2]).toEqual({

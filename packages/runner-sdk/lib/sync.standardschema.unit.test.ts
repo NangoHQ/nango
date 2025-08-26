@@ -127,7 +127,7 @@ describe('StandardSchema validation in NangoSyncBase', () => {
             ];
             const invalidResult = sync.testValidateRecords('User', invalidRecords);
             expect(invalidResult).toHaveLength(1); // stops after first error due to validateSyncRecords flag
-            expect(invalidResult[0].data).toEqual({ id: 1, name: 'Charlie' });
+            expect(invalidResult[0]?.data).toEqual({ id: 1, name: 'Charlie' });
         });
     });
 
@@ -153,7 +153,7 @@ describe('StandardSchema validation in NangoSyncBase', () => {
             ];
             const invalidResult = sync.testValidateRecords('User', invalidRecords);
             expect(invalidResult).toHaveLength(1); // stops after first error
-            expect(invalidResult[0].validation[0].message).toContain('id must be string');
+            expect(invalidResult[0]?.validation[0]?.message).toContain('id must be string');
         });
     });
 
