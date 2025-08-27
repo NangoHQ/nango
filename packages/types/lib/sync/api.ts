@@ -71,7 +71,7 @@ export type PostPublicSyncPause = Endpoint<{
     Body: {
         syncs: (string | { name: string; variant: string })[];
         provider_config_key: string;
-        connection_id: string;
+        connection_id?: string | undefined;
     };
     Success: { success: boolean };
 }>;
@@ -82,7 +82,7 @@ export type PostPublicSyncStart = Endpoint<{
     Body: {
         syncs: (string | { name: string; variant: string })[];
         provider_config_key: string;
-        connection_id: string;
+        connection_id?: string | undefined;
     };
     Success: { success: boolean };
 }>;
