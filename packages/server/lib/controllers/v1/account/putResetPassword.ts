@@ -32,7 +32,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    const { password, token } = req.body;
+    const { password, token } = val.data;
 
     const user = await userService.getUserByResetPasswordToken(token);
     if (!user) {

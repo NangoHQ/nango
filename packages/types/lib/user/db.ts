@@ -14,4 +14,5 @@ export interface DBUser extends Timestamps {
     email_verification_token: string | null;
     email_verification_token_expires_at: Date | null;
     uuid: string;
+    getting_started_closed: boolean;
 }

@@ -54,8 +54,7 @@ describe(`POST ${endpoint}`, () => {
                 errors: [
                     { code: 'invalid_union', message: 'Invalid input', path: ['syncs', '0'] },
                     { code: 'invalid_union', message: 'Invalid input', path: ['syncs', '2'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['provider_config_key'] },
-                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['connection_id'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['provider_config_key'] }
                 ]
             }
         });

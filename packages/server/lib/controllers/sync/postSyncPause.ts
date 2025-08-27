@@ -19,7 +19,7 @@ const bodySchema = z.strictObject({
         .min(0)
         .max(256),
     provider_config_key: providerConfigKeySchema,
-    connection_id: connectionIdSchema
+    connection_id: connectionIdSchema.optional()
 });
 
 export const postPublicSyncPause = asyncWrapper<PostPublicSyncPause>(async (req, res) => {

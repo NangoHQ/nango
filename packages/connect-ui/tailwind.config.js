@@ -16,6 +16,13 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             colors: {
+                background: 'var(--color-background)',
+                foreground: 'var(--color-foreground)',
+                primary: 'var(--color-primary)',
+                'primary-foreground': 'var(--color-primary-foreground)',
+                'text-primary': 'var(--color-text-primary)',
+                'text-muted': 'var(--color-text-muted)',
+
                 // ---
                 // From Figma
                 'green-light': '#EDFBD8',
