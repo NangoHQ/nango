@@ -1455,7 +1455,7 @@ paths:
                                 syncs:
                                     oneOf:
                                         - type: array
-                                          description: A list of sync names that you wish to start.
+                                          description: A list of sync names that you wish to start. If empty, all syncs are triggered
                                           items:
                                               type: string
                                               description: Sync name
@@ -1516,7 +1516,7 @@ paths:
                                 syncs:
                                     oneOf:
                                         - type: array
-                                          description: A list of sync names that you wish to pause.
+                                          description: A list of sync names that you wish to pause. If empty, all syncs are triggered
                                           items:
                                               type: string
                                               description: Sync name

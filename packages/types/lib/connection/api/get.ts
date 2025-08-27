@@ -85,7 +85,7 @@ export type PostPublicConnection = Endpoint<{
             | Omit<TbaCredentials, 'raw'>
             | { type: 'APP'; app_id: string; installation_id: string }
             | { type: 'NONE' };
-        end_user: ConnectSessionInput['end_user'];
+        end_user?: ConnectSessionInput['end_user'] | undefined;
     };
     Success: ApiPublicConnectionFull;
 }>;
