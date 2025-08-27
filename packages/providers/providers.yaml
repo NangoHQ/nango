@@ -6166,6 +6166,7 @@ jobdiva:
     display_name: JobDiva
     categories:
         - hr
+        - ats
     auth_mode: TWO_STEP
     token_url: https://api.jobdiva.com/apiv2/authenticate?clientid=${credentials.clientId}&username=${credentials.username}&password=${credentials.password}
     token_request_method: GET
