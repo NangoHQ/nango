@@ -5,6 +5,30 @@
 @layer base {
     :root {
         --radius: 0.5rem;
+
+        /* Nango */
+        --color-background: #ffffff;
+        --color-foreground: #e4e4e7;
+        --color-primary: #000000;
+        --color-primary-foreground: #ffffff;
+        --color-text-primary: #09090b;
+        --color-text-muted: #71717a;
+
+        /* Clean Slate */
+        /* --color-background: #0f172a;
+        --color-foreground: #1e293b;
+        --color-primary: #818cf8;
+        --color-primary-foreground: #0f172a;
+        --color-text-primary: #e2e8f0;
+        --color-text-muted: #a9acb3; */
+
+        /* Amber Minimal */
+        /* --color-background: #171717;
+        --color-foreground: #262626;
+        --color-primary: #f59e0b;
+        --color-primary-foreground: #000000;
+        --color-text-primary: #e5e5e5;
+        --color-text-muted: #a3a3a3; */
     }
 }
 
