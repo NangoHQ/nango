@@ -8,7 +8,77 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
-<Update label="August 2025" description="v0.66.2" tags={["Breaking changes"]}>
+<Update label="27 August 2025"  tags={["Breaking changes", "API"]}>
+
+  ## EOL for Connection End User Auto-Replication
+
+Currently connection's end user are automatically replicated to the Nango platform based on the `end_user_id` field.
+This behavior was confusing for some customers and was preventing them from declaring multiple organizations for the same user without having to manually concatenate the `end_user_id` field.
+Because the behavior was most of time undesired, we will stop replicating end user fields across connections.
+
+After the transition period, an **end user will be tied to a single connection.**
+
+  ### 🗓️ Timeline
+
+  - **August 27, 2025**: Deprecation warning.
+  - **September 5, 2025**: End user updates will stop being replicated across connections.
+
+  ### 🧐 Am I impacted?
+
+  - If your users can be tied to multiple organizations
+  - If you were relying on the end user auto-replication to maintain data freshness
+
+  ### 💡 What should I do?
+
+  End user fields are mostly for display and tagging purposes:
+  - If you are not using them, you can safely ignore this update.
+
+  - If you are using them, and wish to keep them in sync (e.g: display name, across connections) you will need to patch each connection when your end user is updated on your side
+
+
+  ```ts
+  await nango.patchConnection({
+    connectionId,
+    provider_config_key
+  } , {
+    end_user: {
+      id: '123',
+      email: 'new-email@nango.dev'
+    }
+  });
+  ```
+
+  NB: if you don't keep them in sync, the only side effect is that data will be stale in the Nango platform.
+
+  There is no batch endpoint for this operation. If you need one, please reach out on Slack.
+
+</Update>
+
+<Update label="22 August 2025"  tags={["Breaking changes", "API", "Scripts"]}>
+
+  ## Action output limit
+
+Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB.
+Instead of using an action for large payloads like this, we encourage usage of the Nango proxy.
+Starting today we will warn users where we detect an output larger than 2MB and later we will throw an error where outputs are larger than 2MB.
+
+  ### 🗓️ Timeline
+
+  - **August 22, 2025**: We will start warning users where we detect an output larger than 2MB.
+  - **September 22, 2025**: We will throw an error where outputs are larger than 2MB.
+
+  ### 🧐 Am I impacted?
+
+  - If you use custom actions and return large payloads
+
+  ### 💡 What should I do?
+
+  - Use the Nango proxy instead of custom actions for large payloads.
+
+</Update>
+
+
+<Update label="August 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
 
   ## August 2025 API Breaking changes
 
@@ -74,4 +144,28 @@ description: "Updates and breaking changes for developers."
 
   Please report any inconsistencies or issues with the new endpoints to support@nango.dev or in our slack community.
 
+</Update>
+
+
+<Update label="21 July 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
+
+  ## New script format
+
+The new script format is now officially released under `>=0.64.0`.
+If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4.
+By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install zod: `4.0.5`
+
+  ### 🗓️ Timeline
+
+  - **July 21, 2025**: We will start deprecating the `nango.yaml` format.
+  - **December 1st, 2025**: `nango.yaml` support will be removed.
+
+  ### 🧐 Am I impacted?
+
+  - If you use custom scripts
+
+  ### 💡 What should I do?
+
+  - Follow migration guide -> https://docs.nango.dev/guides/custom-integrations/migrate-to-zero-yaml
+  
 </Update>
