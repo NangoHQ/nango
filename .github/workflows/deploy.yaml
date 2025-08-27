@@ -41,7 +41,8 @@ jobs:
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
-              uses: aws-actions/configure-aws-credentials@v1.7.0
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ secrets.STAGING_DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
