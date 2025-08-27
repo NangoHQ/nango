@@ -414,6 +414,15 @@ export async function refreshCredentialsIfNeeded({
             // Use newCredentials as fallback when neither user nor app are specifically present
             connectionToRefresh.credentials = newCredentials;
         }
+
+        // for github app and github-app oauth we also store the jwt token in the connection config
+        if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
+            connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
+        }
+        if (newCredentials.type === 'CUSTOM' && 'app' in newCredentials && 'jwtToken' in newCredentials.app && newCredentials.app.jwtToken) {
+            connectionToRefresh['connection_config']['jwtToken'] = newCredentials['app']['jwtToken'];
+        }
+
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
             last_fetched_at: new Date(),
@@ -463,6 +472,18 @@ export async function shouldRefreshCredentials({
                 return { should: true, reason: 'expired_introspected_token' };
             }
             return { should: false, reason: 'fresh_introspected_token' };
+        }
+
+        if (credentials.type === 'APP' || credentials.type === 'CUSTOM') {
+            // A Github App or Custom (Github App OAuth) have a jwt expiration and
+            // an access token expiration
+            const connection_config = connection.connection_config;
+            if (connection_config['jwtToken']) {
+                const jwtTokenExpiration = connection_config['jwtToken']['expires_at'];
+                if (jwtTokenExpiration && isTokenExpired(new Date(jwtTokenExpiration), REFRESH_MARGIN_S)) {
+                    return { should: true, reason: 'expired_jwt_token' };
+                }
+            }
         }
 
         if (!credentials.expires_at) {

@@ -72,7 +72,10 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
-    jwtToken?: string;
+    jwtToken?: {
+        token: string;
+        expires_at?: number;
+    };
 }
 
 export interface AppStoreCredentials {
@@ -100,6 +103,11 @@ export interface OAuth2Credentials extends CredentialsCommon {
 
 export interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
+    expires_at?: Date | undefined;
+    jwtToken?: {
+        token: string;
+        expires_at?: number;
+    };
 }
 
 export interface OAuth2ClientCredentials extends CredentialsCommon {
@@ -190,6 +198,7 @@ export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaC
 export type RefreshableCredentials =
     | OAuth2Credentials
     | AppCredentials
+    | CustomCredentials
     | AppStoreCredentials
     | OAuth2ClientCredentials
     | JwtCredentials
