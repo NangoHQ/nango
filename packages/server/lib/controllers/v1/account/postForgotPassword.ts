@@ -27,7 +27,7 @@ export const postForgotPassword = asyncWrapper<PostForgotPassword>(async (req, r
         return;
     }
 
-    const { email } = req.body;
+    const { email } = val.data;
 
     const user = await userService.getUserByEmail(email);
     if (!user) {

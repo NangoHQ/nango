@@ -86,13 +86,15 @@ export interface OAuth2Credentials extends CredentialsCommon {
     type: 'OAUTH2';
     access_token: string;
 
-    refresh_token?: string;
+    refresh_token?: string | undefined;
     expires_at?: Date | undefined;
 
-    config_override?: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface OAuth2ClientCredentials extends CredentialsCommon {
@@ -126,10 +128,12 @@ export interface TbaCredentials {
     token_id: string;
     token_secret: string;
 
-    config_override: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface JwtCredentials {
