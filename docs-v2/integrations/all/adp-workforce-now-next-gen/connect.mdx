@@ -1,38 +1,30 @@
 ---
-title: ADP - How do I link my account?
-sidebarTitle: ADP
+title: ADP Workforce Now Next Generation - How do I link my account?
+sidebarTitle: ADP Workforce Now Next Generation
 ---
 
 # Overview
 
-To authenticate with ADP, you need:
+To authenticate with ADP Workforce Now Next Generation, you need:
 1. **Client ID** - A unique identifier for your client.
 2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
 3. **Client Public Certificate** - The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
 4. **Client Private Key** - The private key (in PEM format) associated with the client certificate, used for establishing a secure TLS connection. 
 
-This guide will walk you through obtaining these credentials within ADP.
+This guide will walk you through obtaining these credentials within ADP Workforce Now Next Generation.
 
 ### Prerequisites:
 
-- You must have an account with ADP.
+- You must have an account with ADP Workforce Now Next Generation.
 
 ### Instructions:
 
 #### Step 1: Finding Your Client Credentials
-1. Log in to your ADP Developer account.
-2. Navigate to the **Apps** section of the Developer Portal.
-3. Click on the **Register App** button.
-4. Fill in the required information for your app.
-5. Agree to the ADP Developer Terms of Service and Privacy Policy.
-6. Click the **Submit** button to complete the app registration process.
-7. Once you are done with the registration process, you can obtain your credentials by navigating to the **Apps** section of the Developer Portal.
-8. Click on the name of the app you just registered above.
-9. Click on the **Credentials** tab to view your app's **Client ID** and **Client Secret**.
+- Generate your **Client ID** and **Client Secret** by adding an app in the ADP API Central for [ADP Workforce Now Next Generation Marketplace](https://apps.adp.com/en-US/apps/410612/adp-api-central-for-adp-workforce-now-and-adp-workforce-now-next-generation/overview)
 
 #### Step 2: Generating the Private Key and Certificate Signing Request
 
-- To authenticate with ADP APIs using Mutual TLS (mTLS), you'll need to generate a **private key** and a **Certificate Signing Request (CSR)**. This allows ADP to issue a signed certificate used for secure communication.
+- To authenticate with ADP Workforce Now Next Generation APIs using Mutual TLS (mTLS), you'll need to generate a **private key** and a **Certificate Signing Request (CSR)**. This allows ADP Workforce Now Next Generation to issue a signed certificate used for secure communication.
 
 Follow the steps below to complete this process:
 
@@ -73,7 +65,7 @@ openssl req -new -key companyname_auth.key -out companyname_auth.csr
 
 When prompted:
 - Leave the **Country**, **State**, **Locality**, and **Challenge Password** fields **blank**
-- Use the correct **Organization Name** that matches your ADP registration
+- Use the correct **Organization Name** that matches your ADP Workforce Now Next Generation registration
 - Set the **Common Name** as your company name followed by `MutualSSL` (e.g., `ExampleCorpMutualSSL`)
 - **Avoid using special characters** in any of the fields
 
@@ -92,8 +84,7 @@ This generates `companyname_auth.csr`, which you'll submit to ADP.
 8. Provide your:
    - Technical contact's **email address**, **name**, and a **group email** (for renewal notifications)
    - **Company name**
-   - **ADP client ID**  
-     _(If you're using ADP Workforce Now, your client ID is the portion after the `@` in your ADP login.)_
+   - **ADP Workforce Now Next Generation Client ID**  
 
 9. Receive and Save the Signed Certificate
 
@@ -109,7 +100,7 @@ Place this file in the same directory where you created the `.key` and `.csr`.
 
 ✅ Files You'll Use for Mutual TLS Authentication
 
-For API authentication with ADP, you'll need the following two files:
+For API authentication with ADP Workforce Now Next Generation, you'll need the following two files:
 
 - `**companyname_auth.key**` — the **Client Private Key** 
 - `**companyname_auth.pem**` — the **Client Public Certificate**
@@ -119,12 +110,12 @@ Make sure both files are stored securely and access is restricted to authorized 
 #### Step 3: Enter credentials in the Connect UI
 
 Once you have your **Client ID**, **Client Secret**, **Client Public Certificate** and **Client Private Key**:
-1. Open the form where you need to authenticate with ADP.
+1. Open the form where you need to authenticate with ADP Workforce Now Next Generation.
 2. Enter your credentials in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 
-<img src="/integrations/all/adp/form.png" style={{maxWidth: "450px" }}/>
+<img src="/integrations/all/adp-workforce-now-next-gen/form.png" style={{maxWidth: "450px" }}/>
 
-You are now connected to ADP.
+You are now connected to ADP Workforce Now Next Generation.
  
