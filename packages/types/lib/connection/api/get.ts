@@ -141,6 +141,22 @@ export type GetPublicConnection = Endpoint<{
     Success: ApiPublicConnectionFull;
 }>;
 
+export type PatchPublicConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+    };
+    Body: {
+        end_user?: ConnectSessionInput['end_user'] | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config'>;
+}>;
+
 export type PostConnectionRefresh = Endpoint<{
     Method: 'POST';
     Params: {

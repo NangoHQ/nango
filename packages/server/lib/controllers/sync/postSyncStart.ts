@@ -15,7 +15,7 @@ const orchestrator = getOrchestrator();
 
 const bodySchema = z.strictObject({
     syncs: z
-        .array(z.union([z.string(), z.object({ name: z.string(), variant: z.string() })]))
+        .array(z.union([z.string(), z.strictObject({ name: z.string(), variant: z.string() })]))
         .min(0)
         .max(256),
     provider_config_key: providerConfigKeySchema,

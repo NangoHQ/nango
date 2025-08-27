@@ -37,6 +37,7 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     OpenAIFunction,
+    PatchPublicConnection,
     PatchPublicIntegration,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
@@ -281,6 +282,18 @@ export class Nango {
         refreshToken?: boolean
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
+        return response.data;
+    }
+
+    /**
+     * Patch a connection
+     * @param params - The parameters for the connection
+     * @param body - The body of the connection
+     * @returns The response from the server
+     */
+    public async patchConnection(params: PatchPublicConnection['QP'], body: PatchPublicConnection['Body']): Promise<PatchPublicConnection['Success']> {
+        const url = `${this.serverUrl}/connections/${params.connectionId}?provider_config_key=${params.provider_config_key}`;
+        const response = await this.http.patch(url, body, { headers: this.enrichHeaders({ 'Content-Type': 'application/json' }) });
         return response.data;
     }
 
