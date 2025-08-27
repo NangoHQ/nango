@@ -542,11 +542,11 @@ class ConnectionController {
                 };
 
                 if ('oauth_client_id_override' in req.body) {
-                    tbaCredentials.config_override['client_id'] = req.body['oauth_client_id_override'];
+                    tbaCredentials.config_override!.client_id = req.body['oauth_client_id_override'];
                 }
 
                 if ('oauth_client_secret_override' in req.body) {
-                    tbaCredentials.config_override['client_secret'] = req.body['oauth_client_secret_override'];
+                    tbaCredentials.config_override!.client_secret = req.body['oauth_client_secret_override'];
                 }
 
                 const config = await configService.getProviderConfig(provider_config_key, environment.id);

@@ -165,11 +165,11 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             });
 
             if (oauth_client_id_override) {
-                tbaCredentials.config_override['client_id'] = oauth_client_id_override;
+                tbaCredentials.config_override!.client_id = oauth_client_id_override;
             }
 
             if (oauth_client_secret_override) {
-                tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
+                tbaCredentials.config_override!.client_secret = oauth_client_secret_override;
             }
         }
 

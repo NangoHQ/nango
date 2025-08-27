@@ -288,8 +288,8 @@ export function buildProxyHeaders({
         }
         case 'TBA': {
             const credentials = connection.credentials;
-            const consumerKey: string = credentials.config_override['client_id'] || connection.connection_config['oauth_client_id'];
-            const consumerSecret: string = credentials.config_override['client_secret'] || connection.connection_config['oauth_client_secret'];
+            const consumerKey: string = credentials.config_override?.client_id || connection.connection_config['oauth_client_id'];
+            const consumerSecret: string = credentials.config_override?.client_secret || connection.connection_config['oauth_client_secret'];
             const accessToken = credentials['token_id'];
             const accessTokenSecret = credentials['token_secret'];
 
