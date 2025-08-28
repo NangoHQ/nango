@@ -48,7 +48,7 @@ jobs:
                   aws-region: ${{ secrets[format('{0}_AWS_REGION', upper(inputs.stage))] }}
             - name: Deploy Connect UI to S3
               run: |
-                  aws s3 sync packages/connect-ui/dist/ s3://${{ secrets.STAGING_CONNECT_UI_BUCKET }} --delete
+                  aws s3 sync packages/connect-ui/dist/ s3://${{ secrets[format('{0}_CONNECT_UI_BUCKET', upper(inputs.stage))] }} --delete
             - name: Create invalidation
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
