@@ -8,6 +8,35 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
+<Update label="September 2025" description="Action output limit" tags={["Breaking changes"]}>
+
+  ## Action payload out limit
+
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit
+  to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](https://docs.nango.dev/guides/proxy-requests#proxy-requests).
+
+  Additionally, we will also soon restrict action inputs so please take note of your inputs.
+
+  ### 🗓️ Timeline
+
+  - **August 22, 2025**: [Warning](https://nango-community.slack.com/archives/C08C5US2ESZ/p1755870254146119) to users in a general announcement to the [#dev-updates](https://nango-community.slack.com/archives/C08C5US2ESZ) channel in Slack.
+  - **September 26, 2025**: We will throw an error when an action output exceeds the stated limitation of 2MB.
+
+  ### 🧐 Am I impacted?
+
+  - If you use actions and have a heavy output from the action. Typically the actions that have a large output are [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts) and in general any fetching any object from an external system. We have added dedicated proxy code for such operations to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts)
+  - If you're using a now deprecated prebuilt template that fetches objects from an external system
+
+  ### 💡 What should I do?
+
+  - Check your action logs for a warning that you've exceeded the action output limitation
+  - Verify the actions you're using and log the output size of the action
+  - Migrate the action to use the proxy instead
+
+  Please reach out with any questions or concerns to support@nango.dev or in our Slack community
+
+</Update>
+
 <Update label="August 2025" description="v0.66.2" tags={["Breaking changes"]}>
 
   ## August 2025 API Breaking changes
