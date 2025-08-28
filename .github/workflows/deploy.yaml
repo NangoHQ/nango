@@ -43,9 +43,9 @@ jobs:
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ secrets.STAGING_DEPLOY_CONNECT_UI_ROLE }}
+                  role-to-assume: ${{ secrets[format('{0}_DEPLOY_CONNECT_UI_ROLE', upper(inputs.stage))] }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ secrets.STAGING_AWS_REGION }}
+                  aws-region: ${{ secrets[format('{0}_AWS_REGION', upper(inputs.stage))] }}
             - name: Deploy Connect UI to S3
               run: |
                   aws s3 sync packages/connect-ui/dist/ s3://${{ secrets.STAGING_CONNECT_UI_BUCKET }} --delete
