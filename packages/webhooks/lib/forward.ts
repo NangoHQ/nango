@@ -35,8 +35,6 @@ export const forwardWebhook = async ({
         return;
     }
 
-    const uniqueConnectionIds = Array.from(new Set(connectionIds));
-
     const logCtx = await logContextGetter.create(
         { operation: { type: 'webhook', action: 'forward' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
         {
@@ -59,7 +57,7 @@ export const forwardWebhook = async ({
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
-    if (!uniqueConnectionIds || uniqueConnectionIds.length === 0) {
+    if (!connectionIds || connectionIds.length === 0) {
         const result = await deliver({
             webhooks,
             body: payload,
@@ -81,7 +79,7 @@ export const forwardWebhook = async ({
     }
 
     let success = true;
-    for (const connectionId of uniqueConnectionIds) {
+    for (const connectionId of connectionIds) {
         const result = await deliver({
             webhooks,
             body: {
