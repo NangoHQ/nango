@@ -38,7 +38,7 @@ describe('Flow service tests', () => {
         expect(firstIntegration).toBeDefined();
 
         // Test with a sync if available
-        if (firstIntegration?.syncs?.length > 0) {
+        if (firstIntegration && firstIntegration?.syncs?.length > 0) {
             const syncFlow = FlowService.getFlowByIntegrationAndName({
                 provider: firstIntegration?.providerConfigKey || '',
                 type: 'sync',
@@ -51,7 +51,7 @@ describe('Flow service tests', () => {
         }
 
         // Test with an action if available
-        if (firstIntegration?.actions?.length > 0) {
+        if (firstIntegration && firstIntegration?.actions?.length > 0) {
             const actionFlow = FlowService.getFlowByIntegrationAndName({
                 provider: firstIntegration?.providerConfigKey || '',
                 type: 'action',
