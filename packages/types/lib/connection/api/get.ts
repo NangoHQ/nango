@@ -8,7 +8,7 @@ import type {
     OAuth2Credentials,
     TbaCredentials
 } from '../../auth/api.js';
-import type { ConnectSessionInput } from '../../connect/api.js';
+import type { EndUserInput } from '../../connect/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
@@ -85,7 +85,7 @@ export type PostPublicConnection = Endpoint<{
             | Omit<TbaCredentials, 'raw'>
             | { type: 'APP'; app_id: string; installation_id: string }
             | { type: 'NONE' };
-        end_user?: ConnectSessionInput['end_user'] | undefined;
+        end_user?: EndUserInput | undefined;
     };
     Success: ApiPublicConnectionFull;
 }>;
@@ -151,7 +151,7 @@ export type PatchPublicConnection = Endpoint<{
         provider_config_key: string;
     };
     Body: {
-        end_user?: ConnectSessionInput['end_user'] | undefined;
+        end_user?: EndUserInput | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config'>;

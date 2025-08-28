@@ -17,12 +17,7 @@ export interface ConnectSessionInput {
               }
           >
         | undefined;
-    end_user: {
-        id: string;
-        email?: string | undefined;
-        display_name?: string | undefined;
-        tags?: Record<string, string> | undefined;
-    };
+    end_user: EndUserInput;
     organization?:
         | {
               id: string;
@@ -30,6 +25,12 @@ export interface ConnectSessionInput {
           }
         | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
+}
+export interface EndUserInput {
+    id: string;
+    email?: string | undefined;
+    display_name?: string | undefined;
+    tags?: Record<string, string> | undefined;
 }
 export type ConnectSessionOutput = ConnectSessionInput & {
     isReconnecting?: boolean;

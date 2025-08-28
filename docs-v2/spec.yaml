@@ -3286,7 +3286,9 @@ components:
                     type: string
                 tags:
                     type: object
-                    additionalProperties: true
+                    additionalProperties:
+                        type: string
+                        maxLength: 64
                     description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
         ConnectionError:
             type: object
