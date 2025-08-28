@@ -177,4 +177,34 @@ describe('Webhooks: forward notification tests', () => {
         });
         expect(spy).toHaveBeenCalledTimes(4);
     });
+
+    it('Should deduplicate connectionIds to prevent duplicate webhook deliveries', async () => {
+        await forwardWebhook({
+            connectionIds: ['1', '2', '1', '2', '1'],
+            account,
+            environment: {
+                name: 'dev',
+                id: 1,
+                secret_key: 'secret'
+            } as DBEnvironment,
+            webhookSettings: webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {
+                'content-type': 'application/json'
+            }
+        });
+        expect(spy).toHaveBeenCalledTimes(4);
+
+        const calls = spy.mock.calls;
+        expect(calls).toHaveLength(4);
+
+        const connectionIdsInCalls = calls.map((call) => {
+            const body = call[1] as any;
+            return body.connectionId;
+        });
+
+        expect(connectionIdsInCalls).toEqual(['1', '1', '2', '2']);
+    });
 });
