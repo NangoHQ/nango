@@ -27,6 +27,32 @@ on:
                     - connect_ui
 
 jobs:
+    deploy_connect_ui_aws:
+        if: inputs.stage == 'staging' && inputs.service == 'connect_ui'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Install dependencies
+              run: npm ci
+            - name: Build Connect UI
+              run: npm run ts-build && npm run -w @nangohq/connect-ui build
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets[format('{0}_DEPLOY_CONNECT_UI_ROLE', upper(inputs.stage))] }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ secrets[format('{0}_AWS_REGION', upper(inputs.stage))] }}
+            - name: Deploy Connect UI to S3
+              run: |
+                  aws s3 sync packages/connect-ui/dist/ s3://${{ secrets[format('{0}_CONNECT_UI_BUCKET', upper(inputs.stage))] }} --delete
+            - name: Create invalidation
+              run: |
+                  aws cloudfront create-invalidation --distribution-id ${{ secrets[format('{0}_CONNECT_UI_DISTRIBUTION_ID', upper(inputs.stage))] }} --paths "/*"
+
     deploy_aws:
         if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui'
         runs-on: ubuntu-latest
