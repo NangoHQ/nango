@@ -51,7 +51,7 @@ jobs:
                   aws s3 sync packages/connect-ui/dist/ s3://${{ secrets[format('{0}_CONNECT_UI_BUCKET', upper(inputs.stage))] }} --delete
             - name: Create invalidation
               run: |
-                  aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
+                  aws cloudfront create-invalidation --distribution-id ${{ secrets[format('{0}_CONNECT_UI_DISTRIBUTION_ID', upper(inputs.stage))] }} --paths "/*"
 
     deploy_aws:
         if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui'
