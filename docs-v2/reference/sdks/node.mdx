@@ -448,6 +448,36 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
 ```
 </Expandable>
 
+### Patch a connection
+
+Patch a connection.
+
+```js
+await nango.patchConnection({
+    connectionId: '<CONNECTION-ID>',
+    providerConfigKey: '<INTEGRATION-ID>'
+  },
+  { ...body });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="body" type="PatchPublicConnection['Body']" required>
+        The body of the connection (see [API Reference](/reference/api/connections/patch))
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "success": true
+}
+```
+</Expandable>
+
 ### Get connection metadata
 
 Returns a connection's metadata.
