@@ -27,6 +27,7 @@ import { deletePublicConnection } from './controllers/connection/connectionId/de
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
+import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
@@ -181,6 +182,7 @@ publicAPI.route('/connections').get(apiAuth, getPublicConnections);
 publicAPI.route('/connections/metadata').post(apiAuth, postPublicMetadata);
 publicAPI.route('/connections/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connections/:connectionId').get(apiAuth, getPublicConnection);
+publicAPI.route('/connections/:connectionId').patch(apiAuth, patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(apiAuth, deletePublicConnection);
 
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
