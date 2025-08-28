@@ -221,14 +221,19 @@ export default function Create() {
                                 </div>
                             </div>
                             <div className="flex justify-between">
-                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} disabled={isCreatingShared} variant="primary">
+                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} isLoading={isCreatingShared} variant="primary">
                                     {isCreatingShared && env !== 'prod'
                                         ? 'Creating...'
                                         : env !== 'prod'
                                           ? "Use Nango's developer app"
                                           : 'Use your own developer app'}
                                 </Button>
-                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} disabled={isCreatingShared} variant="secondary">
+                                <Button
+                                    type="button"
+                                    onClick={() => handleIntegrationCreation(env === 'prod')}
+                                    isLoading={isCreatingShared}
+                                    variant="secondary"
+                                >
                                     {isCreatingShared && env === 'prod'
                                         ? 'Creating...'
                                         : env === 'prod'
