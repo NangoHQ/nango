@@ -1,10 +1,6 @@
 import { vi, expect, it, describe } from 'vitest';
 
-<% if (isZeroYaml) { %>
 import createAction from '../actions/<%= actionName %>.js';
-<% } else { %>
-import runAction from '../actions/<%= actionName %>.js';
-<% } %>
 
 describe('<%= integration %> <%= actionName %> tests', () => {
   const nangoMock = new global.vitest.NangoActionMock({ 
@@ -15,11 +11,7 @@ describe('<%= integration %> <%= actionName %> tests', () => {
 
   it('should output the action output that is expected', async () => {
       const input = await nangoMock.getInput();
-      <% if (isZeroYaml) { %>
       const response = await createAction.exec(nangoMock, input);
-      <% } else { %>
-      const response = await runAction(nangoMock, input);
-      <% } %>
       const output = await nangoMock.getOutput();
 
       expect(response).toEqual(output);

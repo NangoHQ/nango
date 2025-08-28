@@ -492,6 +492,12 @@ program
         const { debug, integration: integrationId, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
+        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
+            return;
+        }
+
         const ok = await generateTests({
             absolutePath,
             integrationId,

@@ -8,11 +8,9 @@ import readline from 'readline';
 import axios from 'axios';
 import chalk from 'chalk';
 import ejs from 'ejs';
-import yaml from 'js-yaml';
 import ora from 'ora';
 
 import { printDebug } from '../utils.js';
-import { NANGO_VERSION } from '../version.js';
 import { compileAll } from '../zeroYaml/compile.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 
@@ -68,18 +66,6 @@ async function findUpFilename(filename: string, fromDir: string): Promise<string
 
 async function getProjectRoot(): Promise<string> {
     const cwd = process.cwd();
-    if (cwd.endsWith('nango-integrations') || cwd.includes('nango-integrations/')) {
-        const currentPackageJson = path.join(cwd, 'package.json');
-        if (await pathExists(currentPackageJson)) {
-            return cwd;
-        }
-
-        const potentialRoot = path.resolve(cwd, '..');
-        if (await pathExists(path.join(potentialRoot, 'package.json'))) {
-            return potentialRoot;
-        }
-    }
-
     const packageJsonPath = await findUpFilename('package.json', cwd);
     return packageJsonPath ? path.dirname(packageJsonPath) : cwd;
 }
@@ -107,8 +93,6 @@ async function fetchLatestVersions(packages: string[], debug: boolean): Promise<
 async function injectTestDependencies({ debug }: { debug: boolean }): Promise<void> {
     const rootPath = await getProjectRoot();
     const packageJsonPath = path.resolve(rootPath, 'package.json');
-    const sharedPackageJsonPath = path.resolve(__dirname, '../../../shared/package.json');
-    let nangoSharedVersion = '0.49.0'; // fallback version
     if (!(await pathExists(packageJsonPath))) {
         if (debug) {
             printDebug(`package.json not found at ${packageJsonPath}. Skipping dependency injection.`);
@@ -134,13 +118,11 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
         packageJson.devDependencies = packageJson.devDependencies || {};
 
         // dependencies for vitest config files
-        const depPackages = ['vitest', 'lodash-es', 'parse-link-header', 'nango', '@nangohq/shared'];
-        const typePackages = ['@types/lodash-es', '@types/parse-link-header'];
+        const depPackages = ['vitest'];
 
         const missingDeps = depPackages.filter((pkg) => !packageJson.devDependencies[pkg]);
-        const missingTypes = typePackages.filter((pkg) => !packageJson.devDependencies[pkg]);
 
-        if (missingDeps.length === 0 && missingTypes.length === 0) {
+        if (missingDeps.length === 0) {
             if (debug) {
                 printDebug('All required dependencies already present in package.json. Skipping dependency injection.');
             }
@@ -154,64 +136,19 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
         }
 
         const requiredDeps: Record<string, string> = {};
-        const requiredTypes: Record<string, string> = {};
-
-        try {
-            const sharedPackageContent = await fs.readFile(sharedPackageJsonPath, 'utf8');
-            const sharedPackageJson = JSON.parse(sharedPackageContent);
-            nangoSharedVersion = sharedPackageJson.version;
-        } catch (err: any) {
-            if (debug) {
-                printDebug(
-                    `Failed to read shared package.json, using fallback version: ${nangoSharedVersion}. Error: ${err instanceof Error ? err.message : 'unknown error'}`
-                );
-            }
-        }
 
         if (debug) {
             printDebug('Attempting to fetch latest versions from npm registry...');
         }
 
-        try {
-            const missingNonSpecialPackages = missingDeps.filter((pkg) => pkg !== 'nango' && pkg !== '@nangohq/shared');
-            const latestDeps = missingNonSpecialPackages.length > 0 ? await fetchLatestVersions(missingNonSpecialPackages, debug) : {};
-            const latestTypes = missingTypes.length > 0 ? await fetchLatestVersions(missingTypes, debug) : {};
+        const latestDeps = missingDeps.length > 0 ? await fetchLatestVersions(missingDeps, debug) : {};
 
-            for (const pkg of missingDeps) {
-                if (pkg === 'nango') {
-                    requiredDeps[pkg] = `^${NANGO_VERSION}`;
-                } else if (pkg === '@nangohq/shared') {
-                    requiredDeps[pkg] = `^${nangoSharedVersion}`;
-                } else {
-                    requiredDeps[pkg] = latestDeps[pkg] ? `^${latestDeps[pkg]}` : 'latest';
-                }
-            }
+        for (const pkg of missingDeps) {
+            requiredDeps[pkg] = latestDeps[pkg] ? latestDeps[pkg] : 'latest';
+        }
 
-            for (const pkg of missingTypes) {
-                requiredTypes[pkg] = latestTypes[pkg] ? `^${latestTypes[pkg]}` : 'latest';
-            }
-
-            if (debug) {
-                printDebug(`Using Nango version: ${NANGO_VERSION}`);
-                printDebug(`Using @nangohq/shared version: ${nangoSharedVersion}`);
-                printDebug(`Fetched latest versions: ${JSON.stringify({ ...latestDeps, ...latestTypes })}`);
-            }
-        } catch (err: any) {
-            if (debug) {
-                printDebug(`Failed to fetch latest versions, using 'latest' as fallback: ${err}`);
-            }
-            for (const pkg of missingDeps) {
-                if (pkg === 'nango') {
-                    requiredDeps[pkg] = `^${NANGO_VERSION}`;
-                } else if (pkg === '@nangohq/shared') {
-                    requiredDeps[pkg] = `^${nangoSharedVersion}`;
-                } else {
-                    requiredDeps[pkg] = 'latest';
-                }
-            }
-            for (const pkg of missingTypes) {
-                requiredTypes[pkg] = 'latest';
-            }
+        if (debug) {
+            printDebug(`Fetched latest versions: ${JSON.stringify(latestDeps)}`);
         }
 
         for (const [dep, version] of Object.entries(requiredDeps)) {
@@ -219,14 +156,6 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
             needsUpdate = true;
             if (debug) {
                 printDebug(`Adding dependency: ${dep}@${version}`);
-            }
-        }
-
-        for (const [dep, version] of Object.entries(requiredTypes)) {
-            packageJson.devDependencies[dep] = version;
-            needsUpdate = true;
-            if (debug) {
-                printDebug(`Adding type dependency: ${dep}@${version}`);
             }
         }
 
@@ -256,21 +185,18 @@ async function generateSyncTest({
     syncName,
     modelName,
     writePath,
-    debug,
-    isZeroYaml
+    debug
 }: {
     integration: string;
     syncName: string;
     modelName: string | string[];
     writePath: string;
     debug: boolean;
-    isZeroYaml: boolean;
 }) {
     const data = {
         integration,
         syncName,
-        modelName,
-        isZeroYaml
+        modelName
     };
 
     if (debug) {
@@ -296,21 +222,18 @@ async function generateActionTest({
     actionName,
     output,
     writePath,
-    debug,
-    isZeroYaml
+    debug
 }: {
     integration: string;
     actionName: string;
     output: string | null;
     writePath: string;
     debug: boolean;
-    isZeroYaml: boolean;
 }) {
     const data = {
         integration,
         actionName,
-        output,
-        isZeroYaml
+        output
     };
 
     if (debug) {
@@ -331,7 +254,7 @@ async function generateActionTest({
     }
 }
 
-async function generateTestConfigs({ debug, force = false, isZeroYaml }: { debug: boolean; force?: boolean; isZeroYaml: boolean }): Promise<boolean> {
+async function generateTestConfigs({ debug, force = false }: { debug: boolean; force?: boolean }): Promise<boolean> {
     try {
         const rootPath = await getProjectRoot();
 
@@ -346,7 +269,7 @@ async function generateTestConfigs({ debug, force = false, isZeroYaml }: { debug
         const viteTemplate = await fs.readFile(VITE_CONFIG_TEMPLATE, 'utf8');
         const vitestTemplateSource = await fs.readFile(VITEST_SETUP_TEMPLATE, 'utf8');
 
-        const vitestTemplate = ejs.render(vitestTemplateSource, { isZeroYaml });
+        const vitestTemplate = ejs.render(vitestTemplateSource);
 
         if (force || !(await pathExists(viteConfigPath))) {
             await fs.writeFile(viteConfigPath, viteTemplate);
@@ -385,16 +308,6 @@ export async function generateTests({
             printDebug(`Generating test files in ${absolutePath}`);
         }
 
-        const nangoYamlPath = path.resolve(absolutePath, 'nango.yaml');
-        const indexTsPath = path.resolve(absolutePath, 'index.ts');
-        const hasNangoYaml = await pathExists(nangoYamlPath);
-        const hasIndexTs = await pathExists(indexTsPath);
-        const isZeroYaml = !hasNangoYaml && hasIndexTs;
-
-        if (debug) {
-            printDebug(`Detected zero yaml: ${isZeroYaml}`);
-        }
-
         const spinner = ora({ text: 'Setting up test dependencies' }).start();
         try {
             await injectTestDependencies({ debug });
@@ -425,58 +338,46 @@ export async function generateTests({
             }
         }
 
-        await generateTestConfigs({ debug, force: forceOverwrite, isZeroYaml });
+        await generateTestConfigs({ debug, force: forceOverwrite });
 
-        let integrationsToProcess: Record<string, any>;
+        let integrationsToProcess: Record<string, any> = {};
 
-        if (isZeroYaml) {
-            if (debug) {
-                printDebug('Detected zero-yaml project, compiling TypeScript and parsing definitions');
-            }
+        if (debug) {
+            printDebug('Detected zero-yaml project, compiling TypeScript and parsing definitions');
+        }
 
-            // compile then use js definitions
-            const compileResult = await compileAll({ fullPath: absolutePath, debug });
-            if (compileResult.isErr()) {
-                console.error(chalk.red(`Failed to compile TypeScript: ${compileResult.error}`));
-                return false;
-            }
+        // compile then use js definitions
+        const compileResult = await compileAll({ fullPath: absolutePath, debug });
+        if (compileResult.isErr()) {
+            console.error(chalk.red(`Failed to compile TypeScript: ${compileResult.error}`));
+            return false;
+        }
 
-            const defsResult = await buildDefinitions({ fullPath: absolutePath, debug });
-            if (defsResult.isErr()) {
-                console.error(chalk.red(`Failed to build definitions: ${defsResult.error}`));
-                return false;
-            }
+        const defsResult = await buildDefinitions({ fullPath: absolutePath, debug });
+        if (defsResult.isErr()) {
+            console.error(chalk.red(`Failed to build definitions: ${defsResult.error}`));
+            return false;
+        }
 
-            const parsed = defsResult.value;
-            integrationsToProcess = {};
+        const parsed = defsResult.value;
 
-            for (const integration of parsed.integrations) {
-                integrationsToProcess[integration.providerConfigKey] = {
-                    syncs: {},
-                    actions: {}
+        for (const integration of parsed.integrations) {
+            integrationsToProcess[integration.providerConfigKey] = {
+                syncs: {},
+                actions: {}
+            };
+
+            for (const sync of integration.syncs) {
+                integrationsToProcess[integration.providerConfigKey].syncs[sync.name] = {
+                    output: sync.output
                 };
-
-                for (const sync of integration.syncs) {
-                    integrationsToProcess[integration.providerConfigKey].syncs[sync.name] = {
-                        output: sync.output
-                    };
-                }
-
-                for (const action of integration.actions) {
-                    integrationsToProcess[integration.providerConfigKey].actions[action.name] = {
-                        output: action.output
-                    };
-                }
             }
-        } else {
-            if (debug) {
-                printDebug('Detected yaml project, parsing from nango.yaml');
+
+            for (const action of integration.actions) {
+                integrationsToProcess[integration.providerConfigKey].actions[action.name] = {
+                    output: action.output
+                };
             }
-            const configPath = path.resolve(absolutePath, `nango.yaml`);
-            const configContent = await fs.readFile(configPath, 'utf8');
-            const config: any = yaml.load(configContent);
-            const { integrations } = config;
-            integrationsToProcess = integrations;
         }
 
         if (integrationId) {
@@ -504,8 +405,7 @@ export async function generateTests({
                         syncName,
                         modelName: sync.output,
                         writePath: absolutePath,
-                        debug,
-                        isZeroYaml
+                        debug
                     });
                 } else if (debug) {
                     printDebug(`No mocks found for sync ${syncName}, skipping test generation`);
@@ -522,8 +422,7 @@ export async function generateTests({
                         actionName,
                         output: action.output,
                         writePath: absolutePath,
-                        debug,
-                        isZeroYaml
+                        debug
                     });
                 } else if (debug) {
                     printDebug(`No mocks found for action ${actionName}, skipping test generation`);
