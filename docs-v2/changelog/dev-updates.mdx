@@ -54,30 +54,6 @@ After the transition period, an **end user will be tied to a single connection.*
 
 </Update>
 
-<Update label="22 August 2025"  tags={["Breaking changes", "API", "Scripts"]}>
-
-  ## Action output limit
-
-Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB.
-Instead of using an action for large payloads like this, we encourage usage of the Nango proxy.
-Starting today we will warn users where we detect an output larger than 2MB and later we will throw an error where outputs are larger than 2MB.
-
-  ### 🗓️ Timeline
-
-  - **August 22, 2025**: We will start warning users where we detect an output larger than 2MB.
-  - **September 22, 2025**: We will throw an error where outputs are larger than 2MB.
-
-  ### 🧐 Am I impacted?
-
-  - If you use custom actions and return large payloads
-
-  ### 💡 What should I do?
-
-  - Use the Nango proxy instead of custom actions for large payloads.
-
-</Update>
-
-
 <Update label="August 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
 
   ## August 2025 API Breaking changes
