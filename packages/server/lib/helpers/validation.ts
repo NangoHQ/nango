@@ -61,7 +61,8 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                 client_id: z.string().min(1).max(255),
                 client_secret: z.string().min(1),
-                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                webhook_secret: z.string().min(0).max(255).optional()
             })
             .strict(),
         z
@@ -98,7 +99,7 @@ export const sharedCredentialsSchema = z
 export const connectionCredentialsOauth2Schema = z.strictObject({
     access_token: z.string().min(1).max(2048),
     refresh_token: z.string().min(1).max(2048).optional(),
-    expires_at: z.iso.datetime().optional(),
+    expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({
             client_id: z.string().min(1).max(255).optional(),
@@ -113,7 +114,7 @@ export const connectionCredentialsOauth2CCSchema = z.strictObject({
     client_secret: z.string().min(1).max(2048),
     client_certificate: z.string().min(1).max(10000).optional(),
     client_private_key: z.string().min(1).max(10000).optional(),
-    expires_at: z.iso.datetime().optional()
+    expires_at: z.coerce.date().optional()
 });
 
 export const connectionCredentialsOauth1Schema = z.strictObject({
@@ -127,7 +128,7 @@ export const connectionCredentialsBasicSchema = z.strictObject({
 });
 
 export const connectionCredentialsApiKeySchema = z.strictObject({
-    api_key: z.string().min(1).max(1024)
+    apiKey: z.string().min(1).max(1024)
 });
 
 export const connectionCredentialsTBASchema = z.strictObject({

@@ -100,7 +100,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
                 code: 'invalid_body',
-                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['credentials', 'api_key'] }]
+                errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['credentials', 'apiKey'] }]
             }
         });
     });

@@ -72,7 +72,10 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
-    jwtToken?: string;
+    jwtToken?: {
+        token: string;
+        expires_at?: number;
+    };
 }
 
 export interface AppStoreCredentials {
@@ -87,17 +90,24 @@ export interface OAuth2Credentials extends CredentialsCommon {
     type: AuthModes['OAuth2'];
     access_token: string;
 
-    refresh_token?: string;
+    refresh_token?: string | undefined;
     expires_at?: Date | undefined;
 
-    config_override?: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
+    expires_at?: Date | undefined;
+    jwtToken?: {
+        token: string;
+        expires_at?: number;
+    };
 }
 
 export interface OAuth2ClientCredentials extends CredentialsCommon {
@@ -129,10 +139,12 @@ export interface TbaCredentials {
     token_id: string;
     token_secret: string;
 
-    config_override: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface BillCredentials extends CredentialsCommon {
@@ -186,6 +198,7 @@ export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaC
 export type RefreshableCredentials =
     | OAuth2Credentials
     | AppCredentials
+    | CustomCredentials
     | AppStoreCredentials
     | OAuth2ClientCredentials
     | JwtCredentials
