@@ -98,6 +98,9 @@ export class Billing {
     async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
         return await this.client.upsertCustomer(team, user);
     }
+    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
+        return await this.client.updateCustomer(customerId, name);
+    }
 
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         return await this.client.linkStripeToCustomer(teamId, customerId);
@@ -119,7 +122,7 @@ export class Billing {
         return await this.client.getUsage(subscriptionId, period);
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amount: string | null }>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return await this.client.upgrade(opts);
     }
 

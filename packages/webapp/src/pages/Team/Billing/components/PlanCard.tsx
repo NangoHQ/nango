@@ -29,7 +29,7 @@ export const PlanCard: React.FC<{
 
     const onClick = () => {
         if (!def.plan.canChange) {
-            window.open('mailto:upgrade@nango.dev', '_blank');
+            window.open('https://www.nango.dev/demo', '_blank');
             return;
         }
 
@@ -198,7 +198,7 @@ export const PlanCard: React.FC<{
                     )}
                 </footer>
             </div>
-            {!hasPaymentMethod ? (
+            {(!hasPaymentMethod && def.isUpgrade) || (!hasPaymentMethod && def.isDowngrade && def.plan.code !== 'free') ? (
                 <DialogContent className="w-[550px] max-h-[800px]">
                     <DialogTitle>Add a payment method first</DialogTitle>
                     <StripeForm onSuccess={() => {}} />

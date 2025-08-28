@@ -2,8 +2,9 @@ export type * from './db.js';
 export type * from './api.js';
 export type * from './api.endpoints.js';
 
-export type * from './onboarding/db.js';
-export type * from './onboarding/api.js';
+export type * from './gettingStarted/db.js';
+export type * from './gettingStarted/dto.js';
+export type * from './gettingStarted/api.js';
 export type * from './record/api.js';
 export type * from './logs/api.js';
 export type * from './logs/messages.js';
@@ -23,8 +24,13 @@ export type * from './syncConfigs/db.js';
 export type * from './syncConfigs/api.js';
 export type * from './team/api.js';
 export type * from './team/db.js';
+export type * from './sharedCredentials/api.js';
+export type * from './sharedCredentials/db.js';
+export type * from './sharedCredentials/dto.js';
 export type * from './billing/types.js';
 export type * from './billing/http.api.js';
+export type * from './usage/dto.js';
+export type * from './usage/db.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';

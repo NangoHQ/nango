@@ -14,11 +14,12 @@ const config: Knex.Config = {
     client: 'postgres',
     connection: {
         connectionString: databaseUrl,
-        statement_timeout: 60000,
+        statement_timeout: envs.RECORDS_DATABASE_STATEMENT_TIMEOUT_MS,
+        ssl: envs.RECORDS_DATABASE_SSL ? { rejectUnauthorized: false } : false,
         application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
     },
     searchPath: schema,
-    pool: { min: 2, max: 50 },
+    pool: { min: envs.RECORDS_DATABASE_POOL_MIN, max: envs.RECORDS_DATABASE_POOL_MAX },
     migrations: {
         extension: isJS ? 'js' : 'ts',
         directory: 'migrations',

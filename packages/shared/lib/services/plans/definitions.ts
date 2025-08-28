@@ -19,7 +19,10 @@ export const freePlan: PlanDefinition = {
         sync_frequency_secs_min: 3600,
         auto_idle: true,
         monthly_actions_max: 1000,
-        monthly_active_records_max: 5000
+        monthly_active_records_max: 5000,
+        has_webhooks_script: false,
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false
     },
     display: {
         features: [
@@ -49,9 +52,10 @@ export const starterPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+        has_sync_variants: false,
         name: 'starter',
-        sync_frequency_secs_min: 30,
+        sync_frequency_secs_min: 3600,
+        connections_max: null,
         auto_idle: false,
         monthly_actions_max: null,
         monthly_active_records_max: null,
@@ -59,7 +63,10 @@ export const starterPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: false,
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -84,19 +91,23 @@ export const growthPlan: PlanDefinition = {
     basePrice: 500,
     flags: {
         api_rate_limit_size: 'l',
-        environments_max: 3,
-        has_otel: false,
+        environments_max: 10,
+        has_otel: true,
         has_sync_variants: true,
         name: 'growth',
         sync_frequency_secs_min: 30,
         auto_idle: false,
+        connections_max: null,
         monthly_actions_max: null,
         monthly_active_records_max: null,
         trial_start_at: null,
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -128,6 +139,7 @@ export const enterprisePlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'enterprise',
         sync_frequency_secs_min: 30,
+        connections_max: null,
         auto_idle: false,
         monthly_actions_max: null,
         monthly_active_records_max: null,
@@ -135,7 +147,10 @@ export const enterprisePlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -158,6 +173,7 @@ export const starterLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'starter-legacy',
         sync_frequency_secs_min: 30,
+        connections_max: null,
         auto_idle: false,
         monthly_actions_max: null,
         monthly_active_records_max: null,
@@ -165,7 +181,10 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -183,6 +202,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'scale-legacy',
         sync_frequency_secs_min: 30,
+        connections_max: null,
         auto_idle: false,
         monthly_actions_max: null,
         monthly_active_records_max: null,
@@ -190,7 +210,10 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -208,6 +231,7 @@ export const growthLegacyPlan: PlanDefinition = {
         has_sync_variants: true,
         name: 'growth-legacy',
         sync_frequency_secs_min: 30,
+        connections_max: null,
         auto_idle: false,
         monthly_actions_max: null,
         monthly_active_records_max: null,
@@ -215,7 +239,10 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_end_at: null,
         trial_end_notified_at: null,
         trial_extension_count: 0,
-        trial_expired: null
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false
     }
 };
 

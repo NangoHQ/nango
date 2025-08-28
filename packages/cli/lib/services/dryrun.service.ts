@@ -235,13 +235,12 @@ export class DryRunService {
             printDebug(`Connection found with ${JSON.stringify(nangoConnection, null, 2)}`);
         }
 
-        const {
-            config: { provider }
-        } = await getConfig(providerConfigKey, debug);
-        if (!provider) {
-            console.log(chalk.red('Provider not found'));
+        const resConfig = await getConfig(providerConfigKey, debug);
+        if (!resConfig || !resConfig.data) {
             return;
         }
+
+        const { provider } = resConfig.data;
         if (debug) {
             printDebug(`Provider found: ${provider}`);
         }
@@ -358,6 +357,7 @@ export class DryRunService {
                 version: '0.0.1'
             };
             const nangoProps: NangoProps = {
+                isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,

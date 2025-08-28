@@ -30,14 +30,14 @@ export class EncryptionManager extends Encryption {
 
         const encryptedEnvironment: DBEnvironment = Object.assign({}, environment);
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(environment.secret_key);
+        const [encryptedClientSecret, iv, authTag] = this.encryptSync(environment.secret_key);
         encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
         encryptedEnvironment.secret_key = encryptedClientSecret;
         encryptedEnvironment.secret_key_iv = iv;
         encryptedEnvironment.secret_key_tag = authTag;
 
         if (encryptedEnvironment.pending_secret_key) {
-            const [encryptedPendingClientSecret, pendingIv, pendingAuthTag] = this.encrypt(encryptedEnvironment.pending_secret_key);
+            const [encryptedPendingClientSecret, pendingIv, pendingAuthTag] = this.encryptSync(encryptedEnvironment.pending_secret_key);
             encryptedEnvironment.pending_secret_key = encryptedPendingClientSecret;
             encryptedEnvironment.pending_secret_key_iv = pendingIv;
             encryptedEnvironment.pending_secret_key_tag = pendingAuthTag;
@@ -54,10 +54,10 @@ export class EncryptionManager extends Encryption {
 
         const decryptedEnvironment: TEnv = Object.assign({}, environment);
 
-        decryptedEnvironment.secret_key = this.decrypt(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
+        decryptedEnvironment.secret_key = this.decryptSync(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
 
         if (decryptedEnvironment.pending_secret_key) {
-            decryptedEnvironment.pending_secret_key = this.decrypt(
+            decryptedEnvironment.pending_secret_key = this.decryptSync(
                 environment.pending_secret_key as string,
                 environment.pending_secret_key_iv as string,
                 environment.pending_secret_key_tag as string
@@ -72,7 +72,7 @@ export class EncryptionManager extends Encryption {
             return connection as unknown as DBConnection;
         }
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
+        const [encryptedClientSecret, iv, authTag] = this.encryptSync(JSON.stringify(connection.credentials));
         const storedConnection: Omit<DBConnection, 'end_user_id'> = {
             ...connection,
             credentials: { encrypted_credentials: encryptedClientSecret },
@@ -86,7 +86,7 @@ export class EncryptionManager extends Encryption {
     public decryptConnection(connection: DBConnection | DBConnectionAsJSONRow): DBConnectionDecrypted {
         const credentials =
             connection.credentials['encrypted_credentials'] && connection.credentials_iv && connection.credentials_tag
-                ? JSON.parse(this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
+                ? JSON.parse(this.decryptSync(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
                 : connection.credentials;
         if (isConnectionJsonRow(connection)) {
             const parsed: DBConnectionDecrypted = {
@@ -117,7 +117,7 @@ export class EncryptionManager extends Encryption {
         const encryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
 
         for (const environmentVariable of encryptedEnvironmentVariables) {
-            const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
+            const [encryptedValue, iv, authTag] = this.encryptSync(environmentVariable.value);
             environmentVariable.value = encryptedValue;
             environmentVariable.value_iv = iv;
             environmentVariable.value_tag = authTag;
@@ -126,11 +126,7 @@ export class EncryptionManager extends Encryption {
         return encryptedEnvironmentVariables;
     }
 
-    public decryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[] | null): DBEnvironmentVariable[] | null {
-        if (environmentVariables === null) {
-            return environmentVariables;
-        }
-
+    public decryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[]): DBEnvironmentVariable[] {
         const decryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
 
         for (const environmentVariable of decryptedEnvironmentVariables) {
@@ -138,7 +134,7 @@ export class EncryptionManager extends Encryption {
                 continue;
             }
 
-            environmentVariable.value = this.decrypt(environmentVariable.value, environmentVariable.value_iv, environmentVariable.value_tag);
+            environmentVariable.value = this.decryptSync(environmentVariable.value, environmentVariable.value_iv, environmentVariable.value_tag);
         }
 
         return decryptedEnvironmentVariables;
@@ -155,13 +151,13 @@ export class EncryptionManager extends Encryption {
             return config;
         }
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
+        const [encryptedClientSecret, iv, authTag] = this.encryptSync(config.oauth_client_secret);
         encryptedConfig.oauth_client_secret = encryptedClientSecret;
         encryptedConfig.oauth_client_secret_iv = iv;
         encryptedConfig.oauth_client_secret_tag = authTag;
 
         if (config.custom) {
-            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(config.custom));
+            const [encryptedValue, iv, authTag] = this.encryptSync(JSON.stringify(config.custom));
             encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
 
@@ -176,11 +172,11 @@ export class EncryptionManager extends Encryption {
 
         const decryptedConfig: ProviderConfig = Object.assign({}, config);
 
-        decryptedConfig.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
+        decryptedConfig.oauth_client_secret = this.decryptSync(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
 
         if (decryptedConfig.custom && config.custom) {
             decryptedConfig.custom = JSON.parse(
-                this.decrypt(config.custom['encryptedValue'] as string, config.custom['iv'] as string, config.custom['authTag'] as string)
+                this.decryptSync(config.custom['encryptedValue'] as string, config.custom['iv'] as string, config.custom['authTag'] as string)
             );
         }
         return decryptedConfig;
@@ -292,7 +288,7 @@ export class EncryptionManager extends Encryption {
                 continue;
             }
 
-            const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
+            const [encryptedValue, iv, authTag] = this.encryptSync(environmentVariable.value);
             environmentVariable.value = encryptedValue;
             environmentVariable.value_iv = iv;
             environmentVariable.value_tag = authTag;

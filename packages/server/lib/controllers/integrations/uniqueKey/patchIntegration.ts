@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -125,6 +125,15 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         }
     }
 
+    // webhook secrets
+    if (body.credentials?.type === 'OAUTH2' && 'webhook_secret' in body.credentials) {
+        if (body.credentials.webhook_secret) {
+            integration.custom = integration.custom || {};
+            integration.custom['webhookSecret'] = body.credentials.webhook_secret;
+        } else {
+            delete integration.custom?.['webhookSecret'];
+        }
+    }
     const update = await configService.editProviderConfig(integration, provider);
     res.status(200).send({
         data: integrationToPublicApi({ integration: update, provider })

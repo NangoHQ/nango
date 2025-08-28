@@ -21,9 +21,9 @@ import { deleteOldData } from './crons/deleteOldData.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
-import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
+import { pubsub } from './pubsub.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
@@ -89,11 +89,15 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 getProviders();
 
 refreshConnectionsCron();
-exportUsageCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();
 void otlp.register(getOtlpRoutes);
+
+const pubsubConnect = await pubsub.connect();
+if (pubsubConnect.isErr()) {
+    logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
+}
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -119,6 +123,7 @@ const close = once(() => {
         otlp.stop();
         await destroyKvstore();
         await billing.shutdown();
+        await pubsub.disconnect();
 
         logger.close();
 

@@ -15,10 +15,11 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/types": "file:../types",
         "orb-billing": "5.0.0",
-        "uuidv7": "1.0.2"
+        "uuidv7": "1.0.2",
+        "stripe": "18.2.1"
     },
     "devDependencies": {
-        "vitest": "3.1.2"
+        "vitest": "3.2.4"
     },
     "files": [
         "dist/**/*"

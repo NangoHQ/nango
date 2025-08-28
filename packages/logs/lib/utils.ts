@@ -1,3 +1,5 @@
+import { errors } from '@elastic/elasticsearch';
+
 import { getLogger } from '@nangohq/utils';
 
 import { client } from './es/client.js';
@@ -20,3 +22,5 @@ export const logLevelToLogger = {
     verbose: 'debug',
     silly: 'debug'
 } as const;
+
+export const ResponseError = errors.ResponseError;

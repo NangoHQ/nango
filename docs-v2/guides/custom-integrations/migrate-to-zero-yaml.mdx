@@ -21,7 +21,7 @@ Here's a quick example of the new syntax:
 
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const issueSchema = z.object({
     id: z.string(),
@@ -180,7 +180,7 @@ integrations:
 **After** (self-contained fetchIssues.ts):
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const issueSchema = z.object({
     id: z.string(),
@@ -215,7 +215,7 @@ export default async function runAction(nango: NangoAction, input: CreateIssueIn
 **After** (self-contained):
 ```typescript
 import { createAction } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const inputSchema = z.object({
     title: z.string(),

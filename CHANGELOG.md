@@ -2,6 +2,323 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.0] - 2025-08-20
+
+### Added
+
+- *(integrations)* Add support for dayforce (#4448) by @hassan254-prog
+- Error message when 429s from nango API in scripts (#4499) by @TBonnin
+- *(api)* /connections endpoints (#4500) by @bodinsamuel
+
+### Fixed
+
+- *(invitation)* FoundUs is not required (#4507) by @bodinsamuel
+- *(billing)* Downgrading to free should not require a card (#4508) by @bodinsamuel
+- *(fleet)* Always idle node when finishing timeout (#4506) by @TBonnin
+
+## [v0.66.2] - 2025-08-20
+
+### Added
+
+- *(proxy)* Handle minutely rate limit (#4428) by @hassan254-prog
+- *(providers)* Provisioned apps endpoints (#4472) by @hassan254-prog
+- *(team-name)* Add email parsing for team name (#4490) by @khaliqgant
+- *(endUser)* Add free-form tagging (#4395) by @bodinsamuel
+- *(webhooks)* Add feature flags, revamp method signature (#4469) by @bodinsamuel
+- *(github-app)* Expose jwt token (#4493) by @khaliqgant
+- *(rate-limit)* Separate rate limit buckets for scripts and direct calls (#4496) by @TBonnin
+- *(integrations)* Add support for datto rmm password grant (#4501) by @hassan254-prog
+- *(UI-scopes)* Add copy button for scopes to be comma delimited (#4502) by @khaliqgant
+- Getting started table migration (#4487) by @kaposke
+- *(server)* New getting started backend (#4491) by @kaposke
+
+### Changed
+
+- Improve salesforce docs (#4481) by @hassan254-prog
+- Move usage export cron to metering (#4485) by @TBonnin
+- *(records)* Better index for track delete query (#4484) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/8a3df491283cec84eccc5f3bb92f2a779dc954c2 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/25923bbed10f9c8827be315cdc2e75370e586af6 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ac9ff8cd942e3440a4dbc38e4aefab467cd0e318 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- Move usage tracking to metering (#4471) by @TBonnin
+- Better index for scheduler scheduling query (#4492) by @TBonnin
+- *(ui)* Fix button text logic when creating integrations with provisioned apps (#4494) by @hassan254-prog
+- *(docs)* Fix symlinks for docs if the scripts are an alias (#4497) by @khaliqgant
+- *(docs)* Actually write docupdates (#4498) by @khaliqgant
+- Sync status after runner crash (#4495) by @TBonnin
+- *(zero)* Various feedback (#4503) by @bodinsamuel
+
+## [v0.66.1] - 2025-08-14
+
+### Added
+
+- *(integrations)* Add support for paycor (#4446) by @hassan254-prog
+- *(integrations)* Add support for heap (#4455) by @hassan254-prog
+- *(providers)* Few tweaks based on feedback (#4453) by @hassan254-prog
+- *(integrations)* Add jumpcloud integration (#4416) by @gonzalde97
+- *(integrations)* Add autotask psa (#4415) by @gonzalde97
+- *(logs)* Add success dimension to metric (#4452) by @TBonnin
+- *(integrations)* Add support for fairing (#4450) by @hassan254-prog
+- *(integrations)* Add support for yotpo (#4456) by @hassan254-prog
+- *(providers)* Add post connection script for snowflake (#4463) by @hassan254-prog
+- *(integrations)* Add support for datto rmm (#4459) by @gonzalde97
+- Add more context to the prompt authorization parameter for Microsoft (#4488) by @hassan254-prog
+- *(signup)* Add found us string to an account (#4475) by @khaliqgant
+
+### Changed
+
+- Add Google review guide (#4454) by @rguldener
+- Small Google review improvements (#4457) by @rguldener
+- Fix APIs nav (#4460) by @rguldener
+- *(deps)* Bump tmp from 0.2.3 to 0.2.4 (#4442) by @dependabot[bot]
+- Update version in manifest by @actions-user
+- Add common issues page (#4461) by @rguldener
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/13eb2c88fdc232afa09e3c29fef2a723eae73a3a by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/55dba247cc3809931e9a1278effc3b4fe4725c48 by Khaliq by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b0e2b01c8bb3b0eac2f39355de4098b381e8618b by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ebea1712324b0f473d7d0a1572227cafecf62e76 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6282a5fce11b072d9377fcf2e599eee4c2b37076 by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(billing)* Send the total connections count to Orb (#4458) by @TBonnin
+- Managed release logic (#4464) by @rossmcewan
+- *(cli)* Support multiple package managers (#4462) by @bodinsamuel
+- *(providers)* Fix autotask credentials verification (#4467) by @hassan254-prog
+- *(cli-generate-docs)* Handle optional props (#4465) by @khaliqgant
+- Lower records batch size (#4473) by @rossmcewan
+- *(records)* Poll min and max, statement timeout moved to env vars (#4476) by @rossmcewan
+- *(jwt)* Migrate zod body validation (#4474) by @hassan254-prog
+- *(integrations)* Loosen restrictions on jumpcloud api key pattern (#4470) by @gonzalde97
+- *(docs-for-zero-yaml)* Fix docs generation for zero yaml produced JSON file (#4477) by @khaliqgant
+- Update test with zero yaml template (#4482) by @bodinsamuel
+- *(server)* Allow other domains for webhook urls (#4480) by @kaposke
+- `can_override_docs_connect_url` true if not present (#4479) by @kaposke
+- *(zero)* Allow default export outside script files (#4466) by @bodinsamuel
+- *(server)* Testing setup for session auth (#4468) by @kaposke
+- *(integrations)* Use proper auth mode for jazzhr (#4486) by @hassan254-prog
+- *(zero)* Various feedback (#4489) by @bodinsamuel
+
+## [v0.66.0] - 2025-08-07
+
+### Added
+
+- Usage notification emails (#4413) by @kaposke
+- *(action-usage)* [nan-3644] log action size (#4422) by @khaliqgant
+- Actually send usage emails (#4421) by @kaposke
+- *(integrations)* Add support for sage people (#4423) by @hassan254-prog
+- Add metering app (#4424) by @TBonnin
+- *(db)* Connect_sessions overrides (#4426) by @kaposke
+- Ability to override docs_connect in connect_sessions (#4427) by @kaposke
+- Mar for usage should be aligned with billing (#4432) by @kaposke
+- Add info to sync records usage (#4433) by @kaposke
+- Add env var for server public routes body limit (#4436) by @TBonnin
+- *(providers)* Allow for pre-provisioning of providers credentials (#4380) by @hassan254-prog
+- *(cli)* Add zod nullable method to zeroyaml definitions (#4440) by @hassan254-prog
+- *(integrations)* Add support for generic api providers (#4438) by @hassan254-prog
+- Ingest billing events from metering (#4435) by @TBonnin
+
+### Changed
+
+- Use decryptAsync for decrypting records (#4410) by @TBonnin
+- Improve workday docs (#4412) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f11ccca90f9f483844885e7f0d0abff40d6231d3 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/921e3f573401afdb3ebf2202861207a993416b2f by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/91e2ce80a1b127b1d02a88b0fe0f8598aef6fb50 by Khaliq by @github-actions[bot]
+- Change to new API docs layout (#4429) by @hassan254-prog
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/86292a88b8375cc9a5bfe063c03c7fdd0210f5f8 by Hassan_Wari by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/01ba37b8e243586fa8b8f314617982972be86802 by Khaliq by @github-actions[bot]
+- Upgrade config + enable LLM integrations (#4437) by @rguldener
+
+### Fixed
+
+- *(integrations)* Fix ukg ready auth mode (#4414) by @hassan254-prog
+- *(deploy-version)* If a version is passed in, don't attempt to bump (#4425) by @khaliqgant
+- Activemq should be optional if not cloud/local (#4439) by @TBonnin
+- *(integrations)* Change hibob logo (#4444) by @hassan254-prog
+- *(tests)* Fix failing integration test (#4447) by @khaliqgant
+- *(cron.exportUsage)* Prevent concurrent executions (#4441) by @TBonnin
+- Activermq subscriptions don't persist across reconnect (#4445) by @TBonnin
+- Move ES index to warm storage after 48h (instead of 24) (#4449) by @TBonnin
+
+## [v0.65.0] - 2025-07-31
+
+### Added
+
+- *(orchestrator)* Add next execution date and task state to schedules (#4383) by @TBonnin
+- *(webapp)* Refresh usage on connection deleted (#4403) by @kaposke
+- *(providers)* Add example of workday username to use in docs (#4405) by @hassan254-prog
+- *(providers)* Add migrations for pre-provisioning provider credentials (#4389) by @hassan254-prog
+
+### Changed
+
+- Use last_scheduled_task_state/next_execution_at in scheduling query (#4398) by @TBonnin
+- Change to new API docs layout  (#4396) by @hassan254-prog
+- Change to new API docs layout (#4401) by @hassan254-prog
+- Remove Koala tracking (#4400) by @rguldener
+- TrackDeletes clarifications (#4382) by @mintlify[bot]
+
+### Fixed
+
+- Cap from getting connect session (#4390) by @kaposke
+- *(connect-ui)* Use custom integration display name (#4399) by @kaposke
+- *(server)* Don't cap a connection from finishing (#4404) by @kaposke
+- *(cli)* Fix global override (#4409) by @khaliqgant
+- Introduce asynchronous encrypt/decrypt functions (#4407) by @TBonnin
+- Use special render instances for runners (#4402) by @TBonnin
+- Improve cap messages (#4406) by @kaposke
+
+## [v0.64.4] - 2025-07-29
+
+### Added
+
+- Cap syncs based on active records (#4366) by @kaposke
+- *(webapp)* Show usage on sidebar for free plans (#4369) by @kaposke
+- *(integrations)* Add support for paycom (#4386) by @hassan254-prog
+- Cap max connections globally (with UI work) (#4381) by @kaposke
+- Track action and active records being capped in posthog (#4384) by @kaposke
+- Update trial messaging to Auto Idling (#4385) by @kaposke
+- *(es)* Add warm tier (#4387) by @bodinsamuel
+
+### Changed
+
+- Change to new API docs layout (#4364) by @hassan254-prog
+- *(ashby)* Change to new API docs layout (#4392) by @hassan254-prog
+
+### Fixed
+
+- *(logs)* Split operations and messages index (#4371) by @bodinsamuel
+- *(deps)* Upgrade axios to 1.11.0 (#4379) by @bodinsamuel
+- *(two_step)* Migrate zod body validation (#4388) by @hassan254-prog
+- *(api)* Rollback /config/uniqueKey (#4391) by @bodinsamuel
+- *(es)* Change warm tier settings (#4394) by @bodinsamuel
+- Upgrade dependencies (#4393) by @bodinsamuel
+
+## [v0.64.3] - 2025-07-25
+
+### Added
+
+- Cap action usage (#4350) by @kaposke
+- *(integrations)* Add support for setmore (#4337) by @hassan254-prog
+- *(refresh)* Implement refresh logic for GitHub OAuth app user credentials (#4341) by @hassan254-prog
+- *(plans)* Add webhooks flags (#4374) by @bodinsamuel
+
+### Changed
+
+- Add deletion detection guide for syncs (#4367) by @rguldener
+- Update Salesforce documentation for recent transition from Connected Apps to External Client Apps (#4300) by @hassan254-prog
+- Track delete callout clarification (#4375) by @mintlify[bot]
+- *(docs)* Update webhooks-from-nango.mdx to describe working with `modifiedAfter` (#4165) by @CharlieDigital
+
+### Fixed
+
+- Allow orchestrator db to support ssl (#4365) by @rossmcewan
+- *(webapp)* Ignore sync input in snippets (#4361) by @kaposke
+- *(runner)* Untrack usage when aborting (#4362) by @bodinsamuel
+- Allow SSL for records database (#4370) by @rossmcewan
+- Temporarily add model_schema back to /scripts/config (#4373) by @kaposke
+- *(github-app-oauth)* Clean up docs and clarify (#4372) by @khaliqgant
+- *(logs)* Fine tune http sampling (#4368) by @bodinsamuel
+- *(refresh)* Fix github app refresh (#4377) by @hassan254-prog
+- *(sync)* Disallow incremental and trackDeletes (#4376) by @bodinsamuel
+- *(script)* Support array of objects in exports (#4378) by @bodinsamuel
+
+## [v0.64.2] - 2025-07-23
+
+### Added
+
+- *(post-connection-script)* Add mailchimp post connection script to get dc connection config value (#4348) by @hassan254-prog
+- *(webhook > metric)* Add breakdown per customer (#4355) by @bodinsamuel
+- *(gmail-webhook)* Add gmail webhook routing script with validation (#4347) by @khaliqgant
+- *(usage)* Create usage tracker (#4345) by @kaposke
+- *(integrations)* Add support for knowbe4 (#4363) by @hassan254-prog
+- *(integrations)* Add support for azure blob storage (#4358) by @hassan254-prog
+
+### Changed
+
+- *(deps)* Bump form-data from 4.0.0 to 4.0.4 in /packages/shared (#4353) by @dependabot[bot]
+- Remove service (#4322) by @mintlify[bot]
+
+### Fixed
+
+- *(plans)* Update flags (#4354) by @bodinsamuel
+- Upgrade node to 22.17.1 (#4356) by @bodinsamuel
+- *(deps)* Upgrade various (#4357) by @bodinsamuel
+- *(cli)* Correctly support optional in zod->json (#4359) by @bodinsamuel
+- *(sdk)* Sample successful http logs (#4360) by @bodinsamuel
+
+## [v0.64.1] - 2025-07-21
+
+### Added
+
+- Usage table migration (#4342) by @kaposke
+- Add more docs for zero yaml config (#4331) by @bodinsamuel
+
+### Changed
+
+- Specify the tenant type users should select when registering an Azure app (#4349) by @hassan254-prog
+
+### Fixed
+
+- *(api)* Remove deprecated /flow routes (#4307) by @bodinsamuel
+- *(api)* Remove deprecated endpoints  (#4319) by @bodinsamuel
+- *(billing)* Feedback (#4346) by @bodinsamuel
+- *(cli)* Replace depreciated endpoint (#4351) by @hassan254-prog
+- *(cli)* Correctly fix deprecated endpoint, remove leftover docs (#4352) by @bodinsamuel
+
+## [v0.64.0] - 2025-07-21
+
+### Added
+
+- *(integrations)* Add support for google chat (#4343) by @hassan254-prog
+
+### Fixed
+
+- *(billing)* Correctly compute initial base fee (#4340) by @bodinsamuel
+- *(proxy)* Retry only on specific error codes for some providers (#4305) by @hassan254-prog
+- Upgrade to zod v4 (#4328) by @bodinsamuel
+
+## [v0.63.1] - 2025-07-18
+
+### Added
+
+- *(pubsub)* Add pubsub package (#4313) by @TBonnin
+- *(webhooks)* Add support for attio webhooks (#4312) by @hassan254-prog
+- Replace NangoModel with json schema (#4177) by @kaposke
+- *(integrations)* Add support for google cloud storage (#4324) by @hassan254-prog
+- Add detailed usage button in billing (#4321) by @kaposke
+- Remove connection_with_scripts_max cap (#4329) by @kaposke
+- *(jobs)* Network policies for kubernetes runners (#4330) by @rossmcewan
+- Create new free-plan caps (#4334) by @kaposke
+- *(kvstore)* Add incr methods  (#4336) by @bodinsamuel
+- *(billing)* Self serve (#4220) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/11febd739d4d2d839cf8c3b31dbb1d7b2a00fda1 by Khaliq by @github-actions[bot]
+- *(orch)* Clean schedules and tasks older than 5 days (#4318) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9ee5e21f8497e8b3c72441353d6d38f3040787da by Khaliq by @github-actions[bot]
+- New API docs pages (#4316) by @hassan254-prog
+- *(deps)* Bump multer from 2.0.1 to 2.0.2 in /packages/server (#4338) by @dependabot[bot]
+- *(plans)* Update growth default flags (#4335) by @bodinsamuel
+
+### Fixed
+
+- *(billing)* Do not backfill sub for non-free plan (#4317) by @bodinsamuel
+- Migration to fix json schema in public flows (#4268) by @kaposke
+- *(github-app)* Handle update without auth code (#4320) by @khaliqgant
+- *(providers)* Move Figma SCIM tenantId from endpoint to base URL for proper SCIM API calls (#4277) by @yksolanki9
+- *(runner)* Prevent parallel run and zombie tasks (#4325) by @bodinsamuel
+- Heartbeat ms -> sec, set last_heartbeat_at on started (#4326) by @bodinsamuel
+- *(runner)* Allow webhooks and syncs to run in parallel (#4327) by @bodinsamuel
+- *(orb)* Do not override flags if same plan (#4332) by @bodinsamuel
+- *(zero)* Correctly support on-event execution (#4333) by @bodinsamuel
+- *(types)* Do not leak deprecate state for providerConfigKey (#4339) by @bodinsamuel
+
 ## [v0.63.0] - 2025-07-11
 
 ### Added
@@ -4341,6 +4658,17 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0
+[v0.66.2]: https://github.com/NangoHQ/nango/compare/v0.66.1..v0.66.2
+[v0.66.1]: https://github.com/NangoHQ/nango/compare/v0.66.0..v0.66.1
+[v0.66.0]: https://github.com/NangoHQ/nango/compare/v0.65.0..v0.66.0
+[v0.65.0]: https://github.com/NangoHQ/nango/compare/v0.64.4..v0.65.0
+[v0.64.4]: https://github.com/NangoHQ/nango/compare/v0.64.3..v0.64.4
+[v0.64.3]: https://github.com/NangoHQ/nango/compare/v0.64.2..v0.64.3
+[v0.64.2]: https://github.com/NangoHQ/nango/compare/v0.64.1..v0.64.2
+[v0.64.1]: https://github.com/NangoHQ/nango/compare/v0.64.0..v0.64.1
+[v0.64.0]: https://github.com/NangoHQ/nango/compare/v0.63.1..v0.64.0
+[v0.63.1]: https://github.com/NangoHQ/nango/compare/v0.63.0..v0.63.1
 [v0.63.0]: https://github.com/NangoHQ/nango/compare/v0.62.1..v0.63.0
 [v0.62.1]: https://github.com/NangoHQ/nango/compare/v0.62.0..v0.62.1
 [v0.62.0]: https://github.com/NangoHQ/nango/compare/v0.61.3..v0.62.0

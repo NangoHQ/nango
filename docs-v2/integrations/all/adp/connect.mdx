@@ -9,7 +9,7 @@ To authenticate with ADP, you need:
 1. **Client ID** - A unique identifier for your client.
 2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
 3. **Client Public Certificate** - The public certificate (in PEM format) used for Mutual TLS (mTLS) authentication.
-4. **Client Private Key** - The private key (in PEM format) associated with the client certificate, used for stablishing a secure TLS connection. 
+4. **Client Private Key** - The private key (in PEM format) associated with the client certificate, used for establishing a secure TLS connection. 
 
 This guide will walk you through obtaining these credentials within ADP.
 
@@ -79,7 +79,7 @@ When prompted:
 
 This generates `companyname_auth.csr`, which you'll submit to ADP.
 
-5. Next you will need to submit the CSR to ADP. Open the **[ADP Certificate Signing Tool](https://developers.adp.com)** (no login required)
+5. Next you will need to submit the CSR to ADP. Open the **[ADP Certificate Signing Tool](https://cert-manager.com/customer/adp/device/adpwebservices/login)** (no login required)
 6. Select **"Authentication and Transaction Signing"** for the certificate type
 7. Paste the full contents of your `.csr` file, including the header and footer:
 

@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`generateModelsTs > should generate models.ts 1`] = `
-"import { z } from "zod";
+"import * as z from "zod";
 
 export const Model = z.object({
   id: z.string(),
@@ -23,7 +23,12 @@ export const Model = z.object({
     nes: z.literal("ted")
   }),
 
-  dynamicObj: z.object({}).catchall(z.literal("date")),
+  dynamicObj: z.record(z.string(), z.literal("date")),
+
+  dynamicObjWithProps: z.object({
+    bool: z.boolean()
+  }).catchall(z.string()),
+
   union2: z.union([Model, Model.array()]),
   dateOrNull: z.date().optional()
 });
@@ -142,7 +147,7 @@ exports[`transformSync > should transform a sync (different values) 1`] = `
 "import { createSync } from "nango";
 import type { ProxyConfiguration } from "nango";
 import { Model } from "../../models.js";
-import { z } from "zod";
+import * as z from "zod";
 
 interface Config extends ProxyConfiguration {
   params: Record<string, string | number>;

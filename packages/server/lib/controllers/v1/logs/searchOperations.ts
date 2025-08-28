@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
-import { envs, model } from '@nangohq/logs';
+import { envs, modelMessages, modelOperations } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -78,7 +78,7 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
 
-    const rawOps = await model.listOperations({
+    const rawOps = await modelOperations.listOperations({
         accountId: env.account_id,
         environmentId: env.id,
         limit: body.limit!,
@@ -91,7 +91,7 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         cursor: body.cursor
     });
     if (body.search && rawOps.items.length > 0) {
-        const bucket = await model.searchForMessagesInsideOperations({ search: body.search, operationsIds: rawOps.items.map((op) => op.id) });
+        const bucket = await modelMessages.searchForMessagesInsideOperations({ search: body.search, operationsIds: rawOps.items.map((op) => op.id) });
         const matched = new Set(bucket.items.map((item) => item.key));
         rawOps.items = rawOps.items.filter((item) => matched.has(item.id));
     }

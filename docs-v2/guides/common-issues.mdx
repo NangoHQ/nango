@@ -1,0 +1,96 @@
+---
+title: 'Common issues'
+sidebarTitle: 'Common issues'
+description: 'Troubleshooting guide for frequent errors and how to fix them.'
+---
+
+## Token refresh error from the external API
+
+Indications of the error:
+
+- Nango logs may show:
+
+```json
+{
+  "error": {
+    "message": "An error occurred during an HTTP call",
+    "payload": {
+      "error": {
+        "code": "invalid_credentials",
+        "payload": { [...] },
+        "message": "The refresh limit has been reached for this connection."
+      }
+    }
+  }
+}
+```
+
+- Or in `Token refresh` log operations:
+
+```json
+{
+  "payload": {
+    "dataMessage": {
+      "error_description": "Token has been expired or revoked.",
+      "error": "invalid_grant"
+    }
+  },
+  "type": "refresh_token_external_error",
+  "status": 400
+}
+```
+
+<Note>
+The `error` and `error_description` fields may differ by API, but typically include `invalid_grant` and mention the token being expired or revoked.
+</Note>
+
+### How to debug
+
+- This error means the external API (e.g., Google, Salesforce) rejected the refresh token as expired or revoked. Nango retries several times, but if the error persists, the credentials are considered permanently broken.
+- The only solution is to ask the user to re-authenticate. See: [How to trigger a re-authentication flow in Nango](https://docs.nango.dev/guides/authorize-in-your-app-default-ui#how-to-trigger-a-re-authentication-flow)
+- We recommend enabling [Nango's revoked token webhooks](https://docs.nango.dev/guides/webhooks/webhooks-from-nango#auth-webhooks) for real-time notifications.
+
+Revoked refresh tokens are a normal part of integrations. Ensure your app provides a good re-auth experience for users.
+
+APIs may revoke tokens for unpredictable reasons. Only investigate if you observe an unusual increase of connection revocations for an API. Achieving a 0% revocation rate is not realistic.
+
+Known API-specific behaviors:
+- Google: All tokens are revoked after 7 days if your OAuth app is in test mode ([detailed guide](https://www.nango.dev/blog/google-oauth-invalid-grant-token-has-been-expired-or-revoked)). To go to production, read our [guide for Google's OAuth app review](https://docs.nango.dev/guides/google-security-review).
+- Salesforce: See [Salesforce refresh token issues](https://www.nango.dev/blog/salesforce-refresh-token-invalid-grant).
+
+
+## Connection not found (unknown_connection / 404)
+
+Indications of the error:
+
+- Request failed with status code `404`
+- code `unknown_connection`
+- error message: "No connection matching the provided params of 'connection_id' and 'provider_config_key'"
+
+```json
+{
+  "error": {
+    "message": "Request failed with status code 404",
+    "data": {
+      "error": {
+        "message": "No connection matching the provided params of 'connection_id' and 'provider_config_key'.Please make sure these values exist in the Nango dashboard [...]",
+        "code": "unknown_connection"
+      }
+    }
+  }
+}
+```
+
+### How to debug
+
+1. Confirm the environment and secret key
+   - The `secretKey` in the API or SDK is specific to the environment. Make sure you pass the key that corresponds to the environment you are using (e.g., dev vs prod).
+   - Open [Environment Settings](https://app.nango.dev/dev/environment-settings) and verify the key matches.
+
+2. Verify the Integration ID (aka `providerConfigKey`)
+   - Go to [Integrations](https://app.nango.dev/dev/integrations), open the integration, and copy the `Integration ID` exactly.
+   - Ensure the value you send as `providerConfigKey` matches this ID.
+
+3. Verify the Connection ID
+   - Go to [Connections](https://app.nango.dev/dev/connections), find the connection, and copy its `Connection ID`.
+   - Ensure the value you send as `connectionId` (header `Connection-Id` when using HTTP, or `connectionId` in the SDK) matches exactly.

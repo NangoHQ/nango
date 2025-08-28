@@ -13,11 +13,12 @@ import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
+import type { OAuth2Credentials } from '@nangohq/shared';
 import type {
     ApiKeyCredentials,
     BasicApiCredentials,
     ConnectionConfig,
+    ConnectionUpsertResponse,
     OAuth1Credentials,
     OAuth2ClientCredentials,
     ProviderGithubApp,
@@ -92,6 +93,9 @@ class ConnectionController {
         }
     }
 
+    /**
+     * @deprecated
+     */
     async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
@@ -123,6 +127,9 @@ class ConnectionController {
         }
     }
 
+    /**
+     * @deprecated
+     */
     async updateMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];
@@ -175,8 +182,6 @@ class ConnectionController {
 
             if (plan) {
                 const isCapped = await connectionCreationStartCapCheckHook({
-                    providerConfigKey: provider_config_key,
-                    environmentId: environment.id,
                     creationType: 'import',
                     team: account,
                     plan
@@ -185,10 +190,7 @@ class ConnectionController {
                     res.status(400).send({
                         error: {
                             code: 'resource_capped',
-                            message:
-                                isCapped.code === 'max'
-                                    ? 'Reached maximum number of allowed connections for your plan'
-                                    : 'Reached maximum number of connections with scripts enabled'
+                            message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
                         }
                     });
                     return;
@@ -236,7 +238,7 @@ class ConnectionController {
                     expires_at: expires_at || parsedExpiresAt,
                     raw: req.body.raw || req.body
                 };
-                const connectionConfig: ConnectionConfig = { ...connection_config };
+                const connectionConfig: Record<string, any> = { ...connection_config };
 
                 if (req.body['oauth_client_id_override']) {
                     oAuthCredentials.config_override = {
@@ -312,7 +314,7 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                const connectionConfig: ConnectionConfig = { ...connection_config };
+                const connectionConfig: Record<string, any> = { ...connection_config };
 
                 if (connectionConfig['oauth_scopes_override']) {
                     const scopesOverride = connectionConfig['oauth_scopes_override'];
@@ -429,7 +431,6 @@ class ConnectionController {
                 const [imported] = await connectionService.importApiAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
                     credentials,
@@ -472,7 +473,6 @@ class ConnectionController {
                 const [imported] = await connectionService.importApiAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
@@ -542,11 +542,11 @@ class ConnectionController {
                 };
 
                 if ('oauth_client_id_override' in req.body) {
-                    tbaCredentials.config_override['client_id'] = req.body['oauth_client_id_override'];
+                    tbaCredentials.config_override!.client_id = req.body['oauth_client_id_override'];
                 }
 
                 if ('oauth_client_secret_override' in req.body) {
-                    tbaCredentials.config_override['client_secret'] = req.body['oauth_client_secret_override'];
+                    tbaCredentials.config_override!.client_secret = req.body['oauth_client_secret_override'];
                 }
 
                 const config = await configService.getProviderConfig(provider_config_key, environment.id);

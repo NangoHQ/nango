@@ -1,4 +1,4 @@
-import { environmentService, getOnboarding } from '@nangohq/shared';
+import { environmentService } from '@nangohq/shared';
 import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -15,7 +15,6 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
     const sessionUser = res.locals.user;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
-    const onboarding = await getOnboarding(sessionUser.id);
     res.status(200).send({
         data: {
             environments: environments.map((env) => {
@@ -24,7 +23,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            onboardingComplete: onboarding?.complete || false
+            gettingStartedClosed: sessionUser.getting_started_closed
         }
     });
 });

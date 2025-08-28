@@ -102,13 +102,16 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Req
 
 function getKey(req: Request, res: Response<any, RequestLocals>): string {
     if ('account' in res.locals) {
-        // We have one for the secret key usage (customers or syncs) and one for the rest (dashboard, public key, session token)
-        // To avoid syncs bringing down dashboard and reverse
-        return `account-${res.locals.authType === 'secretKey' ? 'secret' : 'global'}-${res.locals['account'].id}`;
+        let key = `account-${res.locals.authType === 'secretKey' ? 'secret' : 'global'}-${res.locals['account'].id}`;
+        // customers requests and requests from scripts fall into different buckets
+        if (req.get('Nango-Is-Script') === 'true') {
+            key += `-script`;
+        }
+        return key;
     } else if (req.user) {
         return `user-${req.user.id}`;
     }
-    return `ip-${req.ip}`;
+    return `ip-${req.ip}`; // Fallback to IP address for unauthenticated requests
 }
 
 const specialPaths = ['/api/v1/account'];

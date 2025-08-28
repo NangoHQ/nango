@@ -20,18 +20,18 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
     return (
         <div
             className={cn(
-                'relative flex items-center bg-transparent w-full rounded border text-sm h-10 overflow-hidden focus-within:ring-ring focus-within:ring-1'
+                'relative flex items-center bg-transparent w-full rounded border text-sm h-10 overflow-hidden focus-within:ring-foreground focus-within:ring-1'
             )}
             onClick={() => {
                 ref.current?.focus();
             }}
         >
-            {prefix && <div className="h-10 px-2 pr-0.5 leading-10 text-dark-400">{prefix}</div>}
+            {prefix && <div className="h-10 px-2 pr-0.5 leading-10 text-text-muted">{prefix}</div>}
             <input
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-light-gray disabled:cursor-not-allowed',
-                    'text-sm px-3 py-[10px] placeholder-gray-400',
+                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-muted/10 disabled:cursor-not-allowed',
+                    'text-sm px-3 py-[10px] text-text-primary placeholder-text-muted/50',
                     (fluid || suffix) && 'grow-0 [field-sizing:content] w-auto',
                     prefix && 'pl-0.5',
                     suffix && 'pr-0.5',
@@ -40,7 +40,7 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 type={type}
                 {...props}
             />
-            {suffix && <div className="h-10 px-2 pl-0.5 leading-10 text-dark-400">{suffix}</div>}
+            {suffix && <div className="h-10 px-2 pl-0.5 leading-10 text-text-muted">{suffix}</div>}
         </div>
     );
 });

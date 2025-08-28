@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { pbkdf2, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -32,7 +32,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    const { password, token } = req.body;
+    const { password, token } = val.data;
 
     const user = await userService.getUserByResetPasswordToken(token);
     if (!user) {

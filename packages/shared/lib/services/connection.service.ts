@@ -14,7 +14,12 @@ import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -38,7 +43,6 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     BasicApiCredentials,
-    ConnectionUpsertResponse,
     OAuth2ClientCredentials,
     OAuth2Credentials
 } from '../models/Auth.js';
@@ -51,8 +55,10 @@ import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type {
     AuthModeType,
     BillCredentials,
+    CombinedOauth2AppCredentials,
     ConnectionConfig,
     ConnectionInternal,
+    ConnectionUpsertResponse,
     DBConnection,
     DBConnectionAsJSONRow,
     DBConnectionDecrypted,
@@ -65,6 +71,7 @@ import type {
     Provider,
     ProviderAppleAppStore,
     ProviderBill,
+    ProviderCustom,
     ProviderGithubApp,
     ProviderJwt,
     ProviderOAuth2,
@@ -326,7 +333,6 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
@@ -841,7 +847,7 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep): AuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -925,12 +931,11 @@ class ConnectionService {
                 }
 
                 const tokenPath = template.token_response.token;
-                const expirationPath = template.token_response.token_expiration;
-                const expirationStrategy = template.token_response.token_expiration_strategy;
+                const expirationPath = template.token_response?.token_expiration;
+                const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
-                const token = extractValueByPath(rawCreds, tokenPath);
-                const expiration = extractValueByPath(rawCreds, expirationPath);
-
+                const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -984,10 +989,13 @@ class ConnectionService {
             return Err(create.error);
         }
 
+        const { jwtToken, ...parsedRawCredentials } = create.value;
+        connectionConfig['jwtToken'] = jwtToken;
+
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials: create.value,
+            parsedRawCredentials,
             connectionConfig,
             environmentId: integration.environment_id
         });
@@ -998,6 +1006,66 @@ class ConnectionService {
 
         void logCtx.info('App connection was approved and credentials were saved');
         return Ok(updatedConnection);
+    }
+
+    public async refreshGithubAppCredentials(
+        provider: Provider,
+        config: ProviderConfig,
+        connection: DBConnectionDecrypted,
+        logCtx: LogContextStateless
+    ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
+        if (provider.auth_mode === 'APP') {
+            const appResult = await githubAppClient.createCredentials({
+                connection,
+                integration: config,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            });
+
+            if (appResult.isErr()) {
+                return Err(appResult.error);
+            }
+
+            return Ok(appResult.value);
+        }
+
+        const [userResult, appResult] = await Promise.all([
+            getFreshOAuth2Credentials({
+                connection,
+                config,
+                provider: provider as ProviderOAuth2,
+                logCtx
+            }),
+            githubAppClient.createCredentials({
+                connection,
+                integration: config,
+                provider: provider as ProviderGithubApp,
+                connectionConfig: connection.connection_config
+            })
+        ]);
+
+        if (appResult.isErr()) {
+            return Err(new NangoError('github_app_token_fetch_error'));
+        }
+
+        if (!userResult.success || !userResult.response) {
+            const credentials: CombinedOauth2AppCredentials = {
+                type: 'CUSTOM',
+                user: null,
+                app: appResult.value,
+                raw: appResult.value
+            };
+            return Ok(credentials);
+        }
+
+        const credentials: CombinedOauth2AppCredentials = {
+            type: 'CUSTOM',
+            user: userResult.response,
+            app: appResult.value,
+            raw: appResult.value
+        };
+
+        return Ok(credentials);
     }
 
     public async getOauthClientCredentials({
@@ -1112,7 +1180,9 @@ class ConnectionService {
         connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
+        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
+        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
+        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
@@ -1290,6 +1360,7 @@ class ConnectionService {
             | BillCredentials
             | TwoStepCredentials
             | SignatureCredentials
+            | CombinedOauth2AppCredentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1346,11 +1417,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await githubAppClient.createCredentials({
-                integration: providerConfig,
-                provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
-            });
+            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }
@@ -1406,6 +1473,20 @@ class ConnectionService {
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
+    }
+
+    async countByAccountId(accountId: number): Promise<number> {
+        const res = await db.knex
+            .from('_nango_connections')
+            .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where('_nango_accounts.id', accountId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_environments.deleted', false)
+            .count<{ count: string }>('*')
+            .first();
+
+        return Number(res?.count || 0);
     }
 
     // return the number of connections per account

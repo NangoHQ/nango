@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { zodToNangoModelField } from './zodToNango.js';
 
@@ -11,6 +11,7 @@ describe('zodToNango', () => {
                 'test',
                 z.object({
                     foo: z.literal('bar'),
+                    literalArray: z.literal(['bar', 'baz']),
                     num: z.number(),
                     bool: z.boolean(),
                     null: z.null(),
@@ -21,11 +22,15 @@ describe('zodToNango', () => {
                     any: z.any(),
                     reco: z.record(z.string(), z.date()),
                     opt: z.any().optional(),
+                    nullable: z.string().nullable(),
+                    nullish: z.string().nullish(),
                     ref: ref,
                     void: z.void(),
                     never: z.never(),
-                    date: z.date()
-                    // Not supported
+                    date: z.date(),
+                    emptyObject: z.object({})
+                    // Not supported on purpose
+                    // undefined: z.undefined()
                     // lazy: z.lazy(() => ref)
                 })
             )
@@ -34,6 +39,15 @@ describe('zodToNango', () => {
             optional: false,
             value: [
                 { name: 'foo', optional: false, value: 'bar' },
+                {
+                    name: 'literalArray',
+                    optional: false,
+                    union: true,
+                    value: [
+                        { name: '0', value: 'bar' },
+                        { name: '1', value: 'baz' }
+                    ]
+                },
                 { name: 'num', optional: false, tsType: true, value: 'number' },
                 { name: 'bool', optional: false, tsType: true, value: 'boolean' },
                 { name: 'null', optional: false, tsType: true, value: null },
@@ -69,14 +83,34 @@ describe('zodToNango', () => {
                     value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'Date' }]
                 },
                 { name: 'opt', optional: true, tsType: true, value: 'any' },
+                { name: 'nullable', optional: true, tsType: true, value: 'string' },
+                { name: 'nullish', optional: true, tsType: true, value: 'string' },
                 {
                     name: 'ref',
                     optional: false,
                     value: [{ name: 'id', optional: false, tsType: true, value: 'string' }]
                 },
-                { name: 'void', optional: true, tsType: true, value: 'void' },
+                { name: 'void', tsType: true, value: 'void' },
                 { name: 'never', optional: false, tsType: true, value: 'never' },
-                { name: 'date', optional: false, tsType: true, value: 'Date' }
+                { name: 'date', optional: false, tsType: true, value: 'Date' },
+                { name: 'emptyObject', optional: false, value: [] }
+            ]
+        });
+    });
+
+    it('should support nested objects', () => {
+        const ref = z.object({ id: z.string() });
+        expect(zodToNangoModelField('test', z.object({ foo: ref, arr: z.array(ref) }))).toStrictEqual({
+            name: 'test',
+            optional: false,
+            value: [
+                { name: 'foo', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] },
+                {
+                    array: true,
+                    name: 'arr',
+                    optional: false,
+                    value: [{ name: '0', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] }]
+                }
             ]
         });
     });

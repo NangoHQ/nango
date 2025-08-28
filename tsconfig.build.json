@@ -81,6 +81,15 @@
         },
         {
             "path": "packages/types"
+        },
+        {
+            "path": "packages/account-usage"
+        },
+        {
+            "path": "packages/email"
+        },
+        {
+            "path": "packages/metering"
         }
     ]
 }

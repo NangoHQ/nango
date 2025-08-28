@@ -57,13 +57,13 @@ export async function createCredentials({
             return Err(create.error);
         }
 
-        const rawCredentials = create.value;
+        const { tokenResponse } = create.value;
         const credentials: AppStoreCredentials = {
             type: 'APP_STORE',
-            access_token: rawCredentials.token!,
+            access_token: tokenResponse.token!,
             private_key: Buffer.from(private_key).toString('base64'),
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
+            expires_at: tokenResponse.expires_at,
+            raw: tokenResponse
         };
 
         return Ok(credentials);

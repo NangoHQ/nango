@@ -34,7 +34,7 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import type { SafeParseSuccess, ZodSchema, z } from 'zod';
+import type * as z from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
@@ -59,7 +59,9 @@ export abstract class NangoActionBase<
     abortSignal?: NangoProps['abortSignal'];
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
+    scriptType: NangoProps['scriptType'];
 
+    public isCLI: NangoProps['isCLI'];
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -75,6 +77,8 @@ export abstract class NangoActionBase<
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
+        this.scriptType = config.scriptType;
+        this.isCLI = config.isCLI;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -222,16 +226,16 @@ export abstract class NangoActionBase<
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as any);
+            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as Record<string, unknown>);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }
     }
 
-    public async updateMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<UpdateMetadata['Success']>> {
+    public async updateMetadata(metadata: Partial<TMetadataInferred>): Promise<AxiosResponse<UpdateMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata as any);
+            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }
@@ -338,10 +342,10 @@ export abstract class NangoActionBase<
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
     }
 
-    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>> {
+    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: z.ZodType<Z>; input: T }): Promise<z.ZodSafeParseSuccess<Z>> {
         const parsedInput = zodSchema.safeParse(input);
         if (!parsedInput.success) {
-            for (const error of parsedInput.error.errors) {
+            for (const error of parsedInput.error.issues) {
                 await this.log(`Invalid input provided: ${error.message} at path ${error.path.join('.')}`, { level: 'error' });
             }
             throw new this.ActionError({

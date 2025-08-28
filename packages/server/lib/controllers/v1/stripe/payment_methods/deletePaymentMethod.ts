@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
+import { getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { updatePlan } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { DeleteStripePayment } from '@nangohq/types';
 

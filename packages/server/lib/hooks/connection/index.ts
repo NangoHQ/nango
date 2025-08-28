@@ -25,3 +25,5 @@ export { default as apolloCredentialsVerification } from './providers/apollo/cre
 export { default as sentryOauthPostConnection } from './providers/sentry-oauth/post-connection.js';
 export { default as linearPreConnectionDeletion } from './providers/linear/pre-connection-deletion.js';
 export { default as attioPostConnection } from './providers/attio/post-connection.js';
+export { default as mailchimpPostConnection } from './providers/mailchimp/post-connection.js';
+export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';

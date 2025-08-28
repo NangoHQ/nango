@@ -241,6 +241,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
+            case 'no_user_credentials':
+                this.status = 400;
+                this.message = `No user credentials found for GitHub (App OAuth)`;
+                break;
+
             case 'invalid_limit':
                 this.status = 400;
                 this.message = 'Invalid limit provided. The limit should be a number.';
@@ -472,6 +477,11 @@ export class NangoError extends NangoInternalError {
             case 'script_http_error':
                 this.status = 424;
                 this.message = `An error occurred during an HTTP call`;
+                break;
+
+            case 'script_api_rate_limit_error':
+                this.status = 424;
+                this.message = `Script API rate limit exceeded. Your Nango scripts made too many calls to the Nango API within the allowed window. Mitigation: reduce how often scripts run (e.g. lower sync frequency, fewer actions). Need higher limits? Contact Nango support.`;
                 break;
 
             case 'script_internal_error':

@@ -6,6 +6,7 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
+import { envs } from '../env.js';
 import { deepMergeRecordData } from '../helpers/merge.js';
 import { getUniqueId, removeDuplicateKey } from '../helpers/uniqueKey.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
@@ -27,7 +28,7 @@ import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
 interface UpsertResult {
     external_id: string;
@@ -223,9 +224,12 @@ export async function getRecords({
             return Ok({ records: [], next_cursor: null });
         }
 
-        const results = rawResults.map((item) => {
-            const decryptedData = decryptRecordData(item);
-            return {
+        const results: ReturnedRecord[] = [];
+
+        // TODO: decrypt in batch
+        for (const item of rawResults) {
+            const decryptedData = await decryptRecordData(item);
+            results.push({
                 ...decryptedData,
                 _nango_metadata: {
                     first_seen_at: item.first_seen_at,
@@ -234,8 +238,8 @@ export async function getRecords({
                     deleted_at: item.deleted_at,
                     cursor: Cursor.new(item)
                 }
-            } as ReturnedRecord;
-        });
+            });
+        }
 
         if (results.length > Number(limit || 100)) {
             results.pop();
@@ -533,7 +537,7 @@ export async function update({
 
                 const recordsToUpdate: FormattedRecord[] = [];
                 for (const oldRecord of oldRecords) {
-                    const oldRecordData = decryptRecordData(oldRecord);
+                    const oldRecordData = await decryptRecordData(oldRecord);
 
                     const inputRecord = chunk.find((record) => record.external_id === oldRecord.external_id);
                     if (!inputRecord) {
@@ -541,7 +545,7 @@ export async function update({
                     }
 
                     const { json, ...newRecordRest } = inputRecord;
-                    const newRecordData = decryptRecordData(inputRecord);
+                    const newRecordData = await decryptRecordData(inputRecord);
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,

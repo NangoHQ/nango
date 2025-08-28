@@ -64,3 +64,25 @@ export type PutPublicSyncConnectionFrequency = Endpoint<{
     Success: { frequency: string };
     Error: ApiError<'unknown_connection' | 'unknown_sync'>;
 }>;
+
+export type PostPublicSyncPause = Endpoint<{
+    Method: 'POST';
+    Path: '/sync/pause';
+    Body: {
+        syncs: (string | { name: string; variant: string })[];
+        provider_config_key: string;
+        connection_id?: string | undefined;
+    };
+    Success: { success: boolean };
+}>;
+
+export type PostPublicSyncStart = Endpoint<{
+    Method: 'POST';
+    Path: '/sync/start';
+    Body: {
+        syncs: (string | { name: string; variant: string })[];
+        provider_config_key: string;
+        connection_id?: string | undefined;
+    };
+    Success: { success: boolean };
+}>;

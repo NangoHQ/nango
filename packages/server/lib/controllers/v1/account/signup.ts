@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
@@ -25,7 +25,8 @@ const validation = z
         email: z.string().email(),
         password: passwordSchema,
         name: z.string(),
-        token: z.string().uuid().optional()
+        token: z.string().uuid().optional(),
+        foundUs: z.string().optional()
     })
     .strict();
 
@@ -44,7 +45,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         return;
     }
 
-    const { email, password, name, token }: PostSignup['Body'] = val.data;
+    const { email, password, name, token, foundUs }: PostSignup['Body'] = val.data;
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
@@ -84,7 +85,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         await acceptInvitation(token);
     } else {
         // Regular account
-        account = await accountService.createAccount(`${name}'s Team`);
+        account = await accountService.createAccount({ name, email, foundUs });
         if (!account) {
             res.status(500).send({
                 error: { code: 'error_creating_account', message: 'There was a problem creating the account. Please reach out to support.' }

@@ -1,7 +1,7 @@
 ---
-title: 'Syncs - Overview'
-sidebarTitle: 'Overview'
-description: 'Overview of sync integrations.'
+title: "Syncs - Overview"
+sidebarTitle: "Overview"
+description: "Overview of sync integrations."
 ---
 
 Syncs in Nango let you continuously synchronize data from external APIs such as Hubspot contacts, Slack messages, etc.
@@ -9,23 +9,26 @@ Syncs in Nango let you continuously synchronize data from external APIs such as 
 Syncs replicate external data into Nango, according to a predefined schedule. You can subsequently access the data through a unified API to replicate it into your database. Attached to an API, syncs apply universally across all connections for that API, ensuring consistent data replication.
 
 # Sync records & models
+
 Syncs are designed to replicate data in a structured manner, transforming it into a list of records that adhere to a predefined model. This model, detailed within the sync configuration, outlines the fields (and their data types) of the output records.
 
 # Scheduling and execution
+
 The execution of syncs is based on a schedule you configure, which can be as frequent as every 5 minutes, depending on your plan. Each execution updates the dataset with the latest data from the external API for every connection under the integration. You can start syncs for individual connections or set them to begin for all connections automatically ([reference](/reference/integration-configuration#adding-a-sync)).
 
 Sync schedules & executions can be actively managed per connection through the Nango UI or API, including starting/pausing schedules & canceling/triggering executions. [Incremental syncs](#incremental-syncs) let you initiate a full refresh, effectively resetting the synced dataset.
 
 # Sync endpoints and data caching
+
 Enabled syncs provide access to an endpoint for fetching all synced records, stored within a Nango cache. This highly-available caching supports essential syncing mechanisms like data deduplication, change detection, and heavy replications.
 
-Sync endpoints have an automatically-generated API reference in the Nango UI. 
+Sync endpoints have an automatically-generated API reference in the Nango UI.
 
 # Sync modes: full refresh vs. incremental
 
 ### Full refresh syncs
 
-These syncs retrieve the entire dataset during each execution, replacing previously synced data. Suitable for smaller datasets due to performance constraints.
+These syncs retrieve the entire dataset during each execution. Suitable for smaller datasets due to performance constraints.
 
 ### Incremental syncs
 
@@ -37,7 +40,7 @@ In the case of incremental syncing, the first sync execution is heavier because 
 
 # Sync webhooks
 
-Nango sends [webhooks](/guides/webhooks/webhooks-from-nango) upon the completion of sync executions that result in new data. These webhooks allow you to promptly fetch the new records from the sync endpoint. 
+Nango sends [webhooks](/guides/webhooks/webhooks-from-nango) upon the completion of sync executions that result in new data. These webhooks allow you to promptly fetch the new records from the sync endpoint.
 
 This streamlines the process of reliably replicating data from external APIs to your database, eliminating the need for cron jobs and enabling immediate updates with relevant data as soon as it becomes available.
 
@@ -49,14 +52,15 @@ Nango syncs can identify created, updated, and deleted records, though detecting
 
 **For full refresh syncs**
 
-Deletion detection is straightforward—enable it within the integration configuration. As full refresh syncs replace the dataset entirely with each execution, Nango can automatically identify and flag records that no longer exist in the new dataset.
+Deletion detection is straightforward—enable it within the integration configuration. As full refresh syncs fetch the dataset entirely with each execution, Nango can automatically identify and flag records that no longer exist in the new dataset.
 
 **For incremental syncs**
 
 This method requires a different approach, as the data is not entirely replaced. The sync script must be adjusted to specifically request information on deleted data from the external API and mark the relevant records as deleted. This capability depends on the external API's ability to return information about deletions. Nango's [integration templates](/guides/pre-built-integrations/overview) include examples of integration scripts designed to handle this scenario.
 
 # Error handling
-Failed sync attempts don't automatically retry but will proceed on the next scheduled execution. You have the option to [manually trigger a new execution](#scheduling-and-execution). 
+
+Failed sync attempts don't automatically retry but will proceed on the next scheduled execution. You have the option to [manually trigger a new execution](#scheduling-and-execution).
 
 # Sync scripts
 
@@ -66,7 +70,7 @@ Sync scripts have the following structure:
 
 ```typescript
 import { createSync } from 'nango';
-import { z } from 'zod';
+import * as z from 'zod';
 
 export default createSync({
   models: {
@@ -84,7 +88,7 @@ export default createSync({
 
 The `exec` function starts on the schedule indicated in your integration configuration. The `ResponseModel` is configurable via the integration configuration and is auto-imported into your integration script.
 
-Unlike actions, the syncs default function doesn't take any input parameters or return anything. Sync inputs are passed via the [connection metadata](/guides/customer-configuration#store-customer-specific-data). And instead of returning data directly like actions, syncs persist records to Nango's cache, calling `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your application later fetches the records from the cache. 
+Unlike actions, the syncs default function doesn't take any input parameters or return anything. Sync inputs are passed via the [connection metadata](/guides/customer-configuration#store-customer-specific-data). And instead of returning data directly like actions, syncs persist records to Nango's cache, calling `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your application later fetches the records from the cache.
 
 # API unification
 
@@ -95,5 +99,5 @@ Syncs can have records that conform to a unified model, regardless of the specif
 Check out the syncs [step-by-step guide](/guides/syncs/use-a-sync) or refer to the reference ([API](/reference/api/sync/records-list) / [SDK](/reference/sdks/node#syncs)).
 
 <Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>

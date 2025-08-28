@@ -1,48 +1,108 @@
 ---
-title: Linkedin
-sidebarTitle: Linkedin
+title: 'LinkedIn'
+sidebarTitle: 'LinkedIn'
+description: 'Access the LinkedIn API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/linkedin/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/linkedin/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _LinkedIn_.
+      </Step>
+      <Step title="Authorize LinkedIn">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to LinkedIn. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the LinkedIn API">
+        Let's make your first request to the LinkedIn API (fetch the current member's profile). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/userinfo" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-_No setup guide yet._
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
+            const res = await nango.get({
+                endpoint: '/v2/userinfo',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
+            console.log(res.data);
+            ```
+            </Tab>
+        </Tabs>
 
-## Useful links
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
--   [How to register an Application](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?tabs=HTTPS1#step-1-configure-your-application)
--   [OAuth-related docs](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS1)
--   [API](https://learn.microsoft.com/en-us/linkedin/?context=linkedin%2Fcontext)
--   [Web API docs (their REST API)](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts?context=linkedin%2Fconsumer%2Fcontext)
+      </Step>
+    </Steps>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their LinkedIn accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
+  <Step title="Create a developer account">
+    Go to [LinkedIn's developer signup page](https://www.linkedin.com/developers/) and create an account.
+  </Step>
+  <Step title="Create & configure a LinkedIn app">
+    1. Start creating a LinkedIn app by clicking on the **Create app** button.
+    2. Fill out the app creation form with the following details:
+       - **App name** (required): Enter your app name.
+       - **LinkedIn Page** (required): Enter your company's name or LinkedIn Company Page URL (e.g., https://www.linkedin.com/company/...)
+         - For Third Party/Enterprise Developers: Select a LinkedIn Company Page that will be associated with your app.
+         - For Individual Developers: Select the default Company page associated with your API products.
+       - **Privacy policy URL**: Enter a URL beginning with http:// or https://
+       - **App logo** (required): Upload a square logo image (recommended: at least 100px in one dimension).
+       - **Legal agreement** (required): Check "I have read and agree to these terms".
+     3. In the **Products** tab, select the products you need for your integration. This will automatically add the necessary OAuth 2.0 scopes in the **Auth** tab.
+     4. In the **Auth** tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`, then copy both the `Client ID` and `Primary Client Secret`, you will need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.linkedin.com/) |
+    | | [Create a test account](https://www.linkedin.com/signup) |
+    | Developer | [API documentation](https://learn.microsoft.com/en-us/linkedin/?context=linkedin%2Fcontext) |
+    | | [Developer console](https://www.linkedin.com/developers/) |
+    | | [Authorization documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS1) |
+    | | [Register an OAuth app](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?tabs=HTTPS1#step-1-configure-your-application) |
+    | | [Web API docs (REST API)](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts?context=linkedin%2Fconsumer%2Fcontext) |
 
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
 -   If the scope permissions are changed in your app, your users must re-authenticate to ensure that they have explicitly granted your application all of the permissions that it is requesting on their behalf.
 -   The scopes available to your app depend on which Products or Partner Programs your app has access to.
 -   In order to receive refresh tokens for your connections you must request the "Advertising API" product in your app under the "Products" tab on LinkedIn. This also requires your app to be verified which can be done by your LinkedIn page admin.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

@@ -1,13 +1,12 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { getPlanBy, updatePlan } from '@nangohq/shared';
+import { accountService, getPlanBy, plansList, productTracking, updatePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../utils/stripe.js';
 
-import type { PostStripeWebhooks, Result } from '@nangohq/types';
+import type { DBPlan, PostStripeWebhooks, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
 
 const logger = getLogger('Server.Stripe');
@@ -44,7 +43,7 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     }
 
     logger.info('Received', event.type);
-    const handled = await handleWebhook(event);
+    const handled = await handleWebhook(event, stripe);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
         res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
@@ -54,7 +53,7 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     res.status(200).send({ success: true });
 });
 
-async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
+async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Result<void>> {
     switch (event.type) {
         // card was created through our UI
         case 'setup_intent.succeeded': {
@@ -76,6 +75,25 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err(updated.error);
             }
 
+            return Ok(undefined);
+        }
+
+        // payment method was updated through our UI
+        // we replicate to the customer to keep it in sync and to be able to generate invoices
+        // It might be incorrect in some cases, but it's better than nothing
+        case 'payment_method.attached':
+        case 'payment_method.updated': {
+            const data = event.data.object;
+            if (typeof data.customer !== 'string') {
+                return Err('missing customer in data');
+            }
+
+            const paymentMethod = await stripe.paymentMethods.retrieve(event.data.object.id);
+            const billingDetails = paymentMethod.billing_details;
+
+            await stripe.customers.update(data.customer, {
+                address: billingDetails.address as any
+            });
             return Ok(undefined);
         }
 
@@ -132,7 +150,7 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err("team doesn't not have a subscription or pending changes");
             }
 
-            // Finally, we apply the pending change to confirm the card
+            // Finally, we apply the pending change to confirm the card and the plan
             const resApply = await billing.client.applyPendingChanges({
                 pendingChangeId: sub.pendingChangeId,
                 amount: (data.amount / 100).toFixed(2)
@@ -141,7 +159,42 @@ async function handleWebhook(event: Stripe.Event): Promise<Result<void>> {
                 return Err(resApply.error);
             }
 
-            return Ok(undefined);
+            // This operation is also done in orb/postWebhooks
+            // But their webhook system is so slow that we need to duplicate the logic here
+            return await db.knex.transaction(async (trx) => {
+                const team = await accountService.getAccountById(trx, plan.account_id);
+                if (!team) {
+                    return Err('Failed to find team');
+                }
+
+                const planExternalId = resApply.value.planExternalId;
+                const exists = plansList.find((p) => p.orbId === planExternalId);
+                if (!exists) {
+                    return Err('Received a plan not linked to the plansList');
+                }
+
+                const updated = await updatePlanByTeam(trx, {
+                    account_id: team.id,
+                    name: planExternalId as unknown as DBPlan['name'],
+                    orb_subscription_id: resApply.value.id,
+                    orb_future_plan: null,
+                    orb_future_plan_at: null,
+                    ...exists.flags
+                });
+                if (updated.isErr()) {
+                    return Err('Failed to updated plan');
+                }
+
+                productTracking.track({
+                    name: 'account:billing:plan_changed',
+                    team,
+                    eventProperties: { previousPlan: plan.name, newPlan: planExternalId, orbCustomerId: plan.orb_customer_id }
+                });
+
+                logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
+
+                return Ok(undefined);
+            });
         }
 
         // payment intent from upgrade has not been successful

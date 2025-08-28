@@ -1,0 +1,28 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../database"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../email"
+        }
+    ],
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+}

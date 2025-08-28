@@ -10,6 +10,8 @@ export enum Types {
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY = 'nango.auth.getEnvByConnectSessionOrSecretKey',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY = 'nango.auth.getEnvByConnectSessionOrPublicKey',
+    AUTH_WITH_PUBLIC_KEY = 'nango.auth.withPublicKey',
+    AUTH_WITH_CONNECT_SESSION = 'nango.auth.withConnectSession',
     AUTH_SESSION = 'nango.auth.session',
     GET_CONNECTION = 'nango.server.getConnection',
     JOBS_DELETE_SYNCS_DATA = 'nango.jobs.cron.deleteSyncsData',
@@ -90,7 +92,9 @@ export enum Types {
     CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
     CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
 
-    RECORDS_TOTAL_COUNT = 'nango.records.total.count'
+    RECORDS_TOTAL_COUNT = 'nango.records.total.count',
+
+    CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

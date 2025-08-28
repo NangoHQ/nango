@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
@@ -69,9 +69,10 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
         if (provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'TBA') {
             include.credentials = {
                 type: provider.auth_mode,
-                client_id: integration.oauth_client_id,
-                client_secret: integration.oauth_client_secret,
-                scopes: integration.oauth_scopes || null
+                client_id: integration.shared_credentials_id ? '' : integration.oauth_client_id,
+                client_secret: integration.shared_credentials_id ? '' : integration.oauth_client_secret,
+                scopes: integration.oauth_scopes || null,
+                webhook_secret: integration?.custom?.['webhookSecret'] || null
             };
         } else if (provider.auth_mode === 'APP') {
             include.credentials = {

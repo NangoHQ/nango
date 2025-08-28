@@ -12,6 +12,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     <Steps>
       <Step title="Create an integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Drive_.
+
+      <Note>
+        Nango has credentials you can use for testing. Activate them in the dashboard.
+      </Note>
+
       </Step>
       <Step title="Authorize Google Drive">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Drive. Later, you'll let your users do the same directly from your app.
@@ -65,6 +70,13 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
+
+    <Info>
+      You will need to pass a security review to go live with your integration.
+
+      [Follow our guide](/integrations/google-security-review) to get approved as fast as possible.
+    </Info>
+
     <Steps>
       <Step title="Create a Google Cloud account">
         If you don't already have one, sign up for a [Google Cloud account](https://console.cloud.google.com/).
@@ -77,7 +89,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
-        5. Select it from the project dropdown.
+        7. Select it from the project dropdown.
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
@@ -95,7 +107,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
-        8  Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
+        8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
       </Step>
       <Step title="Create OAuth 2.0 credentials">
         1. Go to **APIs & Services** > **Credentials** in the Google Cloud Console.
@@ -106,22 +118,22 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         6. Click **Create**.
         7. A dialog will appear with your client ID and client secret. Save these credentials securely as you'll need them when configuring your integration in Nango.
       </Step>
-        <Step title="Publish your app (switch from Testing to Production)">
+      <Step title="Start building your integration">
+        Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
+      </Step>
+      <Step title="Verify your app">
+       Most Google drive scopes are marked "restricted" by Google.
+
+       A notable exception is `drive.file`, which lets you only read files the user has explicitly approved.
+
+       You can develop your integration in test mode, but you need to pass a (security) review to go live.
+
+       [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
+      </Step>
+      <Step title="Publish your app (switch from Testing to Production)">
         To move your OAuth app from testing to production:
         1. Go to **APIs & Services** > **OAuth consent screen** > **Audience**.
         2. Click **Publish App** to switch your app from testing to production.
-      </Step>
-
-      <Step title="Verify your app (if required)">
-        If your app uses sensitive or restricted scopes, you'll need to verify it with Google:
-        1. Once published to production, click **Prepare for Verification** to start the verification process.
-        2. Review and confirm all app details, then click **Save and Continue**.
-        3. Justify your use of any sensitive or restricted scopes.
-        4. Upload a demo video showing your app's OAuth flow and scope usage.
-        5. Click **Submit for Verification** to begin Google's review.
-      </Step>
-      <Step title="Next">
-        Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
     ## Common Scopes

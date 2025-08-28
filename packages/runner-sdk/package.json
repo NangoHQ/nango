@@ -1,24 +1,26 @@
 {
     "name": "@nangohq/runner-sdk",
-    "version": "0.63.0",
+    "version": "0.67.0",
     "description": "Nango's Runner SDK",
     "type": "module",
     "main": "dist/index.js",
     "dependencies": {
-        "@nangohq/node": "0.63.0",
-        "@nangohq/providers": "0.63.0",
+        "@nangohq/node": "0.67.0",
+        "@nangohq/providers": "0.67.0",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "lodash-es": "4.17.21",
         "parse-link-header": "2.0.0"
     },
     "devDependencies": {
-        "@nangohq/types": "0.63.0",
+        "@nangohq/types": "0.67.0",
         "@types/json-schema": "7.0.15",
-        "axios": "1.9.0",
+        "axios": "1.11.0",
         "json-schema": "0.4.0",
-        "vitest": "3.1.2",
-        "zod": "3.24.2"
+        "vitest": "3.2.4"
+    },
+    "peerDependencies": {
+        "zod": "4.0.5"
     },
     "files": [
         "dist/",

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { pbkdf2, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';

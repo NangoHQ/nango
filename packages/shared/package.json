@@ -28,12 +28,13 @@
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
-        "axios": "1.9.0",
+        "axios": "1.11.0",
         "braintree": "3.15.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
         "fast-xml-parser": "4.5.0",
-        "form-data": "4.0.0",
+        "form-data": "4.0.4",
+        "he": "^1.2.0",
         "js-yaml": "4.1.0",
         "jsonwebtoken": "9.0.2",
         "lodash-es": "4.17.21",
@@ -64,7 +65,7 @@
         "knex": "3.1.0",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "3.1.2"
+        "vitest": "3.2.4"
     },
     "files": [
         "dist/**/*",

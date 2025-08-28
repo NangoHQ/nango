@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
@@ -97,7 +97,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else {
             // Regular signup
-            const resAccount = await accountService.createAccount(`${name}'s Team`);
+            const resAccount = await accountService.createAccount({ name });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;

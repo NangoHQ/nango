@@ -13,6 +13,7 @@ const account: DBTeam = {
     id: 1,
     name: 'team',
     uuid: 'uuid',
+    found_us: '',
     created_at: new Date(),
     updated_at: new Date()
 };
@@ -28,7 +29,8 @@ const providerConfig: IntegrationConfig = {
     missing_fields: [],
     created_at: new Date(),
     updated_at: new Date(),
-    forward_webhooks: true
+    forward_webhooks: true,
+    shared_credentials_id: null
 };
 
 const syncConfig: DBSyncConfig = {

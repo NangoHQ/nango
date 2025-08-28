@@ -26,6 +26,7 @@ import { directoryMigration, endpointMigration, v1toV2Migration } from './servic
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAll } from './zeroYaml/compile.js';
 import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
@@ -89,6 +90,9 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 `
     )
     .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
+
+// don't allow global options to leak into sub commands
+program.enablePositionalOptions(true);
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
@@ -196,6 +200,13 @@ program
                 return;
             }
         } else {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;
@@ -233,6 +244,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             await dev({ fullPath, debug });
             return;
         }
@@ -244,7 +262,7 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .arguments('environment')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
@@ -263,6 +281,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const resCompile = await compileAll({ fullPath, debug });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
@@ -353,6 +378,13 @@ program
 
         let parsed: NangoYamlParsed;
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const def = await buildDefinitions({ fullPath, debug });
             if (def.isErr()) {
                 console.log('');
@@ -422,6 +454,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
             const res = await compileAll({ fullPath, debug });
             if (res.isErr()) {
                 process.exitCode = 1;

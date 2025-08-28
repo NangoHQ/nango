@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { buildAction, buildSync } from './definitions.js';
 
@@ -50,7 +50,7 @@ describe('buildSync', () => {
         });
         expect(Array.from(def.models.values())).toStrictEqual([
             {
-                fields: [{ name: 'metadata', optional: true, tsType: true, value: 'void' }],
+                fields: [{ name: 'metadata', tsType: true, value: 'void' }],
                 isAnon: true,
                 name: 'SyncMetadata_github_fetchIssues'
             },
@@ -97,7 +97,7 @@ describe('buildSync', () => {
         });
         expect(Array.from(res.models.values())).toStrictEqual([
             {
-                fields: [{ name: 'input', optional: true, tsType: true, value: 'void' }],
+                fields: [{ name: 'input', tsType: true, value: 'void' }],
                 isAnon: true,
                 name: 'ActionInput_github_createIssue'
             },

@@ -8,7 +8,6 @@ import type {
     AppStoreCredentials,
     AuthModeType,
     AuthModes,
-    AuthOperation,
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
@@ -18,7 +17,6 @@ import type {
     GetPublicConnections,
     GetPublicIntegration,
     GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
     GetPublicProvider,
     GetPublicProviders,
     GetPublicRecords,
@@ -65,7 +63,6 @@ export type {
     AppStoreCredentials,
     AuthModeType,
     AuthModes,
-    AuthOperation,
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
@@ -91,7 +88,6 @@ export type {
     GetPublicConnections,
     GetPublicIntegration,
     GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
     GetPublicProvider,
     GetPublicProviders,
     GetPublicRecords,
@@ -108,6 +104,7 @@ export interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     dryRun?: boolean;
+    isScript?: boolean;
     activityLogId?: string | undefined;
 }
 

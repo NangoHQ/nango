@@ -9,7 +9,7 @@
 ```
 .default scope can't be combined with resource-specific scopes
 ```
--   If you require a user to reauthenticate and force them to accept scopes that have been updated or changed you can force a prompt via the `authorization_params`:
+-   If you need a user to reauthenticate or accept updated scopes, you can force a prompt using the `authorization_params`. Use `prompt=login` to force the user to enter their credentials (bypassing single-sign on) or `prompt=consent` to trigger the OAuth consent dialog after sign-in, which asks the user to grant permissions to the app. For more details, see [Microsoft's OAuth 2.0 authorization documentation](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
 
 ```typescript
 const { data } = await nango.createConnectSession({
@@ -17,7 +17,7 @@ const { data } = await nango.createConnectSession({
   integrations_config_defaults: {
     "<provider-name>": {
       authorization_params: {
-        "prompt": "consent"
+        "prompt": "consent" // or "login" depending on your needs
       }
     }
   }

@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { isCloud, nanoid } from '@nangohq/utils';
 
 import { getProvider } from './providers.js';
+import { gettingStartedService } from '../index.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import syncManager from './sync/manager.service.js';
@@ -10,7 +11,7 @@ import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfi
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Knex } from '@nangohq/database';
-import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider } from '@nangohq/types';
+import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider, SharedCredentials } from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -34,29 +35,50 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
-        const result = await trx
-            .select('*')
+        const result = (await trx
+            .select('_nango_configs.*', 'providers_shared_credentials.credentials')
             .from<ProviderConfig>(`_nango_configs`)
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-            .first();
+            .first()) as ProviderConfig & { credentials?: SharedCredentials | null };
 
         if (!result) {
             return null;
         }
 
+        if (result.shared_credentials_id && result.credentials) {
+            result.oauth_client_id = result.credentials.oauth_client_id;
+            result.oauth_client_secret = result.credentials.oauth_client_secret;
+            result.oauth_scopes = result.credentials.oauth_scopes;
+            result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
+            result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+        }
+        delete result.credentials;
+
         return encryptionManager.decryptProviderConfig(result);
     }
 
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
-        return (
-            await trx
-                .select('*')
-                .from<ProviderConfig>(`_nango_configs`)
-                .where({ environment_id, deleted: false })
-                .orderBy('provider', 'asc')
-                .orderBy('created_at', 'asc')
-        )
-            .map((config) => encryptionManager.decryptProviderConfig(config))
+        const results = (await trx
+            .select('_nango_configs.*', 'providers_shared_credentials.credentials')
+            .from<ProviderConfig>(`_nango_configs`)
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
+            .where({ environment_id, deleted: false })
+            .orderBy('provider', 'asc')
+            .orderBy('created_at', 'asc')) as (ProviderConfig & { credentials?: SharedCredentials | null })[];
+
+        return results
+            .map((result) => {
+                if (result.shared_credentials_id && result.credentials) {
+                    result.oauth_client_id = result.credentials.oauth_client_id;
+                    result.oauth_client_secret = result.credentials.oauth_client_secret;
+                    result.oauth_scopes = result.credentials.oauth_scopes;
+                    result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
+                    result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                }
+                delete result.credentials;
+                return encryptionManager.decryptProviderConfig(result);
+            })
             .filter(Boolean) as ProviderConfig[];
     }
 
@@ -102,7 +124,8 @@ class ConfigService {
                 environment_id,
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
-                forward_webhooks: true
+                forward_webhooks: true,
+                shared_credentials_id: null
             },
             provider
         );
@@ -134,6 +157,8 @@ class ConfigService {
 
         // TODO: might be useless since we are dropping the data after a while
         await deleteSyncConfigByConfigId(id);
+
+        await gettingStartedService.deleteMetaByIntegrationId(db.knex, id);
 
         const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
         if (updated <= 0) {
@@ -252,6 +277,9 @@ class ConfigService {
     ];
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        if (providerConfig.shared_credentials_id) {
+            return [];
+        }
         return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 }

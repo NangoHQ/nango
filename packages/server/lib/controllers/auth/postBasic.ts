@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -14,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionCredentialsBasicSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -28,17 +28,10 @@ import type { LogContext } from '@nangohq/logs';
 import type { BasicApiCredentials, PostPublicBasicAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z
-    .object({
-        username: z.string(), // no .min() because some providers do not require username (affinity)
-        password: z.string() // no .min() because some providers do not require password (ashby, bitdefender)
-    })
-    .strict();
-
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional()
+        params: z.record(z.string(), z.any()).optional()
     })
     .and(connectionCredential);
 
@@ -49,7 +42,7 @@ const paramsValidation = z
     .strict();
 
 export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthorization>(async (req, res, next: NextFunction) => {
-    const val = bodyValidation.safeParse(req.body);
+    const val = connectionCredentialsBasicSchema.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }

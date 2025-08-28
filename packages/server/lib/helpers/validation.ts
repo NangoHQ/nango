@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 export const providerSchema = z
     .string()
@@ -52,12 +52,6 @@ export const connectionCredential = z.union([
     z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
 
-export const stringBool = z
-    .enum(['true', 'false', ''])
-    .optional()
-    .default('false')
-    .transform((value) => value === 'true');
-
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
@@ -67,7 +61,8 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                 client_id: z.string().min(1).max(255),
                 client_secret: z.string().min(1),
-                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                webhook_secret: z.string().min(0).max(255).optional()
             })
             .strict(),
         z
@@ -89,5 +84,80 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
             })
             .strict()
     ],
-    { errorMap: () => ({ message: 'invalid credentials object' }) }
+    { error: () => ({ message: 'invalid credentials object' }) }
 );
+
+export const sharedCredentialsSchema = z
+    .object({
+        name: providerNameSchema,
+        client_id: z.string().min(1).max(255),
+        client_secret: z.string().min(1),
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+    })
+    .strict();
+
+export const connectionCredentialsOauth2Schema = z.strictObject({
+    access_token: z.string().min(1).max(2048),
+    refresh_token: z.string().min(1).max(2048).optional(),
+    expires_at: z.coerce.date().optional(),
+    config_override: z
+        .strictObject({
+            client_id: z.string().min(1).max(255).optional(),
+            client_secret: z.string().min(1).max(2048).optional()
+        })
+        .optional()
+});
+
+export const connectionCredentialsOauth2CCSchema = z.strictObject({
+    token: z.string().min(1).max(2048),
+    client_id: z.string().min(1).max(255),
+    client_secret: z.string().min(1).max(2048),
+    client_certificate: z.string().min(1).max(10000).optional(),
+    client_private_key: z.string().min(1).max(10000).optional(),
+    expires_at: z.coerce.date().optional()
+});
+
+export const connectionCredentialsOauth1Schema = z.strictObject({
+    oauth_token: z.string().min(1).max(2048),
+    oauth_token_secret: z.string().min(1).max(2048)
+});
+
+export const connectionCredentialsBasicSchema = z.strictObject({
+    username: z.string().max(1024), // no .min() because some providers do not require password (ashby, bitdefender)
+    password: z.string().max(1024) // no .min() because some providers do not require username (affinity)
+});
+
+export const connectionCredentialsApiKeySchema = z.strictObject({
+    apiKey: z.string().min(1).max(1024)
+});
+
+export const connectionCredentialsTBASchema = z.strictObject({
+    token_id: z.string().min(1),
+    token_secret: z.string().min(1),
+    config_override: z
+        .strictObject({
+            client_id: z.string().min(1).max(255).optional(),
+            client_secret: z.string().min(1).max(2048).optional()
+        })
+        .optional()
+});
+
+export const connectionCredentialsGithubAppSchema = z.strictObject({
+    app_id: z.string().min(1).max(255),
+    installation_id: z.string().min(1).max(255)
+});
+
+export const connectionTagsSchema = z
+    // Please be careful when changing this:
+    // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
+    // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
+    // But they complained a lot about concatenation of string, so an object solves that cleanly
+    .record(z.string(), z.string())
+    .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' });
+
+export const endUserSchema = z.strictObject({
+    id: z.string().max(255).min(1),
+    email: z.string().email().min(5).optional(),
+    display_name: z.string().max(255).optional(),
+    tags: connectionTagsSchema.optional()
+});

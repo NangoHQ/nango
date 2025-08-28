@@ -25,6 +25,12 @@
         },
         {
             "path": "../billing"
+        },
+        {
+            "path": "../account-usage"
+        },
+        {
+            "path": "../pubsub"
         }
     ],
     "include": ["lib/**/*"]

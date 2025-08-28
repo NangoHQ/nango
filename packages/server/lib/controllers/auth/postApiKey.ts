@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -14,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionCredentialsApiKeySchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -28,16 +28,12 @@ import type { LogContext } from '@nangohq/logs';
 import type { ApiKeyCredentials, PostPublicApiKeyAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z
-    .object({
-        apiKey: z.string().min(1)
-    })
-    .strict();
+const bodyValidation = connectionCredentialsApiKeySchema;
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional()
+        params: z.record(z.string(), z.any()).optional()
     })
     .and(connectionCredential);
 

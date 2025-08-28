@@ -27,9 +27,9 @@ describe('POST /api/v1/account/signup', () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['email'] },
-                    { code: 'invalid_type', message: 'Required', path: ['password'] },
-                    { code: 'invalid_type', message: 'Required', path: ['name'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['email'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['password'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['name'] }
                 ]
             }
         });
@@ -37,7 +37,7 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should enforce password strength', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '12345678' } });
+        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '12345678', foundUs: '' } });
 
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
@@ -55,7 +55,10 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should signup', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!' } });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!', foundUs: 'the internet' }
+        });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);

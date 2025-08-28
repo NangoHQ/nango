@@ -25,38 +25,42 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     }
 
     const status = err.response?.status || 0;
-
-    // We don't return straight away because headers are more important than status code
-    // If we find headers we will be able to adapt the wait time but we won't look for headers if it's not those status code
-    let isRetryable =
-        // Maybe: temporary error
-        status >= 500 ||
-        // Rate limit
-        status === 429 ||
-        // Maybe: token was refreshed
-        status === 401;
+    const customHeaderConf = proxyConfig.provider.proxy?.retry;
+    let isRetryable = false;
     let reason: string | undefined;
 
+    if (Array.isArray(customHeaderConf?.error_code)) {
+        for (const code of customHeaderConf.error_code) {
+            if (matchesStatusCode(status, code)) {
+                isRetryable = true;
+                reason = `provider_error_code_${code}`;
+                break;
+            }
+        }
+    } else {
+        // If error_code is not defined, we fall back to default retryable statuses
+        // We allow headers to override this later (e.g., remaining=0), so we don't return early
+        isRetryable =
+            // Maybe: temporary error
+            status >= 500 ||
+            // Rate limit
+            status === 429 ||
+            // Maybe: token was refreshed
+            status === 401;
+    }
     if (!isRetryable && proxyConfig.retryOn) {
         if (proxyConfig.retryOn?.includes(status)) {
             isRetryable = true;
             reason = `retry_on_${status}`;
         }
     }
-    if (!isRetryable) {
-        const customHeaderConf = proxyConfig.provider.proxy?.retry;
-        if (customHeaderConf) {
-            if (customHeaderConf.error_code && Number(customHeaderConf.error_code) === status) {
-                // Custom status code in providers.yaml
-                isRetryable = true;
-                reason = 'provider_error_code';
-            } else if (customHeaderConf.remaining && err.response && err.response.headers[customHeaderConf.remaining] === '0') {
-                // Custom header in providers.yaml
-                isRetryable = true;
-                reason = 'provider_remaining';
-            }
-        }
+
+    if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
+        // Custom header in providers.yaml
+        isRetryable = true;
+        reason = 'provider_remaining';
     }
+
     if (!isRetryable) {
         return { retry: false, reason: 'not_retryable' };
     }
@@ -64,22 +68,46 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     if (proxyConfig.retryHeader && (proxyConfig.retryHeader.at || proxyConfig.retryHeader.after)) {
         // Headers configured on the fly
         const type = proxyConfig.retryHeader.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.retryHeader.at ? proxyConfig.retryHeader.at : proxyConfig.retryHeader.after;
+        const retrySource = proxyConfig.retryHeader.at || proxyConfig.retryHeader.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader! });
-        if (res.found) {
-            return { retry: true, reason: `custom_${res.reason}`, wait: res.wait };
+        // Check all headers and find the most restrictive/ longest wait retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
+                }
+            }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `custom_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
     if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && (proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after)) {
         // Headers configured in the providers.yaml
         const type = proxyConfig.provider.proxy.retry.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.provider.proxy.retry.at ? proxyConfig.provider.proxy.retry.at : proxyConfig.provider.proxy.retry.after;
+        const retrySource = proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader as string });
-        if (res.found) {
-            return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+        // Check all headers and find the most restrictive/ longest wait retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
+                }
+            }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `preconfigured_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
@@ -213,4 +241,29 @@ function parseRetryValue({
     }
 
     return { found: false, reason: `unknown_type:${type}` };
+}
+function matchesStatusCode(status: number, rule: string): boolean {
+    if (!rule) return false;
+
+    // Handle exact match (e.g., "403")
+    if (!isNaN(Number(rule))) {
+        return status === Number(rule);
+    }
+
+    // Handle xx format (e.g., "5xx")
+    const xxMatch = rule.match(/^(\d)xx$/i);
+    if (xxMatch) {
+        const firstDigit = Number(xxMatch[1]);
+        return Math.floor(status / 100) === firstDigit;
+    }
+
+    // Handle range format (e.g., "500-502")
+    const rangeMatch = rule.match(/^(\d{3})-(\d{3})$/);
+    if (rangeMatch) {
+        const start = Number(rangeMatch[1]);
+        const end = Number(rangeMatch[2]);
+        return status >= start && status <= end;
+    }
+
+    return false;
 }

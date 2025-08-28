@@ -18,7 +18,7 @@ import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
 | Paid dev account | ✅ Not required | Free, self-signup for a [Google Cloud account](https://console.cloud.google.com/). |
 | Paid test account | ✅ Not required | Free Google account can be used for testing. |
 | Partnership | ✅ Not required | |
-| App review | ⚠️ Conditional | Required for [sensitive and restricted scopes](https://support.google.com/cloud/answer/9110914) or for publishing to Google Marketplace. |
+| App review | ⚠️ Conditional | Required for some scopes, check our [Google app review guide](/integrations/google-security-review) for details |
 | Security audit | ⚠️ Conditional | May be required as part of the verification process for sensitive scopes. |
 
 
@@ -36,7 +36,7 @@ import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
     5. Under **Location**, select the appropriate organization or folder where this project should belong.
     <Note>If you're not part of an organization, it will default to No organization</Note>
     6. Click **Create** and wait for the project to be created.
-    5. Select it from the project dropdown.
+    7. Select it from the project dropdown.
   </Step>
   <Step title="Enable the APIs you need">
     1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
@@ -56,7 +56,7 @@ import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
     5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
     6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
     7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
-    8  Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
+    8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
   </Step>
   <Step title="Create OAuth 2.0 credentials">
     1. Go to **APIs & Services** > **Credentials** in the Google Cloud Console.

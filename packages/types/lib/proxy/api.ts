@@ -51,10 +51,10 @@ export interface InternalProxyConfiguration {
 }
 
 export interface RetryHeaderConfig {
-    at?: string;
-    after?: string;
+    at?: string[] | string;
+    after?: string[] | string;
     remaining?: string;
-    error_code?: number;
+    error_code?: string[];
     in_body?: {
         path: string;
         value?: string;

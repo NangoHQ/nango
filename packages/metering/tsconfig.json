@@ -1,0 +1,37 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../pubsub"
+        },
+        {
+            "path": "../billing"
+        },
+        {
+            "path": "../database"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
+            "path": "../records"
+        },
+        {
+            "path": "../shared"
+        },
+        {
+            "path": "../account-usage"
+        }
+    ],
+    "include": ["lib/**/*"]
+}

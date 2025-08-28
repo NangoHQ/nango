@@ -21,6 +21,7 @@ export interface ConnectSessionInput {
         id: string;
         email?: string | undefined;
         display_name?: string | undefined;
+        tags?: Record<string, string> | undefined;
     };
     organization?:
         | {
@@ -28,6 +29,7 @@ export interface ConnectSessionInput {
               display_name?: string | undefined;
           }
         | undefined;
+    overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
 }
 export type ConnectSessionOutput = ConnectSessionInput & {
     isReconnecting?: boolean;
@@ -54,6 +56,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         integrations_config_defaults?: ConnectSessionInput['integrations_config_defaults'];
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
+        overrides?: ConnectSessionInput['overrides'];
     };
     Success: {
         data: {

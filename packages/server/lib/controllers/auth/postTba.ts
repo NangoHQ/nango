@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -14,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionCredentialsTBASchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -27,19 +27,10 @@ import { hmacCheck } from '../../utils/hmac.js';
 import type { LogContext } from '@nangohq/logs';
 import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
 
-const bodyValidation = z
-    .object({
-        token_id: z.string().min(1),
-        token_secret: z.string().min(1),
-        oauth_client_id_override: z.string().optional(),
-        oauth_client_secret_override: z.string().optional()
-    })
-    .strict();
-
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
+        params: z.record(z.string(), z.any()).optional(),
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -51,7 +42,7 @@ const paramValidation = z
     .strict();
 
 export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res, next) => {
-    const val = bodyValidation.safeParse(req.body);
+    const val = connectionCredentialsTBASchema.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) }
@@ -174,11 +165,11 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             });
 
             if (oauth_client_id_override) {
-                tbaCredentials.config_override['client_id'] = oauth_client_id_override;
+                tbaCredentials.config_override!.client_id = oauth_client_id_override;
             }
 
             if (oauth_client_secret_override) {
-                tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
+                tbaCredentials.config_override!.client_secret = oauth_client_secret_override;
             }
         }
 

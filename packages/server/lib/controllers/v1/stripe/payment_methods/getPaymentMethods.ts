@@ -1,8 +1,8 @@
+import { getStripe } from '@nangohq/billing';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { GetStripePaymentMethods } from '@nangohq/types';
 

@@ -9,6 +9,7 @@ export function endUserToApi(endUser: DBEndUser | null): ApiEndUser | null {
         id: endUser.end_user_id,
         display_name: endUser.display_name || null,
         email: endUser.email,
+        tags: endUser.tags || null,
         organization: endUser.organization_id ? { id: endUser.organization_id, display_name: endUser.organization_display_name || null } : null
     };
 }

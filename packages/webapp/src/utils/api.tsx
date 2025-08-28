@@ -16,6 +16,23 @@ export async function apiFetch(input: string | URL | Request, init?: RequestInit
     });
 }
 
+export async function publicApiFetch(
+    input: string | URL | Request,
+    { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
+    init?: RequestInit
+) {
+    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+        ...init,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(init?.headers ? (init.headers as Record<string, string>) : {}),
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey,
+            Authorization: `Bearer ${secretKey}`
+        }
+    });
+}
+
 export async function fetcher(...args: Parameters<typeof fetch>) {
     const response = await apiFetch(...args);
     return response.json();

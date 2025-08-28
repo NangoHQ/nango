@@ -9,8 +9,9 @@ import remoteFileService from '../../file/remote.service.js';
 
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
-import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type { SyncConfigWithProvider } from '../../../models/Sync.js';
+import type { DBConnection, DBSyncConfig, NangoModel, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -50,7 +51,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null,
             sdk_version: syncConfig.sdk_version,
-            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false
+            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false,
+            // Temporary regression
+            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema)
         };
 
         if (syncConfig.type === 'sync') {
@@ -65,6 +68,18 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
     }
 
     return Object.values(tmp);
+}
+
+/**
+ * Temporary regression - getting a list of models from the json schema to
+ * give customers more time to migrate to it
+ */
+function modelsFromJsonSchema(jsonSchema: JSONSchema7 | null): NangoModel[] {
+    if (!jsonSchema) {
+        return [];
+    }
+
+    return Object.keys(jsonSchema.definitions || {}).map((key) => ({ name: key, fields: [] }));
 }
 
 export async function getSyncConfig({
@@ -250,56 +265,6 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
         active: true,
         type: 'action'
     });
-
-    if (result) {
-        return result;
-    }
-
-    return [];
-}
-
-export async function getSimplifiedActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
-    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
-
-    if (!nango_config_id) {
-        return [];
-    }
-
-    const result = await schema().from<DBSyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at').where({
-        environment_id,
-        nango_config_id,
-        deleted: false,
-        active: true,
-        type: 'action'
-    });
-
-    if (result) {
-        return result;
-    }
-
-    return [];
-}
-
-export async function getUniqueSyncsByProviderConfig(
-    environment_id: number,
-    unique_key: string
-): Promise<Pick<DBSyncConfig, 'sync_name' | 'created_at' | 'updated_at' | 'metadata'>[]> {
-    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
-
-    if (!nango_config_id) {
-        return [];
-    }
-
-    const result = await schema()
-        .from<DBSyncConfig>(TABLE)
-        .select<Pick<DBSyncConfig, 'sync_name' | 'created_at' | 'updated_at' | 'metadata'>[]>('sync_name', 'created_at', 'updated_at', 'metadata')
-        .where({
-            environment_id,
-            nango_config_id,
-            deleted: false,
-            active: true,
-            type: 'sync'
-        });
 
     if (result) {
         return result;
@@ -606,28 +571,6 @@ export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfi
     }
 
     return result;
-}
-
-export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
-    const result = await db.readOnly
-        .from<DBSyncConfig>(TABLE)
-        .select(`${TABLE}.attributes`)
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            '_nango_configs.unique_key': provider_config_key,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false,
-            [`${TABLE}.sync_name`]: sync_name,
-            [`${TABLE}.active`]: true
-        })
-        .first()
-        .orderBy(`${TABLE}.created_at`, 'desc');
-
-    if (!result) {
-        return null;
-    }
-
-    return result.attributes;
 }
 
 export function increment(input: number | string): number | string {

@@ -19,10 +19,11 @@ import { useClickAway } from 'react-use';
 
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
+import { useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
-import { apiPatchOnboarding } from '../hooks/useOnboarding';
-import { useUser } from '../hooks/useUser';
+import { apiPatchUser, useUser } from '../hooks/useUser';
 import { useStore } from '../store';
+import UsageCard from './UsageCard';
 import { globalEnv } from '../utils/env';
 import { useSignout } from '../utils/user';
 import { cn } from '../utils/utils';
@@ -67,6 +68,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { data } = useConnectionsCount(env);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const refMenu = useRef<HTMLDivElement | null>(null);
+    const { plan } = useEnvironment(env);
 
     useClickAway(refMenu, () => {
         setShowUserSettings(false);
@@ -74,14 +76,16 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const items = useMemo(() => {
         const list: MenuItem[] = [];
-        if (meta && showGettingStarted && !meta.onboardingComplete) {
+        if (meta && showGettingStarted && !meta.gettingStartedClosed) {
             list.push({
                 name: 'Getting Started',
                 icon: IconRocket,
                 value: LeftNavBarItems.GettingStarted,
                 link: `/${env}/getting-started`,
                 onClose: async () => {
-                    await apiPatchOnboarding(env);
+                    await apiPatchUser({
+                        gettingStartedClosed: true
+                    });
                     void mutateMeta();
                 }
             });
@@ -111,7 +115,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             { link: `/${env}/team-settings`, name: 'Team', icon: IconUsersGroup, value: LeftNavBarItems.TeamSettings }
         ];
 
-        if (showGettingStarted && meta.onboardingComplete) {
+        if (showGettingStarted && meta.gettingStartedClosed) {
             list.push({ link: `/dev/getting-started`, name: 'Getting Started', icon: IconRocket, value: LeftNavBarItems.GettingStarted });
         }
 
@@ -170,51 +174,60 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         })}
                     </div>
                 </div>
-                <div className="mx-4">
-                    <Button variant={'emptyFaded'} className="mb-4 w-full border-none bg-grayscale-2" onClick={() => setShowUserSettings(!showUserSettings)}>
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
-                            {me?.email.slice(0, 1).toUpperCase()}
-                        </div>
-                        <div className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</div>
-                        {userMenu.length > 0 && showUserSettings ? (
-                            <IconChevronDown stroke={1} size={18} />
-                        ) : userMenu.length > 0 ? (
-                            <IconChevronUp stroke={1} size={18} />
-                        ) : null}
-                    </Button>
-                    {userMenu.length > 0 && showUserSettings && (
-                        <div
-                            className="absolute bottom-[45px] text-sm left-4 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded"
-                            ref={refMenu}
+                <div className="flex flex-col gap-4 mx-4">
+                    {plan?.name === 'free' && <UsageCard />}
+                    <div>
+                        <Button
+                            variant={'emptyFaded'}
+                            className="mb-4 w-full border-none bg-grayscale-2"
+                            onClick={() => setShowUserSettings(!showUserSettings)}
                         >
-                            <ul className="text-gray-400 space-y-1 p-0.5 px-1">
-                                {userMenu.map((item) => {
-                                    const Icon = item.icon;
-                                    return (
-                                        <Link
-                                            key={item.name}
-                                            className={cn(
-                                                'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-grayscale-2 rounded text-gray-400',
-                                                props.selectedItem === item.value && `bg-grayscale-2 text-white`
-                                            )}
-                                            to={item.link}
-                                        >
-                                            <Icon stroke={1} size={18} />
-                                            <span>{item.name}</span>
-                                        </Link>
-                                    );
-                                })}
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
+                                {me?.email.slice(0, 1).toUpperCase()}
+                            </div>
+                            <div className="items-center w-32 text-gray-400 justify-center text-left text-sm truncate">{me?.email}</div>
+                            {userMenu.length > 0 && showUserSettings ? (
+                                <IconChevronDown stroke={1} size={18} />
+                            ) : userMenu.length > 0 ? (
+                                <IconChevronUp stroke={1} size={18} />
+                            ) : null}
+                        </Button>
+                        {userMenu.length > 0 && showUserSettings && (
+                            <div
+                                className="absolute bottom-[45px] text-sm left-4 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded"
+                                ref={refMenu}
+                            >
+                                <ul className="text-gray-400 space-y-1 p-0.5 px-1">
+                                    {userMenu.map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <Link
+                                                key={item.name}
+                                                className={cn(
+                                                    'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-grayscale-2 rounded text-gray-400',
+                                                    props.selectedItem === item.value && `bg-grayscale-2 text-white`
+                                                )}
+                                                to={item.link}
+                                            >
+                                                <Icon stroke={1} size={18} />
+                                                <span>{item.name}</span>
+                                            </Link>
+                                        );
+                                    })}
 
-                                <li
-                                    className={cn('flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400')}
-                                    onClick={async () => await signout()}
-                                >
-                                    <IconLogout stroke={1} size={18} />
-                                    <span>Log Out</span>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
+                                    <li
+                                        className={cn(
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400 cursor-pointer'
+                                        )}
+                                        onClick={async () => await signout()}
+                                    >
+                                        <IconLogout stroke={1} size={18} />
+                                        <span>Log Out</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

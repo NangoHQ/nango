@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
@@ -29,11 +29,11 @@ import type { LogContext } from '@nangohq/logs';
 import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z.object({}).catchall(z.any()).strict();
+const bodyValidation = z.looseObject({});
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
+        params: z.record(z.string(), z.any()).optional(),
         user_scope: z.string().optional()
     })
     .and(connectionCredential);

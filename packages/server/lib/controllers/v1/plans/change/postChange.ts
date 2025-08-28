@@ -1,13 +1,14 @@
 import { z } from 'zod';
 
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import { plansList, productTracking } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { PostPlanChange } from '@nangohq/types';
+
+const logger = getLogger('orb');
 
 const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
 const validation = z
@@ -49,11 +50,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
 
-    if (!plan.stripe_payment_id || !plan.stripe_customer_id) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
-        return;
-    }
-
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
         if (!sub) {
@@ -76,9 +72,16 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     // -- Upgrade
     if (isUpgrade) {
+        if (!plan.stripe_payment_id || !plan.stripe_customer_id) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+            return;
+        }
+
         let hasPending: string | undefined;
         try {
-            // Schedula an upgrade
+            logger.info(`Upgrading ${account.id} to ${body.orbId}`);
+
+            // Schedule an upgrade
             const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
             if (resUpgrade.isErr()) {
                 report(resUpgrade.error);
@@ -89,10 +92,12 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
             const stripe = getStripe();
 
+            logger.info(`Asking for base fee ${resUpgrade.value.amountInCents} for ${account.id}`);
+
             // Create a payment intent to confirm the card
             const paymentIntent = await stripe.paymentIntents.create({
                 metadata: { accountUuid: account.uuid },
-                amount: resUpgrade.value.amount ? Math.round(Number(resUpgrade.value.amount) * 100) : newPlan.basePrice! * 100,
+                amount: resUpgrade.value.amountInCents ? Math.round(resUpgrade.value.amountInCents) : newPlan.basePrice! * 100,
                 currency: 'usd',
                 customer: plan.stripe_customer_id,
                 payment_method: plan.stripe_payment_id
@@ -109,6 +114,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             res.status(200).send({ data: { success: true } });
         } catch (err) {
             if (hasPending) {
+                logger.info(`Error: cancelling pending change ${hasPending} for ${account.id}`);
                 const resCancel = await billing.client.cancelPendingChanges({ pendingChangeId: hasPending });
                 if (resCancel.isErr()) {
                     report(resCancel.error);
@@ -118,9 +124,18 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             }
             report(err);
         }
+
+        res.status(500).send({ error: { code: 'server_error' } });
         return;
     } else {
         // -- Downgrade
+        if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+            return;
+        }
+
+        logger.info(`Downgrading ${account.id} to ${body.orbId}`);
+
         const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
         if (resDowngrade.isErr()) {
             report(resDowngrade.error);

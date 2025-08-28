@@ -1,16 +1,17 @@
 import tracer from 'dd-trace';
-import { z } from 'zod';
+import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, environmentService } from '@nangohq/shared';
-import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { configService, environmentService, getPlan } from '@nangohq/shared';
+import { flagHasPlan, metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { featureFlags } from '../../../utils/utils.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
-import type { PostPublicWebhook } from '@nangohq/types';
+import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
 
 const paramValidation = z
     .object({
@@ -60,6 +61,21 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
+            let plan: DBPlan | undefined;
+            if (flagHasPlan) {
+                const resPlan = await getPlan(db.knex, { accountId: account.id });
+                if (resPlan.isErr()) {
+                    res.status(404).send({ error: { code: 'unknown_plan' } });
+                    return;
+                }
+
+                plan = resPlan.value;
+                if (!plan.has_webhooks_forward && !plan.has_webhooks_script) {
+                    res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });
+                    return;
+                }
+            }
+
             const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!integration) {
                 res.status(404).send({ error: { code: 'unknown_provider_config' } });
@@ -68,7 +84,16 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            const response = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
+            const response = await routeWebhook({
+                environment,
+                account,
+                plan,
+                integration,
+                headers,
+                body: req.body,
+                rawBody: req.rawBody!,
+                logContextGetter
+            });
 
             if (!response) {
                 res.status(200).send();

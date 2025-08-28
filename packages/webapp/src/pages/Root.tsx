@@ -17,7 +17,7 @@ export const Root: React.FC = () => {
             return;
         }
 
-        if (env === 'dev' && showGettingStarted && !meta.onboardingComplete) {
+        if (env === 'dev' && showGettingStarted && !meta.gettingStartedClosed) {
             navigate('/dev/getting-started');
             return;
         }

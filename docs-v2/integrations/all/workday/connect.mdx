@@ -23,12 +23,12 @@ This guide will walk you through finding or generating these credentials within 
 2. In your Workday homepage, go to the search bar and type **View API Clients** then select it.
 3. Look for the **Workday REST API Endpoint** field.
 4. The **Hostname** is everything after `https://` and before `/ccx/api/v1/`.
-- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/yourtenant_abc`, the hostname is `wd2-impl-services1.workday.com`.
+- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/acme`, the hostname is `wd2-impl-services1.workday.com`.
 <img src="/integrations/all/workday/hostname.png" />
 
 #### Step 2: Finding your Tenant
 1. In the same **Workday REST API Endpoint** field from the **View API Clients** report, the **Tenant** is the final part of the URL after **/v1/**.
-- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/yourtenant_abc`, the **Tenant** is `yourtenant_abc`.
+- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/api/v1/acme`, the **Tenant** is `acme`.
 
 
 #### Step 3: Create Integration System User (ISU)
@@ -50,7 +50,7 @@ This guide will walk you through finding or generating these credentials within 
 <img src="/integrations/all/workday/view_security_group.png" />
 9. In the Person field, search for the ISU username we created above and click **OK**.
 <img src="/integrations/all/workday/view_security_group_for_user.png" />
-10. You should see the security groups for the ISU account, including the one you just created. Scroll down to that security group and click on the link.
+10. You should see the security groups associated with the ISU account, including the one you just created (**Integration System Security Group (Unconstrained)**). Scroll down to find this security group, then click on it.
 11. Navigate to **ellipses** > **Security Group** > **Maintain Domain Permissions for Security Group**.
 <img src="/integrations/all/workday/view_isu_group.png" />
 12. Add all of the required domain security policies with the proper view/modify access for the **Integration Permissions**.
@@ -64,8 +64,9 @@ This guide will walk you through finding or generating these credentials within 
 <img src="/integrations/all/workday/verify_policy_change.png" />
 
 #### Step 4: Generating your Username
-- This is the **Username** from the Integration System User (ISU) you created above, followed by @ and your **Tenant** name.
-- Format: username@tenant
+- This is the **Username** from the Integration System User (ISU) you created above, followed by `@` and your **Workday tenant** name from above.
+- **Format:** `username@yourtenant`
+- **Example:** `ISU Nango@acme`
 #### Step 5: Finding your Password
 - This is the **Password** you set when creating the Integration System User (ISU) above.
 

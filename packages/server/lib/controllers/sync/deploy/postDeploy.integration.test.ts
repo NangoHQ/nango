@@ -47,10 +47,10 @@ describe(`POST ${endpoint}`, () => {
             error: {
                 code: 'invalid_body',
                 errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
-                    { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
-                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] },
-                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] }
+                    { code: 'invalid_type', message: 'Invalid input: expected array, received undefined', path: ['flowConfigs'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected boolean, received undefined', path: ['reconcile'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected boolean, received string', path: ['debug'] },
+                    { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['nangoYamlBody'] }
                 ]
             }
         });
@@ -188,7 +188,12 @@ describe(`POST ${endpoint}`, () => {
                                     },
                                     Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
                                 }
-                            }
+                            },
+                            models: [
+                                { name: 'Output', fields: [] },
+                                { name: 'Ref', fields: [] },
+                                { name: 'Input', fields: [] }
+                            ]
                         }
                     ]
                 }

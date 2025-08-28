@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -27,7 +27,7 @@ export const postForgotPassword = asyncWrapper<PostForgotPassword>(async (req, r
         return;
     }
 
-    const { email } = req.body;
+    const { email } = val.data;
 
     const user = await userService.getUserByEmail(email);
     if (!user) {

@@ -6,10 +6,12 @@ import { promisify } from 'node:util';
 import chalk from 'chalk';
 import ora from 'ora';
 
-import { printDebug } from '../utils.js';
+import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { compileAll } from './compile.js';
 import { exampleFolder } from './constants.js';
+
+import type { PackageJson } from 'type-fest';
 
 const execAsync = promisify(exec);
 
@@ -60,8 +62,12 @@ export async function initZero({
     const packageJsonPath = path.join(absolutePath, 'package.json');
     try {
         const packageJsonRaw = await fs.promises.readFile(packageJsonPath, 'utf-8');
-        const packageJson = JSON.parse(packageJsonRaw) as { devDependencies: { nango: string } };
-        packageJson.devDependencies.nango = NANGO_VERSION;
+        const packageJson = JSON.parse(packageJsonRaw) as PackageJson;
+        if (!packageJson.devDependencies) {
+            packageJson.devDependencies = {};
+        }
+        packageJson.devDependencies['nango'] = NANGO_VERSION;
+        packageJson.devDependencies['nango'] = NANGO_VERSION;
         await fs.promises.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8');
     } catch (err) {
         console.log(chalk.red(`Failed to update nango version in package.json: ${err instanceof Error ? err.message : 'unknown error'}`));
@@ -73,17 +79,18 @@ export async function initZero({
         return true;
     }
 
-    // Run npm install
+    // Install dependencies
     {
-        const spinner = ora({ text: 'Install packages' }).start();
+        const spinner = ora({ text: 'Install dependencies' }).start();
         try {
-            printDebug(`Running npm install`, debug);
+            printDebug(`Running package manager install`, debug);
 
-            await execAsync('npm install', { cwd: absolutePath });
+            const packageManager = detectPackageManager({ fullPath: absolutePath });
+            await execAsync(`${packageManager} install`, { cwd: absolutePath });
             spinner.succeed();
         } catch (err) {
             spinner.fail();
-            console.log(chalk.red(`Failed to npm install: ${err instanceof Error ? err.message : 'unknown error'}`));
+            console.log(chalk.red(`Failed to install dependencies: ${err instanceof Error ? err.message : 'unknown error'}`));
             return false;
         }
     }

@@ -56,11 +56,21 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
+        try {
+            await this.orbSDK.customers.update(customerId, { name });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_update_customer', { cause: err }));
+        }
+    }
+
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         try {
             await this.orbSDK.customers.updateByExternalId(String(teamId), {
-                payment_provider: 'stripe_invoice',
-                payment_provider_id: customerId
+                payment_provider: 'stripe_charge',
+                payment_provider_id: customerId,
+                auto_collection: true
             });
             return Ok(undefined);
         } catch (err) {
@@ -149,7 +159,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amount: string | null }>> {
+    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         try {
             // We schedule the upgrade but we don't apply it yet
             // We apply it when the first payment is made to confirm the card
@@ -163,10 +173,28 @@ export class OrbClient implements BillingClient {
                 { headers: { 'Create-Pending-Subscription-Change': 'true' } }
             );
 
+            // Invoices created are ordered by due date
+            // The first one is the pending one (if there was one) and the second is what we will charge
+            // Since the order and numbers are unreliable, we need to find the one that is due today
+            let amountDue = 0;
+            for (const invoice of pendingUpgrade.changed_resources?.created_invoices || []) {
+                if (!invoice.due_date) {
+                    continue;
+                }
+                if (new Date(invoice.due_date).getTime() > Date.now()) {
+                    continue;
+                }
+                if (invoice.amount_due === '0.00') {
+                    continue;
+                }
+                amountDue = Number(invoice.amount_due) * 100;
+                break;
+            }
+
             return Ok({
                 pendingChangeId: pendingUpgrade.pending_subscription_change!.id,
                 // We return the amount due for the first invoice, it's the pending one that contains the pro-rated amount if any
-                amount: pendingUpgrade.changed_resources?.created_invoices[0]?.amount_due || null
+                amountInCents: amountDue || null
             });
         } catch (err) {
             return Err(new Error('failed_to_upgrade_customer', { cause: err }));
@@ -187,15 +215,21 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<void>> {
+    async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<BillingSubscription>> {
         try {
             // We apply the pending change to confirm the card
-            await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
+            const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
                 description: 'Initial payment on subscription',
                 previously_collected_amount: opts.amount
             });
+            if (!res.subscription) {
+                return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
+            }
 
-            return Ok(undefined);
+            return Ok({
+                id: res.subscription.id,
+                planExternalId: res.subscription.plan!.external_plan_id!
+            });
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));
         }

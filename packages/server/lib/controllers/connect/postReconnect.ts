@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { bodySchema as originalBodySchema, checkIntegrationsDefault } from './postSessions.js';
+import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -19,7 +19,8 @@ const bodySchema = z
         integration_id: providerConfigKeySchema,
         end_user: originalBodySchema.shape.end_user.optional(),
         organization: originalBodySchema.shape.organization,
-        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults
+        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
+        overrides: originalBodySchema.shape.overrides.optional()
     })
     .strict();
 
@@ -41,7 +42,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
@@ -86,13 +87,31 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             endUser = endUserRes.value;
         }
 
-        if (body.integrations_config_defaults) {
+        if (body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
 
-            // Enforce that integrations exists in `integrations_config_defaults`
-            const check = checkIntegrationsDefault(body, integrations);
-            if (check) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } } };
+            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist
+            const integrationConfigDefaultsCheck = checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']);
+            const overridesCheck = checkIntegrationsExist(body.overrides, integrations, ['overrides']);
+            if (integrationConfigDefaultsCheck || overridesCheck) {
+                return {
+                    status: 400,
+                    response: {
+                        error: {
+                            code: 'invalid_body',
+                            errors: zodErrorToHTTP({ issues: [...(integrationConfigDefaultsCheck || []), ...(overridesCheck || [])] })
+                        }
+                    }
+                };
+            }
+
+            const canOverrideDocsConnectUrl = (flagHasPlan && plan?.can_override_docs_connect_url) ?? true;
+            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
+            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
+                return {
+                    status: 403,
+                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
+                };
             }
         }
 
@@ -116,7 +135,8 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                       ])
                   )
                 : null,
-            operationId: logCtx.id
+            operationId: logCtx.id,
+            overrides: body.overrides || null
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

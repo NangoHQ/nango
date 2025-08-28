@@ -1,50 +1,107 @@
 ---
-title: Aircall
-sidebarTitle: Aircall
+title: 'Aircall'
+sidebarTitle: 'Aircall'
+description: 'Access the Aircall API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/aircall/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/aircall/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Aircall_.
+      </Step>
+      <Step title="Authorize Aircall">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Aircall. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Aircall API">
+        Let's make your first request to the Aircall API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/users" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-_No setup guide yet._
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aircall.mdx)</Note>
+            const res = await nango.get({
+              endpoint: '/v1/users',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
+            console.log(res.data);
+            ```
+            </Tab>
 
-## Useful links
+        </Tabs>
 
--   [How to register an Application](https://aircall.io/partners/technology/)
--   [OAuth-related docs](https://developer.aircall.io/api-references/#oauth-technology-partners)
--   [Web API docs (their REST API)](https://developer.aircall.io/api-references/)
--   [Aircall API rate limiting](https://developer.aircall.io/api-references/#rate-limiting)
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aircall.mdx)</Note>
+      </Step>
+    </Steps>
 
-## API gotchas
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aircall.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Aircall accounts.
+    </Tip>
+  </Tab>
+    <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a partner-specific account">
+        You can create a partner-specific account by signing up at [https://aircall.io/partners/technology/signup/](https://aircall.io/partners/technology/signup/).
+      </Step>
+      <Step title="Prepare your URIs">
+        Before proceeding, make sure you have these URIs ready:
+        - **redirect_uri**: `https://api.nango.dev/oauth/callback`
+        - **install_uri**: Your application's installation/setup page URL
 
-## Going further
+        Refer to the [Aircall OAuth documentation](https://developer.aircall.io/api-references/#oauth-technology-partners) to understand how these URIs are used in the OAuth process.
+      </Step>
+      <Step title="Request OAuth credentials">
+        1. Email [marketplace@aircall.io](mailto:marketplace@aircall.io) and request OAuth credentials.
+        2. In your message, mention that you're building a Technology Partner app and provide your **install_uri** and **redirect_uri**.
+        3. Aircall will reply with your **Client ID** and **Client Secret** once approved.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+    </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Aircall Website](https://aircall.io/) |
+    | | [Become a Technology Partner](https://aircall.io/partners/technology/) |
+    | Developer | [API Documentation](https://developer.aircall.io/api-references/) |
+    | | [OAuth Documentation](https://developer.aircall.io/api-references/#oauth-technology-partners) |
+    | | [API Rate Limiting](https://developer.aircall.io/api-references/#rate-limiting) |
+    | | [Webhooks Documentation](https://developer.aircall.io/api-references/#webhooks) |
 
-<Card title="Connect to Aircall-Basic" icon="link" href="/integrations/all/aircall-basic/connect" horizontal>
-  Guide to connect to Aircall-Basic using Nango Connect.
-</Card>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aircall.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Aircall requires becoming a technology partner before you can create OAuth applications.
+    - Rate limiting applies to API requests. Check the [rate limiting documentation](https://developer.aircall.io/api-references/#rate-limiting) for current limits.
+    - Some API endpoints may require specific scopes or permission levels.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aircall.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

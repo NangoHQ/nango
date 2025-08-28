@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -34,7 +34,7 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
 
     const emulatedBody = {
         allowed_integrations: body.allowed_integrations,
-        end_user: body.end_user,
+        end_user: { ...body.end_user, tags: { origin: 'nango_dashboard' } },
         organization: body.organization
     } satisfies PostConnectSessions['Body'];
 

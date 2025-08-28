@@ -1,9 +1,18 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
-import type { AllAuthCredentials } from '../../auth/api.js';
+import type {
+    AllAuthCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
+    TbaCredentials
+} from '../../auth/api.js';
+import type { ConnectSessionInput } from '../../connect/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
-import type { DBConnection, DBConnectionDecrypted } from '../db.js';
+import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
@@ -37,7 +46,8 @@ export type GetConnectionsCount = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
+export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
+    provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created: string;
     metadata: Record<string, unknown> | null;
     provider: string;
@@ -56,6 +66,28 @@ export type GetPublicConnections = Endpoint<{
     Success: {
         connections: ApiPublicConnection[];
     };
+}>;
+
+export type PostPublicConnection = Endpoint<{
+    Method: 'POST';
+    Path: '/connections';
+    Body: {
+        connection_id?: string | undefined;
+        provider_config_key: string;
+        metadata?: Record<string, unknown> | undefined;
+        connection_config?: ConnectionConfig | undefined;
+        credentials:
+            | Omit<OAuth2Credentials, 'raw'>
+            | Omit<OAuth2ClientCredentials, 'raw'>
+            | Omit<OAuth1Credentials, 'raw'>
+            | Omit<ApiKeyCredentials, 'raw'>
+            | Omit<BasicApiCredentials, 'raw'>
+            | Omit<TbaCredentials, 'raw'>
+            | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'NONE' };
+        end_user?: ConnectSessionInput['end_user'] | undefined;
+    };
+    Success: ApiPublicConnectionFull;
 }>;
 
 export type ApiConnectionFull = Omit<
@@ -83,7 +115,8 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'connection_config'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config'> & {
+    provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;
     last_fetched_at: string | null;

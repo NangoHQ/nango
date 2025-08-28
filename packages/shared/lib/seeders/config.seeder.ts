@@ -1,8 +1,10 @@
+import db from '@nangohq/database';
+
 import configService from '../services/config.service.js';
 import { getProvider } from '../services/providers.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBEnvironment, IntegrationConfig } from '@nangohq/types';
+import type { DBEnvironment, DBSharedCredentials, IntegrationConfig } from '@nangohq/types';
 
 export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
     const googleProvider = getProvider('google');
@@ -66,7 +68,8 @@ export async function createConfigSeed(
             provider: providerName,
             environment_id: env.id,
             ...rest,
-            forward_webhooks: true
+            forward_webhooks: true,
+            shared_credentials_id: null
         },
         provider
     );
@@ -76,6 +79,64 @@ export async function createConfigSeed(
     return created;
 }
 
+export async function createPreprovisionedProviderConfigSeed(
+    env: DBEnvironment,
+    unique_key: string,
+    providerName: string,
+    rest?: Partial<IntegrationConfig>
+): Promise<IntegrationConfig> {
+    const provider = getProvider(providerName);
+    if (!provider) {
+        throw new Error(`createPreprovisionedProviderSeed: ${providerName} provider not found`);
+    }
+
+    const sharedCredentials = await createSharedCredentialsSeed(providerName);
+
+    const created = await configService.createProviderConfig(
+        {
+            unique_key,
+            provider: providerName,
+            environment_id: env.id,
+            ...rest,
+            forward_webhooks: true,
+            shared_credentials_id: sharedCredentials.id
+        },
+        provider
+    );
+    if (!created) {
+        throw new Error('failed to created to preprovisioned provider config');
+    }
+    return created;
+}
+
+export async function createSharedCredentialsSeed(providerName: string): Promise<DBSharedCredentials> {
+    const credentials = {
+        oauth_client_id: 'test',
+        oauth_client_secret: 'test',
+        oauth_scopes: 'test'
+    };
+
+    // Create shared credentials
+    const sharedCredentialsResult = await db.knex
+        .insert<DBSharedCredentials>({
+            name: providerName,
+            credentials
+        })
+        .into('providers_shared_credentials')
+        .onConflict('name')
+        .merge({
+            credentials
+        })
+        .returning('*');
+
+    const sharedCredentials = sharedCredentialsResult[0];
+    if (!sharedCredentials) {
+        throw new Error('failed to create shared credentials');
+    }
+
+    return sharedCredentials;
+}
+
 export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationConfig {
     return {
         created_at: new Date(),
@@ -83,6 +144,7 @@ export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationCon
         deleted: false,
         deleted_at: null,
         forward_webhooks: true,
+        shared_credentials_id: null,
         oauth_client_id: null,
         oauth_client_secret: null,
         oauth_scopes: null,

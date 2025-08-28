@@ -45,6 +45,14 @@ const models = new Map<string, NangoModel>([
                     value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'date' }]
                 },
                 {
+                    name: 'dynamicObjWithProps',
+                    optional: false,
+                    value: [
+                        { dynamic: true, name: '__string', optional: false, tsType: true, value: 'string' },
+                        { name: 'bool', optional: false, tsType: true, value: 'boolean' }
+                    ]
+                },
+                {
                     name: 'union2',
                     union: true,
                     value: [

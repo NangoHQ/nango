@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
@@ -88,7 +88,8 @@ const handler = (scheduler: Scheduler) => {
             createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
             heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat,
-            lastScheduledTaskId: null
+            lastScheduledTaskId: null,
+            lastScheduledTaskState: null
         });
         if (schedule.isErr()) {
             res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });
