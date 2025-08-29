@@ -1,3 +1,4 @@
+import stringify from 'json-stable-stringify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
@@ -72,14 +73,19 @@ describe('AsyncAction webhookds', () => {
         await sendAsyncActionWebhook(props);
 
         expect(spy).toHaveBeenCalledTimes(2);
-        const expectedArgs = {
+        const body = {
             type: 'async_action',
             from: 'nango',
             connectionId: props.connectionId,
             payload: props.payload,
             providerConfigKey: props.providerConfigKey
         };
-        expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, expectedArgs, { headers: { 'X-Nango-Signature': expect.any(String) } });
-        expect(spy).toHaveBeenNthCalledWith(2, webhookSettings.secondary_url, expectedArgs, { headers: { 'X-Nango-Signature': expect.any(String) } });
+        const bodyString = stringify(body);
+        expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, bodyString, {
+            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json' }
+        });
+        expect(spy).toHaveBeenNthCalledWith(2, webhookSettings.secondary_url, bodyString, {
+            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json' }
+        });
     });
 });
