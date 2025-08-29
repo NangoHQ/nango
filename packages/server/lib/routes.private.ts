@@ -27,6 +27,8 @@ import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
+import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
@@ -177,6 +179,9 @@ web.route('/environment/activate-key').post(webAuth, environmentController.activ
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
+
+web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
+web.route('/connect-ui-settings').put(webAuth, putConnectUISettings);
 
 web.route('/integrations').get(webAuth, getIntegrations);
 web.route('/integrations').post(webAuth, postIntegration);
