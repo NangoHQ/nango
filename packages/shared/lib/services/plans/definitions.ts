@@ -22,7 +22,9 @@ export const freePlan: PlanDefinition = {
         monthly_active_records_max: 5000,
         has_webhooks_script: false,
         has_webhooks_forward: false,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: false,
+        has_connect_ui_watermark: false
     },
     display: {
         features: [
@@ -66,7 +68,9 @@ export const starterPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: false,
         has_webhooks_forward: false,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: false,
+        has_connect_ui_watermark: false
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -107,7 +111,9 @@ export const growthPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: true,
+        has_connect_ui_watermark: true
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -150,7 +156,9 @@ export const enterprisePlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: true,
+        has_connect_ui_watermark: true
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -184,7 +192,9 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: false,
+        has_connect_ui_watermark: false
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -213,7 +223,9 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: false,
+        has_connect_ui_watermark: false
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -242,7 +254,9 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false
+        can_override_docs_connect_url: false,
+        has_connect_ui_theme: true,
+        has_connect_ui_watermark: true
     }
 };
 
