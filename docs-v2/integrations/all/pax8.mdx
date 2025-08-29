@@ -32,20 +32,23 @@ _No setup guide yet._
 
 ## Useful links
 
--   [Pax8 Developer Portal](https://devx.pax8.com/)
+-   [API reference](https://devx.pax8.com/reference)  
 -   [API Documentation](https://devx.pax8.com/docs/introduction)
 -   [Authentication Guide](https://devx.pax8.com/docs/authentication)
--   [Partner Program](https://www.pax8.com/partners/)
 -   [Integrations Hub](https://app.pax8.com/integrations?tab=credentials)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pax8.mdx)</Note>
 
 ## API gotchas
 
-- Uses Client Credentials OAuth2 flow, not traditional authorization code flow
-- Requires `audience` parameter in token requests, varies by endpoint (e.g., `https://api.pax8.com` for public APIs)
+- The `audience` parameter is required in token requests and varies depending on the endpoint, for example, use `https://api.pax8.com` for public APIs and `api://provisioning` when requesting a token for provisioning endpoints.
 - Access tokens have a 1-day lifetime (86,400 seconds)
 - Only Partner Admin and Primary Partner Admin roles can generate API credentials
-- All requests must use HTTPS
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pax8.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Pax8" icon="link" href="/integrations/all/pax8/connect" horizontal>
+  Guide to connect to Pax8 using Nango Connect.
+</Card>
