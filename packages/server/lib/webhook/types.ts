@@ -121,3 +121,23 @@ export interface AttioWebhook {
     webhook_id: string;
     events: AttioWebhookEvent[];
 }
+
+export interface HubSpotWebhook {
+    objectId: string;
+    propertyName?: string;
+    propertyValue?: string;
+    changeSource?: string;
+    eventId: string;
+    subscriptionId: number;
+    portalId: number;
+    appId: number;
+    occurredAt: number;
+    subscriptionType: string;
+    attemptNumber: number;
+    messageId?: string;
+    messageType?: 'MESSAGE' | 'COMMENT';
+    primaryObjectId?: string;
+    mergedObjectIds?: string[];
+    newObjectId?: string;
+    numberOfPropertiesMoved?: number;
+}
