@@ -48,6 +48,7 @@ import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
+import { getPublicSyncStatus } from './controllers/sync/getSyncStatus.js';
 import { postPublicSyncPause } from './controllers/sync/postSyncPause.js';
 import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
@@ -201,7 +202,7 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, postPublicSyncPause);
 publicAPI.route('/sync/start').post(apiAuth, postPublicSyncStart);
-publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
+publicAPI.route('/sync/status').get(apiAuth, getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 

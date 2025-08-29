@@ -1,3 +1,4 @@
+import type { ReportedSyncJobStatus } from './index.js';
 import type { ApiError, Endpoint } from '../api.js';
 
 export type PostPublicTrigger = Endpoint<{
@@ -85,4 +86,15 @@ export type PostPublicSyncStart = Endpoint<{
         connection_id?: string | undefined;
     };
     Success: { success: boolean };
+}>;
+
+export type GetPublicSyncStatus = Endpoint<{
+    Method: 'GET';
+    Path: '/sync/status';
+    Querystring: {
+        syncs: string;
+        provider_config_key: string;
+        connection_id?: string | undefined;
+    };
+    Success: { syncs: ReportedSyncJobStatus[] };
 }>;
