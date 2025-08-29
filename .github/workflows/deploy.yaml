@@ -42,9 +42,11 @@ jobs:
             - name: Build Webapp
               run: npm run ts-build && npm run -w @nangohq/webapp build
             - name: Replace env.js source with api path in dist/index.html
+              env:
+                  API_DOMAIN: 'https://api-staging.nango.dev'
               run: |
                   FILE="packages/webapp/dist/index.html"
-                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1https://api-staging.nango.dev/env.js?hash=\2#g' "$FILE"
+                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ env.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
