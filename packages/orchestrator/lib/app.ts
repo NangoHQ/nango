@@ -1,14 +1,12 @@
 import './tracer.js';
 
-import { DatabaseClient, Scheduler, stringifyTask } from '@nangohq/scheduler';
-import { initSentry, metrics, once, report, stringifyError } from '@nangohq/utils';
+import { DatabaseClient, Scheduler } from '@nangohq/scheduler';
+import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
-
-import type { Task } from '@nangohq/scheduler';
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
@@ -34,34 +32,7 @@ try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
     await dbClient.migrate();
 
-    const eventsHandler = new TaskEventsHandler(dbClient.db, {
-        on: {
-            CREATED: (task: Task) => {
-                logger.info(`Task created: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
-            },
-            STARTED: (task: Task) => {
-                logger.info(`Task started: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
-            },
-            SUCCEEDED: (task: Task) => {
-                logger.info(`Task succeeded: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
-            },
-            FAILED: (task: Task) => {
-                logger.error(`Task failed: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
-            },
-            EXPIRED: (task: Task) => {
-                logger.error(`Task expired: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
-            },
-            CANCELLED: (task: Task) => {
-                logger.info(`Task cancelled: ${stringifyTask(task)}`);
-                metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
-            }
-        }
-    });
+    const eventsHandler = new TaskEventsHandler(dbClient.db);
     await eventsHandler.connect();
 
     const scheduler = new Scheduler({
