@@ -752,9 +752,10 @@
                   {
                     "group": "Connections",
                     "pages": [
+                      "reference/api/connections/post",
                       "reference/api/connections/list",
                       "reference/api/connections/get",
-                      "reference/api/connections/post",
+                      "reference/api/connections/patch",
                       "reference/api/connections/set-metadata",
                       "reference/api/connections/update-metadata",
                       "reference/api/connections/delete"

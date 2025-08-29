@@ -1016,7 +1016,6 @@ class ConnectionService {
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
         if (provider.auth_mode === 'APP') {
             const appResult = await githubAppClient.createCredentials({
-                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config
@@ -1037,7 +1036,6 @@ class ConnectionService {
                 logCtx
             }),
             githubAppClient.createCredentials({
-                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config
