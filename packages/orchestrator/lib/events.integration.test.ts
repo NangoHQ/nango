@@ -2,19 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getTestDbClient } from '@nangohq/scheduler';
 
+import { envs } from './env.js';
 import { TaskEventsHandler, taskEvents } from './events.js';
 
 import type { Task } from '@nangohq/scheduler';
 
 const dbClient = getTestDbClient();
-const mockCallbacks = {
-    CREATED: vi.fn(),
-    STARTED: vi.fn(),
-    SUCCEEDED: vi.fn(),
-    FAILED: vi.fn(),
-    EXPIRED: vi.fn(),
-    CANCELLED: vi.fn()
-};
 const mockTask: Task = {
     id: 'task-123',
     name: 'task-name',
@@ -43,7 +36,7 @@ describe('TaskEventsHandler', () => {
 
     beforeEach(async () => {
         await dbClient.migrate();
-        eventsHandler = new TaskEventsHandler(dbClient.db, { on: mockCallbacks });
+        eventsHandler = new TaskEventsHandler(dbClient.db);
         await eventsHandler.connect();
     });
 
@@ -65,16 +58,16 @@ describe('TaskEventsHandler', () => {
             await eventsHandler.disconnect();
 
             const localEmitSpy = vi.spyOn(eventsHandler, 'emitLocally');
-            eventsHandler.emit('test-event', 'arg1', 'arg2');
+            eventsHandler.emit('test-event');
 
-            expect(localEmitSpy).toHaveBeenCalledWith('test-event', 'arg1', 'arg2');
+            expect(localEmitSpy).toHaveBeenCalledWith('test-event');
         });
 
         it('should handle payload too large error', async () => {
-            const largePayload = 'x'.repeat(9000);
+            const largeEvent = 'x'.repeat(9000);
             await new Promise((resolve) => {
                 eventsHandler.on('payloadTooLarge', () => resolve(undefined));
-                eventsHandler.emit('my-large-event', largePayload);
+                eventsHandler.emit(largeEvent);
             });
         });
     });
@@ -98,7 +91,7 @@ describe('TaskEventsHandler', () => {
 
     describe('connection management', () => {
         it('should emit connected event on successful connection', async () => {
-            const newEmitter = new TaskEventsHandler(dbClient.db, { on: mockCallbacks });
+            const newEmitter = new TaskEventsHandler(dbClient.db);
 
             await new Promise((resolve) => {
                 newEmitter.on('connected', () => {
@@ -118,24 +111,43 @@ describe('TaskEventsHandler', () => {
         });
     });
 
-    describe.each([taskEvents.taskCreated(mockTask), taskEvents.taskStarted(mockTask), taskEvents.taskCompleted(mockTask)])(
-        'cross-process communication',
-        (event) => {
-            it('should receive task event from other emitter', async () => {
-                const emitter2 = new TaskEventsHandler(dbClient.db, { on: mockCallbacks });
-                await emitter2.connect();
+    describe.each([taskEvents.taskCreated(mockTask), taskEvents.taskCompleted(mockTask)])('cross-process communication', (event) => {
+        it('should receive task event from other emitter', async () => {
+            const emitter2 = new TaskEventsHandler(dbClient.db);
+            await emitter2.connect();
 
-                await new Promise((resolve) => {
-                    eventsHandler.on(event, (taskId: string) => {
-                        expect(taskId).toBe(mockTask.id);
-                        emitter2.disconnect();
-                        resolve(undefined);
-                    });
-                    emitter2.emit(event, mockTask.id);
+            await new Promise((resolve) => {
+                eventsHandler.on(event, () => {
+                    emitter2.disconnect();
+                    resolve(undefined);
                 });
+                emitter2.emit(event);
             });
-        }
-    );
+        });
+    });
+
+    describe('should debounce', () => {
+        it('multiple task created events into a single event', async () => {
+            const delayMs = envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS;
+            const handler = vi.fn();
+            const event = taskEvents.taskCreated(mockTask);
+            eventsHandler.on(event, handler);
+
+            for (let i = 0; i < 5; i++) {
+                eventsHandler.onCallbacks['CREATED'](mockTask);
+            }
+            // Wait for debounce period to pass
+            await new Promise((resolve) => setTimeout(resolve, delayMs + 1));
+
+            // Call the callback again
+            await new Promise((resolve) => {
+                eventsHandler.onCallbacks['CREATED'](mockTask);
+                eventsHandler.on(event, () => resolve(undefined));
+            });
+
+            expect(handler).toHaveBeenCalledTimes(2);
+        });
+    });
 });
 
 describe('taskEvents', () => {
@@ -148,13 +160,6 @@ describe('taskEvents', () => {
         it('should generate event name from string', () => {
             const eventName = taskEvents.taskCreated('myGroup');
             expect(eventName).toBe('task:created:myGroup');
-        });
-    });
-
-    describe('taskStarted', () => {
-        it('should generate event name from task', () => {
-            const eventName = taskEvents.taskStarted(mockTask);
-            expect(eventName).toBe('task:started:task-123');
         });
     });
 

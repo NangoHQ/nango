@@ -4,7 +4,7 @@ import { validateRequest } from '@nangohq/utils';
 
 import { taskEvents } from '../../../../events.js';
 
-import type { Scheduler, Task, TaskState } from '@nangohq/scheduler';
+import type { Scheduler, TaskState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type { EventEmitter } from 'node:events';
@@ -39,7 +39,8 @@ const validate = validateRequest<GetOutput>({
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<GetOutput>) => {
         const longPollingTimeoutMs = res.locals.parsedQuery.longPolling || 120_000;
-        const eventId = taskEvents.taskCompleted(res.locals.parsedParams.taskId);
+        const taskId = res.locals.parsedParams.taskId;
+        const eventId = taskEvents.taskCompleted(taskId);
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -51,7 +52,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
                 respond(res);
             }
         };
-        const onCompletion = async (taskId: Task['id']) => {
+        const onCompletion = async () => {
             const completedTask = await scheduler.get({ taskId });
             if (completedTask.isErr()) {
                 cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: completedTask.error.message } }));
@@ -65,7 +66,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
 
         eventEmitter.once(eventId, onCompletion);
 
-        const task = await scheduler.get({ taskId: res.locals.parsedParams.taskId });
+        const task = await scheduler.get({ taskId });
         if (task.isErr()) {
             cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: task.error.message } }));
             return;
