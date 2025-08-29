@@ -5631,7 +5631,7 @@ itglue:
         - other
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}.itglue.com
+        base_url: https://${connectionConfig.subdomain}.itglue.com
         headers:
             x-api-key: ${apiKey}
             content-type: application/vnd.api+json
@@ -5646,13 +5646,17 @@ itglue:
             type: string
             title: API Key
             description: Your IT Glue API key
+            doc_section: '#step-2-generating-your-api-key'
+            pattern: '^ITG\.[a-zA-Z0-9._-]+$'
+            example: ITG.12cca334567890_123456vasfagas7890
     connection_config:
-        domain:
+        subdomain:
             type: string
-            title: Domain
-            description: Your IT Glue domain (api, api.eu, or api.au)
+            title: Subdomain
+            description: Your IT Glue subdomain (api, api.eu, or api.au)
+            pattern: '^api(\.(eu|au))?$'
             example: api
-            doc_section: '#step-1-finding-your-domain-and-api-key'
+            doc_section: '#step-1-finding-your-domain'
             order: 1
 
 intercom:
