@@ -9,6 +9,8 @@ import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import * as HubspotWebhookRouting from './hubspot-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
 
+import type { HubSpotWebhook } from './types.js';
+
 vi.mock('crypto', async () => {
     const actualCrypto = (await vi.importActual('crypto')) as any;
     return {
@@ -31,7 +33,7 @@ describe('Webhook route unit tests', () => {
         });
         nangoMock.executeScriptForWebhooks = mock;
 
-        const body = [
+        const body: HubSpotWebhook[] = [
             {
                 eventId: 2409503945,
                 subscriptionId: 2426762,
@@ -129,7 +131,7 @@ describe('Webhook route unit tests', () => {
         });
         nangoMock.executeScriptForWebhooks = mock;
 
-        const body = [
+        const body: HubSpotWebhook[] = [
             {
                 eventId: 2409503945,
                 subscriptionId: 2426762,
@@ -158,9 +160,13 @@ describe('Webhook route unit tests', () => {
                 sourceId: 'userId:51430432'
             },
             {
+                eventId: 1234,
+                subscriptionId: 2426765,
+                portalId: 143553137,
+                occurredAt: 1705422467780,
                 subscriptionType: 'all.creation',
-                objectId: 111,
-                eventId: 1234
+                attemptNumber: 0,
+                objectId: 111
             }
         ];
         const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;

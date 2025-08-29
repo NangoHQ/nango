@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
-import type { WebhookHandler } from './types.js';
+import type { HubSpotWebhook, WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Hubspot');
@@ -21,7 +21,7 @@ export function validate(integration: IntegrationConfig, headers: Record<string,
     return crypto.timingSafeEqual(signatureBuffer, hashBuffer);
 }
 
-const route: WebhookHandler = async (nango, headers, body) => {
+const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, headers, body) => {
     const valid = validate(nango.integration, headers, body);
 
     if (!valid) {
@@ -30,7 +30,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
     }
 
     if (Array.isArray(body)) {
-        const groupedByObjectId = body.reduce((acc, event) => {
+        const groupedByObjectId = body.reduce<Record<string, HubSpotWebhook[]>>((acc, event) => {
             (acc[event.objectId] = acc[event.objectId] || []).push(event);
             return acc;
         }, {});
@@ -38,7 +38,10 @@ const route: WebhookHandler = async (nango, headers, body) => {
         let connectionIds: string[] = [];
 
         for (const objectId in groupedByObjectId) {
-            const sorted = groupedByObjectId[objectId].sort((a: any, b: any) => {
+            const events = groupedByObjectId[objectId];
+            if (!events) continue;
+
+            const sorted = events.sort((a: HubSpotWebhook, b: HubSpotWebhook) => {
                 const aIsCreation = a.subscriptionType.endsWith('.creation') ? 1 : 0;
                 const bIsCreation = b.subscriptionType.endsWith('.creation') ? 1 : 0;
                 return bIsCreation - aIsCreation || a.occurredAt - b.occurredAt;
@@ -56,7 +59,9 @@ const route: WebhookHandler = async (nango, headers, body) => {
             }
         }
 
-        return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds });
+        // Deduplicate connection IDs to prevent multiple webhook forwards for the same connection
+        const uniqueConnectionIds = Array.from(new Set(connectionIds));
+        return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds: uniqueConnectionIds, toForward: body });
     } else {
         const response = await nango.executeScriptForWebhooks({
             body,
