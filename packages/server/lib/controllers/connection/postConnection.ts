@@ -30,7 +30,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
-const schemaBody = z.object({
+const schemaBody = z.strictObject({
     provider_config_key: z.string(),
     metadata: z.record(z.string(), z.unknown()).optional(),
     connection_config: z

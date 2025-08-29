@@ -1,10 +1,7 @@
 import yaml from 'js-yaml';
 import { $ } from 'zx';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseEndpoint } from '@nangohq/nango-yaml';
-
-import type { FlowsYaml, Provider } from '@nangohq/types';
+import type { FlowZeroJson, Provider } from '@nangohq/types';
 
 interface FormattedFlow {
     integration: string;
@@ -31,9 +28,9 @@ while (true) {
     const flows = await getFlows(sha);
 
     let canProcess = false;
-    if (flows) {
-        const firstFlow = Object.entries(flows.integrations)[0]?.[1] as any;
-        if (firstFlow && (firstFlow['actions'] || firstFlow['syncs'])) {
+    if (flows && flows.length > 0) {
+        const firstFlow = flows[0];
+        if (firstFlow && (firstFlow.actions || firstFlow.syncs)) {
             canProcess = true;
         }
     }
@@ -99,37 +96,35 @@ for (const [date, added] of months) {
     console.log();
 }
 
-async function getFlows(sha: string): Promise<FlowsYaml | undefined> {
-    const providersPackageYaml = await $`git show ${sha}:packages/shared/flows.yaml`.nothrow().quiet();
-    if (providersPackageYaml.exitCode === 0) {
-        return yaml.load(providersPackageYaml.toString()) as FlowsYaml;
+async function getFlows(sha: string): Promise<FlowZeroJson[] | undefined> {
+    const flowsZeroJson = await $`git show ${sha}:packages/shared/flows.zero.json`.nothrow().quiet();
+    if (flowsZeroJson.exitCode === 0) {
+        return JSON.parse(flowsZeroJson.toString()) as FlowZeroJson[];
     }
 
     return undefined;
 }
 
-function formatFlows(flows: FlowsYaml) {
+function formatFlows(flows: FlowZeroJson[]) {
     const out: Record<string, FormattedFlow> = {};
 
-    for (const name of Object.keys(flows.integrations)) {
-        const integration = flows.integrations[name];
-        if (!integration) {
+    for (const integration of flows) {
+        const name = integration.providerConfigKey;
+        if (!name) {
             continue;
         }
 
         if (integration.actions) {
-            for (const actionName of Object.keys(integration.actions)) {
-                const action = integration.actions[actionName];
+            for (const action of integration.actions) {
                 if (!action) {
                     continue;
                 }
 
-                const parsed = parseEndpoint(action.endpoint, 'POST');
                 const val = {
                     integration: name,
-                    name: actionName,
-                    endpoint: parsed.path,
-                    method: parsed.method,
+                    name: action.name,
+                    endpoint: action.endpoint!.path,
+                    method: action.endpoint!.method,
                     type: 'actions'
                 };
                 out[JSON.stringify(val)] = val;
@@ -137,20 +132,17 @@ function formatFlows(flows: FlowsYaml) {
         }
 
         if (integration.syncs) {
-            for (const syncName of Object.keys(integration.syncs)) {
-                const sync = integration.syncs[syncName];
+            for (const sync of integration.syncs) {
                 if (!sync) {
                     continue;
                 }
 
-                const endpoints = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
-                for (const endpoint of endpoints) {
-                    const parsed = parseEndpoint(endpoint, 'GET');
+                for (const endpoint of sync.endpoints) {
                     const val = {
                         integration: name,
-                        name: syncName,
-                        endpoint: parsed.path,
-                        method: parsed.method,
+                        name: sync.name,
+                        endpoint: endpoint.path,
+                        method: endpoint.method,
                         type: 'syncs'
                     };
 
