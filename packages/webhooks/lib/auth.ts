@@ -10,9 +10,9 @@ import type {
     DBEnvironment,
     DBExternalWebhook,
     DBTeam,
-    EndUser,
     ErrorPayload,
     IntegrationConfig,
+    InternalEndUser,
     NangoAuthWebhookBodyBase,
     NangoAuthWebhookBodyError,
     NangoAuthWebhookBodySuccess
@@ -35,7 +35,7 @@ export async function sendAuth({
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
-    endUser?: EndUser | undefined;
+    endUser?: InternalEndUser | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
     providerConfig?: IntegrationConfig | undefined;

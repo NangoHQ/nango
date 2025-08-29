@@ -4,7 +4,7 @@ import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/ut
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { GetConnectSession } from '@nangohq/types';
+import type { GetConnectSession, InternalEndUser } from '@nangohq/types';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -21,48 +21,45 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
 
     const { connectSession, account, environment } = res.locals;
 
-    const getEndUser = await endUserService.getEndUser(db.knex, {
-        id: connectSession.endUserId,
-        accountId: account.id,
-        environmentId: environment.id
-    });
-
-    if (getEndUser.isErr()) {
-        res.status(404).send({
-            error: {
-                code: 'not_found',
-                message: 'End user not found'
-            }
+    let endUser: InternalEndUser;
+    if (connectSession.endUserId) {
+        const getEndUser = await endUserService.getEndUser(db.knex, {
+            id: connectSession.endUserId,
+            accountId: account.id,
+            environmentId: environment.id
         });
+
+        if (getEndUser.isErr()) {
+            res.status(404).send({ error: { code: 'not_found', message: 'End user not found' } });
+            return;
+        }
+        endUser = getEndUser.value;
+    } else if (connectSession.endUser) {
+        endUser = connectSession.endUser;
+    } else {
+        res.status(404).send({ error: { code: 'not_found', message: 'End user not found' } });
         return;
     }
-    const endUser = getEndUser.value;
-    const response: GetConnectSession['Success'] = {
-        data: {
-            end_user: {
-                id: endUser.endUserId
-            }
+
+    const data: GetConnectSession['Success']['data'] = {
+        endUser: {
+            id: endUser.endUserId,
+            display_name: endUser.displayName || null,
+            email: endUser.email || null,
+            tags: endUser.tags || null,
+            organization: endUser.organization
+                ? {
+                      id: endUser.organization.organizationId,
+                      display_name: endUser.organization.displayName || null
+                  }
+                : null
         }
     };
-    if (endUser.displayName) {
-        response.data.end_user.display_name = endUser.displayName;
-    }
-    if (endUser.email) {
-        response.data.end_user.email = endUser.email;
-    }
-    if (endUser.organization) {
-        response.data.organization = {
-            id: endUser.organization.organizationId
-        };
-        if (endUser.organization.displayName) {
-            response.data.organization.display_name = endUser.organization.displayName;
-        }
-    }
     if (connectSession.allowedIntegrations) {
-        response.data.allowed_integrations = connectSession.allowedIntegrations;
+        data.allowed_integrations = connectSession.allowedIntegrations;
     }
     if (connectSession.integrationsConfigDefaults) {
-        response.data.integrations_config_defaults = Object.fromEntries(
+        data.integrations_config_defaults = Object.fromEntries(
             Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [
                 key,
                 {
@@ -74,11 +71,11 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         );
     }
     if (connectSession.connectionId) {
-        response.data.isReconnecting = true;
+        data.isReconnecting = true;
     }
     if (connectSession.overrides) {
-        response.data.overrides = connectSession.overrides;
+        data.overrides = connectSession.overrides;
     }
 
-    res.status(200).send(response);
+    res.status(200).send({ data });
 });

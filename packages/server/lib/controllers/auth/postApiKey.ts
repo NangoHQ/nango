@@ -10,7 +10,7 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -90,7 +90,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'apikey', connectSession: endUserToMeta(res.locals.endUser) },
+                          meta: { authType: 'apikey', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -175,7 +175,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -189,7 +189,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 account,
                 auth_mode: 'API_KEY',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser ?? undefined
             },
             account,
             config,
