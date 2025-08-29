@@ -86,7 +86,7 @@ jobs:
                   aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
 
     deploy_aws:
-        if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui'
+        if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
         runs-on: ubuntu-latest
         permissions:
             contents: write
