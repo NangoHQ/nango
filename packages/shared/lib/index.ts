@@ -40,6 +40,7 @@ export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/shared-credentials.service.js';
+export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
