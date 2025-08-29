@@ -83,31 +83,6 @@ export function createCredentials({
     }
 }
 
-export function fetchJwtToken({
-    privateKey,
-    payload,
-    options
-}: {
-    privateKey: string;
-    payload: Record<string, string | number>;
-    options: object;
-}): Result<{ jwtToken: string }, AuthCredentialsError> {
-    const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
-
-    if (!hasLineBreak) {
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-    }
-
-    try {
-        const token = signJWT({ payload, secretOrPrivateKey: privateKey, options });
-        return Ok({ jwtToken: token });
-    } catch (err) {
-        const error = new AuthCredentialsError('refresh_token_external_error', { cause: err });
-        return Err(error);
-    }
-}
-
 /**
  * Create JWT credentials from a URL
  */
@@ -124,15 +99,18 @@ export async function createCredentialsFromURL({
     additionalApiHeaders: Record<string, string> | null;
     options: object;
 }): Promise<Result<{ tokenResponse: JwtCredentials; jwtToken: string }, AuthCredentialsError>> {
+    const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+
+    if (!hasLineBreak) {
+        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+    }
+
     try {
-        const tokenValue = fetchJwtToken({ privateKey, payload, options });
-        if (tokenValue.isErr()) {
-            return Err(tokenValue.error);
-        }
-        const { jwtToken } = tokenValue.value;
+        const token = signJWT({ payload, secretOrPrivateKey: privateKey, options });
 
         const headers = {
-            Authorization: `Bearer ${jwtToken}`
+            Authorization: `Bearer ${token}`
         };
 
         if (additionalApiHeaders) {
@@ -147,18 +125,10 @@ export async function createCredentialsFromURL({
             }
         );
 
-        return Ok({ tokenResponse: tokenResponse.data, jwtToken });
+        return Ok({ tokenResponse: tokenResponse.data, jwtToken: token });
     } catch (err) {
         const error = new AuthCredentialsError('refresh_token_external_error', { cause: err });
         return Err(error);
-    }
-}
-
-export function decode(token: string): Record<string, any> | null {
-    try {
-        return jwt.decode(token) as Record<string, any>;
-    } catch {
-        return null;
     }
 }
 

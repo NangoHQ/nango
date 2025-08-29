@@ -1,0 +1,19 @@
+---
+title: 'FAQ'
+sidebarTitle: 'FAQ'
+description: 'Frequently asked questions about custom integrations.'
+---
+
+## I just run `nango migrate-to-zero-yaml`, can I change the folder structure?
+
+Yes, you can change the folder structure. You can move files, zod definitions, types, rename files, folders, etc.
+The results of the migration is just an example of how you can structure your project.
+
+## I'm getting `ZodXX is missing the following properties` errors 
+
+If you are getting Zod errors, it's most likely because you are using a different version of Zod than the one we use in our CLI. We currently require zod `4.0.5`.
+
+If you have an overrides in your package.json or something that is changing the version of Zod, you will need to remove that.
+
+NB: `nango compile` will automatically update your dependencies to the version we use in our CLI.
+

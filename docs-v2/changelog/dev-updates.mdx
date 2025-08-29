@@ -8,6 +8,51 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
+<Update label="August 27, 2025"  tags={["Breaking changes", "API"]}>
+
+  ## End of connection end-user replication
+
+Currently connection's end user are automatically replicated to the Nango platform based on the `end_user_id` field.
+This behavior was confusing for some customers and was preventing them from declaring multiple organizations for the same user without having to manually concatenate the `end_user_id` field.
+Because the behavior was most of time undesired, we will stop replicating end user fields across connections.
+
+After the transition period, an **end user will be tied to a single connection.**
+
+  ### 🗓️ Timeline
+
+  - **September 5, 2025**: End user updates will stop being replicated across connections.
+
+  ### 🧐 Am I impacted?
+
+  - If your users can be tied to multiple organizations
+  - If you were relying on the end user auto-replication to maintain data freshness
+
+  ### 💡 What should I do?
+
+  End user fields are mostly for display and tagging purposes:
+  - If you are not using them, you can safely ignore this update.
+
+  - If you are using them, and wish to keep them in sync (e.g: display name, across connections) you will need to patch each connection when your end user is updated on your side
+
+
+  ```ts
+  await nango.patchConnection({
+    connectionId,
+    provider_config_key
+  } , {
+    end_user: {
+      id: '123',
+      email: 'new-email@nango.dev'
+    }
+  });
+  ```
+
+  NB: if you don't keep them in sync, the only side effect is that data will be stale in the Nango platform.
+
+  There is no batch endpoint for this operation. If you need one, please reach out on Slack.
+
+</Update>
+
 <Update label="August 22, 2025" description="Action output limit" tags={["Breaking changes"]}>
 
   ## Action payload output limit
@@ -41,9 +86,10 @@ description: "Updates and breaking changes for developers."
 
 </Update>
 
-<Update label="August 2025" description="v0.66.2" tags={["Breaking changes"]}>
 
-  ## August 2025 API Breaking changes
+<Update label="August 20, 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
+
+  ## Deprecation of `/connections` endpoints
 
   In this release, we've made some changes to the API that are breaking for some users.
 
@@ -57,7 +103,6 @@ description: "Updates and breaking changes for developers."
 
   ### 🗓️ Timeline
 
-  - **August 20, 2025**: We will start deprecating the `/connection` endpoints.
   - **January 20, 2026**: All `/connection` endpoints will be removed.
 
   ### 🧐 Am I impacted?
@@ -106,5 +151,28 @@ description: "Updates and breaking changes for developers."
   ```
 
   Please report any inconsistencies or issues with the new endpoints to support@nango.dev or in our slack community.
+
+</Update>
+
+
+<Update label="July 21, 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
+
+  ## Deprecation of `nango.yaml` configuration file
+
+The new script format is now officially released under `>=0.64.0`.
+If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4.
+By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install zod: `4.0.5`
+
+  ### 🗓️ Timeline
+
+  - **December 1st, 2025**: `nango.yaml` support will be removed.
+
+  ### 🧐 Am I impacted?
+
+  - If you use custom scripts
+
+  ### 💡 What should I do?
+
+  - Follow migration guide -> https://docs.nango.dev/guides/custom-integrations/migrate-to-zero-yaml
 
 </Update>

@@ -105,7 +105,7 @@ class AppAuthController {
                 return;
             }
 
-            const connectionConfig: Record<string, string | undefined | Record<string, string | number>> = {
+            const connectionConfig: Record<string, string | undefined> = {
                 installation_id,
                 app_id: config.oauth_client_id
             };

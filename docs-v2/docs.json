@@ -77,7 +77,8 @@
                   "guides/custom-integrations/extend-a-pre-built-integration",
                   "guides/custom-integrations/generate-integrations-with-ai",
                   "guides/custom-integrations/event-based-scripts",
-                  "guides/custom-integrations/migrate-to-zero-yaml"
+                  "guides/custom-integrations/migrate-to-zero-yaml",
+                  "guides/custom-integrations/faq"
                 ]
               },
               {
@@ -751,9 +752,10 @@
                   {
                     "group": "Connections",
                     "pages": [
+                      "reference/api/connections/post",
                       "reference/api/connections/list",
                       "reference/api/connections/get",
-                      "reference/api/connections/post",
+                      "reference/api/connections/patch",
                       "reference/api/connections/set-metadata",
                       "reference/api/connections/update-metadata",
                       "reference/api/connections/delete"
