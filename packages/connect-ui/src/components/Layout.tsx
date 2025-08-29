@@ -15,10 +15,6 @@ export const Layout: React.FC = () => {
     });
 
     useKeyPressEvent('Escape', () => {
-        if (isEmbedded) {
-            return;
-        }
-
         triggerClose('click:outside');
     });
 
