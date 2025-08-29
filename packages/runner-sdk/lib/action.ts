@@ -61,6 +61,7 @@ export abstract class NangoActionBase<
     runnerFlags: NangoProps['runnerFlags'];
     scriptType: NangoProps['scriptType'];
 
+    public isCLI: NangoProps['isCLI'];
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -77,6 +78,7 @@ export abstract class NangoActionBase<
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
+        this.isCLI = config.isCLI;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -224,16 +226,16 @@ export abstract class NangoActionBase<
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as any);
+            return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as Record<string, unknown>);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }
     }
 
-    public async updateMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<UpdateMetadata['Success']>> {
+    public async updateMetadata(metadata: Partial<TMetadataInferred>): Promise<AxiosResponse<UpdateMetadata['Success']>> {
         this.throwIfAborted();
         try {
-            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata as any);
+            return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
         } finally {
             this.memoizedConnections.delete(`${this.providerConfigKey}${this.connectionId}`);
         }

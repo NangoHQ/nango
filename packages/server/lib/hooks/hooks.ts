@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
@@ -14,6 +13,7 @@ import {
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
+import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
@@ -151,7 +151,19 @@ export const connectionCreated = async (
         account
     });
 
-    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.connections',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: account.id,
+                connectionId: connection.id,
+                environmentId: connection.environment_id,
+                providerConfigKey: providerConfig.unique_key
+            }
+        }
+    });
 };
 
 export const connectionCreationFailed = async (

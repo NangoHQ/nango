@@ -810,11 +810,20 @@ export function nangoModelToZod({
         return false;
     });
     if (isDynamic) {
-        // z.object({ ... }).catchall(valueType)
         const valueType = nangoTypeToZodAst({ j, field: isDynamic, referencedModels: referencedModels || [] });
         const safeValueType = valueType ?? j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('any')), []);
         // All other fields
         const otherFields = model.fields.filter((f) => f !== isDynamic);
+
+        // If there are no other fields, use z.record(z.string(), safeValueType)
+        if (otherFields.length === 0) {
+            return j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('record')), [
+                j.callExpression(j.memberExpression(j.identifier('z'), j.identifier('string')), []),
+                safeValueType
+            ]);
+        }
+
+        // Otherwise, use z.object({ ... }).catchall(valueType)
         const otherProps = otherFields
             .map((field) => {
                 const zodAst = nangoTypeToZodAst({ j, field, referencedModels: referencedModels || [] });

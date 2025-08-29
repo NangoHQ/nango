@@ -55,12 +55,14 @@ export async function createCredentials({
             return Err(create.error);
         }
 
-        const rawCredentials = create.value;
+        const { tokenResponse, jwtToken } = create.value;
+
         const credentials: AppCredentials = {
             type: 'APP',
-            access_token: rawCredentials.token!,
-            expires_at: rawCredentials.expires_at,
-            raw: rawCredentials
+            access_token: tokenResponse.token!,
+            expires_at: tokenResponse.expires_at,
+            raw: tokenResponse,
+            jwtToken
         };
 
         return Ok(credentials);

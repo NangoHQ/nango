@@ -101,8 +101,8 @@ const Integrations: React.FC = () => {
                     </Button>
                 </div>
                 <div className="flex flex-col gap-5 text-center pt-10">
-                    <h1 className="font-semibold text-xl text-dark-800">{t('integrationsList.title')}</h1>
-                    <p className="text-dark-500">{t('integrationsList.description')}</p>
+                    <h1 className="font-semibold text-xl text-text-primary">{t('integrationsList.title')}</h1>
+                    <p className="text-text-muted">{t('integrationsList.description')}</p>
                 </div>
             </header>
             <main className="h-full overflow-auto m-9 mt-1 p-1 ">
@@ -163,7 +163,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex justify-between items-center border-b border-b-dark-100 py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none hover:bg-dark-100 focus:bg-dark-100"
+            className="group flex justify-between items-center border-b border-b-foreground hover:bg-foreground focus:bg-foreground py-5 px-5 transition-colors rounded-md ring-offset-white focus-visible:ring-neutral-950 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:outline-none"
             role="button"
             tabIndex={0}
             title={connectToLabel}
@@ -173,7 +173,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
                 <div className="w-[50px] h-[50px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                     <img src={integration.logo} />
                 </div>
-                <div className="text-zinc-900">{integration.display_name}</div>
+                <div className="text-text-primary">{integration.display_name}</div>
                 {error && (
                     <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded gap-2">
                         <IconExclamationCircle size={17} stroke={1} /> {error}

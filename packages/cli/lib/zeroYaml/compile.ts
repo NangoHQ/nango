@@ -164,7 +164,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
     try {
-        const { plugin, bag } = nangoPlugin();
+        const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -294,7 +294,7 @@ export function tsToJsPath(filePath: string) {
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
-function nangoPlugin() {
+function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
@@ -303,6 +303,10 @@ function nangoPlugin() {
         batchingRecordsLines,
         setMergingStrategyLines
     };
+
+    const normalizedEntryPoint = path.resolve(entryPoint);
+    // Get actual path even if entryPoint is a symlink
+    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace('.js', '.ts')).replace('.ts', '.js');
 
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
@@ -354,9 +358,9 @@ function nangoPlugin() {
                         }
                     },
 
-                    CallExpression(path) {
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const callee = path.node.callee;
+                    CallExpression(astPath) {
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const callee = astPath.node.callee;
                         if (!('object' in callee) || !('property' in callee)) {
                             return;
                         }
@@ -364,14 +368,14 @@ function nangoPlugin() {
                             return;
                         }
 
-                        const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
-                        const isThenOrCatch = path.findParent(
+                        const isAwaited = astPath.findParent((parentPath) => parentPath.isAwaitExpression());
+                        const isThenOrCatch = astPath.findParent(
                             (parentPath) =>
                                 t.isMemberExpression(parentPath.node) &&
                                 (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
                         );
 
-                        const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+                        const isReturned = Boolean(astPath.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
 
                         if (!isAwaited && !isThenOrCatch && !isReturned && needsAwait.includes(callee.property.name)) {
                             throw new CompileError(
@@ -381,7 +385,7 @@ function nangoPlugin() {
                             );
                         }
 
-                        const callArguments = path.node.arguments;
+                        const callArguments = astPath.node.arguments;
                         if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
                             let retriesPropertyFound = false;
                             let retryOnPropertyFound = false;
@@ -402,24 +406,52 @@ function nangoPlugin() {
                             }
                         }
 
-                        if (callsProxy.includes(callee.property.name)) {
-                            proxyLines.push(lineNumber);
-                        }
-                        if (callsBatchingRecords.includes(callee.property.name)) {
-                            batchingRecordsLines.push(lineNumber);
-                        }
-                        if (callee.property.name === 'setMergingStrategy') {
-                            setMergingStrategyLines.push(lineNumber);
+                        // Check the main file and only the exec method for common errors
+                        // If you abstract those calls in functions then it's not checking since it's quite hard to determine order
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath === realEntryPoint) {
+                                // Check if we're inside a createSync's exec function
+                                const isInCreateSyncExec = astPath.findParent((parentPath) => {
+                                    if (!parentPath.isObjectProperty()) {
+                                        return false;
+                                    }
+                                    const prop = parentPath.node;
+                                    return t.isIdentifier(prop.key) && prop.key.name === 'exec';
+                                });
+
+                                if (isInCreateSyncExec) {
+                                    if (callsProxy.includes(callee.property.name)) {
+                                        proxyLines.push(lineNumber);
+                                    }
+                                    if (callsBatchingRecords.includes(callee.property.name)) {
+                                        batchingRecordsLines.push(lineNumber);
+                                    }
+                                    if (callee.property.name === 'setMergingStrategy') {
+                                        setMergingStrategyLines.push(lineNumber);
+                                    }
+                                }
+                            }
                         }
                     },
 
-                    ExportDefaultDeclaration(path) {
-                        if ((path.node as any).__transformedByRemoveCreateWrappers) {
+                    ExportDefaultDeclaration(astPath) {
+                        if ((astPath.node as any).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const decl = path.node.declaration;
+                        // Skip processing if the current file is not an entry point
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath !== realEntryPoint) {
+                                return;
+                            }
+                        }
+
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const decl = astPath.node.declaration;
                         let calleeName = null;
                         let arg = null;
 
@@ -448,14 +480,15 @@ function nangoPlugin() {
                             const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
                             (exportConst as any).__transformedByRemoveCreateWrappers = true;
                             (exportDefault as any).__transformedByRemoveCreateWrappers = true;
-                            path.replaceWithMultiple([exportConst, exportDefault]);
+                            astPath.replaceWithMultiple([exportConst, exportDefault]);
                         }
                         // Case 2: export default action; (or sync/onEvent)
                         else if (t.isIdentifier(decl)) {
-                            const binding = path.scope.getBinding(decl.name);
+                            const binding = astPath.scope.getBinding(decl.name);
                             if (!binding || !binding.path.isVariableDeclarator()) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
                             }
+
                             const init = binding.path.node.init;
                             if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);

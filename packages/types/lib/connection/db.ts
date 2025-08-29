@@ -10,8 +10,9 @@ export type Metadata = Record<string, unknown>;
 
 export interface ConnectionConfig {
     [key: string]: any;
-    oauth_scopes?: string;
-    authorization_params?: Record<string, string>;
+    oauth_scopes_override?: string[] | undefined;
+    oauth_scopes?: string | undefined;
+    authorization_params?: Record<string, string> | undefined;
 }
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {

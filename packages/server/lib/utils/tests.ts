@@ -11,7 +11,7 @@ import { migrateLogsMapping } from '@nangohq/logs';
 
 import { router } from '../routes.js';
 
-import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath } from '@nangohq/types';
+import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, DBUser } from '@nangohq/types';
 import type { Server } from 'node:http';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
@@ -36,10 +36,11 @@ export function apiFetch(baseUrl: string) {
             method,
             query,
             token,
+            session,
             body,
             params,
             headers: additionalHeaders
-        }: { token?: string; headers?: Record<string, string> } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
+        }: { token?: string; session?: string; headers?: Record<string, string> } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
             (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
             (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
@@ -62,6 +63,11 @@ export function apiFetch(baseUrl: string) {
         if (token) {
             headers.append('Authorization', `Bearer ${token}`);
         }
+
+        if (session) {
+            headers.append('Cookie', session);
+        }
+
         if (body) {
             headers.append('content-type', 'application/json');
         }
@@ -175,4 +181,21 @@ export async function getConnectSessionToken(api: Awaited<ReturnType<typeof runS
     } = (await getSession.json()) as { data: { token: string } };
     if (!token) throw new Error('No connect session token');
     return token;
+}
+
+export async function authenticateUser(api: Awaited<ReturnType<typeof runServer>>, user: DBUser, password: string = 'Password123!'): Promise<string> {
+    const { res } = await api.fetch('/api/v1/account/signin', {
+        method: 'POST',
+        body: { email: user.email, password }
+    });
+    if (!res.ok) {
+        throw new Error('Failed to authenticate user');
+    }
+    const setCookie = res.headers.getSetCookie();
+    if (!setCookie || setCookie.length === 0) {
+        throw new Error('No cookies');
+    }
+
+    // Only grab `nango_session=...`
+    return setCookie[0]!.split(';')[0]!;
 }

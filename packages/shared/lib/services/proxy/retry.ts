@@ -68,22 +68,46 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     if (proxyConfig.retryHeader && (proxyConfig.retryHeader.at || proxyConfig.retryHeader.after)) {
         // Headers configured on the fly
         const type = proxyConfig.retryHeader.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.retryHeader.at ? proxyConfig.retryHeader.at : proxyConfig.retryHeader.after;
+        const retrySource = proxyConfig.retryHeader.at || proxyConfig.retryHeader.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader! });
-        if (res.found) {
-            return { retry: true, reason: `custom_${res.reason}`, wait: res.wait };
+        // Check all headers and find the most restrictive/ longest wait retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
+                }
+            }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `custom_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
     if (proxyConfig.provider.proxy && proxyConfig.provider.proxy.retry && (proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after)) {
         // Headers configured in the providers.yaml
         const type = proxyConfig.provider.proxy.retry.at ? 'at' : 'after';
-        const retryHeader = proxyConfig.provider.proxy.retry.at ? proxyConfig.provider.proxy.retry.at : proxyConfig.provider.proxy.retry.after;
+        const retrySource = proxyConfig.provider.proxy.retry.at || proxyConfig.provider.proxy.retry.after || [];
+        const retryHeaders = Array.isArray(retrySource) ? retrySource : [retrySource];
 
-        const res = getRetryFromHeader({ err, type, retryHeader: retryHeader as string });
-        if (res.found) {
-            return { retry: true, reason: `preconfigured_${res.reason}`, wait: res.wait };
+        // Check all headers and find the most restrictive/ longest wait retry time
+        let bestRetry: { reason: string; wait: number } | null = null;
+
+        for (const retryHeader of retryHeaders) {
+            const res = getRetryFromHeader({ err, type, retryHeader });
+            if (res.found) {
+                if (!bestRetry || res.wait > bestRetry.wait) {
+                    bestRetry = res;
+                }
+            }
+        }
+
+        if (bestRetry) {
+            return { retry: true, reason: `preconfigured_${bestRetry.reason}`, wait: bestRetry.wait };
         }
     }
 
