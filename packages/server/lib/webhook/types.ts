@@ -123,14 +123,14 @@ export interface AttioWebhook {
 }
 
 export interface HubSpotWebhook {
-    objectId: string;
+    objectId: number;
     propertyName?: string;
     propertyValue?: string;
     changeSource?: string;
-    eventId: string;
+    eventId: number;
     subscriptionId: number;
     portalId: number;
-    appId: number;
+    appId?: number;
     occurredAt: number;
     subscriptionType: string;
     attemptNumber: number;
@@ -140,4 +140,6 @@ export interface HubSpotWebhook {
     mergedObjectIds?: string[];
     newObjectId?: string;
     numberOfPropertiesMoved?: number;
+    sourceId?: string;
+    changeFlag?: string;
 }
