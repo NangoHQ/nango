@@ -61,14 +61,6 @@ const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, h
 
         // Deduplicate connection IDs to prevent multiple webhook forwards for the same connection
         const uniqueConnectionIds = Array.from(new Set(connectionIds));
-
-        if (uniqueConnectionIds.length !== connectionIds.length) {
-            logger.info(`Deduplicated connection IDs: ${connectionIds.length} -> ${uniqueConnectionIds.length}`, {
-                configId: nango.integration.id,
-                originalCount: connectionIds.length,
-                uniqueCount: uniqueConnectionIds.length
-            });
-        }
         return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds: uniqueConnectionIds, toForward: body });
     } else {
         const response = await nango.executeScriptForWebhooks({
