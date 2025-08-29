@@ -51,7 +51,7 @@ jobs:
                   role-to-assume: ${{ secrets.STAGING_DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ secrets.STAGING_AWS_REGION }}
-            - name: Deploy Connect UI to S3
+            - name: Deploy Webapp to S3
               run: |
                   aws s3 sync packages/webapp/dist/ s3://${{ secrets.STAGING_APP_UI_BUCKET }} --delete
             - name: Create invalidation
