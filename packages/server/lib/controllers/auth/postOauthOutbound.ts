@@ -10,7 +10,7 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -75,7 +75,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'oauth2-outbound', connectSession: endUserToMeta(res.locals.endUser) },
+                          meta: { authType: 'oauth2-outbound', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -150,10 +150,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, {
-                endUserId: connectSession.endUserId,
-                connection: updatedConnection.connection
-            });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({
@@ -171,7 +168,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 account,
                 auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser ?? undefined
             },
             account,
             config,

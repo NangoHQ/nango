@@ -1,4 +1,4 @@
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, DBUser, EndUser } from '@nangohq/types';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
 // export type RequestLocals =
@@ -27,7 +27,7 @@ export interface RequestLocals {
     account?: DBTeam;
     environment?: DBEnvironment;
     connectSession?: ConnectSession;
-    endUser?: EndUser;
+    endUser?: InternalEndUser | null;
     plan?: DBPlan | null;
     lang?: string;
 }

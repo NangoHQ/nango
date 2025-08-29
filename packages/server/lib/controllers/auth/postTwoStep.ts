@@ -11,7 +11,7 @@ import {
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -89,7 +89,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'twostep', connectSession: endUserToMeta(res.locals.endUser) },
+                          meta: { authType: 'twostep', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -183,7 +183,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -197,7 +197,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 account,
                 auth_mode: 'TWO_STEP',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser ?? undefined
             },
             account,
             config,

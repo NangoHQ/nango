@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
+import { configService, connectionService, errorManager, getConnectionConfig, getProvider, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -68,7 +68,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'unauth', connectSession: endUserToMeta(res.locals.endUser) },
+                          meta: { authType: 'unauth', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -137,7 +137,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -151,7 +151,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 account,
                 auth_mode: 'NONE',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser ?? undefined
             },
             account,
             config,

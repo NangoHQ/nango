@@ -1,6 +1,6 @@
 import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { TimestampsAndDeletedCorrect } from '../db.js';
-import type { EndUser } from '../endUser/index.js';
+import type { InternalEndUser } from '../endUser/index.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
 import type { ReplaceInObject } from '../utils.js';
@@ -47,7 +47,7 @@ export interface RecentlyCreatedConnection {
     operation: AuthOperationType;
     environment: DBEnvironment;
     account: DBTeam;
-    endUser: EndUser | undefined;
+    endUser: InternalEndUser | undefined;
 }
 
 export interface FailedConnectionError {
