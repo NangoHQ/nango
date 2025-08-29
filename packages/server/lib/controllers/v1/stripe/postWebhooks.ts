@@ -1,11 +1,10 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, getPlanBy, plansList, productTracking, updatePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../utils/stripe.js';
 
 import type { DBPlan, PostStripeWebhooks, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
@@ -82,6 +81,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
         // payment method was updated through our UI
         // we replicate to the customer to keep it in sync and to be able to generate invoices
         // It might be incorrect in some cases, but it's better than nothing
+        case 'payment_method.attached':
         case 'payment_method.updated': {
             const data = event.data.object;
             if (typeof data.customer !== 'string') {
@@ -92,8 +92,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             const billingDetails = paymentMethod.billing_details;
 
             await stripe.customers.update(data.customer, {
-                address: billingDetails.address as any,
-                name: billingDetails.name || ''
+                address: billingDetails.address as any
             });
             return Ok(undefined);
         }

@@ -98,6 +98,9 @@ export class Billing {
     async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
         return await this.client.upsertCustomer(team, user);
     }
+    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
+        return await this.client.updateCustomer(customerId, name);
+    }
 
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         return await this.client.linkStripeToCustomer(teamId, customerId);

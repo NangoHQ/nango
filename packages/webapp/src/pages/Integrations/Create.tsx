@@ -221,11 +221,24 @@ export default function Create() {
                                 </div>
                             </div>
                             <div className="flex justify-between">
-                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} disabled={isCreatingShared} variant="primary">
-                                    {isCreatingShared ? 'Creating...' : env === 'prod' ? 'Use your own developer app' : "Use Nango's developer app"}
+                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} isLoading={isCreatingShared} variant="primary">
+                                    {isCreatingShared && env !== 'prod'
+                                        ? 'Creating...'
+                                        : env !== 'prod'
+                                          ? "Use Nango's developer app"
+                                          : 'Use your own developer app'}
                                 </Button>
-                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} variant="secondary">
-                                    {env === 'prod' ? "Use Nango's developer app" : 'Use your own developer app'}
+                                <Button
+                                    type="button"
+                                    onClick={() => handleIntegrationCreation(env === 'prod')}
+                                    isLoading={isCreatingShared}
+                                    variant="secondary"
+                                >
+                                    {isCreatingShared && env === 'prod'
+                                        ? 'Creating...'
+                                        : env === 'prod'
+                                          ? "Use Nango's developer app"
+                                          : 'Use your own developer app'}
                                 </Button>
                             </div>
                         </div>

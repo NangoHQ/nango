@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -105,7 +105,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                 };
             }
 
-            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
+            const canOverrideDocsConnectUrl = (flagHasPlan && plan?.can_override_docs_connect_url) ?? true;
             const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
             if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
                 return {

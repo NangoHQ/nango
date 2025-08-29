@@ -16,7 +16,7 @@ Actions let you trigger tasks on third-party APIs from your backend — like fet
 - Return a result (either synchronously or asynchronously).
 
 <Warning>
-The output of an action cannot exceed 10MB.
+The output of an action cannot exceed 2MB.
 </Warning>
 
 For more details, see [Action Overview](/guides/actions/overview).
@@ -91,7 +91,7 @@ const result = await nango.triggerAction({
 Use asynchronous actions when:
 - The task might take longer to complete
 - You don’t need the action response immediately
-- Actions should be retried for improved reliability 
+- Actions should be retried for improved reliability
 - You are sending many actions at once
 
 To trigger asynchronously, add:

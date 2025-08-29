@@ -25,8 +25,96 @@ on:
                     - orchestrator
                     - metering
                     - connect_ui
+                    - app_ui
 
 jobs:
+    deploy_app_ui_aws:
+        if: inputs.stage == 'staging' && inputs.service == 'app_ui'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Install dependencies
+              run: npm ci
+            - name: Build Webapp
+              run: npm run ts-build && npm run -w @nangohq/webapp build
+            - name: Replace env.js source with api path in dist/index.html
+              env:
+                  API_DOMAIN: 'https://api-staging.nango.dev'
+              run: |
+                  FILE="packages/webapp/dist/index.html"
+                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ env.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.STAGING_DEPLOY_APP_UI_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ secrets.STAGING_AWS_REGION }}
+            - name: Deploy Webapp to S3
+              run: |
+                  aws s3 sync packages/webapp/dist/ s3://${{ secrets.STAGING_APP_UI_BUCKET }} --delete
+            - name: Create invalidation
+              run: |
+                  aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_APP_UI_DISTRIBUTION_ID }} --paths "/*"
+    deploy_connect_ui_aws:
+        if: inputs.stage == 'staging' && inputs.service == 'connect_ui'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Install dependencies
+              run: npm ci
+            - name: Build Connect UI
+              run: npm run ts-build && npm run -w @nangohq/connect-ui build
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.STAGING_DEPLOY_CONNECT_UI_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ secrets.STAGING_AWS_REGION }}
+            - name: Deploy Connect UI to S3
+              run: |
+                  aws s3 sync packages/connect-ui/dist/ s3://${{ secrets.STAGING_CONNECT_UI_BUCKET }} --delete
+            - name: Create invalidation
+              run: |
+                  aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
+
+    deploy_aws:
+        if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            actions: write
+        steps:
+            - name: Checkout nango-environments
+              uses: actions/checkout@v4
+              with:
+                  repository: NangoHQ/nango-environments
+                  token: ${{ secrets.NANGO_ENVIRONMENTS_PAT }}
+                  path: nango-environments
+
+            - name: Deploy ${{ inputs.service }} (AWS)
+              run: |
+                  cd nango-environments
+
+                  # Configure git for the commit
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  # Update the nango-values.yaml file for the current stage and service
+                  yq eval '.spec.values.${{ inputs.service }}.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+
+                  # Commit and push the changes
+                  git add apps/${{ inputs.stage }}/nango-values.yaml
+                  git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
+                  git push origin main
+
     deploy_server:
         if: inputs.service == 'server'
         runs-on: ubuntu-latest

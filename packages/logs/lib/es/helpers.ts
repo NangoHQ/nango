@@ -1,4 +1,6 @@
-import { isTest } from '@nangohq/utils';
+import { errors } from '@elastic/elasticsearch';
+
+import { Err, Ok, isTest } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
@@ -8,6 +10,8 @@ import { getFormattedMessage, getFormattedOperation } from '../models/helpers.js
 import { createMessage } from '../models/messages.js';
 import { createOperation } from '../models/operations.js';
 
+import type { Result } from '@nangohq/utils';
+
 export async function start() {
     if (!envs.NANGO_LOGS_ENABLED) {
         logger.warning('Elasticsearch is disabled, skipping');
@@ -16,12 +20,21 @@ export async function start() {
 
     logger.info('🔄 Elasticsearch service starting...');
 
-    await migrateMapping();
+    const res = await migrateMapping();
 
-    logger.info('✅ Elasticsearch');
+    if (res.isErr()) {
+        if (res.error.message === 'failed_to_connect_elasticsearch') {
+            logger.error('❌ Elasticsearch connection failed. Skipping migration');
+            return;
+        } else {
+            logger.error('❌ Elasticsearch initialization failed');
+            throw res.error;
+        }
+    }
+    logger.info(`✅ Elasticsearch`);
 }
 
-export async function migrateMapping() {
+export async function migrateMapping(): Promise<Result<void>> {
     try {
         for (const index of [indexMessages, indexOperations]) {
             logger.info(`Migrating index "${index.index}"...`);
@@ -62,9 +75,11 @@ export async function migrateMapping() {
                 }
             }
         }
+        return Ok(undefined);
     } catch (err) {
-        logger.error(err);
-        throw new Error('failed_to_init_elasticsearch');
+        const errMsg = err instanceof errors.ConnectionError ? 'failed_to_connect_elasticsearch' : 'failed_to_init_elasticsearch';
+        logger.error(errMsg);
+        return Err(errMsg);
     }
 }
 

@@ -479,6 +479,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `An error occurred during an HTTP call`;
                 break;
 
+            case 'script_api_rate_limit_error':
+                this.status = 424;
+                this.message = `Script API rate limit exceeded. Your Nango scripts made too many calls to the Nango API within the allowed window. Mitigation: reduce how often scripts run (e.g. lower sync frequency, fewer actions). Need higher limits? Contact Nango support.`;
+                break;
+
             case 'script_internal_error':
                 this.status = 500;
                 this.message = `An internal error occurred during the script execution`;

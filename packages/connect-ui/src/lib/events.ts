@@ -10,8 +10,11 @@ export function triggerReady() {
 }
 
 export function triggerClose(eventName: PostPublicConnectTelemetry['Body']['event']) {
-    const isDirty = useGlobal.getState().isDirty;
-    const nango = useGlobal.getState().nango;
+    const { isPreview, isDirty, nango } = useGlobal.getState();
+    if (isPreview) {
+        return;
+    }
+
     if (isDirty) {
         const leave = confirm('Are you sure you want to leave?');
         if (!leave) {
