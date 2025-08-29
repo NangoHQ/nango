@@ -1,8 +1,8 @@
 import { startOfMonth } from '@nangohq/utils';
 
 import type { AccountUsageStore, GetUsageParams, IncrementUsageParams, SetUsageParams } from './accountUsageStore.js';
-import type { AccountUsageIncrementableMetric } from '../metrics.js';
 import type { KVStore } from '@nangohq/kvstore';
+import type { AccountUsageIncrementableMetric } from '@nangohq/types';
 
 const MONTH_IN_MS = 31 * 24 * 60 * 60 * 1000;
 

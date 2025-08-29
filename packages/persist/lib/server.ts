@@ -1,7 +1,8 @@
 import express from 'express';
 
-import { createRoute, getLogger, requestLoggerMiddleware } from '@nangohq/utils';
+import { createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 
+import { logger } from './logger.js';
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { recordsPath } from './records.js';
 import { path as cursorPath, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
@@ -15,7 +16,6 @@ import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import type { ApiError } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-const logger = getLogger('Persist');
 const maxSizeJsonLog = '100kb';
 const maxSizeJsonRecords = '100mb';
 

@@ -73,7 +73,7 @@ export type DeletePublicIntegration = Endpoint<{
     Success: { success: true };
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'shared_credentials_id'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
@@ -101,7 +101,7 @@ export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
-    Body: { provider: string };
+    Body: { provider: string; useSharedCredentials: boolean };
     Success: {
         data: ApiIntegration;
     };

@@ -7,6 +7,7 @@ export interface ConnectSession {
     readonly operationId: string | null;
     readonly allowedIntegrations: string[] | null;
     readonly integrationsConfigDefaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
+    readonly overrides: Record<string, ConnectSessionOverrides> | null;
     readonly createdAt: Date;
     readonly updatedAt: Date | null;
 }
@@ -21,4 +22,8 @@ export interface ConnectSessionIntegrationConfigDefaults {
               oauth_scopes_override?: string | undefined;
           }
         | undefined;
+}
+
+export interface ConnectSessionOverrides {
+    docs_connect?: string | undefined;
 }
