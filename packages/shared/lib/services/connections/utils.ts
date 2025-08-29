@@ -7,7 +7,6 @@ export const DEFAULT_OAUTHCC_EXPIRES_AT_MS = ms('55minutes'); // This ensures we
 export const DEFAULT_INFINITE_EXPIRES_AT_MS = ms('99years');
 export const MAX_CONSECUTIVE_DAYS_FAILED_REFRESH = 4;
 export const REFRESH_MARGIN_S = ms('15minutes') / 1000;
-export const REFRESH_MARGIN_TEN = ms('10minutes') / 1000;
 
 export function getExpiresAtFromCredentials(credentials: AllAuthCredentials): Date | null {
     if (credentials.type === 'CUSTOM' && 'app' in credentials) {

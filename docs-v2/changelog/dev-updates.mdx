@@ -8,9 +8,9 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
-<Update label="27 August 2025"  tags={["Breaking changes", "API"]}>
+<Update label="August 27, 2025"  tags={["Breaking changes", "API"]}>
 
-  ## EOL for Connection End User Auto-Replication
+  ## End of connection end-user replication
 
 Currently connection's end user are automatically replicated to the Nango platform based on the `end_user_id` field.
 This behavior was confusing for some customers and was preventing them from declaring multiple organizations for the same user without having to manually concatenate the `end_user_id` field.
@@ -20,7 +20,6 @@ After the transition period, an **end user will be tied to a single connection.*
 
   ### 🗓️ Timeline
 
-  - **August 27, 2025**: Deprecation warning.
   - **September 5, 2025**: End user updates will stop being replicated across connections.
 
   ### 🧐 Am I impacted?
@@ -54,9 +53,9 @@ After the transition period, an **end user will be tied to a single connection.*
 
 </Update>
 
-<Update label="August 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
+<Update label="August 20, 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
 
-  ## August 2025 API Breaking changes
+  ## Deprecation of `/connections` endpoints
 
   In this release, we've made some changes to the API that are breaking for some users.
 
@@ -70,7 +69,6 @@ After the transition period, an **end user will be tied to a single connection.*
 
   ### 🗓️ Timeline
 
-  - **August 20, 2025**: We will start deprecating the `/connection` endpoints.
   - **January 20, 2026**: All `/connection` endpoints will be removed.
 
   ### 🧐 Am I impacted?
@@ -123,9 +121,9 @@ After the transition period, an **end user will be tied to a single connection.*
 </Update>
 
 
-<Update label="21 July 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
+<Update label="July 21, 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
 
-  ## New script format
+  ## Deprecation of `nango.yaml` configuration file
 
 The new script format is now officially released under `>=0.64.0`.
 If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4.
@@ -133,7 +131,6 @@ By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the 
 
   ### 🗓️ Timeline
 
-  - **July 21, 2025**: We will start deprecating the `nango.yaml` format.
   - **December 1st, 2025**: `nango.yaml` support will be removed.
 
   ### 🧐 Am I impacted?
