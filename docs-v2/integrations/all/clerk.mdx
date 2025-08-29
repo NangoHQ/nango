@@ -1,0 +1,56 @@
+---
+title: Clerk
+sidebarTitle: Clerk
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/clerk/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/clerk/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❌ | Free tier available |
+| Paid test account | ❌ | Free tier available |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+
+## Setup guide
+
+Clerk is a comprehensive authentication and user management platform that provides a complete suite of authentication tools including sign-up, sign-in, user profiles, and session management.
+
+To integrate Clerk with Nango, you'll need to obtain your Secret Key from the Clerk Dashboard.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clerk.mdx)</Note>
+
+
+## Useful links
+
+-   [Clerk Backend API Reference](https://clerk.com/docs/reference/backend-api/description/introduction)
+-   [Authentication Documentation](https://clerk.com/docs/authentication/overview)
+-   [API Keys Documentation](https://clerk.com/docs/upgrade-guides/api-keys)
+-   [Environment Variables](https://clerk.com/docs/deployments/clerk-environment-variables)
+-   [Rate Limits](https://clerk.com/docs/backend-requests/resources/rate-limits)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clerk.mdx)</Note>
+
+## API gotchas
+
+- **API Key Format**: Clerk uses different key prefixes for different environments. Use `sk_test_` keys for development and `sk_live_` keys for production.
+- **Rate Limits**: Clerk implements rate limiting based on your subscription plan. Free tier includes 10,000 monthly active users and standard rate limits.
+- **API Versioning**: Clerk uses API versioning through headers. The current version is v1, accessible at `https://api.clerk.com/v1`.
+- **Authentication**: All API requests require Bearer token authentication using your Secret Key in the Authorization header.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clerk.mdx)</Note>
+
+<Card title="Connect to Clerk" icon="link" href="/integrations/all/clerk/connect" horizontal>
+  Guide to connect to Clerk using Nango Connect.
+</Card>
