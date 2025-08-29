@@ -5656,7 +5656,7 @@ itglue:
             description: Your IT Glue subdomain (api, api.eu, or api.au)
             pattern: '^api(\.(eu|au))?$'
             example: api
-            doc_section: '#step-1-finding-your-domain'
+            doc_section: '#step-1-finding-your-subdomain'
             order: 1
 
 intercom:
