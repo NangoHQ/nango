@@ -13,8 +13,8 @@ describe('getSignatureHeader', () => {
 
     it('should return the same signature for the same payload but different order', () => {
         const secret = 'secret';
-        const signature1 = getSignatureHeader(secret, stringify({ a: 1, b: 2 }));
-        const signature2 = getSignatureHeader(secret, stringify({ b: 2, a: 1 }));
+        const signature1 = getSignatureHeader(secret, stringify({ a: 1, b: 2 })!);
+        const signature2 = getSignatureHeader(secret, stringify({ b: 2, a: 1 })!);
         expect(signature1).toBe(signature2);
     });
 });
