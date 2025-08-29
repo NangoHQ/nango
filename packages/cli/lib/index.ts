@@ -23,6 +23,7 @@ import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
+import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
@@ -520,6 +521,34 @@ program
         }
 
         await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
+    });
+
+program
+    .command('generate:tests')
+    .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .description('Generate tests for integration scripts and config files')
+    .action(async function (this: Command) {
+        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+
+        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
+            return;
+        }
+
+        const ok = await generateTests({
+            absolutePath,
+            integrationId,
+            debug: Boolean(debug),
+            autoConfirm: Boolean(autoConfirm)
+        });
+
+        if (ok) {
+            console.log(chalk.green(`Tests have been generated successfully!`));
+        } else {
+            console.log(chalk.red(`Failed to generate tests`));
+        }
     });
 
 program.parse();
