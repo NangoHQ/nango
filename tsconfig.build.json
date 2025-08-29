@@ -87,6 +87,9 @@
         },
         {
             "path": "packages/email"
+        },
+        {
+            "path": "packages/metering"
         }
     ]
 }

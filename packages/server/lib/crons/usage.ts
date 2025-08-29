@@ -2,12 +2,14 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import { billing as usageBilling } from '@nangohq/billing';
+import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
 import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
+import type { Lock } from '@nangohq/kvstore';
 import type { BillingMetric } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
@@ -19,9 +21,7 @@ export function exportUsageCron(): void {
         return;
     }
 
-    // add some jitter to avoid all instances running at the same time
-    const jitter = Math.floor(Math.random() * cronMinutes);
-    cron.schedule(`*/${cronMinutes + jitter} * * * *`, () => {
+    cron.schedule(`*/${cronMinutes} * * * *`, () => {
         (async () => {
             await exec();
         })();
@@ -31,11 +31,31 @@ export function exportUsageCron(): void {
 export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.exportUsage', async () => {
         logger.info(`Starting`);
-        await billing.exportBillableConnections();
-        await billing.exportActiveConnections();
-        await observability.exportConnectionsMetrics();
-        await observability.exportRecordsMetrics();
-        logger.info(`✅ done`);
+
+        const locking = await getLocking();
+        const ttlMs = cronMinutes * 60 * 1000;
+        let lock: Lock | undefined;
+        const lockKey = `lock:cron:exportUsage`;
+
+        try {
+            lock = await locking.acquire(lockKey, ttlMs);
+        } catch {
+            logger.info(`Could not acquire lock, skipping`);
+            return;
+        }
+
+        try {
+            await billing.exportBillableConnections();
+            await billing.exportProratedConnections();
+            await billing.exportActiveConnections();
+            await observability.exportConnectionsMetrics();
+            await observability.exportRecordsMetrics();
+            logger.info(`✅ done`);
+        } finally {
+            if (lock) {
+                await locking.release(lock);
+            }
+        }
     });
 }
 
@@ -79,8 +99,31 @@ const billing = {
     exportBillableConnections: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.connections', async (span) => {
             try {
+                const res = await connectionService.billableConnections();
+                if (res.isErr()) {
+                    throw res.error;
+                }
+
+                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
+                    return { type: 'total_connections', value: count, properties: { accountId } };
+                });
+
+                const sendRes = usageBilling.addAll(events);
+                if (sendRes.isErr()) {
+                    throw sendRes.error;
+                }
+            } catch (err) {
+                span.setTag('error', err);
+                report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
+            }
+        });
+    },
+    // TODO: remove once we confirmed the total connections metric (proration done by Orb) above is correct
+    exportProratedConnections: async (): Promise<void> => {
+        await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.proratedconnections', async (span) => {
+            try {
                 const now = new Date();
-                const res = await connectionService.billableConnections(now);
+                const res = await connectionService.proratedConnections(now);
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -95,7 +138,7 @@ const billing = {
                 }
             } catch (err) {
                 span.setTag('error', err);
-                report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
+                report(new Error('cron_failed_to_export_prorated_connections', { cause: err }));
             }
         });
     },

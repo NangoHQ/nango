@@ -12,7 +12,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
-import type { PostConnectSessions } from '@nangohq/types';
+import type { DBPlan, PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
 
 export const bodySchema = z
@@ -47,6 +47,14 @@ export const bodySchema = z
                     })
                     .strict()
             )
+            .optional(),
+        overrides: z
+            .record(
+                providerConfigKeySchema,
+                z.object({
+                    docs_connect: z.string().optional()
+                })
+            )
             .optional()
     })
     .strict();
@@ -69,29 +77,32 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
+    const { plan } = res.locals;
+
     const body: PostConnectSessions['Body'] = val.data;
-    await generateSession(res, body);
+    await generateSession(res, body, plan);
 });
 
 /**
- * Enforce that integrations exists in `integrations_config_defaults`
+ * Validate that all the integration keys exist
  */
-export function checkIntegrationsDefault(
-    body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>,
-    integrations: Config[]
+export function checkIntegrationsExist(
+    integrationRecords: Record<string, unknown> | undefined,
+    integrations: Config[],
+    path: string[]
 ): z.core.$ZodIssue[] | false {
-    if (!body.integrations_config_defaults) {
+    if (!integrationRecords) {
         return false;
     }
 
     const errors: z.core.$ZodIssue[] = [];
-    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+    for (const uniqueKey of Object.keys(integrationRecords)) {
         if (!integrations.find((v) => v.unique_key === uniqueKey)) {
             errors.push({
-                path: ['integrations_config_defaults', uniqueKey],
+                path: [...path, uniqueKey],
                 code: 'custom',
                 message: 'Integration does not exist',
-                input: body.integrations_config_defaults
+                input: integrationRecords
             });
         }
     }
@@ -99,7 +110,7 @@ export function checkIntegrationsDefault(
     return errors.length > 0 ? errors : false;
 }
 
-export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body']) {
+export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
     const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
@@ -107,10 +118,10 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
         }
 
-        if (body.allowed_integrations || body.integrations_config_defaults) {
+        if (body.allowed_integrations || body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
 
-            // Enforce that integrations exists in `allowed_integrations`
+            // Enforce that integrations in `allowed_integrations` exist
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {
                 const errors: z.core.$ZodIssue[] = [];
                 for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
@@ -128,10 +139,28 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 }
             }
 
-            // Enforce that integrations exists in `integrations_config_defaults`
-            const check = checkIntegrationsDefault(body, integrations);
-            if (check) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } } };
+            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist
+            const integrationConfigsDefaultsErrors = checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']);
+            const overridesErrors = checkIntegrationsExist(body.overrides, integrations, ['overrides']);
+            if (integrationConfigsDefaultsErrors || overridesErrors) {
+                return {
+                    status: 400,
+                    response: {
+                        error: {
+                            code: 'invalid_body',
+                            errors: zodErrorToHTTP({ issues: [...(integrationConfigsDefaultsErrors || []), ...(overridesErrors || [])] })
+                        }
+                    }
+                };
+            }
+
+            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
+            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
+            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
+                return {
+                    status: 403,
+                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
+                };
             }
         }
 
@@ -158,7 +187,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                       ])
                   )
                 : null,
-            operationId: logCtx.id
+            operationId: logCtx.id,
+            overrides: body.overrides || null
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

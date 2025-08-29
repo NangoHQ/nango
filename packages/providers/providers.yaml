@@ -352,6 +352,50 @@ autodesk:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
+autotask:
+    display_name: AutoTask
+    categories:
+        - support
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.autotask.net/ATServicesRest
+        headers:
+            apiintegrationcode: ${connectionConfig.apiIntegrationCode}
+            username: ${connectionConfig.username}
+            secret: ${credentials.apiKey}
+    credentials_verification_script: autotaskCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/autotask
+    docs_connect: https://docs.nango.dev/integrations/all/autotask/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: AutoTask API Zone
+            description: The zone subdomain for your Autotask instance (e.g., webservices3, webservices1, etc.)
+            example: webservices3
+            doc_section: '#step-1-finding-your-autotask-api-zone'
+        apiIntegrationCode:
+            type: string
+            title: API Integration Code
+            description: The tracking identifier assigned to your API-only user (27-character string)
+            example: ASHJKLFDKAHKASLFH85LSA905H
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-3-configure-the-api-user'
+        username:
+            type: string
+            title: API Username
+            description: The email address of your API-only user account
+            example: apiuser@example.com
+            format: email
+            doc_section: '#step-3-configure-the-api-user'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            pattern: '^[A-Za-z0-9@#$~*]+$'
+            description: The secret for your API-only user account
+            doc_section: '#step-4-generate-api-secret'
+
 algolia:
     display_name: Algolia
     categories:
@@ -3754,6 +3798,31 @@ factorial:
         base_url: https://api.factorialhr.com/api
     docs: https://docs.nango.dev/integrations/all/factorial
 
+fairing:
+    display_name: Fairing
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.fairing.co/api
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /questions
+    docs: https://docs.nango.dev/integrations/all/fairing
+    docs_connect: https://docs.nango.dev/integrations/all/fairing/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Token
+            description: The Secret Token for your Fairing account
+            pattern: '^[A-Za-z0-9_-]{64}$'
+            example: '3UjYpDjuk70Lt7AxC4M1x_7XvxoxkeX-OV7uTahJowilqLb2eLLvrtlvCGZgku1q'
+            doc_section: '#step-1-finding-your-secret-token'
+
 facebook:
     display_name: Facebook
     categories:
@@ -5317,6 +5386,39 @@ health-gorilla:
         base_url: https://healthgorilla.com
     docs: https://docs.nango.dev/integrations/all/health-gorilla
 
+heap:
+    display_name: Heap
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://heapanalytics.com/api
+    token_url: https://heapanalytics.com/api/public/v0/auth_token
+    token_headers:
+        authorization: Basic ${base64(${credentials.appId}:${credentials.apiKey})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/heap
+    docs_connect: https://docs.nango.dev/integrations/all/heap/connect
+    credentials:
+        appId:
+            type: string
+            title: App ID
+            description: Your Heap application ID
+            example: '3207896401'
+            pattern: '^\d+$'
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Heap API Key
+            secret: true
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key-and-app-id'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -5864,6 +5966,30 @@ jotform:
             type: string
             title: API Key
             description: The API key for your Jotform account
+
+jumpcloud:
+    display_name: JumpCloud
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.jumpcloud.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/jumpcloud
+    docs_connect: https://docs.nango.dev/integrations/all/jumpcloud/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JumpCloud API Key.
+            example: jca_9mK4pL2xR8vN6qW1sT7uY3eA5bC9dF0hG2jM
+            pattern: '^jca_[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generate-your-jumpcloud-api-key'
 
 helpscout-docs:
     display_name: Help Scout Docs
@@ -7703,6 +7829,80 @@ paychex:
             description: A confidential key used to authenticate the identity of application (client)
             doc_section: '#step-1-generating-your-client-credentials'
 
+paycor:
+    display_name: Paycor
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm.paycor.com/AppActivation/Authorize
+    token_url: https://apis.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor
+    docs_connect: https://docs.nango.dev/integrations/all/paycor/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor account
+            doc_section: '#step-1-finding-your-company-id'
+
+paycor-sandbox:
+    display_name: Paycor (Sandbox)
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://hcm-demo.paycor.com/AppActivation/Authorize
+    token_url: https://apis-sandbox.paycor.com/sts/v1/common/token?subscription-key=${connectionConfig.subscriptionKey}
+    authorization_params:
+        response_type: code
+        subscription-key: ${connectionConfig.subscriptionKey}
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis-sandbox.paycor.com
+        headers:
+            ocp-apim-subscription-key: ${connectionConfig.subscriptionKey}
+    docs: https://docs.nango.dev/integrations/all/paycor-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/paycor-sandbox/connect
+    connection_config:
+        subscriptionKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key for your Paycor sandbox account
+            automated: true
+        tenantId:
+            type: string
+            title: Company ID
+            example: '290180'
+            pattern: '^\d+$'
+            description: The company ID for your Paycor sandbox account
+            doc_section: '#step-1-finding-your-company-id'
+
 paycom:
     display_name: Paycom
     categories:
@@ -8208,6 +8408,38 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+private-api-bearer:
+    display_name: Private API (Bearer Auth)
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-bearer
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-bearer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
+
+private-api-basic:
+    display_name: Private API (Basic Auth)
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my-private-api
+    docs: https://docs.nango.dev/integrations/all/private-api-basic
+    docs_connect: https://docs.nango.dev/integrations/all/private-api-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your username
+        password:
+            type: string
+            title: Password
+            description: Your password
 
 precisefp:
     display_name: PreciseFP
@@ -8981,6 +9213,35 @@ sage-intacct:
             title: User Password
             description: Your Sage Intacct User Password
             secret: true
+
+sage-people:
+    display_name: Sage People
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_params:
+        prompt: consent
+    default_scopes:
+        - offline_access
+        - api
+    proxy:
+        base_url: https://${connectionConfig.instance_url}/services/apexrest/spapi
+        headers:
+            accept: application/json
+    token_response_metadata:
+        - instance_url
+    docs: https://docs.nango.dev/integrations/all/sage-people
+    docs_connect: https://docs.nango.dev/integrations/all/sage-people/connect
+    connection_config:
+        instance_url:
+            type: string
+            title: Instance URL
+            description: The instance URL of your Salesforce account
+            format: uri
+            pattern: '^https?://.*$'
+            automated: true
 
 salesforce:
     display_name: Salesforce
@@ -11526,6 +11787,43 @@ yahoo:
             format: hostname
             example: fantasysports.yahooapis.com
             prefix: https://
+
+yotpo:
+    display_name: Yotpo
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.yotpo.com
+        headers:
+            x-yotpo-token: ${accessToken}
+    token_url: https://api.yotpo.com/core/v3/stores/${connectionConfig.storeId}/access_tokens
+    token_params:
+        secret: ${credentials.apiSecret}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    docs: https://docs.nango.dev/integrations/all/yotpo
+    docs_connect: https://docs.nango.dev/integrations/all/yotpo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: App Key
+            description: Your Yotpo Store Key.
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-1-retrieving-your-app-key'
+            example: rvR3359XuCuuuEgCgcHNrQ9TE8zwC5dMzWMULHZm
+            order: 1
+    credentials:
+        apiSecret:
+            type: string
+            title: Secret Key
+            description: Your Yotpo app's secret key.
+            secret: true
+            example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
+            doc_section: '#step-2-generating-your-secret-key'
+            pattern: '^[A-Za-z0-9]{40}$'
 
 yandex:
     display_name: Yandex
