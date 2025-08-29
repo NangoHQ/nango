@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/invite';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -52,22 +52,23 @@ describe(`POST ${route}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    // TODO: can't test stuff that needs `user` because we are using an anonymous secret_key
-    // it('should invite a user', async () => {
-    //     const { env } = await seeders.seedAccountEnvAndUser();
+    it('should invite a user', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
-    //     const res = await api.fetch(route, {
-    //         method: 'POST',
-    //         query: { env: 'dev' },
-    //         token: env.secret_key,
-    //         body: { emails: ['foo@example.com'] }
-    //     });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            query: { env: 'dev' },
+            body: { emails: ['foo@example.com'] },
+            session
+        });
 
-    //     expect(res.res.status).toBe(200);
-    //     isSuccess(res.json);
-    //     expect(res.json).toMatchObject({
-    //         data: {
-    //         }
-    //     });
-    // });
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json).toMatchObject({
+            data: {
+                invited: ['foo@example.com']
+            }
+        });
+    });
 });

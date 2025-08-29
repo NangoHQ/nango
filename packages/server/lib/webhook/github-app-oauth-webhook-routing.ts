@@ -7,15 +7,15 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
+import type { InternalNango } from './internal-nango.js';
 import type { WebhookHandler } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionConfig, ConnectionUpsertResponse, IntegrationConfig, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
-function validate(integration: ProviderConfig, headerSignature: string, rawBody: any): boolean {
+function validate(integration: IntegrationConfig, headerSignature: string, rawBody: any): boolean {
     const custom = integration.custom as Record<string, string>;
     const private_key = custom['private_key'];
     const decodedPrivateKey = private_key ? Buffer.from(private_key, 'base64').toString('ascii') : private_key;
@@ -30,11 +30,11 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
     return crypto.timingSafeEqual(trusted, untrusted);
 }
 
-const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
+const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
-        const valid = validate(integration, signature, rawBody);
+        const valid = validate(nango.integration, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
@@ -43,13 +43,18 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     }
 
     if (get(body, 'action') === 'created') {
-        const createResult = await handleCreateWebhook(integration, body, logContextGetter);
+        const createResult = await handleCreateWebhook(nango, body);
         if (createResult.isErr()) {
             return Err(createResult.error);
         }
     }
 
-    const response = await nango.executeScriptForWebhooks(integration, body, 'action', 'installation.id', logContextGetter, 'installation_id');
+    const response = await nango.executeScriptForWebhooks({
+        body,
+        webhookType: 'action',
+        connectionIdentifier: 'installation.id',
+        propName: 'installation_id'
+    });
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
@@ -58,21 +63,21 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     });
 };
 
-async function handleCreateWebhook(integration: ProviderConfig, body: any, logContextGetter: LogContextGetter): Promise<Result<void, NangoError>> {
+async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Result<void, NangoError>> {
     if (!get(body, 'requester.login')) {
         return Ok(undefined);
     }
 
     const connections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
         { app_id: get(body, 'installation.app_id'), pending: true, handle: get(body, 'requester.login') },
-        integration.environment_id
+        nango.environment.id
     );
 
     if (!connections || connections.length === 0) {
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return Ok(undefined);
     } else {
-        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id });
+        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: nango.environment.id });
 
         if (!environmentAndAccountLookup) {
             logger.error('Environment or account not found');
@@ -90,7 +95,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             return Err(new NangoError('webhook_no_connection_or_existing_installation_id'));
         }
 
-        const provider = getProvider(integration.provider);
+        const provider = getProvider(nango.integration.provider);
         if (!provider) {
             logger.error('unknown provider');
             return Err(new NangoError('webhook_unknown_provider'));
@@ -105,7 +110,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             installation_id: installationId
         };
 
-        const logCtx = logContextGetter.get({ id: activityLogId, accountId: account.id });
+        const logCtx = nango.logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(
@@ -118,15 +123,15 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     endUser: undefined // TODO fix this
                 },
                 account,
-                integration,
-                logContextGetter,
+                nango.integration,
+                nango.logContextGetter,
                 { initiateSync: true, runPostConnectionScript: false }
             );
         };
 
         await connectionService.getAppCredentialsAndFinishConnection(
             connection.connection_id,
-            integration,
+            nango.integration as Config,
             provider as ProviderGithubApp,
             connectionConfig,
             logCtx,

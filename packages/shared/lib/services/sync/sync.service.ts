@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { stringifyError } from '@nangohq/utils';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import {
     getActionConfigByNameAndProviderConfigKey,
@@ -22,6 +22,7 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBSyncConfig,
+    Result,
     SlimAction,
     SlimSync,
     SyncAndActionDifferences,
@@ -559,4 +560,34 @@ export async function trackFetch(nango_connection_id: number): Promise<void> {
 
 export async function hardDeleteSync(id: string) {
     await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();
+}
+
+export function normalizedSyncParams(syncs: (string | { name: string; variant: string })[]): Result<{ syncName: string; syncVariant: string }[]> {
+    if (!syncs) {
+        return Err('Missing sync names');
+    }
+    if (!Array.isArray(syncs)) {
+        return Err('syncs must be an array');
+    }
+
+    const syncIdentifiers = syncs.map((sync) => {
+        if (typeof sync === 'string') {
+            if (sync.includes('::')) {
+                const [name, variant] = sync.split('::');
+                return { syncName: name, syncVariant: variant };
+            }
+            return { syncName: sync, syncVariant: 'base' };
+        }
+
+        if (typeof sync === 'object' && sync !== null && typeof sync.name === 'string' && typeof sync.variant === 'string') {
+            return { syncName: sync.name, syncVariant: sync.variant };
+        }
+
+        return null; // Mark invalid entries
+    });
+
+    if (syncIdentifiers.some((sync) => sync === null)) {
+        return Err('syncs must be either strings or { name: string, variant: string } objects');
+    }
+    return Ok(syncIdentifiers as { syncName: string; syncVariant: string }[]);
 }

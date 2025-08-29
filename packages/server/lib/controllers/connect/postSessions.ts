@@ -6,7 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { configService, upsertEndUser } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -17,13 +17,7 @@ import type { Response } from 'express';
 
 export const bodySchema = z
     .object({
-        end_user: z
-            .object({
-                id: z.string().max(255).min(1),
-                email: z.string().email().min(5).optional(),
-                display_name: z.string().max(255).optional()
-            })
-            .strict(),
+        end_user: endUserSchema,
         organization: z
             .object({
                 id: z.string().max(255).min(0),

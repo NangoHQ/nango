@@ -17,40 +17,6 @@ describe(`GET ${endpoint}`, () => {
         api.server.close();
     });
 
-    it('should create one connection with connection_id', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
-
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { connection_id: 'a', public_key: env.public_key },
-            params: { providerConfigKey: config.unique_key }
-        });
-
-        isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            connectionId: 'a',
-            providerConfigKey: 'unauthenticated'
-        });
-    });
-
-    it('should create one connection without connection_id', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
-
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { public_key: env.public_key },
-            params: { providerConfigKey: config.unique_key }
-        });
-
-        isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            connectionId: expect.any(String),
-            providerConfigKey: 'unauthenticated'
-        });
-    });
-
     it('should create one connection with sessionToken', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');

@@ -25,7 +25,7 @@ export type UserCreatedEvent = EventBase<
 
 export type UsageEvent = EventBase<
     'usage',
-    'usage.monthly_active_records' | 'usage.actions',
+    'usage.monthly_active_records' | 'usage.actions' | 'usage.connections',
     {
         value: number;
         properties: {
@@ -35,4 +35,12 @@ export type UsageEvent = EventBase<
     }
 >;
 
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent>;
+export type TeamEvent = EventBase<
+    'team',
+    'team.updated',
+    {
+        id: DBTeam['id'];
+    }
+>;
+
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamEvent>;

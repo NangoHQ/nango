@@ -281,6 +281,7 @@ describe('Exec', () => {
                             'Content-Type': 'application/json',
                             'Nango-Is-Dry-Run': 'true',
                             'Nango-Is-Sync': 'true',
+                            'Nango-Is-Script': 'true',
                             'User-Agent': expect.any(String)
                         },
                         maxBodyLength: -1,
@@ -302,7 +303,7 @@ describe('Exec', () => {
                             forcedJSONParsing: true,
                             silentJSONParsing: true
                         },
-                        url: 'http://localhost:3003/connection/connection-id',
+                        url: 'http://localhost:3003/connections/connection-id',
                         xsrfCookieName: 'XSRF-TOKEN',
                         xsrfHeaderName: 'X-XSRF-TOKEN'
                     },

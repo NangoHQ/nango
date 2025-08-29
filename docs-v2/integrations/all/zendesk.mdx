@@ -100,7 +100,7 @@ description: 'Access the Zendesk API in 2 minutes 💨'
 
       <Step title="Request a global OAuth client (optional)">
         If your application needs to connect to multiple Zendesk instances, you should request a global OAuth client:
-        
+
         1. Develop your app using a local OAuth client first.
         2. Ensure your Unique Identifier is prefixed with "zdg-" (e.g., "zdg-your-app-name").
         3. Fill out all fields in the local client, even those labeled as "optional".
@@ -112,8 +112,8 @@ description: 'Access the Zendesk API in 2 minutes 💨'
     </Steps>
   </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
+    | Topic | Links |
+    | - | - |
     | Authorization | [Guide to connect to Zendesk using Connect UI](/integrations/all/zendesk/connect) |
     | General | [Website](https://www.zendesk.com/) |
     | | [Create a Zendesk account](https://www.zendesk.com/register/) |
@@ -128,7 +128,7 @@ description: 'Access the Zendesk API in 2 minutes 💨'
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    -   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
+    -   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app.
     -   Zendesk OAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
     -   The subdomain is a critical part of the OAuth flow and API calls. It's the unique identifier in the Zendesk URL: `https://<subdomain>.zendesk.com`.
     -   Zendesk has [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) that vary by plan.

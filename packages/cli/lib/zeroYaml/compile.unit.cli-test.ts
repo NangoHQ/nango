@@ -12,12 +12,13 @@ const exec = promisify(execCb);
 
 describe('bundleFile', () => {
     it('should bundle a sync with a constant export', async () => {
-        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.ts'), projectRootPath: fixturesPath });
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/syncs/fetchIssues.js'), projectRootPath: fixturesPath });
         const value = result.unwrap();
         expect(value).toMatchSnapshot();
     });
+
     it('should bundle an action with a default export', async () => {
-        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.ts'), projectRootPath: fixturesPath });
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.js'), projectRootPath: fixturesPath });
         const value = result.unwrap();
         expect(value).toMatchSnapshot();
     });
@@ -35,6 +36,25 @@ describe('compileAll', () => {
         await exec('npm i', { cwd: dir });
         const result = await compileAll({ fullPath: dir, debug: false });
         result.unwrap();
+        expect(result.isOk()).toBe(true);
+    });
+});
+
+describe('edge cases', () => {
+    it('should catch invalid setMergingStrategy', async () => {
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/setMergingStrategy.error.js'), projectRootPath: fixturesPath });
+        if (result.isErr()) {
+            expect(result.error).toMatchSnapshot();
+        } else {
+            throw new Error('should be an error');
+        }
+    });
+
+    it('should allow setMergingStrategy', async () => {
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/setMergingStrategy.valid.js'), projectRootPath: fixturesPath });
+        if (result.isErr()) {
+            throw result.error;
+        }
         expect(result.isOk()).toBe(true);
     });
 });

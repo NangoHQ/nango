@@ -1,10 +1,15 @@
 import { Ok } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
-import type { LogContextGetter } from '@nangohq/logs';
 
-const route: WebhookHandler = async (nango, integration, _headers, body, _rawBody, logContextGetter: LogContextGetter) => {
-    const response = await nango.executeScriptForWebhooks(integration, body, 'event', 'created_by', logContextGetter, `owner`);
+const route: WebhookHandler = async (nango, _headers, body) => {
+    const response = await nango.executeScriptForWebhooks({
+        body,
+        webhookType: 'event',
+        connectionIdentifier: 'created_by',
+        propName: 'owner'
+    });
+
     return Ok({
         content: { status: 'success' },
         statusCode: 200,

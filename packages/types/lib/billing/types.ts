@@ -5,6 +5,7 @@ import type { DBUser } from '../user/db.js';
 export interface BillingClient {
     ingest: (events: BillingIngestEvent[]) => Promise<void>;
     upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
+    updateCustomer: (customerId: string, name: string) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
@@ -47,7 +48,7 @@ export interface BillingPlan {
 }
 
 export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'total_connections' | 'billable_actions' | 'billable_active_connections';
+    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections';
     idempotencyKey: string;
     accountId: number;
     timestamp: Date;
