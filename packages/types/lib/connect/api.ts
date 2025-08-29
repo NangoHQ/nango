@@ -1,4 +1,5 @@
 import type { Endpoint } from '../api.js';
+import type { ConnectUISettings } from '../connectUISettings/dto.js';
 
 export interface ConnectSessionInput {
     allowed_integrations?: string[] | undefined;
@@ -34,6 +35,7 @@ export interface EndUserInput {
 }
 export type ConnectSessionOutput = ConnectSessionInput & {
     isReconnecting?: boolean;
+    connectUISettings: ConnectUISettings;
 };
 
 export type PostConnectSessions = Endpoint<{
