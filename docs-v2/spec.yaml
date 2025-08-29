@@ -1828,7 +1828,7 @@ paths:
                   description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
             responses:
                 '200':
-                    description: The action has completed successfully (output cannot exceed 10MB)
+                    description: The action has completed successfully (output cannot exceed 2MB)
                     content:
                         application/json:
                             schema:
