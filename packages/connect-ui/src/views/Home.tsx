@@ -57,7 +57,7 @@ export const Home: React.FC = () => {
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
         if (isPreview) setIsPreview(isPreview === 'true');
-    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow]);
+    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
 
     useEffect(() => {
         if (data) {
