@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -7,6 +8,7 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
+import { APIError } from '../../utils/api';
 import { createConnectUIPreviewIFrame } from '../../utils/connect-ui';
 import { globalEnv } from '../../utils/env';
 
@@ -15,14 +17,13 @@ export const ConnectUISettings = () => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
 
-    const connectUIContainer = useRef<HTMLIFrameElement>(null);
+    const connectUIContainer = useRef<HTMLDivElement>(null);
+    const connectUIIframe = useRef<HTMLIFrameElement>();
 
-    useEffect(() => {
-        const openConnectUI = async () => {
-            if (!environmentAndAccount || !connectUIContainer.current) {
-                return;
-            }
-
+    const { data: sessionToken } = useQuery<string>({
+        enabled: Boolean(env),
+        queryKey: [env, 'preview-session-token'],
+        queryFn: async () => {
             const res = await apiConnectSessions(env, {
                 end_user: {
                     id: 'previewUserId',
@@ -31,21 +32,46 @@ export const ConnectUISettings = () => {
                 }
             });
 
-            if (!res.res.ok || `error` in res.json) {
-                toast.toast({ title: 'Failed to create connect session', variant: 'error' });
-                return;
+            if (!res.res.ok || 'error' in res.json) {
+                throw new APIError({ res: res.res, json: res.json });
             }
 
-            const iframe = createConnectUIPreviewIFrame({
-                baseURL: globalEnv.connectUrl,
-                apiURL: globalEnv.apiUrl,
-                sessionToken: res.json.data.token
-            });
+            return res.json.data.token;
+        },
+        refetchInterval: 1000,
+        refetchIntervalInBackground: true,
+        staleTime: 0
+    });
 
-            connectUIContainer.current.appendChild(iframe);
-        };
-        void openConnectUI();
-    }, [env, environmentAndAccount, toast]);
+    useEffect(() => {
+        if (!sessionToken || !connectUIIframe.current) {
+            return;
+        }
+
+        const iframe = connectUIIframe.current;
+        iframe.contentWindow?.postMessage(
+            {
+                type: 'session_token',
+                sessionToken
+            },
+            '*'
+        );
+    }, [sessionToken, connectUIIframe]);
+
+    useEffect(() => {
+        if (!environmentAndAccount || !connectUIContainer.current || connectUIIframe.current) {
+            return;
+        }
+
+        const iframe = createConnectUIPreviewIFrame({
+            baseURL: globalEnv.connectUrl,
+            apiURL: globalEnv.apiUrl,
+            sessionToken
+        });
+
+        connectUIIframe.current = iframe;
+        connectUIContainer.current.appendChild(iframe);
+    }, [env, environmentAndAccount, sessionToken, toast]);
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.ConnectUI} className="p-6 w-full h-full">

@@ -1,10 +1,6 @@
 import type { ConnectUIProps } from '@nangohq/frontend';
 
 export function createConnectUIPreviewIFrame({ baseURL, apiURL, sessionToken, lang }: ConnectUIProps) {
-    if (!sessionToken) {
-        throw new Error('sessionToken is required to create a preview iframe');
-    }
-
     const url = new URL(baseURL || 'https://connect.nango.dev');
 
     url.searchParams.set('preview', 'true');

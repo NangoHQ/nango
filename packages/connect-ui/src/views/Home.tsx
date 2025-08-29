@@ -46,6 +46,11 @@ export const Home: React.FC = () => {
             setSessionToken(inUrl);
         }
 
+        if (isPreview === 'true') {
+            // Don't clear session_token event listener on preview
+            return;
+        }
+
         return () => {
             window.removeEventListener('message', listener, false);
         };
