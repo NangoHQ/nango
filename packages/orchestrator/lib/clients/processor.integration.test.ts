@@ -17,16 +17,7 @@ import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
-const taskEventsHandler = new TaskEventsHandler(dbClient.db, {
-    on: {
-        CREATED: () => {},
-        STARTED: () => {},
-        SUCCEEDED: () => {},
-        FAILED: () => {},
-        EXPIRED: () => {},
-        CANCELLED: () => {}
-    }
-});
+const taskEventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
     on: taskEventsHandler.onCallbacks,

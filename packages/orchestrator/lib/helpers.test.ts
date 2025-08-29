@@ -15,16 +15,7 @@ export class TestOrchestratorService {
 
     constructor({ port }: { port: number }) {
         this.dbClient = getTestDbClient();
-        this.eventsHandler = new TaskEventsHandler(this.dbClient.db, {
-            on: {
-                CREATED: () => {},
-                STARTED: () => {},
-                SUCCEEDED: () => {},
-                FAILED: () => {},
-                EXPIRED: () => {},
-                CANCELLED: () => {}
-            }
-        });
+        this.eventsHandler = new TaskEventsHandler(this.dbClient.db);
         this.port = port;
         this.scheduler = null;
         this.orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
