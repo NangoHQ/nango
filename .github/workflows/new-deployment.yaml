@@ -1,0 +1,125 @@
+name: Deploy Self-Hosted to GCP (Cloud Run)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target env"
+        type: choice
+        options: [staging, production]
+        required: true
+        default: staging
+      image_tag:
+        description: "Image tag (default uses commit SHA)"
+        required: false
+
+permissions:
+  contents: read
+  id-token: write 
+
+env:
+  GAR_LOCATION: ${{ vars.GAR_LOCATION }}       
+  GAR_REPO: ${{ vars.GAR_REPO }}                
+  CLOUD_RUN_REGION: ${{ vars.CLOUD_RUN_REGION }}# e.g. asia-southeast2
+  CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+
+jobs:
+  build-and-push:
+    name: Build & Push Image to Artifact Registry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }} 
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use gcloud as a credential helper
+        run: |
+          gcloud auth configure-docker ${GAR_LOCATION}-docker.pkg.dev --quiet
+
+      - name: Compute image tag
+        id: vars
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          if [ -z "$TAG" ]; then TAG="${GITHUB_SHA::12}"; fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "image=${GAR_LOCATION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GAR_REPO}/nango:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.vars.outputs.image }}
+          provenance: false
+
+      - name: Set artifact outputs
+        run: |
+          echo "IMAGE=${{ steps.vars.outputs.image }}" >> $GITHUB_ENV
+
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Auth to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.CLOUD_RUN_SERVICE }}
+          region: ${{ env.CLOUD_RUN_REGION }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/nango:${{ github.event.inputs.image_tag || github.sha }}
+          env_vars: |
+            SERVER_PORT=3003
+            NANGO_SERVER_URL=${{ secrets.NANGO_SERVER_URL }}         # https://nango.yourdomain.com
+            NANGO_DATABASE_URL=${{ secrets.NANGO_DATABASE_URL }}     # postgres://user:pass@host:5432/db?sslmode=require
+            NANGO_ENCRYPTION_KEY=${{ secrets.NANGO_ENCRYPTION_KEY }} # 32-byte base64
+            FLAG_AUTH_ENABLED=false
+            NANGO_DASHBOARD_USERNAME=${{ secrets.NANGO_DASHBOARD_USERNAME }}
+            NANGO_DASHBOARD_PASSWORD=${{ secrets.NANGO_DASHBOARD_PASSWORD }}
+            FLAG_SERVE_CONNECT_UI=true
+            NANGO_PUBLIC_CONNECT_URL=${{ secrets.NANGO_PUBLIC_CONNECT_URL }} # usually same as NANGO_SERVER_URL
+            NANGO_CONNECT_UI_PORT=3009
+          flags: |
+            --allow-unauthenticated
+            --cpu=1 --memory=1Gi
+            --port=3003
+            --min-instances=0 --max-instances=3
+          
+
+      - name: Output Service URL
+        run: echo "URL=${{ steps.deploy.outputs.url }}" >> $GITHUB_ENV
+
+      - name: Health check
+        run: |
+          set -e
+          URL="${{ steps.deploy.outputs.url }}"
+          echo "Hitting $URL/health..."
+          for i in {1..15}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/health" || true)
+            if [ "$code" = "200" ]; then
+              echo "Healthy"; exit 0
+            fi
+            sleep 4
+          done
+          echo "Health check failed"; exit 1
