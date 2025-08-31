@@ -407,6 +407,7 @@
               "integrations/all/highlevel",
               "integrations/all/highlevel-white-label",
               "integrations/all/holded",
+              "integrations/all/hover",
               "integrations/all/hubspot",
               "integrations/all/incident-io",
               "integrations/all/insightly",
