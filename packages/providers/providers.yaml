@@ -2434,13 +2434,13 @@ clerk:
         - other
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.clerk.com/v1
+        base_url: https://api.clerk.com
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /jwks
+                - /v1/jwks
     docs: https://docs.nango.dev/integrations/all/clerk
     docs_connect: https://docs.nango.dev/integrations/all/clerk/connect
     credentials:

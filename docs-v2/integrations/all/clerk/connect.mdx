@@ -1,18 +1,31 @@
 ---
-title: Connect to Clerk
-sidebarTitle: Connect
+title: Clerk - How do I link my account?
+sidebarTitle: Clerk
 ---
 
-## Step 1: Retrieve your Clerk Secret Key
+# Overview
 
-To connect to Clerk, you'll need to obtain your Secret Key from the Clerk Dashboard.
+To authenticate with Clerk, you need:
+1. **Secret Key** - A key that grants Nango permission to interact with Clerk's APIs resources and services.
+
+This guide will walk you through obtaining your **Secret Key** within Clerk.
+
+### Prerequisites:
+
+- You must have an account with Clerk.
+
+### Instructions:
+
+#### Step 1: Retrieve your Clerk Secret Key
 
 1. Sign in to your [Clerk Dashboard](https://dashboard.clerk.com/)
 2. Select your application (or create one if you haven't already)
 3. Navigate to **Configure** > **Developers** > **API Keys**
+<img src="/integrations/all/clerk/configure.png"/>
 4. You'll see two types of keys:
    - **Publishable Key**: Starts with `pk_test_` or `pk_live_` (for frontend use)
    - **Secret Key**: Starts with `sk_test_` or `sk_live_` (for backend use - this is what you need)
+<img src="/integrations/all/clerk/api_key.png"/>
 5. Copy your **Secret Key**
 
 <Warning>
@@ -23,32 +36,13 @@ Keep your Secret Key secure and never expose it in client-side code or public re
 If you're just testing the integration, use your development key (`sk_test_...`). For production, use your live key (`sk_live_...`).
 </Info>
 
-## Step 2: Enter your Secret Key in Nango
+#### Step 2: Enter credentials in the Connect UI
 
-Once you have your Clerk Secret Key:
+Once you have your Clerk **Secret Key**:
+1. Open the form where you need to authenticate with Clerk.
+2. Enter your **Secret Key** in its designated field.
+3. Submit the form, and you should be successfully authenticated.
 
-1. In the Nango UI, create a new connection for Clerk
-2. Paste your Secret Key in the **Secret Key** field
-3. Click **Save** to test the connection
+<img src="/integrations/all/clerk/form.png" style={{maxWidth: "450px" }}/>
 
-The connection will be verified by making a test request to the Clerk API.
-
-## Troubleshooting
-
-### Invalid API Key Error
-
-If you receive an authentication error:
-- Ensure you're using the Secret Key (starts with `sk_`) not the Publishable Key (starts with `pk_`)
-- Check that you haven't accidentally included extra spaces or characters when copying the key
-- Verify you're using the correct environment key (test vs. live)
-
-### Connection Timeout
-
-If the connection times out:
-- Check your network connectivity
-- Ensure your Clerk application is active and not suspended
-- Try regenerating your API keys in the Clerk Dashboard
-
-<Tip>
-For additional help, check the [Clerk documentation](https://clerk.com/docs) or reach out in the [Nango community](https://nango.dev/slack).
-</Tip>
+You are now connected to Clerk.
