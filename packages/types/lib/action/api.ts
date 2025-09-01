@@ -22,7 +22,7 @@ export type PostPublicTriggerAction = Endpoint<{
     Path: '/action/trigger';
     Body: {
         action_name: string;
-        input: any;
+        input: unknown;
     };
     Headers: {
         'provider-config-key': string;
