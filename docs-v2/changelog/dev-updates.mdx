@@ -8,19 +8,15 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
-<Update label="August 27, 2025"  tags={["Breaking changes", "API"]}>
+<Update label="Sep 1, 2025"  tags={["Breaking changes", "API"]}>
 
-  ## End of connection end-user replication
+  ## End-user info is no longer shared between connections
 
-Currently connection's end user are automatically replicated to the Nango platform based on the `end_user_id` field.
-This behavior was confusing for some customers and was preventing them from declaring multiple organizations for the same user without having to manually concatenate the `end_user_id` field.
-Because the behavior was most of time undesired, we will stop replicating end user fields across connections.
-
-After the transition period, an **end user will be tied to a single connection.**
+Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and it was impossible to declare multiple organizations for a given user.
 
   ### 🗓️ Timeline
 
-  - **September 5, 2025**: End user updates will stop being replicated across connections.
+  - **September 8, 2025**: End user updates will stop being replicated across connections.
 
   ### 🧐 Am I impacted?
 
