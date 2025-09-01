@@ -92,7 +92,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'jwt', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'jwt', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -198,7 +198,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 account,
                 auth_mode: 'JWT',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

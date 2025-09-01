@@ -47,7 +47,7 @@ export interface RecentlyCreatedConnection {
     operation: AuthOperationType;
     environment: DBEnvironment;
     account: DBTeam;
-    endUser: InternalEndUser | undefined;
+    endUser: InternalEndUser | null | undefined;
 }
 
 export interface FailedConnectionError {

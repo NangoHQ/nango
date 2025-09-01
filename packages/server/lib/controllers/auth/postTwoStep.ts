@@ -89,7 +89,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'twostep', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'twostep', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -197,7 +197,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 account,
                 auth_mode: 'TWO_STEP',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

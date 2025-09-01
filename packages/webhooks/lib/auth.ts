@@ -35,7 +35,7 @@ export async function sendAuth({
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
-    endUser?: InternalEndUser | undefined;
+    endUser?: InternalEndUser | null | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
     providerConfig?: IntegrationConfig | undefined;

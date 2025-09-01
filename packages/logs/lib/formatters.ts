@@ -16,7 +16,7 @@ export function errorToDocument(error?: unknown): MessageRow['error'] {
     };
 }
 
-export function endUserToMeta(endUser?: Pick<EndUser, 'endUserId' | 'displayName' | 'email' | 'organization'>) {
+export function endUserToMeta(endUser?: Pick<EndUser, 'endUserId' | 'displayName' | 'email' | 'organization'> | null) {
     if (!endUser) {
         return;
     }

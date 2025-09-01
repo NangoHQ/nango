@@ -68,7 +68,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'unauth', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'unauth', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -151,7 +151,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 account,
                 auth_mode: 'NONE',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

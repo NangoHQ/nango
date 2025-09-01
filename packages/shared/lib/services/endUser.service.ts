@@ -218,7 +218,7 @@ export async function upsertEndUser(
         return Ok(createdEndUser.value);
     }
 
-    return await getAndUpdateEndUser(db, {
+    return await getAndUpdateIfModifiedEndUser(db, {
         id: connection.end_user_id,
         account,
         environment,
@@ -226,7 +226,7 @@ export async function upsertEndUser(
     });
 }
 
-async function getAndUpdateEndUser(
+async function getAndUpdateIfModifiedEndUser(
     db: Knex,
     {
         id,
@@ -247,9 +247,6 @@ async function getAndUpdateEndUser(
         return endUserRes;
     }
 
-    console.log('updating end user', {endUser,
-        previousEndUser: endUserRes.value
-    });
     const previousEndUser = endUserRes.value;
     const shouldUpdate =
         endUser.endUserId !== previousEndUser.endUserId ||

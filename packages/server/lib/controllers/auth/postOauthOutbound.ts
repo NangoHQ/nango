@@ -75,7 +75,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'oauth2-outbound', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'oauth2-outbound', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -168,7 +168,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 account,
                 auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

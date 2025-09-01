@@ -99,7 +99,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'signature', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'signature', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -204,7 +204,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 account,
                 auth_mode: 'SIGNATURE',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

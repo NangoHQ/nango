@@ -93,7 +93,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'appstore', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'appstore', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -194,7 +194,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                 account,
                 auth_mode: 'APP_STORE',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

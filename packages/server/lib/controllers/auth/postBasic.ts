@@ -88,7 +88,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'basic', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'basic', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -188,7 +188,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 account,
                 auth_mode: 'BASIC',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

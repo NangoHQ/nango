@@ -96,7 +96,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
-                          meta: { authType: 'bill', connectSession: res.locals.endUser ? endUserToMeta(res.locals.endUser) : undefined },
+                          meta: { authType: 'bill', connectSession: endUserToMeta(res.locals.endUser) },
                           expiresAt: defaultOperationExpiration.auth()
                       },
                       { account, environment }
@@ -189,7 +189,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 account,
                 auth_mode: 'BILL',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser ?? undefined
+                endUser: res.locals.endUser
             },
             account,
             config,
