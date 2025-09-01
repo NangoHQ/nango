@@ -9,8 +9,9 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
+import { setTheme } from '@/lib/theme';
 
-import type { ConnectUIEventToken } from '@nangohq/frontend';
+import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -26,12 +27,21 @@ export const Home: React.FC = () => {
         // Listen to parent
         // the parent will send the sessionToken through post message
         const listener: (this: Window, ev: MessageEvent) => void = (evt) => {
-            if (!evt.data || !('type' in evt.data) || evt.data.type !== 'session_token') {
+            if (!evt.data || !('type' in evt.data)) {
                 return;
             }
-
-            const data = evt.data as ConnectUIEventToken;
-            setSessionToken(data.sessionToken);
+            switch (evt.data.type) {
+                case 'session_token': {
+                    const data = evt.data as ConnectUIEventToken;
+                    setSessionToken(data.sessionToken);
+                    break;
+                }
+                case 'settings_changed': {
+                    const data = evt.data as ConnectUIEventSettingsChanged;
+                    setTheme(data.payload.theme);
+                    break;
+                }
+            }
             // Let the state propagate
             setTimeout(() => telemetry('open'), 1);
         };
@@ -47,7 +57,7 @@ export const Home: React.FC = () => {
         }
 
         if (isPreview === 'true') {
-            // Don't clear session_token event listener on preview
+            // Don't clear event listeners on preview
             return;
         }
 
