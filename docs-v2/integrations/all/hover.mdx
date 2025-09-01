@@ -23,7 +23,21 @@ import PreBuiltUseCases from "/snippets/generated/hover/PreBuiltUseCases.mdx"
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Hover account">
+    If you don't already have one, sign up for a [Hover account](https://hover.to/onboarding/welcome).
+  </Step>
+  <Step title="Create a new integration">
+    1. Go to [**Hover** > **Settings** > **Developer**](https://hover.to/settings/developers).
+    2. Click **Create New Integration**.
+    3. Enter *Integration Name*, *Redirect URI*, *Description*, select *Visibility* and upload a *Logo*.
+       **NOTE**: localhost may not work as Redirect URI - try using redirectmeto.com.
+    4. Click **Save** and you will be redirected to the list of integrations.
+    5. Click **Edit** on the integration you just created.
+    6. Copy **OAuth Client ID** and **OAuth Client Secret** to create the integration in Nango.
+       **NOTE**: You do not need to specify a **scope** for this integration.
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -39,9 +53,6 @@ _No setup guide yet._
 
 ## API gotchas
 
--   Access tokens expire after 2 hours and must be refreshed using the refresh token
--   Refresh tokens are valid indefinitely but are invalidated when exchanged for a new access token
--   The OAuth 2.0 flow uses the Authorization Code Grant type w/o PKCE
 -   No scope is needed when setting up the integration
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hover.mdx)</Note>
