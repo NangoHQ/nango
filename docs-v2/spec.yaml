@@ -612,14 +612,7 @@ paths:
                                     metadata:
                                         type: object
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
 
     /connection/{connectionId}/metadata:
         post:
@@ -649,14 +642,7 @@ paths:
                 '201':
                     description: Successfully created an integrations
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
 
         patch:
             description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
@@ -688,14 +674,7 @@ paths:
                             schema:
                                 type: object
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
 
     /connections:
         get:
@@ -775,6 +754,8 @@ paths:
                                                 end_user:
                                                     nullable: true
                                                     $ref: '#/components/schemas/ConnectionEndUser'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
 
         post:
             description: Adds a connection for which you already have credentials.
@@ -823,7 +804,7 @@ paths:
                                               installation_id:
                                                   type: string
                                 end_user:
-                                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
+                                    $ref: '#/components/schemas/EndUser'
             responses:
                 '200':
                     description: Successfully created an integrations
@@ -832,14 +813,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ConnectionFull'
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
 
     /connections/{connectionId}:
         get:
@@ -875,14 +849,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ConnectionFull'
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
                 '424':
                     description: Connection refresh exhausted
                     content:
@@ -900,14 +867,48 @@ paths:
                                                 type: string
                                                 description: A human-readable error message
                 '404':
-                    description: Unknown Connection
+                    $ref: '#/components/responses/NotFound'
+
+        patch:
+            description: Edit a connection
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                end_user:
+                                    $ref: '#/components/schemas/EndUser'
+            responses:
+                '200':
+                    description: Successfully updated the connection
                     content:
                         application/json:
                             schema:
                                 type: object
                                 properties:
-                                    message:
-                                        type: string
+                                    success:
+                                        type: boolean
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
         delete:
             description: Deletes a specific connection
             parameters:
@@ -934,23 +935,10 @@ paths:
                                     success:
                                         type: boolean
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
                 '404':
-                    description: Unknown connection
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/NotFound'
+
     /connections/metadata:
         post:
             description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
@@ -1840,7 +1828,7 @@ paths:
                   description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
             responses:
                 '200':
-                    description: The action has completed successfully (output cannot exceed 10MB)
+                    description: The action has completed successfully (output cannot exceed 2MB)
                     content:
                         application/json:
                             schema:
@@ -2814,21 +2802,7 @@ components:
                 - end_user
             properties:
                 end_user:
-                    type: object
-                    required:
-                        - id
-                    properties:
-                        id:
-                            type: string
-                            description: Uniquely identifies the end user.
-                        email:
-                            type: string
-                        display_name:
-                            type: string
-                        tags:
-                            type: object
-                            additionalProperties: true
-                            description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
+                    $ref: '#/components/schemas/EndUser'
                 organization:
                     type: object
                     required:
@@ -3282,6 +3256,10 @@ components:
                 display_name:
                     nullable: true
                     type: string
+                tags:
+                    type: object
+                    additionalProperties: true
+                    description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
                 organization:
                     type: object
                     nullable: true
@@ -3294,6 +3272,24 @@ components:
                         display_name:
                             type: string
                             nullable: true
+        EndUser:
+            type: object
+            required:
+                - id
+            properties:
+                id:
+                    type: string
+                    description: Uniquely identifies the end user.
+                email:
+                    type: string
+                display_name:
+                    type: string
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
+                        maxLength: 64
+                    description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
         ConnectionError:
             type: object
             required:

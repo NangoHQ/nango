@@ -5864,6 +5864,41 @@ instagram:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
 
+itglue:
+    display_name: IT Glue
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.itglue.com
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/vnd.api+json
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/itglue
+    docs_connect: https://docs.nango.dev/integrations/all/itglue/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IT Glue API key
+            doc_section: '#step-2-generating-your-api-key'
+            pattern: '^ITG\.[a-zA-Z0-9._-]+$'
+            example: ITG.12cca334567890_123456vasfagas7890
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your IT Glue subdomain (api, api.eu, or api.au)
+            pattern: '^api(\.(eu|au))?$'
+            example: api
+            doc_section: '#step-1-finding-your-subdomain'
+            order: 1
+
 intercom:
     display_name: Intercom
     categories:
@@ -9352,6 +9387,27 @@ rock-gym-pro:
             title: API Password
             description: Your Rock Gym Pro API password
 
+roller:
+    display_name: Roller
+    categories:
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.roller.app/token
+    body_format: json
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Roller client ID
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Roller client secret
+    proxy:
+        base_url: https://api.roller.app
+
+    docs: https://docs.nango.dev/integrations/all/roller
+
 rootly:
     display_name: Rootly
     categories:
@@ -10443,6 +10499,7 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
+            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string
