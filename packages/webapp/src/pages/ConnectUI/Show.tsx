@@ -1,78 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { IconMoon, IconSun } from '@tabler/icons-react';
 import { Helmet } from 'react-helmet';
 
+import { ColorInput } from './components/ColorInput';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import { apiConnectSessions } from '../../hooks/useConnect';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { useToast } from '../../hooks/useToast';
+import { Checkbox } from '../../components/ui/Checkbox';
+import { Button } from '../../components/ui/button/Button';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { useStore } from '../../store';
-import { APIError } from '../../utils/api';
-import { createConnectUIPreviewIFrame } from '../../utils/connect-ui';
-import { globalEnv } from '../../utils/env';
 
 export const ConnectUISettings = () => {
-    const toast = useToast();
-    const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
-
-    const connectUIContainer = useRef<HTMLDivElement>(null);
-    const connectUIIframe = useRef<HTMLIFrameElement>();
-
-    const { data: sessionToken } = useQuery<string>({
-        enabled: Boolean(env),
-        queryKey: [env, 'preview-session-token'],
-        queryFn: async () => {
-            const res = await apiConnectSessions(env, {
-                end_user: {
-                    id: 'previewUserId',
-                    email: 'preview@nango.dev',
-                    display_name: 'Preview User'
-                }
-            });
-
-            if (!res.res.ok || 'error' in res.json) {
-                throw new APIError({ res: res.res, json: res.json });
-            }
-
-            return res.json.data.token;
-        },
-        refetchInterval: 1000,
-        refetchIntervalInBackground: true,
-        staleTime: 0
-    });
-
-    useEffect(() => {
-        if (!sessionToken || !connectUIIframe.current) {
-            return;
-        }
-
-        const iframe = connectUIIframe.current;
-        iframe.contentWindow?.postMessage(
-            {
-                type: 'session_token',
-                sessionToken
-            },
-            '*'
-        );
-    }, [sessionToken, connectUIIframe]);
-
-    useEffect(() => {
-        if (!environmentAndAccount || !connectUIContainer.current || connectUIIframe.current) {
-            return;
-        }
-
-        const iframe = createConnectUIPreviewIFrame({
-            baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
-            sessionToken
-        });
-
-        connectUIIframe.current = iframe;
-        connectUIContainer.current.appendChild(iframe);
-    }, [env, environmentAndAccount, sessionToken, toast]);
-
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.ConnectUI} className="p-6 w-full h-full">
             <Helmet>
@@ -80,8 +16,60 @@ export const ConnectUISettings = () => {
             </Helmet>
             <div className="flex flex-col h-full">
                 <h2 className="mb-8 text-3xl font-semibold tracking-tight text-white">Connect UI Settings</h2>
-                <div className="h-full flex justify-end">
-                    <div ref={connectUIContainer} className="h-full w-[500px] overflow-hidden" />
+                {/** Form */}
+                <div className="flex justify-center gap-8">
+                    <div className="flex flex-col gap-8">
+                        {/** Other settings */}
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-bold text-grayscale-100 flex gap-2">Settings</h2>
+                            <div className="flex gap-2 items-center">
+                                <Checkbox id="showWatermark" />
+                                <label htmlFor="showWatermark" className={`text-sm font-medium text-grayscale-300`}>
+                                    Show watermark
+                                </label>
+                            </div>
+                        </div>
+
+                        {/** Theme */}
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-bold text-grayscale-100 flex gap-2">Theme</h2>
+                            <div className="flex gap-8 h-fit">
+                                <div className="flex flex-col gap-4">
+                                    <h3 className="text-md font-medium text-grayscale-100 flex gap-2">
+                                        <IconSun className="w-6 h-6" /> Light
+                                    </h3>
+
+                                    <ColorInput name="background" id="background" label="Background" />
+                                    <ColorInput name="foreground" id="foreground" label="Foreground" />
+                                    <ColorInput name="primary" id="primary" label="Primary" />
+                                    <ColorInput name="primaryForeground" id="primaryForeground" label="Primary Foreground" />
+                                    <ColorInput name="textPrimary" id="textPrimary" label="Text Primary" />
+                                    <ColorInput name="textMuted" id="textMuted" label="Text Muted" />
+                                </div>
+                                <div className="w-px bg-grayscale-4" />
+                                <div className="flex flex-col gap-4">
+                                    <h3 className="text-md font-medium text-grayscale-100 flex gap-2">
+                                        <IconMoon className="w-6 h-6" /> Dark
+                                    </h3>
+
+                                    <ColorInput name="background" id="background" label="Background" />
+                                    <ColorInput name="foreground" id="foreground" label="Foreground" />
+                                    <ColorInput name="primary" id="primary" label="Primary" />
+                                    <ColorInput name="primaryForeground" id="primaryForeground" label="Primary Foreground" />
+                                    <ColorInput name="textPrimary" id="textPrimary" label="Text Primary" />
+                                    <ColorInput name="textMuted" id="textMuted" label="Text Muted" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/** Save Button */}
+                        <Button variant="primary" size="md" className="self-end">
+                            Save settings
+                        </Button>
+                    </div>
+
+                    {/** Preview */}
+                    <ConnectUIPreview className="h-full w-[500px]" />
                 </div>
             </div>
         </DashboardLayout>
