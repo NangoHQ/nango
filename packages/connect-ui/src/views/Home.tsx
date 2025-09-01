@@ -14,10 +14,12 @@ import type { ConnectUIEventToken } from '@nangohq/frontend';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow } = useGlobal();
+    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview } = useGlobal();
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
+    const isEmbedded = useSearchParam('embedded');
+    const isPreview = useSearchParam('preview');
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
 
     useEffect(() => {
@@ -44,6 +46,11 @@ export const Home: React.FC = () => {
             setSessionToken(inUrl);
         }
 
+        if (isPreview === 'true') {
+            // Don't clear session_token event listener on preview
+            return;
+        }
+
         return () => {
             window.removeEventListener('message', listener, false);
         };
@@ -52,11 +59,10 @@ export const Home: React.FC = () => {
 
     useEffect(() => {
         if (apiURL) setApiURL(apiURL);
-    }, [apiURL]);
-
-    useEffect(() => {
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
-    }, [detectClosedAuthWindow]);
+        if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
+        if (isPreview) setIsPreview(isPreview === 'true');
+    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
 
     useEffect(() => {
         if (data) {

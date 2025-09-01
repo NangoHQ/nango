@@ -10,13 +10,9 @@ description: "Updates and breaking changes for developers."
 
 <Update label="August 27, 2025"  tags={["Breaking changes", "API"]}>
 
-  ## End of connection end-user replication
+  ## End-user info is no longer shared between connections
 
-Currently connection's end user are automatically replicated to the Nango platform based on the `end_user_id` field.
-This behavior was confusing for some customers and was preventing them from declaring multiple organizations for the same user without having to manually concatenate the `end_user_id` field.
-Because the behavior was most of time undesired, we will stop replicating end user fields across connections.
-
-After the transition period, an **end user will be tied to a single connection.**
+Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and it was impossible to declare multiple organizations for a given user.
 
   ### 🗓️ Timeline
 
@@ -52,6 +48,39 @@ After the transition period, an **end user will be tied to a single connection.*
   There is no batch endpoint for this operation. If you need one, please reach out on Slack.
 
 </Update>
+
+<Update label="August 22, 2025" description="Action output limit" tags={["Breaking changes"]}>
+
+  ## Action payload output limit
+
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit
+  to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](https://docs.nango.dev/guides/proxy-requests#proxy-requests).
+
+  Additionally, we will also soon restrict action inputs so please take note of your inputs.
+
+  ### 🗓️ Timeline
+
+  - **October 1, 2025**: We will throw an error when an action output exceeds the stated limitation of 2MB.
+
+  ### 🧐 Am I impacted?
+
+  - If you use actions and have a heavy output from the action. Typically the actions that have a large output are [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts) and in general any fetching any object from an external system. We have added dedicated proxy code for such operations to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts)
+  - If you're using a now deprecated prebuilt template that fetches objects from an external system
+
+  ### 💡 What should I do?
+
+  - Check your action logs for a warning that you've exceeded the action output limitation.
+  - Verify the actions you're using and log the output size of the action
+  - Migrate the action to use the proxy instead
+
+  If your action logs exceed the 2MB limitation you'll now see a warning like this
+  <img src="/images/action-output-size-warning.png" />
+
+
+  Please reach out with any questions or concerns in our Slack community.
+
+</Update>
+
 
 <Update label="August 20, 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
 
@@ -116,7 +145,7 @@ After the transition period, an **end user will be tied to a single connection.*
   }'
   ```
 
-  Please report any inconsistencies or issues with the new endpoints to support@nango.dev or in our slack community.
+  Please report any inconsistencies or issues with the new endpoints in our slack community.
 
 </Update>
 
@@ -140,5 +169,5 @@ By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the 
   ### 💡 What should I do?
 
   - Follow migration guide -> https://docs.nango.dev/guides/custom-integrations/migrate-to-zero-yaml
-  
+
 </Update>
