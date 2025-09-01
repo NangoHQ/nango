@@ -9,7 +9,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
 import type {
@@ -119,7 +119,9 @@ export type PublicApiEndpoints =
     | PostPublicConnection
     | PostPublicSyncStart
     | PostPublicSyncPause
-    | GetPublicSyncStatus;
+    | GetPublicSyncStatus
+    | GetPublicV1
+    | PostPublicTriggerAction;
 
 export type PrivateApiEndpoints =
     | PostSignup
