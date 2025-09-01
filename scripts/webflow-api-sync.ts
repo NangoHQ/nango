@@ -6,7 +6,9 @@ import util from 'node:util';
 import yaml from 'js-yaml';
 import { WebflowClient } from 'webflow-api';
 
-import type { FlowsYaml, Provider } from '@nangohq/types';
+import flowsJson from '../packages/shared/flows.zero.json' with { type: 'json' };
+
+import type { FlowZeroJson, Provider } from '@nangohq/types';
 import type { CollectionItem, CollectionItemList } from 'webflow-api/api';
 
 const rateLimitSleep = 1000;
@@ -30,10 +32,6 @@ const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TO
 const providersPath = 'packages/providers/providers.yaml';
 // eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
-
-const flowsPath = 'packages/shared/flows.yaml';
-// eslint-disable-next-line import/no-named-as-default-member
-const flows = yaml.load(await fs.readFile(flowsPath, 'utf8')) as FlowsYaml;
 
 const docsPath = 'docs-v2/integrations/all';
 const files = await fs.readdir(docsPath);
@@ -108,6 +106,8 @@ const apiItemsBySlug = apiItems.reduce<Record<string, CollectionItem>>((acc, ite
 }, {});
 
 const seen: string[] = [];
+const flowProviderKeys = flowsJson.map((flow: FlowZeroJson) => flow.providerConfigKey);
+
 for (const [slug, provider] of Object.entries(neededProviders)) {
     seen.push(slug);
 
@@ -116,19 +116,20 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
     const logo = `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/${logoPath}`;
 
     let preBuiltCount = 0;
-    if (flows.integrations[slug]) {
-        if (flows.integrations[slug].actions) {
-            preBuiltCount += Object.keys(flows.integrations[slug].actions).length;
+    if (flowProviderKeys.integrations[slug]) {
+        const flowProviderIndex = flowProviderKeys.indexOf(slug);
+        if (flowsJson[flowProviderIndex]['actions']) {
+            preBuiltCount += flowsJson[flowProviderIndex]['actions'].length;
         }
 
-        if (flows.integrations[slug].syncs) {
-            preBuiltCount += Object.keys(flows.integrations[slug].syncs).length;
+        if (flowsJson[flowProviderIndex]['syncs']) {
+            preBuiltCount += flowsJson[flowProviderIndex]['syncs'].length;
         }
     }
 
     if (apiItemsBySlug[slug]) {
         const item = apiItemsBySlug[slug];
-        if (!item.id) {
+        if (!item?.id) {
             throw new Error(`Missing item id for ${slug}`);
         }
 
@@ -201,7 +202,7 @@ for (const toDelete of needDeletion) {
             throw new Error('Unexpected missing item id');
         }
 
-        if (!dryRun) {
+        if (!dryRun && apiItemsBySlug[toDelete]) {
             await webflow.collections.items.deleteItem(apiCollectionId, apiItemsBySlug[toDelete].id);
         }
 

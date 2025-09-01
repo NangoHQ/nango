@@ -2463,6 +2463,32 @@ clickup:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
 
+clerk:
+    display_name: Clerk
+    categories:
+        - dev-tools
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clerk.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/jwks
+    docs: https://docs.nango.dev/integrations/all/clerk
+    docs_connect: https://docs.nango.dev/integrations/all/clerk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Clerk Secret Key (starts with sk_test_ or sk_live_)
+            secret: true
+            pattern: '^sk_(test|live)_[a-zA-Z0-9]+$'
+            example: 'sk_test_abcdefghijklmnop123456789'
+            doc_section: '#step-1-retrieve-your-clerk-secret-key'
+
 cloudentity:
     display_name: Cloudentity
     auth_mode: OAUTH2_CC
@@ -5863,6 +5889,41 @@ instagram:
     proxy:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
+
+itglue:
+    display_name: IT Glue
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.itglue.com
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/vnd.api+json
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/itglue
+    docs_connect: https://docs.nango.dev/integrations/all/itglue/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IT Glue API key
+            doc_section: '#step-2-generating-your-api-key'
+            pattern: '^ITG\.[a-zA-Z0-9._-]+$'
+            example: ITG.12cca334567890_123456vasfagas7890
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your IT Glue subdomain (api, api.eu, or api.au)
+            pattern: '^api(\.(eu|au))?$'
+            example: api
+            doc_section: '#step-1-finding-your-subdomain'
+            order: 1
 
 intercom:
     display_name: Intercom
