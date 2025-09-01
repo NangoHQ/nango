@@ -52,7 +52,6 @@ export async function upsertConnectUISettings(db: Knex, environmentId: number, s
             .merge();
         return Ok(undefined);
     } catch (err) {
-        console.error(err);
         return Err(new Error('failed_to_upsert_connect_ui_settings', { cause: err }));
     }
 }

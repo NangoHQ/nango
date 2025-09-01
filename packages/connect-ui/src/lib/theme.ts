@@ -3,8 +3,6 @@ import type { ConnectUIThemeSettings } from '@nangohq/types';
 export function setTheme(theme: ConnectUIThemeSettings) {
     const root = document.documentElement;
 
-    console.log(root.style);
-
     root.style.setProperty('--color-background', theme.light.background);
     root.style.setProperty('--color-foreground', theme.light.foreground);
     root.style.setProperty('--color-primary', theme.light.primary);

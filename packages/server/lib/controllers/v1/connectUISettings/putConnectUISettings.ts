@@ -8,28 +8,22 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PutConnectUISettings } from '@nangohq/types';
 
-const colorPaletteSchema = z
-    .object({
-        background: z.string(),
-        foreground: z.string(),
-        primary: z.string(),
-        primaryForeground: z.string(),
-        textPrimary: z.string(),
-        textMuted: z.string()
-    })
-    .strict();
+const colorPaletteSchema = z.strictObject({
+    background: z.string(),
+    foreground: z.string(),
+    primary: z.string(),
+    primaryForeground: z.string(),
+    textPrimary: z.string(),
+    textMuted: z.string()
+});
 
-const bodyValidation = z
-    .object({
-        theme: z
-            .object({
-                light: colorPaletteSchema,
-                dark: colorPaletteSchema
-            })
-            .strict(),
-        showWatermark: z.boolean()
-    })
-    .strict();
+const bodyValidation = z.strictObject({
+    theme: z.strictObject({
+        light: colorPaletteSchema,
+        dark: colorPaletteSchema
+    }),
+    showWatermark: z.boolean()
+});
 
 export const putConnectUISettings = asyncWrapper<PutConnectUISettings>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
