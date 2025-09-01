@@ -67,7 +67,15 @@ export class ConnectUI {
      * Open UI in an iframe and listen to events
      */
     open() {
-        console.log('Opening connect ui');
+        this.iframe = this.createIframe();
+        document.body.append(this.iframe);
+
+        document.body.style.overflow = 'hidden';
+
+        this.setupEventListeners();
+    }
+
+    private createIframe() {
         const baseURL = new URL(this.baseURL);
         if (this.apiURL) {
             baseURL.searchParams.append('apiURL', this.apiURL);
@@ -79,10 +87,10 @@ export class ConnectUI {
             baseURL.searchParams.append('lang', this.lang);
         }
 
-        // Create an iframe that will contain the ConnectUI on top of existing UI
         const iframe = document.createElement('iframe');
         iframe.src = baseURL.href;
         iframe.id = 'connect-ui';
+
         iframe.style.position = 'fixed';
         iframe.style.zIndex = '9999';
         iframe.style.top = '0';
@@ -93,12 +101,10 @@ export class ConnectUI {
         iframe.style.height = '100vh';
         iframe.style.backgroundColor = 'transparent';
 
-        this.iframe = iframe;
-        document.body.append(iframe);
+        return iframe;
+    }
 
-        document.body.style.overflow = 'hidden';
-
-        // Listen to event sent from ConnectUI
+    private setupEventListeners() {
         this.listener = (event) => {
             if (event.origin !== this.baseURL) {
                 return;

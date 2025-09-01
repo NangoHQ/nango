@@ -12,8 +12,8 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: 'bg-neutral-900 text-neutral-50 hover:bg-neutral-900/90 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/90',
-                transparent: 'text-dark-500 dark:hover:bg-neutral-50/90 focus:text-dark-800 hover:text-dark-800'
+                default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+                transparent: 'text-text-muted hover:text-text-primary focus:text-text-primary'
             },
             size: {
                 default: 'h-10 px-4 py-2',

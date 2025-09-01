@@ -2,7 +2,7 @@ import { createSync } from 'nango';
 import * as z from 'zod';
 
 const issueSchema = z.object({
-    id: z.string(),
+    id: z.string()
 });
 
 export default createSync({
@@ -21,6 +21,5 @@ export default createSync({
         await nango.setMergingStrategy({ strategy: 'ignore_if_modified_after' }, 'GithubIssue');
 
         await nango.get({ endpoint: '/nangohq/nango/issues' });
-    },
+    }
 });
-

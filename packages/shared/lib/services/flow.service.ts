@@ -1,132 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-
-import yaml from 'js-yaml';
-
-import { NangoYamlParserV2, nangoModelsToJsonSchema } from '@nangohq/nango-yaml';
-import { filterJsonSchemaForModels, report, stringifyError } from '@nangohq/utils';
+import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import flowsJson from '../../flows.zero.json' with { type: 'json' };
 
-import type { FlowsYaml, FlowsZeroJson, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
+import type { FlowsZeroJson, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
 
 class FlowService {
     flowsJson: FlowsZeroJson = flowsJson as FlowsZeroJson;
-    flowsRaw: FlowsYaml | undefined;
     flowsStandard: StandardNangoConfig[] | undefined;
-
-    public getFlowsYaml(): FlowsYaml {
-        if (this.flowsRaw) {
-            return this.flowsRaw;
-        }
-
-        try {
-            const flowPath = path.join(import.meta.dirname, '../../flows.yaml');
-            this.flowsRaw = yaml.load(fs.readFileSync(flowPath).toString()) as FlowsYaml;
-
-            if (this.flowsRaw === undefined || !('integrations' in this.flowsRaw) || Object.keys(this.flowsRaw.integrations).length <= 0) {
-                throw new Error('empty_flows');
-            }
-
-            return this.flowsRaw;
-        } catch (err) {
-            report('failed_to_find_flows', { error: stringifyError(err) });
-            throw err;
-        }
-    }
 
     public getAllAvailableFlowsAsStandardConfig(): StandardNangoConfig[] {
         if (this.flowsStandard) {
             return this.flowsStandard;
         }
 
-        const config = this.getFlowsYaml();
-        const { integrations: allIntegrations } = config;
-
         const standardConfig: StandardNangoConfig[] = [];
 
-        // Legacy Yaml
-        for (const providerConfigKey in allIntegrations) {
-            const flow = allIntegrations[providerConfigKey];
-            if (!flow) {
-                continue;
-            }
-
-            const { models, ...rest } = flow;
-            const parser = new NangoYamlParserV2({
-                raw: { integrations: { [providerConfigKey]: rest }, models: models },
-                yaml: ''
-            });
-            parser.parse(); // we assume it's valid because it's coming from a pre-validated CI
-            const parsed = parser.parsed!;
-            const integration = parsed.integrations.find((value) => value.providerConfigKey === providerConfigKey)!;
-
-            const std: StandardNangoConfig = {
-                providerConfigKey,
-                actions: [],
-                syncs: [],
-                [`on-events`]: []
-            };
-
-            for (const item of [...integration.actions, ...integration.syncs]) {
-                const models = item.usedModels.map((model) => parsed.models.get(model)!);
-                const jsonSchema = models.length > 0 ? nangoModelsToJsonSchema(models) : null;
-
-                if (item.type === 'action') {
-                    std.actions.push({
-                        name: item.name,
-                        type: item.type,
-                        returns: item.output || [],
-                        description: item.description,
-                        runs: '',
-                        scopes: item.scopes,
-                        version: item.version || null,
-                        is_public: true,
-                        pre_built: true,
-                        endpoints: item.endpoint ? [item.endpoint] : [],
-                        input: item.input || undefined,
-                        enabled: false,
-                        last_deployed: null,
-                        webhookSubscriptions: [],
-                        json_schema: jsonSchema,
-                        metadata: { description: item.description, scopes: item.scopes },
-                        sdk_version: null,
-                        is_zero_yaml: false
-                    });
-                } else {
-                    std.syncs.push({
-                        name: item.name,
-                        type: item.type,
-                        returns: item.output || [],
-                        description: item.description,
-                        track_deletes: item.track_deletes,
-                        auto_start: item.auto_start,
-                        sync_type: item.sync_type,
-                        attributes: {},
-                        scopes: item.scopes,
-                        version: item.version || null,
-                        is_public: true,
-                        pre_built: true,
-                        endpoints: item.endpoints,
-                        input: item.input || undefined,
-                        runs: item.runs,
-                        enabled: false,
-                        last_deployed: null,
-                        webhookSubscriptions: [],
-                        json_schema: jsonSchema,
-                        metadata: { description: item.description, scopes: item.scopes },
-                        sdk_version: null,
-                        is_zero_yaml: false
-                    });
-                }
-            }
-
-            standardConfig.push(std);
-        }
-
-        this.flowsStandard = standardConfig;
-
-        // Zero Yaml
         for (const integration of this.flowsJson) {
             const std: StandardNangoConfig = {
                 providerConfigKey: integration.providerConfigKey,
@@ -194,15 +82,10 @@ class FlowService {
                 });
             }
 
-            // Replace the flow if it already exists
-            // During migration we will keep both yaml and zero available but we don't want to have duplicates
-            const pos = this.flowsStandard.findIndex((flow) => flow.providerConfigKey === integration.providerConfigKey);
-            if (pos !== -1) {
-                this.flowsStandard[pos] = std;
-            } else {
-                this.flowsStandard.push(std);
-            }
+            standardConfig.push(std);
         }
+
+        this.flowsStandard = standardConfig;
 
         return standardConfig;
     }

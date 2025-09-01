@@ -87,6 +87,9 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
                 newIntegration.oauth_client_id = creds.client_id;
                 newIntegration.oauth_client_secret = creds.client_secret;
                 newIntegration.oauth_scopes = creds.scopes;
+                if (creds.webhook_secret) {
+                    newIntegration.custom = { webhookSecret: creds.webhook_secret };
+                }
                 break;
             }
 

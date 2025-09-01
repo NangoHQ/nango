@@ -74,15 +74,6 @@ export interface ReportedSyncJobStatus {
     recordCount: Record<string, number>;
 }
 
-// TODO: change that to use Parsed type
-export interface SyncModelSchema {
-    name: string;
-    fields: {
-        name: string;
-        type: string;
-    }[];
-}
-
 export enum SyncCommand {
     PAUSE = 'PAUSE',
     UNPAUSE = 'UNPAUSE',

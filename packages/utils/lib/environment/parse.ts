@@ -70,6 +70,10 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    SYNC_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    ONEVENT_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
@@ -99,7 +103,7 @@ export const ENVS = z.object({
     FLEET_TIMEOUT_FINISHING_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000), // 24 hours
+        .default(25 * 60 * 60 * 1000), // 25 hours
     FLEET_TIMEOUT_IDLE_MS: z.coerce
         .number()
         .optional()
@@ -172,6 +176,9 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
+    NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
+    NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
+    NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
 
     // Koala
     PUBLIC_KOALA_API_URL: z.url().optional(),

@@ -248,6 +248,44 @@ import './github/actions/createIssue.js';
 
 ## Migration Gotchas & FAQ
 
+### Gotchas
+```typescript
+err - github/syncs/issues.ts:57:43
+  Argument of type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }[]' is not assignable to parameter of type 'RawModel[]'.
+  Type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }' is not assignable to type 'RawModel'.
+    Types of property 'id' are incompatible.
+      Type 'number' is not assignable to type 'string'.
+```
+Previously you were setting the ID property of a sync to a number when it should always be a string.
+
+------
+
+```typescript
+err - 1password-scim/actions/create-user.ts:26:45
+  Property 'errors' does not exist on type 'ZodError<{ firstName: string; lastName: string; email: string; active?: boolean | undefined; externalId?: string | undefined; phoneNumbers?: { type: "work" | "mobile" | "other"; value: string; }[] | undefined; photos?: { ...; }[] | undefined; addresses?: { ...; }[] | undefined; title?: string | undefined; }>'.
+```
+Previously you were validating an input using Zod in this way
+```typescript
+const parsedInput = scimCreateUserSchema.safeParse(input);
+
+if (!parsedInput.success) {
+  for (const error of parsedInput.error.errors) {
+    await nango.log(
+      `Invalid input provided to create a user: ${error.message} at path ${error.path.join(".")}`,
+      { level: "error" },
+    );
+  }
+
+  throw new nango.ActionError({
+    message: "Invalid input provided to create a user",
+  });
+}
+```
+Instead of this you can use a Nango helper:
+```typescript
+const parsedInput = await nango.zodValidateInput({ zodSchema: scimCreateUserSchema, input });
+```
+
 ### Nango.yaml EOL
 
 **Q: When will nango.yaml stop being supported?**

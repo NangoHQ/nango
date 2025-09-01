@@ -61,7 +61,7 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
-    it('should update step', async () => {
+    it('should update step and closed', async () => {
         const { env, user, account } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 

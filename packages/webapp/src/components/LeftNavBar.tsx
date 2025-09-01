@@ -21,8 +21,7 @@ import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
-import { apiPatchOnboarding } from '../hooks/useOnboarding';
-import { useUser } from '../hooks/useUser';
+import { apiPatchUser, useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 import UsageCard from './UsageCard';
 import { globalEnv } from '../utils/env';
@@ -41,6 +40,7 @@ export enum LeftNavBarItems {
     TeamSettings,
     TeamBilling,
     UserSettings,
+    ConnectUI,
     GettingStarted,
     Logs
 }
@@ -77,14 +77,16 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const items = useMemo(() => {
         const list: MenuItem[] = [];
-        if (meta && showGettingStarted && !meta.onboardingComplete) {
+        if (meta && showGettingStarted && !meta.gettingStartedClosed) {
             list.push({
                 name: 'Getting Started',
                 icon: IconRocket,
                 value: LeftNavBarItems.GettingStarted,
                 link: `/${env}/getting-started`,
                 onClose: async () => {
-                    await apiPatchOnboarding(env);
+                    await apiPatchUser({
+                        gettingStartedClosed: true
+                    });
                     void mutateMeta();
                 }
             });
@@ -94,6 +96,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         list.push({ name: 'Integrations', icon: IconApps, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: IconCirclesRelation, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: IconLogs, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
+        // Hidden while in development
+        // list.push({
+        //     name: 'Connect UI',
+        //     icon: IconSocial,
+        //     value: LeftNavBarItems.ConnectUI,
+        //     link: `/${env}/connect-ui`
+        // });
         list.push({
             name: 'Environment Settings',
             icon: IconAdjustmentsHorizontal,
@@ -114,7 +123,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             { link: `/${env}/team-settings`, name: 'Team', icon: IconUsersGroup, value: LeftNavBarItems.TeamSettings }
         ];
 
-        if (showGettingStarted && meta.onboardingComplete) {
+        if (showGettingStarted && meta.gettingStartedClosed) {
             list.push({ link: `/dev/getting-started`, name: 'Getting Started', icon: IconRocket, value: LeftNavBarItems.GettingStarted });
         }
 
@@ -215,7 +224,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                     })}
 
                                     <li
-                                        className={cn('flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400')}
+                                        className={cn(
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400 cursor-pointer'
+                                        )}
                                         onClick={async () => await signout()}
                                     >
                                         <IconLogout stroke={1} size={18} />

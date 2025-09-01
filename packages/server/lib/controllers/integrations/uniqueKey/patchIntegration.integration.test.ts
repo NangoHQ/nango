@@ -129,4 +129,40 @@ describe(`PATCH ${endpoint}`, () => {
             error: { code: 'invalid_body', message: "Can't rename an integration with active connections" }
         });
     });
+
+    it('should update webhook_secret for OAUTH2 integration', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: env.secret_key,
+            params: { uniqueKey: 'github' },
+            body: { credentials: { type: 'OAUTH2', client_id: 'client_id', client_secret: 'client_secret', webhook_secret: 'new_secret' } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                created_at: expect.toBeIsoDate(),
+                display_name: 'GitHub (User OAuth)',
+                logo: 'http://localhost:3003/images/template-logos/github.svg',
+                provider: 'github',
+                unique_key: 'github',
+                updated_at: expect.toBeIsoDate(),
+                forward_webhooks: true
+            }
+        });
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        const credentials = resGet.json.data.credentials as { webhook_secret?: string };
+        expect(credentials?.webhook_secret).toBe('new_secret');
+    });
 });

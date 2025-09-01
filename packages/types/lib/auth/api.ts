@@ -1,3 +1,5 @@
+import type { DBConnection } from '../connection/db.js';
+
 export interface AuthModes {
     OAuth1: 'OAUTH1';
     OAuth2: 'OAUTH2';
@@ -17,14 +19,7 @@ export interface AuthModes {
 
 export type AuthModeType = AuthModes[keyof AuthModes];
 
-export interface AuthOperation {
-    CREATION: 'creation';
-    OVERRIDE: 'override';
-    REFRESH: 'refresh';
-    UNKNOWN: 'unknown';
-}
-
-export type AuthOperationType = AuthOperation[keyof AuthOperation];
+export type AuthOperationType = 'creation' | 'override' | 'refresh' | 'unknown';
 
 export interface OAuthAuthorizationMethod {
     BODY: 'body';
@@ -41,8 +36,8 @@ export interface OAuthBodyFormat {
 }
 
 export interface ConnectionUpsertResponse {
-    id: number;
-    operation: AuthOperation;
+    connection: DBConnection;
+    operation: AuthOperationType;
 }
 
 export interface OAuth1RequestTokenResult {
@@ -92,13 +87,15 @@ export interface OAuth2Credentials extends CredentialsCommon {
     type: AuthModes['OAuth2'];
     access_token: string;
 
-    refresh_token?: string;
+    refresh_token?: string | undefined;
     expires_at?: Date | undefined;
 
-    config_override?: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface CustomCredentials extends CredentialsCommon {
@@ -134,10 +131,12 @@ export interface TbaCredentials {
     token_id: string;
     token_secret: string;
 
-    config_override: {
-        client_id?: string;
-        client_secret?: string;
-    };
+    config_override?:
+        | {
+              client_id?: string | undefined;
+              client_secret?: string | undefined;
+          }
+        | undefined;
 }
 
 export interface BillCredentials extends CredentialsCommon {

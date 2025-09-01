@@ -39,7 +39,8 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
-    PostConnectionRefresh
+    PostConnectionRefresh,
+    PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
@@ -63,7 +64,6 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PatchOnboarding } from './onboarding/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { GetPublicRecords } from './record/api.js';
@@ -74,7 +74,7 @@ import type {
     PatchSharedCredentialsProvider,
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
-import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -115,7 +115,11 @@ export type PublicApiEndpoints =
     | PostPublicIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
-    | PostPublicOauthOutboundAuthorization;
+    | PostPublicOauthOutboundAuthorization
+    | PostPublicConnection
+    | PostPublicSyncStart
+    | PostPublicSyncPause
+    | GetPublicSyncStatus;
 
 export type PrivateApiEndpoints =
     | PostSignup
@@ -136,7 +140,6 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | PatchOnboarding
     | PostInternalConnectSessions
     | GetIntegrationFlows
     | DeleteIntegration

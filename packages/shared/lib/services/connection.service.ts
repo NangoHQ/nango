@@ -14,7 +14,12 @@ import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -38,7 +43,6 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     BasicApiCredentials,
-    ConnectionUpsertResponse,
     OAuth2ClientCredentials,
     OAuth2Credentials
 } from '../models/Auth.js';
@@ -54,6 +58,7 @@ import type {
     CombinedOauth2AppCredentials,
     ConnectionConfig,
     ConnectionInternal,
+    ConnectionUpsertResponse,
     DBConnection,
     DBConnectionAsJSONRow,
     DBConnectionDecrypted,
@@ -328,7 +333,6 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        provider: string;
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
@@ -927,12 +931,11 @@ class ConnectionService {
                 }
 
                 const tokenPath = template.token_response.token;
-                const expirationPath = template.token_response.token_expiration;
-                const expirationStrategy = template.token_response.token_expiration_strategy;
+                const expirationPath = template.token_response?.token_expiration;
+                const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
-                const token = extractValueByPath(rawCreds, tokenPath);
-                const expiration = extractValueByPath(rawCreds, expirationPath);
-
+                const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }

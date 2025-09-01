@@ -27,6 +27,7 @@ import type {
     DeleteSyncVariant,
     GetPublicConnection,
     GetPublicConnections,
+    GetPublicEnvironmentVariables,
     GetPublicIntegration,
     GetPublicListIntegrations,
     GetPublicProvider,
@@ -36,6 +37,7 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     OpenAIFunction,
+    PatchPublicConnection,
     PatchPublicIntegration,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
@@ -243,7 +245,7 @@ export class Nango {
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
-        const url = new URL(`${this.serverUrl}/connection`);
+        const url = new URL(`${this.serverUrl}/connections`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
@@ -280,6 +282,18 @@ export class Nango {
         refreshToken?: boolean
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
+        return response.data;
+    }
+
+    /**
+     * Patch a connection
+     * @param params - The parameters for the connection
+     * @param body - The body of the connection
+     * @returns The response from the server
+     */
+    public async patchConnection(params: PatchPublicConnection['QP'], body: PatchPublicConnection['Body']): Promise<PatchPublicConnection['Success']> {
+        const url = `${this.serverUrl}/connections/${params.connectionId}?provider_config_key=${params.provider_config_key}`;
+        const response = await this.http.patch(url, body, { headers: this.enrichHeaders({ 'Content-Type': 'application/json' }) });
         return response.data;
     }
 
@@ -378,7 +392,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -407,7 +421,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -419,7 +433,7 @@ export class Nango {
      * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connections/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
             'Content-Type': 'application/json'
@@ -747,7 +761,7 @@ export class Nango {
      * Retrieve the environment variables as added in the Nango dashboard
      * @returns A promise that resolves with an array of environment variables
      */
-    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+    public async getEnvironmentVariables(): Promise<GetPublicEnvironmentVariables['Success']> {
         const url = `${this.serverUrl}/environment-variables`;
 
         const headers = {
@@ -1060,7 +1074,7 @@ export class Nango {
         refreshToken: boolean = false,
         additionalHeader: Record<string, any> = {}
     ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
-        const url = `${this.serverUrl}/connection/${connectionId}`;
+        const url = `${this.serverUrl}/connections/${connectionId}`;
 
         const headers = {
             'Content-Type': 'application/json'
