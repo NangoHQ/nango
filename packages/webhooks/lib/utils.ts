@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { isAxiosError } from 'axios';
 
-import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable } from '@nangohq/utils';
 
 import type { LogContext } from '@nangohq/logs';
 import type { DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
@@ -50,13 +50,11 @@ export const retry = (logCtx?: LogContext | null, error?: AxiosError, attemptNum
     return false;
 };
 
-export const getSignatureHeader = (secret: string, payload: unknown): Record<string, string> => {
-    const combinedSignature = `${secret}${JSON.stringify(payload)}`;
+export const getSignatureHeader = (secret: string, payload: string): string => {
+    const combinedSignature = `${secret}${payload}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
 
-    return {
-        'X-Nango-Signature': createdHash
-    };
+    return createdHash;
 };
 
 export const filterHeaders = (headers: Record<string, string>): Record<string, string> => {
@@ -134,9 +132,18 @@ export const deliver = async ({
         const { url, type } = webhook;
 
         const filteredHeaders = filterHeaders(incomingHeaders || {});
+
+        // We manually stringify the body to ensure that the order of the keys is consistent
+        // and that axios won't modify the payload in any way.
+        const bodyString = stringifyStable(body);
+        if (bodyString.isErr()) {
+            return Err(new Error('Failed to stringify webhook body', { cause: bodyString.error }));
+        }
+
         const headers = {
-            ...getSignatureHeader(environment.secret_key, body),
-            ...filteredHeaders
+            ...filteredHeaders,
+            'X-Nango-Signature': getSignatureHeader(environment.secret_key, bodyString.value),
+            'content-type': 'application/json'
         };
 
         const logRequest: MessageRow['request'] = {
@@ -151,7 +158,7 @@ export const deliver = async ({
                 async () => {
                     const createdAt = new Date();
                     try {
-                        const res = await axios.post(url, body, { headers });
+                        const res = await axios.post(url, bodyString.value, { headers });
 
                         void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
                         if (res.status >= 200 && res.status < 300) {
