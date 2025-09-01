@@ -1,12 +1,34 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { connectUISettingsService, seeders } from '@nangohq/shared';
+import { connectUISettingsService, seeders, updatePlan } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/connect-ui-settings';
 let api: Awaited<ReturnType<typeof runServer>>;
+
+const customSettings = {
+    showWatermark: false,
+    theme: {
+        light: {
+            background: '#eeeeee',
+            foreground: '#eeeeee',
+            primary: '#eeeeee',
+            primaryForeground: '#eeeeee',
+            textPrimary: '#eeeeee',
+            textMuted: '#eeeeee'
+        },
+        dark: {
+            background: '#111111',
+            foreground: '#111111',
+            primary: '#111111',
+            primaryForeground: '#111111',
+            textPrimary: '#111111',
+            textMuted: '#111111'
+        }
+    }
+};
 
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
@@ -50,33 +72,15 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    it('should return custom settings when they exist', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+    it('should return custom settings when they exist and both plan features are enabled', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
 
-        const customSettings = {
-            showWatermark: false,
-            theme: {
-                light: {
-                    background: '#f0f0f0',
-                    foreground: '#333333',
-                    primary: '#007bff',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#000000',
-                    textMuted: '#666666'
-                },
-                dark: {
-                    background: '#1a1a1a',
-                    foreground: '#cccccc',
-                    primary: '#007bff',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#ffffff',
-                    textMuted: '#999999'
-                }
-            }
-        };
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
+
+        const testSettings = customSettings;
 
         // Create custom settings using the service
-        const upsertResult = await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, customSettings);
+        const upsertResult = await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);
         expect(upsertResult.isOk()).toBe(true);
 
         const res = await api.fetch(route, {
@@ -88,86 +92,111 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            data: customSettings
+            data: testSettings
         });
     });
 
-    it('should return different settings for different environments', async () => {
-        const { env: env1 } = await seeders.seedAccountEnvAndUser();
-        const { env: env2 } = await seeders.seedAccountEnvAndUser();
+    it('should return default theme when plan does not have can_customize_connect_ui_theme flag', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
 
-        const settings1 = {
-            showWatermark: true,
-            theme: {
-                light: {
-                    background: '#ffffff',
-                    foreground: '#000000',
-                    primary: '#007bff',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#000000',
-                    textMuted: '#666666'
-                },
-                dark: {
-                    background: '#000000',
-                    foreground: '#ffffff',
-                    primary: '#007bff',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#ffffff',
-                    textMuted: '#999999'
-                }
-            }
+        const testSettings = {
+            ...customSettings,
+            showWatermark: false
         };
 
-        const settings2 = {
-            showWatermark: false,
-            theme: {
-                light: {
-                    background: '#f0f0f0',
-                    foreground: '#333333',
-                    primary: '#28a745',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#000000',
-                    textMuted: '#666666'
-                },
-                dark: {
-                    background: '#1a1a1a',
-                    foreground: '#cccccc',
-                    primary: '#28a745',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#ffffff',
-                    textMuted: '#999999'
-                }
-            }
+        // Store custom settings in database
+        await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);
+
+        // Disable the theme customization feature for this plan, but enable watermark customization
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: true });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: env.secret_key
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+
+        // Theme should be overridden to defaults, but showWatermark should remain custom
+        expect(res.json.data.theme).toStrictEqual(connectUISettingsService.defaultConnectUISettings.theme);
+        expect(res.json.data.showWatermark).toBe(false); // Should preserve custom value
+    });
+
+    it('should return default showWatermark when plan does not have can_disable_connect_ui_watermark flag', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
+
+        // Create custom settings with non-default watermark setting
+        const testSettings = {
+            ...customSettings,
+            showWatermark: false
         };
 
-        // Create different settings for each environment
-        await connectUISettingsService.upsertConnectUISettings(db.knex, env1.id, settings1);
-        await connectUISettingsService.upsertConnectUISettings(db.knex, env2.id, settings2);
+        // Store custom settings in database
+        await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);
 
-        // Test first environment
-        const res1 = await api.fetch(route, {
+        // Disable the watermark customization feature for this plan, but enable theme customization
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: false });
+
+        const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env1.secret_key
+            token: env.secret_key
         });
 
-        expect(res1.res.status).toBe(200);
-        isSuccess(res1.json);
-        expect(res1.json.data).toStrictEqual(settings1);
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
 
-        // Test second environment
-        const res2 = await api.fetch(route, {
+        // showWatermark should be overridden to default, but theme should remain custom
+        expect(res.json.data.showWatermark).toBe(connectUISettingsService.defaultConnectUISettings.showWatermark);
+        expect(res.json.data.theme).toStrictEqual(testSettings.theme); // Should preserve custom theme
+    });
+
+    it('should return default values for both features when plan has neither flag', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
+
+        // Create custom settings with non-default values
+        const testSettings = customSettings;
+
+        // Store custom settings in database
+        await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);
+
+        // Disable both features for this plan
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: false });
+
+        const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env2.secret_key
+            token: env.secret_key
         });
 
-        expect(res2.res.status).toBe(200);
-        isSuccess(res2.json);
-        expect(res2.json.data).toStrictEqual(settings2);
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
 
-        // Clean up
-        await db.knex('connect_ui_settings').where('environment_id', env1.id).del();
-        await db.knex('connect_ui_settings').where('environment_id', env2.id).del();
+        // Both should be overridden to defaults
+        expect(res.json.data).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
+    });
+
+    it('should return default settings when no custom settings exist and plan has no feature flags', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
+
+        // Ensure no custom settings exist for this environment
+        await db.knex('connect_ui_settings').where('environment_id', env.id).del();
+
+        // Disable both features for this plan
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: false });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: env.secret_key
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+
+        // Should return default settings
+        expect(res.json.data).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
     });
 });
