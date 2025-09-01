@@ -87,7 +87,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
+    const { isPreview, provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
     const nango = useNango();
     const { t } = useI18n();
 
@@ -226,7 +226,7 @@ export const Go: React.FC = () => {
 
     const onSubmit = useCallback(
         async (v: Record<string, unknown>) => {
-            if (!integration || loading || !provider || !nango) {
+            if (isPreview || !integration || loading || !provider || !nango) {
                 return;
             }
 
