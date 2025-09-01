@@ -4,7 +4,7 @@ import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 export function telemetry(event: PostPublicConnectTelemetry['Body']['event'], dimensions?: PostPublicConnectTelemetry['Body']['dimensions']) {
     const state = useGlobal.getState();
-    if (!state.sessionToken) {
+    if (!state.sessionToken || state.isPreview) {
         return;
     }
     const headers = {

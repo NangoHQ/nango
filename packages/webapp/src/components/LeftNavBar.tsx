@@ -40,6 +40,7 @@ export enum LeftNavBarItems {
     TeamSettings,
     TeamBilling,
     UserSettings,
+    ConnectUI,
     GettingStarted,
     Logs
 }
@@ -95,6 +96,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         list.push({ name: 'Integrations', icon: IconApps, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: IconCirclesRelation, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: IconLogs, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
+        // Hidden while in development
+        // list.push({
+        //     name: 'Connect UI',
+        //     icon: IconSocial,
+        //     value: LeftNavBarItems.ConnectUI,
+        //     link: `/${env}/connect-ui`
+        // });
         list.push({
             name: 'Environment Settings',
             icon: IconAdjustmentsHorizontal,
