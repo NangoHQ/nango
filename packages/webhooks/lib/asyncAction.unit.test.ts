@@ -1,8 +1,7 @@
-import stringify from 'json-stable-stringify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
-import { axiosInstance } from '@nangohq/utils';
+import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendAsyncActionWebhook } from './asyncAction.js';
 
@@ -80,7 +79,7 @@ describe('AsyncAction webhookds', () => {
             payload: props.payload,
             providerConfigKey: props.providerConfigKey
         };
-        const bodyString = stringify(body);
+        const bodyString = stringifyStable(body).unwrap();
         expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, bodyString, {
             headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json' }
         });

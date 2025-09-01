@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import stringify from 'json-stable-stringify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance } from '@nangohq/utils';
+import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendSync } from './sync.js';
 
@@ -284,7 +283,7 @@ describe('Webhooks: sync notification tests', () => {
             success: true,
             syncType: 'INCREMENTAL'
         };
-        const bodyString = stringify(body);
+        const bodyString = stringifyStable(body).unwrap();
         expect(spy).toHaveBeenCalledTimes(2);
 
         expect(spy).toHaveBeenNthCalledWith(

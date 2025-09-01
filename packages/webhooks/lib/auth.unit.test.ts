@@ -1,7 +1,6 @@
-import stringify from 'json-stable-stringify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance } from '@nangohq/utils';
+import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendAuth } from './auth.js';
 
@@ -288,7 +287,7 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             operation: 'refresh'
         };
-        const bodyString = stringify(body);
+        const bodyString = stringifyStable(body).unwrap();
 
         expect(spy).toHaveBeenNthCalledWith(
             1,
