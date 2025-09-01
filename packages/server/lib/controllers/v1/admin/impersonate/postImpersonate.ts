@@ -45,13 +45,13 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
         return;
     }
 
-    const result = await accountService.getAccountAndEnvironmentIdByUUID(body.accountUUID, environment.name);
-    if (!result) {
+    const accountTarget = await accountService.getAccountByUUID(body.accountUUID);
+    if (!accountTarget) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'Account not found' } });
         return;
     }
 
-    const user = await userService.getAnUserByAccountId(result.accountId);
+    const user = await userService.getAnUserByAccountId(accountTarget.id);
     if (!user) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'Cannot switch to account with no users' } });
         return;
