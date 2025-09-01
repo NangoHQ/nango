@@ -19,7 +19,6 @@ export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
 export type * from './connectUISettings/dto.js';
 export type * from './connectUISettings/db.js';
-export type * from './connectUISettings/api.js';
 export type * from './meta/api.js';
 export type * from './invitations/api.js';
 export type * from './invitations/db.js';

@@ -101,11 +101,11 @@ export interface DBPlan extends Timestamps {
      * Enable or disable the ability to customize the connect UI theme
      * @default false
      */
-    has_connect_ui_theme: boolean;
+    can_customize_connect_ui_theme: boolean;
 
     /**
      * Enable or disable the ability to disable the connect UI watermark
      * @default false
      */
-    has_connect_ui_watermark: boolean;
+    can_disable_connect_ui_watermark: boolean;
 }

@@ -28,8 +28,8 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         has_webhooks_script: false,
         has_webhooks_forward: false,
         can_override_docs_connect_url: false,
-        has_connect_ui_theme: false,
-        has_connect_ui_watermark: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false,
         created_at: new Date(),
         updated_at: new Date(),
         ...override

@@ -5,8 +5,8 @@ exports.config = { transaction: true };
  */
 exports.up = async function (knex) {
     await knex.schema.alterTable('plans', (table) => {
-        table.boolean('has_connect_ui_theme').notNullable().defaultTo(false);
-        table.boolean('has_connect_ui_watermark').notNullable().defaultTo(false);
+        table.boolean('can_customize_connect_ui_theme').notNullable().defaultTo(false);
+        table.boolean('can_disable_connect_ui_watermark').notNullable().defaultTo(false);
     });
 };
 
