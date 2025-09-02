@@ -32,6 +32,7 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -174,7 +175,9 @@ export type PrivateApiEndpoints =
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
     | GetGettingStarted
-    | PatchGettingStarted;
+    | PatchGettingStarted
+    | GetConnectUISettings
+    | PutConnectUISettings;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
