@@ -233,6 +233,17 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         return Buffer.from(resolvedInner).toString('base64');
     });
 
+    if (str.includes('||')) {
+        const parts = str.split('||').map((part) => part.trim());
+        const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+
+        if (left && left !== parts[0]) {
+            return left;
+        }
+
+        return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
+    }
+
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
