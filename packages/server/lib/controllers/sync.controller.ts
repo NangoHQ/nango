@@ -11,15 +11,11 @@ import {
     getActionOrModelByEndpoint,
     getSyncConfigRaw,
     getSyncs,
-    getSyncsByConnectionId,
-    getSyncsByProviderConfigKey,
-    normalizedSyncParams,
     productTracking,
     syncCommandToOperation,
-    syncManager,
     verifyOwnership
 } from '@nangohq/shared';
-import { Ok, baseUrl, getHeaders, isCloud, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
+import { baseUrl, getHeaders, isCloud, isHosted, redactHeaders, truncateJson } from '@nangohq/utils';
 
 import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -28,7 +24,6 @@ import { getPublicRecords } from './records/getRecords.js';
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { HTTP_METHOD, Sync, SyncCommand } from '@nangohq/shared';
-import type { DBConnectionDecrypted } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -343,82 +338,6 @@ class SyncController {
                     headers: redactHeaders({ headers: responseHeaders })
                 }
             });
-        }
-    }
-
-    public async getSyncStatus(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { syncs, provider_config_key, connection_id } = req.query;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            let syncIdentifiers = syncs === '*' ? Ok([]) : normalizedSyncParams(typeof syncs === 'string' ? syncs.split(',') : (syncs as string[]));
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: syncIdentifiers.error.message });
-                return;
-            }
-
-            const environmentId = res.locals['environment'].id;
-
-            let connection: DBConnectionDecrypted | null = null;
-
-            if (connection_id) {
-                const connectionResult = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
-                const { success: connectionSuccess, error: connectionError } = connectionResult;
-                if (!connectionSuccess || !connectionResult.response) {
-                    errorManager.errResFromNangoErr(res, connectionError);
-                    return;
-                }
-
-                connection = connectionResult.response;
-            }
-
-            if (syncIdentifiers.value.length <= 0) {
-                if (connection && connection.id) {
-                    const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
-                    if (syncs) {
-                        syncIdentifiers = Ok(syncs.map((sync) => ({ syncName: sync.name, syncVariant: sync.variant })));
-                    }
-                } else {
-                    const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey: provider_config_key as string });
-                    if (syncs) {
-                        syncIdentifiers = Ok(syncs.map((sync) => ({ syncName: sync.name, syncVariant: sync.variant })));
-                    }
-                }
-            }
-
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: `syncs parameter is invalid. Received ${JSON.stringify(syncs)}` });
-                return;
-            }
-
-            const {
-                success,
-                error,
-                response: syncsWithStatus
-            } = await syncManager.getSyncStatus({
-                environmentId,
-                providerConfigKey: provider_config_key as string,
-                syncIdentifiers: syncIdentifiers.value,
-                orchestrator,
-                recordsService,
-                connectionId: connection_id as string,
-                includeJobStatus: false,
-                optionalConnection: connection
-            });
-
-            if (!success || !syncsWithStatus) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            res.send({ syncs: syncsWithStatus });
-        } catch (err) {
-            next(err);
         }
     }
 

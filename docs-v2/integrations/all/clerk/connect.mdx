@@ -1,0 +1,48 @@
+---
+title: Clerk - How do I link my account?
+sidebarTitle: Clerk
+---
+
+# Overview
+
+To authenticate with Clerk, you need:
+1. **Secret Key** - A key that grants Nango permission to interact with Clerk's APIs resources and services.
+
+This guide will walk you through obtaining your **Secret Key** within Clerk.
+
+### Prerequisites:
+
+- You must have an account with Clerk.
+
+### Instructions:
+
+#### Step 1: Retrieve your Clerk Secret Key
+
+1. Sign in to your [Clerk Dashboard](https://dashboard.clerk.com/)
+2. Select your application (or create one if you haven't already)
+3. Navigate to **Configure** > **Developers** > **API Keys**
+<img src="/integrations/all/clerk/configure.png"/>
+4. You'll see two types of keys:
+   - **Publishable Key**: Starts with `pk_test_` or `pk_live_` (for frontend use)
+   - **Secret Key**: Starts with `sk_test_` or `sk_live_` (for backend use - this is what you need)
+<img src="/integrations/all/clerk/api_key.png"/>
+5. Copy your **Secret Key**
+
+<Warning>
+Keep your Secret Key secure and never expose it in client-side code or public repositories. This key provides full access to your Clerk backend API.
+</Warning>
+
+<Info>
+If you're just testing the integration, use your development key (`sk_test_...`). For production, use your live key (`sk_live_...`).
+</Info>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your Clerk **Secret Key**:
+1. Open the form where you need to authenticate with Clerk.
+2. Enter your **Secret Key** in its designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/clerk/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Clerk.
