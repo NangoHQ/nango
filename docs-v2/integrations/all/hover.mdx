@@ -1,0 +1,58 @@
+---
+title: Hover
+sidebarTitle: Hover
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/hover/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/hover/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+<Steps>
+  <Step title="Create a Hover account">
+    If you don't already have one, sign up for a [Hover account](https://hover.to/onboarding/welcome).
+  </Step>
+  <Step title="Create a new integration">
+    1. Go to [**Hover** > **Settings** > **Developer**](https://hover.to/settings/developers).
+    2. Click **Create New Integration**.
+    3. Enter *Integration Name*, *Redirect URI*, *Description*, select *Visibility* and upload a *Logo*.
+       **NOTE**: localhost may not work as Redirect URI - try using redirectmeto.com.
+    4. Click **Save** and you will be redirected to the list of integrations.
+    5. Click **Edit** on the integration you just created.
+    6. Copy **OAuth Client ID** and **OAuth Client Secret** to create the integration in Nango.
+       **NOTE**: You do not need to specify a **scope** for this integration.
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hover.mdx)</Note>
+
+
+## Useful links
+
+-   [Hover API Documentation](https://developers.hover.to/docs)
+-   [Hover OAuth 2.0 Authentication Documentation](https://developers.hover.to/docs/oauth-20-authentication)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hover.mdx)</Note>
+
+## API gotchas
+
+-   No scope is needed when setting up the integration
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hover.mdx)</Note>

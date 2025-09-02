@@ -6,6 +6,7 @@ import multer from 'multer';
 import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
+import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -54,7 +55,7 @@ import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
-import syncController from './controllers/sync.controller.js';
+import { allPublicV1 } from './controllers/v1/getV1.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
@@ -214,7 +215,7 @@ publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/action/trigger').post(apiAuth, postPublicTriggerAction); //TODO: to deprecate
 publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
@@ -225,6 +226,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
 
 publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
