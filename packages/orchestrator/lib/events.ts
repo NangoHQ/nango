@@ -196,26 +196,20 @@ export class TaskEventsHandler extends PgEventEmitter {
 
     private debounced = new Map<string, NodeJS.Timeout>();
 
-    private debouncedEmit(event: string, delay: number): void {
+    private throttleEmit(event: string, delay: number): void {
         const timeoutId = this.debounced.get(event);
 
-        // Execute if timeout doesn't exist (first call or after delay period)
+        // If there's no existing timeout, emit the event and set a new timeout
         if (!timeoutId) {
             this.emit(event);
-        }
 
-        // Clear existing timeout to reset the cooldown period
-        if (timeoutId) {
-            clearTimeout(timeoutId);
+            this.debounced.set(
+                event,
+                setTimeout(() => {
+                    this.debounced.delete(event);
+                }, delay)
+            );
         }
-
-        // Set new timeout to start the cooldown period
-        this.debounced.set(
-            event,
-            setTimeout(() => {
-                this.debounced.delete(event);
-            }, delay)
-        );
     }
 
     constructor(db: knex.Knex) {
@@ -229,7 +223,7 @@ export class TaskEventsHandler extends PgEventEmitter {
                 // so we emit them with the groupKey prefix
                 // and debounce them to avoid flooding the listeners
                 // with too many duplicate events
-                this.debouncedEmit(taskEvents.taskCreated(task), envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS);
+                this.throttleEmit(taskEvents.taskCreated(task), envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS);
             },
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
