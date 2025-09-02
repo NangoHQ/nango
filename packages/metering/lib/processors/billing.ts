@@ -139,7 +139,7 @@ async function notifyOnProdUsageThreshold({ accountId, environmentId }: { accoun
                     productTracking.track({
                         name: 'prod:connections:threshold_hit',
                         team,
-                        eventProperties: { connectionCount: threshold }
+                        userProperties: { connectionCount: threshold }
                     });
                 }
             }
