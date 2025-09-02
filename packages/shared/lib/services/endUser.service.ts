@@ -1,7 +1,18 @@
+/* eslint-disable prettier/prettier */
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
-import type { ConnectSessionInput, DBConnection, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser } from '@nangohq/types';
+import type {
+    ConnectSession,
+    ConnectSessionInput,
+    DBConnection,
+    DBEndUser,
+    DBEnvironment,
+    DBInsertEndUser,
+    DBTeam,
+    EndUser,
+    InternalEndUser
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
@@ -32,13 +43,27 @@ export const EndUserMapper = {
             displayName: dbEndUser.display_name || null,
             organization: dbEndUser.organization_id
                 ? {
-                      organizationId: dbEndUser.organization_id,
-                      displayName: dbEndUser.organization_display_name || null
-                  }
+                    organizationId: dbEndUser.organization_id,
+                    displayName: dbEndUser.organization_display_name || null
+                }
                 : null,
             tags: dbEndUser.tags || null,
             createdAt: dbEndUser.created_at,
             updatedAt: dbEndUser.updated_at
+        };
+    },
+    apiToEndUser: (endUser: ConnectSessionInput['end_user'], organization?: ConnectSessionInput['organization'] | null): InternalEndUser => {
+        return {
+            endUserId: endUser.id,
+            email: endUser.email || null,
+            displayName: endUser.display_name || null,
+            tags: endUser.tags || null,
+            organization: organization
+                ? {
+                    organizationId: organization.id,
+                    displayName: organization.display_name || null
+                }
+                : null
         };
     }
 };
@@ -91,17 +116,14 @@ export async function createEndUser(
 
 export async function getEndUser(
     db: Knex,
-    props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number },
+    props: { id: number; accountId: number; environmentId: number },
     { forUpdate = false }: { forUpdate?: boolean } = {}
 ): Promise<Result<EndUser, EndUserError>> {
-    const query = db
-        .from<DBEndUser>(END_USERS_TABLE)
-        .select('*')
-        .where(
-            'endUserId' in props
-                ? { end_user_id: props.endUserId, environment_id: props.environmentId, account_id: props.accountId }
-                : { id: props.id, environment_id: props.environmentId, account_id: props.accountId }
-        );
+    const query = db.from<DBEndUser>(END_USERS_TABLE).select('*').where({
+        id: props.id,
+        environment_id: props.environmentId,
+        account_id: props.accountId
+    });
     if (forUpdate) {
         query.forUpdate();
     }
@@ -122,18 +144,20 @@ export async function getEndUser(
 export async function updateEndUser(
     db: Knex,
     {
-        endUserId,
+        id,
         accountId,
         environmentId,
+        endUserId,
         email,
         displayName,
         organization,
         tags
-    }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'tags'>
+    }: Pick<EndUser, 'id' | 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId' | 'tags'>
 ): Promise<Result<EndUser, EndUserError>> {
     const [updated] = await db<DBEndUser>(END_USERS_TABLE)
-        .where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId })
+        .where({ id, account_id: accountId, environment_id: environmentId })
         .update({
+            end_user_id: endUserId,
             email,
             display_name: displayName || null,
             organization_id: organization?.organizationId || null,
@@ -146,31 +170,16 @@ export async function updateEndUser(
         return Err(
             new EndUserError({
                 code: 'update_failed',
-                message: `Failed update of end user '${endUserId}'`,
-                payload: { endUserId, accountId, environmentId }
+                message: `Failed update of end user '${id}'`,
+                payload: { id, accountId, environmentId }
             })
         );
     }
     return Ok(EndUserMapper.from(updated));
 }
 
-export async function deleteEndUser(
-    db: Knex,
-    { endUserId, accountId, environmentId }: { endUserId: string; accountId: number; environmentId: number }
-): Promise<Result<void, EndUserError>> {
-    const deleted = await db<DBEndUser>(END_USERS_TABLE).where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId }).delete();
-    if (!deleted) {
-        return Err(new EndUserError({ code: 'not_found', message: `End user '${endUserId}' not found`, payload: { endUserId, accountId, environmentId } }));
-    }
-    return Ok(undefined);
-}
-
 export async function linkConnection(db: Knex, { endUserId, connection }: { endUserId: number; connection: Pick<DBConnection, 'id'> }) {
     await db<DBConnection>('_nango_connections').where({ id: connection.id }).update({ end_user_id: endUserId });
-}
-
-export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<DBConnection, 'id'> }) {
-    await db<DBConnection>('_nango_connections').where({ id: connection.id }).update({ end_user_id: null });
 }
 
 export async function getEndUserByConnectionId(db: Knex, props: { connectionId: number }): Promise<Result<EndUser, EndUserError>> {
@@ -191,38 +200,17 @@ export async function upsertEndUser(
     {
         account,
         environment,
-        endUserPayload,
-        organization
+        connection,
+        endUser
     }: {
         account: DBTeam;
         environment: DBEnvironment;
-        endUserPayload: ConnectSessionInput['end_user'];
-        organization?: ConnectSessionInput['organization'];
+        connection: Pick<DBConnection, 'end_user_id'>;
+        endUser: InternalEndUser;
     }
 ): Promise<Result<EndUser, EndUserError>> {
-    // Check if the endUser exists in the database
-    const endUserRes = await getEndUser(db, { endUserId: endUserPayload.id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
-
-    // --- Create end user if it doesn't exist yet
-    if (endUserRes.isErr()) {
-        if (endUserRes.error.code !== 'not_found') {
-            return endUserRes;
-        }
-
-        const createdEndUser = await createEndUser(db, {
-            endUserId: endUserPayload.id,
-            email: endUserPayload.email || null,
-            displayName: endUserPayload.display_name || null,
-            organization: organization?.id
-                ? {
-                      organizationId: organization.id,
-                      displayName: organization.display_name || null
-                  }
-                : null,
-            accountId: account.id,
-            environmentId: environment.id,
-            tags: endUserPayload.tags || null
-        });
+    if (!connection.end_user_id) {
+        const createdEndUser = await createEndUser(db, { accountId: account.id, environmentId: environment.id, ...endUser });
         if (createdEndUser.isErr()) {
             return createdEndUser;
         }
@@ -230,35 +218,86 @@ export async function upsertEndUser(
         return Ok(createdEndUser.value);
     }
 
-    // --- Update
-    const endUser = endUserRes.value;
+    return await getAndUpdateIfModifiedEndUser(db, {
+        id: connection.end_user_id,
+        account,
+        environment,
+        endUser
+    });
+}
+
+async function getAndUpdateIfModifiedEndUser(
+    db: Knex,
+    {
+        id,
+        account,
+        environment,
+        endUser
+    }: {
+        id: number;
+        account: DBTeam;
+        environment: DBEnvironment;
+        endUser: InternalEndUser;
+        connection?: number;
+    }
+): Promise<Result<EndUser, EndUserError>> {
+    // Check if the endUser exists in the database
+    const endUserRes = await getEndUser(db, { id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
+    if (endUserRes.isErr()) {
+        return endUserRes;
+    }
+
+    const previousEndUser = endUserRes.value;
     const shouldUpdate =
-        endUser.email !== endUserPayload.email ||
-        endUser.displayName !== endUserPayload.display_name ||
-        endUser.organization?.organizationId !== organization?.id ||
-        endUser.organization?.displayName !== organization?.display_name ||
-        JSON.stringify(endUser.tags) !== JSON.stringify(endUserPayload.tags);
+        endUser.endUserId !== previousEndUser.endUserId ||
+        endUser.email !== previousEndUser.email ||
+        endUser.displayName !== previousEndUser.displayName ||
+        endUser.organization?.organizationId !== previousEndUser.organization?.organizationId ||
+        endUser.organization?.displayName !== previousEndUser.organization?.displayName ||
+        JSON.stringify(endUser.tags) !== JSON.stringify(previousEndUser.tags);
     if (!shouldUpdate) {
-        return Ok(endUser);
+        return Ok(endUserRes.value);
     }
 
     const updatedEndUser = await updateEndUser(db, {
-        endUserId: endUser.endUserId,
+        ...endUser,
+        id: previousEndUser.id,
         accountId: account.id,
         environmentId: environment.id,
-        email: endUserPayload.email || null,
-        displayName: endUserPayload.display_name || null,
-        tags: endUserPayload.tags || null,
-        organization: organization?.id
-            ? {
-                  organizationId: organization.id,
-                  displayName: organization.display_name || null
-              }
-            : null
     });
     if (updatedEndUser.isErr()) {
         return updatedEndUser;
     }
 
     return Ok(updatedEndUser.value);
+}
+
+export async function syncEndUserToConnection(
+    db: Knex,
+    {
+        connectSession,
+        connection,
+        account,
+        environment
+    }: { connectSession: ConnectSession; connection: DBConnection; account: DBTeam; environment: DBEnvironment }
+): Promise<Result<boolean, EndUserError>> {
+    if (connectSession.endUserId) {
+        // TODO: remove this once after we deployed end_user column
+        await linkConnection(db, { endUserId: connectSession.endUserId, connection });
+        return Ok(true);
+    } else if (connectSession.endUser) {
+        const upsertRes = await upsertEndUser(db, {
+            account,
+            environment,
+            connection,
+            endUser: connectSession.endUser
+        });
+        if (upsertRes.isErr()) {
+            return Err(upsertRes.error);
+        }
+
+        await linkConnection(db, { endUserId: upsertRes.value.id, connection });
+        return Ok(true);
+    }
+    return Ok(false);
 }

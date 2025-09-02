@@ -80,7 +80,10 @@ describe(`GET ${endpoint}`, () => {
 
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            data: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
+            data: {
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
+                allowed_integrations: ['github']
+            }
         });
         expect(res.res.status).toBe(200);
     });

@@ -1,9 +1,8 @@
 import * as keystore from '@nangohq/keystore';
-import { EndUserMapper } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
-import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, ConnectSessionOverrides, DBEndUser, EndUser } from '@nangohq/types';
+import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, ConnectSessionOverrides, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
 
@@ -11,7 +10,7 @@ const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
 export interface DBConnectSession {
     readonly id: number;
-    readonly end_user_id: number;
+    readonly end_user_id: number | null;
     readonly account_id: number;
     readonly environment_id: number;
     readonly connection_id: number | null;
@@ -21,8 +20,9 @@ export interface DBConnectSession {
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
+    readonly end_user: InternalEndUser | null;
 }
-type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
+type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'end_user_id' | 'created_at' | 'updated_at'>;
 
 const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
@@ -37,7 +37,8 @@ const ConnectSessionMapper = {
             updated_at: session.updatedAt,
             allowed_integrations: session.allowedIntegrations || null,
             integrations_config_defaults: session.integrationsConfigDefaults || null,
-            overrides: session.overrides || null
+            overrides: session.overrides || null,
+            end_user: session.endUser || null
         };
     },
     from: (dbSession: DBConnectSession): ConnectSession => {
@@ -52,7 +53,8 @@ const ConnectSessionMapper = {
             updatedAt: dbSession.updated_at,
             allowedIntegrations: dbSession.allowed_integrations || null,
             integrationsConfigDefaults: dbSession.integrations_config_defaults || null,
-            overrides: dbSession.overrides || null
+            overrides: dbSession.overrides || null,
+            endUser: dbSession.end_user || null
         };
     }
 };
@@ -70,37 +72,36 @@ export class ConnectSessionError extends Error {
 
 export interface ConnectSessionAndEndUser {
     connectSession: ConnectSession;
-    endUser: EndUser;
 }
 
 export async function createConnectSession(
     db: Knex,
     {
-        endUserId,
         accountId,
         environmentId,
         connectionId,
         allowedIntegrations,
         integrationsConfigDefaults,
         operationId,
-        overrides
+        overrides,
+        endUser
     }: SetOptional<
         Pick<
             ConnectSession,
-            'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId' | 'overrides'
+            'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId' | 'overrides' | 'endUser'
         >,
         'connectionId'
     >
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
-        end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
         connection_id: connectionId || null,
         allowed_integrations: allowedIntegrations,
         integrations_config_defaults: integrationsConfigDefaults,
         operation_id: operationId,
-        overrides: overrides || null
+        overrides: overrides || null,
+        end_user: endUser
     };
     const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
@@ -108,7 +109,7 @@ export async function createConnectSession(
             new ConnectSessionError({
                 code: 'creation_failed',
                 message: 'Failed to create connect session',
-                payload: { endUserId, allowedIntegrations, integrationsConfigDefaults }
+                payload: { allowedIntegrations, integrationsConfigDefaults }
             })
         );
     }
@@ -129,21 +130,17 @@ export async function getConnectSession(
 ): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
     const session = await db
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
-        .select<{ connect_session: DBConnectSession; end_user: DBEndUser }>(
-            db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`),
-            db.raw('row_to_json(end_users.*) as end_user')
-        )
-        .join('end_users', 'end_users.id', `${CONNECT_SESSIONS_TABLE}.end_user_id`)
+        .select<{ connect_session: DBConnectSession }>(db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`))
         .where({
-            [`${CONNECT_SESSIONS_TABLE}.id`]: id,
-            [`${CONNECT_SESSIONS_TABLE}.account_id`]: accountId,
-            [`${CONNECT_SESSIONS_TABLE}.environment_id`]: environmentId
+            id,
+            account_id: accountId,
+            environment_id: environmentId
         })
         .first();
     if (!session) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
-    return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session), endUser: EndUserMapper.from(session.end_user) });
+    return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session) });
 }
 
 export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
