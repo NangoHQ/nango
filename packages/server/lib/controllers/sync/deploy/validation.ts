@@ -103,7 +103,7 @@ const onEventScriptsByProvider = z.array(
                     .object({
                         name: z.string().min(1).max(255),
                         fileBody,
-                        event: z.enum(['post-connection-creation', 'pre-connection-deletion'])
+                        event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'pre-connection-creation'])
                     })
                     .strict()
             )

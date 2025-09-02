@@ -7,6 +7,6 @@ export interface DBOnEventScript extends Timestamps {
     file_location: string;
     version: string;
     active: boolean;
-    event: 'POST_CONNECTION_CREATION' | 'PRE_CONNECTION_DELETION';
+    event: 'POST_CONNECTION_CREATION' | 'PRE_CONNECTION_DELETION' | 'PRE_CONNECTION_CREATION';
     sdk_version: string | null;
 }

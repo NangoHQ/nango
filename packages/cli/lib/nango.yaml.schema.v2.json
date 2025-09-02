@@ -41,6 +41,16 @@
                                 "errorMessage": {
                                     "_": "post-connection-creation must be an array of strings."
                                 }
+                            },
+                            "pre-connection-creation": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-zA-Z0-9_-]+$"
+                                },
+                                "errorMessage": {
+                                    "_": "pre-connection-creation must be an array of strings."
+                                }
                             }
                         }
                     },

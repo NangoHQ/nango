@@ -9,6 +9,7 @@ Nango events allow you to execute integration scripts in response to particular 
 # Types of Nango events
 
 Nango currently supports the following events:
+- `pre-connection-creation` occurs before a connection has been created. Useful for custom credentials validation.
 - `post-connection-creation` occurs when a connection has been created.
 - `pre-connection-deletion` occurs before a connection is deleted.
 
@@ -64,7 +65,7 @@ To enable the above script, you create a file and import in your index.ts file:
 import './airtable/on-events/pre-connection-deletion.js';
 ```
 
-```ts pre-connection-deletion.ts  
+```ts pre-connection-deletion.ts
 import { createOnEvent } from 'nango';
 
 export default createOnEvent({

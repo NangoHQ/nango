@@ -41,7 +41,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
                     actions: [
                         {
                             description: '',
@@ -95,7 +95,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
                     actions: []
                 }
             ],
