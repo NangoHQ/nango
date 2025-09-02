@@ -94,5 +94,8 @@
         "web-vitals": "2.1.4",
         "zustand": "5.0.3"
     },
-    "proxy": "http://localhost:3003"
+    "proxy": "http://localhost:3003",
+    "dependencies": {
+        "@tanstack/react-form": "^1.19.3"
+    }
 }

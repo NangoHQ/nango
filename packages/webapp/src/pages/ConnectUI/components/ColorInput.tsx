@@ -1,21 +1,11 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef } from 'react';
 
 import { Input } from '../../../components/ui/input/Input';
 import { cn } from '../../../utils/utils';
 
 import type { InputHTMLAttributes } from 'react';
 
-export interface ColorInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
-    value?: string;
-    onChange?: (value: string) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    className?: string;
-    placeholder?: string;
-    disabled?: boolean;
-    label?: string;
-}
-
-const isValidCSSColor = (color: string): boolean => {
+export const isValidCSSColor = (color: string): boolean => {
     if (!color) return false;
 
     // Create a temporary element to test the color
@@ -26,39 +16,20 @@ const isValidCSSColor = (color: string): boolean => {
     return tempElement.style.color !== '';
 };
 
+export interface ColorInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value'> {
+    value: string;
+    className?: string;
+    placeholder?: string;
+    label?: string;
+}
+
 export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
-    ({ value = '', onChange, onBlur, className, placeholder = '#000000', disabled, label, ...props }, ref) => {
-        const [isValid, setIsValid] = useState(true);
-        const [displayValue, setDisplayValue] = useState(value);
-
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.target.value;
-            setDisplayValue(newValue);
-
-            // Validate the color
-            const valid = newValue === '' || isValidCSSColor(newValue);
-            setIsValid(valid);
-
-            if (onChange) {
-                onChange(newValue);
-            }
-        };
-
-        const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            // Final validation on blur
-            const valid = displayValue === '' || isValidCSSColor(displayValue);
-            setIsValid(valid);
-
-            if (onBlur) {
-                onBlur(e);
-            }
-        };
-
+    ({ value = '', className, placeholder = '#000000', disabled, label, ...props }, ref) => {
         // Use the display value for the preview, fallback to a default color if invalid
-        const previewColor = displayValue && isValidCSSColor(displayValue) ? displayValue : '#000000';
+        const previewColor = value && isValidCSSColor(value) ? value : '#000000';
 
         return (
-            <div className={cn('flex flex-col gap-2', className)}>
+            <div className={cn('flex flex-col items-start gap-2', className)}>
                 {label && (
                     <label htmlFor={props.id} className="text-sm font-medium text-grayscale-300">
                         {label}
@@ -68,14 +39,12 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
                     ref={ref}
                     type="text"
                     variant="border"
-                    value={displayValue}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    value={value}
                     placeholder={placeholder}
                     disabled={disabled}
                     before={
                         <div
-                            className={cn('w-5 h-5 rounded border-2 border-grayscale-600', !isValid && 'border-red-500', disabled && 'opacity-50')}
+                            className={cn('w-5 h-5 rounded border-2 border-grayscale-600', disabled && 'opacity-50')}
                             style={{ backgroundColor: previewColor }}
                             title={`Color preview: ${previewColor}`}
                         />

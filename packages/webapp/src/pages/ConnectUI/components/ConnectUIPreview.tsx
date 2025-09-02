@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { useEnvironment } from '../../../hooks/useEnvironment';
@@ -9,12 +9,30 @@ import { createConnectUIPreviewIFrame } from '../../../utils/connect-ui';
 import { globalEnv } from '../../../utils/env';
 import { cn } from '../../../utils/utils';
 
-export const ConnectUIPreview = ({ className }: { className?: string }) => {
+import type { ConnectUIEventSettingsChanged } from '@nangohq/frontend/lib/types';
+
+export interface ConnectUIPreviewRef {
+    sendSettingsChanged: (settings: ConnectUIEventSettingsChanged['payload']) => void;
+}
+
+export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: string }>(({ className }, ref) => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
 
     const connectUIContainer = useRef<HTMLDivElement>(null);
     const connectUIIframe = useRef<HTMLIFrameElement>();
+
+    useImperativeHandle(ref, () => ({
+        sendSettingsChanged: (settings: ConnectUIEventSettingsChanged['payload']) => {
+            if (connectUIIframe.current?.contentWindow) {
+                const message: ConnectUIEventSettingsChanged = {
+                    type: 'settings_changed',
+                    payload: settings
+                };
+                connectUIIframe.current.contentWindow.postMessage(message, '*');
+            }
+        }
+    }));
 
     const { data: sessionToken } = useQuery<string>({
         enabled: Boolean(env),
@@ -70,4 +88,6 @@ export const ConnectUIPreview = ({ className }: { className?: string }) => {
     }, [env, environmentAndAccount, sessionToken]);
 
     return <div ref={connectUIContainer} className={cn('overflow-hidden', className)} />;
-};
+});
+
+ConnectUIPreview.displayName = 'ConnectUIPreview';
