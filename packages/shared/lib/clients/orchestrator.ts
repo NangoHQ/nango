@@ -126,7 +126,7 @@ export class Orchestrator {
         accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
-        input: object;
+        input: unknown;
         retryMax: number;
         async: boolean;
         logCtx: LogContext;

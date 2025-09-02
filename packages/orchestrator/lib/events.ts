@@ -1,8 +1,9 @@
 import EventEmitter from 'node:events';
 
-import { GROUP_PREFIX_SEPARATOR } from '@nangohq/scheduler';
-import { retryWithBackoff } from '@nangohq/utils';
+import { GROUP_PREFIX_SEPARATOR, stringifyTask } from '@nangohq/scheduler';
+import { metrics, retryWithBackoff } from '@nangohq/utils';
 
+import { envs } from './env.js';
 import { logger } from './utils.js';
 
 import type { Task } from '@nangohq/scheduler';
@@ -38,12 +39,8 @@ class PgEventEmitter extends EventEmitter {
             this.connected = true;
 
             this.client.on('notification', (notification: { pid: number; channel: string; payload?: string }) => {
-                try {
-                    const { event, args }: { event: string; args: any } = JSON.parse(notification.payload || '{}');
-                    super.emit(event, ...args);
-                } catch (err) {
-                    logger.error('Error parsing PostgreSQL notification', err);
-                    super.emit('parseError', err, notification.payload);
+                if (notification.payload) {
+                    super.emit(notification.payload);
                 }
             });
 
@@ -121,20 +118,19 @@ class PgEventEmitter extends EventEmitter {
             }
         }
     }
-
-    override emit(event: string | symbol, ...args: any[]): boolean {
+    override emit(event: string): boolean {
         if (!this.connected) {
             logger.warning(`Not connected to PostgreSQL, emitting event locally: ${String(event)}`);
-            return this.emitLocally(event, ...args);
+            return this.emitLocally(event);
         }
 
         if (typeof event !== 'string' || !event.trim()) {
             throw new Error('Event name must be a non-empty string');
         }
 
-        this.notify(event, args).catch((err: unknown) => {
+        this.notify(event).catch((err: unknown) => {
             logger.error('Error notifying PostgreSQL:', err);
-            super.emit('notifyError', err, event, args);
+            super.emit('notifyError', err, event);
         });
         return true;
     }
@@ -147,18 +143,16 @@ class PgEventEmitter extends EventEmitter {
         return false;
     }
 
-    private async notify(event: string, args: any[]): Promise<void> {
+    private async notify(payload: string): Promise<void> {
         if (!this.connected || !this.client) {
             throw new Error('Not connected to PostgreSQL');
         }
-
-        const payload = JSON.stringify({ event, args });
 
         // Check payload size (PostgreSQL NOTIFY has ~8KB limit)
         const maxPayloadSize = 8_000;
         if (payload.length > maxPayloadSize) {
             const error = new Error(`Payload too large: ${payload.length} bytes (max: ${maxPayloadSize})`);
-            super.emit('payloadTooLarge', error, event, args);
+            super.emit('payloadTooLarge', error, payload);
             throw error;
         }
 
@@ -182,9 +176,6 @@ export const taskEvents = {
         const groupKeyPrefix = prop.groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
         return `task:created:${groupKeyPrefix}`;
     },
-    taskStarted: (task: Task): string => {
-        return `task:started:${task.id}`;
-    },
     taskCompleted: (prop: Task | string): string => {
         if (typeof prop === 'string') {
             return `task:completed:${prop}`;
@@ -203,32 +194,61 @@ export class TaskEventsHandler extends PgEventEmitter {
         CANCELLED: (task: Task) => void;
     };
 
-    constructor(db: knex.Knex, { on }: { on: TaskEventsHandler['onCallbacks'] }) {
+    private debounced = new Map<string, NodeJS.Timeout>();
+
+    private throttleEmit(event: string, delay: number): void {
+        const timeoutId = this.debounced.get(event);
+
+        // If there's no existing timeout, emit the event and set a new timeout
+        if (!timeoutId) {
+            this.emit(event);
+
+            this.debounced.set(
+                event,
+                setTimeout(() => {
+                    this.debounced.delete(event);
+                }, delay)
+            );
+        }
+    }
+
+    constructor(db: knex.Knex) {
         super(db, { channel: 'nango_task_events' });
+
         this.onCallbacks = {
             CREATED: (task: Task) => {
-                on.CREATED(task);
-                this.emit(taskEvents.taskCreated(task), task.id);
+                logger.info(`Task created: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
+                // CREATED events are used for dequeuing tasks per groupKey
+                // so we emit them with the groupKey prefix
+                // and debounce them to avoid flooding the listeners
+                // with too many duplicate events
+                this.throttleEmit(taskEvents.taskCreated(task), envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS);
             },
             STARTED: (task: Task) => {
-                on.STARTED(task);
-                this.emit(taskEvents.taskStarted(task), task.id);
+                logger.info(`Task started: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+                // STARTED events are not listen to, so we don't emit them
             },
             SUCCEEDED: (task: Task) => {
-                on.SUCCEEDED(task);
-                this.emit(taskEvents.taskCompleted(task), task.id);
+                logger.info(`Task succeeded: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+                this.emit(taskEvents.taskCompleted(task));
             },
             FAILED: (task: Task) => {
-                on.FAILED(task);
-                this.emit(taskEvents.taskCompleted(task), task.id);
+                logger.error(`Task failed: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+                this.emit(taskEvents.taskCompleted(task));
             },
             EXPIRED: (task: Task) => {
-                on.EXPIRED(task);
-                this.emit(taskEvents.taskCompleted(task), task.id);
+                logger.error(`Task expired: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
+                this.emit(taskEvents.taskCompleted(task));
             },
             CANCELLED: (task: Task) => {
-                on.CANCELLED(task);
-                this.emit(taskEvents.taskCompleted(task), task.id);
+                logger.info(`Task cancelled: ${stringifyTask(task)}`);
+                metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
+                this.emit(taskEvents.taskCompleted(task));
             }
         };
     }
