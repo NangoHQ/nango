@@ -52,7 +52,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
 
             return res.json.data.token;
         },
-        refetchInterval: 1000,
+        refetchInterval: 1000 * 60 * 5, // 5 minutes
         refetchIntervalInBackground: true,
         staleTime: 0
     });

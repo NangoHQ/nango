@@ -20,7 +20,7 @@ export const Home: React.FC = () => {
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
     const isEmbedded = useSearchParam('embedded');
-    const isPreview = useSearchParam('preview');
+    const isPreview = useSearchParam('preview') === 'true';
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
 
     useEffect(() => {
@@ -37,6 +37,10 @@ export const Home: React.FC = () => {
                     break;
                 }
                 case 'settings_changed': {
+                    // Only allow dynamic theme changing in preview mode
+                    if (!isPreview) {
+                        break;
+                    }
                     const data = evt.data as ConnectUIEventSettingsChanged;
                     setTheme(data.payload.theme);
                     break;
@@ -56,7 +60,7 @@ export const Home: React.FC = () => {
             setSessionToken(inUrl);
         }
 
-        if (isPreview === 'true') {
+        if (isPreview) {
             // Don't clear event listeners on preview
             return;
         }
@@ -71,12 +75,13 @@ export const Home: React.FC = () => {
         if (apiURL) setApiURL(apiURL);
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
-        if (isPreview) setIsPreview(isPreview === 'true');
+        if (isPreview) setIsPreview(isPreview);
     }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
 
     useEffect(() => {
         if (data) {
             setSession(data.data);
+            setTheme(data.data.connectUISettings.theme);
             void navigate({ to: '/integrations' });
         }
     }, [data]);

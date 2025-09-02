@@ -99,7 +99,6 @@ export const ConnectUISettingsPage = () => {
                     {/** Form */}
                     <form
                         onSubmit={(e) => {
-                            console.log('onSubmit', e);
                             e.preventDefault();
                             e.stopPropagation();
                             void form.handleSubmit();
