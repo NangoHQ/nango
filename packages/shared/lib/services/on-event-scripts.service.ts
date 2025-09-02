@@ -11,7 +11,8 @@ const TABLE = 'on_event_scripts';
 
 const EVENT_TYPE_MAPPINGS: Record<DBOnEventScript['event'], OnEventType> = {
     POST_CONNECTION_CREATION: 'post-connection-creation',
-    PRE_CONNECTION_DELETION: 'pre-connection-deletion'
+    PRE_CONNECTION_DELETION: 'pre-connection-deletion',
+    PRE_CONNECTION_CREATION: 'pre-connection-creation'
 } as const;
 
 const eventTypeMapper = {

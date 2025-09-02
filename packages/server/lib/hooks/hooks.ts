@@ -17,7 +17,8 @@ import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
-import { postConnectionCreation } from './connection/on/connection-created.js';
+import { postConnectionCreation } from './connection/on/post-connection-creation.js';
+import { preConnectionCreation } from './connection/on/pre-connection-creation.js';
 import postConnection from './connection/post-connection.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
@@ -98,6 +99,15 @@ export async function testConnectionCredentials({
             void logCtx.info('Running automatic credentials verification via verification script');
             await executeVerificationScript(config, credentials, connectionId, connectionConfig);
             return Ok({ tested: true });
+        }
+
+        const result = await preConnectionCreation({ config, credentials, provider, connectionId, connectionConfig, logCtx });
+        if (result.isOk()) {
+            const { tested } = result.value;
+
+            if (tested) {
+                return Ok({ tested: true });
+            }
         }
 
         if (provider.proxy?.verification) {
