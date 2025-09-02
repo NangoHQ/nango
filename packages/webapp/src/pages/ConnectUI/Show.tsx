@@ -152,7 +152,7 @@ export const ConnectUISettingsPage = () => {
                                                     }}
                                                 >
                                                     {(field) => (
-                                                        <>
+                                                        <div className="flex flex-col gap-1">
                                                             <ColorInput
                                                                 value={field.state.value}
                                                                 label={themeField.label}
@@ -165,7 +165,7 @@ export const ConnectUISettingsPage = () => {
                                                                     {field.state.meta.errors.join(', ')}
                                                                 </em>
                                                             )}
-                                                        </>
+                                                        </div>
                                                     )}
                                                 </form.Field>
                                             </TooltipTrigger>
