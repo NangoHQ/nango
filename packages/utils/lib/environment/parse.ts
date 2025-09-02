@@ -193,7 +193,7 @@ export const ENVS = z.object({
 
     // SMTP
     SMTP_URL: z.url().optional(),
-    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
+    SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
