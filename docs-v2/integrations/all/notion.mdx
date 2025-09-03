@@ -65,24 +65,13 @@ description: 'Access the Notion API in 2 minutes 💨'
       <Step title="Create a new integration">
         1. Go to [My Integrations](https://www.notion.so/my-integrations) in your Notion account.
         2. Click **+ New integration**.
-        3. Fill in the integration details:
-          - **Integration Name**: Enter a name for your integration
-          - **Associated workspace**: Select the Notion workspace
-          - **Type**: Select **Public** (required for OAuth)
-          - **Company name**: Enter your company name
-          - **Website**: Enter your company website URL 
-          - **Tagline**: A short description of your integration
-          - **Privacy Policy URL**: Link to your privacy policy
-          - **Terms of Use URL**: Link to your terms of service
-          - **Email**: Developer contact email
-          - **Logo**: Upload a 512×512 image
-          - **Redirect URIs**: Add `https://api.nango.dev/oauth/callback`
+        3. Select **Public** as the integration type, then fill in the integration details. For the **Redirect URIs**, add `https://api.nango.dev/oauth/callback`.
         4. Click **Save**.
       </Step>
       <Step title="Obtain API credentials">
         1. After saving, click **Configure integration settings**.
         2. Under the **Configuration** tab, copy your **OAuth Client ID** and **OAuth Client Secret**. You'll need these when configuring your integration in Nango.
-        3. Under the **Capabilities** section, select the permissions your integration requires.
+        3. Under the **Capabilities** section, select the [capabilities](https://developers.notion.com/reference/capabilities) your integration requires.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
