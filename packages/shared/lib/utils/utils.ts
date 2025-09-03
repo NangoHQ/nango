@@ -234,14 +234,14 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     });
 
     if (str.includes('||')) {
-        const parts = str.split('||').map((part) => part.trim());
-        const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+        const [left, right = ''] = str.split('||').map((part) => part.trim());
 
-        if (left && left !== parts[0]) {
-            return left;
+        if (left) {
+            const interpolated = interpolateStringFromObject(left, replacers);
+            if (interpolated && interpolated !== left) return interpolated;
         }
 
-        return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
+        return right ? interpolateStringFromObject(right, replacers) : '';
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
