@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.2] - 2025-09-03
+
+### Added
+
+- *(integrations)* Add pax8 integration (#4419) by @gonzalde97
+- Add fallback support to connection config interpolation (#4592) by @hassan254-prog
+- *(zero)* Add support for z.unknown (#4596) by @bodinsamuel
+
+### Changed
+
+- Add changelog illustrations (#4599) by @bastienbeurier
+- *(jobs)* No worker threads for task processors (#4593) by @TBonnin
+- Improve docs on oauth setup (#4581) by @hassan254-prog
+
+### Fixed
+
+- *(managed-email)* Use authorized email (#4598) by @khaliqgant
+- *(email)* Update sending domain (#4595) by @khaliqgant
+- *(providers)* Remove validation from pax8 (#4597) by @hassan254-prog
+- Append k8s to runner id if runner type is KUBERNETES (#4600) by @rossmcewan
+
 ## [v0.67.1] - 2025-09-02
 
 ### Added
@@ -4746,6 +4767,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.2]: https://github.com/NangoHQ/nango/compare/v0.67.1..v0.67.2
 [v0.67.1]: https://github.com/NangoHQ/nango/compare/v0.67.0..v0.67.1
 [v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0
 [v0.66.2]: https://github.com/NangoHQ/nango/compare/v0.66.1..v0.66.2
