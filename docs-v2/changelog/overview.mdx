@@ -4,6 +4,138 @@ sidebarTitle: 'Product Updates'
 description: "Product updates and improvements."
 ---
 
+<Update label="August 2025">
+
+## TypeScript-based script configs
+Integration scripts now use TypeScript for configuration, colocated with your script code. Benefits:
+- Strong type safety
+- Better tooling (auto-complete, linting)
+- No custom syntax to learn
+
+This makes writing and maintaining custom integrations simpler, whether you code them manually or generate them with an LLM. [Migration guide](/guides/custom-integrations/migrate-to-zero-yaml).
+
+---
+
+## Developer updates distribution
+
+You’ll now receive important developer updates about deprecations, breaking changes, and other integration-impacting news in a more structured way:
+- **Email**: Sent to everyone who signs up (with the option to unsubscribe).
+- **Private Slack channels**: Delivered directly if your team has a dedicated channel with us.
+- **Community Slack**: Shared in the `#dev-updates` channel.
+- **Docs**: Dedicated [Dev Updates changelog](/changelog/dev-updates).
+
+---
+
+## Separate rate limits for Script API vs. Public API
+Script API calls and Public API calls are now rate-limited separately. This prevents heavy script usage from affecting your ability to use the Public API (and vice versa). Both limits are soft and can be increased per customer. Limits are now properly reported in the Nango logs.
+
+---
+
+## New getting started flow
+A redesigned onboarding screen helps you set up your first integration and call an API right after signup. This makes it easier to experience Nango’s value in just a few minutes.
+
+---
+
+</Update>
+
+<Update label="July 2025">
+
+## Nango-provided OAuth apps for testing
+When testing OAuth APIs, you can now use Nango-provided developer apps instead of setting up your own.
+- Available for top APIs (more being added over time).
+- Select this option when creating a new integration.
+- For **testing only**—production apps should still use your own credentials to keep Nango fully white-labeled.
+
+---
+
+## Edit user & org info
+You can now edit the user and organization information attached to a connection. This info is visible in the Nango dashboard, helping you manage connections more easily.  
+[API reference](/reference/api/connections/patch).
+
+---
+
+## Faster action execution
+Action execution latency has been reduced from **more than 200ms+** to **less than 50ms**. This makes actions feel much more responsive, especially when a human is waiting for the result.
+
+---
+
+## API-specific docs with getting started
+Each API-specific doc now includes a “Getting Started” section so you can:
+1. Run the auth flow
+2. Make a first successful API request
+
+All in **under 5 minutes**. Example: [Google Calendar docs](/integrations/all/google-calendar).
+
+---
+
+</Update>
+
+<Update label="June 2025">
+
+## Generate integrations with AI
+We published a new guide on using AI to generate integrations faster than coding them manually. You can still edit the generated code as needed.  
+[Guide](/guides/custom-integrations/generate-integrations-with-ai).
+
+---
+
+## Self-serve subscription upgrades
+You can now upgrade or downgrade your plan directly in the Nango UI, under **Usage & Billing**.  
+*Note: Legacy plans still require contacting us.*
+
+---
+
+## Usage reporting
+The **Usage & Billing** tab now includes detailed usage reports:
+- Track all metrics that affect billing.
+- See past invoices with a full breakdown.
+
+---
+
+## Improved self-hosted release process
+We’ve formalized the release process for self-hosted Enterprise customers:
+- Two-month release cadence
+- Semantic versioning adopted
+- Clearer update process in the [self-hosting docs](/guides/self-hosting/enterprise-self-hosting/overview#updates).
+
+---
+
+</Update>
+
+<Update label="May 2025">
+
+## Nango as an MCP server
+Nango can now act as a remote MCP server, exposing third-party API actions as tools for your AI agents.
+- Build and enable/disable tools with Nango actions.
+- Use them via the MCP protocol.  
+[Guide](/guides/mcp).
+
+---
+
+## Localized Connect UI
+You can now localize the Connect UI:
+- Choose a language.
+- Override links to end-user guides with your own versions.  
+[Docs](/reference/sdks/frontend#param-lang).
+
+---
+
+## Asynchronous actions
+You can now run actions asynchronously—triggering them without waiting for an immediate result. This is useful when:
+- Tasks take a long time to complete.
+- You don’t need the response right away.
+- Actions should be retried for reliability.
+- You’re sending many actions at once.  
+[Docs](/guides/actions/use-an-action#asynchronous-actions).
+
+---
+
+## Granular time windows in logs
+You can now filter logs by precise time windows, making it easier to drill down into specific events for debugging.
+
+---
+
+</Update>
+
 <Update label="April 2025" tags={["Catalog"]}>
 
     ## April catalog update
@@ -72,6 +204,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Usage-based pricing
 
     <Frame>
@@ -85,6 +219,8 @@ description: "Product updates and improvements."
     - 1,000 free connections still available on the Free plan (unlimited on Free Self-Hosted)
     - Add-ons are priced individually on a monthly basis—no large annual commitments
 
+    ---
+
     ## Logs search 
 
     <Frame>
@@ -96,6 +232,8 @@ description: "Product updates and improvements."
     - Search across log and sub-log contents via the top-level search bar
     - Filter logs using record IDs to investigate when records were synced
     - Improved navigation and load times across the tab
+
+    ---
 
     ## Enterprise self-hosting with ECS + Terraform
 
@@ -111,6 +249,8 @@ description: "Product updates and improvements."
 
     The Terraform configuration is available upon request.
 
+    ---
+
     ## Create, edit & delete environments
 
     <Frame>
@@ -121,6 +261,8 @@ description: "Product updates and improvements."
 
     - Growth plan includes 3 environments by default
     - Additional environments available via paid add-on
+
+    ---
 
 </Update>
 
@@ -244,6 +386,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Authorization logs
 
     <Frame>
@@ -279,6 +423,8 @@ description: "Product updates and improvements."
         ></iframe>
     </div>
 
+    ---
+
     ## AI agent support
 
     <Frame>
@@ -298,6 +444,8 @@ description: "Product updates and improvements."
     This makes it easier to build AI agents that can reliably interact with 400+ APIs.
 
     Get inspired by [AI companies using Nango](https://www.nango.dev/blog/nango-for-ai).
+
+    ---
 
     ## AI agent demo video
 
@@ -409,6 +557,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Sync partitioning
 
     <Frame>
@@ -422,6 +572,8 @@ description: "Product updates and improvements."
     The API and UI give you full control over these syncs, letting you create, manage, and monitor them with ease.
 
     [Learn more in the docs](/guides/syncs/sync-partitioning).
+
+    ---
 
     ## Revamped environment settings
 
@@ -437,6 +589,8 @@ description: "Product updates and improvements."
 
     Check it out in the *Environment Settings* tab in the [Nango UI](https://app.nango.dev/).
 
+    ---
+
     ## Detailed webhook logs
 
     <Frame>
@@ -448,6 +602,8 @@ description: "Product updates and improvements."
     We've added **granular logs** for all webhook types, allowing you to inspect individual webhook deliveries. You can now view the request/response payloads, filter by log type/status/timestamp and quickly debug failed webhook deliveries.
 
     Check it out in the *Logs* tab in the [Nango UI](https://app.nango.dev/).
+
+    ---
 
     ## Real-time syncing strategies
 
@@ -468,6 +624,8 @@ description: "Product updates and improvements."
     - **Ignore older updates**: When polling, Nango checks if a newer webhook update exists. If so, it preserves the more recent webhook data instead of overwriting it.
 
     [Learn more in the docs](/guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks#sync-concurrency-considerations).
+
+    ---
 
 </Update>
 
@@ -523,6 +681,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Trigger syncs
 
     <Frame>
@@ -530,6 +690,8 @@ description: "Product updates and improvements."
     </Frame>
 
     You can now trigger syncs directly from the Nango UI with customizable options. The new modal allows you to trigger syncs incrementally, retrieving only the data modified since the last sync, or fully, fetching all historical data. Additionally, you can choose to clear the cached data if needed. To trigger a sync, navigate to the Connections tab, select a connection, go to the Syncs sub-tab, and click the “…” menu.
+
+    ---
 
     ## Lighter CLI
 
@@ -539,6 +701,8 @@ description: "Product updates and improvements."
 
     The CLI is now drastically lighter, going from more than 30 seconds to less than 2 seconds to install.
 
+    ---
+
     ## Create environments
 
     <Frame>
@@ -547,6 +711,8 @@ description: "Product updates and improvements."
 
     You can now create new environments in Nango, beyond the default _Production_ and _Dev_ environemnts. Simply use the dropfown at the top of the left nav bar in the [Nango UI](https://app.nango.dev). This feature is available for paid plans only.
 
+    ---
+
     ## Event-based scripts
 
     <Frame>
@@ -554,6 +720,8 @@ description: "Product updates and improvements."
     </Frame>
 
     Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/custom-integrations/event-based-scripts).
+
+    ---
 
 </Update>
 
@@ -787,6 +955,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Resilient integrations
 
     <Frame>
@@ -794,6 +964,8 @@ description: "Product updates and improvements."
     </Frame>
 
     Integration executions are no longer disrupted during runner VM upgrades. The VMs now wait for ongoing executions to complete before proceeding with the upgrade. This enhancement minimizes interruptions, especially for long-running syncs that can take up to 24 hours.
+
+    ---
 
     ## Surface misconfigured integrations
 
@@ -803,6 +975,8 @@ description: "Product updates and improvements."
 
     The Nango UI now highlights misconfigured integrations, such as those missing OAuth app credentials. An error icon will appear next to the misconfigured integration in the _Integrations_ tab of the [Nango UI](https://app.nango.dev).
 
+    ---
+
     ## Getting started tab
 
     <Frame>
@@ -811,6 +985,8 @@ description: "Product updates and improvements."
 
     The Nango UI now includes a _Getting Started_ tab featuring a 2-minute demo video and essential guides to help you get started. You can dismiss this tab when it's no longer needed, but it will remain accessible from the bottom-left menu.
 
+    ---
+
     ## API catalog
 
     <Frame>
@@ -818,6 +994,8 @@ description: "Product updates and improvements."
     </Frame>
 
     You can now search through [all the APIs supported by Nango](https://www.nango.dev/api-integrations). This list is automatically updated whenever new APIs are added.
+
+    ---
 
 </Update>
 
@@ -1059,6 +1237,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Guides
 
     <Frame>
@@ -1066,6 +1246,8 @@ description: "Product updates and improvements."
     </Frame>
 
     The [Guides](/guides) section of the documentation has been improved with a feature-based classification and more comprehensive, detailed guides.
+
+    ---
 
     ## API-specific docs
 
@@ -1075,6 +1257,8 @@ description: "Product updates and improvements."
 
     API-specific documentation has been enhanced to include more details about tooling, pre-built integrations, and configurations for each API. For example, see the [Hubspot](/integrations/all/hubspot) documentation. These API-specific docs are automatically generated and kept up-to-date.
 
+    ---
+
     ## Integration docs
 
     <Frame>
@@ -1083,6 +1267,8 @@ description: "Product updates and improvements."
 
     Each pre-built integration now includes a ReadMe file with detailed information about the integration, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company integration](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
 
+    ---
+
     ## User & org information
 
     <Frame>
@@ -1090,6 +1276,8 @@ description: "Product updates and improvements."
     </Frame>
 
     Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/api-authorization/authorize-in-your-app-default-ui).
+
+    ---
 
 </Update>
 
@@ -1455,6 +1643,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Authorization input validation
 
     <Frame>
@@ -1462,6 +1652,8 @@ description: "Product updates and improvements."
     </Frame>
 
     When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/guides/api-authorization/authorize-in-your-app-default-ui).
+
+    ---
 
     ## OpenTelemetry exporter
 
@@ -1471,6 +1663,8 @@ description: "Product updates and improvements."
 
     Improve integration observability by exporting Nango logs in real-time to tools like Datadog, New Relic and others. This feature is a paid add-on, reach out on Slack to active it the, in your _Environment Settings_, configure the destination URL and headers.
 
+    ---
+
     ## End-user authorization guides
 
     <Frame>
@@ -1478,6 +1672,8 @@ description: "Product updates and improvements."
     </Frame>
 
     Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/guides/api-authorization/authorize-in-your-app-default-ui).
+
+    ---
 
     ## Invalid credentials detection
 
@@ -1487,6 +1683,8 @@ description: "Product updates and improvements."
 
     Nango now periodically detects invalid API keys and basic credentials in addition to expired OAuth tokens. Slack notifications & dashboard callouts are created when credentials fail validation. This feature is live for all users.
 
+    ---
+
     ## Pre-built authorization UI
 
     <Frame>
@@ -1494,6 +1692,8 @@ description: "Product updates and improvements."
     </Frame>
 
     The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/api-authorization/authorize-in-your-app-default-ui) to use it, or continue using your [custom UI](/guides/api-authorization/authorize-in-your-app-custom-ui) without interruption.
+
+    ---
 
 </Update>
 
@@ -1601,6 +1801,8 @@ description: "Product updates and improvements."
         </Accordion>
     </AccordionGroup>
 
+    ---
+
     ## Improved logging
 
     <Frame>
@@ -1608,6 +1810,8 @@ description: "Product updates and improvements."
     </Frame>
 
     All HTTP requests made through your integrations are now logged. Logs have been streamlined for easier navigation, with searchable payloads to pinpoint specific issues. Check out the _Logs_ tab in the [Nango UI](https://app.nango.dev).
+
+    ---
 
     ## Higher sync frequency
 
@@ -1617,6 +1821,8 @@ description: "Product updates and improvements."
 
     Nango now offers support for more frequent syncs, down to 30-second intervals. It's available on Growth plans as a paid add-on, and on Enterprise plans.
 
+    ---
+
     ## SOC 2 Type 2
 
     <Frame>
@@ -1624,6 +1830,8 @@ description: "Product updates and improvements."
     </Frame>
 
     Nango has achived SOC 2 Type 2 certification, in addition to GDPR compliance & DPF, allowing us to operate in Europe. Visit our [trust center](https://app.vanta.com/nango.dev/trust/6ldi6a2401gxg3e25and9m) for details.
+
+    ---
 
     ## JSONSchema types
 

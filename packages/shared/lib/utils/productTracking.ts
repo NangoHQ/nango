@@ -10,13 +10,14 @@ export type ProductTrackingTypes =
     | 'account:billing:plan_changed'
     | 'account:billing:downgraded'
     | 'account:billing:upgraded'
+    | 'deploy:success'
+    | 'prod:connections:threshold_hit'
     | 'server:resource_capped:connection_creation'
     | 'server:resource_capped:connection_imported'
     | 'server:resource_capped:script_activate'
     | 'server:resource_capped:script_deploy_is_disabled'
     | 'server:resource_capped:action_triggered'
-    | 'server:resource_capped:active_records'
-    | 'deploy:success';
+    | 'server:resource_capped:active_records';
 
 class ProductTracking {
     client: PostHog | undefined;

@@ -1616,14 +1616,9 @@ paths:
                                                     type: object
                                                     description: Total count of records for each model synced by the sync
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/{name}/variant/{variant}:
         post:
