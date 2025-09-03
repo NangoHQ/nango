@@ -285,6 +285,9 @@ aircall-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.aircall.io
+        retry:
+            at:
+                - 'x-aircallapi-reset'
         verification:
             method: GET
             endpoints:
