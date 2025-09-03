@@ -23,13 +23,40 @@ type ThemePath = {
     [K in keyof ConnectUIColorPalette]: `theme.light.${K}` | `theme.dark.${K}`;
 }[keyof ConnectUIColorPalette];
 
+const lightThemeFields: { name: ThemePath; label: string }[] = [
+    {
+        name: 'theme.light.background',
+        label: 'Background'
+    },
+    {
+        name: 'theme.light.foreground',
+        label: 'Foreground'
+    },
+    {
+        name: 'theme.light.primary',
+        label: 'Primary'
+    },
+    {
+        name: 'theme.light.primaryForeground',
+        label: 'Primary Foreground'
+    },
+    {
+        name: 'theme.light.textPrimary',
+        label: 'Text Primary'
+    },
+    {
+        name: 'theme.light.textMuted',
+        label: 'Text Muted'
+    }
+];
+
 export const ConnectUISettingsPage = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
     const environment = useEnvironment(env);
 
     const { data: connectUISettings } = useConnectUISettings(env);
-    const { mutate: updateConnectUISettings } = useUpdateConnectUISettings(env);
+    const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
 
     const form = useForm({
@@ -60,33 +87,6 @@ export const ConnectUISettingsPage = () => {
             });
         }
     });
-
-    const lightThemeFields: { name: ThemePath; label: string }[] = [
-        {
-            name: 'theme.light.background',
-            label: 'Background'
-        },
-        {
-            name: 'theme.light.foreground',
-            label: 'Foreground'
-        },
-        {
-            name: 'theme.light.primary',
-            label: 'Primary'
-        },
-        {
-            name: 'theme.light.primaryForeground',
-            label: 'Primary Foreground'
-        },
-        {
-            name: 'theme.light.textPrimary',
-            label: 'Text Primary'
-        },
-        {
-            name: 'theme.light.textMuted',
-            label: 'Text Muted'
-        }
-    ];
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.ConnectUI} className="p-6 w-full">
@@ -183,9 +183,15 @@ export const ConnectUISettingsPage = () => {
 
                         {/** Save Button */}
                         <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
-                            {([canSubmit, isDirty, isSubmitting]) => (
-                                <Button type="submit" variant="primary" size="md" className="self-end" disabled={!canSubmit || !isDirty || isSubmitting}>
-                                    {isSubmitting ? 'Saving...' : 'Save settings'}
+                            {([canSubmit, isDirty]) => (
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="md"
+                                    className="self-end"
+                                    disabled={!canSubmit || !isDirty || isUpdatingConnectUISettings}
+                                >
+                                    {isUpdatingConnectUISettings ? 'Saving...' : 'Save settings'}
                                 </Button>
                             )}
                         </form.Subscribe>
