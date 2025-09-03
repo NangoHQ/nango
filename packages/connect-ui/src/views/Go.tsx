@@ -342,7 +342,7 @@ export const Go: React.FC = () => {
             <header className="relative m-10">
                 <div className="absolute top-0 left-0 w-full flex justify-between">
                     {!isSingleIntegration ? (
-                        <Link to="/" onClick={() => setIsDirty(false)}>
+                        <Link to="/integrations" onClick={() => setIsDirty(false)}>
                             <Button className="gap-1" title={t('go.backToList')} variant={'transparent'}>
                                 <IconArrowLeft stroke={1} /> {t('common.back')}
                             </Button>
