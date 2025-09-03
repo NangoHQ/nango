@@ -1,4 +1,5 @@
 import type { Endpoint } from '../api.js';
+import type { ConnectUISettings } from '../connectUISettings/dto.js';
 
 export interface ConnectSessionInput {
     allowed_integrations?: string[] | undefined;
@@ -17,12 +18,7 @@ export interface ConnectSessionInput {
               }
           >
         | undefined;
-    end_user: {
-        id: string;
-        email?: string | undefined;
-        display_name?: string | undefined;
-        tags?: Record<string, string> | undefined;
-    };
+    end_user: EndUserInput;
     organization?:
         | {
               id: string;
@@ -31,8 +27,15 @@ export interface ConnectSessionInput {
         | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
 }
+export interface EndUserInput {
+    id: string;
+    email?: string | undefined;
+    display_name?: string | undefined;
+    tags?: Record<string, string> | undefined;
+}
 export type ConnectSessionOutput = ConnectSessionInput & {
     isReconnecting?: boolean;
+    connectUISettings: ConnectUISettings;
 };
 
 export type PostConnectSessions = Endpoint<{

@@ -503,6 +503,16 @@ class ConnectionService {
         return res?.count ? Number(res.count) : 0;
     }
 
+    public async countConnectionsByEnvironment({ environmentId }: { environmentId: number }): Promise<number> {
+        const res = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ environment_id: environmentId, deleted: false })
+            .count<{ count: string }>('*')
+            .first();
+
+        return res?.count ? Number(res.count) : 0;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<ConnectionInternal[]> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
@@ -1016,7 +1026,6 @@ class ConnectionService {
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
         if (provider.auth_mode === 'APP') {
             const appResult = await githubAppClient.createCredentials({
-                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config
@@ -1037,7 +1046,6 @@ class ConnectionService {
                 logCtx
             }),
             githubAppClient.createCredentials({
-                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
                 connectionConfig: connection.connection_config

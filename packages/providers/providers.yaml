@@ -2463,6 +2463,32 @@ clickup:
         base_url: https://api.clickup.com
     docs: https://docs.nango.dev/integrations/all/clickup
 
+clerk:
+    display_name: Clerk
+    categories:
+        - dev-tools
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clerk.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/jwks
+    docs: https://docs.nango.dev/integrations/all/clerk
+    docs_connect: https://docs.nango.dev/integrations/all/clerk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Clerk Secret Key (starts with sk_test_ or sk_live_)
+            secret: true
+            pattern: '^sk_(test|live)_[a-zA-Z0-9]+$'
+            example: 'sk_test_abcdefghijklmnop123456789'
+            doc_section: '#step-1-retrieve-your-clerk-secret-key'
+
 cloudentity:
     display_name: Cloudentity
     auth_mode: OAUTH2_CC
@@ -5745,6 +5771,25 @@ holded:
             title: API Key
             description: The API key for your Holded account
 
+hover:
+    display_name: Hover
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://hover.to/oauth/authorize
+    token_url: https://hover.to/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.hover.to
+    docs: https://docs.nango.dev/integrations/all/hover
+
 hubspot:
     display_name: HubSpot
     categories:
@@ -5863,6 +5908,41 @@ instagram:
     proxy:
         base_url: https://graph.instagram.com
     docs: https://docs.nango.dev/integrations/all/instagram
+
+itglue:
+    display_name: IT Glue
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.itglue.com
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/vnd.api+json
+        verification:
+            method: GET
+            endpoints:
+                - /organizations
+    docs: https://docs.nango.dev/integrations/all/itglue
+    docs_connect: https://docs.nango.dev/integrations/all/itglue/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IT Glue API key
+            doc_section: '#step-2-generating-your-api-key'
+            pattern: '^ITG\.[a-zA-Z0-9._-]+$'
+            example: ITG.12cca334567890_123456vasfagas7890
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your IT Glue subdomain (api, api.eu, or api.au)
+            pattern: '^api(\.(eu|au))?$'
+            example: api
+            doc_section: '#step-1-finding-your-subdomain'
+            order: 1
 
 intercom:
     display_name: Intercom
@@ -8286,6 +8366,27 @@ paypal-sandbox:
         base_url: https://api-m.sandbox.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal-sandbox
 
+pax8:
+    display_name: Pax8
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.pax8.com/v1/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience} || https://api.pax8.com
+    proxy:
+        base_url: https://api.pax8.com
+    docs: https://docs.nango.dev/integrations/all/pax8
+    docs_connect: https://docs.nango.dev/integrations/all/pax8/connect
+    connection_config:
+        audience:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 pendo:
     display_name: Pendo
     categories:
@@ -9351,6 +9452,27 @@ rock-gym-pro:
             type: string
             title: API Password
             description: Your Rock Gym Pro API password
+
+roller:
+    display_name: Roller
+    categories:
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.roller.app/token
+    body_format: json
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Roller client ID
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Roller client secret
+    proxy:
+        base_url: https://api.roller.app
+
+    docs: https://docs.nango.dev/integrations/all/roller
 
 rootly:
     display_name: Rootly
@@ -10443,6 +10565,7 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
+            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string

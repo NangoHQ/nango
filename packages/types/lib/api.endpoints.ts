@@ -9,7 +9,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
 import type {
@@ -32,6 +32,7 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -74,7 +75,7 @@ import type {
     PatchSharedCredentialsProvider,
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
-import type { PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -118,7 +119,10 @@ export type PublicApiEndpoints =
     | PostPublicOauthOutboundAuthorization
     | PostPublicConnection
     | PostPublicSyncStart
-    | PostPublicSyncPause;
+    | PostPublicSyncPause
+    | GetPublicSyncStatus
+    | GetPublicV1
+    | PostPublicTriggerAction;
 
 export type PrivateApiEndpoints =
     | PostSignup
@@ -171,7 +175,9 @@ export type PrivateApiEndpoints =
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
     | GetGettingStarted
-    | PatchGettingStarted;
+    | PatchGettingStarted
+    | GetConnectUISettings
+    | PutConnectUISettings;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
