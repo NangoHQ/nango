@@ -5,30 +5,34 @@ import { connectUISettingsService, seeders, updatePlan } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
+import type { ConnectUISettings } from '@nangohq/types';
+
 const route = '/api/v1/connect-ui-settings';
 let api: Awaited<ReturnType<typeof runServer>>;
 
-const customSettings = {
-    showWatermark: false,
-    theme: {
-        light: {
-            background: '#eeeeee',
-            foreground: '#eeeeee',
-            primary: '#eeeeee',
-            primaryForeground: '#eeeeee',
-            textPrimary: '#eeeeee',
-            textMuted: '#eeeeee'
-        },
-        dark: {
-            background: '#111111',
-            foreground: '#111111',
-            primary: '#111111',
-            primaryForeground: '#111111',
-            textPrimary: '#111111',
-            textMuted: '#111111'
+function getCustomSettings(): ConnectUISettings {
+    return {
+        showWatermark: false,
+        theme: {
+            light: {
+                background: '#eeeeee',
+                foreground: '#eeeeee',
+                primary: '#eeeeee',
+                primaryForeground: '#eeeeee',
+                textPrimary: '#eeeeee',
+                textMuted: '#eeeeee'
+            },
+            dark: {
+                background: '#111111',
+                foreground: '#111111',
+                primary: '#111111',
+                primaryForeground: '#111111',
+                textPrimary: '#111111',
+                textMuted: '#111111'
+            }
         }
-    }
-};
+    };
+}
 
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
@@ -77,7 +81,7 @@ describe(`GET ${route}`, () => {
 
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
 
-        const testSettings = customSettings;
+        const testSettings = getCustomSettings();
 
         // Create custom settings using the service
         const upsertResult = await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);
@@ -100,7 +104,7 @@ describe(`GET ${route}`, () => {
         const { env, plan } = await seeders.seedAccountEnvAndUser();
 
         const testSettings = {
-            ...customSettings,
+            ...getCustomSettings(),
             showWatermark: false
         };
 
@@ -129,7 +133,7 @@ describe(`GET ${route}`, () => {
 
         // Create custom settings with non-default watermark setting
         const testSettings = {
-            ...customSettings,
+            ...getCustomSettings(),
             showWatermark: false
         };
 
@@ -157,7 +161,7 @@ describe(`GET ${route}`, () => {
         const { env, plan } = await seeders.seedAccountEnvAndUser();
 
         // Create custom settings with non-default values
-        const testSettings = customSettings;
+        const testSettings = getCustomSettings();
 
         // Store custom settings in database
         await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, testSettings);

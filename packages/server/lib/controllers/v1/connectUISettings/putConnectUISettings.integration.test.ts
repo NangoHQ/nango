@@ -10,27 +10,29 @@ import type { ConnectUISettings } from '@nangohq/types';
 const route = '/api/v1/connect-ui-settings';
 let api: Awaited<ReturnType<typeof runServer>>;
 
-const customSettings = {
-    showWatermark: false,
-    theme: {
-        light: {
-            background: '#eeeeee',
-            foreground: '#eeeeee',
-            primary: '#eeeeee',
-            primaryForeground: '#eeeeee',
-            textPrimary: '#eeeeee',
-            textMuted: '#eeeeee'
-        },
-        dark: {
-            background: '#111111',
-            foreground: '#111111',
-            primary: '#111111',
-            primaryForeground: '#111111',
-            textPrimary: '#111111',
-            textMuted: '#111111'
+function getCustomSettings(): ConnectUISettings {
+    return {
+        showWatermark: false,
+        theme: {
+            light: {
+                background: '#eeeeee',
+                foreground: '#eeeeee',
+                primary: '#eeeeee',
+                primaryForeground: '#eeeeee',
+                textPrimary: '#eeeeee',
+                textMuted: '#eeeeee'
+            },
+            dark: {
+                background: '#111111',
+                foreground: '#111111',
+                primary: '#111111',
+                primaryForeground: '#111111',
+                textPrimary: '#111111',
+                textMuted: '#111111'
+            }
         }
-    }
-};
+    };
+}
 
 describe(`PUT ${route}`, () => {
     beforeAll(async () => {
@@ -45,7 +47,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            body: customSettings
+            body: getCustomSettings()
         });
 
         shouldBeProtected(res);
@@ -57,7 +59,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             token: env.secret_key,
-            body: customSettings
+            body: getCustomSettings()
         });
 
         shouldRequireQueryEnv(res);
@@ -73,7 +75,7 @@ describe(`PUT ${route}`, () => {
         await db.knex('connect_ui_settings').where('environment_id', env.id).del();
 
         const newSettings = {
-            ...customSettings
+            ...getCustomSettings()
         };
 
         const res = await api.fetch(route, {
@@ -102,7 +104,7 @@ describe(`PUT ${route}`, () => {
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
 
         // Create initial settings
-        const initialSettings = customSettings;
+        const initialSettings = getCustomSettings();
 
         await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, initialSettings);
 
@@ -244,7 +246,7 @@ describe(`PUT ${route}`, () => {
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: true });
 
         const testSettings = {
-            ...customSettings,
+            ...getCustomSettings(),
             showWatermark: false
         };
 
@@ -276,7 +278,7 @@ describe(`PUT ${route}`, () => {
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: false });
 
         const testSettings = {
-            ...customSettings,
+            ...getCustomSettings(),
             showWatermark: false
         };
 
@@ -307,7 +309,7 @@ describe(`PUT ${route}`, () => {
         // Disable both features for this plan
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: false });
 
-        const testSettings = customSettings;
+        const testSettings = getCustomSettings();
 
         const res = await api.fetch(route, {
             method: 'PUT',
