@@ -63,6 +63,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
@@ -194,6 +195,7 @@ export const ENVS = z.object({
     // SMTP
     SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
+    SMTP_DOMAIN: z.string().default('email.nango.dev'),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
