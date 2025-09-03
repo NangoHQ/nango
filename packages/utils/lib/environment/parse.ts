@@ -191,6 +191,7 @@ export const ENVS = z.object({
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
     MAILGUN_URL: z.url().optional(),
+    MAILGUN_SENDING_DOMAIN: z.string().default('email.nango.dev'),
 
     // SMTP
     SMTP_URL: z.url().optional(),
