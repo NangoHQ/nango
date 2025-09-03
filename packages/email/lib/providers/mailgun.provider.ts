@@ -19,7 +19,7 @@ export class MailgunEmailProvider implements EmailProvider<MessagesSendResult> {
     }
 
     async send(email: string, subject: string, html: string): Promise<MessagesSendResult> {
-        return this.client.messages.create(envs.SMTP_DOMAIN || 'email.nango.dev', {
+        return this.client.messages.create(envs.SMTP_DOMAIN, {
             from: envs.SMTP_FROM,
             to: [email],
             subject,
