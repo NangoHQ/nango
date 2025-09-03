@@ -67,30 +67,21 @@ description: 'Access the Slack API in 2 minutes 💨'
         Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program.
       </Step>
       <Step title="Create & configure a Slack app">
-        Start creating a Slack app by clicking on the _Your Apps_ button then _Create New App_.
-
-        Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch.
-
-        After choosing how you'd like to configure your app, add your app's name and pick a workspace to develop your app in.
-
-        In the _Basic Information_ tab, copy/paste your app's `Client ID` and `Client Secret`, you will need to specify it in Nango later on.
+        1. Click on the **Your Apps** button then **Create New App**.
+        2. Choose how you’d like to configure your app’s scopes and settings. You can use a manifest file or start from scratch; for a simpler flow, select **From scratch**.
+        3. Add your **App name** and select a workspace to develop your app in, then click **Create App**.
+        4. In the **Basic Information** tab, copy your app's `Client ID` and `Client Secret`, as you'll need them when configuring your integration in Nango.
         </Step>
-
         <Step title="Set up the OAuth scopes">
-
-        In the _OAuth & Permissions_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
-
-        Still in the _OAuth & Permissions_ tab, under _Scopes_, add the scopes that are relevant to how you want to consume Slack's API.
-
-        There are 2 types of scopes, `Bot Token Scopes` and `User Token Scopes`. Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
-
-        User Token Scopes access user data and act on behalf of users that authorize them. They will be added to Nango when creating a Slack connection.
+        1. In the left sidebar, select the **OAuth & Permissions** tab and configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+        2. Still in the **OAuth & Permissions** tab, under **Scopes**, add the scopes that are relevant to how you want to consume Slack's API.
+        There are 2 types of scopes, [Bot Token Scopes](https://docs.slack.dev/reference/scopes/?token_types=Bot) and [User Token Scopes](https://docs.slack.dev/reference/scopes/?token_types=User). 
+        - Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
+        - User token Scopes access user data and act on behalf of users that authorize them. They will be [added](/reference/api/connect/sessions/create#body-integrations-config-defaults-key-user-scopes) to Nango when creating a Slack connection.
       </Step>
-
-      <Step title="Create a Slack Developer Sandbox">
+      <Step title="Create a Slack Developer Sandbox (Optional)">
         If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration.
       </Step>
-
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
