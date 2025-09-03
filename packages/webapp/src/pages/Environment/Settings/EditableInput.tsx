@@ -92,7 +92,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 name={name}
                 value={secret && !edit ? '*'.repeat(value.length) : value}
                 onChange={(e) => setValue(e.target.value)}
-                disabled={loading || !edit}
+                disabled={loading}
                 className={cn(error && 'border-alert-400')}
                 after={
                     !edit && (
