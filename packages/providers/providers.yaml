@@ -8366,6 +8366,34 @@ paypal-sandbox:
         base_url: https://api-m.sandbox.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal-sandbox
 
+pax8:
+    display_name: Pax8
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.pax8.com/v1/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+    proxy:
+        base_url: https://api.pax8.com
+        headers:
+            authorization: Bearer ${accessToken}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/companies
+    docs: https://docs.nango.dev/integrations/all/pax8
+    docs_connect: https://docs.nango.dev/integrations/all/pax8/connect
+    connection_config:
+        audience:
+            type: string
+            title: Audience
+            example: https://api.pax8.com
+            pattern: '^(https://api.pax8.com|api://provisioning|api://p8p.client|api://usage)$'
+            description: The audience for your Pax8 token request
+
 pendo:
     display_name: Pendo
     categories:
