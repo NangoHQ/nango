@@ -95,19 +95,25 @@ export async function testConnectionCredentials({
     logCtx: LogContextStateless;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
     try {
-        if (provider.credentials_verification_script) {
-            void logCtx.info('Running automatic credentials verification via verification script');
-            await executeVerificationScript(config, credentials, connectionId, connectionConfig);
-            return Ok({ tested: true });
-        }
-
         const result = await preConnectionCreation({ config, credentials, provider, connectionId, connectionConfig, logCtx });
+
         if (result.isOk()) {
             const { tested } = result.value;
 
             if (tested) {
                 return Ok({ tested: true });
             }
+        }
+
+        if (result.isErr()) {
+            void logCtx.error('Pre-connection-creation script failed');
+            return Err(result.error);
+        }
+
+        if (provider.credentials_verification_script) {
+            void logCtx.info('Running automatic credentials verification via verification script');
+            await executeVerificationScript(config, credentials, connectionId, connectionConfig);
+            return Ok({ tested: true });
         }
 
         if (provider.proxy?.verification) {

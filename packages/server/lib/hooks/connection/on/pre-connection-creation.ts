@@ -55,20 +55,21 @@ export async function preConnectionCreation({
         //logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         const res = await getOrchestrator().triggerOnEventScript({
-            accountId: -1,
-            connection: { id: -1, connection_id: connectionId, provider_config_key: config.unique_key, environment_id: -1 },
+            accountId: 1,
+            connection: { id: 1, connection_id: connectionId, provider_config_key: config.unique_key, environment_id: config.environment_id },
             version,
             name,
             fileLocation,
             sdkVersion: script.sdk_version,
-            async: true,
+            async: false,
             // @ts-expect-error we know logCtx is defined here
             logCtx
         });
 
+        console.log('isss error?');
+        console.log(res.isErr());
         if (res.isErr()) {
-            // @ts-expect-error should exist
-            await logCtx.failed();
+            //await logCtx.failed();
             return Err(res.error);
         }
     }
