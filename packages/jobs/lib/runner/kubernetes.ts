@@ -65,7 +65,7 @@ class Kubernetes {
         }
 
         // Create network policies
-        const networkPoliciesResult = await this.createNetworkPolicies(namespace);
+        const networkPoliciesResult = await this.createNetworkPolicies(namespace, node.id);
         if (networkPoliciesResult.isErr()) {
             return networkPoliciesResult;
         }
@@ -91,7 +91,7 @@ class Kubernetes {
             });
 
             // Delete network policies
-            await this.deleteNetworkPolicies(namespace);
+            await this.deleteNetworkPolicies(namespace, node.id);
 
             return Ok(undefined);
         } catch (err) {
@@ -215,9 +215,9 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async createNetworkPolicies(namespace: string): Promise<Result<void>> {
+    private async createNetworkPolicies(namespace: string, nodeId: number): Promise<Result<void>> {
         const denyAll: k8s.V1NetworkPolicy = {
-            metadata: { name: 'default-deny' },
+            metadata: { name: `default-deny-${nodeId}` },
             spec: {
                 podSelector: {},
                 policyTypes: ['Ingress']
@@ -239,7 +239,7 @@ class Kubernetes {
             }
         }
         const allowFromNango: k8s.V1NetworkPolicy = {
-            metadata: { name: 'allow-from-nango' },
+            metadata: { name: `allow-from-nango-${nodeId}` },
             spec: {
                 podSelector: {},
                 ingress: [
@@ -273,7 +273,7 @@ class Kubernetes {
         }
 
         const allowEgressToNangoAndInternet: k8s.V1NetworkPolicy = {
-            metadata: { name: 'allow-egress-to-nango-and-internet' },
+            metadata: { name: `allow-egress-to-nango-and-internet-${nodeId}` },
             spec: {
                 podSelector: {},
                 policyTypes: ['Egress'],
@@ -318,19 +318,19 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async deleteNetworkPolicies(namespace: string): Promise<void> {
+    private async deleteNetworkPolicies(namespace: string, nodeId: number): Promise<void> {
         try {
             // Delete network policies
             await this.networkingApi.deleteNamespacedNetworkPolicy({
-                name: 'default-deny',
+                name: `default-deny-${nodeId}`,
                 namespace
             });
             await this.networkingApi.deleteNamespacedNetworkPolicy({
-                name: 'allow-from-nango',
+                name: `allow-from-nango-${nodeId}`,
                 namespace
             });
             await this.networkingApi.deleteNamespacedNetworkPolicy({
-                name: 'allow-egress-to-nango-and-internet',
+                name: `allow-egress-to-nango-and-internet-${nodeId}`,
                 namespace
             });
         } catch (err) {
