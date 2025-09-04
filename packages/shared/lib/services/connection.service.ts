@@ -1022,13 +1022,16 @@ class ConnectionService {
         provider: Provider,
         config: ProviderConfig,
         connection: DBConnectionDecrypted,
-        logCtx: LogContextStateless
+        logCtx: LogContextStateless,
+        specifiedTokenName: string | undefined
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
         if (provider.auth_mode === 'APP') {
             const appResult = await githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                specifiedTokenName
             });
 
             if (appResult.isErr()) {
@@ -1046,9 +1049,11 @@ class ConnectionService {
                 logCtx
             }),
             githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                specifiedTokenName
             })
         ]);
 
@@ -1352,12 +1357,14 @@ class ConnectionService {
         connection,
         providerConfig,
         provider,
-        logCtx
+        logCtx,
+        specifiedTokenName
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
         provider: Provider;
         logCtx: LogContextStateless;
+        specifiedTokenName?: string | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
@@ -1425,7 +1432,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx);
+            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx, specifiedTokenName);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }

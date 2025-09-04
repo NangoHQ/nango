@@ -4,20 +4,24 @@ import * as jwtClient from './jwt.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { interpolateStringFromObject } from '../utils/utils.js';
 
-import type { AppCredentials, ConnectionConfig, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
+import type { AppCredentials, ConnectionConfig, DBConnectionDecrypted, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
  * Create Github APP credentials
  */
 export async function createCredentials({
+    connection,
     provider,
     integration,
-    connectionConfig
+    connectionConfig,
+    specifiedTokenName
 }: {
+    connection?: DBConnectionDecrypted;
     provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
+    specifiedTokenName?: string | undefined;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
@@ -41,6 +45,37 @@ export async function createCredentials({
 
         if (!payload['iss'] && connectionConfig['app_id']) {
             payload['iss'] = connectionConfig['app_id'];
+        }
+
+        if (
+            connection &&
+            connection.credentials &&
+            'expires_at' in connection.credentials &&
+            'access_token' in connection.credentials &&
+            specifiedTokenName === 'jwtToken'
+        ) {
+            const createdJwtToken = jwtClient.fetchJwtToken({
+                privateKey,
+                payload,
+                options: { algorithm: 'RS256' }
+            });
+            if (createdJwtToken.isErr()) {
+                return Err(createdJwtToken.error);
+            }
+            const { jwtToken } = createdJwtToken.value;
+
+            if ('jwtToken' in connection.credentials) {
+                connection.credentials['jwtToken'] = jwtToken;
+            }
+
+            return Ok({
+                type: 'APP',
+                access_token: connection.credentials['access_token'],
+                expires_at: connection.credentials['expires_at'],
+                raw: connection.credentials,
+                jwtToken,
+                app: connection.credentials
+            });
         }
 
         const create = await jwtClient.createCredentialsFromURL({
