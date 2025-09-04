@@ -11,11 +11,6 @@ import type { Result } from '@nangohq/utils';
 export const logger = getLogger('Kubernetes');
 
 class Kubernetes {
-    //Using these API options allows us to use server-side apply to create or patch the resources
-    //More information: https://kubernetes.io/docs/reference/using-api/server-side-apply/
-    private readonly apiOptions: k8s.ConfigurationOptions = {
-        middleware: [k8s.setHeaderMiddleware('Content-Type', 'application/apply-patch+yaml')]
-    };
     private static instance: Kubernetes | null = null;
     private readonly kc: k8s.KubeConfig;
     private readonly appsApi: k8s.AppsV1Api;
