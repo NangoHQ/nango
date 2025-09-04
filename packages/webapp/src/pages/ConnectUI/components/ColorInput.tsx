@@ -31,20 +31,20 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
         return (
             <div className={cn('flex flex-col items-start gap-2', className)}>
                 {label && (
-                    <label htmlFor={props.id} className="text-sm font-medium text-grayscale-300">
+                    <label htmlFor={props.id} className="text-sm font-medium leading-5 text-primary">
                         {label}
                     </label>
                 )}
                 <Input
                     ref={ref}
                     type="text"
-                    variant="border"
+                    variant="black"
                     value={value}
                     placeholder={placeholder}
                     disabled={disabled}
                     before={
                         <div
-                            className={cn('w-5 h-5 rounded border-2 border-grayscale-600', disabled && 'opacity-50')}
+                            className={cn('w-4 h-4 rounded border-1 border-strong', disabled && 'opacity-50')}
                             style={{ backgroundColor: previewColor }}
                             title={`Color preview: ${previewColor}`}
                         />

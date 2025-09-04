@@ -28,3 +28,24 @@ body,
 .mantine-Prism-code {
     font-family: 'Roboto Mono';
 }
+
+/* Custom classes */
+.title-screen {
+    @apply text-[40px] leading-[48px] font-bold;
+}
+
+.title-section {
+    @apply text-[32px] leading-[40px] font-bold;
+}
+
+.title-subsection {
+    @apply text-[24px] leading-[32px] font-bold;
+}
+
+.title-group {
+    @apply text-[20px] leading-[28px] font-bold;
+}
+
+.title-body {
+    @apply text-[18px] leading-[24px] font-semibold;
+}

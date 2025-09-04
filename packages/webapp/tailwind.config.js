@@ -8,6 +8,95 @@ export default {
         },
         extend: {
             colors: {
+                gray: {
+                    50: '#FFFFFF',
+                    75: '#FCFDFD',
+                    100: '#F9FAFB',
+                    150: '#F2F3F5',
+                    200: '#E7E7E7',
+                    250: '#D6D7D8',
+                    300: '#C4C5C7',
+                    400: '#A1A2A5',
+                    500: '#8B8C8F',
+                    550: '#76777A',
+                    600: '#626366',
+                    650: '#505155',
+                    700: '#424347',
+                    750: '#35363A',
+                    800: '#2A2B2F',
+                    825: '#242528',
+                    850: '#202124',
+                    875: '#1E1F21',
+                    900: '#18191B',
+                    950: '#121212',
+                    1000: '#0B0B0C'
+                },
+                brand: {
+                    100: '#E0F7FC',
+                    300: '#66D6F0',
+                    500: '#00B2E3',
+                    700: '#0089B0',
+                    900: '#005771'
+                },
+                orange: {
+                    100: '#FFE5D1',
+                    300: '#FBB47A',
+                    500: '#F09745',
+                    700: '#BD7736',
+                    900: '#6A3C1C'
+                },
+                yellow: {
+                    100: '#FFF8D1',
+                    300: '#FED75B',
+                    500: '#F7C752',
+                    700: '#C49E2D',
+                    900: '#6E580E'
+                },
+                blue: {
+                    100: '#E6F0FF',
+                    300: '#AFCBFF',
+                    500: '#90A1F0',
+                    700: '#3E58A8',
+                    900: '#1F2A55'
+                },
+                violet: {
+                    100: '#F2E6F7',
+                    300: '#D8B6E6',
+                    500: '#C695C6',
+                    700: '#AD82AD',
+                    900: '#5D3A63'
+                },
+                mint: {
+                    100: '#E3F9F2',
+                    300: '#9CE7CE',
+                    500: '#6ED6AC',
+                    700: '#4AA981',
+                    900: '#1F4E39'
+                },
+                pink: {
+                    100: '#FDE6F2',
+                    300: '#F7A3CD',
+                    500: '#EF6CBD',
+                    700: '#C04E91',
+                    900: '#6A2851'
+                },
+                red: {
+                    100: '#FDECEC',
+                    300: '#F7A6A6',
+                    500: '#EE4242',
+                    700: '#E81818',
+                    900: '#5A0F0F'
+                },
+                green: {
+                    100: '#E6F7EC',
+                    300: '#A8E6B9',
+                    500: '#4CD964',
+                    700: '#1E9E3E',
+                    900: '#0A3D16'
+                },
+
+                // Anything below is old - will be deleted after design system migration
+
                 // -----
                 // Design system 2023
                 //
@@ -208,6 +297,37 @@ export default {
                 'code-orange': '#f09745',
                 'code-yellow': '#f7c752'
             },
+
+            textColor: (theme) => ({
+                primary: theme('colors.gray.50'),
+                secondary: theme('colors.gray.300'),
+                tertiary: theme('colors.gray.500'),
+                disabled: theme('colors.gray.600'),
+                'on-brand': theme('colors.brand.500')
+            }),
+
+            backgroundColor: (theme) => ({
+                surface: theme('colors.gray.1000'),
+                'sub-surface': theme('colors.gray.950'),
+                elevated: theme('colors.gray.900'),
+                subtle: theme('colors.gray.800'),
+                muted: theme('colors.gray.700'),
+                accent: theme('colors.brand.900'),
+                danger: theme('colors.orange.900'),
+                warning: theme('colors.yellow.900'),
+                success: theme('colors.green.900'),
+                inverse: theme('colors.gray.50')
+            }),
+
+            borderColor: (theme) => ({
+                default: theme('colors.gray.700'),
+                muted: theme('colors.gray.800'),
+                strong: theme('colors.gray.500'),
+                light: theme('colors.gray.150'),
+                disabled: theme('colors.gray.900'),
+                brand: theme('colors.brand.500')
+            }),
+
             fontSize: {
                 xs: ['11px', '16px'],
                 s: ['12px', '18px'],
@@ -229,10 +349,11 @@ export default {
             boxShadow: {
                 card: '0px 2px 50px 5px rgba(51, 51, 51, 0.30), 0px 8px 10px 0px rgba(0, 0, 0, 0.30)'
             },
-            backgroundImage: {
+            backgroundImage: (theme) => ({
+                'dark-surface-gradient': `linear-gradient(141deg, ${theme('backgroundColor.surface')} 0%, ${theme('backgroundColor.elevated')} 57.57%);`,
                 'dark-glow': 'linear-gradient(141deg, theme(colors.grayscale-5) 0%, theme(colors.black) 100%)',
                 'dark-glow-reverse': 'linear-gradient(135deg, theme(colors.grayscale-3) 0%, theme(colors.grayscale-5) 94.23%)'
-            },
+            }),
 
             keyframes: {
                 'accordion-down': {
