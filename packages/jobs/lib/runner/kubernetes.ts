@@ -120,7 +120,8 @@ class Kubernetes {
             await this.coreApi.patchNamespace(
                 {
                     name: namespace,
-                    body: namespaceManifest
+                    body: namespaceManifest,
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
@@ -168,7 +169,8 @@ class Kubernetes {
                 {
                     name,
                     namespace,
-                    body: deploymentManifest
+                    body: deploymentManifest,
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
@@ -202,7 +204,8 @@ class Kubernetes {
                 {
                     name,
                     namespace,
-                    body: serviceManifest
+                    body: serviceManifest,
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
@@ -225,7 +228,8 @@ class Kubernetes {
                             podSelector: {},
                             policyTypes: ['Ingress']
                         }
-                    }
+                    },
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
@@ -256,7 +260,8 @@ class Kubernetes {
                             ],
                             policyTypes: ['Ingress']
                         }
-                    }
+                    },
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
@@ -296,7 +301,8 @@ class Kubernetes {
                                 }
                             ]
                         }
-                    }
+                    },
+                    fieldManager: 'nango-supervisor'
                 },
                 k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
