@@ -111,6 +111,7 @@ class Kubernetes {
 
     private async ensureNamespace(namespace: string): Promise<Result<void>> {
         const namespaceManifest: k8s.V1Namespace = {
+            apiVersion: 'v1',
             kind: 'Namespace',
             metadata: {
                 name: namespace
@@ -135,6 +136,7 @@ class Kubernetes {
 
     private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<void>> {
         const deploymentManifest: k8s.V1Deployment = {
+            apiVersion: 'apps/v1',
             kind: 'Deployment',
             metadata: {
                 name,
@@ -184,6 +186,7 @@ class Kubernetes {
 
     private async createService(_node: Node, name: string, namespace: string): Promise<Result<void>> {
         const serviceManifest: k8s.V1Service = {
+            apiVersion: 'v1',
             kind: 'Service',
             metadata: {
                 name,
@@ -226,6 +229,7 @@ class Kubernetes {
                     name: 'default-deny',
                     namespace,
                     body: {
+                        apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
                         metadata: { name: 'default-deny' },
                         spec: {
@@ -248,6 +252,7 @@ class Kubernetes {
                     name: 'allow-from-nango',
                     namespace,
                     body: {
+                        apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
                         metadata: { name: 'allow-from-nango' },
                         spec: {
@@ -281,6 +286,7 @@ class Kubernetes {
                     name: 'allow-egress-to-nango-and-internet',
                     namespace,
                     body: {
+                        apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
                         metadata: { name: 'allow-egress-to-nango-and-internet' },
                         spec: {
