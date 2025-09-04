@@ -98,6 +98,7 @@ export const ENVS = z.object({
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
+    FLEET_SUPERVISOR_LOCK_KEY: z.string().default('fleet_supervisor'),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
