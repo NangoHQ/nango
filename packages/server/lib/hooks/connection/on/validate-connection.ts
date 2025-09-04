@@ -51,8 +51,13 @@ export async function validateConnection({
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         const res = await getOrchestrator().triggerOnEventScript({
-            accountId: 1,
-            connection: { id: 1, connection_id: connection.connection_id, provider_config_key: config.unique_key, environment_id: config.environment_id },
+            accountId: account.id,
+            connection: {
+                id: connection.id,
+                connection_id: connection.connection_id,
+                provider_config_key: config.unique_key,
+                environment_id: config.environment_id
+            },
             version,
             name,
             fileLocation,
