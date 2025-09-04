@@ -2,6 +2,115 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.2] - 2025-09-03
+
+### Added
+
+- *(integrations)* Add pax8 integration (#4419) by @gonzalde97
+- Add fallback support to connection config interpolation (#4592) by @hassan254-prog
+- *(zero)* Add support for z.unknown (#4596) by @bodinsamuel
+
+### Changed
+
+- Add changelog illustrations (#4599) by @bastienbeurier
+- *(jobs)* No worker threads for task processors (#4593) by @TBonnin
+- Improve docs on oauth setup (#4581) by @hassan254-prog
+
+### Fixed
+
+- *(managed-email)* Use authorized email (#4598) by @khaliqgant
+- *(email)* Update sending domain (#4595) by @khaliqgant
+- *(providers)* Remove validation from pax8 (#4597) by @hassan254-prog
+- Append k8s to runner id if runner type is KUBERNETES (#4600) by @rossmcewan
+
+## [v0.67.1] - 2025-09-02
+
+### Added
+
+- Add docs on how to setup permissions setting for ukg ready (#4510) by @hassan254-prog
+- *(integrations)* Add support for zoho calendar (#4515) by @hassan254-prog
+- *(integrations)* Add support for float (#4520) by @hassan254-prog
+- *(integrations)* Add support for pipedream (#4518) by @hassan254-prog
+- *(webapp)* New getting started (#4504) by @kaposke
+- *(integrations)* Add support for avoma (#4522) by @hassan254-prog
+- *(action-payload)* Add limits and allow list (#4512) by @khaliqgant
+- *(integrations)* Add support for jobdiva (#4514) by @hassan254-prog
+- Getting started closed state (#4525) by @kaposke
+- *(server)* Add more security headers (#4516) by @bodinsamuel
+- *(api)* Allow end_user in POST /connections (#4513) by @bodinsamuel
+- Decouple getting started closed state from progress (#4535) by @kaposke
+- Add circuitbreaker mechanism for ES (#4537) by @TBonnin
+- *(integrations)* Add support for adp run and workforce now next gen (#4539) by @hassan254-prog
+- *(connect-ui)* Simplify color scheme (#4545) by @kaposke
+- *(deploy)* Deploy connect ui to S3 with CloudFront (#4550) by @rossmcewan
+- *(integrations)* Add support for Roller (#4560) by @TBonnin
+- *(api)* PATCH /connections/:id (#4549) by @bodinsamuel
+- *(zero-yaml-migration)* Add a few gotchas as faced when migrating public template (#4557) by @khaliqgant
+- *(integrations)* Add itglue integration (#4420) by @gonzalde97
+- ConnectUI embedded and preview modes (#4562) by @kaposke
+- *(integrations)* Add support for clerk (#4509) by @hendriknielaender
+- *(emails)* Change from email for transactional emails (#4582) by @khaliqgant
+- *(integrations)* Add support for hover (#4578) by @CharlesWithC
+- *(tracking)* Track prod usage threshold (#4589) by @khaliqgant
+- Connect ui settings migration (#4574) by @kaposke
+- ConnectUI settings backend (#4575) by @kaposke
+- *(api)* /v1 and /action/trigger (#4583) by @bodinsamuel
+
+### Changed
+
+- Rename product changelog section (#4511) by @mintlify[bot]
+- Track auth type usage (#4533) by @bodinsamuel
+- Datadog metrics name conflict (#4540) by @bodinsamuel
+- Remove `onboarding_demo_progress` and it's references (#4526) by @kaposke
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/67c5612f0d5dbda19df597e73822ce18431d598a by Khaliq by @github-actions[bot]
+- More dev-updates, scripts faq (#4553) by @bodinsamuel
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4bb55ea91c17a0c1e54ffc0c3433e4b45b3fe4b7 by Hassan_Wari by @github-actions[bot]
+- Standardize dev update docs (#4563) by @mintlify[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bb30930c1410329eaab914558e6587fb749754b3 by Hassan_Wari by @github-actions[bot]
+- Dev update wording change (#4570) by @mintlify[bot]
+- Change date for end user release (#4580) by @bodinsamuel
+- Backfill product updates (#4588) by @bastienbeurier
+- *(orchestrator)* Simplify and reduce task events (#4573) by @TBonnin
+
+### Fixed
+
+- *(link-pagination)* Validate both possible pagination sources before returning (#4478) by @hassan254-prog
+- *(fe)* Remove koala (#4524) by @khaliqgant
+- *(db)* Drop deleted columns (#4519) by @bodinsamuel
+- *(api)* GET /environment-variables new format (#4521) by @bodinsamuel
+- *(api)* POST /sync/start, POST /sync/pause new format  (#4523) by @bodinsamuel
+- Revert "fix(api): POST /sync/start, POST /sync/pause new format  (#4523) (#4527) by @TBonnin
+- *(api)* POST /sync/start, POST /sync/pause new format  (#4528) by @bodinsamuel
+- Revert security headers (#4531) by @bodinsamuel
+- *(billing)* Sync data with orb and stripe (#4517) by @bodinsamuel
+- *(zero)* Handle deep symlink (#4530) by @bodinsamuel
+- *(api)* Always send team update event (#4532) by @bodinsamuel
+- *(deploy)* Deploy to AWS for staging environments (#4541) by @rossmcewan
+- *(api)* Block public key usage for new accounts  (#4534) by @bodinsamuel
+- *(api)* Allow passing of webhook secret for integrations (#4529) by @hassan254-prog
+- *(jobs)* Set max concurrency for webhook processor to 200 (#4543) by @TBonnin
+- `patchUser` zod schema (#4546) by @kaposke
+- *(api)* POST /connections types issues, apiKey prop (#4548) by @bodinsamuel
+- Incorrect migration name (#4551) by @kaposke
+- *(api)* Start/pause connection_id is optional (#4552) by @bodinsamuel
+- *(github)* Refresh a jwt for github app and github app oauth (#4538) by @khaliqgant
+- Remove dynamic environment variables (#4556) by @rossmcewan
+- Allow server to startup when ES isn't responding (#4547) by @TBonnin
+- *(webapp)* Use `isLoading`  instead of disabled prop (#4559) by @hassan254-prog
+- Revert "fix(github): refresh a jwt for github app and github app… (#4561) by @TBonnin
+- *(flows.yaml removal)* Remove usage of flowsyaml in the nango repo (#4555) by @khaliqgant
+- Deploy webapp to s3 with cloudfront (#4565) by @rossmcewan
+- Ignore the app_ui for aws deployment (#4567) by @rossmcewan
+- *(webapp)* Use correct template logos for private apis (#4566) by @hassan254-prog
+- *(action-output)* Documentation updates for restricting action output (#4554) by @khaliqgant
+- *(webhooks)* Deduplicate webhook forwards for hubspot (#4558) by @hassan254-prog
+- *(api)* GET /sync/status new format  (#4568) by @bodinsamuel
+- *(impersonate)* Handle impersonating account with dev env (#4571) by @bodinsamuel
+- *(webhook-sync-failure)* Fix false report (#4579) by @khaliqgant
+- *(webhooks)* Stabilize signature (#4572) by @bodinsamuel
+- Fix typo in changelog (#4584) by @sgrodzicki
+- *(api)* Incorrect tba validation (#4585) by @bodinsamuel
+
 ## [v0.67.0] - 2025-08-20
 
 ### Added
@@ -4658,6 +4767,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.2]: https://github.com/NangoHQ/nango/compare/v0.67.1..v0.67.2
+[v0.67.1]: https://github.com/NangoHQ/nango/compare/v0.67.0..v0.67.1
 [v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0
 [v0.66.2]: https://github.com/NangoHQ/nango/compare/v0.66.1..v0.66.2
 [v0.66.1]: https://github.com/NangoHQ/nango/compare/v0.66.0..v0.66.1

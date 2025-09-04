@@ -65,8 +65,10 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         return { ...zodToNangoModelField(name, schema.def.innerType), optional };
     } else if (isZodUndefined(schema)) {
         throw new Error('z.undefined() is not supported, please use z.null() or z.optional() instead');
+    } else if (isZodUnknown(schema)) {
+        return { name, value: 'unknown', tsType: true, optional };
     } else {
-        throw new Error(`not handled, ${JSON.stringify(schema)}`);
+        throw new Error(`field "${name}" contains an unsupported Zod type, please change or reach out to Nango support, ${JSON.stringify(schema)}`);
     }
 }
 
@@ -140,4 +142,8 @@ function isZodNullable(schema: z.core.$ZodType): schema is z.ZodNullable {
 
 function isZodUndefined(schema: z.core.$ZodType): schema is z.ZodUndefined {
     return schema.constructor.name === 'ZodUndefined';
+}
+
+function isZodUnknown(schema: z.core.$ZodType): schema is z.ZodUnknown {
+    return schema.constructor.name === 'ZodUnknown';
 }

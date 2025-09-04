@@ -16,7 +16,7 @@ import Signin from './pages/Account/Signin';
 import { Signup } from './pages/Account/Signup';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
-import { ConnectUISettings } from './pages/ConnectUI/Show';
+import { ConnectUISettingsPage } from './pages/ConnectUI/Show';
 import { ConnectionCreate } from './pages/Connection/Create';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
@@ -99,7 +99,7 @@ const App = () => {
                             <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsShow />} />
-                            <Route path="/:env/connect-ui" element={<ConnectUISettings />} />
+                            <Route path="/:env/connect-ui" element={<ConnectUISettingsPage />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
                             <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
                             <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
