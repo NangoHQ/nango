@@ -18,7 +18,6 @@ import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
 import { postConnectionCreation } from './connection/on/post-connection-creation.js';
-import { preConnectionCreation } from './connection/on/pre-connection-creation.js';
 import postConnection from './connection/post-connection.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
@@ -95,21 +94,6 @@ export async function testConnectionCredentials({
     logCtx: LogContextStateless;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
     try {
-        const result = await preConnectionCreation({ config, credentials, provider, connectionId, connectionConfig, logCtx });
-
-        if (result.isOk()) {
-            const { tested } = result.value;
-
-            if (tested) {
-                return Ok({ tested: true });
-            }
-        }
-
-        if (result.isErr()) {
-            void logCtx.error('Pre-connection-creation script failed');
-            return Err(result.error);
-        }
-
         if (provider.credentials_verification_script) {
             void logCtx.info('Running automatic credentials verification via verification script');
             await executeVerificationScript(config, credentials, connectionId, connectionConfig);

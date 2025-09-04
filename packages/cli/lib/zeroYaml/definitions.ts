@@ -66,7 +66,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
                 providerConfigKey: integrationId,
                 actions: [],
                 syncs: [],
-                onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] }
+                onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] }
             };
             parsed.integrations.push(integration);
         }
@@ -97,8 +97,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
                     integration.onEventScripts['post-connection-creation'].push(basename);
                 } else if (script.event === 'pre-connection-deletion') {
                     integration.onEventScripts['pre-connection-deletion'].push(basename);
-                } else if (script.event === 'pre-connection-creation') {
-                    integration.onEventScripts['pre-connection-creation'].push(basename);
+                } else if (script.event === 'validate-connection') {
+                    integration.onEventScripts['validate-connection'].push(basename);
                 }
                 break;
             }

@@ -49,7 +49,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
             const parsedOnEventScripts = {
                 'post-connection-creation': onEventScripts['post-connection-creation'] || [],
                 'pre-connection-deletion': onEventScripts['pre-connection-deletion'] || [],
-                'pre-connection-creation': onEventScripts['pre-connection-creation'] || []
+                'validate-connection': onEventScripts['validate-connection'] || []
             };
 
             const parsedIntegration: NangoYamlParsedIntegration = {

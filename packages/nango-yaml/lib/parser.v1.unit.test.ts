@@ -41,7 +41,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: [
                         {
                             description: '',
@@ -95,7 +95,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: []
                 }
             ],

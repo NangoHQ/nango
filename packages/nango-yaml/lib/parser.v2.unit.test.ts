@@ -47,7 +47,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: [
                         {
                             description: '',
@@ -95,7 +95,7 @@ describe('parse', () => {
                 {
                     providerConfigKey: 'provider',
                     syncs: [],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: [
                         {
                             description: '',
@@ -153,7 +153,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'pre-connection-creation': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: []
                 }
             ],
@@ -377,7 +377,7 @@ describe('parse', () => {
                     'on-events': {
                         'post-connection-creation': ['test1', 'test2'],
                         'pre-connection-deletion': ['test3', 'test4'],
-                        'pre-connection-creation': ['test5', 'test6']
+                        'validate-connection': ['test5', 'test6']
                     }
                 }
             }
@@ -389,7 +389,7 @@ describe('parse', () => {
         expect(parser.parsed?.integrations[0]?.onEventScripts).toStrictEqual({
             'post-connection-creation': ['test1', 'test2'],
             'pre-connection-deletion': ['test3', 'test4'],
-            'pre-connection-creation': ['test5', 'test6']
+            'validate-connection': ['test5', 'test6']
         });
     });
 });

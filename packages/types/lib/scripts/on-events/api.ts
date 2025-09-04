@@ -1,6 +1,6 @@
 import type { DBOnEventScript } from './db.js';
 
-export type OnEventType = 'post-connection-creation' | 'pre-connection-deletion' | 'pre-connection-creation';
+export type OnEventType = 'post-connection-creation' | 'pre-connection-deletion' | 'validate-connection';
 
 export interface OnEventScript {
     id: DBOnEventScript['id'];

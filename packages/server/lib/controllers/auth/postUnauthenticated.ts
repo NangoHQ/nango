@@ -6,6 +6,7 @@ import { configService, connectionService, errorManager, getConnectionConfig, ge
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
@@ -133,6 +134,30 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
             void logCtx.error('Failed to create connection');
             await logCtx.failed();
+            return;
+        }
+
+        const customValidationResponse = await validateConnection({
+            connection: updatedConnection.connection,
+            config,
+            environment,
+            account,
+            logContextGetter
+        });
+
+        if (customValidationResponse.isErr()) {
+            void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+            await logCtx.failed();
+
+            // since this is an invalid connection, delete it with no trace of it
+            await connectionService.hardDelete(updatedConnection.connection.id);
+
+            res.status(400).send({
+                error: {
+                    code: 'connection_validation_failed',
+                    message: customValidationResponse.error.message
+                }
+            });
             return;
         }
 
