@@ -38,7 +38,7 @@ const logger = getLogger('Proxy.Controller');
 const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
     'connection-id': connectionIdSchema,
-    retries: z.coerce.number().optional(),
+    retries: z.coerce.number().optional().default(0),
     'base-url-override': z.url().optional(),
     decompress: z.enum(['true', 'false']).optional(),
     'retry-on': z
@@ -64,7 +64,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
     const connectionId = parsedHeaders['connection-id'];
     const providerConfigKey = parsedHeaders['provider-config-key'];
-const retries = parsedHeaders['retries'] || 0;
+    const retries = parsedHeaders['retries'];
     const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
