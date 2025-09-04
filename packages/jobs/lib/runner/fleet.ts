@@ -5,7 +5,7 @@ import { kubernetesNodeProvider } from './kubernetes.js';
 import { localNodeProvider } from './local.js';
 import { renderNodeProvider } from './render.js';
 
-const fleetId = 'nango_runners';
+const fleetId = envs.RUNNER_FLEET_ID;
 export const runnersFleet = (() => {
     switch (envs.RUNNER_TYPE) {
         case 'LOCAL':

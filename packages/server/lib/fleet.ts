@@ -1,3 +1,5 @@
 import { Fleet } from '@nangohq/fleet';
 
-export const runnersFleet = new Fleet({ fleetId: 'nango_runners' });
+import { envs } from './env.js';
+
+export const runnersFleet = new Fleet({ fleetId: envs.RUNNER_FLEET_ID });
