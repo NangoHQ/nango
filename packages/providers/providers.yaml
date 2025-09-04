@@ -10140,6 +10140,27 @@ servicenow:
             suffix: .service-now.com
             prefix: https://
 
+skio:
+    display_name: Skio
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: API ${apiKey}
+        base_url: https://graphql.skio.com
+    credentials_verification_script: skioCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/skio
+    docs_connect: https://docs.nango.dev/integrations/all/skio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Skio account
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-generating-your-api-key'
+
 sharepoint-online:
     display_name: SharePoint Online (v2)
     categories:
