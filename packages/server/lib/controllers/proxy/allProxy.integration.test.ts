@@ -77,4 +77,29 @@ describe(`GET ${route}`, () => {
             user_view_type: 'public'
         });
     });
+
+    it('should use all the headers', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            params: { anyPath: 'users/octocat' },
+            headers: {
+                'connection-id': connection.connection_id,
+                'provider-config-key': integration.unique_key,
+                'nango-is-sync': 'true',
+                'nango-is-dry-run': 'true',
+                'nango-activity-log-id': '123',
+                retries: 1,
+                'base-url-override': 'https://api.github.com',
+                decompress: 'true',
+                'retry-on': '1,2,3',
+                'x-custom': 'custom-value'
+            } as any
+        });
+
+        isSuccess(res.json);
+    });
 });

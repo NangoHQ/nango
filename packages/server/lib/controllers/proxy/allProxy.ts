@@ -40,14 +40,14 @@ const schemaHeaders = z.object({
     'connection-id': connectionIdSchema,
     retries: z.coerce.number().optional(),
     'base-url-override': z.url().optional(),
-    decompress: z.literal(['true', 'false']).optional(),
+    decompress: z.enum(['true', 'false']).optional(),
     'retry-on': z
         .string()
         .regex(/^\d+(,\d+)*$/)
         .optional(),
     'nango-activity-log-id': z.string().max(255).optional(),
-    'nango-is-sync': z.literal(['true', 'false']).optional(),
-    'nango-is-dry-run': z.literal(['true', 'false']).optional()
+    'nango-is-sync': z.enum(['true', 'false']).optional(),
+    'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
 
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
@@ -60,17 +60,17 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const { environment, account } = res.locals;
 
     let logCtx: LogContext | undefined;
-    const reqHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
+    const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
 
-    const connectionId = reqHeaders['connection-id'];
-    const providerConfigKey = reqHeaders['provider-config-key'];
-    const retries = reqHeaders['retries'] ? Number(reqHeaders['retries']) : 0;
-    const baseUrlOverride = reqHeaders['base-url-override'];
-    const decompress = reqHeaders['decompress'] === 'true';
-    const retryOn = reqHeaders['retry-on'] ? reqHeaders['retry-on'].split(',').map(Number) : null;
-    const existingActivityLogId = reqHeaders['nango-activity-log-id'];
-    const isSync = reqHeaders['nango-is-sync'] === 'true';
-    const isDryRun = reqHeaders['nango-is-dry-run'] === 'true';
+    const connectionId = parsedHeaders['connection-id'];
+    const providerConfigKey = parsedHeaders['provider-config-key'];
+    const retries = parsedHeaders['retries'] ? Number(parsedHeaders['retries']) : 0;
+    const baseUrlOverride = parsedHeaders['base-url-override'];
+    const decompress = parsedHeaders['decompress'] === 'true';
+    const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
+    const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
+    const isSync = parsedHeaders['nango-is-sync'] === 'true';
+    const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
     try {
         if (!isSync) {
             metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
