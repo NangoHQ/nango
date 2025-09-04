@@ -114,7 +114,6 @@ class Kubernetes {
                 if (!this.notFound(err)) {
                     return Err(new Error('Failed to delete service', { cause: err }));
                 }
-                return Err(new Error('Failed to delete service', { cause: err }));
             }
 
             try {
