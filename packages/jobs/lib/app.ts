@@ -63,8 +63,8 @@ try {
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
-            processor.stop();
             otlp.stop();
+            await processor.stop();
             await destroyLogs();
             await runnersFleet.stop();
             await db.knex.destroy();
