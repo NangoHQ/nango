@@ -186,9 +186,12 @@ class Kubernetes {
                     } catch (err: any) {
                         return Err(new Error('Failed to patch deployment', { cause: err }));
                     }
+                } else {
+                    return Err(new Error('Failed to create deployment', { cause: err }));
                 }
+            } else {
+                return Err(new Error('Failed to create deployment', { cause: err }));
             }
-            return Err(new Error('Failed to create deployment', { cause: err }));
         }
         return Ok(undefined);
     }
@@ -231,13 +234,13 @@ class Kubernetes {
                             k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
                         );
                     } catch (err: any) {
-                        return Err(new Error('Failed to patch namespace', { cause: err }));
+                        return Err(new Error('Failed to patch service', { cause: err }));
                     }
                 } else {
-                    return Err(new Error('Failed to create namespace', { cause: err }));
+                    return Err(new Error('Failed to create service', { cause: err }));
                 }
             } else {
-                return Err(new Error('Failed to create namespace', { cause: err }));
+                return Err(new Error('Failed to create service', { cause: err }));
             }
         }
         return Ok(undefined);
@@ -272,9 +275,12 @@ class Kubernetes {
                     } catch (err: any) {
                         return Err(new Error('Failed to patch default-deny network policy', { cause: err }));
                     }
+                } else {
+                    return Err(new Error('Failed to create default-deny network policy', { cause: err }));
                 }
+            } else {
+                return Err(new Error('Failed to create default-deny network policy', { cause: err }));
             }
-            return Err(new Error('Failed to create default-deny network policy', { cause: err }));
         }
         const allowFromNango: k8s.V1NetworkPolicy = {
             metadata: { name: 'allow-from-nango' },
@@ -315,9 +321,12 @@ class Kubernetes {
                     } catch (err: any) {
                         return Err(new Error('Failed to patch allow-from-nango network policy', { cause: err }));
                     }
+                } else {
+                    return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
                 }
+            } else {
+                return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
             }
-            return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
         }
 
         const allowEgressToNangoAndInternet: k8s.V1NetworkPolicy = {
@@ -368,9 +377,12 @@ class Kubernetes {
                     } catch (err: any) {
                         return Err(new Error('Failed to patch allow-egress-to-nango-and-internet network policy', { cause: err }));
                     }
+                } else {
+                    return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
                 }
+            } else {
+                return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
             }
-            return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
         }
 
         return Ok(undefined);
