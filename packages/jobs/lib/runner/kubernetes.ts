@@ -144,10 +144,7 @@ class Kubernetes {
                 selector: { matchLabels: { app: name } },
                 template: {
                     metadata: {
-                        labels: { app: name },
-                        annotations: {
-                            'supervisor.nango.dev/restartedAt': new Date().toISOString()
-                        }
+                        labels: { app: name }
                     },
                     spec: {
                         containers: [
@@ -170,30 +167,16 @@ class Kubernetes {
                 namespace,
                 body: deploymentManifest
             });
+            return Ok(undefined);
         } catch (err: any) {
             if (err.body) {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
-                    try {
-                        await this.appsApi.patchNamespacedDeployment(
-                            {
-                                name,
-                                namespace,
-                                body: deploymentManifest
-                            },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
-                        );
-                    } catch (err: any) {
-                        return Err(new Error('Failed to patch deployment', { cause: err }));
-                    }
-                } else {
-                    return Err(new Error('Failed to create deployment', { cause: err }));
+                    return Ok(undefined);
                 }
-            } else {
-                return Err(new Error('Failed to create deployment', { cause: err }));
             }
+            return Err(new Error('Failed to create deployment', { cause: err }));
         }
-        return Ok(undefined);
     }
 
     private async createService(_node: Node, name: string, namespace: string): Promise<Result<void>> {
@@ -224,24 +207,10 @@ class Kubernetes {
             if (err.body) {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
-                    try {
-                        await this.coreApi.patchNamespacedService(
-                            {
-                                name,
-                                namespace,
-                                body: serviceManifest
-                            },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
-                        );
-                    } catch (err: any) {
-                        return Err(new Error('Failed to patch service', { cause: err }));
-                    }
-                } else {
-                    return Err(new Error('Failed to create service', { cause: err }));
+                    return Ok(undefined);
                 }
-            } else {
-                return Err(new Error('Failed to create service', { cause: err }));
             }
+            return Err(new Error('Failed to create service', { cause: err }));
         }
         return Ok(undefined);
     }
@@ -262,20 +231,7 @@ class Kubernetes {
         } catch (err: any) {
             if (err.body) {
                 const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy(
-                            {
-                                name: 'default-deny',
-                                namespace,
-                                body: denyAll
-                            },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
-                        );
-                    } catch (err: any) {
-                        return Err(new Error('Failed to patch default-deny network policy', { cause: err }));
-                    }
-                } else {
+                if (body.reason !== 'AlreadyExists') {
                     return Err(new Error('Failed to create default-deny network policy', { cause: err }));
                 }
             } else {
@@ -308,20 +264,7 @@ class Kubernetes {
         } catch (err: any) {
             if (err.body) {
                 const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy(
-                            {
-                                name: 'allow-from-nango',
-                                namespace,
-                                body: allowFromNango
-                            },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
-                        );
-                    } catch (err: any) {
-                        return Err(new Error('Failed to patch allow-from-nango network policy', { cause: err }));
-                    }
-                } else {
+                if (body.reason !== 'AlreadyExists') {
                     return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
                 }
             } else {
@@ -364,20 +307,7 @@ class Kubernetes {
         } catch (err: any) {
             if (err.body) {
                 const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy(
-                            {
-                                name: 'allow-egress-to-nango-and-internet',
-                                namespace,
-                                body: allowEgressToNangoAndInternet
-                            },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
-                        );
-                    } catch (err: any) {
-                        return Err(new Error('Failed to patch allow-egress-to-nango-and-internet network policy', { cause: err }));
-                    }
-                } else {
+                if (body.reason !== 'AlreadyExists') {
                     return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
                 }
             } else {
