@@ -19,9 +19,9 @@ export function getRunnerClient(url: string): ProxyAppRouter {
                     return fetch(url, {
                         ...options,
                         dispatcher: new Agent({
-                            headersTimeout: 0,
-                            connectTimeout: 0,
-                            bodyTimeout: 0
+                            headersTimeout: 10_000,
+                            connectTimeout: 5_000,
+                            bodyTimeout: 15_000
                         })
                     });
                 }
