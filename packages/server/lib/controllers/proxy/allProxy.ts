@@ -195,7 +195,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     onRefreshFailed: connectionRefreshFailed
                 });
                 if (credentialResponse.isErr()) {
-                    throw new ProxyError('failed_to_get_connection', 'Failed to get connection credentials', connectionRes.error);
+                    throw new ProxyError('failed_to_get_connection', 'Failed to get connection credentials', credentialResponse.error);
                 }
 
                 freshConnection = credentialResponse.value;
