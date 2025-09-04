@@ -10,7 +10,7 @@ import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import { noopNodeProvider } from './node-providers/noop.js';
 
 describe('fleet', () => {
-    const fleetId = 'nango_runners';
+    const fleetId = 'test_runners';
     const dbClient = getTestDbClient(fleetId);
     const nodeProvider = noopNodeProvider;
     const fleet = new Fleet({
