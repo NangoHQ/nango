@@ -64,7 +64,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
     const connectionId = parsedHeaders['connection-id'];
     const providerConfigKey = parsedHeaders['provider-config-key'];
-    const retries = parsedHeaders['retries'] ? Number(parsedHeaders['retries']) : 0;
+const retries = parsedHeaders['retries'] || 0;
     const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
