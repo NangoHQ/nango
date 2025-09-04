@@ -65,53 +65,51 @@ description: 'Access the Attio API in 2 minutes 💨'
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
     <Steps>
-      <Step title="Create an Attio account">
-        Go to the [Attio sign-up page](https://app.attio.com/sign-up) and create your account.
+      <Step title="Create an Attio Developer account">
+        If you don't already have one, sign up for an [Attio Developer account](https://build.attio.com/).
       </Step>
-      <Step title="Create a new integration">
-        1. Log in to your Attio account.
-        2. Navigate to **Settings > Developers** in your Attio workspace.
-        3. Click on **Create integration**.
-        4. Enter a name for your integration.
-        5. Click **Create** to generate your integration.
+      <Step title="Create a new app">
+        1. Log in to your [Attio Developer account](https://build.attio.com/auth/login).
+        2. From the left sidebar, click **+ New app** and enter a unique **name** for your app.
       </Step>
       <Step title="Configure OAuth settings">
-        1. In your integration settings page, locate the **OAuth 2.0** section.
-        2. Add `https://api.nango.dev/oauth/callback` as a redirect URI.
-        3. Configure the appropriate scopes for your integration needs:
-           - **object_configuration**: Access to object configuration data
-           - **record_read**: Read access to records
-           - **record_write**: Write access to records
-           - **list_read**: Read access to lists
-           - **list_write**: Write access to lists
-        4. Save your changes.
+        1. On your app's settings page, open the **OAuth** tab.
+        2. Toggle **OAuth** on, and add `https://api.nango.dev/oauth/callback` as your **Redirect URIs**.
+        3. Configure the appropriate [scopes](https://docs.attio.com/rest-api/how-to/authentication#scopes) your integration needs.
+        4. Copy your **Client ID** and **Client Secret**, you'll need these when configuring your integration in Nango.
       </Step>
-      <Step title="Obtain your OAuth credentials">
-        1. In your integration settings page, copy your **Client ID** and **Client Secret**.
-        2. You'll need these when configuring your integration in Nango.
+      <Step title="Publish your app">
+        1. Navigate to the **App listing** tab and complete all the required fields.
+        2. Click the **Publish app** button in the top-right corner. Attio's team will review your submission (typically within 48 hours). Once approved, your app will become **Public** and available to other users.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
+    ## Common Scopes
+    | Scope | Description |
+    | --- | --- |
+    | `object_configuration` | Access to object configuration data. |
+    | `record_read` | Read access to records. |
+    | `record_write` | Write access to records. |
+    | `list_read` | Read access to lists. |
+    | `list_write` | Write access to lists. |
   </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links | 
     | - | - | 
     | General | [Attio Website](https://attio.com/) |
-    | | [Create an Attio account](https://app.attio.com/sign-up) |
+    | | [Create an Attio Developer account](https://build.attio.com/) |
+    | | [Create an Attio account](https://app.attio.com/welcome/sign-in) |
     | | [Attio Dashboard](https://app.attio.com/) |
     | Developer | [API documentation](https://developers.attio.com/reference) |
-    | | [How to register an Application](https://developers.attio.com/docs/integrations) |
-    | | [OAuth documentation](https://developers.attio.com/reference/using-oauth) |
-    | | [Authentication guide](https://developers.attio.com/docs/authentication) |
-    | | [Rate limits](https://developers.attio.com/reference/rate-limits) |
+    | | [Authentication guide](https://docs.attio.com/rest-api/how-to/authentication) |
+    | | [OAuth documentation](https://docs.attio.com/rest-api/how-to/authentication#oauth-2-0) |
+    | | [Rate limits](https://docs.attio.com/rest-api/how-to/rate-limiting) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    - Attio requires specific scopes to be configured during OAuth app setup to access different types of data.
-    - After authorization, make sure to test your scopes to ensure they provide the necessary access to your application.
     - Attio's API uses object-based endpoints where you specify the object type (e.g., people, companies) in the URL path.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
