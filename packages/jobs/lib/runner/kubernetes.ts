@@ -32,6 +32,22 @@ class Kubernetes {
         this.networkingApi = this.kc.makeApiClient(k8s.NetworkingV1Api);
     }
 
+    alreadyExists(err: any): boolean {
+        if (err.body) {
+            const body = JSON.parse(err.body);
+            return body.reason == 'AlreadyExists';
+        }
+        return false;
+    }
+
+    notFound(err: any): boolean {
+        if (err.body) {
+            const body = JSON.parse(err.body);
+            return body.reason == 'NotFound';
+        }
+        return false;
+    }
+
     static getInstance(): Kubernetes {
         if (!Kubernetes.instance) {
             Kubernetes.instance = new Kubernetes();
@@ -78,20 +94,34 @@ class Kubernetes {
         const namespace = this.getNamespace(node);
 
         try {
-            // Delete deployment
-            await this.appsApi.deleteNamespacedDeployment({
-                name,
-                namespace
-            });
+            try {
+                await this.appsApi.deleteNamespacedDeployment({
+                    name,
+                    namespace
+                });
+            } catch (err: any) {
+                if (!this.notFound(err)) {
+                    return Err(new Error('Failed to delete deployment', { cause: err }));
+                }
+            }
 
-            // Delete service
-            await this.coreApi.deleteNamespacedService({
-                name,
-                namespace
-            });
+            try {
+                await this.coreApi.deleteNamespacedService({
+                    name,
+                    namespace
+                });
+            } catch (err: any) {
+                if (!this.notFound(err)) {
+                    return Err(new Error('Failed to delete service', { cause: err }));
+                }
+                return Err(new Error('Failed to delete service', { cause: err }));
+            }
 
-            // Delete network policies
-            await this.deleteNetworkPolicies(namespace, node.id);
+            try {
+                await this.deleteNetworkPolicies(namespace, node.id);
+            } catch (err: any) {
+                return Err(new Error('Failed to delete network policies', { cause: err }));
+            }
 
             return Ok(undefined);
         } catch (err) {
@@ -121,11 +151,8 @@ class Kubernetes {
                 body: namespaceManifest
             });
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    return Ok(undefined);
-                }
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
             return Err(new Error('Failed to create namespace', { cause: err }));
         }
@@ -169,11 +196,8 @@ class Kubernetes {
             });
             return Ok(undefined);
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    return Ok(undefined);
-                }
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
             return Err(new Error('Failed to create deployment', { cause: err }));
         }
@@ -204,11 +228,8 @@ class Kubernetes {
                 body: serviceManifest
             });
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason == 'AlreadyExists') {
-                    return Ok(undefined);
-                }
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
             return Err(new Error('Failed to create service', { cause: err }));
         }
@@ -229,14 +250,10 @@ class Kubernetes {
                 body: denyAll
             });
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason !== 'AlreadyExists') {
-                    return Err(new Error('Failed to create default-deny network policy', { cause: err }));
-                }
-            } else {
-                return Err(new Error('Failed to create default-deny network policy', { cause: err }));
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
+            return Err(new Error('Failed to create default-deny network policy', { cause: err }));
         }
         const allowFromNango: k8s.V1NetworkPolicy = {
             metadata: { name: `allow-from-nango-${nodeId}` },
@@ -262,14 +279,10 @@ class Kubernetes {
                 body: allowFromNango
             });
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason !== 'AlreadyExists') {
-                    return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
-                }
-            } else {
-                return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
+            return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
         }
 
         const allowEgressToNangoAndInternet: k8s.V1NetworkPolicy = {
@@ -305,14 +318,10 @@ class Kubernetes {
                 body: allowEgressToNangoAndInternet
             });
         } catch (err: any) {
-            if (err.body) {
-                const body = JSON.parse(err.body);
-                if (body.reason !== 'AlreadyExists') {
-                    return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
-                }
-            } else {
-                return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
             }
+            return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
         }
 
         return Ok(undefined);
@@ -320,22 +329,34 @@ class Kubernetes {
 
     private async deleteNetworkPolicies(namespace: string, nodeId: number): Promise<void> {
         try {
-            // Delete network policies
             await this.networkingApi.deleteNamespacedNetworkPolicy({
                 name: `default-deny-${nodeId}`,
                 namespace
             });
+        } catch (err: any) {
+            if (!this.notFound(err)) {
+                throw err;
+            }
+        }
+        try {
             await this.networkingApi.deleteNamespacedNetworkPolicy({
                 name: `allow-from-nango-${nodeId}`,
                 namespace
             });
+        } catch (err: any) {
+            if (!this.notFound(err)) {
+                throw err;
+            }
+        }
+        try {
             await this.networkingApi.deleteNamespacedNetworkPolicy({
                 name: `allow-egress-to-nango-and-internet-${nodeId}`,
                 namespace
             });
-        } catch (err) {
-            // Ignore errors when deleting network policies as they might not exist
-            logger.warn('Failed to delete network policies:', err);
+        } catch (err: any) {
+            if (!this.notFound(err)) {
+                throw err;
+            }
         }
     }
 
