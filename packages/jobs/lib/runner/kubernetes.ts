@@ -140,7 +140,8 @@ class Kubernetes {
             kind: 'Deployment',
             metadata: {
                 name,
-                labels: { app: name }
+                labels: { app: name },
+                namespace
             },
             spec: {
                 replicas: 1,
@@ -190,7 +191,8 @@ class Kubernetes {
             kind: 'Service',
             metadata: {
                 name,
-                labels: { app: name }
+                labels: { app: name },
+                namespace
             },
             spec: {
                 selector: { app: name },
@@ -231,7 +233,7 @@ class Kubernetes {
                     body: {
                         apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
-                        metadata: { name: 'default-deny' },
+                        metadata: { name: 'default-deny', namespace },
                         spec: {
                             podSelector: {},
                             policyTypes: ['Ingress']
@@ -254,7 +256,7 @@ class Kubernetes {
                     body: {
                         apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
-                        metadata: { name: 'allow-from-nango' },
+                        metadata: { name: 'allow-from-nango', namespace },
                         spec: {
                             podSelector: {},
                             ingress: [
@@ -288,7 +290,7 @@ class Kubernetes {
                     body: {
                         apiVersion: 'networking.k8s.io/v1',
                         kind: 'NetworkPolicy',
-                        metadata: { name: 'allow-egress-to-nango-and-internet' },
+                        metadata: { name: 'allow-egress-to-nango-and-internet', namespace },
                         spec: {
                             podSelector: {},
                             policyTypes: ['Egress'],
