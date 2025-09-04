@@ -9,8 +9,9 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
+import { setTheme } from '@/lib/theme';
 
-import type { ConnectUIEventToken } from '@nangohq/frontend';
+import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -19,19 +20,32 @@ export const Home: React.FC = () => {
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
     const isEmbedded = useSearchParam('embedded');
-    const isPreview = useSearchParam('preview');
+    const isPreview = useSearchParam('preview') === 'true';
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
 
     useEffect(() => {
         // Listen to parent
         // the parent will send the sessionToken through post message
         const listener: (this: Window, ev: MessageEvent) => void = (evt) => {
-            if (!evt.data || !('type' in evt.data) || evt.data.type !== 'session_token') {
+            if (!evt.data || !('type' in evt.data)) {
                 return;
             }
-
-            const data = evt.data as ConnectUIEventToken;
-            setSessionToken(data.sessionToken);
+            switch (evt.data.type) {
+                case 'session_token': {
+                    const data = evt.data as ConnectUIEventToken;
+                    setSessionToken(data.sessionToken);
+                    break;
+                }
+                case 'settings_changed': {
+                    // Only allow dynamic theme changing in preview mode
+                    if (!isPreview) {
+                        break;
+                    }
+                    const data = evt.data as ConnectUIEventSettingsChanged;
+                    setTheme(data.payload.theme);
+                    break;
+                }
+            }
             // Let the state propagate
             setTimeout(() => telemetry('open'), 1);
         };
@@ -46,8 +60,8 @@ export const Home: React.FC = () => {
             setSessionToken(inUrl);
         }
 
-        if (isPreview === 'true') {
-            // Don't clear session_token event listener on preview
+        if (isPreview) {
+            // Don't clear event listeners on preview
             return;
         }
 
@@ -61,12 +75,13 @@ export const Home: React.FC = () => {
         if (apiURL) setApiURL(apiURL);
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
-        if (isPreview) setIsPreview(isPreview === 'true');
+        if (isPreview) setIsPreview(isPreview);
     }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
 
     useEffect(() => {
         if (data) {
             setSession(data.data);
+            setTheme(data.data.connectUISettings.theme);
             void navigate({ to: '/integrations' });
         }
     }, [data]);

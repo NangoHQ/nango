@@ -13,7 +13,6 @@ import { FleetError } from './utils/errors.js';
 import { withPgLock } from './utils/locking.js';
 import { waitUntilHealthy } from './utils/url.js';
 
-import type { FleetId } from './instances.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import type { Node, NodeConfigOverride } from './types.js';
 import type { Deployment, RoutingId } from '@nangohq/types';
@@ -30,7 +29,7 @@ export class Fleet {
     private supervisor: Supervisor | undefined = undefined;
     private nodeProvider: NodeProvider;
 
-    constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: FleetId; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
+    constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: string; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         if (nodeProvider) {
@@ -110,7 +109,7 @@ export class Fleet {
             if (!starting[0] && !pending[0]) {
                 await withPgLock({
                     db: this.dbClient.db,
-                    lockKey: `create_node_${routingId}`,
+                    lockKey: `fleet_${this.fleetId}_create_node_${routingId}`,
                     fn: async (trx): Promise<Result<Node>> => {
                         const deployment = await deployments.getActive(trx);
                         if (deployment.isErr()) {

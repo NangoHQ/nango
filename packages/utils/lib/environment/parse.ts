@@ -78,6 +78,11 @@ export const ENVS = z.object({
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
+    RUNNER_FLEET_ID: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]+$/)
+        .optional()
+        .default('nango_runners'),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -93,6 +98,7 @@ export const ENVS = z.object({
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
+    FLEET_SUPERVISOR_LOCK_KEY: z.string().default('fleet_supervisor'),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
@@ -195,6 +201,7 @@ export const ENVS = z.object({
     // SMTP
     SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
+    SMTP_DOMAIN: z.string().default('email.nango.dev'),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),

@@ -50,7 +50,7 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
             return { name, value: [value], array: true, optional };
         }
         return { name, value: value.value, tsType: true, array: true, optional };
-    } else if (isZodUnion(schema)) {
+    } else if (isZodUnion(schema) || isZodDiscriminatedUnion(schema)) {
         const values: NangoModelField['value'] = [];
 
         for (const [key, value] of Object.entries(schema._zod.def.options)) {
@@ -65,8 +65,29 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         return { ...zodToNangoModelField(name, schema.def.innerType), optional };
     } else if (isZodUndefined(schema)) {
         throw new Error('z.undefined() is not supported, please use z.null() or z.optional() instead');
+    } else if (isZodUnknown(schema)) {
+        return { name, value: 'unknown', tsType: true, optional };
+    } else if (isZodBigInt(schema)) {
+        return { name, value: 'bigint', tsType: true, optional };
+    } else if (isZodEmail(schema)) {
+        // Not supported yet by "ts-json-schema-generator" (2.4.0)
+        // return { name, value: 'email', tsType: true, optional };
+        throw new Error(`z.email() is not supported, please use z.string() instead`);
+    } else if (isZodUrl(schema)) {
+        // Not supported yet by "ts-json-schema-generator" (2.4.0)
+        // return { name, value: 'url', tsType: true, optional };
+        throw new Error(`z.url() is not supported, please use z.string() instead`);
+    } else if (isZodTuple(schema)) {
+        // const values: NangoModelField['value'] = [];
+
+        // for (const [key, value] of Object.entries(schema._zod.def.items)) {
+        //     values.push(zodToNangoModelField(key, value));
+        // }
+        // return { name, value: values, tsType: true, array: true, optional };
+
+        throw new Error(`z.tuple() is not supported, please use z.array() instead`);
     } else {
-        throw new Error(`not handled, ${JSON.stringify(schema)}`);
+        throw new Error(`field "${name}" contains an unsupported Zod type, please change or reach out to Nango support, ${JSON.stringify(schema)}`);
     }
 }
 
@@ -140,4 +161,28 @@ function isZodNullable(schema: z.core.$ZodType): schema is z.ZodNullable {
 
 function isZodUndefined(schema: z.core.$ZodType): schema is z.ZodUndefined {
     return schema.constructor.name === 'ZodUndefined';
+}
+
+function isZodUnknown(schema: z.core.$ZodType): schema is z.ZodUnknown {
+    return schema.constructor.name === 'ZodUnknown';
+}
+
+function isZodDiscriminatedUnion(schema: z.core.$ZodType): schema is z.ZodDiscriminatedUnion {
+    return schema.constructor.name === 'ZodDiscriminatedUnion';
+}
+
+function isZodBigInt(schema: z.core.$ZodType): schema is z.ZodBigInt {
+    return schema.constructor.name === 'ZodBigInt';
+}
+
+function isZodEmail(schema: z.core.$ZodType): schema is z.ZodEmail {
+    return schema.constructor.name === 'ZodEmail';
+}
+
+function isZodUrl(schema: z.core.$ZodType): schema is z.ZodURL {
+    return schema.constructor.name === 'ZodURL';
+}
+
+function isZodTuple(schema: z.core.$ZodType): schema is z.ZodTuple {
+    return schema.constructor.name === 'ZodTuple';
 }

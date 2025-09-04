@@ -61,20 +61,13 @@ description: 'Access the LinkedIn API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
    <Steps>
   <Step title="Create a developer account">
-    Go to [LinkedIn's developer signup page](https://www.linkedin.com/developers/) and create an account.
+    If you don't already have one, sign up for a free [LinkedIn's developer account](https://www.linkedin.com/developers/).
   </Step>
   <Step title="Create & configure a LinkedIn app">
-    1. Start creating a LinkedIn app by clicking on the **Create app** button.
-    2. Fill out the app creation form with the following details:
-       - **App name** (required): Enter your app name.
-       - **LinkedIn Page** (required): Enter your company's name or LinkedIn Company Page URL (e.g., https://www.linkedin.com/company/...)
-         - For Third Party/Enterprise Developers: Select a LinkedIn Company Page that will be associated with your app.
-         - For Individual Developers: Select the default Company page associated with your API products.
-       - **Privacy policy URL**: Enter a URL beginning with http:// or https://
-       - **App logo** (required): Upload a square logo image (recommended: at least 100px in one dimension).
-       - **Legal agreement** (required): Check "I have read and agree to these terms".
-     3. In the **Products** tab, select the products you need for your integration. This will automatically add the necessary OAuth 2.0 scopes in the **Auth** tab.
-     4. In the **Auth** tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`, then copy both the `Client ID` and `Primary Client Secret`, you will need them when configuring your integration in Nango.
+    1. Go to the [Create an app](https://www.linkedin.com/developers/apps/new) page
+    2. Fill in all the required details, then click the **Create App** button.
+    3. In the **Products** tab, select the products you need for your integration. This will automatically add the necessary OAuth 2.0 scopes in the **Auth** tab.
+    4. In the **Auth** tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`, then copy both the **Client ID** and **Primary Client Secret**, you will need them when configuring your integration in Nango.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
@@ -89,7 +82,7 @@ description: 'Access the LinkedIn API in 2 minutes 💨'
     | Developer | [API documentation](https://learn.microsoft.com/en-us/linkedin/?context=linkedin%2Fcontext) |
     | | [Developer console](https://www.linkedin.com/developers/) |
     | | [Authorization documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS1) |
-    | | [Register an OAuth app](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?tabs=HTTPS1#step-1-configure-your-application) |
+    | | [How to register an OAuth app](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?tabs=HTTPS1#step-1-configure-your-application) |
     | | [Web API docs (REST API)](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts?context=linkedin%2Fconsumer%2Fcontext) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
@@ -97,7 +90,7 @@ description: 'Access the LinkedIn API in 2 minutes 💨'
   <Tab title="🚨 API gotchas">
 -   If the scope permissions are changed in your app, your users must re-authenticate to ensure that they have explicitly granted your application all of the permissions that it is requesting on their behalf.
 -   The scopes available to your app depend on which Products or Partner Programs your app has access to.
--   In order to receive refresh tokens for your connections you must request the "Advertising API" product in your app under the "Products" tab on LinkedIn. This also requires your app to be verified which can be done by your LinkedIn page admin.
+-   In order to receive refresh tokens for your connections you must request the **Advertising API** product in your app under the **Products** tab on LinkedIn. This also requires your app to be verified which can be done by your LinkedIn page admin.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linkedin.mdx)</Note>
   </Tab>

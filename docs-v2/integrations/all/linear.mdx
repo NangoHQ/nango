@@ -73,27 +73,17 @@ description: 'Access the Linear API in 2 minutes 💨'
     If you don't already have one, sign up for a [Linear account](https://linear.app/signup).
   </Step>
   <Step title="Create an OAuth2 application">
-    1. Log in to your Linear account.
+    1. Log in to your [Linear account](https://linear.app/login).
     2. Under your specific workspace, navigate to **Settings** > **API** > **OAuth applications**.
-    3. Click + sign.
-    4. It is highly recommended to create a dedicated workspace for managing your OAuth application, as each admin user will have access.
+    3. Click the **+** icon.
+    <Note> It is highly recommended to create a dedicated workspace for managing your OAuth application, as each admin user will have access. </Note>
   </Step>
   <Step title="Configure your OAuth application">
-    1. Fill in the required information:
-       - **Name**: Your application's name
-       - **Developer name**: Your name or company name
-       - **Developer URL**: Your website URL
-       - **Description** (optional): Your application's description
-       - **Callback URLs**: Add `https://api.nango.dev/oauth/callback`
-       - **Icon** (optional): Upload an icon for your application
-       - If you want your application to be installed by other workspace, you can toggle the **Public** toggle button.
+    1. Fill in all the required information. For **Callback URLs**: add `https://api.nango.dev/oauth/callback` and toggle the **Public** switch to allow installation in other workspaces.
     2. Click **Create** to save your application.
   </Step>
   <Step title="Obtain OAuth credentials">
-    1. After creating your application, you'll be provided with:
-       - **Client ID**
-       - **Client Secret**
-    2. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
+    1. After creating your application, you'll be provided with **Client ID** and **Client Secret**. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
   </Step>
 
   <Step title="Next">

@@ -21,6 +21,9 @@ export interface Runner {
 }
 
 function getRunnerId(suffix: string): string {
+    if (envs.RUNNER_TYPE === 'KUBERNETES') {
+        suffix = `${suffix}-k8s`;
+    }
     return `${env}-runner-account-${suffix}`;
 }
 

@@ -69,13 +69,8 @@ description: 'Access the HighLevel White Label API in 2 minutes 💨'
       </Step>
       <Step title="Register an OAuth app">
         1. Go to [HighLevel Marketplace](https://marketplace.gohighlevel.com/)
-        2. Navigate to **My Apps** and click **Create App**
-        3. Fill in the required details:
-           - **App Name**: Your application name
-           - **App Type**: Select either **Public** or **Private**
-           - **Target User**: Choose the intended user — either **Sub-Account** or **Agency**
-           - **Installation Permissions**: Specify who can install the app — either **Agency & Sub-Account** or **Agency Only**
-           - **Listing Type**: Select **White-label**
+        2. Navigate to [My Apps](https://marketplace.gohighlevel.com/apps) and click **Create App**
+        3. Fill in all the required information. For **Listing Type** select **White-label**
         4. Click **Create App** to create your app
         5. Complete all mandatory sections: **Basic Info**, **App Profile Details**, **Support Details**, and **Pricing Details**
       </Step>
@@ -83,15 +78,11 @@ description: 'Access the HighLevel White Label API in 2 minutes 💨'
         1. In your app settings, navigate to **Advanced Settings** then **Auth** section
         2. Configure the following:
            - **Scopes**: Select the required scopes for your integration (see [HighLevel scopes documentation](https://highlevel.stoplight.io/docs/integrations/vcctp9t1w8hja-scopes))
-           - **Redirect URI**: Set this to your Nango OAuth redirect URL:
-             ```
-             https://api.nango.dev/oauth/callback
-             ```
+           - **Redirect URI**: Set this to `https://api.nango.dev/oauth/callback` 
         3. Generate Client Keys:
-           - Click **Add** in the Client Key section
+           - Click **Add** in the **Client Key** section
            - Enter a name for your key and click **Add**
-           - A pair of keys will be generated: **Client ID** and **Client Secret**
-           - Save these credentials as you'll need them when configuring Nango
+           - A **Client ID** and **Client Secret** will be generated, save these credentials as you'll need them when configuring Nango
         4. Click **Save** to complete your OAuth configuration
       </Step>
       <Step title="Next">
