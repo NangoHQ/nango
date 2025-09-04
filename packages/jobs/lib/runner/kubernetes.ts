@@ -127,7 +127,7 @@ class Kubernetes {
                     name: namespace,
                     body: namespaceManifest
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
         } catch (err: any) {
             return Err(new Error('Failed to create namespace', { cause: err }));
@@ -175,7 +175,7 @@ class Kubernetes {
                     namespace,
                     body: deploymentManifest
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
             return Ok(undefined);
         } catch (err) {
@@ -209,7 +209,7 @@ class Kubernetes {
                     namespace,
                     body: serviceManifest
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
             return Ok(undefined);
         } catch (err) {
@@ -232,7 +232,7 @@ class Kubernetes {
                         }
                     }
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
         } catch (err: any) {
             return Err(new Error('Failed to create default-deny network policy', { cause: err }));
@@ -263,7 +263,7 @@ class Kubernetes {
                         }
                     }
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
         } catch (err: any) {
             return Err(new Error('Failed to create allow-from-nango network policy', { cause: err }));
@@ -303,7 +303,7 @@ class Kubernetes {
                         }
                     }
                 },
-                this.apiOptions
+                k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
             );
         } catch (err: any) {
             return Err(new Error('Failed to create allow-egress-to-nango-and-internet network policy', { cause: err }));
