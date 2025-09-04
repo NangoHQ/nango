@@ -175,11 +175,14 @@ class Kubernetes {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
                     try {
-                        await this.appsApi.patchNamespacedDeployment({
-                            name,
-                            namespace,
-                            body: deploymentManifest
-                        });
+                        await this.appsApi.patchNamespacedDeployment(
+                            {
+                                name,
+                                namespace,
+                                body: deploymentManifest
+                            },
+                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
+                        );
                     } catch (err: any) {
                         return Err(new Error('Failed to patch deployment', { cause: err }));
                     }
@@ -225,7 +228,7 @@ class Kubernetes {
                                 namespace,
                                 body: serviceManifest
                             },
-                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.ServerSideApply)
+                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
                         );
                     } catch (err: any) {
                         return Err(new Error('Failed to patch namespace', { cause: err }));
@@ -258,11 +261,14 @@ class Kubernetes {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
                     try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy({
-                            name: 'default-deny',
-                            namespace,
-                            body: denyAll
-                        });
+                        await this.networkingApi.patchNamespacedNetworkPolicy(
+                            {
+                                name: 'default-deny',
+                                namespace,
+                                body: denyAll
+                            },
+                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
+                        );
                     } catch (err: any) {
                         return Err(new Error('Failed to patch default-deny network policy', { cause: err }));
                     }
@@ -298,11 +304,14 @@ class Kubernetes {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
                     try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy({
-                            name: 'allow-from-nango',
-                            namespace,
-                            body: allowFromNango
-                        });
+                        await this.networkingApi.patchNamespacedNetworkPolicy(
+                            {
+                                name: 'allow-from-nango',
+                                namespace,
+                                body: allowFromNango
+                            },
+                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
+                        );
                     } catch (err: any) {
                         return Err(new Error('Failed to patch allow-from-nango network policy', { cause: err }));
                     }
@@ -348,11 +357,14 @@ class Kubernetes {
                 const body = JSON.parse(err.body);
                 if (body.reason == 'AlreadyExists') {
                     try {
-                        await this.networkingApi.patchNamespacedNetworkPolicy({
-                            name: 'allow-egress-to-nango-and-internet',
-                            namespace,
-                            body: allowEgressToNangoAndInternet
-                        });
+                        await this.networkingApi.patchNamespacedNetworkPolicy(
+                            {
+                                name: 'allow-egress-to-nango-and-internet',
+                                namespace,
+                                body: allowEgressToNangoAndInternet
+                            },
+                            k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.StrategicMergePatch)
+                        );
                     } catch (err: any) {
                         return Err(new Error('Failed to patch allow-egress-to-nango-and-internet network policy', { cause: err }));
                     }
