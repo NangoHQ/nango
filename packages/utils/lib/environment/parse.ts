@@ -78,6 +78,11 @@ export const ENVS = z.object({
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
+    RUNNER_FLEET_ID: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]+$/)
+        .optional()
+        .default('nango_runners'),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),

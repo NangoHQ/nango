@@ -2,11 +2,11 @@ import z from 'zod';
 
 import db from '@nangohq/database';
 import { connectUISettingsService } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PutConnectUISettings } from '@nangohq/types';
+import type { ConnectUISettings, PutConnectUISettings } from '@nangohq/types';
 
 const colorPaletteSchema = z.strictObject({
     background: z.string(),
@@ -38,8 +38,19 @@ export const putConnectUISettings = asyncWrapper<PutConnectUISettings>(async (re
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, plan } = res.locals;
     const body: PutConnectUISettings['Body'] = val.data;
+
+    const newSettings: ConnectUISettings = body;
+
+    // Override settings to defaults if the plan does not have the feature
+    if (flagHasPlan && !plan?.can_customize_connect_ui_theme) {
+        newSettings.theme = connectUISettingsService.defaultConnectUISettings.theme;
+    }
+
+    if (flagHasPlan && !plan?.can_disable_connect_ui_watermark) {
+        newSettings.showWatermark = connectUISettingsService.defaultConnectUISettings.showWatermark;
+    }
 
     const settings = await connectUISettingsService.upsertConnectUISettings(db.knex, environment.id, body);
     if (settings.isErr()) {
