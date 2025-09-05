@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.3] - 2025-09-05
+
+### Added
+
+- *(server)* Restrict ConnectUI customization with flags (#4590) by @kaposke
+- ConnectUI customization frontend (#4591) by @kaposke
+- Add RUNNER_FLEET_ID (#4604) by @TBonnin
+- *(api)* Proxy new format (#4610) by @bodinsamuel
+
+### Changed
+
+- Improve setup guide for various providers (#4601) by @hassan254-prog
+- Change number of APIs supported to 500+ (#4602) by @rguldener
+
+### Fixed
+
+- *(docs)* Documentation fixes (#4603) by @khaliqgant
+- Use server-side apply to create or patch resources and annotate deployment to rollout restart (#4605) by @rossmcewan
+- Connections count metric (#4606) by @TBonnin
+- *(zero)* Support more zod primitives (#4607) by @bodinsamuel
+- Per-fleet lock key and fix kubernetes runner management (#4608) by @rossmcewan
+- *(cli)* Deploy by integration should filter integration (#4612) by @bodinsamuel
+
 ## [v0.67.2] - 2025-09-03
 
 ### Added
@@ -4767,6 +4790,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.3]: https://github.com/NangoHQ/nango/compare/v0.67.2..v0.67.3
 [v0.67.2]: https://github.com/NangoHQ/nango/compare/v0.67.1..v0.67.2
 [v0.67.1]: https://github.com/NangoHQ/nango/compare/v0.67.0..v0.67.1
 [v0.67.0]: https://github.com/NangoHQ/nango/compare/v0.66.2..v0.67.0

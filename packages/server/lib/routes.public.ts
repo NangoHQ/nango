@@ -42,7 +42,7 @@ import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
-import proxyController from './controllers/proxy.controller.js';
+import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
@@ -228,4 +228,4 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
 
-publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), allPublicProxy);
