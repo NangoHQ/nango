@@ -841,6 +841,11 @@ paths:
                   description: If true, return the refresh token as part of the response (false by default).
                   schema:
                       type: boolean
+                - name: token_name
+                  in: query
+                  description: If provided, ensures a secondary token is refreshed and returned
+                  schema:
+                      type: string
             responses:
                 '200':
                     description: Successfully returned a connection
