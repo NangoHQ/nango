@@ -135,6 +135,7 @@ export type GetPublicConnection = Endpoint<{
         provider_config_key: string;
         refresh_token?: boolean | undefined;
         force_refresh?: boolean | undefined;
+        token_name?: string | undefined;
     };
     Path: '/connection/:connectionId';
     Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;

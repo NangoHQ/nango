@@ -205,7 +205,7 @@ export abstract class NangoActionBase<
         return integration;
     }
 
-    public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
+    public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string, tokenName?: string): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
@@ -215,7 +215,7 @@ export abstract class NangoActionBase<
         const cachedConnection = this.memoizedConnections.get(credentialsPair);
 
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey, connectionId);
+            const connection = await this.nango.getConnection(providerConfigKey, connectionId, false, false, tokenName);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
