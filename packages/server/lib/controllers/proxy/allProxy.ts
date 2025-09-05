@@ -39,7 +39,7 @@ const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
     'connection-id': connectionIdSchema,
     retries: z.coerce.number().optional().default(0),
-    'base-url-override': z.url().optional(),
+    'base-url-override': z.url().or(z.literal('')).optional(),
     decompress: z.enum(['true', 'false']).optional(),
     'retry-on': z
         .string()

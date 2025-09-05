@@ -3,6 +3,7 @@ import EventEmitter from 'node:events';
 import { GROUP_PREFIX_SEPARATOR, stringifyTask } from '@nangohq/scheduler';
 import { metrics, retryWithBackoff } from '@nangohq/utils';
 
+import { validateTask } from './clients/validate.js';
 import { envs } from './env.js';
 import { logger } from './utils.js';
 
@@ -176,11 +177,20 @@ export const taskEvents = {
         const groupKeyPrefix = prop.groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
         return `task:created:${groupKeyPrefix}`;
     },
-    taskCompleted: (prop: Task | string): string => {
+    taskCompleted: (prop: Task | string): string | undefined => {
         if (typeof prop === 'string') {
             return `task:completed:${prop}`;
         }
-        return `task:completed:${prop.id}`;
+
+        // Only action and onEvent tasks are being listened to for completion
+        const res = validateTask(prop);
+        if (res.isErr()) {
+            return undefined;
+        }
+        if (res.value.isOnEvent() || res.value.isAction()) {
+            return `task:completed:${prop.id}`;
+        }
+        return undefined;
     }
 };
 
@@ -233,22 +243,34 @@ export class TaskEventsHandler extends PgEventEmitter {
             SUCCEEDED: (task: Task) => {
                 logger.info(`Task succeeded: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
-                this.emit(taskEvents.taskCompleted(task));
+                const event = taskEvents.taskCompleted(task);
+                if (event) {
+                    this.emit(event);
+                }
             },
             FAILED: (task: Task) => {
                 logger.error(`Task failed: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
-                this.emit(taskEvents.taskCompleted(task));
+                const event = taskEvents.taskCompleted(task);
+                if (event) {
+                    this.emit(event);
+                }
             },
             EXPIRED: (task: Task) => {
                 logger.error(`Task expired: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_EXPIRED);
-                this.emit(taskEvents.taskCompleted(task));
+                const event = taskEvents.taskCompleted(task);
+                if (event) {
+                    this.emit(event);
+                }
             },
             CANCELLED: (task: Task) => {
                 logger.info(`Task cancelled: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_CANCELLED);
-                this.emit(taskEvents.taskCompleted(task));
+                const event = taskEvents.taskCompleted(task);
+                if (event) {
+                    this.emit(event);
+                }
             }
         };
     }
