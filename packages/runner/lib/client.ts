@@ -8,7 +8,14 @@ import type { RequestInit } from 'undici';
 
 export type ProxyAppRouter = CreateTRPCProxyClient<AppRouter>;
 
-export function getRunnerClient(url: string): ProxyAppRouter {
+export function getRunnerClient(
+    url: string,
+    httpOpts: {
+        headersTimeoutMs: number;
+        connectTimeoutMs: number;
+        responseTimeoutMs: number;
+    }
+): ProxyAppRouter {
     return createTRPCProxyClient<AppRouter>({
         transformer: superjson,
         links: [
@@ -19,9 +26,9 @@ export function getRunnerClient(url: string): ProxyAppRouter {
                     return fetch(url, {
                         ...options,
                         dispatcher: new Agent({
-                            headersTimeout: 10_000,
-                            connectTimeout: 5_000,
-                            bodyTimeout: 15_000
+                            headersTimeout: httpOpts.headersTimeoutMs,
+                            connectTimeout: httpOpts.connectTimeoutMs,
+                            bodyTimeout: httpOpts.responseTimeoutMs
                         })
                     });
                 }
