@@ -26,7 +26,6 @@ export class CustomerTracking {
                 const result = await process(event);
                 if (result.isErr()) {
                     report(new Error(`Failed to process customer tracking event: ${result.error}`), { event });
-                    return;
                 }
             }
         });
@@ -48,7 +47,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 return Ok(undefined);
             }
             default:
-                return Err(`Unknown customer tracking event type: ${event.type}`);
+                return Ok(undefined);
         }
     } catch (err) {
         return Err(`Error processing customer tracking event: ${stringifyError(err)}`);
