@@ -40,13 +40,14 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<GetOutput>) => {
         const longPollingTimeoutMs = res.locals.parsedQuery.longPolling || 120_000;
         const taskId = res.locals.parsedParams.taskId;
-        const eventId = taskEvents.taskCompleted(taskId);
+        const event = taskEvents.taskCompleted(taskId);
+
         const cleanupAndRespond = (respond: (res: EndpointResponse<GetOutput>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
             }
-            if (onCompletion) {
-                eventEmitter.removeListener(eventId, onCompletion);
+            if (onCompletion && event) {
+                eventEmitter.removeListener(event, onCompletion);
             }
             if (!res.writableEnded) {
                 respond(res);
@@ -64,14 +65,16 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(408).send({ error: { code: 'timeout', message: 'Long polling timeout' } }));
         }, longPollingTimeoutMs);
 
-        eventEmitter.once(eventId, onCompletion);
+        if (event) {
+            eventEmitter.once(event, onCompletion);
+        }
 
         const task = await scheduler.get({ taskId });
         if (task.isErr()) {
             cleanupAndRespond((res) => res.status(404).json({ error: { code: 'task_not_found', message: task.error.message } }));
             return;
         }
-        if (res.locals.parsedQuery.longPolling && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
+        if (event && res.locals.parsedQuery.longPolling && (task.value.state === 'CREATED' || task.value.state === 'STARTED')) {
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json({ state: task.value.state, output: task.value.output }));
