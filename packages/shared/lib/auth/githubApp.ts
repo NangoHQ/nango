@@ -68,13 +68,16 @@ export async function createCredentials({
                 connection.credentials['jwtToken'] = jwtToken;
             }
 
+            if ('jwtToken' in connection.credentials.raw) {
+                delete connection.credentials.raw['jwtToken'];
+            }
+
             return Ok({
                 type: 'APP',
                 access_token: connection.credentials['access_token'],
                 expires_at: connection.credentials['expires_at'],
-                raw: connection.credentials,
-                jwtToken,
-                app: connection.credentials
+                raw: connection.credentials.raw,
+                jwtToken
             });
         }
 

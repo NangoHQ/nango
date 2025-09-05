@@ -999,13 +999,13 @@ class ConnectionService {
             return Err(create.error);
         }
 
-        const { jwtToken, ...parsedRawCredentials } = create.value;
+        const { jwtToken } = create.value;
         connectionConfig['jwtToken'] = jwtToken;
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials,
+            parsedRawCredentials: create.value,
             connectionConfig,
             environmentId: integration.environment_id
         });
