@@ -1086,9 +1086,12 @@ export class Nango {
         const url = `${this.serverUrl}/connections/${connectionId}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            ...additionalHeader
+            'Content-Type': 'application/json'
         };
+
+        if (additionalHeader && Object.keys(additionalHeader).length > 0) {
+            Object.assign(headers, additionalHeader);
+        }
 
         const params: Record<string, string | boolean> = {
             provider_config_key: providerConfigKey,
