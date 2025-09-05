@@ -769,12 +769,14 @@ describe('Records service', () => {
             await upsertRecords({ records: recordsGen3, connectionId, environmentId, model, syncId, syncJobId: 3 });
 
             // Mark previous generations (1 and 2) as deleted
-            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
-                connectionId,
-                model,
-                syncId,
-                generation: 3
-            });
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    connectionId,
+                    model,
+                    syncId,
+                    generation: 3
+                })
+            ).unwrap();
 
             expect(deletedIds).toHaveLength(4);
             expect(deletedIds).toEqual(expect.arrayContaining(['1', '2', '3', '4']));
@@ -804,12 +806,14 @@ describe('Records service', () => {
             await upsertRecords({ records: [rec1], connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
 
             // Mark previous generation as deleted
-            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
-                connectionId,
-                model,
-                syncId,
-                generation: 3
-            });
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    connectionId,
+                    model,
+                    syncId,
+                    generation: 3
+                })
+            ).unwrap();
 
             // Only the non-deleted record should be marked as deleted
             expect(deletedIds).toEqual(['2']);
@@ -832,12 +836,14 @@ describe('Records service', () => {
             const otherModelRecords = [{ id: '3', name: 'Other Model Record' }];
             await upsertRecords({ records: otherModelRecords, connectionId, environmentId, model: otherModel, syncId, syncJobId: 1 });
 
-            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
-                connectionId,
-                model,
-                syncId,
-                generation: 2
-            });
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    connectionId,
+                    model,
+                    syncId,
+                    generation: 2
+                })
+            ).unwrap();
             expect(deletedIds).toEqual(['1']);
         });
 
@@ -851,13 +857,15 @@ describe('Records service', () => {
             const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
 
-            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
-                connectionId,
-                model,
-                syncId,
-                generation: 2,
-                batchSize: 3 // small batch size
-            });
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    connectionId,
+                    model,
+                    syncId,
+                    generation: 2,
+                    batchSize: 3 // small batch size
+                })
+            ).unwrap();
             expect(deletedIds).toHaveLength(count);
         });
 
@@ -878,12 +886,14 @@ describe('Records service', () => {
             const initialCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();
             expect(initialCounts[model]?.count).toBe(3);
 
-            const deletedIds = await Records.markPreviousGenerationRecordsAsDeleted({
-                connectionId,
-                model,
-                syncId,
-                generation: 2
-            });
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    connectionId,
+                    model,
+                    syncId,
+                    generation: 2
+                })
+            ).unwrap();
             expect(deletedIds).toHaveLength(3);
 
             const finalCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();

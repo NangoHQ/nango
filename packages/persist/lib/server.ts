@@ -5,8 +5,12 @@ import { createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import { logger } from './logger.js';
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { recordsPath } from './records.js';
-import { path as cursorPath, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
-import { path as getRecordsPath, routeHandler as getRecordsHandler } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
+import { route as getCursorRoute, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
+import { route as getRecordsRoute, routeHandler as getRecordsHandler } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
+import {
+    route as deleteOutdatedRecordsRoute,
+    routeHandler as deleteOutdatedRecordsHandler
+} from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteOutdatedRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
@@ -31,13 +35,15 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
 server.use('/environment/:environmentId/*splat', authMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
-server.use(cursorPath, express.json());
-server.use(getRecordsPath, express.json());
+server.use(getCursorRoute.path, express.json());
+server.use(getRecordsRoute.path, express.json());
+server.use(deleteOutdatedRecordsRoute.path, express.json());
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
 createRoute(server, postRecordsHandler);
 createRoute(server, deleteRecordsHandler);
+createRoute(server, deleteOutdatedRecordsHandler);
 createRoute(server, putRecordsHandler);
 createRoute(server, getCursorHandler);
 createRoute(server, getRecordsHandler);
