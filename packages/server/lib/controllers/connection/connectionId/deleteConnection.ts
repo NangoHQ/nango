@@ -5,7 +5,7 @@ import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { preConnectionDeletion } from '../../../hooks/connection/on/connection-deleted.js';
+import { preConnectionDeletion } from '../../../hooks/connection/on/pre-connection-deletion.js';
 import { slackService } from '../../../services/slack.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';

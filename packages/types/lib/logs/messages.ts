@@ -40,7 +40,7 @@ export interface OperationAction {
 
 export interface OperationOnEvents {
     type: 'events';
-    action: 'post_connection_creation' | 'pre_connection_deletion';
+    action: 'post_connection_creation' | 'pre_connection_deletion' | 'validate_connection';
 }
 
 // TODO: rename to OperationConnection
