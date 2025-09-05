@@ -22,7 +22,7 @@ type GetCursor = Endpoint<{
     Success: GetCursorSuccess;
 }>;
 
-export const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
+const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
 const method = 'GET';
 
 const validate = validateRequest<GetCursor>(getCursorRequestParser);

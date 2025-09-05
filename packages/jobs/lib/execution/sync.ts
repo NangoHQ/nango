@@ -291,12 +291,16 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
         for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
-                deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
+                const res = await records.deleteOutdatedRecords({
                     connectionId: nangoProps.nangoConnectionId,
                     model,
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                deletedKeys = res.value;
                 void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 

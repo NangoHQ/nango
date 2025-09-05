@@ -30,6 +30,10 @@ export interface DeleteRecordsSuccess {
     nextMerging: MergingStrategy;
 }
 
+export interface DeleteOutdatedRecordsSuccess {
+    deletedKeys: string[];
+}
+
 export interface GetCursorSuccess {
     cursor?: string;
 }

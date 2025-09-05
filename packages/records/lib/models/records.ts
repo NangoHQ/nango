@@ -673,7 +673,7 @@ export async function deleteRecordCount({ connectionId, environmentId, model }: 
 
 // Mark all non-deleted records from previous generations as deleted
 // returns the ids of records being deleted
-export async function markPreviousGenerationRecordsAsDeleted({
+export async function deleteOutdatedRecords({
     connectionId,
     model,
     syncId,
@@ -685,60 +685,68 @@ export async function markPreviousGenerationRecordsAsDeleted({
     syncId: string;
     generation: number;
     batchSize?: number;
-}): Promise<string[]> {
-    const now = db.fn.now(6);
-    return db.transaction(async (trx) => {
-        const deletedIds: string[] = [];
-        let hasMore = true;
-        while (hasMore) {
-            const res = await trx
-                .from<FormattedRecord>(RECORDS_TABLE)
-                .whereIn('id', function (sub) {
-                    sub.select('id')
-                        .from(RECORDS_TABLE)
-                        .where({
-                            connection_id: connectionId,
-                            model,
-                            sync_id: syncId,
-                            deleted_at: null
-                        })
-                        .where('sync_job_id', '<', generation)
-                        .limit(batchSize);
-                })
-                .update({
-                    deleted_at: now,
-                    updated_at: now,
-                    sync_job_id: generation
-                })
-                // records table is partitioned by connection_id and model
-                // to avoid table scan, we must always filter by connection_id and model
-                .where({
-                    connection_id: connectionId,
-                    model
-                })
-                .returning('external_id');
+}): Promise<Result<string[]>> {
+    try {
+        const now = db.fn.now(6);
+        return await db.transaction(async (trx) => {
+            const deletedIds: string[] = [];
+            let hasMore = true;
+            while (hasMore) {
+                const res = await trx
+                    .from<FormattedRecord>(RECORDS_TABLE)
+                    .whereIn('id', function (sub) {
+                        sub.select('id')
+                            .from(RECORDS_TABLE)
+                            .where({
+                                connection_id: connectionId,
+                                model,
+                                sync_id: syncId,
+                                deleted_at: null
+                            })
+                            .where('sync_job_id', '<', generation)
+                            .limit(batchSize);
+                    })
+                    .update({
+                        deleted_at: now,
+                        updated_at: now,
+                        sync_job_id: generation
+                    })
+                    // records table is partitioned by connection_id and model
+                    // to avoid table scan, we must always filter by connection_id and model
+                    .where({
+                        connection_id: connectionId,
+                        model
+                    })
+                    .returning('external_id');
 
-            if (res.length < batchSize) {
-                hasMore = false;
+                if (res.length < batchSize) {
+                    hasMore = false;
+                }
+
+                deletedIds.push(...res.map((r) => r.external_id));
             }
 
-            deletedIds.push(...res.map((r) => r.external_id));
-        }
-
-        // update records count
-        const count = deletedIds.length;
-        if (count > 0) {
-            await trx(RECORD_COUNTS_TABLE)
-                .where({
-                    connection_id: connectionId,
-                    model
-                })
-                .update({
-                    count: trx.raw('GREATEST(0, count - ?)', [count])
-                });
-        }
-        return deletedIds;
-    });
+            // update records count
+            const count = deletedIds.length;
+            if (count > 0) {
+                await trx(RECORD_COUNTS_TABLE)
+                    .where({
+                        connection_id: connectionId,
+                        model
+                    })
+                    .update({
+                        count: trx.raw('GREATEST(0, count - ?)', [count])
+                    });
+            }
+            return Ok(deletedIds);
+        });
+    } catch (err) {
+        const e = new Error(
+            `Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, syncId ${syncId}, generation ${generation}`,
+            { cause: err }
+        );
+        return Err(e);
+    }
 }
 
 /**
