@@ -67,6 +67,7 @@ import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchO
 import type { GetMeta } from './meta/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
+import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
 import type {
@@ -122,7 +123,8 @@ export type PublicApiEndpoints =
     | PostPublicSyncPause
     | GetPublicSyncStatus
     | GetPublicV1
-    | PostPublicTriggerAction;
+    | PostPublicTriggerAction
+    | AllPublicProxy;
 
 export type PrivateApiEndpoints =
     | PostSignup

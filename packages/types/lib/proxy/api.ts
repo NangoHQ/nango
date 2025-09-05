@@ -23,7 +23,7 @@ export interface BaseProxyConfiguration {
     files?: ProxyFile[]; // TODO: only allow this from the API
     headers?: Record<string, string>;
     params?: string | Record<string, string | number | string[] | number[]>;
-    baseUrlOverride?: string;
+    baseUrlOverride?: string | undefined;
     responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
