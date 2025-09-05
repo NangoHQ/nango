@@ -67,6 +67,7 @@ export type * from './runner/sdk.js';
 export type * from './plans/db.js';
 export type * from './plans/http.api.js';
 export type * from './stripe/http.api.js';
+export type * from './proxy/http.api.js';
 
 export type * from './nangoYaml/index.js';
 
