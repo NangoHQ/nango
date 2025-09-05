@@ -1,26 +1,23 @@
-import { OtlpSpan, defaultOperationExpiration } from '@nangohq/logs';
 import { NangoError, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { getOrchestrator } from '../../../utils/utils.js';
 
-import type { LogContextGetter } from '@nangohq/logs';
+import type { LogContext } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
-import type { DBConnection, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBConnection, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function validateConnection({
     connection,
     config,
-    environment,
     account,
-    logContextGetter
+    logCtx
 }: {
     config: Config;
     connection: DBConnection;
-    environment: DBEnvironment;
     account: DBTeam;
-    logContextGetter: LogContextGetter;
+    logCtx: LogContext;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
     if (!config.id) {
         return Ok({ tested: false });
@@ -35,20 +32,6 @@ export async function validateConnection({
 
     for (const script of validateConnectionScripts) {
         const { name, file_location: fileLocation, version } = script;
-
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'events', action: 'validate_connection' }, expiresAt: defaultOperationExpiration.action() },
-            {
-                account,
-                environment,
-                integration: { id: config.id, name: connection.provider_config_key, provider: config.provider },
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: script.id, name: script.name },
-                meta: { event }
-            }
-        );
-
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         const res = await getOrchestrator().triggerOnEventScript({
             accountId: account.id,

@@ -140,9 +140,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         const customValidationResponse = await validateConnection({
             connection: updatedConnection.connection,
             config,
-            environment,
             account,
-            logContextGetter
+            logCtx
         });
 
         if (customValidationResponse.isErr()) {
