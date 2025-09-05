@@ -59,6 +59,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
     const { environment, account } = res.locals;
 
+    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE, req.rawBody?.length || 0, { accountId: account.id });
+
     let logCtx: LogContext | undefined;
     const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
 
@@ -330,6 +332,8 @@ async function handleResponse({ res, responseStream, logCtx }: { res: Response; 
             void logCtx.error('Failed to parse JSON response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
+        } finally {
+            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE, responseLen, { accountId: logCtx.accountId });
         }
     });
 }
@@ -409,6 +413,9 @@ function handleErrorResponse({
                     // Intentionally left blank - errorData will be a string
                 }
             }
+
+            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE, data.length, { accountId: logCtx.accountId });
+
             void logCtx.error('Failed with this body', { body: errorData });
         });
     }

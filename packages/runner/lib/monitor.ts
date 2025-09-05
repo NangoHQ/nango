@@ -1,6 +1,8 @@
 import fs from 'fs';
 import os from 'os';
 
+import { metrics } from '@nangohq/utils';
+
 import { persistClient } from './clients/persist.js';
 import { envs } from './env.js';
 import { idle } from './idle.js';
@@ -8,6 +10,7 @@ import { logger } from './logger.js';
 
 import type { NangoProps } from '@nangohq/types';
 
+const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
     private tracked = new Map<number, { nangoProps: NangoProps; taskId: string }>();
@@ -16,12 +19,14 @@ export class RunnerMonitor {
     private lastMemoryReportDate: Date | null = null;
     private idleInterval: NodeJS.Timeout | null = null;
     private memoryInterval: NodeJS.Timeout | null = null;
+    private runnerAccountId: string | null = null;
 
     constructor({ runnerId }: { runnerId: number }) {
         this.runnerId = runnerId;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
+        this.runnerAccountId = envs.RUNNER_URL ? (regexRunnerUrl.exec(envs.RUNNER_URL)?.[2] ?? null) : null;
     }
 
     private onExit(): void {
@@ -65,6 +70,9 @@ export class RunnerMonitor {
             const rss = process.memoryUsage().rss;
             const total = getTotalMemoryInBytes();
             const memoryUsagePercentage = (rss / total) * 100;
+            if (this.runnerAccountId) {
+                metrics.gauge(metrics.Types.RUNNER_MEMORY_USAGE, memoryUsagePercentage, { accountId: this.runnerAccountId || 1 });
+            }
             if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage(memoryUsagePercentage);
             }
