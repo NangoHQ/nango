@@ -204,6 +204,7 @@ describe('PaginationService', () => {
             it('should handle undefined response data', async () => {
                 proxy.mockResolvedValueOnce({
                     data: {
+                        data: [],
                         pages: { next: null }
                     }
                 });
@@ -345,6 +346,54 @@ describe('PaginationService', () => {
                         endpoint: '/test'
                     })
                 );
+            });
+        });
+
+        describe('first-page validation', () => {
+            beforeEach(() => {
+                paginationConfig = {
+                    type: 'link',
+                    link_rel_in_response_header: 'next',
+                    response_path: 'data',
+                    limit_name_in_request: 'limit'
+                } as LinkPagination;
+            });
+
+            it('should throw if response_path is missing on first page', async () => {
+                proxy.mockResolvedValueOnce({
+                    headers: { link: undefined },
+                    data: {
+                        pagination: { next_url: null }
+                    }
+                });
+
+                const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
+                await expect(generator.next()).rejects.toThrow("Missing expected response_path 'data' on first page");
+            });
+
+            it('should throw if response_path resolves to non-array on first page', async () => {
+                proxy.mockResolvedValueOnce({
+                    headers: { link: undefined },
+                    data: {
+                        data: { id: 1 },
+                        pagination: { next_url: null }
+                    }
+                });
+
+                const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
+                await expect(generator.next()).rejects.toThrow("Expected an array at response_path 'data' on first page");
+            });
+
+            it('should throw if no response_path and response.data is not array', async () => {
+                const paginationConfigNoPath: any = { ...paginationConfig };
+                delete paginationConfigNoPath.response_path;
+                proxy.mockResolvedValueOnce({
+                    headers: { link: undefined },
+                    data: { message: 'not-an-array' }
+                });
+
+                const generator = PaginationService.link(config, paginationConfigNoPath, {}, false, proxy);
+                await expect(generator.next()).rejects.toThrow('Expected response.data to be an array on first page');
             });
         });
     });
