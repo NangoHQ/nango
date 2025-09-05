@@ -59,7 +59,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
     const { environment, account } = res.locals;
 
-    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE, req.rawBody?.length || 0, { accountId: account.id });
+    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     let logCtx: LogContext | undefined;
     const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
@@ -414,7 +414,7 @@ function handleErrorResponse({
                 }
             }
 
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE, data.length, { accountId: logCtx.accountId });
+            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
             void logCtx.error('Failed with this body', { body: errorData });
         });
