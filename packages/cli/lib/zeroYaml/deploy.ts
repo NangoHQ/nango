@@ -152,7 +152,7 @@ async function createPackage({
 
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
-    const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+    const singleDeployMode = Boolean(optionalSyncName || optionalActionName || optionalIntegrationId);
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
