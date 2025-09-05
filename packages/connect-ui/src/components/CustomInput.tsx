@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 
+import { useFormField } from './ui/form';
 import { cn } from '@/lib/utils';
 
 import type { ReactNode } from '@tanstack/react-router';
@@ -14,33 +15,35 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 // until shadcn provide before/after it's going to be custom
 const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type, prefix, suffix, fluid, ...props }, forwardedRef) => {
     const ref = useRef<HTMLInputElement>(null);
+    const { error } = useFormField();
 
     useImperativeHandle(forwardedRef, () => ref.current as HTMLInputElement);
 
     return (
         <div
             className={cn(
-                'relative flex items-center bg-transparent w-full rounded border text-sm h-10 overflow-hidden focus-within:ring-foreground focus-within:ring-1'
+                'relative flex items-center bg-surface-light dark:bg-surface-dark w-full rounded border border-elevated-light dark:border-elevated-dark text-sm h-9 px-3 py-1 overflow-hidden',
+                error ? 'border-red-700 dark:border-red-500' : ''
             )}
             onClick={() => {
                 ref.current?.focus();
             }}
         >
-            {prefix && <div className="h-10 px-2 pr-0.5 leading-10 text-text-muted">{prefix}</div>}
+            {prefix && <div className="text-secondary-light dark:text-secondary-dark">{prefix}</div>}
             <input
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-muted/10 disabled:cursor-not-allowed',
-                    'text-sm px-3 py-[10px] text-text-primary placeholder-text-muted/50',
+                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-primary-light/10 dark:disabled:text-primary-dark/10 disabled:cursor-not-allowed',
+                    'text-sm text-primary-light dark:text-primary-dark placeholder-text-secondary-light dark:placeholder-text-secondary-dark',
                     (fluid || suffix) && 'grow-0 [field-sizing:content] w-auto',
-                    prefix && 'pl-0.5',
-                    suffix && 'pr-0.5',
+                    prefix && 'pl-1',
+                    suffix && 'pr-1',
                     className
                 )}
                 type={type}
                 {...props}
             />
-            {suffix && <div className="h-10 px-2 pl-0.5 leading-10 text-text-muted">{suffix}</div>}
+            {suffix && <div className="text-secondary-light dark:text-secondary-dark">{suffix}</div>}
         </div>
     );
 });

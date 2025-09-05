@@ -9,10 +9,10 @@ import { telemetry } from '@/lib/telemetry';
 const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
     if (error instanceof APIError) {
         if (error.details.res.status === 401) {
-            return <div className="p-4 text-red-base text-center">Your session has expired, please refresh the modal</div>;
+            return <div className="p-4 text-red-500 dark:text-red-700 text-center">Your session has expired, please refresh the modal</div>;
         }
     }
-    return <div className="p-4 text-red-base text-center">An error occurred. Please refresh your page or contact our support.</div>;
+    return <div className="p-4 text-red-500 dark:text-red-700 text-center">An error occurred. Please refresh your page or contact our support.</div>;
 };
 
 export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
