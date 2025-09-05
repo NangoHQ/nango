@@ -109,7 +109,7 @@ export class Supervisor {
         while (this.state === 'running') {
             const res = await withPgLock({
                 db: this.dbClient.db,
-                lockKey: `fleet_supervisor`,
+                lockKey: envs.FLEET_SUPERVISOR_LOCK_KEY,
                 fn: async () => this.tick(),
                 timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
                 onTimeout: () => {

@@ -109,7 +109,7 @@ export class Fleet {
             if (!starting[0] && !pending[0]) {
                 await withPgLock({
                     db: this.dbClient.db,
-                    lockKey: `create_node_${routingId}`,
+                    lockKey: `fleet_${this.fleetId}_create_node_${routingId}`,
                     fn: async (trx): Promise<Result<Node>> => {
                         const deployment = await deployments.getActive(trx);
                         if (deployment.isErr()) {

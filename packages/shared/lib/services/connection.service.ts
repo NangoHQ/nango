@@ -1539,8 +1539,12 @@ class ConnectionService {
             >(
                 db.knex.raw(`_nango_environments.account_id as "accountId"`),
                 db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as "withActions"`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as "withSyncs"`),
+                db.knex.raw(
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withActions"`
+                ),
+                db.knex.raw(
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withSyncs"`
+                ),
                 db.knex.raw(
                     `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as "withWebhooks"`
                 )
@@ -1549,9 +1553,6 @@ class ConnectionService {
             .whereNull('_nango_sync_configs.deleted_at')
             .where(function () {
                 this.where('_nango_sync_configs.active', true).orWhereNull('_nango_sync_configs.active');
-            })
-            .where(function () {
-                this.where('_nango_sync_configs.enabled', true).orWhereNull('_nango_sync_configs.enabled');
             })
             .groupBy('_nango_environments.account_id');
 
