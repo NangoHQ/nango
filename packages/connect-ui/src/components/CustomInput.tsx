@@ -22,19 +22,19 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
     return (
         <div
             className={cn(
-                'relative flex items-center bg-surface-light dark:bg-surface-dark w-full rounded border border-elevated-light dark:border-elevated-dark text-sm h-9 px-3 py-1 overflow-hidden',
-                error ? 'border-red-700 dark:border-red-500' : ''
+                'relative flex items-center bg-surface w-full rounded border border-elevated text-sm h-9 px-3 py-1 overflow-hidden',
+                error ? 'border-error' : ''
             )}
             onClick={() => {
                 ref.current?.focus();
             }}
         >
-            {prefix && <div className="text-secondary-light dark:text-secondary-dark">{prefix}</div>}
+            {prefix && <div className="text-secondary">{prefix}</div>}
             <input
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-primary-light/10 dark:disabled:text-primary-dark/10 disabled:cursor-not-allowed',
-                    'text-sm text-primary-light dark:text-primary-dark placeholder-text-secondary-light dark:placeholder-text-secondary-dark',
+                    'bg-transparent border-0 h-full w-full rounded focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-primary/10 disabled:cursor-not-allowed',
+                    'text-sm text-primary placeholder-text-secondary',
                     (fluid || suffix) && 'grow-0 [field-sizing:content] w-auto',
                     prefix && 'pl-1',
                     suffix && 'pr-1',
@@ -43,7 +43,7 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 type={type}
                 {...props}
             />
-            {suffix && <div className="text-secondary-light dark:text-secondary-dark">{suffix}</div>}
+            {suffix && <div className="text-secondary">{suffix}</div>}
         </div>
     );
 });
