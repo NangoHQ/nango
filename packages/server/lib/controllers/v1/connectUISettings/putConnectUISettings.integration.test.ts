@@ -15,20 +15,20 @@ function getCustomSettings(): ConnectUISettings {
         showWatermark: false,
         theme: {
             light: {
-                background: '#eeeeee',
-                foreground: '#eeeeee',
+                backgroundSurface: '#eeeeee',
+                backgroundElevated: '#eeeeee',
                 primary: '#eeeeee',
-                primaryForeground: '#eeeeee',
+                onPrimary: '#eeeeee',
                 textPrimary: '#eeeeee',
-                textMuted: '#eeeeee'
+                textSecondary: '#eeeeee'
             },
             dark: {
-                background: '#111111',
-                foreground: '#111111',
+                backgroundSurface: '#111111',
+                backgroundElevated: '#111111',
                 primary: '#111111',
-                primaryForeground: '#111111',
+                onPrimary: '#111111',
                 textPrimary: '#111111',
-                textMuted: '#111111'
+                textSecondary: '#111111'
             }
         }
     };
@@ -113,20 +113,20 @@ describe(`PUT ${route}`, () => {
             showWatermark: false,
             theme: {
                 light: {
-                    background: '#dddddd',
-                    foreground: '#dddddd',
+                    backgroundSurface: '#dddddd',
+                    backgroundElevated: '#dddddd',
                     primary: '#dddddd',
-                    primaryForeground: '#dddddd',
+                    onPrimary: '#dddddd',
                     textPrimary: '#dddddd',
-                    textMuted: '#dddddd'
+                    textSecondary: '#dddddd'
                 },
                 dark: {
-                    background: '#222222',
-                    foreground: '#222222',
+                    backgroundSurface: '#222222',
+                    backgroundElevated: '#222222',
                     primary: '#222222',
-                    primaryForeground: '#222222',
+                    onPrimary: '#222222',
                     textPrimary: '#222222',
-                    textMuted: '#222222'
+                    textSecondary: '#222222'
                 }
             }
         };
@@ -188,20 +188,20 @@ describe(`PUT ${route}`, () => {
             // Missing showWatermark
             theme: {
                 light: {
-                    background: '#eeeeee',
-                    foreground: '#eeeeee',
+                    backgroundSurface: '#eeeeee',
+                    backgroundElevated: '#eeeeee',
                     primary: '#eeeeee',
-                    primaryForeground: '#eeeeee',
+                    onPrimary: '#eeeeee',
                     textPrimary: '#eeeeee'
                     // Missing textMuted
                 },
                 dark: {
                     // Missing textMuted
-                    foreground: '#111111',
+                    backgroundElevated: '#111111',
                     primary: '#111111',
-                    primaryForeground: '#111111',
+                    onPrimary: '#111111',
                     textPrimary: '#111111',
-                    textMuted: '#111111'
+                    textSecondary: '#111111'
                 }
             }
         } as ConnectUISettings;
