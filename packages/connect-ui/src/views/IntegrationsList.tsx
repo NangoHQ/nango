@@ -1,11 +1,12 @@
 /// <reference types="vite-plugin-svgr/client" />
-import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
+import { IconArrowRight, IconExclamationCircle } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffectOnce } from 'react-use';
 
+import NoIntegrationGif from '@/assets/no-integrations.gif';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { LoadingView } from '@/components/LoadingView';
@@ -15,7 +16,6 @@ import { triggerClose } from '@/lib/events';
 import { useI18n } from '@/lib/i18n';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
 
 import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
 
@@ -74,14 +74,10 @@ const Integrations: React.FC = () => {
     if (data.data.length <= 0) {
         return (
             <>
-                <header className="flex justify-end">
-                    <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX className="w-4 h-4 text-secondary" />
-                    </Button>
-                </header>
+                <HeaderButtons />
                 <main className="space-y-10">
                     <div className="flex flex-col items-center gap-5 w-full">
-                        <NoIntegrationSVG />
+                        <img alt="No integrations" className="w-[100px]" src={NoIntegrationGif} />
                         <h1 className="text-xl font-semibold text-primary">{t('integrationsList.noIntegrations')}</h1>
                     </div>
 
