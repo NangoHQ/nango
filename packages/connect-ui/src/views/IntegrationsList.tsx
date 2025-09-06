@@ -76,13 +76,13 @@ const Integrations: React.FC = () => {
             <>
                 <header className="flex justify-end">
                     <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX className="w-4 h-4 text-secondary-light dark:text-secondary-dark" />
+                        <IconX className="w-4 h-4 text-secondary" />
                     </Button>
                 </header>
                 <main className="space-y-10">
                     <div className="flex flex-col items-center gap-5 w-full">
                         <NoIntegrationSVG />
-                        <h1 className="text-xl font-semibold text-primary-light dark:text-primary-dark">{t('integrationsList.noIntegrations')}</h1>
+                        <h1 className="text-xl font-semibold text-primary">{t('integrationsList.noIntegrations')}</h1>
                     </div>
 
                     <Button className="w-full" title={t('common.close')} onClick={() => triggerClose('click:close')}>
@@ -102,8 +102,8 @@ const Integrations: React.FC = () => {
             <HeaderButtons />
             <main className="space-y-5">
                 <div className="space-y-5 text-center">
-                    <h1 className="font-semibold text-xl text-primary-light dark:text-primary-dark">{t('integrationsList.title')}</h1>
-                    <p className="text-secondary-light dark:text-secondary-dark">{t('integrationsList.description')}</p>
+                    <h1 className="font-semibold text-xl text-primary">{t('integrationsList.title')}</h1>
+                    <p className="text-secondary">{t('integrationsList.description')}</p>
                 </div>
                 <div className="flex flex-col">
                     {integrations.map((integration) => {
@@ -162,7 +162,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex justify-between items-center p-5 border-b border-b-gray-150 dark:border-b-gray-900 hover:bg-elevated-light dark:hover:bg-elevated-dark focus:bg-elevated-light dark:focus:bg-elevated-dark"
+            className="group flex justify-between items-center p-5 border-b border-b-elevated hover:bg-elevated focus:bg-elevated"
             role="button"
             tabIndex={0}
             title={connectToLabel}
@@ -172,14 +172,14 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
                 <div className="w-12 h-12 bg-white transition-colors rounded shadow-md p-1.5 group-hover:bg-dark-100">
                     <img src={integration.logo} />
                 </div>
-                <div className="text-primary-light dark:text-primary-dark">{integration.display_name}</div>
+                <div className="text-primary">{integration.display_name}</div>
                 {error && (
-                    <div className="border border-red-700 bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded gap-2">
+                    <div className="border border-error text-error flex items-center py-1 px-4 rounded gap-2">
                         <IconExclamationCircle size={17} stroke={1} /> {error}
                     </div>
                 )}
             </div>
-            <IconArrowRight className="w-5 h-5 text-secondary-light dark:text-secondary-dark group-hover:text-primary-light dark:group-hover:text-primary-dark" />
+            <IconArrowRight className="w-5 h-5 text-secondary group-hover:text-primary" />
         </div>
     );
 };

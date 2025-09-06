@@ -11,8 +11,6 @@ export const App: React.FC = () => {
     const languageParam = useSearchParam('lang');
     const language = getLanguage(languageParam);
 
-    document.documentElement.classList.add('dark');
-
     return (
         <QueryErrorResetBoundary>
             <QueryClientProvider client={queryClient}>

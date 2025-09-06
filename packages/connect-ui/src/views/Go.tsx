@@ -314,9 +314,9 @@ export const Go: React.FC = () => {
                                 <IconCircleCheckFilled className="w-full h-full text-green-600" />
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-primary-light dark:text-primary-dark">{t('go.success')}</h2>
+                        <h2 className="text-xl font-semibold text-primary">{t('go.success')}</h2>
                     </div>
-                    <p className="text-center text-secondary-light dark:text-secondary-dark">{t('go.successMessage', { provider: provider.name })}</p>
+                    <p className="text-center text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
                     <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                         {t('common.finish')}
                     </Button>
@@ -337,9 +337,9 @@ export const Go: React.FC = () => {
                                 <IconCircleXFilled className="w-full h-full text-red-700" />
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-primary-light dark:text-primary-dark">{t('go.connectionFailed')}</h2>
+                        <h2 className="text-xl font-semibold text-primary">{t('go.connectionFailed')}</h2>
                     </div>
-                    <p className="text-secondary-light dark:text-secondary-dark text-center">{error || t('go.tryAgain')}</p>
+                    <p className="text-secondary text-center">{error || t('go.tryAgain')}</p>
                     <Button
                         className="w-full"
                         loading={loading}
@@ -369,9 +369,7 @@ export const Go: React.FC = () => {
                     <div className="w-16 h-16 p-2 rounded-sm shadow-md bg-white">
                         <img src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-center text-xl text-primary-light dark:text-primary-dark">
-                        {t('go.linkAccount', { provider: displayName })}
-                    </h1>
+                    <h1 className="font-semibold text-center text-xl text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
                 <Form {...form}>
@@ -399,14 +397,11 @@ export const Go: React.FC = () => {
                                                     <FormItem className={cn(isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null)}>
                                                         <div className="space-y-2">
                                                             <div className="flex gap-2 items-center">
-                                                                <FormLabel className="text-xs font-semibold text-primary-light dark:text-primary-dark">
-                                                                    {definition?.title || base?.title}{' '}
-                                                                    {!isOptional && <span className="text-red-700 dark:text-red-500">*</span>}
+                                                                <FormLabel className="text-xs font-semibold text-primary">
+                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
-                                                                    <span className="bg-elevated-light dark:bg-elevated-dark rounded-lg px-2 py-0.5 text-xs text-text-muted">
-                                                                        optional
-                                                                    </span>
+                                                                    <span className="bg-elevated rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
                                                                 )}
                                                                 {docsConnectUrl && (
                                                                     <Link
@@ -414,14 +409,12 @@ export const Go: React.FC = () => {
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
                                                                     >
-                                                                        <IconInfoCircle className="w-4 h-4 text-secondary-light dark:text-secondary-dark" />
+                                                                        <IconInfoCircle className="w-4 h-4 text-secondary" />
                                                                     </Link>
                                                                 )}
                                                             </div>
                                                             {definition?.description && (
-                                                                <FormDescription className="text-secondary-light dark:text-secondary-dark">
-                                                                    {definition.description}
-                                                                </FormDescription>
+                                                                <FormDescription className="text-secondary">{definition.description}</FormDescription>
                                                             )}
                                                         </div>
                                                         <FormControl>
@@ -445,22 +438,16 @@ export const Go: React.FC = () => {
                         )}
 
                         {shouldAutoTrigger && (
-                            <div className="text-sm text-secondary-light dark:text-secondary-dark text-center">
+                            <div className="text-sm text-secondary text-center">
                                 {t('go.willConnect', { provider: displayName })}
                                 {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
                             </div>
                         )}
 
-                        {error && (
-                            <p className="text-sm text-secondary-light dark:text-secondary-dark text-center bg-elevated-light dark:bg-elevated-dark p-6 rounded-md">
-                                {error}
-                            </p>
-                        )}
+                        {error && <p className="text-sm text-secondary text-center bg-elevated p-6 rounded-md">{error}</p>}
 
                         {!error && shouldAutoTrigger && !form.formState.isValid && (
-                            <p className="text-sm text-secondary-light dark:text-secondary-dark text-center bg-elevated-light dark:bg-elevated-dark p-6 rounded-md">
-                                {t('go.invalidPreconfigured')}
-                            </p>
+                            <p className="text-sm text-secondary text-center bg-elevated p-6 rounded-md">{t('go.invalidPreconfigured')}</p>
                         )}
 
                         <Button
@@ -473,17 +460,12 @@ export const Go: React.FC = () => {
                         </Button>
 
                         {docsConnectUrl && (
-                            <p className="text-secondary-light dark:text-secondary-dark text-center">
+                            <p className="text-secondary text-center">
                                 {t('common.needHelp')}{' '}
-                                <Link
-                                    className="underline text-primary-light dark:text-primary-dark"
-                                    target="_blank"
-                                    to={docsConnectUrl}
-                                    onClick={() => telemetry('click:doc')}
-                                >
+                                <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
                                     {t('common.viewGuide')}
                                 </Link>{' '}
-                                <IconExternalLink className="inline-block w-3.5 h-3.5 text-secondary-light dark:text-secondary-dark" stroke={2} />
+                                <IconExternalLink className="inline-block w-3.5 h-3.5 text-secondary" stroke={2} />
                             </p>
                         )}
                     </form>
