@@ -23,7 +23,7 @@ const fr: Translation = {
         linkAccount: 'Lier le compte {provider}',
         connect: 'Connecter',
         success: 'Succès !',
-        successMessage: 'Vous avez configuré avec succès votre intégration {provider}',
+        successMessage: 'Vous avez configuré avec succès votre intégration {provider}.',
         connectionFailed: 'Échec de la connexion',
         tryAgain: 'Veuillez réessayer',
         backToList: 'Retour à la liste des intégrations',

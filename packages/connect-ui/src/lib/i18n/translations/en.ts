@@ -21,7 +21,7 @@ const en = {
         linkAccount: 'Link {provider} Account',
         connect: 'Connect',
         success: 'Success!',
-        successMessage: "You've successfully set up your {provider} integration",
+        successMessage: "You've successfully set up your {provider} integration.",
         connectionFailed: 'Connection failed',
         tryAgain: 'Please try again',
         backToList: 'Back to integrations list',

@@ -23,7 +23,7 @@ const es: Translation = {
         linkAccount: 'Vincular cuenta de {provider}',
         connect: 'Conectar',
         success: '¡Éxito!',
-        successMessage: 'Has configurado exitosamente tu integración con {provider}',
+        successMessage: 'Has configurado exitosamente tu integración con {provider}.',
         connectionFailed: 'Conexión fallida',
         tryAgain: 'Por favor, inténtalo de nuevo',
         backToList: 'Volver a la lista de integraciones',
