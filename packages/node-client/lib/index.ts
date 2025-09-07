@@ -273,7 +273,7 @@ export class Nango {
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
      * @param refreshToken - Optional. When set to true, this returns the refresh token as part of the response
-     * @param tokenName - Optional. Pass in a secondary token name to ensure the token is refreshed and is retrieved
+     * @param tokenName - Optional. Pass in a secondary jwtToken to ensure the token is refreshed and is retrieved
      * @returns A promise that resolves with a connection object
      */
     public async getConnection(
@@ -281,7 +281,7 @@ export class Nango {
         connectionId: string,
         forceRefresh?: boolean,
         refreshToken?: boolean,
-        tokenName?: string
+        tokenName?: 'jwtToken'
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshToken, tokenName });
         return response.data;
