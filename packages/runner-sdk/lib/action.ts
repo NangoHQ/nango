@@ -205,7 +205,11 @@ export abstract class NangoActionBase<
         return integration;
     }
 
-    public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string, tokenName?: string): Promise<GetPublicConnection['Success']> {
+    public async getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        tokenName?: 'jwtToken'
+    ): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
