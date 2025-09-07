@@ -2,7 +2,7 @@ import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
-import { accountService, connectionService, environmentService, getPlan, productTracking } from '@nangohq/shared';
+import { connectionService, getPlan } from '@nangohq/shared';
 import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
@@ -82,12 +82,6 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                     metric: 'connections',
                     delta: event.payload.value
                 });
-                if (typeof event.payload.properties['environmentId'] === 'number') {
-                    await notifyOnProdUsageThreshold({
-                        accountId: event.payload.properties.accountId,
-                        environmentId: event.payload.properties['environmentId']
-                    });
-                }
                 // No billing action for connections, just tracking usage
                 return Ok(undefined);
             }
@@ -122,29 +116,5 @@ async function trackUsage({ accountId, metric, delta }: { accountId: number; met
         });
     } catch (err) {
         report(new Error('Failed to track usage', { cause: err }), { accountId, metric, delta });
-    }
-}
-
-async function notifyOnProdUsageThreshold({ accountId, environmentId }: { accountId: number; environmentId: number }): Promise<void> {
-    const threshold = 3;
-    try {
-        const environment = await environmentService.getRawById(environmentId);
-
-        if (environment && environment.name === 'prod') {
-            const connections = await connectionService.countConnectionsByEnvironment({ environmentId });
-
-            if (connections === threshold) {
-                const team = await accountService.getAccountById(db.knex, accountId);
-                if (team) {
-                    productTracking.track({
-                        name: 'prod:connections:threshold_hit',
-                        team,
-                        userProperties: { connectionCount: threshold }
-                    });
-                }
-            }
-        }
-    } catch (err) {
-        report(new Error('Failed to notify on usage threshold', { cause: err }), { accountId });
     }
 }
