@@ -348,10 +348,16 @@ export class Nango {
      * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @param refreshGithubAppJwtToken - Optional. When set to true, this will refresh the JWT token for GitHub App / Github App OAuth connections
      * @returns A promise that resolves with the raw token response
      */
-    public async getRawTokenResponse<T = Record<string, any>>(providerConfigKey: string, connectionId: string, forceRefresh?: boolean): Promise<T> {
-        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh });
+    public async getRawTokenResponse<T = Record<string, any>>(
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh?: boolean,
+        refreshGithubAppJwtToken?: boolean
+    ): Promise<T> {
+        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
         const credentials = response.data.credentials as CredentialsCommon;
         return credentials.raw as T;
     }
