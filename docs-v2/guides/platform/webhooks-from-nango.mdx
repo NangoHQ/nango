@@ -1,0 +1,32 @@
+---
+title: 'Webhooks from Nango'
+sidebarTitle: 'Webhooks from Nango'
+description: 'Webhooks Nango sends to your backend'
+---
+
+Nango uses webhooks to notify your application of important events.
+
+<Info>
+    This page talks about webhooks Nango sends to your own application.
+    To process webhooks from external APIs, please read the [Webhooks](/guides/use-cases/webhooks) page.
+</Info>
+
+## Webhooks Configuration
+
+Each [environment](/guides/platform/environments) in Nango has its own webhook settings:
+- Which webhooks Nango sends to your application
+- Endpoints the webhooks are sent to
+
+Nango currently sends all webhooks to the same endpoint. You can configure up to two endpoints per environment that will receive webhooks.
+
+Failed webhook deliveries are retried several times, with exponential backoff. All webhook delivery attempts are logged in Nango's [logs](/guides/platform/logs).
+
+To receive webhooks from Nango in your app follow our [Webhooks from Nango implementation guide](/implementation-guides/platform/webhooks-from-nango).
+
+## Overview of Nango webhooks
+
+The most popular webhooks are:
+- New connection created: Sent whenever a new [connection](/guides/use-cases/api-auth#what-is-a-connection%3F) has been created in the environment
+- Sync execution finished: Sent whenever a [Sync](/guides/use-cases/syncs) execution finishes
+- Forwarded webhook: Sent when you instruct Nango to forward [Webhooks from an external API](/guides/use-cases/webhooks) to your app
+

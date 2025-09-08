@@ -1,0 +1,29 @@
+---
+title: 'Environments'
+sidebarTitle: 'Environments'
+description: 'Organize your integrations & data with environments'
+---
+
+Environments help you segment your integrations configuration and customer data.
+
+## How environments work in Nango
+
+Environments in your Nango account are completely separated.
+
+Each environment contains its own:
+- Integrations configuration
+- Version of your [Syncs](/guides/use-cases/syncs), [Actions](/guides/use-cases/actions), etc.
+- [Connections](/guides/use-cases/api-auth#what-is-a-connection%3F)
+- Environment settings
+
+We recommend that your environments in Nango reflect the environments of your application. For example, if you have a local development environment, a staging environment, a demo environment, and a production environment, we recommend you have the same four environments in your Nango account.
+
+When you deploy a new version of your [Functions](/guides/platform/functions), you always deploy them to a specific environment.
+
+All users in your account can currently access all environments. Any changes you make to them are visible to all team members. We plan to add RBAC functionality, and may introduce team-member specific environments in the future.
+
+## Additional environments
+
+By default, each Nango account has a "dev" and a "prod" environment.
+
+Depending on your [pricing plan](https://www.nango.dev/pricing), you may be able to create additional environments.

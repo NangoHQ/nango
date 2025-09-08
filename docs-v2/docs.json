@@ -25,6 +25,13 @@
       "claude"
     ]
   },
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Nango Docs"
+    }
+  },
   "navigation": {
     "anchors": [
       {
@@ -34,11 +41,63 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/intro-to-nango",
+              "getting-started/our-approach-to-integrations",
               {
                 "group": "Quickstart",
                 "pages": [
                   "getting-started/quickstart/access-an-api",
                   "getting-started/quickstart/embed-in-your-app"
+                ]
+              },
+              "getting-started/sample-app"
+            ]
+          },
+          {
+            "group": "Use Cases",
+            "pages": [
+              "guides/use-cases/api-auth",
+              "guides/use-cases/syncs",
+              "guides/use-cases/actions",
+              "guides/use-cases/webhooks",
+              "guides/use-cases/mcp-server",
+              "guides/use-cases/proxy"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "guides/platform/ai-generated-integrations",
+              "guides/platform/unified-apis",
+              "guides/platform/customer-configuration",
+              "guides/platform/functions",
+              "guides/platform/lifecycle-events",
+              "guides/platform/webhooks-from-nango",
+              "guides/platform/data-validation",
+              "guides/platform/logs",
+              "guides/platform/environments",
+              "guides/platform/resource-limits",
+              {
+                "group": "Self-hosting",
+                "pages": [
+                  "guides/self-hosting/infrastructure",
+                  {
+                    "group": "Enterprise self-hosting",
+                    "pages": [
+                      "guides/self-hosting/enterprise-self-hosting/overview",
+                      "guides/self-hosting/enterprise-self-hosting/ecs"
+                    ]
+                  },
+                  {
+                    "group": "Free self-hosting",
+                    "pages": [
+                      "guides/self-hosting/free-self-hosting/overview",
+                      "guides/self-hosting/free-self-hosting/configuration",
+                      "guides/self-hosting/free-self-hosting/locally",
+                      "guides/self-hosting/free-self-hosting/aws",
+                      "guides/self-hosting/free-self-hosting/gcp",
+                      "guides/self-hosting/free-self-hosting/digital-ocean"
+                    ]
+                  }
                 ]
               }
             ]
@@ -46,7 +105,6 @@
           {
             "group": "Advanced Guides & Resources",
             "pages": [
-              "getting-started/sample-app",
               {
                 "group": "API authorization",
                 "pages": [
@@ -153,6 +211,49 @@
                   }
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "anchor": "Implementation Guides",
+        "icon": "pen",
+        "groups": [
+          { 
+            "group": "API Auth",
+            "pages": [
+              "implementation-guides/api-auth/configure-integration",
+              "implementation-guides/api-auth/implement-api-auth",
+              "implementation-guides/api-auth/customize-connect-ui"
+            ]
+          },
+          { 
+            "group": "Syncs",
+            "pages": [
+              "implementation-guides/syncs/deletion-detection"
+            ]
+          },
+          {
+            "group": "Actions",
+            "pages": [
+              "implementation-guides/actions/async-actions"
+            ]
+          },
+          {
+            "group": "Building integrations",
+            "pages": [
+              "implementation-guides/building-integrations/best-practices/unified-apis",
+              "implementation-guides/building-integrations/best-practices/rate-limits",
+              "implementation-guides/building-integrations/best-practices/customer-configuration",
+              "implementation-guides/building-integrations/data-validation"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "implementation-guides/platform/webhooks-from-nango",
+              "implementation-guides/platform/contribute-new-api",
+              "implementation-guides/platform/open-telemetry-logs-export"
             ]
           }
         ]
@@ -850,11 +951,6 @@
             ]
           }
         ]
-      },
-      {
-        "anchor": "Community",
-        "href": "https://nango.dev/slack",
-        "icon": "slack"
       }
     ]
   },
