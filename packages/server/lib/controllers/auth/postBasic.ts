@@ -10,7 +10,7 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -174,7 +174,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -188,7 +188,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 account,
                 auth_mode: 'BASIC',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

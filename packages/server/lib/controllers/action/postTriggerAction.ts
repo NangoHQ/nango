@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorManager, getSyncConfigRaw, productTracking } from '@nangohq/shared';
-import { getHeaders, isCloud, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { pubsub } from '../../pubsub.js';
@@ -48,9 +48,11 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
         return;
     }
 
+    const { account, environment, plan } = res.locals;
+    metrics.increment(metrics.Types.ACTION_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
+
     await tracer.trace<Promise<void>>('server.sync.triggerAction', async (span) => {
         const { input, action_name }: PostPublicTriggerAction['Body'] = valBody.data;
-        const { account, environment, plan } = res.locals;
 
         const environmentId = environment.id;
         const headers: PostPublicTriggerAction['Headers'] = valHeaders.data;

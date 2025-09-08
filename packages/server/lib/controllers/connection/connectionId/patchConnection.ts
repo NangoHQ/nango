@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { configService, connectionService, linkConnection, upsertEndUser } from '@nangohq/shared';
+import { EndUserMapper, configService, connectionService, linkConnection, upsertEndUser } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -62,13 +62,13 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
 
     if (body.end_user) {
         await db.knex.transaction(async (trx) => {
-            const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user! });
+            const endUserRes = await upsertEndUser(trx, { account, environment, connection, endUser: EndUserMapper.apiToEndUser(body.end_user!) });
             if (endUserRes.isErr()) {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                 return;
             }
 
-            if (!connection.end_user_id || endUserRes.value.id !== connection.end_user_id) {
+            if (!connection.end_user_id) {
                 await linkConnection(trx, { endUserId: endUserRes.value.id, connection });
             }
         });

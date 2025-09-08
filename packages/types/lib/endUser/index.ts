@@ -39,3 +39,5 @@ export interface ApiEndUser {
         display_name: string | null;
     } | null;
 }
+
+export type InternalEndUser = Omit<EndUser, 'id' | 'accountId' | 'environmentId' | 'createdAt' | 'updatedAt'>;
