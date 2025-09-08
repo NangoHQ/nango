@@ -90,7 +90,7 @@ const Integrations: React.FC = () => {
     }
 
     if (isSingleIntegration) {
-        return;
+        return <LoadingView />;
     }
 
     return (
