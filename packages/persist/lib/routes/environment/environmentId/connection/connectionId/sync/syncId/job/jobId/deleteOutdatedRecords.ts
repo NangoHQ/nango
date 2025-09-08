@@ -61,6 +61,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
     });
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     if (result.isOk()) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         void logCtx.info(`${model}: "Deleted ${result.value} outdated records for model ${model}"`);
         res.status(200).json({ deletedKeys: result.value });
     } else {

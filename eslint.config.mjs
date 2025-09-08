@@ -149,7 +149,6 @@ export default tseslint.config(
                 {
                     allowNumber: true,
                     allowBoolean: true,
-                    allowArray: true,
                     allowNever: true
                 }
             ],
