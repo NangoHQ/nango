@@ -357,7 +357,11 @@ export declare class NangoAction {
      * Get current integration
      */
     getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']>;
-    getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
+    getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
+    ): Promise<GetPublicConnection['Success']>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     /**
