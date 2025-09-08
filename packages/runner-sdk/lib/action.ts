@@ -208,7 +208,7 @@ export abstract class NangoActionBase<
     public async getConnection(
         providerConfigKeyOverride?: string,
         connectionIdOverride?: string,
-        refreshGithubAppJwtToken?: boolean
+        options: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean } = {}
     ): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
@@ -216,15 +216,28 @@ export abstract class NangoActionBase<
         const connectionId = connectionIdOverride || this.connectionId;
 
         const credentialsPair = `${providerConfigKey}${connectionId}`;
-        const cachedConnection = this.memoizedConnections.get(credentialsPair);
+        const cached = this.memoizedConnections.get(credentialsPair);
 
-        if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey, connectionId, false, false, refreshGithubAppJwtToken);
+        const shouldRefresh =
+            options.forceRefresh ||
+            options.refreshToken ||
+            options.refreshGithubAppJwtToken ||
+            !cached ||
+            Date.now() - cached.timestamp > MEMOIZED_CONNECTION_TTL;
+
+        if (shouldRefresh) {
+            const connection = await this.nango.getConnection(
+                providerConfigKey,
+                connectionId,
+                options.forceRefresh ?? false,
+                options.refreshToken ?? false,
+                options.refreshGithubAppJwtToken ?? false
+            );
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
 
-        return cachedConnection.connection;
+        return cached.connection;
     }
 
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
