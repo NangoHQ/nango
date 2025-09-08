@@ -96,4 +96,16 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     can_override_docs_connect_url: boolean;
+
+    /**
+     * Enable or disable the ability to customize the connect UI theme
+     * @default false
+     */
+    can_customize_connect_ui_theme: boolean;
+
+    /**
+     * Enable or disable the ability to disable the connect UI watermark
+     * @default false
+     */
+    can_disable_connect_ui_watermark: boolean;
 }

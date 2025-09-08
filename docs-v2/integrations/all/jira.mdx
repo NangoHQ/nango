@@ -78,35 +78,24 @@ description: 'Access the Jira API in 2 minutes 💨'
       <Step title="Configure OAuth 2.0 (3LO)">
         1. In the left sidebar, select **Authorization**.
         2. Next to OAuth 2.0 (3LO), click **Add**.
-        3. Enter `https://api.nango.dev/oauth/callback` as the Callback URL.
-        4. Click **Save** to save your changes.
+        3. Enter `https://api.nango.dev/oauth/callback` as the **Callback URL**.
+        4. Click **Save Changes** to save your changes.
       </Step>
       <Step title="Add API permissions">
         1. In the left sidebar, select **Permissions**.
         2. Find the Jira API and click **Add**, and then click **Configure**.
-        3. Click **Edit Scopes** then select the scopes your application requires. Common scopes include:
-           - `read:jira-user` - Read user information
-           - `read:jira-work` - Read issues, projects, and workflows
-           - `write:jira-work` - Create and update issues
-           - `delete:jira-work` - Delete issues
-           - `manage:jira-project` - Manage project settings
-           - `manage:jira-configuration` - Manage Jira instance settings
-           - `offline_access` - Get refresh tokens (required for long-term access)
+        3. Click **Edit Scopes** then select the [scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#scopes) your application requires. For reference, see our [Common Scopes](#common-scopes) table below.
         4. Click **Save** to save your changes.
       </Step>
       <Step title="Obtain your client credentials">
         1. In the left sidebar, select **Settings**.
         2. Note your **Client ID**.
-        3. Copy both the Client ID and Secret by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
+        3. Copy both the **Client ID** and **Secret** by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
       </Step>
-      <Step title="Make your app available to users (optional)">
-        If you want to distribute your app to other users:
-
+      <Step title="Make your app available to users">
         1. In the left sidebar, select **Distribution**.
-        2. In **Distribution controls**, click the **Edit** button, then select the **Sharing** radio button.
-        3. Return to the Authorization page and copy the Authorization URL to share with your users.
-
-        Note: By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.
+        2. In **Distribution controls**, click the **Edit** button, select the **Sharing** radio button, enter a **Privacy Policy URL** and then click the **Save changes** button.
+       <Note>By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.</Note>
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
@@ -120,6 +109,9 @@ description: 'Access the Jira API in 2 minutes 💨'
     | read:jira-user | Read user information |
     | read:jira-work | Read Jira work items (issues, projects, etc.) |
     | write:jira-work | Create and update Jira work items |
+    | delete:jira-work |  Delete issues |
+    | manage:jira-project |  Manage project settings |
+    | manage:jira-configuration |  Manage Jira instance settings |
     | offline_access | Access to refresh tokens for offline access |
 
   </Tab>
@@ -142,8 +134,8 @@ description: 'Access the Jira API in 2 minutes 💨'
   <Tab title="🚨 API gotchas">
     - Refreshing tokens require the `offline_access` scope when creating the integration on the Nango UI.
     - When connecting to Jira, you have two options for specifying which Jira site to connect to:
-      1. Provide a `baseUrl` during connection creation (recommended)
-      2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
+      1. Provide a `Subdomain` during connection creation (recommended)
+      2. Let Nango auto-select the first available site (legacy behavior): If no `Subdomain` is specified, Nango will use the first site from the accessible resources api.
 
     ```ts
     const response = await nango.get({
@@ -153,22 +145,16 @@ description: 'Access the Jira API in 2 minutes 💨'
     const cloudId = response.data[0].id;
     ```
 
-    - A single Jira OAuth token can be valid for multiple Atlassian sites. For example, the same token might grant access to both "nango-hq.atlassian.net" and "nango-test.atlassian.net". This is why specifying the `baseUrl` during connection creation is important if you need to connect to a specific site.
+    - A single Jira OAuth token can be valid for multiple Atlassian sites. For example, the same token might grant access to both "nango-hq.atlassian.net" and "nango-test.atlassian.net". This is why specifying the `Subdomain` during connection creation is important if you need to connect to a specific site.
 
     - The connection process works as follows:
       1. Nango fetches all accessible sites for the OAuth token
-      2. If you specified a `domain`, Nango finds the matching site and sets its `cloudId`
-      3. If no `domain` is specified, Nango uses the first available site
-      4. The selected site's `cloudId` and `domain` are stored in the connection configuration
-    - The `cloudId` is required for making API requests to the Jira API v3. Nango handles this automatically by matching it to your specified `baseUrl` or selecting the first available site. Your API URLs will be constructed as: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
-
-    You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
-
+      2. If you specified a `Subdomain`, Nango finds the matching site and sets its `cloudId`
+      3. If no `Subdomain` is specified, Nango uses the first available site and sets its `cloudId`
+      4. The selected site's `cloudId` and `subdomain` are stored in the connection configuration
+    - The `cloudId` is required to make API requests to the Jira API `v3`. Nango handles getting this automatically by matching it to your specified `subdomain` if provided, or by selecting the first available site if it is not. You will then need to construct your Nango integration's `endpoint` as follows: `/ex/jira/${cloudId}/rest/api/3/<endpoint>`
     - When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
     - Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
-    - Nango also supports `BASIC` auth for REST APIs in Jira. To use this feature, provide your `email` as the username and your `api_token` as the password. To generate an `api_token`, please refer to the [Manage Atlassian API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) section
-    - The `state` parameter is required for security in the OAuth flow to prevent CSRF attacks. Nango handles this automatically.
-    - Jira's OAuth implementation uses rotating refresh tokens. Each time you refresh an access token, you'll receive a new refresh token that invalidates the previous one.
     - When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
     - The Jira REST API has different versions (v2 and v3). Make sure you're using the correct version for your needs.
 

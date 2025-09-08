@@ -17,6 +17,9 @@ export type * from './user/api.js';
 export type * from './user/db.js';
 export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
+export type * from './connectUISettings/dto.js';
+export type * from './connectUISettings/db.js';
+export type * from './connectUISettings/api.js';
 export type * from './meta/api.js';
 export type * from './invitations/api.js';
 export type * from './invitations/db.js';
@@ -64,6 +67,7 @@ export type * from './runner/sdk.js';
 export type * from './plans/db.js';
 export type * from './plans/http.api.js';
 export type * from './stripe/http.api.js';
+export type * from './proxy/http.api.js';
 
 export type * from './nangoYaml/index.js';
 

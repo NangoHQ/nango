@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import * as endUserService from '@nangohq/shared';
-import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUISettingsService } from '@nangohq/shared';
+import { report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -41,6 +42,17 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         return;
     }
 
+    const connectUISettingsResult = await connectUISettingsService.getConnectUISettings(db.knex, environment.id);
+    if (connectUISettingsResult.isErr()) {
+        // Not critical - report, but don't fail
+        report(connectUISettingsResult.error);
+    }
+
+    let connectUISettings = connectUISettingsService.defaultConnectUISettings;
+    if (connectUISettingsResult.isOk() && connectUISettingsResult.value) {
+        connectUISettings = connectUISettingsResult.value;
+    }
+
     const data: GetConnectSession['Success']['data'] = {
         endUser: {
             id: endUser.endUserId,
@@ -53,7 +65,8 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
                       display_name: endUser.organization.displayName || null
                   }
                 : null
-        }
+        },
+        connectUISettings
     };
     if (connectSession.allowedIntegrations) {
         data.allowed_integrations = connectSession.allowedIntegrations;

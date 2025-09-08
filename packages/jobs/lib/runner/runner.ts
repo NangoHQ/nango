@@ -20,7 +20,16 @@ export interface Runner {
     url: string;
 }
 
+export const runnerHttpOpts = {
+    headersTimeoutMs: envs.RUNNER_CLIENT_HEADERS_TIMEOUT_MS,
+    connectTimeoutMs: envs.RUNNER_CLIENT_CONNECT_TIMEOUT_MS,
+    responseTimeoutMs: envs.RUNNER_CLIENT_RESPONSE_TIMEOUT_MS
+};
+
 function getRunnerId(suffix: string): string {
+    if (envs.RUNNER_TYPE === 'KUBERNETES') {
+        suffix = `${suffix}-k8s`;
+    }
     return `${env}-runner-account-${suffix}`;
 }
 

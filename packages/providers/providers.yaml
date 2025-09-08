@@ -285,6 +285,9 @@ aircall-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.aircall.io
+        retry:
+            at:
+                - 'x-aircallapi-reset'
         verification:
             method: GET
             endpoints:
@@ -5771,6 +5774,25 @@ holded:
             title: API Key
             description: The API key for your Holded account
 
+hover:
+    display_name: Hover
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://hover.to/oauth/authorize
+    token_url: https://hover.to/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.hover.to
+    docs: https://docs.nango.dev/integrations/all/hover
+
 hubspot:
     display_name: HubSpot
     categories:
@@ -8347,6 +8369,27 @@ paypal-sandbox:
         base_url: https://api-m.sandbox.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal-sandbox
 
+pax8:
+    display_name: Pax8
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.pax8.com/v1/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience} || https://api.pax8.com
+    proxy:
+        base_url: https://api.pax8.com
+    docs: https://docs.nango.dev/integrations/all/pax8
+    docs_connect: https://docs.nango.dev/integrations/all/pax8/connect
+    connection_config:
+        audience:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 pendo:
     display_name: Pendo
     categories:
@@ -10092,6 +10135,27 @@ servicenow:
             example: domain
             suffix: .service-now.com
             prefix: https://
+
+skio:
+    display_name: Skio
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: API ${apiKey}
+        base_url: https://graphql.skio.com
+    credentials_verification_script: skioCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/skio
+    docs_connect: https://docs.nango.dev/integrations/all/skio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Skio account
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-generating-your-api-key'
 
 sharepoint-online:
     display_name: SharePoint Online (v2)

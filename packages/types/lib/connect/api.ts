@@ -1,4 +1,5 @@
 import type { Endpoint } from '../api.js';
+import type { ConnectUISettings } from '../connectUISettings/dto.js';
 import type { ApiEndUser } from '../endUser/index.js';
 
 export interface ConnectSessionInput {
@@ -38,6 +39,7 @@ export interface EndUserInput {
 export type ConnectSessionOutput = Omit<ConnectSessionInput, 'end_user' | 'organization'> & {
     endUser: ApiEndUser;
     isReconnecting?: boolean;
+    connectUISettings: ConnectUISettings;
 };
 
 export type PostConnectSessions = Endpoint<{
