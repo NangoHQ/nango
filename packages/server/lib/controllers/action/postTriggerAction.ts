@@ -49,7 +49,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
     }
 
     const { account, environment, plan } = res.locals;
-    metrics.increment(metrics.Types.ACTION_INCOMING_PAYLOAD_SIZE, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
+    metrics.increment(metrics.Types.ACTION_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     await tracer.trace<Promise<void>>('server.sync.triggerAction', async (span) => {
         const { input, action_name }: PostPublicTriggerAction['Body'] = valBody.data;

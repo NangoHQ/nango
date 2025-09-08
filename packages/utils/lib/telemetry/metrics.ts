@@ -5,7 +5,7 @@ export enum Types {
     ACTION_SUCCESS = 'nango.orch.action.success',
     ACTION_FAILURE = 'nango.orch.action.failure',
     ACTION_TRACK_RUNTIME = 'action_track_runtime',
-    ACTION_INCOMING_PAYLOAD_SIZE = 'nango.action.incoming.payload.size',
+    ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
@@ -44,8 +44,8 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_INCOMING_PAYLOAD_SIZE = 'nango.server.proxy.incoming.payload.size',
-    PROXY_OUTGOING_PAYLOAD_SIZE = 'nango.server.proxy.outgoing.payload.size',
+    PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
+    PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
 
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
@@ -75,7 +75,7 @@ export enum Types {
     WEBHOOK_OUTGOING_FAILED = 'nango.webhook.outgoing.failed',
     WEBHOOK_ASYNC_ACTION_SUCCESS = 'nango.webhook.async_action.success',
     WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
-    WEBHOOK_INCOMING_PAYLOAD_SIZE = 'nango.webhook.incoming.payload.size',
+    WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
@@ -101,7 +101,7 @@ export enum Types {
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
-    DEPLOY_INCOMING_PAYLOAD_SIZE = 'nango.server.deploy.incoming.payload.size'
+    DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

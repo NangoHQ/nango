@@ -71,7 +71,7 @@ export class RunnerMonitor {
             const total = getTotalMemoryInBytes();
             const memoryUsagePercentage = (rss / total) * 100;
             if (this.runnerAccountId) {
-                metrics.gauge(metrics.Types.RUNNER_MEMORY_USAGE, memoryUsagePercentage, { accountId: this.runnerAccountId || 1 });
+                metrics.gauge(metrics.Types.RUNNER_MEMORY_USAGE, memoryUsagePercentage, { accountId: this.runnerAccountId });
             }
             if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage(memoryUsagePercentage);
