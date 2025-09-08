@@ -841,11 +841,11 @@ paths:
                   description: If true, return the refresh token as part of the response (false by default).
                   schema:
                       type: boolean
-                - name: token_name
+                - name: refresh_github_app_jwt_token
                   in: query
-                  description: If provided, ensures a secondary token is refreshed and returned
+                  description: If true, this will refresh the JWT token for GitHub App / Github App OAuth connections
                   schema:
-                      type: string
+                      type: boolean
             responses:
                 '200':
                     description: Successfully returned a connection

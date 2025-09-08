@@ -208,7 +208,7 @@ export abstract class NangoActionBase<
     public async getConnection(
         providerConfigKeyOverride?: string,
         connectionIdOverride?: string,
-        tokenName?: 'jwtToken'
+        refreshGithubAppJwtToken?: boolean
     ): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
@@ -219,7 +219,7 @@ export abstract class NangoActionBase<
         const cachedConnection = this.memoizedConnections.get(credentialsPair);
 
         if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey, connectionId, false, false, tokenName);
+            const connection = await this.nango.getConnection(providerConfigKey, connectionId, false, false, refreshGithubAppJwtToken);
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }

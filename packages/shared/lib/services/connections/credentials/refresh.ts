@@ -57,7 +57,7 @@ interface RefreshProps {
               logCtx: LogContextStateless;
           }) => Promise<Result<{ tested: boolean }, NangoError>>)
         | undefined;
-    specifiedTokenName?: string | undefined;
+    refreshGithubAppJwtToken?: boolean;
 }
 
 const logger = getLogger('connectionRefresh');
@@ -169,7 +169,7 @@ async function refreshCredentials(
         logContextGetter,
         onRefreshFailed,
         onRefreshSuccess,
-        specifiedTokenName
+        refreshGithubAppJwtToken
     }: RefreshProps,
     provider: RefreshableProvider
 ): Promise<Result<DBConnectionDecrypted, NangoError>> {
@@ -182,7 +182,7 @@ async function refreshCredentials(
         environment_id: environment.id,
         instantRefresh,
         logCtx: logsBuffer,
-        specifiedTokenName
+        refreshGithubAppJwtToken
     });
 
     if (refreshRes.isErr()) {
@@ -329,7 +329,7 @@ export async function refreshCredentialsIfNeeded({
     environment_id,
     instantRefresh = false,
     logCtx,
-    specifiedTokenName
+    refreshGithubAppJwtToken
 }: {
     connectionId: string;
     environmentId: number;
@@ -338,7 +338,7 @@ export async function refreshCredentialsIfNeeded({
     environment_id: number;
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
-    specifiedTokenName?: string | undefined;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
     const locking = await getLocking();
@@ -361,7 +361,7 @@ export async function refreshCredentialsIfNeeded({
             providerConfig,
             provider,
             instantRefresh,
-            specifiedTokenName
+            refreshGithubAppJwtToken
         });
 
         return {
@@ -414,7 +414,7 @@ export async function refreshCredentialsIfNeeded({
             success,
             error,
             response: newCredentials
-        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, specifiedTokenName });
+        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
         if (!success || !newCredentials) {
             return Err(error!);
         }
@@ -431,7 +431,7 @@ export async function refreshCredentialsIfNeeded({
             connectionToRefresh.credentials = newCredentials;
         }
 
-        if (specifiedTokenName && specifiedTokenName === 'jwtToken') {
+        if (refreshGithubAppJwtToken) {
             if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
                 connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
             }
@@ -477,18 +477,18 @@ export async function shouldRefreshCredentials({
     providerConfig,
     provider,
     instantRefresh,
-    specifiedTokenName
+    refreshGithubAppJwtToken
 }: {
     connection: DBConnectionDecrypted;
     credentials: RefreshableCredentials;
     providerConfig: ProviderConfig;
     provider: RefreshableProvider;
     instantRefresh: boolean;
-    specifiedTokenName?: string | undefined;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<{ should: boolean; reason: string }> {
-    if (specifiedTokenName) {
-        if (connection.connection_config[specifiedTokenName]) {
-            const tokenValue = connection.connection_config[specifiedTokenName];
+    if (refreshGithubAppJwtToken && (providerConfig.provider === 'github-app' || providerConfig.provider === 'github-app-oauth')) {
+        if (connection.connection_config['jwtToken']) {
+            const tokenValue = connection.connection_config['jwtToken'];
             const decodedValue = decodeJwt(tokenValue);
             if (decodedValue && decodedValue['exp']) {
                 const exp = new Date(decodedValue['exp'] * 1000);

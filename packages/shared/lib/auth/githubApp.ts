@@ -15,13 +15,13 @@ export async function createCredentials({
     provider,
     integration,
     connectionConfig,
-    specifiedTokenName
+    refreshGithubAppJwtToken
 }: {
     connection?: DBConnectionDecrypted;
     provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
-    specifiedTokenName?: string | undefined;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
@@ -52,7 +52,7 @@ export async function createCredentials({
             connection.credentials &&
             'expires_at' in connection.credentials &&
             'access_token' in connection.credentials &&
-            specifiedTokenName === 'jwtToken'
+            refreshGithubAppJwtToken
         ) {
             const createdJwtToken = jwtClient.fetchJwtToken({
                 privateKey,

@@ -16,7 +16,7 @@ const queryStringValidation = z
         provider_config_key: providerConfigKeySchema,
         refresh_token: z.stringbool().optional().default(false),
         force_refresh: z.stringbool().optional().default(false),
-        token_name: z.string().optional()
+        refresh_github_app_jwt_token: z.stringbool().optional().default(false)
     })
     .strict();
 
@@ -48,7 +48,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         provider_config_key: providerConfigKey,
         force_refresh: instantRefresh,
         refresh_token: returnRefreshToken,
-        token_name: specifiedTokenName
+        refresh_github_app_jwt_token: refreshGithubAppJwtToken
     } = queryParams;
     const { connectionId } = params;
 
@@ -99,7 +99,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         instantRefresh: instantRefresh ?? false,
         onRefreshSuccess: connectionRefreshSuccessHook,
         onRefreshFailed: connectionRefreshFailedHook,
-        specifiedTokenName
+        refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
     });
     if (credentialResponse.isErr()) {
         const { connection, ...payload } = credentialResponse.error.payload || {};
