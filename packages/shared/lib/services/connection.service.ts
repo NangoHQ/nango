@@ -999,13 +999,13 @@ class ConnectionService {
             return Err(create.error);
         }
 
-        const { jwtToken, ...parsedRawCredentials } = create.value;
+        const { jwtToken } = create.value;
         connectionConfig['jwtToken'] = jwtToken;
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials,
+            parsedRawCredentials: create.value,
             connectionConfig,
             environmentId: integration.environment_id
         });
@@ -1018,17 +1018,20 @@ class ConnectionService {
         return Ok(updatedConnection);
     }
 
-    public async refreshGithubAppCredentials(
+    private async refreshGithubAppCredentials(
         provider: Provider,
         config: ProviderConfig,
         connection: DBConnectionDecrypted,
-        logCtx: LogContextStateless
+        logCtx: LogContextStateless,
+        refreshGithubAppJwtToken: boolean = false
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
         if (provider.auth_mode === 'APP') {
             const appResult = await githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                refreshGithubAppJwtToken
             });
 
             if (appResult.isErr()) {
@@ -1046,9 +1049,11 @@ class ConnectionService {
                 logCtx
             }),
             githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                refreshGithubAppJwtToken
             })
         ]);
 
@@ -1352,12 +1357,15 @@ class ConnectionService {
         connection,
         providerConfig,
         provider,
-        logCtx
+        logCtx,
+        refreshGithubAppJwtToken
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
         provider: Provider;
         logCtx: LogContextStateless;
+        specifiedTokenName?: string | undefined;
+        refreshGithubAppJwtToken?: boolean | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
@@ -1425,7 +1433,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx);
+            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx, refreshGithubAppJwtToken);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }

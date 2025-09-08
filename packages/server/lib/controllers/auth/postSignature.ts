@@ -10,8 +10,8 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection,
-    signatureClient
+    signatureClient,
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -216,7 +216,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         }
 
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -230,7 +230,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 account,
                 auth_mode: 'SIGNATURE',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

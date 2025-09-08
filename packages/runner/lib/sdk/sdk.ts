@@ -311,7 +311,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             await this.sendLogToPersist({
                 type: 'log',
                 level: 'warn',
-                source: 'user',
+                source: 'internal',
                 message: `Merging strategy for model ${model} is already set. Skipping`,
                 createdAt: now.toISOString(),
                 meta: { model, merging }
@@ -341,7 +341,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         await this.sendLogToPersist({
             type: 'log',
             level: 'info',
-            source: 'user',
+            source: 'internal',
             message: `Merging strategy set to '${merging.strategy}' for model ${model}.`,
             createdAt: now.toISOString()
         });
