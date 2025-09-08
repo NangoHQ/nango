@@ -36,8 +36,9 @@ jobs:
 
             - name: Ensure there are no broken mintlify links
               run: |
+                  npm i -g mint
                   cd docs-v2
-                  if ! npx --yes mintlify broken-links | grep -q "no broken links found"; then
+                  if ! mint broken-links | grep -q "no broken links found"; then
                     echo "Broken links found in documentation"
                     exit 1
                   fi
