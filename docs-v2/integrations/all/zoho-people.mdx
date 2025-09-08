@@ -1,63 +1,108 @@
 ---
-title: Zoho People
-sidebarTitle: Zoho People
+title: 'Zoho People'
+sidebarTitle: 'Zoho People'
+description: 'Access the Zoho People API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/zoho-people/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/zoho-people/PreBuiltUseCases.mdx"
-import ZohoSharedUsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
-import ZohoSharedGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
-
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
-
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
-| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
-| Partnership | ❌ Required for production | Partnership with Zoho is required to deploy to production. |
-| App review | ✅ Not required | No review process for OAuth apps. |
-| Security audit | ✅ Not required | |
+import UsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
+import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
 
 
-## Setup guide
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoho_.
+      </Step>
+      <Step title="Authorize Zoho People">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zoho People. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Zoho People API">
+        Let's make your first request to the Zoho People API (retrieves basic organizational information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/api/v3/organization" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
 
-Follow the general [Zoho OAuth setup guide](/integrations/all/zoho) to create your OAuth application. When selecting scopes, make sure to include the People-specific scopes listed in the Common Scopes section below.
+            <Tab title="Node">
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-## Useful links
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<ZohoSharedUsefulLinks />
+            const res = await nango.get({
+                endpoint: '/api/v3/organization',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+            console.log(res.data);
+            ```
+            </Tab>
 
-### People-specific links
-- [Zoho People API Documentation](https://www.zoho.com/people/api/overview.html)
-- [Zoho People OAuth Steps](https://www.zoho.com/people/api/oauth-steps.html)
-- [Zoho People API Scopes](https://www.zoho.com/people/api/scopes.html)
-- [Zoho People API Limits](https://www.zoho.com/people/api/api-limits.html)
+        </Tabs>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-people.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Common Scopes
+      </Step>
+    </Steps>
 
-- **ZohoPeople.forms.ALL** - Access to all People forms
-- **ZohoPeople.employee.ALL** - Access to all employee data
-- **ZohoPeople.attendance.ALL** - Access to all attendance data
-- **ZohoPeople.leave.ALL** - Access to all leave data
-- **ZohoPeople.timetracker.ALL** - Access to all time tracker data
-- **ZohoPeople.shifts.ALL** - Access to all shift data
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Jira accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    
+    <SetupGuide />
+    
+    ## Common Scopes
+    | Scope                          | Description                                                         |
+    | ------------------------------ | ------------------------------------------------------------------- |
+    | `ZohoPeople.employee.ALL`      | Full access to all employee-related operations.                     |
+    | `ZohoPeople.forms.ALL`         | Full access to all forms (read, create, update, delete).            |
+    | `ZohoPeople.forms.READ`        | Read-only access to People forms.                                   |
+    | `ZohoPeople.leave.ALL`         | Full access to all leave-related operations (read, create, update). |
+    | `ZohoPeople.leave.READ`        | Read-only access to leave data.                                     |
+    | `ZohoPeople.attendance.ALL`    | Full access to attendance-related operations.                       |
+    | `ZohoPeople.timetracker.ALL`   | Full access to timetracker-related operations.                      |
+    | `ZohoPeople.organization.READ` | Read-only access to organization details.                           |
 
-<ZohoSharedGotchas />
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic             | Links                                                                                                   |
+    | ----------------- | ------------------------------------------------------------------------------------------------------- |
+    | Authorization     | [Guide to connect to Zoho People using Connect UI](/integrations/all/zoho-people/connect) |
+    | General           | [Zoho API Console](https://api-console.zoho.com/)                                                       |
+    |                   | [Zoho People Website](https://www.zoho.com/people/)                                                     |
+    | Developer / OAuth | [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)                                 |
+    |                   | [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)      |
+    |                   | [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)             |
+    |                   | [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-expiry.html) |
+    |                   | [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)                          |
+    |                   | [OAuth Scopes](https://www.zoho.com/people/api/scopes.html)                                             |
+    |                   | [API Limits](https://www.zoho.com/calendar/help/api/api-limits.html)                                    |
+    | API               | [Zoho People API docs](https://www.zoho.com/people/api/overview.html)   
 
-### People-specific gotchas
-- Zoho People API has region-specific endpoints. You need to use the correct endpoint based on the user's region.
-- The People API has rate limits that vary based on your Zoho People plan.
-- API rate limits are documented at [Zoho People API Limits](https://www.zoho.com/people/api/api-limits.html).
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-people.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+  - Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
+  - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
+  - For specific scopes, refer to the API documentation pages to find the exact scopes needed per API and per method. 
+  - Zoho People requires a partnership to deploy to production.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-people.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-people.mdx)</Note>
+  </Tab>
+</Tabs>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
