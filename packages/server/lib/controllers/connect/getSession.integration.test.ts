@@ -82,7 +82,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: {
-                end_user: { id: endUserId, email: 'a@b.com' },
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.defaultConnectUISettings
             }
@@ -136,7 +136,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: {
-                end_user: { id: endUserId, email: 'a@b.com' },
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: customConnectUISettings
             }
