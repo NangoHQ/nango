@@ -2,6 +2,7 @@ import { getProvider } from '@nangohq/providers';
 
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
+import { TelemetryBag } from './telemetry.js';
 
 import type { ZodMetadata } from './types.js';
 import type { Nango } from '@nangohq/node';
@@ -67,6 +68,8 @@ export abstract class NangoActionBase<
     public provider?: string;
 
     public ActionError = ActionError;
+
+    public telemetryBag = new TelemetryBag();
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
     protected memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();

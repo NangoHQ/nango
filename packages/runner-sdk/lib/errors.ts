@@ -1,3 +1,5 @@
+import type { RunnerOutputError } from '@nangohq/types';
+
 export abstract class SDKError extends Error {
     abstract code: string;
     payload: Record<string, unknown>;
@@ -41,5 +43,14 @@ export class ActionError<T = Record<string, unknown>> extends Error {
         if (payload) {
             this.payload = payload;
         }
+    }
+}
+
+export class ExecutionError extends Error {
+    payload: RunnerOutputError;
+
+    constructor(payload: RunnerOutputError) {
+        super();
+        this.payload = payload;
     }
 }

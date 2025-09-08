@@ -49,8 +49,10 @@ describe('Exec', () => {
         exports.default = f
         `;
         const res = await exec({ nangoProps, code });
-        expect(res.error).toEqual(null);
-        expect(res.success).toEqual(true);
+        if (res.isErr()) {
+            throw res.error;
+        }
+        expect(res.value.output).toEqual(true);
     });
 
     it('should return a formatted error when receiving an Error', async () => {
@@ -62,6 +64,10 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
+
         expect(res.error).toEqual({
             payload: {
                 message: 'foobar',
@@ -70,7 +76,6 @@ describe('Exec', () => {
             status: 500,
             type: 'script_internal_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should return a formatted error when receiving an ActionError', async () => {
@@ -82,6 +87,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toEqual({
             payload: {
                 message: 'foobar',
@@ -90,7 +98,6 @@ describe('Exec', () => {
             status: 500,
             type: 'action_script_runtime_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should return a formatted error when receiving an ActionError with an array', async () => {
@@ -102,6 +109,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toEqual({
             payload: {
                 message: [{ id: 'foobar' }]
@@ -109,7 +119,6 @@ describe('Exec', () => {
             status: 500,
             type: 'action_script_runtime_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should return a formatted error when receiving an invalid error', async () => {
@@ -121,6 +130,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toEqual({
             payload: {
                 name: 'Error'
@@ -128,7 +140,6 @@ describe('Exec', () => {
             status: 500,
             type: 'script_internal_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
@@ -144,7 +155,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
-
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toMatchObject({
             payload: {
                 code: 'ECONNREFUSED'
@@ -152,7 +165,6 @@ describe('Exec', () => {
             status: 500,
             type: 'script_network_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
@@ -176,7 +188,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
-
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         // NB: it will fail because Nango is not running not because the website is not reachable
         // NB2: the message is different depending on the system running Node
         expect(res.error).toEqual({
@@ -198,7 +212,6 @@ describe('Exec', () => {
             },
             type: 'script_http_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should truncate a large error', async () => {
@@ -213,7 +226,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
-
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toStrictEqual({
             payload: {
                 message: 'A manual error'
@@ -221,7 +236,6 @@ describe('Exec', () => {
             status: 500,
             type: 'action_script_runtime_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should redact Authorization', async () => {
@@ -236,7 +250,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
-
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toStrictEqual({
             payload: {
                 message: 'A manual error',
@@ -245,7 +261,6 @@ describe('Exec', () => {
             status: 500,
             type: 'action_script_runtime_error'
         });
-        expect(res.success).toEqual(false);
     });
 
     it('should truncate caught AxiosError', async () => {
@@ -264,7 +279,9 @@ describe('Exec', () => {
         exports.default = fn
         `;
         const res = await exec({ nangoProps, code });
-
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
         expect(res.error).toStrictEqual({
             payload: {
                 message: 'A manual error',
@@ -315,7 +332,6 @@ describe('Exec', () => {
             status: 500,
             type: 'action_script_runtime_error'
         });
-        expect(res.success).toEqual(false);
     });
     it('should release all locks when completing successfully', async () => {
         const nangoProps = getNangoProps();
@@ -329,7 +345,10 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        await exec({ nangoProps, code, locks });
+        const res = await exec({ nangoProps, code, locks });
+        if (res.isErr()) {
+            throw res.error;
+        }
 
         const res1 = await locks.hasLock({ owner, key: 'test-lock-1' });
         expect(res1.unwrap()).toEqual(false);
@@ -348,7 +367,10 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        await exec({ nangoProps, code, locks });
+        const res = await exec({ nangoProps, code, locks });
+        if (res.isErr()) {
+            throw res.error;
+        }
 
         const res1 = await locks.hasLock({ owner, key: 'test-lock-1' });
         expect(res1.unwrap()).toEqual(false);
