@@ -194,8 +194,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
             await logCtx.failed();
 
-            // since this is an invalid connection, delete it with no trace of it
-            await connectionService.hardDelete(updatedConnection.connection.id);
+            if (updatedConnection.operation === 'creation') {
+                // since this is a new invalid connection, delete it with no trace of it
+                await connectionService.hardDelete(updatedConnection.connection.id);
+            }
 
             res.status(400).send({
                 error: {
