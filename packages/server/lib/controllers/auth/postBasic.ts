@@ -190,10 +190,13 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 await connectionService.hardDelete(updatedConnection.connection.id);
             }
 
+            const payload = customValidationResponse.error?.payload;
+            const message = payload && typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+
             res.status(400).send({
                 error: {
                     code: 'connection_validation_failed',
-                    message: customValidationResponse.error.message
+                    message
                 }
             });
             return;

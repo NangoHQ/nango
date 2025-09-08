@@ -1,10 +1,10 @@
-import { NangoError, onEventScriptService } from '@nangohq/shared';
+import { onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { Config } from '@nangohq/shared';
+import type { Config, NangoError } from '@nangohq/shared';
 import type { DBConnection, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -51,7 +51,7 @@ export async function validateConnection({
 
         if (res.isErr()) {
             await logCtx.failed();
-            return Err(new NangoError('connection_test_failed', { err: res.error }));
+            return Err(res.error);
         }
     }
 
