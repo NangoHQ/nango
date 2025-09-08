@@ -166,7 +166,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
         >
             <div className="flex gap-3 items-center">
                 <div className="w-12 h-12 bg-white transition-colors rounded shadow-md p-1.5 group-hover:bg-dark-100">
-                    <img src={integration.logo} />
+                    <img alt={`${integration.display_name} logo`} src={integration.logo} />
                 </div>
                 <div className="text-primary">{integration.display_name}</div>
                 {error && (

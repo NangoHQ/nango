@@ -309,7 +309,7 @@ export const Go: React.FC = () => {
                 <main className="space-y-10">
                     <div className="flex flex-col gap-7 items-center">
                         <div className="relative w-16 h-16 p-2 rounded-sm shadow-md bg-white">
-                            <img src={integration.logo} />
+                            <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
                                 <IconCircleCheckFilled className="w-full h-full text-green-600" />
                             </div>
@@ -332,7 +332,7 @@ export const Go: React.FC = () => {
                 <main className="flex flex-col items-center gap-10">
                     <div className="flex flex-col gap-7 items-center">
                         <div className="relative w-16 h-16 p-2 rounded-sm shadow-md bg-white">
-                            <img src={integration.logo} />
+                            <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
                                 <IconCircleXFilled className="w-full h-full text-red-700" />
                             </div>
@@ -367,7 +367,7 @@ export const Go: React.FC = () => {
             <main className="space-y-7">
                 <div className="flex flex-col gap-7 items-center">
                     <div className="w-16 h-16 p-2 rounded-sm shadow-md bg-white">
-                        <img src={integration.logo} />
+                        <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-center text-xl text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
