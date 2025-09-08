@@ -167,7 +167,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             }
 
             const payload = customValidationResponse.error?.payload;
-            const message = payload && typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+            const message = payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {
