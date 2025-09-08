@@ -43,7 +43,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicConnection, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
 
 export declare const oldLevelToNewLevel: {
