@@ -208,7 +208,7 @@ export abstract class NangoActionBase<
     public async getConnection(
         providerConfigKeyOverride?: string,
         connectionIdOverride?: string,
-        options: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean } = {}
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
     ): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
@@ -219,9 +219,9 @@ export abstract class NangoActionBase<
         const cached = this.memoizedConnections.get(credentialsPair);
 
         const shouldRefresh =
-            options.forceRefresh ||
-            options.refreshToken ||
-            options.refreshGithubAppJwtToken ||
+            options?.forceRefresh ||
+            options?.refreshToken ||
+            options?.refreshGithubAppJwtToken ||
             !cached ||
             Date.now() - cached.timestamp > MEMOIZED_CONNECTION_TTL;
 
@@ -229,9 +229,9 @@ export abstract class NangoActionBase<
             const connection = await this.nango.getConnection(
                 providerConfigKey,
                 connectionId,
-                options.forceRefresh ?? false,
-                options.refreshToken ?? false,
-                options.refreshGithubAppJwtToken ?? false
+                options?.forceRefresh ?? false,
+                options?.refreshToken ?? false,
+                options?.refreshGithubAppJwtToken ?? false
             );
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
