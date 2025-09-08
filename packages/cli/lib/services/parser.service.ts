@@ -70,7 +70,9 @@ class ParserService {
             'delete',
             'getConnection',
             'getEnvironmentVariables',
-            'triggerAction'
+            'triggerAction',
+            'setMergingStrategy',
+            'deleteRecordsFromPreviousExecution'
         ];
 
         const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
@@ -83,10 +85,11 @@ class ParserService {
 
         const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
-        const callsReferencingModelsToCheck = callsBatchingRecords.concat('setMergingStrategy');
+        const callsReferencingModelsToCheck = callsBatchingRecords.concat('setMergingStrategy', 'deleteRecordsFromPreviousExecution', 'getRecordsByIds');
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];
         const setMergingStrategyLines: number[] = [];
+        const deleteRecordsFromPreviousExecutionLines: number[] = [];
 
         traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
@@ -177,6 +180,10 @@ class ParserService {
                     if (callee.property.name === 'setMergingStrategy') {
                         setMergingStrategyLines.push(lineNumber);
                     }
+
+                    if (callee.property.name === 'deleteRecordsFromPreviousExecution') {
+                        deleteRecordsFromPreviousExecutionLines.push(lineNumber);
+                    }
                 }
             },
             ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
@@ -232,6 +239,28 @@ class ParserService {
         }
         if (proxyLines.length > 0 && setMergingStrategyLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...proxyLines))) {
             console.log(chalk.red(`setMergingStrategy should be called before any proxy function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`));
+            usedCorrectly = false;
+        }
+
+        if (deleteRecordsFromPreviousExecutionLines.length > 1) {
+            console.log(
+                chalk.red(
+                    `deleteRecordsFromPreviousExecution should be called only once in "${filePath}:${Math.max(...deleteRecordsFromPreviousExecutionLines)}".`
+                )
+            );
+            usedCorrectly = false;
+        }
+
+        if (
+            batchingRecordsLines.length > 0 &&
+            deleteRecordsFromPreviousExecutionLines.length > 0 &&
+            batchingRecordsLines.some((line) => line > Math.min(...batchingRecordsLines))
+        ) {
+            console.log(
+                chalk.red(
+                    `deleteRecordsFromPreviousExecution should be called after all batching records functions in "${filePath}:${Math.max(...deleteRecordsFromPreviousExecutionLines)}".`
+                )
+            );
             usedCorrectly = false;
         }
 
