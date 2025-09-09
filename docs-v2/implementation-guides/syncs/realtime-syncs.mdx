@@ -1,41 +1,43 @@
 ---
-title: 'Real-time syncing with webhooks'
-sidebarTitle: 'Real-time syncing'
-description: 'Guide to sync data in real-time with webhooks.'
+title: 'Real-time syncs'
+sidebarTitle: 'Real-time syncs'
+description: 'Guide on how to sync data in real-time with Nango'
 ---
 
-<Info>
-    Pre-requisites: 
-    - Configure webhooks in the external API portal ([details](/guides/webhooks/webhooks-from-apis/overview#pre-requisite-configure-webhooks-in-the-external-api-portal)).
-    - Set up a [custom sync integration](/guides/custom-integrations/overview)
-</Info>
+## What is a real-time sync
 
-# What is a real-time sync
-
-Real-time sync involves receiving webhooks from external APIs and processing them in Nango via [syncs](/guides/syncs/overview). By default, syncs poll data at a set frequency, but they can also be configured to handle webhooks for real-time updates.
+Real-time sync involves receiving webhooks from external APIs and processing them in Nango via [syncs](/guides/use-cases/syncs). By default, syncs poll data at a set frequency, but they can also be configured to handle webhooks for real-time updates.
 
 When processed in a sync:
 - The webhook triggers the execution of a Nango sync script
 - The script extracts data from the webhook and optionally fetches additional data from the external API
 - The modified data is stored in the Nango cache
 
-Whenever the cache is updated, Nango sends a [sync completion webhook](/guides/webhooks/webhooks-from-nango#sync-webhooks) to notify your application of new data. This entire process happens in real-time.
+Whenever the cache is updated, Nango sends a [sync completion webhook](/implementation-guides/platform/webhooks-from-nango#sync-webhooks) to notify your application of new data. This entire process happens in real-time.
 
-<Tip>
-**Webhooks and periodic polling:**
+### Webhooks & periodic polling
 
 Webhooks can fail due to external API outages or unordered events. Periodic polling ensures data consistency by reconciling any missed updates.
-</Tip>
 
-<Tip>
-**Real-time vs. near-real-time syncing:**
+If you use webhooks for realtime syncs, we recommend to always combine them with a polling sync.
+
+### Near realtime syncing
 
 As an alternative to real-time syncing, consider **near**-real-time syncing by polling at a higher frequency, which is simpler. Our high-frequency syncing add-on allows polling every 30 seconds.
-</Tip>
 
-# Implement a real-time sync
+This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/use-cases/api-auth#what-is-a-connection%3F).
 
-To enable real-time sync, define `webhookSubscriptions` and `onWebhook` in your TypeScript script:
+## Implement a realtime sync
+
+### Step 1 - Setup prerequisites
+
+To create a realtime sync, you need to have:
+- Webhooks from the external API enabled. Follow our [implement webhooks processing]() guide.
+- A sync for the object you want to sync. Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync#how-to-build-a-sync) guide.
+
+### Step 2 - Enable webhooks processing
+
+To enable the real-time sync, define `webhookSubscriptions` and `onWebhook` in your sync function:
 
 ```typescript
 export default createSync({
@@ -43,7 +45,7 @@ export default createSync({
         // Use for periodic polling.
   },
 
-  webhookSubscriptions: ['contact.propertyChange'],
+  webhookSubscriptions: ['contact.propertyChange'], // Webhook event type to listen to
 
   // Webhook handler
   onWebhook: async (nango, payload) => {
