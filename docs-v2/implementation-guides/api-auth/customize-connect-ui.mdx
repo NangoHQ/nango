@@ -6,7 +6,7 @@ description: 'Guide to letting your users authorize an external API from your ap
 
 <Info>
 Pre-requisites:
-- complete the [Configure an integration](/implementation-guides/api-auth/configuration) guide
+- complete the [Configure an integration](/implementation-guides/api-auth/configure-integration) guide
 - generate a [Connect session token](/implementation-guides/api-auth/implement-api-auth#1-generate-a-session-token-backend)
 </Info>
 
@@ -93,7 +93,7 @@ For example, Zendesk has the following authorization URL, where the subdomain is
 
 `https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
 
-When using the [Connect UI](/guides/api-authorization/authorize-in-your-app-default-ui#option-1-use-the-nango-connect-ui), this information is collected from the end user with an automatically-generated form.
+When using the [Connect UI](/implementation-guides/api-auth/implement-api-auth), this information is collected from the end user with an automatically-generated form.
 
 But when using a custom UI, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
@@ -114,7 +114,7 @@ nango.auth('zendesk', {
 This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connection/get)), or see it in connection details in the Nango UI.
 
 # Next
-Once the authorization succeeds, [_save the connection ID_](/guides/api-authorization/authorize-in-your-app-default-ui#3-save-the-connection-id-backend).
+Once the authorization succeeds, [_save the connection ID_](/implementation-guides/api-auth/implement-api-auth#3-listen-for-webhooks-%26-save-the-connection-id-backend).
 
 <Tip>
     **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

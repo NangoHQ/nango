@@ -41,11 +41,11 @@ You can also implement 2-way syncs by combining syncs with [Actions](/guides/use
   ![](/images/diagrams/nango-syncs-diagram.png)
 </Frame>
 
-Syncs are defined on the integration (e.g. Github, Google Drive, etc.) by implementing a [Function](/guides/platform/function) with the sync's logic.
+Syncs are defined on the integration (e.g. Github, Google Drive, etc.) by implementing a [Function](/guides/platform/functions) with the sync's logic.
 
 Nango then executes the sync for each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) of this integration. This lets you customize the sync's logic, execution frequency, etc. for each customer, if necessary.
 
-Follow our [implement a sync]() guide for step-by-step instructions to create your own syncs.
+Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for step-by-step instructions to create your own syncs.
 
 ## Syncs in detail
 
@@ -59,7 +59,7 @@ These only fetch data that has changed since the last execution, appending it to
 **Full refresh sync**
 These syncs retrieve the entire dataset during each execution. Takes longer to execute, especially for large datasets. Often used as fallback, if the external API endpoint offers no way to filter or sort records by last modified date.
 
-Refer to the [implement a sync]() guide for more information on how to implement either in Nango.
+Refer to the [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for more information on how to implement either in Nango.
 
 ### Deletion detection
 
@@ -75,4 +75,4 @@ Nango supports real-time syncs with [webhooks](/guides/use-cases/webhooks).
 
 You can either rely entirely on webhooks for the sync, or combine webhooks with polling sync runs to ensure you never miss data.
 
-Follow our [implement real-time syncs with webhooks]() guide to add real-time support for your sync.
+Follow our [implement real-time syncs with webhooks](/implementation-guides/syncs/realtime-syncs) guide to add real-time support for your sync.
