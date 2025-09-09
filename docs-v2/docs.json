@@ -379,6 +379,7 @@
               "integrations/all/google-play",
               "integrations/all/google-sheet",
               "integrations/all/google-slides",
+              "integrations/all/google-workspace-admin",
               "integrations/all/gorgias",
               "integrations/all/gorgias-basic",
               "integrations/all/grain",
