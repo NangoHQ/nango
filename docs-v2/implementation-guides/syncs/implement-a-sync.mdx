@@ -8,7 +8,7 @@ This guide has two parts:
 - How to create your own sync
 - How to use a sync in your own app
 
-If you are using a pre-built reference implementation sync, you can [skip to the second section]().
+If you are using a pre-built reference implementation sync, you can [skip to the second section](#how-to-use-a-sync).
 
 ## How to build a sync
 
@@ -26,7 +26,7 @@ Before you plan to modify your integration functions, run:
 nango dev # Keep the tab open
 ```
 
-This command starts a process that continuously compiles your integration scripts and prints code syntax errors.
+This command starts a process that continuously compiles your integration functions and prints code syntax errors.
 
 ### Step 3 - Create the sync file
 
@@ -83,7 +83,7 @@ Also import your new sync file in your `index.ts` file:
 import './salesforce/syncs/salesforce-contacts';
 ```
 
-### Step 3 - Implement your sync
+### Step 4 - Implement your sync
 
 In the `exec` method, implement the logic of your sync. Edit `MyObject` to contain the properties you need.
 
@@ -169,13 +169,13 @@ function mapContacts(records: any[]): SalesforceContact[] {
 }
 ```
 
-In this integration script, the following Nango utilities are used:
+In this integration function, the following Nango utilities are used:
 - `nango.lastSyncDate` is the last date at which the sync has run
 - `await nango.batchSave()` to persist external data in Nango's cache
 - `await nango.get()` to perform an API request (automatically authenticated by Nango)
 - `await nango.log()` to write custom log messages
 
-### Step 4 - Test your sync locally
+### Step 5 - Test your sync locally
 
 Easily test your integration scripts locally as you develop them with the `dryrun` function of the CLI:
 
@@ -191,7 +191,7 @@ Because this is a dry run, syncs won't persist data in Nango. Instead, the retri
     By default, `dryrun` retrieves connections from your `dev` environment. You can change this with a CLI flag.
 </Tip>
 
-### Step 5 - Deploy your sync
+### Step 6 - Deploy your sync
 
 To run your sync in Nango, you need to deploy it to an environment in your Nango account.
 
