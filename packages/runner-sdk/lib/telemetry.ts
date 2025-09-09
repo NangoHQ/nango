@@ -1,7 +1,7 @@
 import type { TelemetryBagJSON } from '@nangohq/types';
 
 export class TelemetryBag {
-    customLogs: number = 1;
+    customLogs: number = 0;
     proxyCalls: number = 0;
 
     toJSON(): TelemetryBagJSON {

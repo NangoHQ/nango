@@ -47,10 +47,25 @@ export class ActionError<T = Record<string, unknown>> extends Error {
 }
 
 export class ExecutionError extends Error {
-    payload: RunnerOutputError;
+    type: string;
+    payload: RunnerOutputError['payload'];
+    status: RunnerOutputError['status'];
+    additional_properties: RunnerOutputError['additional_properties'];
 
     constructor(payload: RunnerOutputError) {
         super();
-        this.payload = payload;
+        this.type = payload.type;
+        this.payload = payload.payload;
+        this.status = payload.status;
+        this.additional_properties = payload.additional_properties;
+    }
+
+    toJSON(): RunnerOutputError {
+        return {
+            type: this.type,
+            payload: this.payload,
+            status: this.status,
+            additional_properties: this.additional_properties
+        };
     }
 }

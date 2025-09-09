@@ -68,13 +68,14 @@ describe('Exec', () => {
             throw new Error('Expected an error');
         }
 
-        expect(res.error).toEqual({
+        expect(res.error.toJSON()).toEqual({
             payload: {
                 message: 'foobar',
                 name: 'Error'
             },
             status: 500,
-            type: 'script_internal_error'
+            type: 'script_internal_error',
+            additional_properties: undefined
         });
     });
 
@@ -90,13 +91,14 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toEqual({
+        expect(res.error.toJSON()).toEqual({
             payload: {
                 message: 'foobar',
                 prop: 'foobar'
             },
             status: 500,
-            type: 'action_script_runtime_error'
+            type: 'action_script_runtime_error',
+            additional_properties: undefined
         });
     });
 
@@ -112,12 +114,13 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toEqual({
+        expect(res.error.toJSON()).toEqual({
             payload: {
                 message: [{ id: 'foobar' }]
             },
             status: 500,
-            type: 'action_script_runtime_error'
+            type: 'action_script_runtime_error',
+            additional_properties: undefined
         });
     });
 
@@ -133,12 +136,13 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toEqual({
+        expect(res.error.toJSON()).toEqual({
             payload: {
                 name: 'Error'
             },
             status: 500,
-            type: 'script_internal_error'
+            type: 'script_internal_error',
+            additional_properties: undefined
         });
     });
 
@@ -163,11 +167,12 @@ describe('Exec', () => {
                 code: 'ECONNREFUSED'
             },
             status: 500,
-            type: 'script_network_error'
+            type: 'script_network_error',
+            additional_properties: undefined
         });
     });
 
-    it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
+    it('should return a script_network_error when receiving an AxiosError (with a body)', async () => {
         const nangoProps = getNangoProps();
         const code = `
         fn = async (nango) => {
@@ -193,7 +198,7 @@ describe('Exec', () => {
         }
         // NB: it will fail because Nango is not running not because the website is not reachable
         // NB2: the message is different depending on the system running Node
-        expect(res.error).toEqual({
+        expect(res.error.toJSON()).toEqual({
             payload: {
                 error: 'Not found'
             },
@@ -229,12 +234,13 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toStrictEqual({
+        expect(res.error.toJSON()).toStrictEqual({
             payload: {
                 message: 'A manual error'
             },
             status: 500,
-            type: 'action_script_runtime_error'
+            type: 'action_script_runtime_error',
+            additional_properties: undefined
         });
     });
 
@@ -253,13 +259,14 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toStrictEqual({
+        expect(res.error.toJSON()).toStrictEqual({
             payload: {
                 message: 'A manual error',
                 Authorization: '[Redacted]'
             },
             status: 500,
-            type: 'action_script_runtime_error'
+            type: 'action_script_runtime_error',
+            additional_properties: undefined
         });
     });
 
@@ -282,7 +289,7 @@ describe('Exec', () => {
         if (res.isOk()) {
             throw new Error('Expected an error');
         }
-        expect(res.error).toStrictEqual({
+        expect(res.error.toJSON()).toStrictEqual({
             payload: {
                 message: 'A manual error',
                 reason: {
@@ -330,7 +337,8 @@ describe('Exec', () => {
                 }
             },
             status: 500,
-            type: 'action_script_runtime_error'
+            type: 'action_script_runtime_error',
+            additional_properties: undefined
         });
     });
     it('should release all locks when completing successfully', async () => {
@@ -355,6 +363,7 @@ describe('Exec', () => {
         const res2 = await locks.hasLock({ owner, key: 'test-lock-1' });
         expect(res2.unwrap()).toEqual(false);
     });
+
     it('should release all locks when failing', async () => {
         const nangoProps = getNangoProps();
         const locks = new Locks();
@@ -367,10 +376,7 @@ describe('Exec', () => {
         };
         exports.default = fn
         `;
-        const res = await exec({ nangoProps, code, locks });
-        if (res.isErr()) {
-            throw res.error;
-        }
+        await exec({ nangoProps, code, locks });
 
         const res1 = await locks.hasLock({ owner, key: 'test-lock-1' });
         expect(res1.unwrap()).toEqual(false);
