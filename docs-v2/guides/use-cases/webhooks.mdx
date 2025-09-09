@@ -23,9 +23,9 @@ Common examples:
     - It auto-scales, and provides tools to deal with webhook floods, debouncing, etc.
     - You have full control over webhooks processing
 - Each webhook gets attributed to its corresponding [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (a user or organization that has setup a specific integration)
-- Webhooks can be forwarded to your app, or trigger a [Function]() in Nango for processing
+- Webhooks can be forwarded to your app, or trigger a [Function](/guides/platform/functions) in Nango for processing
 - Webhooks can be combined with [syncs](/guides/use-cases/syncs) to create real-time syncs to your product
-- All incoming webhooks create detailed logs in Nango's [logs]()
+- All incoming webhooks create detailed logs in Nango's [logs](/guides/platform/logs)
 
 
 ## How webhooks work
@@ -35,10 +35,10 @@ Common examples:
 3. Nango processes incoming webhooks and attributes them to the correct account
 4. You decide for each webhook type how it gets processed:
     - Forward to your backend
-    - Trigger a [Function]() in Nango to process the webhook
+    - Trigger a [Function](/guides/platform/functions) in Nango to process the webhook
 5. Nango stores detailed logs about each incoming webhook and it's associated processing
 
-Follow our [implement an webhook]() guide to use webhooks in your product.
+Follow our [implement an webhook](/implementation-guides/webhooks/implement-webhooks) guide to use webhooks in your product.
 
 ## Webhooks in detail
 
@@ -58,4 +58,4 @@ With this setup, both webhooks and the polling syncs update the same [Sync](/gui
 
 This gives you the best of both worlds: The reliability of polling syncs, and the real-time updates of webhooks.
 
-To set this up, follow our [implementation guide for real-time syncs]().
+To set this up, follow our [implementation guide for real-time syncs](/implementation-guides/syncs/realtime-syncs).
