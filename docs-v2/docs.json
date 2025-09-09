@@ -240,6 +240,7 @@
           {
             "group": "Actions",
             "pages": [
+              "implementation-guides/actions/implement-an-action",
               "implementation-guides/actions/async-actions"
             ]
           },
