@@ -1,62 +1,106 @@
 ---
-title: Zoho Desk
-sidebarTitle: Zoho Desk
+title: 'Zoho Desk'
+sidebarTitle: 'Zoho Desk'
+description: 'Access the Zoho Desk API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/zoho-desk/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/zoho-desk/PreBuiltUseCases.mdx"
-import ZohoSharedUsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
-import ZohoSharedGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
-
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
-
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
-| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | No review process for OAuth apps. |
-| Security audit | ✅ Not required | |
+import ApiGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
+import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
 
 
-## Setup guide
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoho_.
+      </Step>
+      <Step title="Authorize Zoho Desk">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zoho Desk. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Zoho Desk API">
+        Let's make your first request to the Zoho Desk API (fetch a list of tickets). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/tickets?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
 
-Follow the general [Zoho OAuth setup guide](/integrations/all/zoho) to create your OAuth application. When selecting scopes, make sure to include the Desk-specific scopes listed in the Common Scopes section below.
+            <Tab title="Node">
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-## Useful links
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<ZohoSharedUsefulLinks />
+            const res = await nango.get({
+                endpoint: '/v1/tickets',
+                params: {
+                    limit: 10
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+            console.log(JSON.stringify(res.data.data, null, 2));
+            ```
+            </Tab>
 
-### Desk-specific links
-- [Zoho Desk API Documentation](https://desk.zoho.com/DeskAPIDocument)
-- [Zoho Desk OAuth Overview](https://desk.zoho.com/DeskAPIDocument#OauthTokens)
-- [Zoho Desk OAuth Scopes](https://desk.zoho.com/DeskAPIDocument#OauthTokens#OAuthScopes)
+        </Tabs>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-desk.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Common Scopes
+      </Step>
+    </Steps>
 
-- **Desk.tickets.ALL** - Access to all Desk tickets
-- **Desk.contacts.READ** - Read access to Desk contacts
-- **Desk.contacts.UPDATE** - Update access to Desk contacts
-- **Desk.contacts.CREATE** - Create access to Desk contacts
-- **Desk.tasks.ALL** - Access to all Desk tasks
-- **Desk.basic.READ** - Basic read access to Desk
-- **Desk.search.READ** - Search functionality in Desk
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Zoho Desk accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    
+    <SetupGuide />
+    
+    ## Common Scopes
+    | Scope                 | Description                                                               |
+    | --------------------- | ------------------------------------------------------------------------- |
+    | `Desk.tickets.ALL`    | Full access to tickets and related data (read, create, update, delete).   |
+    | `Desk.contacts.READ`  | Read-only access to contacts, accounts, and related data.                 |
+    | `Desk.contacts.WRITE` | Write access to contacts, accounts, and related data.                     |
+    | `Desk.tasks.ALL`      | Full access to tasks and related data.                                    |
+    | `Desk.basic.READ`     | Read access to basic data such as organizations, agents, and departments. |
+    | `Desk.settings.ALL`   | Full access to settings data.                                             |
+    | `Desk.search.READ`    | Read access to search for data.                                           |
 
-<ZohoSharedGotchas />
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic             | Links                                                                                                   |
+    | ----------------- | ------------------------------------------------------------------------------------------------------- |
+    | Authorization     | [Guide to connect to Zoho Desk using Connect UI](/integrations/all/zoho-desk/connect) |
+    | General           | [Zoho API Console](https://api-console.zoho.com/)                                                       |
+    |                   | [Zoho Desk Website](https://www.zoho.com/desk/)                                                     |
+    | Developer / OAuth | [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)                                 |
+    |                   | [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)      |
+    |                   | [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)             |
+    |                   | [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-expiry.html) |
+    |                   | [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)                          |
+    |                   | [OAuth Scopes](https://desk.zoho.com/DeskAPIDocument#OauthTokens#OAuthScopes)                                             |
+    |                   | [API Limits](https://www.zoho.com/calendar/help/api/api-limits.html)                                    |
+    | API               | [Zoho Desk API docs](https://desk.zoho.com/DeskAPIDocument)   
 
-### Desk-specific gotchas
-- Zoho Desk API has region-specific endpoints. You need to use the correct endpoint based on the user's region.
-- The Desk API has rate limits that vary based on your Zoho Desk plan.
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-desk.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-desk.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    <ApiGotchas />
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-desk.mdx)</Note>
+  </Tab>
+</Tabs>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
