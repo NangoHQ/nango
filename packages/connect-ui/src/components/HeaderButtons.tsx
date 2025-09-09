@@ -1,5 +1,5 @@
-import { IconArrowLeft, IconX } from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
+import { ArrowLeft, X } from 'lucide-react';
 
 import { Button } from './ui/button';
 import { triggerClose } from '@/lib/events';
@@ -20,12 +20,12 @@ export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () 
             {backLink && (
                 <Link to={backLink} onClick={onClickBack}>
                     <Button size={'icon'} title={t('common.back')} variant={'transparent'}>
-                        <IconArrowLeft className="w-4 h-4 mr-1" /> {t('common.back')}
+                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('common.back')}
                     </Button>
                 </Link>
             )}
             <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={onClickClose}>
-                <IconX className="w-4 h-4" />
+                <X className="w-4 h-4" />
             </Button>
         </header>
     );

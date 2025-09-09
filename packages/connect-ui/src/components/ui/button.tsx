@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
-import { IconLoader2 } from '@tabler/icons-react';
 import { cva } from 'class-variance-authority';
+import { LoaderCircle } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils.js';
@@ -38,7 +38,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
     const Comp = asChild ? Slot : 'button';
     return (
         <Comp ref={ref} className={cn(buttonVariants({ variant, size, className }))} {...props} disabled={loading || props.disabled}>
-            {loading && <IconLoader2 className="mr-2 animate-spin" size={15} />}
+            {loading && <LoaderCircle className="mr-2 animate-spin" size={15} />}
             {children}
         </Comp>
     );

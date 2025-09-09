@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconCircleCheckFilled, IconCircleXFilled, IconExternalLink, IconInfoCircle } from '@tabler/icons-react';
+import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
+import { ExternalLink, Info } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -409,7 +410,7 @@ export const Go: React.FC = () => {
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
                                                                     >
-                                                                        <IconInfoCircle className="w-4 h-4 text-secondary" />
+                                                                        <Info className="w-4 h-4 text-secondary" />
                                                                     </Link>
                                                                 )}
                                                             </div>
@@ -465,7 +466,7 @@ export const Go: React.FC = () => {
                                 <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
                                     {t('common.viewGuide')}
                                 </Link>{' '}
-                                <IconExternalLink className="inline-block w-3.5 h-3.5 text-secondary" stroke={2} />
+                                <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
                             </p>
                         )}
                     </form>
