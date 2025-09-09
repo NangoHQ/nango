@@ -5189,6 +5189,15 @@ google-cloud-storage:
         - storage
     docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
+google-workspace-admin:
+    display_name: Google Workspace Admin
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://admin.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-workspace-admin
+
 gorgias:
     display_name: Gorgias
     categories:
