@@ -277,6 +277,10 @@ export const Go: React.FC = () => {
                         setConnectionFailed(true);
                         setError(t('go.invalidCredentials', { provider: displayName }));
                         return;
+                    } else if (err.type === 'connection_validation_failed') {
+                        setConnectionFailed(true);
+                        setError(err.message || t('go.invalidCredentials', { provider: displayName }));
+                        return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
                         setError(t('go.resourceCapped'));
@@ -342,7 +346,7 @@ export const Go: React.FC = () => {
             <header className="relative m-10">
                 <div className="absolute top-0 left-0 w-full flex justify-between">
                     {!isSingleIntegration ? (
-                        <Link to="/" onClick={() => setIsDirty(false)}>
+                        <Link to="/integrations" onClick={() => setIsDirty(false)}>
                             <Button className="gap-1" title={t('go.backToList')} variant={'transparent'}>
                                 <IconArrowLeft stroke={1} /> {t('common.back')}
                             </Button>

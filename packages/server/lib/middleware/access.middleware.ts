@@ -23,7 +23,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, EndUser } from '@nangohq/types';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -201,7 +201,7 @@ export class AccessMiddleware {
             account: DBTeam;
             environment: DBEnvironment;
             connectSession: ConnectSession;
-            endUser: EndUser;
+            endUser: InternalEndUser | null;
             plan: DBPlan | null;
         }>
     > {
@@ -235,7 +235,7 @@ export class AccessMiddleware {
             account: result.account,
             environment: result.environment,
             connectSession: getConnectSession.value.connectSession,
-            endUser: getConnectSession.value.endUser,
+            endUser: getConnectSession.value.connectSession.endUser,
             plan
         });
     }

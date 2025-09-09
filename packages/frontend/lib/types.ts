@@ -1,4 +1,4 @@
-import type { ConnectionResponseSuccess } from '@nangohq/types';
+import type { ConnectUISettings, ConnectionResponseSuccess } from '@nangohq/types';
 
 export type AuthErrorType =
     | 'missing_auth_token'
@@ -8,6 +8,7 @@ export type AuthErrorType =
     | 'window_closed'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
+    | 'connection_validation_failed'
     | 'resource_capped';
 
 export type AuthResult = ConnectionResponseSuccess;
@@ -114,4 +115,9 @@ export interface ConnectUIEventConnect {
     payload: AuthResult;
 }
 
-export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect;
+export interface ConnectUIEventSettingsChanged {
+    type: 'settings_changed';
+    payload: ConnectUISettings;
+}
+
+export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect | ConnectUIEventSettingsChanged;

@@ -35,7 +35,11 @@ describe('Runner client', () => {
     };
 
     beforeAll(() => {
-        client = getRunnerClient(serverUrl);
+        client = getRunnerClient(serverUrl, {
+            headersTimeoutMs: 3_000,
+            connectTimeoutMs: 2_000,
+            responseTimeoutMs: 5_000
+        });
         server.listen(port);
     });
 

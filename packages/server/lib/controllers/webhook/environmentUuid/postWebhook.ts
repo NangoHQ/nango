@@ -55,6 +55,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
+
             const isDisabledForThisAccount = await featureFlags.isSet('disable-external-webhooks', { distinctId: account.uuid });
             if (isDisabledForThisAccount) {
                 res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });

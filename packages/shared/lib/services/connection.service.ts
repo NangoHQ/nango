@@ -503,6 +503,16 @@ class ConnectionService {
         return res?.count ? Number(res.count) : 0;
     }
 
+    public async countConnectionsByEnvironment({ environmentId }: { environmentId: number }): Promise<number> {
+        const res = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ environment_id: environmentId, deleted: false })
+            .count<{ count: string }>('*')
+            .first();
+
+        return res?.count ? Number(res.count) : 0;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<ConnectionInternal[]> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
@@ -989,13 +999,13 @@ class ConnectionService {
             return Err(create.error);
         }
 
-        const { jwtToken, ...parsedRawCredentials } = create.value;
+        const { jwtToken } = create.value;
         connectionConfig['jwtToken'] = jwtToken;
 
         const [updatedConnection] = await this.upsertConnection({
             connectionId,
             providerConfigKey: integration.unique_key,
-            parsedRawCredentials,
+            parsedRawCredentials: create.value,
             connectionConfig,
             environmentId: integration.environment_id
         });
@@ -1008,17 +1018,20 @@ class ConnectionService {
         return Ok(updatedConnection);
     }
 
-    public async refreshGithubAppCredentials(
+    private async refreshGithubAppCredentials(
         provider: Provider,
         config: ProviderConfig,
         connection: DBConnectionDecrypted,
-        logCtx: LogContextStateless
+        logCtx: LogContextStateless,
+        refreshGithubAppJwtToken: boolean = false
     ): Promise<Result<CombinedOauth2AppCredentials | AppCredentials, AuthCredentialsError>> {
         if (provider.auth_mode === 'APP') {
             const appResult = await githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                refreshGithubAppJwtToken
             });
 
             if (appResult.isErr()) {
@@ -1036,9 +1049,11 @@ class ConnectionService {
                 logCtx
             }),
             githubAppClient.createCredentials({
+                connection,
                 integration: config,
                 provider: provider as ProviderGithubApp,
-                connectionConfig: connection.connection_config
+                connectionConfig: connection.connection_config,
+                refreshGithubAppJwtToken
             })
         ]);
 
@@ -1342,12 +1357,15 @@ class ConnectionService {
         connection,
         providerConfig,
         provider,
-        logCtx
+        logCtx,
+        refreshGithubAppJwtToken
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
         provider: Provider;
         logCtx: LogContextStateless;
+        specifiedTokenName?: string | undefined;
+        refreshGithubAppJwtToken?: boolean | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
@@ -1415,7 +1433,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
-            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx);
+            const create = await this.refreshGithubAppCredentials(provider, providerConfig, connection, logCtx, refreshGithubAppJwtToken);
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
             }
@@ -1522,8 +1540,12 @@ class ConnectionService {
             >(
                 db.knex.raw(`_nango_environments.account_id as "accountId"`),
                 db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as "withActions"`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as "withSyncs"`),
+                db.knex.raw(
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withActions"`
+                ),
+                db.knex.raw(
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withSyncs"`
+                ),
                 db.knex.raw(
                     `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as "withWebhooks"`
                 )
@@ -1532,9 +1554,6 @@ class ConnectionService {
             .whereNull('_nango_sync_configs.deleted_at')
             .where(function () {
                 this.where('_nango_sync_configs.active', true).orWhereNull('_nango_sync_configs.active');
-            })
-            .where(function () {
-                this.where('_nango_sync_configs.enabled', true).orWhereNull('_nango_sync_configs.enabled');
             })
             .groupBy('_nango_environments.account_id');
 

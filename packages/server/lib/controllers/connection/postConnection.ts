@@ -284,13 +284,22 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     let endUser: EndUser | undefined;
     if (body.end_user) {
         await db.knex.transaction(async (trx) => {
-            const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user! });
+            const endUserRes = await upsertEndUser(trx, {
+                connection: updatedConnection.connection,
+                account,
+                environment,
+                endUser: EndUserMapper.apiToEndUser(body.end_user!)
+            });
             if (endUserRes.isErr()) {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                 return;
             }
 
             endUser = endUserRes.value;
+
+            if (updatedConnection.connection.end_user_id) {
+                return;
+            }
 
             await linkConnection(trx, { endUserId: endUserRes.value.id, connection: updatedConnection.connection });
         });

@@ -63,10 +63,12 @@ export const ENVS = z.object({
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
+    JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
@@ -77,6 +79,11 @@ export const ENVS = z.object({
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
+    RUNNER_FLEET_ID: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]+$/)
+        .optional()
+        .default('nango_runners'),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -88,10 +95,13 @@ export const ENVS = z.object({
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
-    JOBS_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+    RUNNER_CLIENT_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    RUNNER_CLIENT_RESPONSE_TIMEOUT_MS: z.coerce.number().optional().default(15_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
+    FLEET_SUPERVISOR_LOCK_KEY: z.string().default('fleet_supervisor'),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
@@ -194,6 +204,7 @@ export const ENVS = z.object({
     // SMTP
     SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
+    SMTP_DOMAIN: z.string().default('email.nango.dev'),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),

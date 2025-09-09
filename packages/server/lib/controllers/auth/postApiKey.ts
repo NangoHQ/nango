@@ -10,11 +10,12 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionCredentialsApiKeySchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -174,8 +175,36 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             return;
         }
 
+        const customValidationResponse = await validateConnection({
+            connection: updatedConnection.connection,
+            config,
+            account,
+            logCtx
+        });
+
+        if (customValidationResponse.isErr()) {
+            void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+            await logCtx.failed();
+
+            if (updatedConnection.operation === 'creation') {
+                // since this is a new invalid connection, delete it with no trace of it
+                await connectionService.hardDelete(updatedConnection.connection.id);
+            }
+
+            const payload = customValidationResponse.error?.payload;
+            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+
+            res.status(400).send({
+                error: {
+                    code: 'connection_validation_failed',
+                    message
+                }
+            });
+            return;
+        }
+
         if (isConnectSession) {
-            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -189,7 +218,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 account,
                 auth_mode: 'API_KEY',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser
             },
             account,
             config,

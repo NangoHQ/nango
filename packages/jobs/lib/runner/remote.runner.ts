@@ -1,6 +1,6 @@
 import { getRunnerClient } from '@nangohq/nango-runner';
 
-import { RunnerType } from './runner.js';
+import { RunnerType, runnerHttpOpts } from './runner.js';
 
 import type { Runner } from './runner.js';
 
@@ -11,7 +11,7 @@ export class RemoteRunner implements Runner {
         public readonly id: string,
         public readonly url: string
     ) {
-        this.client = getRunnerClient(this.url);
+        this.client = getRunnerClient(this.url, runnerHttpOpts);
     }
 
     static async getOrStart(runnerId: string): Promise<RemoteRunner> {

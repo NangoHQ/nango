@@ -285,6 +285,9 @@ aircall-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://api.aircall.io
+        retry:
+            at:
+                - 'x-aircallapi-reset'
         verification:
             method: GET
             endpoints:
@@ -5186,6 +5189,15 @@ google-cloud-storage:
         - storage
     docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
+google-workspace-admin:
+    display_name: Google Workspace Admin
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://admin.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-workspace-admin
+
 gorgias:
     display_name: Gorgias
     categories:
@@ -5770,6 +5782,25 @@ holded:
             type: string
             title: API Key
             description: The API key for your Holded account
+
+hover:
+    display_name: Hover
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://hover.to/oauth/authorize
+    token_url: https://hover.to/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.hover.to
+    docs: https://docs.nango.dev/integrations/all/hover
 
 hubspot:
     display_name: HubSpot
@@ -8347,6 +8378,27 @@ paypal-sandbox:
         base_url: https://api-m.sandbox.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal-sandbox
 
+pax8:
+    display_name: Pax8
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.pax8.com/v1/token
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience} || https://api.pax8.com
+    proxy:
+        base_url: https://api.pax8.com
+    docs: https://docs.nango.dev/integrations/all/pax8
+    docs_connect: https://docs.nango.dev/integrations/all/pax8/connect
+    connection_config:
+        audience:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 pendo:
     display_name: Pendo
     categories:
@@ -10092,6 +10144,27 @@ servicenow:
             example: domain
             suffix: .service-now.com
             prefix: https://
+
+skio:
+    display_name: Skio
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: API ${apiKey}
+        base_url: https://graphql.skio.com
+    credentials_verification_script: skioCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/skio
+    docs_connect: https://docs.nango.dev/integrations/all/skio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Skio account
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-generating-your-api-key'
 
 sharepoint-online:
     display_name: SharePoint Online (v2)
@@ -12393,11 +12466,31 @@ zoho-books:
     display_name: Zoho Books
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-books
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-books/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Books account
+            pattern: '^[a-z.]+$'
+            prefix: https://books.zoho.
+            example: com
+            suffix: /
 
 zoho-crm:
     display_name: Zoho CRM
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-crm
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-crm/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho CRM account
+            pattern: '^[a-z.]+$'
+            prefix: https://crm.zoho.
+            example: com
+            suffix: /
 
 zoho-calendar:
     display_name: Zoho Calendar
@@ -12412,7 +12505,7 @@ zoho-calendar:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Calendar
+            description: The domain extension of your Zoho Calendar account
             pattern: '^[a-z.]+$'
             prefix: https://calendar.zoho.
             example: com
@@ -12424,7 +12517,19 @@ zoho-desk:
         - support
         - ticketing
     alias: zoho
+    proxy:
+        base_url: https://desk.zoho.com/api
     docs: https://docs.nango.dev/integrations/all/zoho-desk
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-desk/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Desk account
+            pattern: '^[a-z.]+$'
+            prefix: https://desk.zoho.
+            example: com
+            suffix: /
 
 zoho-inventory:
     display_name: Zoho Inventory
@@ -12432,6 +12537,16 @@ zoho-inventory:
         - e-commerce
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-inventory
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-inventory/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Inventory account
+            pattern: '^[a-z.]+$'
+            prefix: https://inventory.zoho.
+            example: com
+            suffix: /
 
 zoho-invoice:
     display_name: Zoho Invoice
@@ -12439,6 +12554,16 @@ zoho-invoice:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-invoice/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Invoice account
+            pattern: '^[a-z.]+$'
+            prefix: https://invoice.zoho.
+            example: com
+            suffix: /
 
 zoho-mail:
     display_name: Zoho Mail
@@ -12449,17 +12574,31 @@ zoho-mail:
     proxy:
         base_url: https://mail.zoho.${connectionConfig.extension}
     docs: https://docs.nango.dev/integrations/all/zoho-mail
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-mail/connect
     connection_config:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho account
+            description: The domain extension of your Zoho Mail account
             pattern: '^[a-z.]+$'
+            prefix: https://mail.zoho.
+            example: com
+            suffix: /
 
 zoho-bigin:
     display_name: Zoho Bigin
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-bigin/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Bigin account
+            pattern: '^[a-z.]+$'
+            prefix: https://bigin.zoho.
+            example: com
+            suffix: /
 
 zoho-people:
     display_name: Zoho People
@@ -12469,6 +12608,16 @@ zoho-people:
     proxy:
         base_url: https://people.zoho.com
     docs: https://docs.nango.dev/integrations/all/zoho-people
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-people/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho People account
+            pattern: '^[a-z.]+$'
+            prefix: https://people.zoho.
+            example: com
+            suffix: /
 
 zoom:
     display_name: Zoom
