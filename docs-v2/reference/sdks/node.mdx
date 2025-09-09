@@ -411,6 +411,9 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
     <ResponseField name="refreshToken" type="boolean">
         Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
     </ResponseField>
+    <ResponseField name="refreshGithubAppJwtToken" type="boolean">
+        Defaults to `false`. If true, this will refresh the JWT token for GitHub App / Github App OAuth connections
+    </ResponseField>
 </Expandable>
 
 **Example Response**

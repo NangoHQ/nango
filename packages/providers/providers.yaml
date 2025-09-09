@@ -5189,6 +5189,15 @@ google-cloud-storage:
         - storage
     docs: https://docs.nango.dev/integrations/all/google-cloud-storage
 
+google-workspace-admin:
+    display_name: Google Workspace Admin
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://admin.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-workspace-admin
+
 gorgias:
     display_name: Gorgias
     categories:
@@ -12457,11 +12466,31 @@ zoho-books:
     display_name: Zoho Books
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-books
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-books/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Books account
+            pattern: '^[a-z.]+$'
+            prefix: https://books.zoho.
+            example: com
+            suffix: /
 
 zoho-crm:
     display_name: Zoho CRM
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-crm
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-crm/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho CRM account
+            pattern: '^[a-z.]+$'
+            prefix: https://crm.zoho.
+            example: com
+            suffix: /
 
 zoho-calendar:
     display_name: Zoho Calendar
@@ -12476,7 +12505,7 @@ zoho-calendar:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Calendar
+            description: The domain extension of your Zoho Calendar account
             pattern: '^[a-z.]+$'
             prefix: https://calendar.zoho.
             example: com
@@ -12488,7 +12517,19 @@ zoho-desk:
         - support
         - ticketing
     alias: zoho
+    proxy:
+        base_url: https://desk.zoho.com/api
     docs: https://docs.nango.dev/integrations/all/zoho-desk
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-desk/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Desk account
+            pattern: '^[a-z.]+$'
+            prefix: https://desk.zoho.
+            example: com
+            suffix: /
 
 zoho-inventory:
     display_name: Zoho Inventory
@@ -12496,6 +12537,16 @@ zoho-inventory:
         - e-commerce
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-inventory
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-inventory/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Inventory account
+            pattern: '^[a-z.]+$'
+            prefix: https://inventory.zoho.
+            example: com
+            suffix: /
 
 zoho-invoice:
     display_name: Zoho Invoice
@@ -12503,6 +12554,16 @@ zoho-invoice:
         - invoicing
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-invoice
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-invoice/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Invoice account
+            pattern: '^[a-z.]+$'
+            prefix: https://invoice.zoho.
+            example: com
+            suffix: /
 
 zoho-mail:
     display_name: Zoho Mail
@@ -12513,17 +12574,31 @@ zoho-mail:
     proxy:
         base_url: https://mail.zoho.${connectionConfig.extension}
     docs: https://docs.nango.dev/integrations/all/zoho-mail
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-mail/connect
     connection_config:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho account
+            description: The domain extension of your Zoho Mail account
             pattern: '^[a-z.]+$'
+            prefix: https://mail.zoho.
+            example: com
+            suffix: /
 
 zoho-bigin:
     display_name: Zoho Bigin
     alias: zoho
     docs: https://docs.nango.dev/integrations/all/zoho-bigin
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-bigin/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Bigin account
+            pattern: '^[a-z.]+$'
+            prefix: https://bigin.zoho.
+            example: com
+            suffix: /
 
 zoho-people:
     display_name: Zoho People
@@ -12533,6 +12608,16 @@ zoho-people:
     proxy:
         base_url: https://people.zoho.com
     docs: https://docs.nango.dev/integrations/all/zoho-people
+    docs_connect: https://docs.nango.dev/integrations/all/zoho-people/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho People account
+            pattern: '^[a-z.]+$'
+            prefix: https://people.zoho.
+            example: com
+            suffix: /
 
 zoom:
     display_name: Zoom

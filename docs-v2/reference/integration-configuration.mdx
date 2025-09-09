@@ -49,6 +49,8 @@ integrations:
           - scope2
 
     on-events:
+        validate-connection:
+            - verify-credentials
         post-connection-creation:
             - setup
             - moreSetup

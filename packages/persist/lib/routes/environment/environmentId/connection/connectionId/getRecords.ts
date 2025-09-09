@@ -28,7 +28,7 @@ type GetRecords = Endpoint<{
     Success: GetRecordsSuccess;
 }>;
 
-export const path = '/environment/:environmentId/connection/:nangoConnectionId/records';
+const path = '/environment/:environmentId/connection/:nangoConnectionId/records';
 const method = 'GET';
 
 const validate = validateRequest<GetRecords>(getRecordsRequestParser);

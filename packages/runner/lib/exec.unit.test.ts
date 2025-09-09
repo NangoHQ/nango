@@ -293,7 +293,8 @@ describe('Exec', () => {
                         params: {
                             force_refresh: false,
                             provider_config_key: 'provider-config-key',
-                            refresh_token: false
+                            refresh_token: false,
+                            refresh_github_app_jwt_token: false
                         },
                         timeout: 0,
                         transformRequest: [null],

@@ -19,10 +19,10 @@ import {
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
-    linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager
+    providerClientManager,
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -446,7 +446,7 @@ class OAuthController {
             }
 
             if (isConnectSession) {
-                await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+                await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -459,7 +459,7 @@ class OAuthController {
                     account,
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
-                    endUser: isConnectSession ? res.locals['endUser'] : undefined
+                    endUser: res.locals.endUser
                 },
                 account,
                 config,
@@ -956,7 +956,7 @@ class OAuthController {
                         account,
                         auth_mode: 'APP',
                         operation: res.operation,
-                        endUser: connectSession?.endUser
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
@@ -977,7 +977,12 @@ class OAuthController {
             if (session.connectSessionId && connectionResponse.isOk()) {
                 const upsertedConnection = connectionResponse.value;
                 if (upsertedConnection?.connection && connectSession) {
-                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: upsertedConnection.connection });
+                    await syncEndUserToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: upsertedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
             }
 
@@ -1345,7 +1350,12 @@ class OAuthController {
                 }
 
                 connectSession = connectSessionRes.value;
-                await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
+                await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
             }
 
             void logCtx.debug(
@@ -1370,7 +1380,7 @@ class OAuthController {
                     account,
                     auth_mode: provider.auth_mode,
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.endUser
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,
@@ -1388,7 +1398,7 @@ class OAuthController {
                             account,
                             auth_mode: provider.auth_mode,
                             operation: res.operation,
-                            endUser: connectSession?.endUser
+                            endUser: connectSession?.connectSession.endUser ?? undefined
                         },
                         account,
                         config,
@@ -1557,7 +1567,12 @@ class OAuthController {
                     }
 
                     connectSession = connectSessionRes.value;
-                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
+                    await syncEndUserToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: updatedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
 
                 void logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
@@ -1576,7 +1591,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
-                        endUser: connectSession?.endUser
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
