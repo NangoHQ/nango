@@ -245,9 +245,29 @@
             ]
           },
           {
+            "group": "Webhooks",
+            "pages": [
+              "implementation-guides/webhooks/implement-webhooks"
+            ]
+          },
+          {
+            "group": "MCP Server",
+            "pages": [
+              "implementation-guides/mcp-server/implement-mcp-server"
+            ]
+          },
+          {
+            "group": "Requests Proxy",
+            "pages": [
+              "implementation-guides/requests-proxy/implement-requests-proxy"
+            ]
+          },
+          {
             "group": "Building integrations",
             "pages": [
               "implementation-guides/building-integrations/functions-setup",
+              "implementation-guides/building-integrations/leverage-ai-agents",
+              "implementation-guides/building-integrations/extend-reference-implementation",
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
@@ -259,7 +279,16 @@
             "pages": [
               "implementation-guides/platform/webhooks-from-nango",
               "implementation-guides/platform/contribute-new-api",
-              "implementation-guides/platform/open-telemetry-logs-export"
+              "implementation-guides/platform/implement-event-handler",
+              "implementation-guides/platform/open-telemetry-logs-export",
+              "implementation-guides/platform/common-issues"
+            ]
+          },
+          {
+            "group": "Migrations",
+            "pages": [
+              "implementation-guides/migrations/migrate-from-public-key",
+              "implementation-guides/migrations/migrate-to-zero-yaml"
             ]
           }
         ]
