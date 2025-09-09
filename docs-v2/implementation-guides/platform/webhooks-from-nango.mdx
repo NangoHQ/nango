@@ -266,7 +266,17 @@ Payload received following a failed sync execution:
 
 ### External webhook forwarding
 
-Nango can forward webhooks received from 3rd-party APIs. See details in this [guide](/guides/webhooks/webhooks-from-apis#forward-external-webhooks-to-your-app).
+Webhooks forward from external APIs have the following JSON body:
+
+```json
+{
+   "from": "hubspot",
+   "type": "forward",
+   "connectionId": "<CONNECTION-ID>",
+   "providerConfigKey": "<INTEGRATION-ID>",
+   "payload": ... // Raw payload from Hubspot webhook
+}
+```
 
 ## Webhook retries & debugging
 

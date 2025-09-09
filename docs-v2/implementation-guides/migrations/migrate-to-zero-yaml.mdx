@@ -1,0 +1,342 @@
+---
+title: 'Migrating to Zero YAML'
+sidebarTitle: 'Migrating to Zero YAML'
+description: 'Guide on how to migrate to Zero YAML in Nango.'
+---
+
+This guide will help you migrate your existing Nango integrations from the YAML-based approach to our new Zero YAML system, which uses pure TypeScript with modern tooling.
+
+## What is Zero YAML?
+
+Zero YAML is Nango's new approach to building integrations that eliminates the need for separate `nango.yaml` configuration files. Instead, everything is defined in TypeScript using a configuration-as-code approach with full type safety.
+
+Key benefits:
+- **Type Safety**: Full TypeScript support with Zod schema validation
+- **Better Developer Experience**: Modern tooling, enhanced CLI output, and better error messages
+- **Portability**: Self-contained files that can be easily shared and version controlled
+- **No Custom Syntax**: Pure TypeScript - no need to learn YAML-specific conventions and our previous custom model syntax
+
+Here's a quick example of the new syntax:
+
+```typescript
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const issueSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    state: z.string()
+});
+
+const sync = createSync({
+    description: 'Fetches GitHub issues',
+    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
+    frequency: 'every hour',
+    models: { GithubIssue: issueSchema },
+    exec: async (nango) => {
+        await nango.batchSave([{ id: 'foobar' }], 'GithubIssue');
+    }
+});
+```
+
+## How Zero YAML Works
+
+The new system is built around simplification
+
+### Simplified file Structure
+
+Like a regular typescript codebase
+
+```sh
+├── index.ts                     # Declare what's deployed
+├── package.json                 # Dependency management and types
+├── github/                      # An integration
+    ├── syncs/
+    │     └── fetchIssues.ts     # A sync
+    └── actions/
+           └── createIssue.ts     # An action
+```
+
+### Simplified configuration
+
+Three core functions that replace YAML configuration. You'll benefits from intellisense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
+
+- **`createSync()`**: Defines data synchronization jobs
+- **`createAction()`**: Defines on-off jobs
+- **`createOnEvent()`**: Defines event-based jobs
+
+
+----
+
+
+## Quick Migration Guide
+
+### Automatic Migration
+
+The easiest way to migrate is using our automated migration command:
+
+```bash
+nango migrate-to-zero-yaml
+```
+
+<Warning>This **operation is destructive** and will overwrite your existing files. Make sure to backup your existing files before running the command.</Warning>
+
+This command will:
+1. Analyze your existing `nango.yaml` and TypeScript files
+2. Generate new self-contained TypeScript files
+3. Create the required `package.json` if it doesn't exist
+4. Set up the `index.ts` entry point
+5. Preserve your existing logic and configuration
+
+### Post-Migration Steps
+
+The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct.
+
+<Note>Because the new format is stricter, some types issues can arise after the migration.</Note>
+
+### Migration Plan
+
+We recommend:
+1. **Backup** your current nango integrations folder
+2. Use your **dev env** to migrate to test the new format
+3. Deploy to **prod env** after your have assesed that everything works properly
+
+## What Has Changed?
+
+### Configuration: YAML → TypeScript Objects
+
+**Before** (nango.yaml + separate .ts file):
+```yaml
+# nango.yaml
+integrations:
+  github:
+    issues:
+      runs: every 1h
+      sync_type: full
+      endpoint: GET /issues
+      description: Fetches GitHub issues
+models:
+  GithubIssue:
+    id: string
+    title: string
+```
+
+**After** (single self-contained file):
+```typescript
+const sync = createSync({
+    description: 'Fetches GitHub issues',
+    frequency: 'every hour',
+    syncType: 'full',
+    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
+    models: { GithubIssue: issueSchema }
+});
+```
+
+### Models: YAML Definitions → Zod Schemas
+
+**Before**:
+```yaml
+models:
+  GithubIssue:
+    id: string
+    title: string
+    state: string
+```
+
+**After**:
+```typescript
+const issueSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    state: z.string()
+});
+```
+
+## Before and After Examples
+
+### Sync Example
+
+**Before** (issues.ts + nango.yaml excerpt):
+```typescript
+// issues.ts
+import type { NangoSync, GithubIssue } from '../../models';
+
+export default async function fetchData(nango: NangoSync) {
+    // Sync logic here
+}
+```
+
+```yaml
+# nango.yaml excerpt
+integrations:
+  github:
+    issues:
+      runs: every 1h
+      sync_type: full
+      endpoint: GET /issues
+```
+
+**After** (self-contained fetchIssues.ts):
+```typescript
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const issueSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    state: z.string()
+});
+
+const sync = createSync({
+    description: 'Fetches GitHub issues',
+    frequency: 'every hour',
+    syncType: 'full',
+    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
+    models: { GithubIssue: issueSchema },
+    exec: async (nango) => {
+        // Your existing sync logic here
+    }
+});
+
+export default sync;
+```
+
+### Action Example
+
+**Before** (separate files):
+```typescript
+// create-issue.ts
+export default async function runAction(nango: NangoAction, input: CreateIssueInput) {
+    // Action logic
+}
+```
+
+**After** (self-contained):
+```typescript
+import { createAction } from 'nango';
+import * as z from 'zod';
+
+const inputSchema = z.object({
+    title: z.string(),
+    body: z.string()
+});
+
+const action = createAction({
+    description: 'Create a GitHub issue',
+    endpoint: { method: 'POST', path: '/issues', group: 'Issues' },
+    input: inputSchema,
+    output: z.void(),
+    exec: async (nango, input) => {
+        // Your action logic here
+    }
+});
+
+export default action;
+```
+
+### Index File Structure
+
+The new `index.ts` file imports all your integrations:
+
+```typescript
+// index.ts
+import './github/syncs/fetchIssues.js';
+import './github/actions/createIssue.js';
+// Add more imports as needed
+```
+
+## Migration Gotchas & FAQ
+
+### Gotchas
+```typescript
+err - github/syncs/issues.ts:57:43
+  Argument of type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }[]' is not assignable to parameter of type 'RawModel[]'.
+  Type '{ id: number; owner: string; repo: string; issue_number: number; title: string; author: string; author_id: string; state: string; date_created: Date; date_last_modified: Date; body: string; }' is not assignable to type 'RawModel'.
+    Types of property 'id' are incompatible.
+      Type 'number' is not assignable to type 'string'.
+```
+Previously you were setting the ID property of a sync to a number when it should always be a string.
+
+------
+
+```typescript
+err - 1password-scim/actions/create-user.ts:26:45
+  Property 'errors' does not exist on type 'ZodError<{ firstName: string; lastName: string; email: string; active?: boolean | undefined; externalId?: string | undefined; phoneNumbers?: { type: "work" | "mobile" | "other"; value: string; }[] | undefined; photos?: { ...; }[] | undefined; addresses?: { ...; }[] | undefined; title?: string | undefined; }>'.
+```
+Previously you were validating an input using Zod in this way
+```typescript
+const parsedInput = scimCreateUserSchema.safeParse(input);
+
+if (!parsedInput.success) {
+  for (const error of parsedInput.error.errors) {
+    await nango.log(
+      `Invalid input provided to create a user: ${error.message} at path ${error.path.join(".")}`,
+      { level: "error" },
+    );
+  }
+
+  throw new nango.ActionError({
+    message: "Invalid input provided to create a user",
+  });
+}
+```
+Instead of this you can use a Nango helper:
+```typescript
+const parsedInput = await nango.zodValidateInput({ zodSchema: scimCreateUserSchema, input });
+```
+
+### Nango.yaml EOL
+
+**Q: When will nango.yaml stop being supported?**
+
+**A:** nango.yaml integrations will be supported until the end of 2025. Zero YAML will be the only supported way to build integrations after that. An official roadmap will be published soon.
+
+### Package.json Requirement
+
+**Q: Why is package.json now mandatory?**
+
+**A:** The new system uses modern JavaScript tooling that requires proper dependency management. The `package.json` ensures:
+- Consistent dependency versions across environments
+- Proper module resolution
+- Better integration with modern development tools
+
+If you don't have one, the migration command will create it automatically.
+
+<Info>Note: Bundling custom dependencies is not yet possible but is now on our roadmap thanks to this update.</Info>
+
+### Backward Compatibility
+
+**Q: What still works the same?**
+
+**A:** Your core integration logic remains unchanged. No new features or breaking changes. All CLIs commands are still available.
+
+### Testing Migrated Integrations
+
+**Q: How do I test after migration?**
+
+**A:** Use the same testing commands:
+
+```bash
+# Test a specific sync
+nango dryrun <scriptName> <connectionId>
+```
+
+### Rollback Process
+
+**Q: Can I rollback if something goes wrong?**
+
+**A:** Yes, Nango's platform remains compatible with nango.yaml at all time:
+1. Go to your backup folder
+2. `nango deploy dev`
+
+Keep your original files until you've fully validated the migration.
+
+---
+
+The Zero YAML approach represents a significant step forward in Nango's developer experience. By eliminating custom syntax and embracing pure TypeScript, we've made integrations more maintainable, shareable, and enjoyable to work with. Many more features will be possible thanks to this new syntax.
+
+If you encounter any issues during migration, our support team is ready to help. Happy integrating! 🚀
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
