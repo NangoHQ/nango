@@ -231,7 +231,10 @@
             "group": "Syncs",
             "pages": [
               "implementation-guides/syncs/implement-a-sync",
-              "implementation-guides/syncs/deletion-detection"
+              "implementation-guides/syncs/deletion-detection",
+              "implementation-guides/syncs/realtime-syncs",
+              "implementation-guides/syncs/large-datasets",
+              "implementation-guides/syncs/sync-partitioning"
             ]
           },
           {
