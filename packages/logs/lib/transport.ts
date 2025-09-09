@@ -46,7 +46,7 @@ export class ESTransport implements LogTransportAbstract {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId, success: String(success) });
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId, success: String(success), source: data.source || 'internal' });
         }
     }
 

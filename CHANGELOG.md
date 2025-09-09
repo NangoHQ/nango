@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.5] - 2025-09-08
+
+### Fixed
+
+- *(types)* Update sdk types with updated getConnection signature (#4624) by @khaliqgant
+
+## [v0.67.4] - 2025-09-08
+
+### Added
+
+- *(integrations)* Add support for skio (#4613) by @hassan254-prog
+- Add more metrics (#4618) by @bodinsamuel
+- *(connect)* Stop normalizing endUser (#4564) by @bodinsamuel
+- *(secondary-token-refresh)* Allow tokenName to be specified in getConnection (#4611) by @khaliqgant
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2a8c5d05e6e4adc6856dfdada0851d49a33d3490 by Hassan_Wari by @github-actions[bot]
+
+### Fixed
+
+- Don't emit task completion events for syncs/webhooks (#4615) by @TBonnin
+- *(server)* Fix base url validation (#4616) by @hassan254-prog
+- *(jobs)* Fail quicker when runner is not available (#4614) by @TBonnin
+- *(post-connection-script)* Check for correct provider name (gusto-demo) (#4619) by @hassan254-prog
+- *(tracking)* Move to on consumer and log events (#4617) by @khaliqgant
+
 ## [v0.67.3] - 2025-09-05
 
 ### Added
@@ -4790,6 +4817,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.5]: https://github.com/NangoHQ/nango/compare/v0.67.4..v0.67.5
+[v0.67.4]: https://github.com/NangoHQ/nango/compare/v0.67.3..v0.67.4
 [v0.67.3]: https://github.com/NangoHQ/nango/compare/v0.67.2..v0.67.3
 [v0.67.2]: https://github.com/NangoHQ/nango/compare/v0.67.1..v0.67.2
 [v0.67.1]: https://github.com/NangoHQ/nango/compare/v0.67.0..v0.67.1

@@ -5,7 +5,7 @@ import type { InternalNango as Nango } from '../../internal-nango.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
-    const rootUrl = connection.provider_config_key.includes('sandbox') ? 'api.gusto-demo.com' : 'api.gusto.com';
+    const rootUrl = connection.provider_config_key.includes('demo') ? 'api.gusto-demo.com' : 'api.gusto.com';
 
     const response = await nango.proxy<GustoTokenInfoResponse>({
         baseUrlOverride: `https://${rootUrl}`,

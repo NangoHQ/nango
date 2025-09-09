@@ -277,6 +277,10 @@ export const Go: React.FC = () => {
                         setConnectionFailed(true);
                         setError(t('go.invalidCredentials', { provider: displayName }));
                         return;
+                    } else if (err.type === 'connection_validation_failed') {
+                        setConnectionFailed(true);
+                        setError(err.message || t('go.invalidCredentials', { provider: displayName }));
+                        return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
                         setError(t('go.resourceCapped'));

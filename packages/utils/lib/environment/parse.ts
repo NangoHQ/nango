@@ -68,6 +68,7 @@ export const ENVS = z.object({
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
+    JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
@@ -94,7 +95,9 @@ export const ENVS = z.object({
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
-    JOBS_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+    RUNNER_CLIENT_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    RUNNER_CLIENT_RESPONSE_TIMEOUT_MS: z.coerce.number().optional().default(15_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),

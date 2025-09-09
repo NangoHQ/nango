@@ -8,6 +8,7 @@ export type AuthErrorType =
     | 'window_closed'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
+    | 'connection_validation_failed'
     | 'resource_capped';
 
 export type AuthResult = ConnectionResponseSuccess;

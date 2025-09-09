@@ -1,6 +1,6 @@
 import { logContextGetter } from '@nangohq/logs';
 import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validation } from './validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -23,8 +23,11 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         return;
     }
 
+    const { account } = res.locals;
     const body: PostDeployConfirmation['Body'] = val.data;
     const environmentId = res.locals['environment'].id;
+
+    metrics.increment(metrics.Types.DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     const syncAndActionDifferences = await getAndReconcileDifferences({
         environmentId,

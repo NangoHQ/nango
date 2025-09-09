@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.67.3",
+    "version": "0.67.5",
     "workspaces": [
         "packages/*",
         "scripts"

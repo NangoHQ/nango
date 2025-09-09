@@ -39,7 +39,7 @@ const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
     'connection-id': connectionIdSchema,
     retries: z.coerce.number().optional().default(0),
-    'base-url-override': z.url().optional(),
+    'base-url-override': z.url().or(z.literal('')).optional(),
     decompress: z.enum(['true', 'false']).optional(),
     'retry-on': z
         .string()
@@ -58,6 +58,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     }
 
     const { environment, account } = res.locals;
+
+    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     let logCtx: LogContext | undefined;
     const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
@@ -330,6 +332,8 @@ async function handleResponse({ res, responseStream, logCtx }: { res: Response; 
             void logCtx.error('Failed to parse JSON response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
+        } finally {
+            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
         }
     });
 }
@@ -409,6 +413,9 @@ function handleErrorResponse({
                     // Intentionally left blank - errorData will be a string
                 }
             }
+
+            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
+
             void logCtx.error('Failed with this body', { body: errorData });
         });
     }

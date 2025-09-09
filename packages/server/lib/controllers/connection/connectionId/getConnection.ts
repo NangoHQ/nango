@@ -15,7 +15,8 @@ const queryStringValidation = z
     .object({
         provider_config_key: providerConfigKeySchema,
         refresh_token: z.stringbool().optional().default(false),
-        force_refresh: z.stringbool().optional().default(false)
+        force_refresh: z.stringbool().optional().default(false),
+        refresh_github_app_jwt_token: z.stringbool().optional().default(false)
     })
     .strict();
 
@@ -43,7 +44,12 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
     const queryParams: GetPublicConnection['Querystring'] = queryParamValues.data;
     const params: GetPublicConnection['Params'] = paramValue.data;
 
-    const { provider_config_key: providerConfigKey, force_refresh: instantRefresh, refresh_token: returnRefreshToken } = queryParams;
+    const {
+        provider_config_key: providerConfigKey,
+        force_refresh: instantRefresh,
+        refresh_token: returnRefreshToken,
+        refresh_github_app_jwt_token: refreshGithubAppJwtToken
+    } = queryParams;
     const { connectionId } = params;
 
     const isSync = req.headers['Nango-Is-Sync'] === 'true';
@@ -92,7 +98,8 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         logContextGetter,
         instantRefresh: instantRefresh ?? false,
         onRefreshSuccess: connectionRefreshSuccessHook,
-        onRefreshFailed: connectionRefreshFailedHook
+        onRefreshFailed: connectionRefreshFailedHook,
+        refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
     });
     if (credentialResponse.isErr()) {
         const { connection, ...payload } = credentialResponse.error.payload || {};
