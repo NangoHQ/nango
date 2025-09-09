@@ -90,7 +90,6 @@ export default createSync({
   frequency: 'every hour',
   autoStart: true,
   syncType: 'full',
-  trackDeletes: true,
   models: {
     SalesforceContact: SalesforceContact,
   },
@@ -131,6 +130,7 @@ async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
 
         endpoint = response.data.nextRecordsUrl;
     }
+    await nango.deleteRecordsFromPreviousExecution('SalesforceContact')
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {

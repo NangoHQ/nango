@@ -21,7 +21,6 @@ icon: "code"
       frequency: 'every hour',
       autoStart: true,
       syncType: 'full',
-      trackDeletes: true,
 
       metadata: z.void(),
       models: {
@@ -41,6 +40,9 @@ icon: "code"
 
         // Persist issues to the Nango cache.
         await nango.batchSave(issues, 'GithubIssueDemo');
+
+        // Delete records that don't exist anymore
+        await nango.deleteRecordsFromPreviousExecution('GithubIssueDemo')
       },
     });
     ```
@@ -163,7 +165,9 @@ Read more about [integration scripts](/guides/custom-integrations/overview) to u
   ```
 </ResponseField>
 
-<ResponseField name="trackDeletes" type="boolean">
+<ResponseField name="trackDeletes" type="boolean" deprecated>
+  [DEPRECATED] Instead use `await nango.deleteRecordsFromPreviousExecution('modelName')` inside the sync `exec` function.
+
   When `trackDeletes` is set to `true`, Nango automatically detects deleted records **during full syncs only** and marks them as deleted in each record’s metadata (soft delete). These records remain stored in the cache.
 
   When set to `false`, Nango does not mark missing records as deleted, even if they weren’t returned in the latest full sync—they simply remain in the cache unchanged.
@@ -773,6 +777,33 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
     The model type of the records to delete.
   </ResponseField>
 </Expandable>
+
+### Detect deletions automatically
+
+Automatically detects and marks records as deleted by comparing the current sync execution with the previous one.
+
+```js
+await nango.deleteRecordsFromPreviousExecution('ModelName');
+```
+
+This function should be called at the end of your sync execution, after all records have been saved with `batchSave`. Nango will compare the records saved in the current execution with those from the previous execution and mark any missing records as deleted.
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="modelType" type="string" required>
+    The model type to detect deletions for.
+  </ResponseField>
+</Expandable>
+
+**Important considerations:**
+
+- Only use within syncs that fetch the complete dataset
+- Call this function only after successfully saving all records
+- If your sync fails or doesn't fetch the complete dataset, avoid calling this function as it may cause false deletions
+- Records are soft deleted (marked with `_metadata.deleted = true`) and remain in the cache
+
+For more details on deletion detection strategies, see the [detecting deletes guide](/guides/syncs/detecting-deletes).
 
 ### Update records
 

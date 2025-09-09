@@ -89,6 +89,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return Err(def.error);
         }
 
+        for (const integration of def.value.integrations) {
+            for (const sync of integration.syncs) {
+                if (sync.track_deletes) {
+                    console.warn(
+                        chalk.yellow(
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecution()' in your sync script to automatically detect deletions.`
+                        )
+                    );
+                }
+            }
+        }
+
         generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
