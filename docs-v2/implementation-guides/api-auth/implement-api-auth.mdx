@@ -9,7 +9,7 @@ description: "Guide to letting your users authorize an external API from your ap
 </Info>
 
 <Frame caption="Authorization overview.">
-  ![](/images/auth.png)
+  ![](/images/diagrams/auth.png)
 </Frame>
 
 # 1. Generate a session token (backend)
@@ -93,13 +93,13 @@ Here's an example of how your backend can retrieve a session token from Nango ([
 Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from:
 
 <Frame caption="Connect UI with list of allowed integration ids">
-![](/images/connect-integration-list.png)
+![](/images/screenshots/connect-integration-list.png)
 </Frame>
 
 Passing a single integration ID in `allowed_integrations` will send the end user directly to this integration's authorization flow:
 
 <Frame caption="Connect UI with one allowed integration id.">
-![](/images/connect-linear-only.png)
+![](/images/screenshots/connect-linear-only.png)
 </Frame>
 
 ## 2. Trigger the auth flow (frontend)
@@ -107,7 +107,7 @@ Passing a single integration ID in `allowed_integrations` will send the end user
 In **your frontend**, load the Nango frontend SDK, retrieve the session token from the backend, and trigger the authorization flow.
 
 <Frame caption="Connection flow with Nango's pre-built Connect UI">
-  ![](/images/connect-ui.gif)
+  ![](/images/screenshots/connect-ui.gif)
 </Frame>
 
 ```js
