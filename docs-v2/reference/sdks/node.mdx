@@ -387,7 +387,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/implementation-guides/requests-proxy/implement-requests-proxy)).
 </Info>
 
 <Tip>
@@ -1659,7 +1659,7 @@ const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123
 
 # Proxy
 
-Makes an HTTP request using the [proxy](/guides/proxy-requests):
+Makes an HTTP request using the [proxy](/guides/use-cases/proxy):
 
 ```js
 const config = {
