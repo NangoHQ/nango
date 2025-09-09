@@ -32,7 +32,7 @@ This command starts a process that continuously compiles your integration functi
 
 In your `nango-integrations` folder, create the file for your new action function.
 
-Action files should be within a `actions` folder, which is nested under the integration's folder.
+Action files should be within an `actions` folder, which is nested under the integration's folder.
 
 For example, if you want to create a new action to fetch the available fields on the contact object from `salesforce`, your structure should look like this:
 
@@ -61,7 +61,7 @@ const MyObject = z.object({
 });
 
 export default createAction({
-    description: `<Description of your sync>`,
+    description: `<Description of your action>`,
     version: '1.0.0', // Version, increment it when you release a new version
     endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
     input: z.void(),
@@ -84,8 +84,8 @@ In the `exec` method, implement the logic of your action. Edit `MyObject` to con
 
 The following can help you with your implementation:
 - [`nango` object reference](/reference/scripts) to understand the SDK methods available in actions
-- [Our reference implementations repo](https://www.nango.dev/templates) has 600+ examples of syncs & actions implemented by Nango
- - [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build actions with claude code, cursor & other AI agents
+- [Our reference implementations repo](https://www.nango.dev/templates) has 600+ examples of syncs and actions implemented by Nango
+- [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build actions with Claude Code, Cursor, and other AI agents
 
 Example implementation of the Salesforce contact fields action:
 
@@ -172,7 +172,7 @@ nango deploy --action salesforce-contact-fields dev
 
 Run `nango deploy -h` for more options to deploy only parts of your integrations.
 
-To fetch the synced data in your product, follow the steps in the next setion.
+To fetch the synced data in your product, follow the steps in the next section.
 
 <Tip>
     Most teams automate deployments to production in their CI.
@@ -184,7 +184,7 @@ To fetch the synced data in your product, follow the steps in the next setion.
 
 For common use cases, [pre-built reference implementations](https://www.nango.dev/templates) are available to help you get started fast.
 
-Select your integration in the _Integrations_ tab, and navigate to the _Endpoints_ tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
+Select your integration in the **Integrations** tab and navigate to the **Endpoints** tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
 
 Reference implementations are a starting point. You will likely need to [customize them](/implementation-guides/building-integrations/extend-reference-implementation) or [create your own custom action](#how-to-build-an-action).
 

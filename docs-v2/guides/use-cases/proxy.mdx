@@ -6,22 +6,22 @@ description: 'Run authenticated API requests'
 
 The proxy provides an easy way to make authenticated API requests to external APIs.
 
-## When should you the proxy?
+## When should you use the proxy?
 
 - You want to make authenticated API requests directly from your backend
-- You would like automatic retries and reate-limit handling for your API requests
+- You want automatic retries and rate-limit handling for your API requests
 - You want your API requests to be logged in Nango
 
 Common examples:
-- Fetching files, and other large binary content, from an external API
+- Fetching files and other large binary content from an external API
 - Running API requests directly from your backend to an external API
 - Allowing AI agents to make arbitrary, authenticated API requests to an external API
 
 ## Key facts
 
-- The proxy proxies API requests from your backend to the external API, and back
-- Nango automatically adds any required authentication or API specific config (e.g. subdomain) to the API request
-- Nango can, optionally, retry failed requsts and handle rate-limits
+- The proxy forwards API requests from your backend to the external API and back
+- Nango automatically adds any required authentication or API-specific config (e.g., subdomain) to the API request
+- Nango can optionally retry failed requests and handle rate limits
 - Proxied API requests are executed 1:1 against the external API, and its response is transferred back to you without modification
 - All proxy requests are logged in Nango's [logs](/guides/platform/logs)
 

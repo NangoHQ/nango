@@ -4,7 +4,7 @@ sidebarTitle: 'Unified APIs'
 description: 'How Nango supports unified APIs'
 ---
 
-Nango suports building your own, custom unified APIs.
+Nango supports building your own, custom unified APIs.
 
 Nango does not have pre-built unified data models and APIs available out of the box. This page explains why.
 
@@ -22,9 +22,9 @@ However, when API unification becomes limiting, Nango preserves your ability to 
 
 ### Unification challenges
 
-Not all use cases and APIs are good fits for unification. You might need to leverage specific capabilities of an API that are impossible to standardize with others. For example, Notion’s block-based structure reflects unique ways its API is consumed, making it difficult to unify with other knowledge management APIs like Google Drive or SharePoint. While basic use cases such as listing files or exporting plain-text documents can be unified, advanced capabilities like complex handling of Notion blocks cannot. APIs with no standard equivalent capabilities are sometimes referred to as _unstructured_ APIs.
+Not all use cases and APIs are good fits for unification. You might need to leverage specific capabilities of an API that are impossible to standardize with others. For example, Notion's block-based structure reflects unique ways its API is consumed, making it difficult to unify with other knowledge management APIs like Google Drive or SharePoint. While basic use cases such as listing files or exporting plain-text documents can be unified, advanced capabilities like complex handling of Notion blocks cannot. APIs with no standard equivalent capabilities are sometimes referred to as *unstructured* APIs.
 
-Even when APIs have standard models, such as CRMs (contacts, companies), accounting systems (transactions, invoices), or HR platforms (employees, teams) — often called _structured_ APIs — unification can still be imperfect due to discrepancies across providers. For instance, an Applicant Tracking System (ATS) might have 5 candidate statuses, another 10, and a third might allow fully customizable statuses. Mapping these statuses into a single unified model requires decisions that cannot follow a “one-size-fits-all” approach. These decisions have significant consequences for how your integration functions and must account for different use cases. For SaaS companies, these decisions often need to adapt to the specific logic of each customer, especially if they use custom fields or statuses.
+Even when APIs have standard models, such as CRMs (contacts, companies), accounting systems (transactions, invoices), or HR platforms (employees, teams) — often called *structured* APIs — unification can still be imperfect due to discrepancies across providers. For instance, an Applicant Tracking System (ATS) might have 5 candidate statuses, another 10, and a third might allow fully customizable statuses. Mapping these statuses into a single unified model requires decisions that cannot follow a "one-size-fits-all" approach. These decisions have significant consequences for how your integration functions and must account for different use cases. For SaaS companies, these decisions often need to adapt to the specific logic of each customer, especially if they use custom fields or statuses.
 
 Fortunately, Nango streamlines this process while giving you full control over how you unify APIs to match your exact needs. It ensures flexibility to handle both standard models and specific API nuances without sacrificing functionality.
 
@@ -40,14 +40,14 @@ Based on our experience helping hundreds of companies build product integrations
 
 ### Unify with your data model
 
-If your product already has a data model for the entities you’re working with (e.g., contacts, companies, invoices), use this as your universal model for API unification. This approach has several advantages:
-- It gives you a single, consistent model for your application.
-- It ensures that the unified model contains all the fields needed for your specific use case.
-- If your internal model is large, simplify it to focus on the subset of fields that are most important to your customers.
+If your product already has a data model for the entities you're working with (e.g., contacts, companies, invoices), use this as your universal model for API unification. This approach has several advantages:
+- It gives you a single, consistent model for your application
+- It ensures that the unified model contains all the fields needed for your specific use case
+- If your internal model is large, simplify it to focus on the subset of fields that are most important to your customers
 
 ### Expect fields to be optional
 
-Not all APIs will provide the same information. Some fields in your unified model will inevitably be `null` for certain APIs. Design your logic to handle missing fields gracefully, and build fallback mechanisms where necessary. This ensures that your integrations remain robust even when data is incomplete.
+Not all APIs will provide the same information. Some fields in your unified model will inevitably be `null` for certain APIs. Design your logic to handle missing fields gracefully and build fallback mechanisms where necessary. This ensures that your integrations remain robust even when data is incomplete.
 
 ### Use the same model for reads and writes
 

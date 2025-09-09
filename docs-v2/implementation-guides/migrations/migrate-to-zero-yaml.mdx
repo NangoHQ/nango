@@ -14,7 +14,7 @@ Key benefits:
 - **Type Safety**: Full TypeScript support with Zod schema validation
 - **Better Developer Experience**: Modern tooling, enhanced CLI output, and better error messages
 - **Portability**: Self-contained files that can be easily shared and version controlled
-- **No Custom Syntax**: Pure TypeScript - no need to learn YAML-specific conventions and our previous custom model syntax
+- **No Custom Syntax**: Pure TypeScript—no need to learn YAML-specific conventions and our previous custom model syntax
 
 Here's a quick example of the new syntax:
 
@@ -45,7 +45,7 @@ The new system is built around simplification
 
 ### Simplified file Structure
 
-Like a regular typescript codebase
+Like a regular TypeScript codebase
 
 ```sh
 ├── index.ts                     # Declare what's deployed
@@ -59,10 +59,10 @@ Like a regular typescript codebase
 
 ### Simplified configuration
 
-Three core functions that replace YAML configuration. You'll benefits from intellisense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
+Three core functions that replace YAML configuration. You'll benefit from IntelliSense and type safety, directly in your IDE. No need to jump between files to find the right configuration.
 
 - **`createSync()`**: Defines data synchronization jobs
-- **`createAction()`**: Defines on-off jobs
+- **`createAction()`**: Defines one-off jobs
 - **`createOnEvent()`**: Defines event-based jobs
 
 
@@ -79,7 +79,7 @@ The easiest way to migrate is using our automated migration command:
 nango migrate-to-zero-yaml
 ```
 
-<Warning>This **operation is destructive** and will overwrite your existing files. Make sure to backup your existing files before running the command.</Warning>
+<Warning>This **operation is destructive** and will overwrite your existing files. Make sure to back up your existing files before running the command.</Warning>
 
 This command will:
 1. Analyze your existing `nango.yaml` and TypeScript files
@@ -92,14 +92,14 @@ This command will:
 
 The migration command should automatically transform all your files. However, you should review the changes and make sure everything is correct.
 
-<Note>Because the new format is stricter, some types issues can arise after the migration.</Note>
+<Note>Because the new format is stricter, some type issues can arise after the migration.</Note>
 
 ### Migration Plan
 
 We recommend:
-1. **Backup** your current nango integrations folder
+1. **Back up** your current nango integrations folder
 2. Use your **dev env** to migrate to test the new format
-3. Deploy to **prod env** after your have assesed that everything works properly
+3. Deploy to **prod env** after you have assessed that everything works properly
 
 ## What Has Changed?
 
@@ -280,7 +280,7 @@ if (!parsedInput.success) {
   });
 }
 ```
-Instead of this you can use a Nango helper:
+Instead of this, you can use a Nango helper:
 ```typescript
 const parsedInput = await nango.zodValidateInput({ zodSchema: scimCreateUserSchema, input });
 ```
@@ -308,7 +308,7 @@ If you don't have one, the migration command will create it automatically.
 
 **Q: What still works the same?**
 
-**A:** Your core integration logic remains unchanged. No new features or breaking changes. All CLIs commands are still available.
+**A:** Your core integration logic remains unchanged. No new features or breaking changes. All CLI commands are still available.
 
 ### Testing Migrated Integrations
 
@@ -325,7 +325,7 @@ nango dryrun <scriptName> <connectionId>
 
 **Q: Can I rollback if something goes wrong?**
 
-**A:** Yes, Nango's platform remains compatible with nango.yaml at all time:
+**A:** Yes, Nango's platform remains compatible with nango.yaml at all times:
 1. Go to your backup folder
 2. `nango deploy dev`
 

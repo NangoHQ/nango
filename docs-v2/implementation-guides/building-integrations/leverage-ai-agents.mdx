@@ -59,7 +59,7 @@ I need to build a Nango custom [SYNC/ACTION] for [API_NAME] called [INTEGRATION_
 - **Output schema**: [describe the expected data structure]
 - **Field mapping**:
   - `api_field_name` → `nango_field_name`
-  - other transformations (ex: dates)
+  - other transformations (e.g., dates)
 - **API Documentation**: [link-to-docs]
 - **Data source**: [specific API endpoint(s) to call]
 - **Error handling requirements**
@@ -69,12 +69,12 @@ Please implement this step by step and use `nango dryrun <integration-name> <con
 
 ### 3. Key prompt tips
 
-- **Be specific about the provider and integration name** - this helps the AI understand the context
-- **Specify sync vs action** - clearly state whether you're building a sync (continuous data synchronization) or action (one-time operation)
-- **Specify data models** - clearly describe what data you want to be synced or returned and its structure
-- **Include field mapping details** - specify how API fields should map to your desired output schema and any transformations needed
-- **Provide the test connection ID** - enables the AI to run `nango dryrun` for testing
-- **Include API documentation links** - if available, provide links to the provider's API docs
+- **Be specific about the provider and integration name**—this helps the AI understand the context
+- **Specify sync vs action**—clearly state whether you're building a sync (continuous data synchronization) or action (one-time operation)
+- **Specify data models**—clearly describe what data you want to be synced or returned and its structure
+- **Include field mapping details**—specify how API fields should map to your desired output schema and any transformations needed
+- **Provide the test connection ID**—enables the AI to run `nango dryrun` for testing
+- **Include API documentation links**—if available, provide links to the provider's API docs
 
 ### 4. Iterative Development
 

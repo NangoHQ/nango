@@ -4,24 +4,24 @@ sidebarTitle: 'MCP Server'
 description: 'Expose your integrations directly to an LLM'
 ---
 
-Our built-in MCP server can expose your integrations directly to an LLM.
+Our built-in MCP server exposes your integrations directly to an LLM.
 
 ## When should you use the MCP server?
 
 - You want to expose custom tools to an LLM
-- You don't want to create your own tool calling wrapper/infrastructure
+- You don't want to create your own tool-calling wrapper or infrastructure
 
 Common examples:
 - Exposing your "create-opportunity" [Action](/guides/use-cases/actions) to an LLM
-- Creating additional, custom tools not supported by an APIs native remote MCP Server
+- Creating additional, custom tools not supported by an API's native remote MCP Server
 
 ## Key facts
 
 - The built-in MCP server exposes the [Actions](/guides/use-cases/actions) of your integration
 - Nango generates one MCP server for each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F)
-    - This makes MCP server specific to an integrations AND to one connected account of the integration
+    - This makes the MCP server specific to an integration AND to one connected account of the integration
     - This ensures the account's permissions are respected on the external API
-- MCP tool calls are Action invocations under the hood, and get logged as such in Nango's [logs](/guides/platform/logs)
+- MCP tool calls are Action invocations under the hood and get logged as such in Nango's [logs](/guides/platform/logs)
 
 
 ## How the MCP Server works
@@ -36,7 +36,7 @@ Follow our [implement the MCP Server](/implementation-guides/mcp-server/implemen
 
 ### Tool calling without the MCP server
 
-Many AI apps use custom tool calling wrappers, rather than MCP servers.
+Many AI apps use custom tool-calling wrappers rather than MCP servers.
 
 You can still use Actions as tools for LLMs without our MCP server.
 
