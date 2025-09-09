@@ -4,9 +4,9 @@ sidebarTitle: 'Extend a reference implementation'
 description: 'Guide on how to extend a reference integration in Nango.'
 ---
 
-Nango publishes reference implementations for the most popular APIs & use cases. Reference implementations are a starting point for your custom integrations to reuse and extend.
+Nango publishes reference implementations for the most popular APIs and use cases. Reference implementations are a starting point for your custom integrations to reuse and extend.
 
-You can find all 600+ reference implementations on the [reference implementations Github repo](https://www.nango.dev/templates).
+You can find all 600+ reference implementations on the [reference implementations GitHub repo](https://www.nango.dev/templates).
 
 This guide walks you through how you can extend and customize them.
 
@@ -22,21 +22,21 @@ Otherwise, you can skip to the next step.
 
 Copy the code of the reference implementation into your own `nango-integrations` folder.
 
-You can either copy an entire integration folder (e.g. `github`), or copy individual sync & action files. If you copy individual files, make sure you also copy imported functions that may be in other files.
+You can either copy an entire integration folder (e.g., `github`) or copy individual sync and action files. If you copy individual files, make sure you also copy imported functions that may be in other files.
 
-All reference implementation files are available in our [reference implementations Github repo](https://www.nango.dev/templates).
+All reference implementation files are available in our [reference implementations GitHub repo](https://www.nango.dev/templates).
 
 Import the new files in your `index.ts` file.
 
 ### Step 4 - Customize the implementation
 
-Edit the sync & action functions as required for your integration.
+Edit the sync and action functions as required for your integration.
 
 You may want to reference:
 - [Implement a sync guide](/implementation-guides/syncs/implement-a-sync)
 - [Implement an action guide](/implementation-guides/actions/implement-an-action)
 
-These two guides explain the SDK available in custom sync & action functions. They also explain how to test your functions locally, and how to deploy them.
+These two guides explain the SDK available in custom sync and action functions. They also explain how to test your functions locally and how to deploy them.
 
 <Info>
 If a custom sync or action function name conflicts with a reference implementation name, the custom function will override the reference implementation in the Nango UI (once you deploy your custom integrations to Nango).

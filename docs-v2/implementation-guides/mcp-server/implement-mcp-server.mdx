@@ -11,7 +11,7 @@ MCP servers expose your Nango actions as tools that can be invoked by LLM client
 When an LLM client connects to your MCP server:
 
 1. The server authenticates the request using your Nango secret key
-2. It identifies available actions based on the provided connection ID and integration ID (ak provider config key)
+2. It identifies available actions based on the provided connection ID and integration ID (a.k.a. provider config key)
 3. It exposes these actions as tools for the LLM to invoke
 4. When the LLM invokes a tool, the MCP server executes the corresponding Nango action
 
@@ -66,10 +66,10 @@ Check out a full chat loop example in our [Nango MCP Client Example repo](https:
 
 A good way to manually test the MCP server is to use [Claude Desktop](https://claude.ai/download) paired with the [mcp-remote](https://www.npmjs.com/package/mcp-remote) npm package.
 
-Claude Desktop originally only supports the [sdio](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#stdio) transport, but the `mcp-remote` package allows you to proxy requests to the MCP server over the Streamable HTTP transport.
+Claude Desktop originally only supports the [stdio](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#stdio) transport, but the `mcp-remote` package allows you to proxy requests to the MCP server over the Streamable HTTP transport.
 
 1. Install [Claude Desktop](https://claude.ai/download)
-2. Open `~/Library/Application Support/Claude/claude_desktop_config.json` (MacOS) or `%APPDATA%/Claude/claude_desktop_config.json` (Windows) in a code editor and add your desired MCP server connections using [mcp-remote](https://www.npmjs.com/package/mcp-remote). Eg:
+2. Open `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%/Claude/claude_desktop_config.json` (Windows) in a code editor and add your desired MCP server connections using [mcp-remote](https://www.npmjs.com/package/mcp-remote). For example:
     ```json
     {
       "mcpServers": {
@@ -106,8 +106,8 @@ Claude Desktop originally only supports the [sdio](https://modelcontextprotocol.
     ```
     Avoid modifying the spacing on the headers as `mcp-remote` is sensitive to it.
     
-3. Restart Claude Desktop to apply the changes.
-4. Claude should now be able to list and execute actions from the connections you added to the config file.
+3. Restart Claude Desktop to apply the changes
+4. Claude should now be able to list and execute actions from the connections you added to the config file
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

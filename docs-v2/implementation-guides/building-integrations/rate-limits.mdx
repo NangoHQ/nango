@@ -20,15 +20,15 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
-- It uses exponential backoff to wait out the rate-limit period.
-- Nango [syncs](/guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook scripts have shorter lifespans, see [Resource Limits](/guides/platform/resource-limits)).
-- It works for APIs, without requiring any API-specific configurations
+- It uses exponential backoff to wait out the rate-limit period
+- Nango [syncs](/guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook scripts have shorter lifespans, see [Resource Limits](/guides/platform/resource-limits))
+- It works for APIs without requiring any API-specific configurations
 
-Find detail about HTTP request retries in the [reference](/reference/scripts#http-request-retries).
+Find details about HTTP request retries in the [reference](/reference/scripts#http-request-retries).
 
 ## Strategy 2: Leverage rate-limit headers
 
-Most of the time, the 1st strategy is sufficient to handle rate limits.
+Most of the time, the first strategy is sufficient to handle rate limits.
 
 For APIs with stringent limits, Nango provides a more refined and customized approach by automatically parsing API-specific rate-limit headers from responses and scheduling retries only after the rate limit period has reset:
 
@@ -39,7 +39,7 @@ await nango.get({ endpoint: '/some-endpoint', retryHeader: { at: "x-ratelimit-re
 ```
 
 
-If rate-limit headers are not already configured for an API you are using, you can request their inclusion by reaching out to the Nango team via the [community](https://nango.dev/slack) — typically within 24 hours.
+If rate-limit headers are not already configured for an API you are using, you can request their inclusion by reaching out to the Nango team via the [community](https://nango.dev/slack)—typically within 24 hours.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

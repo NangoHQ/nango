@@ -4,26 +4,26 @@ sidebarTitle: 'Webhooks'
 description: 'Listen to webhooks from external APIs'
 ---
 
-Webhooks let you listen to incoming webhooks from external APIs, and react to them.
+Webhooks let you listen to incoming webhooks from external APIs and react to them.
 
 ## When should you use webhooks?
 
-- You want to know about changes in the external API in realtime
-- You want to build a realtime data sync from the external API to your product
-- You don't want to deal with how each API implements webhooks, subscriptions, attributing webhooks to users, etc.
-- You don't want to build and maintain infrastructure to deal with webhook floods, debouncing, etc.
+- You want to know about changes in the external API in real time
+- You want to build a real-time data sync from the external API to your product
+- You don't want to deal with how each API implements webhooks, subscriptions, or attributing webhooks to users
+- You don't want to build and maintain infrastructure to handle webhook floods, debouncing, etc.
 
 Common examples:
-- Listen to "contact updated" webhook from HubSpot, Attio, etc.
-- Triggering an "order" sync run whenever Shopify sends a "new order" webhook
+- Listen to "contact updated" webhooks from HubSpot, Attio, etc.
+- Trigger an "order" sync run whenever Shopify sends a "new order" webhook
 
 ## Key facts
 
 - Incoming webhooks are processed by Nango's infrastructure
-    - It auto-scales, and provides tools to deal with webhook floods, debouncing, etc.
-    - You have full control over webhooks processing
-- Each webhook gets attributed to its corresponding [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (a user or organization that has setup a specific integration)
-- Webhooks can be forwarded to your app, or trigger a [Function](/guides/platform/functions) in Nango for processing
+    - It auto-scales and provides tools to handle webhook floods, debouncing, etc.
+    - You have full control over webhook processing
+- Each webhook gets attributed to its corresponding [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (a user or organization that has set up a specific integration)
+- Webhooks can be forwarded to your app or trigger a [Function](/guides/platform/functions) in Nango for processing
 - Webhooks can be combined with [syncs](/guides/use-cases/syncs) to create real-time syncs to your product
 - All incoming webhooks create detailed logs in Nango's [logs](/guides/platform/logs)
 
@@ -36,9 +36,9 @@ Common examples:
 4. You decide for each webhook type how it gets processed:
     - Forward to your backend
     - Trigger a [Function](/guides/platform/functions) in Nango to process the webhook
-5. Nango stores detailed logs about each incoming webhook and it's associated processing
+5. Nango stores detailed logs about each incoming webhook and its associated processing
 
-Follow our [implement an webhook](/implementation-guides/webhooks/implement-webhooks) guide to use webhooks in your product.
+Follow our [implement a webhook](/implementation-guides/webhooks/implement-webhooks) guide to use webhooks in your product.
 
 ## Webhooks in detail
 
@@ -52,10 +52,10 @@ You can also combine the two: Process the webhook in Nango, fetch additional dat
 
 ### Real-time syncs with webhooks + polling
 
-You can combine webhooks and polling syncs into a single, realtime sync.
+You can combine webhooks and polling syncs into a single, real-time sync.
 
-With this setup, both webhooks and the polling syncs update the same [Sync](/guides/use-cases/syncs) cache in Nango. Nango applies change detection to the objects in the cache, and notifies your application when new data is available.
+With this setup, both webhooks and polling syncs update the same [Sync](/guides/use-cases/syncs) cache in Nango. Nango applies change detection to the objects in the cache and notifies your application when new data is available.
 
-This gives you the best of both worlds: The reliability of polling syncs, and the real-time updates of webhooks.
+This gives you the best of both worlds: the reliability of polling syncs and the real-time updates of webhooks.
 
 To set this up, follow our [implementation guide for real-time syncs](/implementation-guides/syncs/realtime-syncs).

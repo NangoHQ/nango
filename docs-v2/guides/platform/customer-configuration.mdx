@@ -4,9 +4,9 @@ sidebarTitle: 'Per-customer config'
 description: 'How Nango helps you handle customer-specific configuration in your integrations'
 ---
 
-Many integrations need customer‑specific behavior: custom field mappings, record filters, or feature toggles. Larger customers often run custom schemas in CRMs, ERPs, or productivity tools, so a one‑size‑fits‑all approach won’t work.
+Many integrations need customer-specific behavior: custom field mappings, record filters, or feature toggles. Larger customers often run custom schemas in CRMs, ERPs, or productivity tools, so a one-size-fits-all approach won’t work.
 
-Per‑customer configuration lets you adapt without forking code. The core logic stays the same, while each connection supplies the rules that shape requests, transformations, and validations.
+Per-customer configuration lets you adapt without forking code. The core logic stays the same, while each connection supplies the rules that shape requests, transformations, and validations.
 
 ## How Nango helps with customer-specific config
 
@@ -14,13 +14,13 @@ Store customer configuration on the Connection as metadata. It lives alongside t
 
 You can access the metadata from any [Function](/guides/platform/functions) in Nango, so your integration can read mappings, filters, and flags at runtime.
 
-To implement per-customer config in your Nango integrations, follow the step‑by‑step guide: [Implement per-customer configuration](/implementation-guides/building-integrations/customer-configuration).
+To implement per-customer config in your Nango integrations, follow the step-by-step guide: [Implement per-customer configuration](/implementation-guides/building-integrations/customer-configuration).
 
 ## How to approach customer-specific config
 
 Start with a single default behavior. Only add configuration when real needs recur across customers.
 
-Design a minimal, typed schema that mirrors actual use cases (e.g., field mappings, record filters, feature flags). Avoid open‑ended key/value bags.
+Design a minimal, typed schema that mirrors actual use cases (e.g., field mappings, record filters, feature flags). Avoid open-ended key/value bags.
 
 Add UI and workflows in your app to capture the config, persist it on the Connection, and reference it in your Functions. Roll out incrementally and version the schema when it changes.
 

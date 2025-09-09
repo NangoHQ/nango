@@ -19,7 +19,7 @@ Type `nango help` to get an overview of all CLI functions or take a look at the 
 
 All your integrations live in a folder called `nango-integrations`. Whether located in your main codebase or a dedicated repository, this folder should be version-controlled.
 
-To initialize your integrations folder (e.g. at the root of your repository), run:
+To initialize your integrations folder (e.g., at the root of your repository), run:
 ```bash
 nango init nango-integrations
 ```
@@ -35,8 +35,7 @@ nango init nango-integrations
 
 </Note>
 
-This creates the `./nango-integrations` folder with some initial configuration and an example
-sync script. The `nango-integrations` directory looks like this:
+This creates the `./nango-integrations` folder with some initial configuration and an example sync script. The `nango-integrations` directory looks like this:
 ```
 nango-integrations/
 ├── .nango
@@ -56,15 +55,15 @@ NANGO_SECRET_KEY_PROD='<PROD-SECRET-KEY>'
 NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
 ```
 
-Get your secret keys from the _Environment Settings_ tab (toggle between the `Production` and `Development` environment in the left nav bar).
+Get your secret keys from the **Environment Settings** tab (toggle between the `Production` and `Development` environment in the left nav bar).
 
 ## Next steps
 
 Take a look at the example `github-issues-example` sync.
 
-You can also find more examples in our [reference implementations repo](https://www.nango.dev/templates) on Github.
+You can also find more examples in our [reference implementations repo](https://www.nango.dev/templates) on GitHub.
 
-When you are ready, remove the example integration, and create your own function:
-- [Implement a sync](/implementation-guides/syncs/implement-a-sync),
+When you are ready, remove the example integration and create your own function:
+- [Implement a sync](/implementation-guides/syncs/implement-a-sync)
 - [Implement an action](/implementation-guides/actions/implement-an-action)
-- [Implement webhooks processing](/implementation-guides/webhooks/implement-webhooks)
+- [Implement webhook processing](/implementation-guides/webhooks/implement-webhooks)

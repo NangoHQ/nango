@@ -6,33 +6,33 @@ description: 'Continously sync data from external APIs'
 
 Syncs let you continuously sync data from external APIs.
 
-They work with any data the extenal API exposes.
+They work with any data the external API exposes.
 
 ## When should you use syncs?
 
-- You want to store a copy of the external API's data in your app, and keep this copy up to date
+- You want to store a copy of the external API's data in your app and keep this copy up to date
 - You want to know when data in the external API changes, but the API offers no webhooks for this
-- You want to combine polling syncs & webhooks to get a reliable, real-time stream of changes from the external API
+- You want to combine polling syncs and webhooks to get a reliable, real-time stream of changes from the external API
 
 Common examples:
-- Syncing contacts, companies or deals from a CRM (HubSpot, Salesforce, Attio, etc.)
-- Syncing files from drives (Google Drive, Sharepoint, Box, etc.)
+- Syncing contacts, companies, or deals from a CRM (HubSpot, Salesforce, Attio, etc.)
+- Syncing files from drives (Google Drive, SharePoint, Box, etc.)
 - Syncing call transcripts from video recorders (Gong, Fathom, Zoom, etc.)
 
-You can also implement 2-way syncs by combining syncs with [Actions](/guides/use-cases/actions).
+You can also implement two-way syncs by combining syncs with [Actions](/guides/use-cases/actions).
 
 
 ## Key facts
 
 - Syncs run in Nango's infrastructure, powered by [Functions](/guides/platform/functions)
-    - You control the code of the sync: Which data to fetch, transformations, data models, etc.
-    - All platform features, like data validation, per-customer config, retries, rate-limit handling, are available for syncs
-- Syncs are defined once, and run in the context of each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (api key or access token of your user)
+    - You control the code of the sync: which data to fetch, transformations, data models, etc.
+    - All platform features, like data validation, per-customer config, retries, and rate-limit handling, are available for syncs
+- Syncs are defined once and run in the context of each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (API key or access token of your user)
 - Syncs can be incremental (only fetch changed data) or full refresh (always fetch all data)
 - Synced data is cached in Nango (encrypted at rest and in transit)
-- Nango detects changes to synced data (additions, updates & deletes) and sends a webhook to your app
+- Nango detects changes to synced data (additions, updates, and deletes) and sends a webhook to your app
 - You set the frequency at which the sync polls for new data (15 seconds minimum interval)
-- Syncs handle rate-limits, retries, and pagination
+- Syncs handle rate limits, retries, and pagination
 - All sync runs and API requests are logged in Nango's [logs](/guides/platform/logs)
 
 ## How syncs work
@@ -41,9 +41,9 @@ You can also implement 2-way syncs by combining syncs with [Actions](/guides/use
   ![](/images/diagrams/nango-syncs-diagram.png)
 </Frame>
 
-Syncs are defined on the integration (e.g. Github, Google Drive, etc.) by implementing a [Function](/guides/platform/functions) with the sync's logic.
+Syncs are defined on the integration (e.g., GitHub, Google Drive, etc.) by implementing a [Function](/guides/platform/functions) with the sync's logic.
 
-Nango then executes the sync for each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) of this integration. This lets you customize the sync's logic, execution frequency, etc. for each customer, if necessary.
+Nango then executes the sync for each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) of this integration. This lets you customize the sync's logic, execution frequency, etc., for each customer, if necessary.
 
 Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for step-by-step instructions to create your own syncs.
 
@@ -51,19 +51,19 @@ Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync) gui
 
 ### Incremental vs. full-refresh syncs
 
-Syncs can either be incremental or full-refresh. Nango supports both, and automatically detects changes to records in both modes.
+Syncs can either be incremental or full-refresh. Nango supports both and automatically detects changes to records in both modes.
 
 **Incremental sync**
-These only fetch data that has changed since the last execution, appending it to the existing dataset. This mode is more efficient for larger datasets and relies on the external API's support for querying modified records. Unfortunately, not all APIs, and not all endpoints, support this.
+These only fetch data that has changed since the last execution, appending it to the existing dataset. This mode is more efficient for larger datasets and relies on the external API's support for querying modified records. Unfortunately, not all APIs and not all endpoints support this.
 
 **Full refresh sync**
-These syncs retrieve the entire dataset during each execution. Takes longer to execute, especially for large datasets. Often used as fallback, if the external API endpoint offers no way to filter or sort records by last modified date.
+These syncs retrieve the entire dataset during each execution. They take longer to execute, especially for large datasets. Often used as a fallback if the external API endpoint offers no way to filter or sort records by last modified date.
 
 Refer to the [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for more information on how to implement either in Nango.
 
 ### Deletion detection
 
-Nango supports detecting deleted records on the external API.
+Nango supports detecting deleted records on external APIs.
 
 Deletion detection for incremental syncs requires specific support for this by the external API. For full-refresh syncs, deletes can always be detected.
 
@@ -73,6 +73,6 @@ Follow our [implementation guide for deletion detection in syncs](/implementatio
 
 Nango supports real-time syncs with [webhooks](/guides/use-cases/webhooks).
 
-You can either rely entirely on webhooks for the sync, or combine webhooks with polling sync runs to ensure you never miss data.
+You can either rely entirely on webhooks for the sync or combine webhooks with polling sync runs to ensure you never miss data.
 
 Follow our [implement real-time syncs with webhooks](/implementation-guides/syncs/realtime-syncs) guide to add real-time support for your sync.

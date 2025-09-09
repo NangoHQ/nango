@@ -4,7 +4,7 @@ sidebarTitle: 'API Auth'
 description: 'Let your users connect external APIs to your app'
 ---
 
-API Auth lets you connect your app with [500+ APIs](/integrations/all).
+API Auth connects your app to [500+ APIs](/integrations/all).
 
 <Frame caption="Connection flow with Nango's pre-built Connect UI">
   ![](/images/screenshots/connect-ui.gif)
@@ -12,24 +12,24 @@ API Auth lets you connect your app with [500+ APIs](/integrations/all).
 
 ## When should you use API auth?
 
-- You want to let your users connect their external accounts to your app
-- You want to avoid implementing OAuth flows, guides on where to find API keys, refresh token logic, etc. yourself
-- You want a white-label experience for your users to connect
+- You want users to connect their external accounts to your app
+- You want to avoid building OAuth flows, API key guides, and token refresh logic yourself
+- You want a white-label connection experience for your users
 
 All Nango customers use API auth. Everything else, [Syncs](/guides/use-cases/syncs), [Actions](/guides/use-cases/actions), and [Webhooks](/guides/use-cases/webhooks), builds on it.
 
 
 ## Key facts
 
-- Supports dozens of auth methods: OAuth 2.0, 2.1, API key, basic auth, custom auth models
-- Securely stores all credentials with encryption at rest & in transit (learn more on our [Trust center](https://trust.nango.dev))
-- Automatically refreshes access tokens as required. Ensures access tokens don't expire.
-- Detects broken access tokens and notifies your backend with a webhook
-- Fully white-label: Users authorize your app. No Nango branding.
-- Full control: You always have access to your user's API keys & access tokens
-- Provides detailed end-user guides to find API keys and other parameters (subdomain, project id, etc.) required to connect
-- Automatically validates API keys & other credentials on connection
-- Anybody can [contribute new APIs](/implementation-guides/platform/contribute-new-api) to Nango, or our team can add new APIs for you
+- Supports dozens of auth methods: OAuth 2.0, 2.1, API key, basic auth, and custom auth models
+- Securely stores all credentials with encryption at rest and in transit (learn more on our [Trust center](https://trust.nango.dev))
+- Automatically refreshes access tokens as needed to prevent expiration
+- Detects broken access tokens and notifies your backend via webhook
+- Fully white-label: Users authorize your app with no Nango branding
+- Full control: You always have access to your users' API keys and access tokens
+- Provides detailed guides to help users find API keys and other required parameters (subdomain, project ID, etc.)
+- Automatically validates API keys and other credentials during connection
+- Anyone can [contribute new APIs](/implementation-guides/platform/contribute-new-api) to Nango, or our team can add new APIs for you
 - All authorization attempts create detailed logs in Nango's [logs](/guides/platform/logs)
 
 ## How API auth works
@@ -42,28 +42,28 @@ All Nango customers use API auth. Everything else, [Syncs](/guides/use-cases/syn
 
 ### What is a Connection?
 
-Each time a customer connects an external account this creates a Connection in Nango.
+Each time a customer connects an external account, this creates a Connection in Nango.
 
-You can think of a Connection in Nango as a set of credentials for an integration (e.g. a Github API access token).
+You can think of a Connection in Nango as a set of credentials for an integration (e.g., a GitHub API access token).
 
-It is up to you how you associate the Connection with objects in your application. You can link them to an account in your application, a user, or any other object, such as a project or workspace. Which of these is best depends on the use case of your integration, and whether you want each user, each account, etc. to set the integration up.
+It's up to you how you associate the Connection with objects in your application. You can link them to an account, a user, or any other object, such as a project or workspace. Which option is best depends on your integration's use case and whether you want each user, account, etc., to set up the integration.
 
 Integrations in Nango always run in the context of a Connection.
 
-For example, if you define a [Sync](/guides/use-cases/syncs) for your Github integration, this sync will run in the context of each Github connection in your account.
+For example, if you define a [Sync](/guides/use-cases/syncs) for your GitHub integration, this sync will run in the context of each GitHub connection in your account.
 
 ### Adding support for new APIs
 
-Nango is designed to make it fast & easy to add support for new APIs.
+Nango is designed to make it fast and easy to add support for new APIs.
 
 If you need support for an API we don't have yet, you can either:
-- [Contribute support for it yourself](/implementation-guides/platform/contribute-new-api) (we take ~24h to review, merge & deploy high-quality PRs)
+- [Contribute support for it yourself](/implementation-guides/platform/contribute-new-api) (we take ~24h to review, merge, and deploy high-quality PRs)
 - Request support on the [Slack community](https://nango.dev/slack) or your private Slack connect channel with Nango
   - We prioritize requests by plan. Free users can expect support for new APIs in 5-10 business days, Enterprise customers \<48h
 
 ### API auth demo
 
-Watch a quick demo of the API auth flow, and the detailed logs it creates.
+Watch a quick demo of the API auth flow and the detailed logs it creates.
 
 <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
     <iframe
