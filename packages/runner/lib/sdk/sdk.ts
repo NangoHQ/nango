@@ -145,7 +145,6 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
         // arrays are not supported in the log meta, so we convert them to objects
         const meta = Array.isArray(payload) ? Object.fromEntries(payload.map((e, i) => [i, e])) : payload || undefined;
 
-        this.telemetryBag.customLogs += 1;
         await this.sendLogToPersist({
             type: 'log',
             level: oldLevelToNewLevel[level],
@@ -154,6 +153,8 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             meta,
             createdAt: new Date().toISOString()
         });
+
+        this.telemetryBag.customLogs += 1;
     }
 
     public triggerSync(

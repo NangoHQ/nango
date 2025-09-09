@@ -46,7 +46,7 @@ export interface UserLogParameters {
     level?: 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 }
 
-export interface TelemetryBagJSON {
+export interface TelemetryBagJSON extends Record<string, number> {
     customLogs: number;
     proxyCalls: number;
 }

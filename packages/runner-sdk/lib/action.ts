@@ -2,7 +2,6 @@ import { getProvider } from '@nangohq/providers';
 
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
-import { TelemetryBag } from './telemetry.js';
 
 import type { ZodMetadata } from './types.js';
 import type { Nango } from '@nangohq/node';
@@ -28,6 +27,7 @@ import type {
     SetMetadata,
     SignatureCredentials,
     TbaCredentials,
+    TelemetryBagJSON,
     TwoStepCredentials,
     UnauthCredentials,
     UpdateMetadata,
@@ -69,7 +69,10 @@ export abstract class NangoActionBase<
 
     public ActionError = ActionError;
 
-    public telemetryBag = new TelemetryBag();
+    public telemetryBag: TelemetryBagJSON = {
+        customLogs: 0,
+        proxyCalls: 0
+    };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
     protected memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();

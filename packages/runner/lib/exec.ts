@@ -121,7 +121,7 @@ export async function exec({
                     }
 
                     const output = await payload.onWebhook(nango as any, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag.toJSON() });
+                    return Ok({ output, telemetryBag: nango.telemetryBag });
                 } else {
                     if (!scriptExports.onWebhookPayloadReceived) {
                         const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
@@ -130,7 +130,7 @@ export async function exec({
                     }
 
                     const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag.toJSON() });
+                    return Ok({ output, telemetryBag: nango.telemetryBag });
                 }
             }
 
@@ -155,7 +155,7 @@ export async function exec({
                     output = await def(nango, inputParams);
                 }
 
-                return Ok({ output, telemetryBag: nango.telemetryBag.toJSON() });
+                return Ok({ output, telemetryBag: nango.telemetryBag });
             }
 
             // Action
@@ -173,7 +173,7 @@ export async function exec({
                 } else {
                     output = await def(nango);
                 }
-                return Ok({ output, telemetryBag: nango.telemetryBag.toJSON() });
+                return Ok({ output, telemetryBag: nango.telemetryBag });
             }
 
             // Sync
@@ -187,10 +187,10 @@ export async function exec({
                 }
 
                 await payload.exec(nango as any);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag.toJSON() });
+                return Ok({ output: true, telemetryBag: nango.telemetryBag });
             } else {
                 await def(nango);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag.toJSON() });
+                return Ok({ output: true, telemetryBag: nango.telemetryBag });
             }
         } catch (err) {
             if (err instanceof ActionError) {
