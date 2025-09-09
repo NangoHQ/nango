@@ -230,6 +230,7 @@
           { 
             "group": "Syncs",
             "pages": [
+              "implementation-guides/syncs/implement-a-sync",
               "implementation-guides/syncs/deletion-detection"
             ]
           },
@@ -242,9 +243,10 @@
           {
             "group": "Building integrations",
             "pages": [
-              "implementation-guides/building-integrations/best-practices/unified-apis",
-              "implementation-guides/building-integrations/best-practices/rate-limits",
-              "implementation-guides/building-integrations/best-practices/customer-configuration",
+              "implementation-guides/building-integrations/functions-setup",
+              "implementation-guides/building-integrations/unified-apis",
+              "implementation-guides/building-integrations/rate-limits",
+              "implementation-guides/building-integrations/customer-configuration",
               "implementation-guides/building-integrations/data-validation"
             ]
           },

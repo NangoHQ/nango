@@ -44,8 +44,18 @@ Follow our [implement an webhook]() guide to use webhooks in your product.
 
 ### Forwarding vs. processing in Nango
 
-Master
+**Forwarding**: Nango forwards the webhook from the external API to your webhooks endpoint.
 
-### Combining webooks and polling syncs into a real-time sync
+**Processing in Nango**: The webhook from the external API triggers a [Function](/guides/platform/functions) in Nango. This lets you make additional API requests to the external API and store data in Nango's [Sync](/guides/use-cases/syncs) cache.
 
-Content
+You can also combine the two: Process the webhook in Nango, fetch additional data from the external API, and then forward the final object as a webhook to your app.
+
+### Real-time syncs with webhooks + polling
+
+You can combine webhooks and polling syncs into a single, realtime sync.
+
+With this setup, both webhooks and the polling syncs update the same [Sync](/guides/use-cases/syncs) cache in Nango. Nango applies change detection to the objects in the cache, and notifies your application when new data is available.
+
+This gives you the best of both worlds: The reliability of polling syncs, and the real-time updates of webhooks.
+
+To set this up, follow our [implementation guide for real-time syncs]().
