@@ -254,7 +254,7 @@ class ParserService {
         if (
             batchingRecordsLines.length > 0 &&
             deleteRecordsFromPreviousExecutionLines.length > 0 &&
-            batchingRecordsLines.some((line) => line > Math.min(...batchingRecordsLines))
+            batchingRecordsLines.some((line) => line > Math.min(...deleteRecordsFromPreviousExecutionLines))
         ) {
             console.log(
                 chalk.red(
