@@ -27,7 +27,7 @@ Adopt the same data model for both reading data (e.g., syncing) and writing data
 
 ### Enforce custom data validation rules in your custom integration scripts
 
-When building custom integrations in Nango, leverage Nango’s built-in support for data validation using the zod library ([docs](/guides/data-validation#custom-validation)). By enforcing validation rules in Nango scripts, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
+When building custom integrations in Nango, leverage Nango’s built-in support for [data validation using the zod library](/implementation-guides/building-integrations/data-validation). By enforcing validation rules in Nango scripts, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
 
 ## How to build a unified API in Nango
 
@@ -93,8 +93,8 @@ In your custom scripts, implement data-fetching logic and apply necessary transf
 
 ### Optional enhancements
 
-- **Enforce generated types in your codebase:** Nango will leverage your unified model to generate strongly-typed interfaces for your codebase, reducing errors and improving developer productivity ([docs](/guides/data-validation#using-schema-json-in-your-codebase)).
-- **Custom data validation:** Leverage Nango's integration with zod to define custom validation rules tailored to your unified model ([docs](/guides/data-validation#custom-validation)).
+- **Enforce generated types in your codebase:** Nango will leverage your unified model to [generate strongly-typed interfaces for your codebase](/implementation-guides/building-integrations/data-validation#available-schema-files), reducing errors and improving developer productivity.
+- **Custom data validation:** Leverage Nango's integration with zod to define custom validation rules tailored to your unified model ([More about data validation](/guides/platform/data-validation)).
 - **Runtime data validation:** Nango includes built-in runtime validation, which surfaces warnings in the _Logs_ tab of the Nango UI when runtime data validation error are detected. 
 
 ### Calling the unified API from your app

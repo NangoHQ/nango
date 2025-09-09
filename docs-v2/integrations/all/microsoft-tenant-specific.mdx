@@ -112,7 +112,6 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 -   Microsoft has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Microsoft EntraID, OneNote, Onedrive, Outlook, Sharepoint Online, Microsoft Teams etc.).
 -   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list of notebook objects from Onenote, you can have a look at [List Notebooks permissions](https://learn.microsoft.com/en-us/graph/api/onenote-list-notebooks?view=graph-rest-1.0&tabs=http#permissions).
 -   See particularly the `tenant` parameter under [Request an authorization code](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
--   This `tenant` parameter must be provided as [extra configuration to the frontend SDK](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 <APIGotchas /> 
 
 <Tip>You _can_ use this provider for general Microsoft Graph access (and the major Microsoft SaaS services like Teams, OneDrive, other Office 365 services, etc.) by setting the `tenant` to `common` but we recommend using the [Microsoft Teams provider](/integrations/all/microsoft-teams) instead which includes sync capability.</Tip>

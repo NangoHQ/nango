@@ -79,7 +79,7 @@ icon: "code"
   </Tab>
 </Tabs>
 
-Read more about [integration scripts](/guides/custom-integrations/overview) to understand what role they play in Nango.
+Read more about [integration functions](/guides/platform/functions) to understand what role they play in Nango.
 
 # Configuration
 
@@ -730,7 +730,7 @@ await nango.getConnection();
 
 # Sync-specific helper methods
 
-Sync scripts persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/guides/syncs/use-a-sync)).
+Sync scripts persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/syncs/implement-a-sync)).
 
 ### Save records
 
@@ -757,7 +757,7 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
 Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
 
-To implement deletion detection in your syncs, [follow this guide](/guides/syncs/detecting-deletes).
+To implement deletion detection in your syncs, [follow this guide](/implementation-guides/syncs/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 

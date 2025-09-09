@@ -33,7 +33,7 @@ For those not using HMAC, the risk of attack was minimal but theoretically possi
 1. The new Connect session flow is **secure by default** and replaces the HMAC signature. Randomly generated connection IDs further enhance security.
 2. Connection IDs are now **unique across integrations**, which will allow us to simplify API endpoints by transitioning from composite keys (`connection ID` + `integration ID`) to a single **unique connection ID**.
 3. The Connect session will let us provide additional API capabilities that can be called directly & securely from the frontend.
-4. The Connect session unlocks our [pre-built authorization UI](/guides/api-authorization/authorize-in-your-app-default-ui#option-1-use-the-default-ui-nango-connect), which simplifies collecting API keys, basic credentials, and OAuth flows with custom parameters. This UI also validates end-user inputs and provides guidance on required credentials.
+4. The Connect session unlocks our [pre-built authorization UI](/implementation-guides/api-auth/implement-api-auth), which simplifies collecting API keys, basic credentials, and OAuth flows with custom parameters. This UI also validates end-user inputs and provides guidance on required credentials.
 
 <Note>
 The Connect session works with both the pre-built authorization UI and custom authorization UIs. Custom authorization UIs are not being deprecated; they remain a critical feature and fully supported.
@@ -43,7 +43,7 @@ The deprecated public key, however, was only compatible with custom authorizatio
 
 # Migration steps
 
-Follow the steps in this [guide](/guides/api-authorization/authorize-in-your-app-default-ui), focusing on these key changes:
+Follow the steps in this [guide](/implementation-guides/api-auth/implement-api-auth), focusing on these key changes:
 
 - Fetch a **Connect session token** from your backend, pass it to your frontend, and update Nango frontend SDK method signatures accordingly.
 - Connection credentials are now **received via webhooks**, not the frontend SDK. You must specify a **user ID** (and optionally an **organization ID**) when fetching the Connect session token to correctly attribute webhooks. You can also attach additional information to connections for better UI display.

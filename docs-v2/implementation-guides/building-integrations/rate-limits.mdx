@@ -21,7 +21,7 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
 - It uses exponential backoff to wait out the rate-limit period.
-- Nango [syncs](/guides/syncs/overview) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook scripts have shorter lifespans, see [Resource Limits](/guides/resource-limits)).
+- Nango [syncs](/guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook scripts have shorter lifespans, see [Resource Limits](/guides/platform/resource-limits)).
 - It works for APIs, without requiring any API-specific configurations
 
 Find detail about HTTP request retries in the [reference](/reference/scripts#http-request-retries).
