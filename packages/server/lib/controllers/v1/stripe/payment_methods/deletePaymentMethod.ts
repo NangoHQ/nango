@@ -38,7 +38,7 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
         res.status(400).send({
             error: {
                 code: 'invalid_body',
-                message: 'Cannot delete payment method when not on free plan. Reach out to support if you need to delete or change your payment method.'
+                message: 'Cannot delete payment method with an active subscription. Reach out to support if you need to delete or change your payment method.'
             }
         });
         return;
