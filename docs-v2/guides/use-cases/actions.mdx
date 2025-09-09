@@ -6,7 +6,7 @@ description: 'Create new API endpoints on the external API'
 
 Actions let you create new API endpoints on the external API.
 
-You can invoke them from your backend, or expose them to LLMs with our built-in [MCP Server](/guides/use-cases/nango-mcp-server).
+You can invoke them from your backend, or expose them to LLMs with our built-in [MCP Server](/guides/use-cases/mcp-server).
 
 ## When should you use actions?
 
@@ -32,7 +32,7 @@ You can think of actions as "virtual endpoints" on the external API, that you ge
 - Actions can call other actions
 - Actions run synchronously by default, but can also run async (e.g. for batch writes)
 - Actions are invoked from your backend, and run in the context of a [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (api key or access token of your user)
-- Actions can also be exposed to LLMs with our built-in [MCP Server](/guides/use-cases/nango-mcp-server)
+- Actions can also be exposed to LLMs with our built-in [MCP Server](/guides/use-cases/mcp-server)
 - Actions can be used to build [unified APIs](/guides/platform/unified-apis) in Nango
 - All action invocations and API requests are logged in Nango's [logs](/guides/platform/logs)
 
