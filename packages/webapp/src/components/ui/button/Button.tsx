@@ -11,7 +11,7 @@ import type { LinkProps } from 'react-router-dom';
 export type ButtonVariants = VariantProps<typeof buttonStyles>['variant'];
 
 export const buttonStyles = cva(
-    'rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-100',
+    'rounded-sm text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-100',
     {
         variants: {
             variant: {
@@ -32,7 +32,7 @@ export const buttonStyles = cva(
                 // Design system v2
                 link: 'text-grayscale-400 hover:text-white focus:text-white',
                 select: 'bg-grayscale-900 text-grayscale-400 border border-grayscale-900 hover:text-white focus:text-white hover:border-grayscale-600',
-                popoverItem: 'w-full rounded hover:bg-grayscale-900 text-grayscale-300 focus:bg-grayscale-900',
+                popoverItem: 'w-full rounded-sm hover:bg-grayscale-900 text-grayscale-300 focus:bg-grayscale-900',
                 secondary: 'bg-grayscale-800 text-grayscale-400 border border-transparent hover:text-white focus:text-white hover:border-grayscale-600',
                 tertiary: 'bg-grayscale-1000 text-grayscale-500 border border-grayscale-600 hover:text-white focus:text-white hover:border-grayscale-600'
             },

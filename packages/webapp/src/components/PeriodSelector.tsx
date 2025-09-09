@@ -95,11 +95,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button
-                    variant="zombieGray"
-                    size={'sm'}
-                    className={cn('flex-grow truncate text-text-light-gray', selectedPreset !== defaultPreset && 'text-white')}
-                >
+                <Button variant="zombieGray" size={'sm'} className={cn('grow truncate text-text-light-gray', selectedPreset !== defaultPreset && 'text-white')}>
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
@@ -115,14 +111,14 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                 rangeInputErrorMessage && 'border border-alert-red'
                             )}
                         >
-                            <div className="w-12 flex-shrink-0 flex justify-center items-center h-full p-1 bg-grayscale-5 rounded-md font-medium">
+                            <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-grayscale-5 rounded-md font-medium">
                                 <IconCalendar size={18} />
                             </div>
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
                                     type="text"
                                     placeholder={customPeriodInputExample}
-                                    className="w-full bg-transparent text-sm text-grayscale-13 placeholder:text-grayscale-10 focus:outline-none focus:ring-0 border-none"
+                                    className="w-full bg-transparent text-sm text-grayscale-13 placeholder:text-grayscale-10 focus:outline-hidden focus:ring-0 border-none"
                                     value={customPeriodInputValue}
                                     onChange={(e) => setCustomPeriodInputValue(e.target.value)}
                                 />
@@ -141,8 +137,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                     )}
                                     onClick={() => onPresetSelected(preset)}
                                 >
-                                    <div className="flex-grow flex items-center gap-2">
-                                        <div className="w-12 flex-shrink-0 flex justify-center items-center p-1 bg-grayscale-5 rounded-md font-medium">
+                                    <div className="grow flex items-center gap-2">
+                                        <div className="w-12 shrink-0 flex justify-center items-center p-1 bg-grayscale-5 rounded-md font-medium">
                                             {preset.shortLabel}
                                         </div>
                                         <span>{preset.label}</span>

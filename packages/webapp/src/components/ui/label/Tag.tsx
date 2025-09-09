@@ -16,8 +16,8 @@ const variantStyles = cva('', {
             neutral: 'bg-grayscale-900 border-grayscale-700 text-grayscale-100'
         },
         size: {
-            md: 'px-2 pt-[1px] leading-[17px] text-[12px]', // for some reasons text-s is conflicting with the color
-            sm: 'px-1 pb-[1px] leading-[13px] text-[12px]'
+            md: 'px-2 pt-px leading-[17px] text-[12px]', // for some reasons text-s is conflicting with the color
+            sm: 'px-1 pb-px leading-[13px] text-[12px]'
         }
     },
     defaultVariants: {
@@ -48,7 +48,7 @@ export const Tag: React.FC<
     } & VariantProps<typeof variantStyles>
 > = ({ children, variant, textCase, size }) => {
     return (
-        <div className={cn('inline-flex border-[0.5px] bg-opacity-30 rounded', variantStyles({ variant, size }))}>
+        <div className={cn('inline-flex border-[0.5px] bg-opacity-30 rounded-sm', variantStyles({ variant, size }))}>
             <div className={cn(textCaseStyles({ textCase }))}>{children}</div>
         </div>
     );

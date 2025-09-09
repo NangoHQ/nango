@@ -66,7 +66,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                     return (
                         <div key={name}>
                             {(byGroup.length > 1 || (byGroup.length == 1 && name !== 'others')) && (
-                                <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm font-semibold">{name}</div>
+                                <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-xs font-semibold">{name}</div>
                             )}
                             <Table.Table className="table-fixed">
                                 <Table.Header>
@@ -123,7 +123,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
 
                 {v1Flow.length > 0 && (
                     <div>
-                        <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-sm font-semibold">Scripts without endpoint</div>
+                        <div className="bg-active-gray capitalize py-1 px-2 text-sm rounded-xs font-semibold">Scripts without endpoint</div>
                         <Table.Table className="table-fixed">
                             <Table.Header>
                                 <Table.Row>

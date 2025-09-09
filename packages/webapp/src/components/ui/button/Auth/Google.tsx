@@ -29,7 +29,7 @@ export default function GoogleButton({ text, setServerErrorMessage, token }: Pro
         <button
             onClick={googleLogin}
             type="button"
-            className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm w-full text-sm font-medium text-white bg-dark-600 hover:bg-gray-700"
+            className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-xs w-full text-sm font-medium text-white bg-dark-600 hover:bg-gray-700"
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="18px" className="inline" viewBox="0 0 512 512">
                 <path

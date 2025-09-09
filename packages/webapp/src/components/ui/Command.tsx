@@ -39,7 +39,7 @@ const CommandInput = React.forwardRef<React.ElementRef<typeof CommandPrimitive.I
             <CommandPrimitive.Input
                 ref={ref}
                 className={cn(
-                    'flex h-9 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+                    'flex h-9 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
                     className
                 )}
                 {...props}
@@ -90,7 +90,7 @@ const CommandItem = React.forwardRef<React.ElementRef<typeof CommandPrimitive.It
         <CommandPrimitive.Item
             ref={ref}
             className={cn(
-                'px-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-sm outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white',
+                'px-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors aria-selected:bg-pure-black aria-selected:text-white',
                 className
             )}
             {...props}
@@ -111,7 +111,7 @@ const CommandCheck = React.forwardRef<HTMLDivElement, React.ComponentPropsWithou
         <span
             ref={ref}
             className={cn(
-                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-sm',
+                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-xs',
                 checked && 'border-transparent',
                 className
             )}

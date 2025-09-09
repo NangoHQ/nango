@@ -213,7 +213,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
-                        <div className="bg-grayscale-800 rounded">
+                        <div className="bg-grayscale-800 rounded-sm">
                             <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
                                     variant="popoverItem"
