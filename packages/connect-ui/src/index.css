@@ -8,13 +8,18 @@
 
         /* Nango */
         --color-background-surface: #ffffff;
-        --color-background-elevated: #f9fafb;
+        --color-background-elevated: #f2f2f2;
+        --color-background-sub-surface: #fafafa;
         --color-primary: #00b2e3;
         --color-on-primary: #ffffff;
         --color-text-primary: #18191b;
-        --color-text-secondary: #626366;
+        --color-text-secondary: #35363a;
+        --color-text-tertiary: #626366;
 
-        --color-background-subtle: #d6d7d8;
+        --color-background-subtle: #f0f0f0;
+
+        --color-border-muted: #e7e7e7;
+        --color-border-default: #c4c5c7;
 
         --color-error: #e81818;
     }
@@ -23,12 +28,17 @@
         /* Nango */
         --color-background-surface: #0b0b0c;
         --color-background-elevated: #18191b;
+        --color-background-sub-surface: #121212;
         --color-primary: #00b2e3;
         --color-on-primary: #ffffff;
         --color-text-primary: #ffffff;
-        --color-text-secondary: #8b8c8f;
+        --color-text-secondary: #c4c5c7;
+        --color-text-tertiary: #8b8c8f;
 
         --color-background-subtle: #2a2b2f;
+
+        --color-border-muted: #2a2b2f;
+        --color-border-default: #424347;
 
         --color-error: #ee4242;
     }

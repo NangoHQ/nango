@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ExternalLink, Info } from 'lucide-react';
+import { ExternalLink, Info, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -307,17 +307,17 @@ export const Go: React.FC = () => {
         return (
             <>
                 <HeaderButtons />
-                <main className="space-y-10">
+                <main className="flex-1 flex flex-col justify-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
-                        <div className="relative w-16 h-16 p-2 rounded-sm shadow-md bg-white">
+                        <div className="relative w-16 h-16 p-2 rounded border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
                                 <IconCircleCheckFilled className="w-full h-full text-green-600" />
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-primary">{t('go.success')}</h2>
+                        <p className="text-center text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
                     </div>
-                    <p className="text-center text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
                     <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                         {t('common.finish')}
                     </Button>
@@ -328,19 +328,19 @@ export const Go: React.FC = () => {
 
     if (connectionFailed) {
         return (
-            <>
+            <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
                 <HeaderButtons />
-                <main className="flex flex-col items-center gap-10">
+                <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
-                        <div className="relative w-16 h-16 p-2 rounded-sm shadow-md bg-white">
+                        <div className="relative w-16 h-16 p-2 rounded border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
                                 <IconCircleXFilled className="w-full h-full text-red-700" />
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-primary">{t('go.connectionFailed')}</h2>
+                        <p className="text-secondary text-center">{error || t('go.tryAgain')}</p>
                     </div>
-                    <p className="text-secondary text-center">{error || t('go.tryAgain')}</p>
                     <Button
                         className="w-full"
                         loading={loading}
@@ -353,30 +353,55 @@ export const Go: React.FC = () => {
                         {t('common.back')}
                     </Button>
                 </main>
-            </>
+                {docsConnectUrl && (
+                    <footer>
+                        <p className="text-secondary text-center">
+                            {t('common.needHelp')}{' '}
+                            <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                                {t('common.viewGuide')}
+                            </Link>{' '}
+                            <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
+                        </p>
+                    </footer>
+                )}
+            </div>
         );
     }
 
     return (
-        <>
+        <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
             <HeaderButtons
                 backLink={!isSingleIntegration ? '/integrations' : undefined}
                 onClickBack={() => {
                     setIsDirty(false);
                 }}
             />
-            <main className="space-y-7">
+            <main className="flex-1 flex flex-col gap-7 px-4 justify-center">
                 <div className="flex flex-col gap-7 items-center">
-                    <div className="w-16 h-16 p-2 rounded-sm shadow-md bg-white">
+                    <div className="w-16 h-16 p-2 rounded bg-white border border-subtle">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-center text-xl text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
+                    <h1 className="font-semibold text-center text-lg text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
+                {error && (
+                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                        <TriangleAlert className="w-5 h-5" />
+                        {error}
+                    </p>
+                )}
+
+                {!error && shouldAutoTrigger && !form.formState.isValid && (
+                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                        <TriangleAlert className="w-5 h-5" />
+                        {t('go.invalidPreconfigured')}
+                    </p>
+                )}
+
                 <Form {...form}>
-                    <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
+                    <form className="flex flex-col gap-7" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
-                            <div className={cn('space-y-10')}>
+                            <div className={cn('flex flex-col gap-5')}>
                                 {orderedFields.map(([name]) => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params', string];
 
@@ -395,8 +420,13 @@ export const Go: React.FC = () => {
                                             name={name}
                                             render={({ field }) => {
                                                 return (
-                                                    <FormItem className={cn(isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null)}>
-                                                        <div className="space-y-2">
+                                                    <FormItem
+                                                        className={cn(
+                                                            'bg-elevated p-5',
+                                                            isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null
+                                                        )}
+                                                    >
+                                                        <div className="flex flex-col gap-2">
                                                             <div className="flex gap-2 items-center">
                                                                 <FormLabel className="text-xs font-semibold text-primary">
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
@@ -445,12 +475,6 @@ export const Go: React.FC = () => {
                             </div>
                         )}
 
-                        {error && <p className="text-sm text-secondary text-center bg-elevated p-6 rounded-md">{error}</p>}
-
-                        {!error && shouldAutoTrigger && !form.formState.isValid && (
-                            <p className="text-sm text-secondary text-center bg-elevated p-6 rounded-md">{t('go.invalidPreconfigured')}</p>
-                        )}
-
                         <Button
                             className="w-full"
                             disabled={!form.formState.isValid || Object.keys(form.formState.errors).length > 0}
@@ -459,19 +483,20 @@ export const Go: React.FC = () => {
                         >
                             {error ? t('common.tryAgain') : loading ? t('common.connecting') : t('go.connect')}
                         </Button>
-
-                        {docsConnectUrl && (
-                            <p className="text-secondary text-center">
-                                {t('common.needHelp')}{' '}
-                                <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
-                                    {t('common.viewGuide')}
-                                </Link>{' '}
-                                <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
-                            </p>
-                        )}
                     </form>
                 </Form>
             </main>
-        </>
+            {docsConnectUrl && (
+                <footer>
+                    <p className="text-secondary text-center">
+                        {t('common.needHelp')}{' '}
+                        <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                            {t('common.viewGuide')}
+                        </Link>{' '}
+                        <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
+                    </p>
+                </footer>
+            )}
+        </div>
     );
 };

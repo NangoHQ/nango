@@ -1,7 +1,7 @@
 /// <reference types="vite-plugin-svgr/client" />
-import { IconArrowRight, IconExclamationCircle } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { ArrowRight, CircleAlert } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffectOnce } from 'react-use';
@@ -75,10 +75,11 @@ const Integrations: React.FC = () => {
         return (
             <>
                 <HeaderButtons />
-                <main className="space-y-10">
-                    <div className="flex flex-col items-center gap-5 w-full">
+                <main className="flex-1 flex flex-col gap-10 justify-center h-full">
+                    <div className="flex flex-col items-center gap-5 w-full text-center">
                         <img alt="No integrations" className="w-[100px]" src={NoIntegrationGif} />
                         <h1 className="text-xl font-semibold text-primary">{t('integrationsList.noIntegrations')}</h1>
+                        <p className="text-secondary">{t('integrationsList.noIntegrationsDescription')}</p>
                     </div>
 
                     <Button className="w-full" title={t('common.close')} onClick={() => triggerClose('click:close')}>
@@ -89,19 +90,19 @@ const Integrations: React.FC = () => {
         );
     }
 
-    if (isSingleIntegration) {
-        return <LoadingView />;
-    }
+    // if (isSingleIntegration) {
+    return <LoadingView />;
+    // }
 
     return (
         <>
-            <HeaderButtons />
-            <main className="space-y-5">
-                <div className="space-y-5 text-center">
+            <HeaderButtons className="mb-5" />
+            <main className="flex flex-col gap-7 h-full">
+                <div className="flex flex-col gap-7 text-center">
                     <h1 className="font-semibold text-xl text-primary">{t('integrationsList.title')}</h1>
                     <p className="text-secondary">{t('integrationsList.description')}</p>
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-1.5">
                     {integrations.map((integration) => {
                         return <Integration key={integration.unique_key} integration={integration} />;
                     })}
@@ -158,24 +159,26 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex justify-between items-center p-5 border-b border-b-elevated hover:bg-elevated focus:bg-elevated"
+            className="group flex flex-col gap-3 p-5 bg-subSurface hover:bg-subtle focus:bg-subtle"
             role="button"
             tabIndex={0}
             title={connectToLabel}
             onClick={onClick}
         >
-            <div className="flex gap-3 items-center">
-                <div className="w-12 h-12 bg-white transition-colors rounded shadow-md p-1.5 group-hover:bg-dark-100">
-                    <img alt={`${integration.display_name} logo`} src={integration.logo} />
-                </div>
-                <div className="text-primary">{integration.display_name}</div>
-                {error && (
-                    <div className="border border-error text-error flex items-center py-1 px-4 rounded gap-2">
-                        <IconExclamationCircle size={17} stroke={1} /> {error}
+            <div className=" flex justify-between items-center">
+                <div className="flex gap-3 items-center">
+                    <div className="w-12 h-12 bg-white transition-colors rounded p-1.5 group-hover:bg-dark-100">
+                        <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                )}
+                    <div className="text-primary">{integration.display_name}</div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-tertiary group-hover:text-primary" />
             </div>
-            <IconArrowRight className="w-5 h-5 text-secondary group-hover:text-primary" />
+            {error && (
+                <div className="py-2 px-4 border border-error bg-red-100 text-error text-sm flex items-center rounded gap-2">
+                    <CircleAlert className="w-5 h-5" strokeWidth={1.5} /> {error} Error obtaining the provider.
+                </div>
+            )}
         </div>
     );
 };

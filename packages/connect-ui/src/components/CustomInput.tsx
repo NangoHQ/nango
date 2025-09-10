@@ -22,14 +22,14 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
     return (
         <div
             className={cn(
-                'relative flex items-center bg-surface w-full rounded border border-elevated text-sm h-9 px-3 py-1 overflow-hidden',
-                error ? 'border-error' : ''
+                'relative flex items-center bg-surface w-full shadow-sm rounded border border-muted text-sm h-9 px-3 py-1 overflow-hidden focus-within:border-border-default focus-within:ring-1 focus-within:ring-brand-500/20',
+                error ? 'border-error focus-within:border-error' : ''
             )}
             onClick={() => {
                 ref.current?.focus();
             }}
         >
-            {prefix && <div className="text-secondary">{prefix}</div>}
+            {prefix && <div className="text-secondary px-1 bg-subtle border border-muted rounded">{prefix}</div>}
             <input
                 ref={ref}
                 className={cn(
@@ -43,7 +43,7 @@ const CustomInput = forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 type={type}
                 {...props}
             />
-            {suffix && <div className="text-secondary">{suffix}</div>}
+            {suffix && <div className="text-secondary px-1 bg-subtle border border-muted rounded">{suffix}</div>}
         </div>
     );
 });

@@ -6,17 +6,17 @@ import { triggerClose } from '@/lib/events';
 import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-interface HeaderButtonsProps {
+interface HeaderButtonsProps extends React.HTMLAttributes<HTMLDivElement> {
     onClickClose?: () => void;
     backLink?: string;
     onClickBack?: () => void;
 }
 
-export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () => triggerClose('click:close'), backLink, onClickBack }) => {
+export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () => triggerClose('click:close'), backLink, onClickBack, ...props }) => {
     const { t } = useI18n();
 
     return (
-        <header className={cn('flex justify-end', onClickBack && 'justify-between')}>
+        <header {...props} className={cn('flex justify-end', onClickBack && 'justify-between', props.className)}>
             {backLink && (
                 <Link to={backLink} onClick={onClickBack}>
                     <Button size={'icon'} title={t('common.back')} variant={'transparent'}>

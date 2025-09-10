@@ -13,7 +13,7 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default: 'bg-primary text-on-primary hover:bg-primary-light/90',
-                transparent: 'text-secondary hover:text-primary focus:text-primary'
+                transparent: 'text-tertiary hover:text-primary focus:text-primary'
             },
             size: {
                 default: 'h-10 px-4 py-2',
