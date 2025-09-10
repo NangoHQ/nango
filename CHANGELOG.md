@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.6] - 2025-09-10
+
+### Added
+
+- *(persist)* Add endpoint to delete outdated records (#4620) by @TBonnin
+- *(custom-validation-script)* Spec custom verification endpoints as a on events script (#4609) by @khaliqgant
+- *(integrations)* Add support for google workspace admin (#4628) by @hassan254-prog
+- *(runner-sdk)* Add deleteRecordsFromPreviousExecution function (#4626) by @TBonnin
+- *(webhook)* Add proper user agent (#4629) by @bodinsamuel
+- *(sdk)* Telemetry (#4627) by @bodinsamuel
+- DeleteRecordsFromPreviousExecution docs  and deprecate trackDeletes (#4633) by @TBonnin
+
+### Changed
+
+- Zoho documentations migration (#4623) by @hassan254-prog
+- *(deps-dev)* Bump vite from 7.0.6 to 7.0.7 in /packages/webapp (#4635) by @dependabot[bot]
+- *(webapp)* Upgrade to tailwind v4 (#4634) by @kaposke
+
+### Fixed
+
+- *(paginate)* Throw error if `response_path` isn't present on the first page (#4587) by @hassan254-prog
+- *(plan)* Prevent deleting payment method if they have an active sub (#4630) by @bodinsamuel
+- Deploy runners to k8s fleet (#4632) by @rossmcewan
+- Revert "fix(paginate): throw error if `response_path` isn't present on the first page" (#4637) by @hassan254-prog
+
 ## [v0.67.5] - 2025-09-08
 
 ### Fixed
@@ -4817,6 +4842,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.6]: https://github.com/NangoHQ/nango/compare/v0.67.5..v0.67.6
 [v0.67.5]: https://github.com/NangoHQ/nango/compare/v0.67.4..v0.67.5
 [v0.67.4]: https://github.com/NangoHQ/nango/compare/v0.67.3..v0.67.4
 [v0.67.3]: https://github.com/NangoHQ/nango/compare/v0.67.2..v0.67.3
