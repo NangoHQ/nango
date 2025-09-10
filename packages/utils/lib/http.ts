@@ -97,17 +97,11 @@ export function redactObjectOrString<TData extends string | Record<string, any>>
     return redactURL({ url: data, valuesToFilter }) as TData;
 }
 
-let userAgent: string | undefined;
-export function getUserAgent(): string {
-    if (userAgent) {
-        return userAgent;
-    }
-
+export const userAgent = (() => {
     const clientVersion = NANGO_VERSION;
     const nodeVersion = process.versions.node;
 
     const osName = os.platform().replace(' ', '_');
     const osVersion = os.release().replace(' ', '_');
-    userAgent = `nango/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
-    return userAgent;
-}
+    return `nango/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
+})();
