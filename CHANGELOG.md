@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.5] - 2025-09-08
+
+### Fixed
+
+- *(types)* Update sdk types with updated getConnection signature (#4624) by @khaliqgant
+
 ## [v0.67.4] - 2025-09-08
 
 ### Added
@@ -4811,6 +4817,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.5]: https://github.com/NangoHQ/nango/compare/v0.67.4..v0.67.5
 [v0.67.4]: https://github.com/NangoHQ/nango/compare/v0.67.3..v0.67.4
 [v0.67.3]: https://github.com/NangoHQ/nango/compare/v0.67.2..v0.67.3
 [v0.67.2]: https://github.com/NangoHQ/nango/compare/v0.67.1..v0.67.2

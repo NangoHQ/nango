@@ -237,6 +237,28 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 })
             );
         }
+        if (bag.deleteRecordsFromPreviousExecutionLines.length > 1) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecution should be called only once per sync`,
+                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionLines)
+                })
+            );
+        }
+        if (
+            bag.deleteRecordsFromPreviousExecutionLines.length > 0 &&
+            bag.batchingRecordsLines.length > 0 &&
+            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecution should be called after any batching records function`,
+                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionLines)
+                })
+            );
+        }
 
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
@@ -298,10 +320,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
+    const deleteRecordsFromPreviousExecutionLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
-        setMergingStrategyLines
+        setMergingStrategyLines,
+        deleteRecordsFromPreviousExecutionLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -326,7 +350,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'delete',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction'
+        'triggerAction',
+        'setMergingStrategy',
+        'deleteRecordsFromPreviousExecution'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -430,6 +456,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     }
                                     if (callee.property.name === 'setMergingStrategy') {
                                         setMergingStrategyLines.push(lineNumber);
+                                    }
+
+                                    if (callee.property.name === 'deleteRecordsFromPreviousExecution') {
+                                        deleteRecordsFromPreviousExecutionLines.push(lineNumber);
                                     }
                                 }
                             }

@@ -47,7 +47,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: [
                         {
                             description: '',
@@ -95,7 +95,7 @@ describe('parse', () => {
                 {
                     providerConfigKey: 'provider',
                     syncs: [],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: [
                         {
                             description: '',
@@ -153,7 +153,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
                     actions: []
                 }
             ],
@@ -372,7 +372,15 @@ describe('parse', () => {
     it('should handle on-events', () => {
         const v2: NangoYamlV2 = {
             models: {},
-            integrations: { provider: { 'on-events': { 'post-connection-creation': ['test1', 'test2'], 'pre-connection-deletion': ['test3', 'test4'] } } }
+            integrations: {
+                provider: {
+                    'on-events': {
+                        'post-connection-creation': ['test1', 'test2'],
+                        'pre-connection-deletion': ['test3', 'test4'],
+                        'validate-connection': ['test5', 'test6']
+                    }
+                }
+            }
         };
         const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
         parser.parse();
@@ -380,7 +388,8 @@ describe('parse', () => {
         expect(parser.warnings).toStrictEqual([]);
         expect(parser.parsed?.integrations[0]?.onEventScripts).toStrictEqual({
             'post-connection-creation': ['test1', 'test2'],
-            'pre-connection-deletion': ['test3', 'test4']
+            'pre-connection-deletion': ['test3', 'test4'],
+            'validate-connection': ['test5', 'test6']
         });
     });
 });

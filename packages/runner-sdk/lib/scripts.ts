@@ -324,7 +324,7 @@ export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined> {
     /**
      * The event that will trigger this script.
      */
-    event: 'post-connection-creation' | 'pre-connection-deletion';
+    event: 'post-connection-creation' | 'pre-connection-deletion' | 'validate-connection';
 
     /**
      * The connection's metadata of the script.
