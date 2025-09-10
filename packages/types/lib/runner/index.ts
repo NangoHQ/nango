@@ -1,4 +1,4 @@
-import type { TelemetryBagJSON } from './sdk.js';
+import type { TelemetryBag } from './sdk.js';
 
 export interface RunnerOutputError {
     type: string;
@@ -9,7 +9,7 @@ export interface RunnerOutputError {
 
 export interface RunnerOutput {
     output: unknown;
-    telemetryBag: TelemetryBagJSON;
+    telemetryBag: TelemetryBag;
 }
 
 export interface RunnerFlags {

@@ -27,7 +27,7 @@ import type {
     SetMetadata,
     SignatureCredentials,
     TbaCredentials,
-    TelemetryBagJSON,
+    TelemetryBag,
     TwoStepCredentials,
     UnauthCredentials,
     UpdateMetadata,
@@ -69,7 +69,7 @@ export abstract class NangoActionBase<
 
     public ActionError = ActionError;
 
-    public telemetryBag: TelemetryBagJSON = {
+    public telemetryBag: TelemetryBag = {
         customLogs: 0,
         proxyCalls: 0
     };
