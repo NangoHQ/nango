@@ -120,10 +120,8 @@ export default createSync({
 <Warning>
 **Be careful with exception handling when using** `deleteRecordsFromPreviousExecutions`
 
-Nango only performs deletion detection (the “diff”) if a sync run completes successfully without any uncaught exceptions.
-
 If you’re using `deleteRecordsFromPreviousExecutions`, exception handling becomes critical:
-- If your sync doesn’t fetch the full dataset, but still completes (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
+- If your sync doesn’t fetch the full dataset, but still call `deleteRecordsFromPreviousExecutions` (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
 - This leads to false positives, where valid records are mistakenly considered deleted.
 
 ✅ What You Should Do
