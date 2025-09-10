@@ -4319,7 +4319,6 @@ fillout:
     token_response_metadata:
         - base_url
     docs: https://docs.nango.dev/integrations/all/fillout
-    docs_connect: https://docs.nango.dev/integrations/all/fillout/connect
     connection_config:
         base_url:
             type: string
