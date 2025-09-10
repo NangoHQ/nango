@@ -485,7 +485,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async deleteRecordsFromPreviousExecution(model: string): Promise<{ deletedKeys: string[] }> {
+    public async deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }> {
         this.throwIfAborted();
         const res = await this.persistClient.deleteOutdatedRecords({
             model: this.modelFullName(model),
