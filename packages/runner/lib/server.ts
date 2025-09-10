@@ -94,12 +94,14 @@ function startProcedure() {
                 }, heartbeatIntervalMs);
 
                 try {
-                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
+                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks });
 
                     await jobsClient.putTask({
                         taskId,
                         nangoProps,
-                        ...(error ? { error } : { output: output as any })
+                        ...(execRes.isErr()
+                            ? { error: execRes.error.toJSON() }
+                            : { output: execRes.value.output as any, telemetryBag: execRes.value.telemetryBag })
                     });
                 } finally {
                     clearInterval(heartbeat);

@@ -118,6 +118,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             }
         });
         const response = (await proxy.request()).unwrap();
+        this.telemetryBag.proxyCalls += 1;
 
         return response;
     }
@@ -152,6 +153,8 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             meta,
             createdAt: new Date().toISOString()
         });
+
+        this.telemetryBag.customLogs += 1;
     }
 
     public triggerSync(

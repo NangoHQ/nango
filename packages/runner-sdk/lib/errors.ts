@@ -1,3 +1,5 @@
+import type { RunnerOutputError } from '@nangohq/types';
+
 export abstract class SDKError extends Error {
     abstract code: string;
     payload: Record<string, unknown>;
@@ -41,5 +43,29 @@ export class ActionError<T = Record<string, unknown>> extends Error {
         if (payload) {
             this.payload = payload;
         }
+    }
+}
+
+export class ExecutionError extends Error {
+    type: string;
+    payload: RunnerOutputError['payload'];
+    status: RunnerOutputError['status'];
+    additional_properties: RunnerOutputError['additional_properties'];
+
+    constructor(payload: RunnerOutputError) {
+        super();
+        this.type = payload.type;
+        this.payload = payload.payload;
+        this.status = payload.status;
+        this.additional_properties = payload.additional_properties;
+    }
+
+    toJSON(): RunnerOutputError {
+        return {
+            type: this.type,
+            payload: this.payload,
+            status: this.status,
+            additional_properties: this.additional_properties
+        };
     }
 }

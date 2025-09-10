@@ -88,7 +88,7 @@
         "tailwindcss": "^4.1.13",
         "typescript": "5.8.3",
         "vaul": "1.1.2",
-        "vite": "7.0.6",
+        "vite": "7.0.7",
         "vite-plugin-checker": "0.9.3",
         "vite-plugin-svgr": "4.3.0",
         "vitest": "3.2.4",
