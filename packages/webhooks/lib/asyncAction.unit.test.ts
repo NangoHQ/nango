@@ -81,10 +81,10 @@ describe('AsyncAction webhookds', () => {
         };
         const bodyString = stringifyStable(body).unwrap();
         expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, bodyString, {
-            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json' }
+            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json', 'user-agent': expect.stringContaining('nango/') }
         });
         expect(spy).toHaveBeenNthCalledWith(2, webhookSettings.secondary_url, bodyString, {
-            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json' }
+            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json', 'user-agent': expect.stringContaining('nango/') }
         });
     });
 });

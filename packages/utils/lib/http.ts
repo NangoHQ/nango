@@ -1,3 +1,7 @@
+import os from 'node:os';
+
+import { NANGO_VERSION } from './version.js';
+
 // Headers that are never relevant to the outcome of the call
 const IGNORED_HEADERS = new Set([
     'access-control-allow-credentials',
@@ -92,3 +96,12 @@ export function redactObjectOrString<TData extends string | Record<string, any>>
     }
     return redactURL({ url: data, valuesToFilter }) as TData;
 }
+
+export const userAgent = (() => {
+    const clientVersion = NANGO_VERSION;
+    const nodeVersion = process.versions.node;
+
+    const osName = os.platform().replace(' ', '_');
+    const osVersion = os.release().replace(' ', '_');
+    return `nango/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
+})();
