@@ -1,3 +1,5 @@
+import type { TelemetryBag } from './sdk.js';
+
 export interface RunnerOutputError {
     type: string;
     payload: Record<string, unknown> | unknown[];
@@ -6,9 +8,8 @@ export interface RunnerOutputError {
 }
 
 export interface RunnerOutput {
-    success: boolean;
-    error: RunnerOutputError | null;
-    response?: unknown; // TODO: define response type
+    output: unknown;
+    telemetryBag: TelemetryBag;
 }
 
 export interface RunnerFlags {
