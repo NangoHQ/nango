@@ -44,7 +44,7 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
                     disabled={disabled}
                     before={
                         <div
-                            className={cn('w-5 h-5 rounded border-2 border-grayscale-600', disabled && 'opacity-50')}
+                            className={cn('w-5 h-5 rounded-sm border-2 border-grayscale-600', disabled && 'opacity-50')}
                             style={{ backgroundColor: previewColor }}
                             title={`Color preview: ${previewColor}`}
                         />

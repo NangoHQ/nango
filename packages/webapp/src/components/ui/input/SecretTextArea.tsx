@@ -24,7 +24,7 @@ export const SecretTextArea = forwardRef<HTMLTextAreaElement, SecretTextareaProp
                 <textarea
                     ref={ref}
                     className={cn(
-                        'bg-active-gray border-dark-800  text-text-light-gray w-full appearance-none rounded-md px-3 py-2 text-base placeholder-gray-400 shadow-sm ',
+                        'bg-active-gray border-dark-800  text-text-light-gray w-full appearance-none rounded-md px-3 py-2 text-base placeholder-gray-400 shadow-xs ',
                         className,
                         'h-48'
                     )}

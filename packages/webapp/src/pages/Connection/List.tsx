@@ -237,7 +237,7 @@ export const ConnectionList: React.FC = () => {
                         </div>
                     )}
                     <div className="flex gap-2 relative my-3">
-                        <div className="flex-grow">
+                        <div className="grow">
                             <Input
                                 inputSize={'sm'}
                                 before={<MagnifyingGlassIcon className="w-4" />}

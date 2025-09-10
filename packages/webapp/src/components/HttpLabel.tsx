@@ -41,7 +41,7 @@ const sizesText = cva('text-[13px]', {
 export const HttpLabel: React.FC<NangoSyncEndpointV2 & { size?: Sizes }> = ({ method, path, size }) => {
     return (
         <div className={cn('flex items-center gap-2')}>
-            <div className={cn(styles({ bg: method }), sizesMethod({ size }), 'py-[1px] px-1.5 rounded')}>
+            <div className={cn(styles({ bg: method }), sizesMethod({ size }), 'py-px px-1.5 rounded-sm')}>
                 <span className={cn(styles({ text: method }), 'font-semibold')}>{method}</span>
             </div>
             <span className={cn(sizesText({ size }), 'break-all font-code')}>{path}</span>
