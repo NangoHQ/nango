@@ -292,7 +292,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
                 void logCtx.warn(
-                    `'track_deletes' is deprecated and will be removed in future versions. To detect deletions please call 'nango.deleteRecordsFromPreviousExecution()' in your sync script.`
+                    `'track_deletes' is deprecated and will be removed in future versions. To detect deletions please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script.`
                 );
                 const res = await records.deleteOutdatedRecords({
                     connectionId: nangoProps.nangoConnectionId,

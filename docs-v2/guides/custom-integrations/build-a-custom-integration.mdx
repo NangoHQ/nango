@@ -130,7 +130,7 @@ async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
 
         endpoint = response.data.nextRecordsUrl;
     }
-    await nango.deleteRecordsFromPreviousExecution('SalesforceContact')
+    await nango.deleteRecordsFromPreviousExecutions('SalesforceContact')
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {

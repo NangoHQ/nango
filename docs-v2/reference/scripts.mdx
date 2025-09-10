@@ -42,7 +42,7 @@ icon: "code"
         await nango.batchSave(issues, 'GithubIssueDemo');
 
         // Delete records that don't exist anymore
-        await nango.deleteRecordsFromPreviousExecution('GithubIssueDemo')
+        await nango.deleteRecordsFromPreviousExecutions('GithubIssueDemo')
       },
     });
     ```
@@ -166,7 +166,7 @@ Read more about [integration scripts](/guides/custom-integrations/overview) to u
 </ResponseField>
 
 <ResponseField name="trackDeletes" type="boolean" deprecated>
-  [DEPRECATED] Instead use `await nango.deleteRecordsFromPreviousExecution('modelName')` inside the sync `exec` function.
+  [DEPRECATED] Instead use `await nango.deleteRecordsFromPreviousExecutions('modelName')` inside the sync `exec` function.
 
   When `trackDeletes` is set to `true`, Nango automatically detects deleted records **during full syncs only** and marks them as deleted in each record’s metadata (soft delete). These records remain stored in the cache.
 
@@ -783,7 +783,7 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 Automatically detects and marks records as deleted by comparing the current sync execution with the previous one.
 
 ```js
-await nango.deleteRecordsFromPreviousExecution('ModelName');
+await nango.deleteRecordsFromPreviousExecutions('ModelName');
 ```
 
 This function should be called at the end of your sync execution, after all records have been saved with `batchSave`. Nango will compare the records saved in the current execution with those from the previous execution and mark any missing records as deleted.
