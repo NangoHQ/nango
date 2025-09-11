@@ -6,13 +6,13 @@ description: 'Guide on how to handle API rate limits from external APIs.'
 
 External APIs often enforce rate limits to prevent excessive use. When these limits are reached, you'll start receiving HTTP `429 Too Many Requests` errors, blocking further requests until the limit resets.
 
-To maintain data freshness and avoid disruptions in your integration scripts, it's crucial to manage your API call volume and handle rate limits effectively. Nango simplifies this process significantly.
+To maintain data freshness and avoid disruptions in your integration functions, it's crucial to manage your API call volume and handle rate limits effectively. Nango simplifies this process significantly.
 
 ## Strategy 1: Retry with exponential backoff
 
 The simplest strategy involves retrying failed requests after waiting:
 
-When you configure HTTP requests using Nango's helper ([reference](/reference/scripts#http-requests)), you can specify the number of retries:
+When you configure HTTP requests using Nango's helper ([reference](/reference/functions#http-requests)), you can specify the number of retries:
 
 ```ts
 await nango.get({ endpoint: '/some-endpoint', retries: 10 });
@@ -21,10 +21,10 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
 - It uses exponential backoff to wait out the rate-limit period
-- Nango [syncs](/guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook scripts have shorter lifespans, see [Resource Limits](/guides/platform/resource-limits))
+- Nango [syncs](/guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook functions have shorter lifespans, see [Resource Limits](/guides/platform/resource-limits))
 - It works for APIs without requiring any API-specific configurations
 
-Find details about HTTP request retries in the [reference](/reference/scripts#http-request-retries).
+Find details about HTTP request retries in the [reference](/reference/functions#http-request-retries).
 
 ## Strategy 2: Leverage rate-limit headers
 

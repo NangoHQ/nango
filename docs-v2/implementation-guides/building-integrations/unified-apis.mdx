@@ -25,9 +25,9 @@ Not all APIs will provide the same information. Some fields in your unified mode
 
 Adopt the same data model for both reading data (e.g., syncing) and writing data back to the API. This approach eliminates duplicate logic in your application and integrations, making your codebase cleaner and easier to maintain.
 
-### Enforce custom data validation rules in your custom integration scripts
+### Enforce custom data validation rules in your custom integrations
 
-When building custom integrations in Nango, leverage Nango’s built-in support for [data validation using the zod library](/implementation-guides/building-integrations/data-validation). By enforcing validation rules in Nango scripts, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
+When building custom integrations in Nango, leverage Nango’s built-in support for [data validation using the zod library](/implementation-guides/building-integrations/data-validation). By enforcing validation rules in Nango functions, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
 
 ## How to build a unified API in Nango
 
@@ -89,7 +89,7 @@ export default createAction({
 
 ### 3. Fetch data and transform
 
-In your custom scripts, implement data-fetching logic and apply necessary transformations to align external data with the unified model.
+In your custom functions, implement data-fetching logic and apply necessary transformations to align external data with the unified model.
 
 ### Optional enhancements
 

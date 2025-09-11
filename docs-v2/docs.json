@@ -94,6 +94,10 @@
     {
       "source": "/guides/new-api-support",
       "destination": "/implementation-guides/platform/contribute-new-api"
+    },
+    {
+      "source": "/reference/scripts",
+      "destination": "/reference/functions"
     }
   ],
   "navigation": {
@@ -855,7 +859,7 @@
                     ]
                   },
                   {
-                    "group": "Scripts",
+                    "group": "Functions",
                     "pages": [
                       "reference/api/scripts/config"
                     ]
@@ -921,7 +925,7 @@
             "pages": [
               "reference/cli",
               "reference/api-configuration",
-              "reference/scripts",
+              "reference/functions",
               "reference/integration-configuration"
             ]
           }
