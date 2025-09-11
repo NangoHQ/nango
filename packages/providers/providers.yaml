@@ -6474,6 +6474,67 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+kintone:
+    display_name: Kintone
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.kintone.com/oauth2/authorization
+    token_url: https://${connectionConfig.subdomain}.kintone.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kintone.com
+    docs: https://docs.nango.dev/integrations/all/kintone
+    docs_connect: https://docs.nango.dev/integrations/all/kintone/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain for your Kintone account
+            doc_section: '#step-1-finding-your-subdomain'
+            example: urdzw8p24agp
+            pattern: '^[a-z0-9_-]+$'
+
+kintone-user-api:
+    display_name: Kintone User API
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kintone.com
+        verification:
+            method: GET
+            skip_automatic_headers: true
+            endpoints:
+                - /v1/users.json
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/kintone-user-api
+    docs_connect: https://docs.nango.dev/integrations/all/kintone-user-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Kintone account
+            example: cy.s.api1.eyJraWQiOiJ2MSIsInR5cCI6IkpXVCIsImFsZyI6IkhTMjU2In0.eyJyYW5kIjoiNWQ4ZmNiOGYtMDk3ZC00MWNhLWJkZjAtYTAxN2ZiMDZkYjNlIiwiaXNzIjoieTkwNzgyIiwiZXhwIjoxNzU4MTg1Mzg5fQ.GUoYL6hBFGOywcfjxQB3Y3vSwEq67evDGcmVQvzPY94
+            pattern: '^cy\.s\.api1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-2-generating-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain for your Kintone account
+            doc_section: '#step-1-finding-your-subdomain'
+            example: urdzw8p24agp
+            order: 1
+            pattern: '^[a-z0-9_-]+$'
+
 knowbe4:
     display_name: KnowBe4 (Reporting)
     categories:
