@@ -242,7 +242,7 @@ export const ScriptSettings: React.FC<{
                                 <Dialog
                                     open={openFrequency}
                                     onOpenChange={(v) => {
-                                        if (v) onFrequencyChange(flow.runs);
+                                        if (v) onFrequencyChange(flow.runs!);
                                         setOpenFrequency(v);
                                     }}
                                 >
