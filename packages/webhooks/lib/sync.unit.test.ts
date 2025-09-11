@@ -293,7 +293,8 @@ describe('Webhooks: sync notification tests', () => {
             expect.objectContaining({
                 headers: {
                     'X-Nango-Signature': expect.toBeSha256(),
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
                 }
             })
         );
@@ -305,7 +306,8 @@ describe('Webhooks: sync notification tests', () => {
             expect.objectContaining({
                 headers: {
                     'X-Nango-Signature': expect.toBeSha256(),
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
                 }
             })
         );

@@ -39,7 +39,7 @@ export const Admin: React.FC = () => {
                                 type="text"
                                 placeholder="Account UUID"
                                 name="account_uuid"
-                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-xs focus:outline-hidden"
                             />
                         </div>
                         <div>
@@ -47,7 +47,7 @@ export const Admin: React.FC = () => {
                                 type="text"
                                 placeholder="Login reason"
                                 name="login_reason"
-                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-xs focus:outline-hidden"
                             />
                         </div>
                         <div>

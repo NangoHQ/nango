@@ -86,7 +86,7 @@ export default function Signin() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="border-border-gray bg-dark-600 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
+                                    className="border-border-gray bg-dark-600 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-xs focus:outline-hidden"
                                 />
                             </div>
                         </div>
@@ -107,7 +107,7 @@ export default function Signin() {
                                     placeholder="Password"
                                     autoComplete="current-password"
                                     required
-                                    className="border-border-gray bg-dark-600 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-sm focus:outline-none"
+                                    className="border-border-gray bg-dark-600 text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-[14px] placeholder-gray-400 shadow-xs focus:outline-hidden"
                                 />
                             </div>
                         </div>
@@ -115,7 +115,7 @@ export default function Signin() {
                         <div className="grid">
                             <button
                                 type="submit"
-                                className="bg-white mt-4 flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow hover:border-2 active:ring-2 active:ring-offset-2"
+                                className="bg-white mt-4 flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
                             >
                                 Log in
                             </button>
@@ -134,9 +134,9 @@ export default function Signin() {
                         {globalEnv.features.managedAuth && (
                             <>
                                 <div className="flex items-center justify-center my-4 text-xs">
-                                    <div className="border-t border-gray-600 flex-grow mr-7"></div>
+                                    <div className="border-t border-gray-600 grow mr-7"></div>
                                     <span className="text-dark-500">or continue with</span>
-                                    <div className="border-t border-gray-600 flex-grow ml-7"></div>
+                                    <div className="border-t border-gray-600 grow ml-7"></div>
                                 </div>
 
                                 <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} />

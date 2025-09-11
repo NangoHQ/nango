@@ -1,8 +1,8 @@
 import * as z from 'zod';
 
+import { Fleet } from '@nangohq/fleet';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { runnersFleet } from '../../fleet.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { PostRollout } from '@nangohq/types';
@@ -39,12 +39,9 @@ export const postRollout = asyncWrapper<PostRollout>(async (req, res) => {
     }
 
     const { fleetId }: PostRollout['Params'] = params.data;
-    const { image }: PostRollout['Body'] = body.data;
+    const runnersFleet = new Fleet({ fleetId });
 
-    if (fleetId !== runnersFleet.fleetId) {
-        res.status(404).send({ error: { code: 'invalid_uri_params', message: 'Unknown fleet' } });
-        return;
-    }
+    const { image }: PostRollout['Body'] = body.data;
 
     const rollout = await runnersFleet.rollout(image);
     if (rollout.isErr()) {

@@ -1,64 +1,107 @@
 ---
-title: Zoho Books
-sidebarTitle: Zoho Books
+title: 'Zoho Books'
+sidebarTitle: 'Zoho Books'
+description: 'Access the Zoho Books API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/zoho-books/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/zoho-books/PreBuiltUseCases.mdx"
-import ZohoSharedUsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
-import ZohoSharedGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
-
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
-
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free Zoho account is sufficient for development. |
-| Paid test account | ✅ Not required | Free Zoho account is sufficient for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | No review process for OAuth apps. |
-| Security audit | ✅ Not required | |
+import ApiGotchas from "/snippets/zoho-shared/zoho-shared-gotchas.mdx"
+import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
 
 
-## Setup guide
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoho_.
+      </Step>
+      <Step title="Authorize Zoho Books">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zoho Books. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Zoho Books API">
+        Let's make your first request to the Zoho Books API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/books/v3/contacts" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
 
-Follow the general [Zoho OAuth setup guide](/integrations/all/zoho) to create your OAuth application. When selecting scopes, make sure to include the Books-specific scopes listed in the Common Scopes section below.
+            <Tab title="Node">
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/books/v3/contacts',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data.contacts, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Zoho Books accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    
+    <SetupGuide />
+    
+    ## Common Scopes
+    | Scope                            | Description                                                      |
+    | -------------------------------- | ---------------------------------------------------------------- |
+    | `ZohoBooks.contacts.ALL`         | Full access to the Contacts module (customers and vendors).      |
+    | `ZohoBooks.invoices.ALL`         | Full access to the Invoices module.                              |
+    | `ZohoBooks.customerpayments.ALL` | Full access to the Payments Received (customer payments) module. |
+    | `ZohoBooks.creditnotes.ALL`      | Full access to the Credit Notes module.                          |
+    | `ZohoBooks.expenses.ALL`         | Full access to the Expenses module.                              |
+    | `ZohoBooks.salesorders.ALL`      | Full access to the Sales Orders module.                          |
+    | `ZohoBooks.purchaseorders.ALL`   | Full access to the Purchase Orders module.                       |
+    | `ZohoBooks.bills.ALL`            | Full access to the Bills module.                                 |
 
 
-## Useful links
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic             | Links                                                                                                   |
+    | ----------------- | ------------------------------------------------------------------------------------------------------- |
+    | Authorization     | [Guide to connect to Zoho Books using Connect UI](/integrations/all/zoho-books/connect) |
+    | General           | [Zoho API Console](https://api-console.zoho.com/)                                                       |
+    |                   | [Zoho Books Website](https://www.zoho.com/books/)                                                     |
+    | Developer / OAuth | [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)                                 |
+    |                   | [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)      |
+    |                   | [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)             |
+    |                   | [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-expiry.html) |
+    |                   | [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)                          |
+    |                   | [OAuth Scopes](https://www.zoho.com/books/api/v3/oauth/#scopes)                                 |
+    |                   | [API Limits](https://www.zoho.com/calendar/help/api/api-limits.html)                                    |
+    | API               | [Zoho Books API docs](https://www.zoho.com/books/api/v3/introduction/)   
 
-<ZohoSharedUsefulLinks />
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-books.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+  <ApiGotchas />
 
-### Books-specific links
-- [Zoho Books API Documentation](https://www.zoho.com/books/api/v3/)
-- [Zoho Books OAuth Overview](https://www.zoho.com/books/api/v3/oauth/)
-- [Zoho Books API Collection](https://www.zoho.com/books/api/v3/apicollection/)
-
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-books.mdx)</Note>
-
-## Common Scopes
-
-- **ZohoBooks.fullaccess.all** - Full access to Books data
-- **ZohoBooks.contacts.READ** - Read access to contacts
-- **ZohoBooks.contacts.CREATE** - Create contacts
-- **ZohoBooks.contacts.UPDATE** - Update contacts
-- **ZohoBooks.contacts.DELETE** - Delete contacts
-- **ZohoBooks.invoices.READ** - Read access to invoices
-- **ZohoBooks.invoices.CREATE** - Create invoices
-- **ZohoBooks.invoices.UPDATE** - Update invoices
-- **ZohoBooks.invoices.DELETE** - Delete invoices
-
-## API gotchas
-
-<ZohoSharedGotchas />
-
-### Books-specific gotchas
-- The Zoho Books API has region-specific endpoints. You need to use the correct endpoint based on the user's region.
-- You can make your OAuth app cross-data-centers with [these instructions](https://www.zoho.com/books/api/v3/introduction/#multidc). This means that a single OAuth app will be able to query the Zoho API for Zoho accounts from the US, EU, etc.
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-books.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-books.mdx)</Note>
+  </Tab>
+</Tabs>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
