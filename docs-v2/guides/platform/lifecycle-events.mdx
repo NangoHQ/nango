@@ -21,6 +21,7 @@ To implement a lifecycle event handler, follow our [implementation guide](/imple
 ## Supported lifecycle events
 
 Nango currently supports the following events:
+- `validate-connection` occurs when a connection is being created and allows for custom validation of the connection credentials. This will reject and delete the connection if it fails the validation.
 - `post-connection-creation` occurs when a connection has been created.
 - `pre-connection-deletion` occurs before a connection is deleted.
 

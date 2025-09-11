@@ -5,7 +5,7 @@ icon: "code"
 description: "Full reference of the SDK available in Nango functions"
 ---
 
-# Examples
+## Examples
 
 <Tabs>
   <Tab title="Sync function">
@@ -82,7 +82,7 @@ description: "Full reference of the SDK available in Nango functions"
 
 Read more about [integration functions](/guides/platform/functions) to understand what role they play in Nango.
 
-# Configuration
+## Configuration
 
 ### `createSync`
 
@@ -261,7 +261,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
   The description of the sync.
 </ResponseField>
 
-<ResponseField name="event" type="'post-connection-creation' | 'pre-connection-deletion'" required>
+<ResponseField name="event" type="'post-connection-creation' | 'pre-connection-deletion' | 'validate-connection'" required>
   The event that will trigger this function.
 </ResponseField>
 
@@ -284,7 +284,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
   ```
 </ResponseField>
 
-# HTTP requests
+## HTTP requests
 
 Makes an HTTP request inside an integration function:
 
@@ -358,7 +358,7 @@ await nango.delete(config); // DELETE request
   </Tip>
 </Expandable>
 
-# HTTP request retries
+## HTTP request retries
 
 To configure retries when HTTP requests fail, use the `retries` and `retryOn` parameters in your [HTTP requests](#http-requests).
 
@@ -372,7 +372,7 @@ The following will apply:
 - By default, no retries are performed: `retries` default to `0`
 - The retry starting delay is `3000ms`, the delay between attempts is multiplied by `2` each time (exponential backoff) and is capped at `10 minutes`.
 
-# Logging
+## Logging
 
 You can collect logs in integration functions. This is particularly useful when:
 
@@ -387,7 +387,7 @@ await nango.log("This is a log.");
 
 Logs can be viewed & searched in the Nango UI. We plan to make them exportable in the future as well.
 
-# Environment variables
+## Environment variables
 
 Integration functions sometimes need to access sensitive variables that should not be revealed directly in the code.
 
@@ -414,7 +414,7 @@ No parameters.
   ```
 </Expandable>
 
-# Trigger action
+## Trigger action
 
 Integration functions currently do not support importing files, which limits the ability to share code between integration functions.
 
@@ -445,7 +445,7 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
   ```
 </Expandable>
 
-# Paginate through API responses
+## Paginate through API responses
 
 Nango provides a helper to automatically paginate endpoint responses.
 
@@ -569,7 +569,7 @@ The pagination helper supports 3 types of pagination: `cursor`, `link` or `offse
   </Info>
 </Expandable>
 
-# Get Integration
+## Get Integration
 
 Returns the current integration information
 
@@ -591,7 +591,7 @@ See `GET /integrations/{uniqueKey}` query parameters: [documentation](/reference
 
 See `GET /integrations/{uniqueKey}` response: [documentation](/reference/api/integration/get)
 
-# Manage connection metadata
+## Manage connection metadata
 
 ### Get connection metadata
 
@@ -664,7 +664,7 @@ await nango.updateMetadata({ 'CUSTOM_KEY1': 'CUSTOM_VALUE1' });
 
 Empty response.
 
-# Get the connection credentials
+## Get the connection credentials
 
 Returns a specific connection with credentials.
 
@@ -729,7 +729,7 @@ await nango.getConnection();
   ```
 </Expandable>
 
-# Sync-specific helper methods
+## Sync-specific helper methods
 
 Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/syncs/implement-a-sync)).
 
@@ -888,7 +888,7 @@ export default createSync({
 });
 ```
 
-# Action-specific helper methods
+## Action-specific helper methods
 
 ### `ActionError`
 
@@ -916,7 +916,7 @@ In this case, the response to the trigger action call will be:
 }
 ```
 
-# Relative imports in functions
+## Relative imports in functions
 
 You can import relative files into your functions to allow for code abstraction and to
 maintain DRY (Don't Repeat Yourself) principles. This means you can reuse code across
@@ -941,7 +941,7 @@ export default createSync({
 
 Note that you cannot import third-party modules at this time. Additionally, if there is a compilation error in an imported file, the entry point file will also fail to compile.
 
-# Pre-included Dependencies
+## Pre-included Dependencies
 
 Some libraries are pre-included for usage in functions:
 
