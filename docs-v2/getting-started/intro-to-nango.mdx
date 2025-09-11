@@ -6,37 +6,53 @@ description: 'Understand Nango in 5 minutes.'
 
 Nango is the platform to **authorize and access APIs** on behalf of your customers.
 
-# Who is Nango for?
+## Who is Nango for?
 
-Nango is designed for developers building **product integrations**—embedding external account connections within their applications to enhance functionality.
+Nango is designed for developers building **product integrations**: Letting users connect their external accounts to your own product.
 
-# Core features
+## Core features
 
-- **Embedded authorization UI**: Pre-built flows with appropriate input forms and guidance.
-- **Secure credential management**: Retrieval, storage, and refreshing of API credentials.
-- **Request proxying**: Injects credentials into API requests seamlessly.
-- **Credential monitoring**: Notifies via webhooks when credentials become invalid.
-- **Reconnection flows**: Facilitates repairing broken connections.
-- **Observability tools**: Tailored monitoring for integrations.
+- **[API Auth](/guides/use-cases/api-auth)** for [500+ APIs](/integrations/overview)
+    - **Embedded, white-label auth UI**: With appropriate input forms and guidance.
+    - **Secure credential management**: Retrieval, storage, and refreshing of API credentials.
+    - **Credential monitoring**: Notifies via webhooks when credentials become invalid.
+- **[Request proxying](/guides/use-cases/proxy)**: Injects credentials into API requests seamlessly.
+- **[Data Syncing](/guides/use-cases/syncs)**: Continuously synchronize data from APIs to your application.
+- **[Actions](/guides/use-cases/actions)**: Encapsulate use cases into reusable actions.
+- **[Webhooks](/guides/use-cases/webhooks)**: Listen to webhooks from APIs with a universal interface.
+- **[MCP](/guides/use-cases/mcp-server)**: Expose your integrations as an MCP server for tool calling.
+- **[Observability](/guides/platform/logs)**: Tailored monitoring for integrations.
 - **Management dashboard & APIs**: Control and oversee all connected accounts.
 
-Advanced Capabilities
-- **Data Syncing**: Continuously synchronize data from APIs to your application.
-- **Actions**: Encapsulate use cases into reusable actions.
-- **Webhooks**: Listen to webhooks from APIs with a universal interface.
-- **MCP**: Expose your integrations as an MCP server for tool calling.
-
-# Benefits
+## Benefits
 
 - **Speed**: Eliminates the need to build authorization flows and infrastructure for each API.
 - **Reliability**: Provides a robust solution from day one.
-- **Security**: Ensures secure storage and retrieval of API credentials.
+- **Security**: Ensures secure storage and retrieval of API credentials & user data.
 - **Observability**: Provides full visibility into every interaction with the external API.
-- **Modularity**: Pick the features you want to use, without vendor lock-in..
+- **Modularity**: Pick the features you want to use, without vendor lock-in.
 
 By leveraging Nango, developers can save days per integration and months over time.
 
-# Get started
+## Build vs. buy for product integrations
+
+Should you build your own product integrations, or buy pre-built connectors?
+
+We believe **engineering teams should build their own integrations** (with a platform like Nango).
+
+### The case for building integrations
+
+Every product has unique data structures and user workflows. When you build an integration, you map your product and the external product together. Getting the details right is crucial.
+
+Pre-built integrations force you into someone else's assumptions about how your data should connect, which often doesn't match your users' expectations or your product's logic.
+
+### The Control and Reliability Advantage
+
+When you build integrations in-house, you maintain full control over API requests, data transformations, and debugging capabilities. With pre-built solutions, you're dependent on external support teams to fix issues and prioritize your requests, which can lead to delays and frustration when problems arise in production.
+
+More on our [build vs. buy guide for product integrations](https://www.nango.dev/blog/product-integrations-build-or-buy).
+
+## Get started
 
 Access any API in minutes, and fully embed the flow within your app in an hour.
 

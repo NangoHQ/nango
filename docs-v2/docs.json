@@ -109,7 +109,6 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/intro-to-nango",
-              "getting-started/our-approach-to-integrations",
               {
                 "group": "Quickstart",
                 "pages": [
