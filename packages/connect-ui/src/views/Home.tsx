@@ -9,7 +9,7 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { setTheme } from '@/lib/theme';
+import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
 
@@ -42,7 +42,7 @@ export const Home: React.FC = () => {
                         break;
                     }
                     const data = evt.data as ConnectUIEventSettingsChanged;
-                    setTheme(data.payload.theme);
+                    updateSettings(data.payload);
                     break;
                 }
             }
@@ -81,7 +81,7 @@ export const Home: React.FC = () => {
     useEffect(() => {
         if (data) {
             setSession(data.data);
-            setTheme(data.data.connectUISettings.theme);
+            updateSettings(data.data.connectUISettings);
             void navigate({ to: '/integrations' });
         }
     }, [data]);
