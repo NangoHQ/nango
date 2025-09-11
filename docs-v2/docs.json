@@ -923,8 +923,8 @@
             "group": "Build Integrations - Reference",
             "pages": [
               "reference/cli",
-              "reference/api-configuration",
               "reference/functions",
+              "reference/api-configuration",
               "reference/integration-configuration"
             ]
           }
