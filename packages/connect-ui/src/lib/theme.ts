@@ -1,6 +1,7 @@
 import type { ConnectUIThemeSettings } from '@nangohq/types';
 
 export function setTheme(theme: ConnectUIThemeSettings) {
+    return;
     const root = document.documentElement;
 
     root.style.setProperty('--color-background-surface', theme.light.backgroundSurface);
