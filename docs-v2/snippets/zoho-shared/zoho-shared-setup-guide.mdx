@@ -1,0 +1,23 @@
+<Steps>
+      <Step title="Create a Zoho account">
+        If you don't already have one, go to [Zoho's signup page](https://www.zoho.com/signup.html) and create one.
+      </Step>
+      
+      <Step title="Access the Zoho API Console">
+        1. Go to the [Zoho API Console](https://api-console.zoho.com/).
+        2. Sign in with your Zoho account if prompted.
+      </Step>
+
+      <Step title="Create a new client">
+        1. In the API Console, click on the **+ ADD CLIENT** button and select **Server-based Applications** as your client type.
+        2. Fill in all the required information. For **Authorized Redirect URIs** enter `https://api.nango.dev/oauth/callback`
+        3. Click **Create** to register your client. You will then receive a **Client ID** and **Client Secret**, which are required to configure your integration in Nango.
+      </Step>
+
+      <Step title="Configure Multi-DC">
+        1. On the **Settings** tab, check the option to use the same OAuth credentials for all data centers, this enables you to handle users from different regions
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+</Steps>

@@ -38,7 +38,7 @@ export const CopyText: React.FC<{ text: string; showOnHover?: boolean; className
                 <button
                     className={cn(
                         'group transition-colors inline-flex max-w-full items-center gap-1.5 text-dark-400 border border-transparent px-2 py-0.5 rounded-md hover:border-dark-500 hover:text-white',
-                        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                        'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring',
                         className
                     )}
                     onClick={copyToClipboard}

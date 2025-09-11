@@ -62,9 +62,9 @@ export const ConnectionCreate: React.FC = () => {
                     <div className="pr-10 flex flex-col gap-10">
                         <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
-                            <Skeleton className="w-[100%] h-10" />
-                            <Skeleton className="w-[100%]" />
-                            <Skeleton className="w-[100%]" />
+                            <Skeleton className="w-full h-10" />
+                            <Skeleton className="w-full" />
+                            <Skeleton className="w-full" />
                         </div>
                     </div>
                 </div>

@@ -89,6 +89,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return Err(def.error);
         }
 
+        for (const integration of def.value.integrations) {
+            for (const sync of integration.syncs) {
+                if (sync.track_deletes) {
+                    console.warn(
+                        chalk.yellow(
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                        )
+                    );
+                }
+            }
+        }
+
         generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
@@ -237,6 +249,28 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 })
             );
         }
+        if (bag.deleteRecordsFromPreviousExecutionsLines.length > 1) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called only once per sync`,
+                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
+        if (
+            bag.deleteRecordsFromPreviousExecutionsLines.length > 0 &&
+            bag.batchingRecordsLines.length > 0 &&
+            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionsLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called after any batching records function`,
+                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
 
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
@@ -298,10 +332,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
+    const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
-        setMergingStrategyLines
+        setMergingStrategyLines,
+        deleteRecordsFromPreviousExecutionsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -326,7 +362,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'delete',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction'
+        'triggerAction',
+        'setMergingStrategy',
+        'deleteRecordsFromPreviousExecutions'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -430,6 +468,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     }
                                     if (callee.property.name === 'setMergingStrategy') {
                                         setMergingStrategyLines.push(lineNumber);
+                                    }
+
+                                    if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
+                                        deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                                     }
                                 }
                             }

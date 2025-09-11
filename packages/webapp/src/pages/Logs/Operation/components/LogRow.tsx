@@ -17,7 +17,7 @@ export const LogRow: React.FC<{
         <Table.Row
             data-state={row.getIsSelected() && 'selected'}
             className={cn(
-                'focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 !border-l-2',
+                'focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 border-l-2!',
                 row.original.level === 'error' && 'hover:border-l-red-500 focus:border-l-red-500',
                 row.original.level === 'warn' && 'hover:border-l-yellow-400 focus:border-l-yellow-400',
                 row.original.level === 'info' && 'hover:border-l-blue-400 focus:border-l-blue-400',

@@ -84,7 +84,8 @@ const validate = validateRequest<PutTask>({
                         additional_properties: z.record(z.string(), z.unknown()).optional()
                     })
                     .optional(),
-                output: jsonSchema.default(null)
+                output: jsonSchema.default(null),
+                telemetryBag: z.object({ customLogs: z.number(), proxyCalls: z.number() }).default({ customLogs: 0, proxyCalls: 0 })
             })
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)

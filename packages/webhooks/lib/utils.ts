@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { isAxiosError } from 'axios';
 
-import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
 
 import type { LogContext } from '@nangohq/logs';
 import type { DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
@@ -143,7 +143,8 @@ export const deliver = async ({
         const headers = {
             ...filteredHeaders,
             'X-Nango-Signature': getSignatureHeader(environment.secret_key, bodyString.value),
-            'content-type': 'application/json'
+            'content-type': 'application/json',
+            'user-agent': userAgent
         };
 
         const logRequest: MessageRow['request'] = {
