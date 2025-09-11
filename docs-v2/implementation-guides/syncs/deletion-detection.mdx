@@ -1,0 +1,160 @@
+---
+title: "Detecting deletes"
+sidebarTitle: "Detecting deletes"
+description: "Guide on how to detect deleted records with syncs"
+---
+
+Sometimes you need to know when an object you are syncing has been deleted in the external system.
+
+Detecting deletes is not a universal switch.
+It differs significantly between full refresh and incremental syncs. Pick the strategy that matches your sync type.
+
+## Detecting deletes in incremental syncs
+
+Incremental syncs only fetch the delta (new/updated records) since the previous run, so Nango has no built-in way to know which records disappeared on the provider side.
+
+You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/functions#delete-records)) inside the sync functions.
+
+### When can you use this?
+
+You can use `nango.batchDelete()` if the external API supports one of the following:
+
+- A dedicated “recently deleted” endpoint (e.g. `GET /entities/deleted?since=...`)
+- The ability to filter or sort by a deletion timestamp
+- The ability to filter or sort by last-modified timestamp _and_ records include a flag like `is_deleted`, `archived`, etc.
+
+If none of these are available, you cannot detect deletes with an incremental sync.
+
+You'll either need to switch to a full refresh sync or skip deletion detection.
+
+Switching to a full refresh sync should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/syncs/large-datasets).
+
+### Example incremental sync with deletion detection
+
+```ts
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const AccountSchema = z.object({
+  id: z.string(),
+  name: z.string()
+});
+
+export default createSync({
+  description: 'Incrementally sync Accounts & handle deletions',
+  frequency: 'every 2 hours',
+  syncType: 'incremental',
+  endpoints: [{ method: 'GET', path: '/accounts', group: 'Accounts' }],
+  models: { Account: AccountSchema },
+
+  exec: async (nango) => {
+    // (1) Fetch newly created / updated accounts
+    // Save them with await nango.batchSave(...);
+
+    // (2) Fetch deletions since the last run (if this is not the first run)
+    const last = nango.lastSyncDate;
+    if (last) {
+        const res = await nango.get({
+            endpoint: '/accounts/deleted',
+            params: { since: last.toISOString() }
+        });
+
+        // (3) Tell Nango which IDs have been deleted in the external system
+        const toDelete = res.data.map((row: any) => ({ id: row.id }));
+        if (toDelete.length) {
+            await nango.batchDelete(toDelete, 'Account');
+        }
+    }
+  }
+});
+```
+
+## Detecting deletes in full refresh syncs
+
+Full refresh syncs download all records when they run.
+
+Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour by calling the `deleteRecordsFromPreviousExecutions` function. ([full reference](/reference/functions#detect-deletions-automatically)).
+
+<Note>
+  `deleteRecordsFromPreviousExecutions` does not work with incremental syncs because fetching the data incrementally prevents performing a diff and automatically detecting deletions.
+</Note>
+
+### Example full refresh sync with deletion detection
+
+```ts
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const TicketSchema = z.object({
+  id: z.string(),
+  subject: z.string(),
+  status: z.string()
+});
+
+export default createSync({
+  description: 'Fetch all help-desk tickets',
+  frequency: 'every day',
+  syncType: 'full',
+  endpoints: [{ method: 'GET', path: '/tickets', group: 'Tickets' }],
+  models: { Ticket: TicketSchema },
+
+  exec: async (nango) => {
+    // Unlike incremental syncs, the execution logic
+    // doesn't need any changes for deletion detection in full refresh syncs
+    const tickets = await nango.paginate<{ id: string; subject: string; status: string }>({
+      endpoint: '/tickets',
+      paginate: { type: 'cursor', cursorPathInResponse: 'next', cursorNameInRequest: 'cursor', responsePath: 'tickets' }
+    });
+
+    for await (const page of tickets) {
+      await nango.batchSave(page, 'Ticket');
+    }
+
+    // Delete records that don't exist anymore
+    await nango.deleteRecordsFromPreviousExecutions('Ticket');
+  }
+});
+```
+
+### How the algorithm works
+
+1. During the execution, Nango stores the list of record IDs.
+2. When calling `deleteRecordsFromPreviousExecutions`, Nango compares the new list with the old one.
+3. Any records missing in the new list are marked as deleted (soft delete). They remain accessible from the Nango cache, but with `record._metadata.deleted === true`.
+
+<Warning>
+**Be careful with exception handling when using** `deleteRecordsFromPreviousExecutions`
+
+Nango only performs deletion detection (the “diff”) if a sync run completes successfully without any uncaught exceptions.
+
+If you’re using `deleteRecordsFromPreviousExecutions`, exception handling becomes critical:
+- If your sync doesn’t fetch the full dataset, but still call `deleteRecordsFromPreviousExecutions` (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
+- This leads to false positives, where valid records are mistakenly considered deleted.
+
+**What You Should Do**
+
+If a failure prevents full data retrieval, make sure the sync run fails and `deleteRecordsFromPreviousExecutions` is not being called:
+- Let exceptions bubble up and interrupt the run.
+- If you’re using `try/catch`, re-throw exceptions that indicate incomplete data.
+</Warning>
+
+<Tip>
+**How to use** `deleteRecordsFromPreviousExecutions` **safely**
+
+If some records are incorrectly marked as deleted due to calling `deleteRecordsFromPreviousExecutions` improperly, you can trigger a full resync (via the UI or API) to restore the correct data state.
+
+However, because `deleteRecordsFromPreviousExecutions` relies on logic in your sync functions, mistakes there can lead to false deletions.
+
+We strongly recommend not performing irreversible destructive actions (like hard-deleting records in your system) based solely on deletions reported by Nango. A full resync should always be able to recover from issues.
+</Tip>
+
+## Troubleshooting deletion detection issues
+
+| Symptom                                                                    | Likely cause                                                                             |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Records that still exist in the source API are shown as `deleted` in Nango | sync didn't save all records (silent failures) before calling `deleteRecordsFromPreviousExecutions` |
+| You never see deleted records                                              | Check if deletion detection is implemented for the sync.                                 |
+
+<Tip>
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
