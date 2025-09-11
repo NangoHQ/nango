@@ -32,6 +32,70 @@
       "og:site_name": "Nango Docs"
     }
   },
+  "navbar": {
+    "links": [
+      {
+        "label": "Sign Up",
+        "href": "https://app.nango.dev/signup"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/nangoHQ/nango"
+    }
+  },
+  "footer": {
+    "socials": {
+      "twitter": "https://twitter.com/NangoHQ",
+      "linkedin": "https://www.linkedin.com/company/nangohq/",
+      "github": "https://github.com/NangoHQ/nango",
+      "slack": "https://nango.dev/slack",
+      "website": "https://www.nango.dev/"
+    }
+  },
+  "integrations": {
+    "gtm": {
+      "tagId": "GTM-N4KVPWR"
+    }
+  },
+  "redirects": [
+    {
+      "source": "/introduction",
+      "destination": "/"
+    },
+    {
+      "source": "/guides/mcs",
+      "destination": "/guides/use-cases/mcp-server"
+    },
+    {
+      "source": "/guides/api-authorization/authorize-in-your-app-default-ui",
+      "destination": "/implementation-guides/api-auth/implement-api-auth"
+    },
+    {
+      "source": "/guides/custom-integrations/overview",
+      "destination": "/guides/platform/functions"
+    },
+    {
+      "source": "/guides/webhooks/webhooks-from-nango",
+      "destination": "/guides/platform/webhooks-from-nango"
+    },
+    {
+      "source": "/guides/syncs/overview",
+      "destination": "/guides/use-cases/syncs"
+    },
+    {
+      "source": "/guides/actions/overview",
+      "destination": "/guides/use-cases/actions"
+    },
+    {
+      "source": "/guides/api-authorization/overview",
+      "destination": "/guides/use-cases/api-auth"
+    },
+    {
+      "source": "/guides/new-api-support",
+      "destination": "/implementation-guides/platform/contribute-new-api"
+    }
+  ],
   "navigation": {
     "anchors": [
       {
@@ -886,105 +950,5 @@
         "method": "bearer"
       }
     }
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
-      }
-    ],
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
-    }
-  },
-  "footer": {
-    "socials": {
-      "twitter": "https://twitter.com/NangoHQ",
-      "linkedin": "https://www.linkedin.com/company/nangohq/",
-      "github": "https://github.com/NangoHQ/nango",
-      "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
-    }
-  },
-  "integrations": {
-    "gtm": {
-      "tagId": "GTM-N4KVPWR"
-    }
-  },
-  "redirects": [
-    {
-      "source": "/introduction",
-      "destination": "/"
-    },
-    {
-      "source": "/integrate/guides/authorize-an-api",
-      "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
-    },
-    {
-      "source": "/customize/guides/create-a-custom-integration",
-      "destination": "/guides/custom-integrations/overview"
-    },
-    {
-      "source": "/guides/customize/extend-an-integration-template",
-      "destination": "/guides/custom-integrations/extend-a-pre-built-integration"
-    },
-    {
-      "source": "/guides/customize/contribute-an-api",
-      "destination": "/guides/new-api-support"
-    },
-    {
-      "source": "/guides/getting-started/authorize-an-api-from-your-app",
-      "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
-    },
-    {
-      "source": "/guides/getting-started/write-to-an-api",
-      "destination": "/guides/actions/use-an-action"
-    },
-    {
-      "source": "/guides/getting-started/read-from-an-api",
-      "destination": "/guides/syncs/use-a-sync"
-    },
-    {
-      "source": "/what-is-nango",
-      "destination": "/getting-started/intro-to-nango"
-    },
-    {
-      "source": "/home",
-      "destination": "/"
-    },
-    {
-      "source": "guides/custom-integration-builder/overview",
-      "destination": "guides/custom-integrations/overview"
-    },
-    {
-      "source": "guides/custom-integration-builder/build-a-custom-integration",
-      "destination": "guides/custom-integrations/build-a-custom-integration"
-    },
-    {
-      "source": "guides/custom-integration-builder/extend-a-pre-built-integration",
-      "destination": "guides/custom-integrations/extend-a-pre-built-integration"
-    },
-    {
-      "source": "guides/custom-integration-builder/event-based-scripts",
-      "destination": "guides/custom-integrations/event-based-scripts"
-    },
-    {
-      "source": "guides/services",
-      "destination": "guides/custom-integrations/service"
-    },
-    {
-      "source": "guides/individual-requests",
-      "destination": "guides/proxy-requests"
-    },
-    {
-      "source": "guides/infrastructure",
-      "destination": "guides/self-hosting/infrastructure"
-    },
-    {
-      "source": "guides/new-api-support",
-      "destination": "guides/api-authorization/new-api-support"
-    }
-  ]
+  }
 }
