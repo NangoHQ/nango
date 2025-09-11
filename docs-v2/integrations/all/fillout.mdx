@@ -8,13 +8,13 @@ description: 'Access the Fillout API in 2 minutes 💨'
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Fillout_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Fillout_. Nango doesn't provide a test OAuth app for Fillout yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
       </Step>
       <Step title="Authorize Fillout">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Fillout. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Fillout API">
-        Let's make your first request to the Fillout API (fetch a list of issues). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Fillout API (fetch a list of all your forms). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
                  ```bash
@@ -85,7 +85,7 @@ description: 'Access the Fillout API in 2 minutes 💨'
     | - | - | 
     | General | [Fillout Website](https://www.fillout.com/) |
     | | [Fillout Dashboard](https://build.fillout.com/) |
-    | Developer | [Generate an Oauth integration](https://build.fillout.com/home/settings/developer/apps) |
+    | Developer | [Generate an OAuth integration](https://build.fillout.com/home/settings/developer/apps) |
     | | [Fillout API docs](https://www.fillout.com/help/api-reference/) |
     | | [API Authentication](https://www.fillout.com/help/oauth-applications) |
     | | [API rate limiting](https://www.fillout.com/help/fillout-rest-api#rate-limits) |
