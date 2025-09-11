@@ -9,10 +9,6 @@ export interface ConnectUIThemeSettings {
 }
 
 export interface ConnectUIColorPalette {
-    backgroundSurface: string;
-    backgroundElevated: string;
-    primary: string;
-    onPrimary: string;
-    textPrimary: string;
-    textSecondary: string;
+    buttonBackground: string;
+    buttonText: string;
 }
