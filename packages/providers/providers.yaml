@@ -10430,6 +10430,7 @@ slack:
     scope_separator: ','
     alternate_access_token_response_path: authed_user.access_token
     token_url: https://slack.com/api/oauth.v2.access
+    disable_pkce: true
     token_response_metadata:
         - incoming_webhook.url
         - incoming_webhook.channel
