@@ -13,7 +13,7 @@ It differs significantly between full refresh and incremental syncs. Pick the st
 
 Incremental syncs only fetch the delta (new/updated records) since the previous run, so Nango has no built-in way to know which records disappeared on the provider side.
 
-You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/scripts#delete-records)) inside the sync script.
+You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/functions#delete-records)) inside the sync functions.
 
 ### When can you use this?
 
@@ -139,7 +139,7 @@ If a failure prevents full data retrieval, make sure the sync run fails so Nango
 **How to use** `trackDeletes` **safely**
 If some records are incorrectly marked as deleted due to the `trackDeletes` feature, you can trigger a full resync (via the UI or API) to restore the correct data state.
 
-However, because `trackDeletes` relies on logic in your sync scripts—and mistakes there can lead to false deletions—we strongly recommend not performing irreversible destructive actions (like hard-deleting records in your system) based solely on deletions reported by Nango. A full resync should always be able to recover from issues.
+However, because `trackDeletes` relies on logic in your sync functions, mistakes there can lead to false deletions. We strongly recommend not performing irreversible destructive actions (like hard-deleting records in your system) based solely on deletions reported by Nango. A full resync should always be able to recover from issues.
 </Warning>
 
 ## Troubleshooting deletion detection issues

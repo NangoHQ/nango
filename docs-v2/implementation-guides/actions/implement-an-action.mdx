@@ -83,7 +83,7 @@ import './salesforce/actions/salesforce-contact-fields';
 In the `exec` method, implement the logic of your action. Edit `MyObject` to contain the properties you need.
 
 The following can help you with your implementation:
-- [`nango` object reference](/reference/scripts) to understand the SDK methods available in actions
+- [`nango` object reference](/reference/functions) to understand the SDK methods available in actions
 - [Our reference implementations repo](https://www.nango.dev/templates) has 600+ examples of syncs and actions implemented by Nango
 - [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build actions with Claude Code, Cursor, and other AI agents
 
@@ -144,7 +144,7 @@ In this integration function, the following Nango utilities are used:
 
 ### Step 5 - Test your action locally
 
-Easily test your integration scripts locally as you develop them with the `dryrun` function of the CLI:
+Easily test your action function locally as you develop them with the `dryrun` function of the CLI:
 
 ```bash
 nango dryrun salesforce-contact-fields '<CONNECTION-ID>'

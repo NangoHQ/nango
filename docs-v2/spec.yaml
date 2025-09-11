@@ -1065,7 +1065,7 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all integration scripts.
+            description: Return the configuration for all integration functions.
             parameters:
                 - name: format
                   in: query
@@ -1076,7 +1076,7 @@ paths:
                   description: The output type of the script configuration
             responses:
                 '200':
-                    description: Successfully returned integration scripts config
+                    description: Successfully returned integration functions config
                     content:
                         application/json:
                             schema:

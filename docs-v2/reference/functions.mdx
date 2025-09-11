@@ -1,13 +1,14 @@
 ---
-title: "Integration scripts"
-sidebarTitle: "Integration scripts"
+title: "Integration functions reference"
+sidebarTitle: "Functions"
 icon: "code"
+description: "Full reference of the SDK available in Nango functions"
 ---
 
 # Examples
 
 <Tabs>
-  <Tab title="Sync script">
+  <Tab title="Sync function">
     ```ts
     import { createSync } from 'nango';
 
@@ -45,7 +46,7 @@ icon: "code"
     });
     ```
   </Tab>
-  <Tab title="Action script">
+  <Tab title="Action function">
     ```ts
     import { createAction } from 'nango';
     import { GithubCreateIssueInput, GithubCreateIssueResult } from '../../models.js';
@@ -119,7 +120,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
 </ResponseField>
 
 <ResponseField name="models" type="object" required>
-  The models that will be synced by this script.
+  The models that will be synced by this function.
   You need one endpoint per model.
 
   ```ts
@@ -257,7 +258,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
 </ResponseField>
 
 <ResponseField name="event" type="'post-connection-creation' | 'pre-connection-deletion'" required>
-  The event that will trigger this script.
+  The event that will trigger this function.
 </ResponseField>
 
 <ResponseField name="exec" type="function" required>
@@ -265,12 +266,12 @@ Read more about [integration functions](/guides/platform/functions) to understan
 </ResponseField>
 
 <ResponseField name="version" type="string">
-  The version of the onEvent script.
-  Use it to track changes to the onEvent script inside Nango's UI.
+  The version of the onEvent function.
+  Use it to track changes to the onEvent function inside Nango's UI.
 </ResponseField>
 
 <ResponseField name="metadata" type="object" default="z.void()">
-  The connection's metadata of the script.
+  The connection's metadata of the function.
 
   ```ts
   metadata: z.object({
@@ -281,7 +282,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
 
 # HTTP requests
 
-Makes an HTTP request inside an integration script:
+Makes an HTTP request inside an integration function:
 
 ```js
 import type { ProxyConfiguration } from 'nango';
@@ -296,7 +297,7 @@ await nango.delete(config); // DELETE request
 ```
 
 <Tip>
-  Note that all HTTP requests benefit from automatic credential injection. Because scripts are executed in the context of a specific integration & connection, Nango can automatically retrieve & refresh the relevant API credentials.
+  Note that all HTTP requests benefit from automatic credential injection. Because functions are executed in the context of a specific integration & connection, Nango can automatically retrieve & refresh the relevant API credentials.
 </Tip>
 
 **Parameters**
@@ -369,12 +370,12 @@ The following will apply:
 
 # Logging
 
-You can collect logs in integration scripts. This is particularly useful when:
+You can collect logs in integration functions. This is particularly useful when:
 
-- developing, to debug your integration scripts
-- in production, to collect information about integration script executions & understand issues
+- developing, to debug your integration functions
+- in production, to collect information about integration function executions & understand issues
 
-Collect logs in integration scripts as follows:
+Collect logs in integration functions as follows:
 
 ```ts
 await nango.log("This is a log.");
@@ -384,9 +385,9 @@ Logs can be viewed & searched in the Nango UI. We plan to make them exportable i
 
 # Environment variables
 
-Integration scripts sometimes need to access sensitive variables that should not be revealed directly in the code.
+Integration functions sometimes need to access sensitive variables that should not be revealed directly in the code.
 
-For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from integration scripts with:
+For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from integration functions with:
 
 ```js
 await nango.getEnvironmentVariables();
@@ -411,9 +412,9 @@ No parameters.
 
 # Trigger action
 
-Integration scripts currently do not support importing files, which limits the ability to share code between integration scripts.
+Integration functions currently do not support importing files, which limits the ability to share code between integration functions.
 
-As a temporary workaround, you can call action scripts from other integration scripts with:
+As a temporary workaround, you can call action functions from other integration functions with:
 
 ```js
 await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
@@ -444,7 +445,7 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
 
 Nango provides a helper to automatically paginate endpoint responses.
 
-Similar to [HTTP requests](/reference/scripts#http-requests), the `nango.paginate()` method takes in a `ProxyConfiguration` parameter.
+Similar to [HTTP requests](/reference/functions#http-requests), the `nango.paginate()` method takes in a `ProxyConfiguration` parameter.
 
 Use the `paginate` field to of the `ProxyConfiguration` to specify how the endpoint's pagination work. Here's an example for a Jira endpoint:
 
@@ -481,7 +482,7 @@ for await (const projects of nango.paginate<JiraProjectResponse>(config)) {
 As shown in the example above, use a `for` loop to iterate through the paginated results.
 
 <Tip>
-  Nango has pre-configured the pagination settings for some popular APIs, so you don't have to specify them in scripts.
+  Nango has pre-configured the pagination settings for some popular APIs, so you don't have to specify them in functions.
 
   You can view the pre-configured pagination settings for all APIs in the [providers.yaml](https://nango.dev/providers.yaml) file.
 
@@ -726,7 +727,7 @@ await nango.getConnection();
 
 # Sync-specific helper methods
 
-Sync scripts persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/syncs/implement-a-sync)).
+Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/syncs/implement-a-sync)).
 
 ### Save records
 
@@ -778,7 +779,7 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 
 Updates records in the Nango cache by merging the given data into the existing record. The `id` field is required in each record and used to determine what existing record to merge into.
 
-`batchUpdate` is primarily useful in webhook sync scripts, where you receive partial updates from a webhook and want to merge them into the existing records.
+`batchUpdate` is primarily useful in webhook sync functions, where you receive partial updates from a webhook and want to merge them into the existing records.
 
 The merge algorithm used is a deep merge. Nested objects are merged recursively, while arrays always use the new value for the array. Any fields not present in the update record are left unchanged.
 
@@ -832,7 +833,7 @@ if (records.has('1')) {
 ```
 
 <Tip>
-  Fetching records by ID is useful when you need to update specific records with a more granular approach than [`nango.batchUpdate()`](/reference/scripts#update-records), which performs a deep merge. Note that `nango.batchUpdate()` is more performant than using `nango.getRecordsById()`, followed by `nango.batchSave()`.
+  Fetching records by ID is useful when you need to update specific records with a more granular approach than [`nango.batchUpdate()`](/reference/functions#update-records), which performs a deep merge. Note that `nango.batchUpdate()` is more performant than using `nango.getRecordsById()`, followed by `nango.batchSave()`.
 
   A common use case is when handling external webhooks, where only a partial update of a record is received from an API.
 </Tip>
@@ -860,7 +861,7 @@ export default createSync({
 
 ### `ActionError`
 
-You can use `ActionError` in an action script to return a descriptive error to your app when needed:
+You can use `ActionError` in an action function to return a descriptive error to your app when needed:
 
 ```ts
 
@@ -884,11 +885,11 @@ In this case, the response to the trigger action call will be:
 }
 ```
 
-# Relative imports in scripts
+# Relative imports in functions
 
-You can import relative files into your scripts to allow for code abstraction and to
+You can import relative files into your functions to allow for code abstraction and to
 maintain DRY (Don't Repeat Yourself) principles. This means you can reuse code across
-different scripts by importing it. The imported file must live in the `nango-integrations`
+different functions by importing it. The imported file must live in the `nango-integrations`
 directory and can be imported in the following way:
 
 ```ts
@@ -911,7 +912,7 @@ Note that you cannot import third-party modules at this time. Additionally, if t
 
 # Pre-included Dependencies
 
-Some libraries are pre-included for usage in scripts:
+Some libraries are pre-included for usage in functions:
 
 - [zod](https://github.com/colinhacks/zod)
 - [crypto / node:crypto](https://nodejs.org/api/crypto.html#crypto)
