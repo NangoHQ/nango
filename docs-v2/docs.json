@@ -56,11 +56,11 @@
             "group": "Use Cases",
             "pages": [
               "guides/use-cases/api-auth",
+              "guides/use-cases/proxy",
               "guides/use-cases/syncs",
               "guides/use-cases/actions",
               "guides/use-cases/webhooks",
-              "guides/use-cases/mcp-server",
-              "guides/use-cases/proxy"
+              "guides/use-cases/mcp-server"
             ]
           },
           {
@@ -116,6 +116,12 @@
               "implementation-guides/api-auth/customize-connect-ui"
             ]
           },
+          {
+            "group": "Requests Proxy",
+            "pages": [
+              "implementation-guides/requests-proxy/implement-requests-proxy"
+            ]
+          },
           { 
             "group": "Syncs",
             "pages": [
@@ -143,12 +149,6 @@
             "group": "MCP Server",
             "pages": [
               "implementation-guides/mcp-server/implement-mcp-server"
-            ]
-          },
-          {
-            "group": "Requests Proxy",
-            "pages": [
-              "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
           },
           {
