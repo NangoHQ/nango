@@ -116,7 +116,7 @@ export const ScriptSettings: React.FC<{
                 tooltipContent={
                     <div className="max-w-96">
                         Nango endpoints are powered by integration functions. Some of the following configurations can only be changed by modifying this
-                        underlying script. If the source is a template, you will need to extend it to change certain configurations (
+                        underlying function. If the source is a reference implementation, you will need to extend it to change certain configurations (
                         <Link to="https://docs.nango.dev/implementation-guides/building-integrations/extend-reference-implementation" className="underline">
                             guide
                         </Link>
@@ -242,7 +242,7 @@ export const ScriptSettings: React.FC<{
                                 <Dialog
                                     open={openFrequency}
                                     onOpenChange={(v) => {
-                                        if (v) onFrequencyChange(flow.runs);
+                                        if (v) onFrequencyChange(flow.runs!);
                                         setOpenFrequency(v);
                                     }}
                                 >

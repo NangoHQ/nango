@@ -804,7 +804,7 @@ This function should be called at the end of your sync execution, after all reco
 - If your sync fails or doesn't fetch the complete dataset, avoid calling this function as it may cause false deletions
 - Records are soft deleted (marked with `_metadata.deleted = true`) and remain in the cache
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/guides/syncs/detecting-deletes).
+For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/syncs/deletion-detection.mdx).
 
 ### Update records
 

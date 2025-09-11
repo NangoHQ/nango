@@ -139,7 +139,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                 if (payloadSizeInMb > 2) {
                     if (actionPayloadAllowList.includes(account.id)) {
                         void logCtx.warn(
-                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large will soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
+                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large will soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/use-cases/proxy.`,
                             {
                                 payloadSize,
                                 actionName: action_name,
