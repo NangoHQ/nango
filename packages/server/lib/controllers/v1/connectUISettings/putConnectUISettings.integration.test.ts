@@ -222,12 +222,12 @@ describe(`PUT ${route}`, () => {
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'light', 'textMuted']
+                        path: ['theme', 'light', 'textSecondary']
                     },
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'dark', 'background']
+                        path: ['theme', 'dark', 'backgroundSurface']
                     },
                     {
                         code: 'invalid_type',
