@@ -325,6 +325,9 @@
                                         }
                                     }
                                 },
+                                "skip_automatic_headers": {
+                                    "type": "boolean"
+                                },
                                 "data": {
                                     "type": "object"
                                 }
