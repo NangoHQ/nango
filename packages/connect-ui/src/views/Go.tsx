@@ -309,7 +309,7 @@ export const Go: React.FC = () => {
                 <HeaderButtons />
                 <main className="flex-1 flex flex-col justify-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
-                        <div className="relative w-16 h-16 p-2 rounded border border-subtle bg-white">
+                        <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
                                 <IconCircleCheckFilled className="w-full h-full text-green-600" />
@@ -332,7 +332,7 @@ export const Go: React.FC = () => {
                 <HeaderButtons />
                 <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
-                        <div className="relative w-16 h-16 p-2 rounded border border-subtle bg-white">
+                        <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
                                 <IconCircleXFilled className="w-full h-full text-red-700" />
@@ -378,7 +378,7 @@ export const Go: React.FC = () => {
             />
             <main className="flex-1 flex flex-col gap-7 px-4 justify-center">
                 <div className="flex flex-col gap-7 items-center">
-                    <div className="w-16 h-16 p-2 rounded bg-white border border-subtle">
+                    <div className="w-16 h-16 p-2 rounded-sm bg-white border border-subtle">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-center text-lg text-primary">{t('go.linkAccount', { provider: displayName })}</h1>

@@ -159,7 +159,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex flex-col gap-3 p-5 bg-subSurface hover:bg-subtle focus:bg-subtle"
+            className="group flex flex-col gap-3 p-5 bg-sub-surface hover:bg-subtle focus:bg-subtle"
             role="button"
             tabIndex={0}
             title={connectToLabel}
@@ -167,7 +167,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
         >
             <div className=" flex justify-between items-center">
                 <div className="flex gap-3 items-center">
-                    <div className="w-12 h-12 bg-white transition-colors rounded p-1.5 group-hover:bg-dark-100">
+                    <div className="w-12 h-12 bg-white transition-colors rounded-sm p-1.5 group-hover:bg-dark-100">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
                     <div className="text-primary">{integration.display_name}</div>
@@ -175,7 +175,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
                 <ArrowRight className="w-5 h-5 text-tertiary group-hover:text-primary" />
             </div>
             {error && (
-                <div className="py-2 px-4 border border-error bg-red-100 text-error text-sm flex items-center rounded gap-2">
+                <div className="py-2 px-4 border border-error bg-red-100 text-error text-sm flex items-center rounded-sm gap-2">
                     <CircleAlert className="w-5 h-5" strokeWidth={1.5} /> {error} Error obtaining the provider.
                 </div>
             )}

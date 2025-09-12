@@ -28,12 +28,7 @@ export const Layout: React.FC = () => {
                     </div>
                 </div>
                 <div className="p-5 w-full text-center">
-                    <a
-                        className="flex-shrink-0 text-xs text-tertiary"
-                        href="https://www.nango.dev?utm_source=connectui"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                    >
+                    <a className="shrink-0 text-xs text-tertiary" href="https://www.nango.dev?utm_source=connectui" rel="noopener noreferrer" target="_blank">
                         Secured by
                         <NangoLogoSVG className="h-4 w-auto inline-block ml-2" />
                     </a>
@@ -51,12 +46,7 @@ export const Layout: React.FC = () => {
                     </div>
                 </div>
                 <div className="p-5 w-full text-center">
-                    <a
-                        className="flex-shrink-0 text-xs text-tertiary"
-                        href="https://www.nango.dev?utm_source=connectui"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                    >
+                    <a className="shrink-0 text-xs text-tertiary" href="https://www.nango.dev?utm_source=connectui" rel="noopener noreferrer" target="_blank">
                         Secured by
                         <NangoLogoSVG className="h-4 w-auto inline-block ml-2" />
                     </a>

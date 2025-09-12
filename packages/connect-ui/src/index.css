@@ -1,6 +1,74 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-*: initial;
+    --font-sans: Inter, sans-serif;
+
+    --color-primary: var(--color-primary);
+    --color-surface: var(--color-background-surface);
+    --color-sub-surface: var(--color-background-sub-surface);
+    --color-elevated: var(--color-background-elevated);
+    --color-subtle: var(--color-background-subtle);
+    --color-text-primary: var(--color-text-primary);
+    --color-text-secondary: var(--color-text-secondary);
+    --color-text-tertiary: var(--color-text-tertiary);
+    --color-on-primary: var(--color-on-primary);
+    --color-border-muted: var(--color-border-muted);
+    --color-border-default: var(--color-border-default);
+    --color-error: var(--color-error);
+
+    --color-brand-100: #e0f7fcff;
+    --color-brand-300: #66d6f0ff;
+    --color-brand-500: #00b2e3ff;
+    --color-brand-700: #0089b0ff;
+    --color-brand-900: #005771ff;
+
+    --color-red-100: #fdecec;
+    --color-red-300: #f7a6a6;
+    --color-red-500: #ee4242;
+    --color-red-700: #e81818;
+
+    --color-yellow-100: #fff8d1;
+    --color-yellow-300: #fed75b;
+    --color-yellow-500: #f7c752;
+    --color-yellow-700: #d6a81e;
+    --color-yellow-900: #5c4a0b;
+
+    --color-green-300: #a8e6b9;
+    --color-green-700: #1e9e3e;
+
+    --border-color-muted: var(--color-border-muted);
+    --border-color-default: var(--color-border-default);
+
+    --text-color-primary: var(--color-text-primary);
+    --text-color-secondary: var(--color-text-secondary);
+    --text-color-tertiary: var(--color-text-tertiary);
+    --text-color-on-primary: var(--color-on-primary);
+
+    --shadow-focus: 0 0 0 3px rgba(0, 178, 227, 0.2);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+}
 
 @layer base {
     :root {
