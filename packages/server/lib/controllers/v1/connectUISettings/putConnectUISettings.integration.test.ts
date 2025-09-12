@@ -15,12 +15,10 @@ function getCustomSettings(): ConnectUISettings {
         showWatermark: false,
         theme: {
             light: {
-                buttonBackground: '#eeeeee',
-                buttonText: '#eeeeee'
+                primary: '#eeeeee'
             },
             dark: {
-                buttonBackground: '#111111',
-                buttonText: '#111111'
+                primary: '#111111'
             }
         }
     };
@@ -105,12 +103,10 @@ describe(`PUT ${route}`, () => {
             showWatermark: false,
             theme: {
                 light: {
-                    buttonBackground: '#dddddd',
-                    buttonText: '#dddddd'
+                    primary: '#dddddd'
                 },
                 dark: {
-                    buttonBackground: '#222222',
-                    buttonText: '#222222'
+                    primary: '#222222'
                 }
             }
         };
@@ -172,12 +168,10 @@ describe(`PUT ${route}`, () => {
             // Missing showWatermark
             theme: {
                 light: {
-                    buttonBackground: '#eeeeee'
-                    // Missing buttonText
+                    // Missing primary
                 },
                 dark: {
-                    // Missing buttonBackground
-                    buttonText: '#111111'
+                    // Missing primary
                 }
             }
         } as ConnectUISettings;
@@ -198,12 +192,12 @@ describe(`PUT ${route}`, () => {
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'light', 'buttonText']
+                        path: ['theme', 'light', 'primary']
                     },
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'dark', 'buttonBackground']
+                        path: ['theme', 'dark', 'primary']
                     },
                     {
                         code: 'invalid_type',

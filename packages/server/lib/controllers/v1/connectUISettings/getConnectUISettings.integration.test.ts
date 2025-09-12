@@ -15,12 +15,10 @@ function getCustomSettings(): ConnectUISettings {
         showWatermark: false,
         theme: {
             light: {
-                buttonBackground: '#eeeeee',
-                buttonText: '#eeeeee'
+                primary: '#eeeeee'
             },
             dark: {
-                buttonBackground: '#111111',
-                buttonText: '#111111'
+                primary: '#111111'
             }
         }
     };

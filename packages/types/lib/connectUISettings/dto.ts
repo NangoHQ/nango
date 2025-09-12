@@ -9,6 +9,5 @@ export interface ConnectUIThemeSettings {
 }
 
 export interface ConnectUIColorPalette {
-    buttonBackground: string;
-    buttonText: string;
+    primary: string;
 }

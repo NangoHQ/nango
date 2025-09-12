@@ -7,12 +7,10 @@ export const defaultConnectUISettings: ConnectUISettings = {
     showWatermark: true,
     theme: {
         light: {
-            buttonBackground: '#00B2E3',
-            buttonText: '#ffffff'
+            primary: '#00B2E3'
         },
         dark: {
-            buttonBackground: '#00B2E3',
-            buttonText: '#ffffff'
+            primary: '#00B2E3'
         }
     }
 };

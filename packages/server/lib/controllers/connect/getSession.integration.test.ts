@@ -101,12 +101,10 @@ describe(`GET ${endpoint}`, () => {
             showWatermark: true,
             theme: {
                 light: {
-                    buttonBackground: '#ffffff',
-                    buttonText: '#ffffff'
+                    primary: '#ffffff'
                 },
                 dark: {
-                    buttonBackground: '#000000',
-                    buttonText: '#000000'
+                    primary: '#000000'
                 }
             }
         };

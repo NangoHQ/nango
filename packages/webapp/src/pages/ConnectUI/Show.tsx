@@ -25,12 +25,8 @@ type ThemePath = {
 
 const lightThemeFields: { name: ThemePath; label: string }[] = [
     {
-        name: 'theme.light.buttonBackground',
-        label: 'Button Background'
-    },
-    {
-        name: 'theme.light.buttonText',
-        label: 'Button Text'
+        name: 'theme.light.primary',
+        label: 'Primary color'
     }
 ];
 
@@ -133,7 +129,7 @@ export const ConnectUISettingsPage = () => {
                             {(field) => (
                                 <div className="flex gap-5 items-center">
                                     <label htmlFor={field.name} className={`text-sm font-medium text-grayscale-300`}>
-                                        Display Nango watermark
+                                        Nango watermark
                                     </label>
                                     <Tooltip delayDuration={0}>
                                         <TooltipTrigger asChild>
