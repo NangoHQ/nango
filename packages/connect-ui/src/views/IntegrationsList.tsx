@@ -78,8 +78,8 @@ const Integrations: React.FC = () => {
                 <main className="flex-1 flex flex-col gap-10 justify-center h-full">
                     <div className="flex flex-col items-center gap-5 w-full text-center">
                         <img alt="No integrations" className="w-[100px]" src={NoIntegrationGif} />
-                        <h1 className="text-xl font-semibold text-primary">{t('integrationsList.noIntegrations')}</h1>
-                        <p className="text-secondary">{t('integrationsList.noIntegrationsDescription')}</p>
+                        <h1 className="text-xl font-semibold text-text-primary">{t('integrationsList.noIntegrations')}</h1>
+                        <p className="text-text-secondary">{t('integrationsList.noIntegrationsDescription')}</p>
                     </div>
 
                     <Button className="w-full" title={t('common.close')} onClick={() => triggerClose('click:close')}>
@@ -99,8 +99,8 @@ const Integrations: React.FC = () => {
             <HeaderButtons className="mb-5" />
             <main className="flex flex-col gap-7 h-full">
                 <div className="flex flex-col gap-7 text-center">
-                    <h1 className="font-semibold text-xl text-primary">{t('integrationsList.title')}</h1>
-                    <p className="text-secondary">{t('integrationsList.description')}</p>
+                    <h1 className="font-semibold text-xl text-text-primary">{t('integrationsList.title')}</h1>
+                    <p className="text-text-secondary">{t('integrationsList.description')}</p>
                 </div>
                 <div className="flex flex-col gap-1.5">
                     {integrations.map((integration) => {
@@ -159,7 +159,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
 
     return (
         <div
-            className="group flex flex-col gap-3 p-5 bg-sub-surface hover:bg-subtle focus:bg-subtle"
+            className="group flex flex-col gap-3 p-5 bg-elevated hover:bg-subtle focus:bg-subtle cursor-pointer"
             role="button"
             tabIndex={0}
             title={connectToLabel}
@@ -167,12 +167,12 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
         >
             <div className=" flex justify-between items-center">
                 <div className="flex gap-3 items-center">
-                    <div className="w-12 h-12 bg-white transition-colors rounded-sm p-1.5 group-hover:bg-dark-100">
+                    <div className="w-12 h-12 bg-white transition-colors rounded-sm p-1.5">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <div className="text-primary">{integration.display_name}</div>
+                    <div className="text-text-primary">{integration.display_name}</div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-tertiary group-hover:text-primary" />
+                <ArrowRight className="w-5 h-5 text-text-tertiary group-hover:text-text-primary" />
             </div>
             {error && (
                 <div className="py-2 px-4 border border-error bg-red-100 text-error text-sm flex items-center rounded-sm gap-2">

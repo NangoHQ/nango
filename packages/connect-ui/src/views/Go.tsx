@@ -315,8 +315,8 @@ export const Go: React.FC = () => {
                                 <IconCircleCheckFilled className="w-full h-full text-green-600" />
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-primary">{t('go.success')}</h2>
-                        <p className="text-center text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
+                        <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
+                        <p className="text-center text-text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
                     </div>
                     <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                         {t('common.finish')}
@@ -338,8 +338,8 @@ export const Go: React.FC = () => {
                                 <IconCircleXFilled className="w-full h-full text-red-700" />
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-primary">{t('go.connectionFailed')}</h2>
-                        <p className="text-secondary text-center">{error || t('go.tryAgain')}</p>
+                        <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
+                        <p className="text-text-secondary text-center">{error || t('go.tryAgain')}</p>
                     </div>
                     <Button
                         className="w-full"
@@ -355,12 +355,12 @@ export const Go: React.FC = () => {
                 </main>
                 {docsConnectUrl && (
                     <footer>
-                        <p className="text-secondary text-center">
+                        <p className="text-text-tertiary text-center">
                             {t('common.needHelp')}{' '}
-                            <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                            <Link className="underline text-text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
                                 {t('common.viewGuide')}
                             </Link>{' '}
-                            <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
+                            <ExternalLink className="inline-block w-3.5 h-3.5 text-text-tertiary" />
                         </p>
                     </footer>
                 )}
@@ -381,7 +381,7 @@ export const Go: React.FC = () => {
                     <div className="w-16 h-16 p-2 rounded-sm bg-white border border-subtle">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-center text-lg text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
+                    <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
                 {error && (
@@ -428,7 +428,7 @@ export const Go: React.FC = () => {
                                                     >
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-2 items-center">
-                                                                <FormLabel className="text-xs font-semibold text-primary">
+                                                                <FormLabel className="text-xs font-semibold text-text-primary">
                                                                     {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
@@ -440,12 +440,12 @@ export const Go: React.FC = () => {
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
                                                                     >
-                                                                        <Info className="w-4 h-4 text-secondary" />
+                                                                        <Info className="w-4 h-4 text-text-secondary" />
                                                                     </Link>
                                                                 )}
                                                             </div>
                                                             {definition?.description && (
-                                                                <FormDescription className="text-secondary">{definition.description}</FormDescription>
+                                                                <FormDescription className="text-text-secondary">{definition.description}</FormDescription>
                                                             )}
                                                         </div>
                                                         <FormControl>
@@ -469,7 +469,7 @@ export const Go: React.FC = () => {
                         )}
 
                         {shouldAutoTrigger && (
-                            <div className="text-sm text-secondary text-center">
+                            <div className="text-sm text-text-secondary text-center">
                                 {t('go.willConnect', { provider: displayName })}
                                 {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
                             </div>
@@ -488,12 +488,12 @@ export const Go: React.FC = () => {
             </main>
             {docsConnectUrl && (
                 <footer>
-                    <p className="text-secondary text-center">
+                    <p className="text-text-tertiary text-center">
                         {t('common.needHelp')}{' '}
-                        <Link className="underline text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                        <Link className="underline text-text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
                             {t('common.viewGuide')}
                         </Link>{' '}
-                        <ExternalLink className="inline-block w-3.5 h-3.5 text-secondary" />
+                        <ExternalLink className="inline-block w-3.5 h-3.5 text-text-tertiary" />
                     </p>
                 </footer>
             )}
