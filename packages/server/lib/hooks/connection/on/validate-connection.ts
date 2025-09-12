@@ -1,6 +1,7 @@
 import { onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -46,6 +47,7 @@ export async function validateConnection({
             fileLocation,
             sdkVersion: script.sdk_version,
             async: false,
+            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
 
