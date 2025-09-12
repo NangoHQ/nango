@@ -133,7 +133,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_server:
-        if: inputs.service == 'server'
+        if: inputs.service == 'server' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -151,7 +151,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_jobs:
-        if: inputs.service == 'jobs'
+        if: inputs.service == 'jobs' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -168,7 +168,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_runners:
-        if: inputs.service == 'runner'
+        if: inputs.service == 'runner' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -187,7 +187,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_persist:
-        if: inputs.service == 'persist'
+        if: inputs.service == 'persist' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -204,7 +204,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
-        if: inputs.service == 'orchestrator'
+        if: inputs.service == 'orchestrator' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -221,7 +221,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_metering:
-        if: inputs.service == 'metering'
+        if: inputs.service == 'metering' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -238,7 +238,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_connect_ui:
-        if: inputs.service == 'connect_ui'
+        if: inputs.service == 'connect_ui' && inputs.stage != 'staging'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
