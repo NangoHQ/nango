@@ -5067,6 +5067,8 @@ google-analytics:
     alias: google
     categories:
         - analytics
+    proxy:
+        base_url: https://analyticsdata.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-analytics
 
 google-calendar:
