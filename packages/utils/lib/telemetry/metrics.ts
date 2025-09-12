@@ -89,6 +89,9 @@ export enum Types {
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
 
+    SLACK_NOTIFICATION_SUCCESS = 'nango.slack.notification.success',
+    SLACK_NOTIFICATION_FAILURE = 'nango.slack.notification.failure',
+
     GET_RECORDS_COUNT = 'nango.server.getRecords.count',
     GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
 
