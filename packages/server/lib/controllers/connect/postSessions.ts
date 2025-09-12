@@ -167,6 +167,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
+            endUserId: null,
             accountId: account.id,
             environmentId: environment.id,
             allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
