@@ -259,7 +259,7 @@ export class OrchestratorClient {
             ...rest,
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
-                createdToStarted: 30,
+                createdToStarted: 5 * 60,
                 startedToCompleted: 60 * 60,
                 heartbeat: 5 * 60
             },
