@@ -6,6 +6,7 @@ import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq
 import { configService, connectionService, errorManager, getSyncConfigRaw, productTracking } from '@nangohq/shared';
 import { getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -129,6 +130,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                 input,
                 async,
                 retryMax,
+                maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
                 logCtx
             });
 
