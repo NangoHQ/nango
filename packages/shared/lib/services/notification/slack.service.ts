@@ -1,5 +1,5 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
+import { Err, Ok, basePublicUrl, getLogger, stringToHash, stringifyObject, truncateJson } from '@nangohq/utils';
 
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
@@ -692,35 +692,35 @@ export class SlackService {
             return Err('slack_hook_channel_id_not_configured');
         }
 
-        // Join the Slack channel
-        let proxyConfig = getProxyConfiguration({
-            externalConfig: {
-                method: 'POST',
-                endpoint: 'conversations.join',
-                headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                data: { channel },
-                decompress: false,
-                providerConfigKey: integration.unique_key
-            },
-            internalConfig: {
-                providerName: integration.provider
-            }
-        });
-        if (proxyConfig.isErr()) {
-            return Err('failed_to_get_proxy_config');
-        }
-        let proxy = new ProxyRequest({
-            logger: () => {},
-            proxyConfig: proxyConfig.value,
-            getConnection: () => slackConnection
-        });
-        const join = await proxy.request();
-        if (join.isErr()) {
-            return Err('slack_join_channel_failed');
-        }
-        if (!join.value.data.ok) {
-            return Err(join.value.data.error);
-        }
+        // // Join the Slack channel
+        // let proxyConfig = getProxyConfiguration({
+        //     externalConfig: {
+        //         method: 'POST',
+        //         endpoint: 'conversations.join',
+        //         headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        //         data: { channel },
+        //         decompress: false,
+        //         providerConfigKey: integration.unique_key
+        //     },
+        //     internalConfig: {
+        //         providerName: integration.provider
+        //     }
+        // });
+        // if (proxyConfig.isErr()) {
+        //     return Err('failed_to_get_proxy_config');
+        // }
+        // let proxy = new ProxyRequest({
+        //     logger: () => {},
+        //     proxyConfig: proxyConfig.value,
+        //     getConnection: () => slackConnection
+        // });
+        // const join = await proxy.request();
+        // if (join.isErr()) {
+        //     return Err('slack_join_channel_failed');
+        // }
+        // if (!join.value.data.ok) {
+        //     return Err(join.value.data.error);
+        // }
 
         // Send/update chat message
         const data = {
@@ -755,7 +755,7 @@ export class SlackService {
             ]
         };
 
-        proxyConfig = getProxyConfiguration({
+        const proxyConfig = getProxyConfiguration({
             externalConfig: {
                 method: 'POST',
                 endpoint: data.ts ? 'chat.update' : 'chat.postMessage',
@@ -772,12 +772,15 @@ export class SlackService {
         if (proxyConfig.isErr()) {
             return Err('failed_to_get_proxy_config');
         }
-        proxy = new ProxyRequest({
+        const proxy = new ProxyRequest({
             logger: () => {},
             proxyConfig: proxyConfig.value,
             getConnection: () => slackConnection
         });
         const slackMessage = await proxy.request();
+
+        logger.warning(stringifyObject(slackMessage));
+
         if (slackMessage.isErr()) {
             return Err('slack_post_failed');
         }
