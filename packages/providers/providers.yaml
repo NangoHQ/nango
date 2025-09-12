@@ -4274,6 +4274,58 @@ fitbit:
         base_url: https://api.fitbit.com
     docs: https://docs.nango.dev/integrations/all/fitbit
 
+fillout-api-key:
+    display_name: Fillout (API Key)
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/api/forms
+    docs: https://docs.nango.dev/integrations/all/fillout-api-key
+    docs_connect: https://docs.nango.dev/integrations/all/fillout-api-key/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Fillout account
+            example: api.fillout.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname-and-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Fillout account
+            example: sk_prod_n5ZEod5AwJQCtG3ncuzgXvpSWx19joz4KMSJlC2nVul9B48zhkCLuPc9Kq97tK7smlOcMChnk1uyaUeZ5Gm4GVrUUnDMxHI7TZH_31032
+            pattern: '^sk_prod_[A-Za-z0-9]+_[0-9]+$'
+            doc_section: '#step-1-finding-your-hostname-and-api-key'
+
+fillout:
+    display_name: Fillout (Oauth)
+    categories:
+        - surveys
+    auth_mode: OAUTH2
+    authorization_url: https://build.fillout.com/authorize/oauth
+    token_url: https://server.fillout.com/public/oauth/accessToken
+    proxy:
+        base_url: ${connectionConfig.base_url}
+    token_response_metadata:
+        - base_url
+    docs: https://docs.nango.dev/integrations/all/fillout
+    connection_config:
+        base_url:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 float:
     display_name: Float
     categories:

@@ -1,0 +1,39 @@
+---
+title: Fillout (API Key) - How do I link my account?
+sidebarTitle: Fillout (API Key)
+---
+
+# Overview
+
+To authenticate with Fillout (API Key), you need:
+1. **Hostname** - Your Fillout instance URL
+2. **API Key** - A key that grants Nango permission to interact with Fillout's API resources and services
+
+This guide will walk you through finding both your **Hostname** and **API Key** within Fillout.
+
+## Prerequisites
+
+- You must have a Fillout account
+
+## Step 1: Finding your hostname and API key
+
+1. Navigate to [Developer settings](https://build.fillout.com/home/settings/developer).
+2. Click **Enable API** if you haven't already done so.
+
+<img src="/integrations/all/fillout-api-key/enable_api.png"/>
+
+3. Your **Hostname** will appear in the **Base URL** field. It is the value between `https://` and `/v1/api`. In the example below, the **Hostname** is `api.fillout.com`. Your **API Key** will be shown in the **API Key** field.
+
+<img src="/integrations/all/fillout-api-key/credentials.png"/>
+
+## Step 2: Enter credentials in the Connect UI
+
+Once you have both your **Hostname** and **API Key**:
+
+1. Open the form where you need to authenticate with Fillout (API Key).
+2. Enter your **Hostname** and **API Key** in their respective fields.
+3. Submit the form to complete authentication.
+
+<img src="/integrations/all/fillout-api-key/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fillout (API Key).
