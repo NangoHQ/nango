@@ -14,6 +14,7 @@ const en = {
         title: 'Select Integration',
         description: 'Please select an API integration from the list below.',
         noIntegrations: 'No integration found.',
+        noIntegrationsDescription: "You haven't configured any integration in this environment. Add your first integration in the Nango dashboard.",
         connectTo: 'Connect to {provider}',
         error: 'An error occurred while loading configuration'
     },
@@ -21,7 +22,7 @@ const en = {
         linkAccount: 'Link {provider} Account',
         connect: 'Connect',
         success: 'Success!',
-        successMessage: "You've successfully set up your {provider} integration",
+        successMessage: "You've successfully set up your {provider} integration.",
         connectionFailed: 'Connection failed',
         tryAgain: 'Please try again',
         backToList: 'Back to integrations list',

@@ -45,13 +45,19 @@ const Input = forwardRef<
         InputVariantProp
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
-        <div className={cn('transition-colors relative flex items-center bg-transparent w-full rounded border text-sm', wrapperStyles({ variant }), className)}>
+        <div
+            className={cn(
+                'transition-colors relative flex items-center bg-transparent w-full rounded-sm border text-sm',
+                wrapperStyles({ variant }),
+                className
+            )}
+        >
             {before && <div className="absolute text-text-light-gray px-2">{before}</div>}
             <input
                 type={type}
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full w-full rounded text-grayscale-100 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-1 file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-grayscale-400 disabled:cursor-not-allowed',
+                    'bg-transparent border-0 h-full w-full rounded-sm text-grayscale-100 focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-1 file:border-0 file:bg-transparent file:text-sm file:font-medium outline-hidden disabled:text-grayscale-400 disabled:cursor-not-allowed',
                     inputStyles({ inputSize }),
                     before && 'pl-8',
                     after && 'pr-8'

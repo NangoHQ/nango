@@ -27,6 +27,7 @@ import type {
     SetMetadata,
     SignatureCredentials,
     TbaCredentials,
+    TelemetryBag,
     TwoStepCredentials,
     UnauthCredentials,
     UpdateMetadata,
@@ -67,6 +68,11 @@ export abstract class NangoActionBase<
     public provider?: string;
 
     public ActionError = ActionError;
+
+    public telemetryBag: TelemetryBag = {
+        customLogs: 0,
+        proxyCalls: 0
+    };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
     protected memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();

@@ -1,0 +1,53 @@
+---
+title: 'Functions'
+sidebarTitle: 'Functions'
+description: 'The primitive that powers all integrations in Nango'
+---
+
+Functions (previously called "scripts") are the building blocks that power all integrations in Nango.
+
+## What are Functions in Nango?
+
+Functions are TypeScript code that you write to define how your integrations work.
+
+Functions run in Nango's infrastructure and give you deep control over your [Syncs](/guides/use-cases/syncs), [Actions](/guides/use-cases/actions), or [Webhook processing](/guides/use-cases/webhooks).
+
+They typically cover:
+- External API requests
+- Data transformation
+- [Customer-specific logic](/guides/platform/customer-configuration) (field mappings, filter options, etc.)
+- Other business logic about how you read and write data from external APIs
+
+You can find many examples of Functions in our [reference implementations GitHub repo](https://www.nango.dev/templates).
+
+To implement your own functions, follow our [implementation guides](/implementation-guides). Increasingly, [AI agents](/guides/platform/ai-generated-integrations) can also help you write Nango functions.
+
+## Key facts
+
+<Frame caption="Overview of Functions in Nango">
+  ![](/images/diagrams/nango-functions-diagram.png)
+</Frame>
+
+- Functions are defined by you and run in the Nango infrastructure
+- Your Functions define the business logic (API requests, transformations, etc.) of your integration
+- All Functions in Nango are written in TypeScript. You can use any language in your own backend
+- The code of your Functions is stored in a `nango-integrations` folder in your codebase (e.g., in your monorepo)
+- You can test Functions locally with the CLI
+- You deploy your Functions to your Nango account with a CLI (or CI/CD of your choice)
+    - Functions are deployed to an [Environment](/guides/platform/environments) within your account (e.g., dev, staging, prod, etc.)
+- Within Functions, you have a Nango SDK available. The exact features of this SDK depend on the context of your Function (sync execution, webhook handler, etc.)
+    - Functions always run in the context of a [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F)
+    - The SDK helps with: External API requests, pagination, Connection info, logging, data validation, storing data in the cache, etc.
+- All inputs and outputs of Functions are strictly typed
+- Your Functions execute on an isolated runner with dedicated resources (memory, CPU, etc.)
+
+## Function types
+
+Nango currently supports the following Function types:
+
+- [Sync](/guides/use-cases/syncs) function: Executes whenever a sync run executes
+- [Action](/guides/use-cases/actions) function: Executes when the action is triggered
+- [Webhook](/guides/use-cases/webhooks) handler function: Executed when Nango processes an incoming webhook
+- [Event](/guides/platform/lifecycle-events) function: Executes when certain lifecycle events happen on the platform
+
+Our [implementation guides](/implementation-guides) have step-by-step instructions for each function type.

@@ -217,7 +217,7 @@ export const ConnectionShow: React.FC = () => {
             <section className="mt-12">
                 <ul className="flex text-gray-400 text-sm cursor-pointer">
                     <li
-                        className={`flex items-center px-4 text-test2 py-2 rounded ${activeTab === Tabs.Syncs ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
+                        className={`flex items-center px-4 text-test2 py-2 rounded-sm ${activeTab === Tabs.Syncs ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
@@ -226,7 +226,7 @@ export const ConnectionShow: React.FC = () => {
                         )}
                     </li>
                     <li
-                        className={`flex items-center px-4 py-2  rounded ${activeTab === Tabs.Authorization ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
+                        className={`flex items-center px-4 py-2  rounded-sm ${activeTab === Tabs.Authorization ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Authorization)}
                     >
                         Authorization

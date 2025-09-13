@@ -115,9 +115,9 @@ export const ScriptSettings: React.FC<{
                 align="start"
                 tooltipContent={
                     <div className="max-w-96">
-                        Nango endpoints are powered by integration scripts. Some of the following configurations can only be changed by modifying this
-                        underlying script. If the source is a template, you will need to extend it to change certain configurations (
-                        <Link to="https://docs.nango.dev/guides/custom-integrations/extend-a-pre-built-integration" className="underline">
+                        Nango endpoints are powered by integration functions. Some of the following configurations can only be changed by modifying this
+                        underlying function. If the source is a reference implementation, you will need to extend it to change certain configurations (
+                        <Link to="https://docs.nango.dev/implementation-guides/building-integrations/extend-reference-implementation" className="underline">
                             guide
                         </Link>
                         ).

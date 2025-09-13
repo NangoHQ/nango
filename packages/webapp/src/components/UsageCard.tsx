@@ -54,7 +54,7 @@ export default function UsageCard() {
     }, []);
 
     return (
-        <div className="flex flex-col gap-[20px] p-3 rounded">
+        <div className="flex flex-col gap-[20px] p-3 rounded-sm">
             <span className="text-white font-semibold text-sm">Free plan usage</span>
             <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col gap-[10px] w-full">
