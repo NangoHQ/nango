@@ -184,6 +184,9 @@
                 "pre_connection_deletion_script": {
                     "type": "string"
                 },
+                "pre_connection_creation_script": {
+                    "type": "string"
+                },
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
@@ -494,6 +497,12 @@
                     "enum": ["milliseconds"]
                 },
                 "token_response_metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "refresh_token_response_metadata": {
                     "type": "array",
                     "items": {
                         "type": "string"

@@ -1986,7 +1986,7 @@ bullhorn:
     proxy:
         base_url: ${connectionConfig.restUrl}
         headers:
-            BhRestToken: ${accessToken}
+            bhresttoken: ${accessToken}
     pre_connection_creation_script: bullhornPreConnectionCreation
     post_connection_script: bullhornPostConnection
     token_response_metadata:
@@ -2010,10 +2010,12 @@ bullhorn:
             type: string
             title: Username
             description: Your API Username
+            doc_section: '#step-1-obtain-your-api-credentials'
         password:
             type: string
             title: Password
             description: Your API Password
+            doc_section: '#step-1-obtain-your-api-credentials'
 
 cal-com-v1:
     display_name: Cal.com (v1)
