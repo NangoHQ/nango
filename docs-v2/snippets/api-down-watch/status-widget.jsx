@@ -5,13 +5,25 @@ export const StatusWidget = ({ service }) => {
   const apiDownWatchPublicKey = 'pk_wDkTwEJORAN3jhVBZoSyIGObbcE77JrRKnZ-bgQtq6c';
   //const apiDownWatchHost = 'https://api.apidownwatch.com';
   const apiDownWatchHost = 'http://localhost:8080';
+  const refreshRate = 5;
 
   useEffect(() => {
-    fetch(`${apiDownWatchHost}/api/embed/${service}?key=${apiDownWatchPublicKey}`)
-      .then(response => response.text())
-      .then(html => setWidgetHtml(html));
+      const fetchWidget = () => {
+          fetch(`${apiDownWatchHost}/api/embed/${service}?key=${apiDownWatchPublicKey}`)
+              .then((res) => res.text())
+              .then((html) => setWidgetHtml(html))
+              .catch((err) => {
+                  console.error('Failed to fetch status widget:', err);
+              });
+      };
+
+      fetchWidget();
+
+      const interval = setInterval(fetchWidget, refreshRate * 60 * 1000);
+
+      return () => clearInterval(interval);
   }, [service]);
 
-  return <div className="mb-3" dangerouslySetInnerHTML={{ __html: widgetHtml }} />;
+  return <div className="mb-4" dangerouslySetInnerHTML={{ __html: widgetHtml }} />;
 }
 

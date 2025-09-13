@@ -16,22 +16,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import PageNotFound from '../../PageNotFound';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-
-const apiDownWatchPublicKey = 'pk_wDkTwEJORAN3jhVBZoSyIGObbcE77JrRKnZ-bgQtq6c';
-//const apiDownWatchHost = 'https://api.apidownwatch.com';
-const apiDownWatchHost = 'http://localhost:8080';
-
-function StatusWidget({ service, publicKey, className = '' }: { service: string; publicKey: string; className?: string }) {
-    const [widgetHtml, setWidgetHtml] = useState('');
-
-    useEffect(() => {
-        fetch(`${apiDownWatchHost}/api/embed/${service}?key=${publicKey}`)
-            .then((res) => res.text())
-            .then((html) => setWidgetHtml(html));
-    }, [service, publicKey]);
-
-    return <div className={className} dangerouslySetInnerHTML={{ __html: widgetHtml }} />;
-}
+import { StatusWidget } from '../components/StatusWidget';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -120,6 +105,9 @@ export const ShowIntegration: React.FC = () => {
                                     </ButtonLink>
                                 )}
                             </div>
+                            <div className="flex">
+                                <StatusWidget className="text-white" service={data.integration.provider} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,10 +117,6 @@ export const ShowIntegration: React.FC = () => {
                         Add Test Connection
                     </ButtonLink>
                 </div>
-            </div>
-
-            <div className="flex gap-3 my-2">
-                <StatusWidget className="text-white" service={data.integration.provider} publicKey={apiDownWatchPublicKey} />
             </div>
 
             <nav className="flex gap-2 my-11">
