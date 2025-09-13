@@ -28,7 +28,11 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    connectionPreCreation as connectionPreCreationHook
+} from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
@@ -91,7 +95,7 @@ class OAuthController {
                       );
 
             const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
-            const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+            let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
             let authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
@@ -174,6 +178,21 @@ class OAuthController {
                 if (defaults?.authorization_params) {
                     authorizationParams = defaults.authorization_params;
                 }
+            }
+
+            const preConnection = await connectionPreCreationHook(
+                connectionId,
+                provider,
+                config,
+                connectionConfig,
+                logContextGetter,
+                logCtx,
+                account,
+                environment
+            );
+
+            if (preConnection.isOk() && preConnection.value) {
+                connectionConfig = { ...connectionConfig, ...preConnection.value };
             }
 
             const session: OAuthSession = {
@@ -1191,7 +1210,8 @@ class OAuthController {
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
-                    session.codeVerifier
+                    session.codeVerifier,
+                    connectionConfig
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(

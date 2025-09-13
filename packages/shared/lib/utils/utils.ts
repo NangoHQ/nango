@@ -391,7 +391,7 @@ export function encodeParameters(params: Record<string, any>): Record<string, st
 export function getConnectionMetadata(
     params: any,
     provider: Provider,
-    metadataField: 'webhook_response_metadata' | 'token_response_metadata'
+    metadataField: 'webhook_response_metadata' | 'token_response_metadata' | 'refresh_token_response_metadata'
 ): Record<string, any> {
     if (!params || !provider[metadataField]) {
         return {};

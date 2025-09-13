@@ -7,7 +7,7 @@ import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
-import { isTokenExpired } from '../../../utils/utils.js';
+import { getConnectionMetadata, isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
 import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
@@ -441,8 +441,16 @@ export async function refreshCredentialsIfNeeded({
             }
         }
 
+        let refreshTokenMetadata: Record<string, any> = {};
+        if (newCredentials.type === 'OAUTH2' && 'raw' in newCredentials) {
+            refreshTokenMetadata = getConnectionMetadata(newCredentials.raw, provider, 'refresh_token_response_metadata');
+        }
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
+            connection_config: {
+                ...connectionToRefresh.connection_config,
+                ...refreshTokenMetadata
+            },
             last_fetched_at: new Date(),
             credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
             last_refresh_failure: null,

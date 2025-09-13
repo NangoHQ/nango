@@ -75,6 +75,7 @@ export interface BaseProvider {
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
     token_response_metadata?: string[];
+    refresh_token_response_metadata?: string[];
     webhook_response_metadata?: string[];
     authorization_code_param_in_webhook?: string;
     docs: string;
@@ -83,6 +84,7 @@ export interface BaseProvider {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    pre_connection_creation_script?: string;
     pre_connection_deletion_script?: string;
     credentials_verification_script?: string;
     categories?: string[];

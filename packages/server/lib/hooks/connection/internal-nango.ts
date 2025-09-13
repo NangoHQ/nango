@@ -59,7 +59,7 @@ export function getHandler({
     handlers
 }: {
     provider: Provider | null;
-    providerScriptPropertyName: 'pre_connection_deletion_script' | 'post_connection_script';
+    providerScriptPropertyName: 'pre_connection_deletion_script' | 'post_connection_script' | 'pre_connection_creation_script';
     handlers: Record<string, (internalNango: InternalNango) => Promise<void>>;
 }): ((internalNango: InternalNango) => Promise<void>) | undefined {
     if (!provider || !provider[providerScriptPropertyName]) {

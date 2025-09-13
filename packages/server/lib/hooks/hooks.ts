@@ -19,6 +19,7 @@ import executeVerificationScript from './connection/credentials-verification-scr
 import { slackService } from '../services/slack.js';
 import { postConnectionCreation } from './connection/on/post-connection-creation.js';
 import postConnection from './connection/post-connection.js';
+import preConnectionCreation from './connection/pre-connection-creation.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
 import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
@@ -76,6 +77,29 @@ export const connectionCreationStartCapCheck = async ({
     }
 
     return { capped: false };
+};
+
+export const connectionPreCreation = async (
+    connectionId: string,
+    provider: Provider,
+    config: Config,
+    connectionConfig: ConnectionConfig,
+    logContextGetter: LogContextGetter,
+    logCtx: LogContextStateless,
+    account: DBTeam,
+    environment: DBEnvironment
+): Promise<Result<ConnectionConfig | void, NangoError>> => {
+    try {
+        if (provider.pre_connection_creation_script) {
+            void logCtx.info('Running pre-connection creation script');
+            const result = await preConnectionCreation(connectionId, connectionConfig, logContextGetter, account, environment, config);
+            return Ok(result);
+        }
+        return Ok(undefined);
+    } catch (err) {
+        void logCtx.error('Pre Connection creation failed');
+        return Err(new NangoError('pre_connection_creation_failed', { err }));
+    }
 };
 
 export async function testConnectionCredentials({
