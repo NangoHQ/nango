@@ -472,6 +472,7 @@
               "integrations/all/google-sheet",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
+              "integrations/all/google-service-account",
               "integrations/all/gorgias",
               "integrations/all/gorgias-basic",
               "integrations/all/grain",

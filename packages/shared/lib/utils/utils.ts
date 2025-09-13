@@ -203,6 +203,9 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
         if (b.startsWith('base64(')) {
             return a;
         }
+        if (b in replacers && replacers[b] != null) {
+            return `${replacers[b]}`;
+        }
         const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
@@ -440,7 +443,9 @@ export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): str
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
 
-    const normalized = pem
+    const withRealNewlines = pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
+
+    const normalized = withRealNewlines
         .replace(/\r\n/g, '\n')
         .replace(/^\s+|\s+$/g, '')
         .replace(/-----(BEGIN|END) [^-]+-----/g, '')
