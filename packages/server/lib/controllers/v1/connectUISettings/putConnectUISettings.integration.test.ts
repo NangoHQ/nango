@@ -13,6 +13,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 function getCustomSettings(): ConnectUISettings {
     return {
         showWatermark: false,
+        defaultTheme: 'system',
         theme: {
             light: {
                 primary: '#eeeeee'
@@ -101,6 +102,7 @@ describe(`PUT ${route}`, () => {
         // Update the settings
         const updatedSettings: ConnectUISettings = {
             showWatermark: false,
+            defaultTheme: 'light',
             theme: {
                 light: {
                     primary: '#dddddd'
