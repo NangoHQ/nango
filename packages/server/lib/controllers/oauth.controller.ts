@@ -192,7 +192,7 @@ class OAuthController {
             );
 
             if (preConnection.isOk() && preConnection.value) {
-                connectionConfig = { ...connectionConfig, ...preConnection.value };
+                connectionConfig = preConnection.value;
             }
 
             const session: OAuthSession = {

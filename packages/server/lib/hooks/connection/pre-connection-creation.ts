@@ -73,7 +73,10 @@ async function execute(
             const internalNango = {
                 getConnection: baseInternalNango.getConnection,
                 proxy: baseInternalNango.proxy,
-                updateConnectionConfig: (config: ConnectionConfig) => Promise.resolve(config),
+                updateConnectionConfig: (config: ConnectionConfig) => {
+                    connection.connection_config = { ...connection.connection_config, ...config };
+                    return Promise.resolve(connection.connection_config);
+                },
                 unsetConnectionConfigAttributes: (...keys: string[]) => {
                     const updatedConfig = Object.fromEntries(Object.entries(connection.connection_config).filter(([key]) => !keys.includes(key)));
                     return Promise.resolve(updatedConfig);

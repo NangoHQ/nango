@@ -98,7 +98,7 @@ export const connectionPreCreation = async (
         return Ok(undefined);
     } catch (err) {
         void logCtx.error('Pre Connection creation failed');
-        return Err(new Error('pre_connection_creation_failed', { err }));
+        return Err(new Error('pre_connection_creation_failed', { cause: err }));
     }
 };
 
