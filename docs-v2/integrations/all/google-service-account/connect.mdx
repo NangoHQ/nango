@@ -9,7 +9,7 @@ To authenticate with Google Service Account, you need:
 1. **Service Account Email Address** – The unique email assigned to your service account.  
 2. **Private Key** – The private key generated when creating a service account key.  
 3. **Scopes** – A space-separated list of Google API scopes that your application should have access to.
-4. **Delegated Access Email Address (optional)** – The user’s email address that the service account should impersonate when domain-wide delegation is [enabled](#step-3-delegate-domain-wide-authority-optional%2C-for-google-workspace).
+4. **Delegated Access Email Address (optional)** – The user’s email address that the service account should impersonate when domain-wide delegation is [enabled](#step-3-delegate-domain-wide-authority-optional-for-google-workspace).
 
 This guide will walk you through creating and obtaining your **Service Account credentials** in Google Cloud.
 
@@ -43,7 +43,7 @@ This guide will walk you through creating and obtaining your **Service Account c
 <Note> ⚠️ Google does not keep a copy of the private key. If you lose it, you’ll need to generate a new one. </Note>
 
 
-#### Step 3: Delegate Domain-Wide Authority (optional, for Google Workspace)
+#### Step 3: Delegate Domain-Wide Authority (optional for Google Workspace)
 If your application needs to act on behalf of users in your domain (e.g. read all users’ calendars), you must enable domain-wide delegation:  
 
 1. From your Google Workspace [Admin console](https://admin.google.com/), go to **Main menu** > **Security** > **Access and data control** > **API Controls**.
