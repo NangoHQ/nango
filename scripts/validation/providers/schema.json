@@ -47,7 +47,8 @@
                         "JWT",
                         "BILL",
                         "TWO_STEP",
-                        "SIGNATURE"
+                        "SIGNATURE",
+                        "MCP"
                     ]
                 },
                 "authorization_method": {
@@ -374,6 +375,9 @@
                             "enum": ["refresh_token"]
                         }
                     }
+                },
+                "registration_url": {
+                    "type": "string"
                 },
                 "request_params": {
                     "type": "object",

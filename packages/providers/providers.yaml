@@ -7789,6 +7789,21 @@ notion:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
 
+notion-mcp:
+    display_name: Notion (MCP)
+    categories:
+        - knowledge-base
+        - productivity
+        - mcp
+    auth_mode: MCP
+    authorization_url: https://mcp.notion.com/authorize
+    token_url: https://mcp.notion.com/token
+    registration_url: https://mcp.notion.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+
 notion-scim:
     display_name: Notion (SCIM API)
     categories:

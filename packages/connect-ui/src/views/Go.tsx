@@ -64,7 +64,10 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         username: z.string().min(1),
         password: z.string().min(1)
     }),
-    CUSTOM: z.object({})
+    CUSTOM: z.object({}),
+    MCP: z.object({
+        client_id: z.string().min(1)
+    })
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {

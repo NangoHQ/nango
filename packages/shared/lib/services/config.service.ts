@@ -112,6 +112,37 @@ class ConfigService {
         return res[0] ?? null;
     }
 
+    async createEmptyProviderConfigWithClientId(
+        providerName: string,
+        environment_id: number,
+        provider: Provider,
+        client_id: string
+    ): Promise<IntegrationConfig> {
+        const exists = await db.knex
+            .count<{ count: string }>('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider: providerName, environment_id, deleted: false })
+            .first();
+
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: providerName,
+                oauth_client_id: client_id,
+                forward_webhooks: true,
+                shared_credentials_id: null
+            },
+            provider
+        );
+
+        if (!config) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        return config;
+    }
+
     async createEmptyProviderConfig(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
