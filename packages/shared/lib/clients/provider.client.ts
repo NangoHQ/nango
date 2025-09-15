@@ -12,7 +12,7 @@ import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
 const workdayOauthExpiresIn = 3600;
-const bullhornExpiresIn = 10080;
+const bullhornExpiresInMinutes = 10080;
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -320,7 +320,7 @@ class ProviderClient {
                 const sessionParams = {
                     version: '*',
                     access_token,
-                    ttl: bullhornExpiresIn
+                    ttl: bullhornExpiresInMinutes
                 };
 
                 const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
@@ -329,7 +329,7 @@ class ProviderClient {
 
                 return {
                     restUrl,
-                    expires_in: bullhornExpiresIn * 60,
+                    expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
                 };
@@ -366,7 +366,7 @@ class ProviderClient {
                 const sessionParams = {
                     version: '*',
                     access_token,
-                    ttl: bullhornExpiresIn
+                    ttl: bullhornExpiresInMinutes
                 };
 
                 const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
@@ -375,7 +375,7 @@ class ProviderClient {
 
                 return {
                     restUrl,
-                    expires_in: bullhornExpiresIn * 60,
+                    expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
                 };
