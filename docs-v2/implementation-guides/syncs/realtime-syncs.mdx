@@ -1,0 +1,141 @@
+---
+title: 'Real-time syncs'
+sidebarTitle: 'Real-time syncs'
+description: 'Guide on how to sync data in real-time with Nango'
+---
+
+## What is a real-time sync
+
+Real-time sync involves receiving webhooks from external APIs and processing them in Nango via [syncs](/guides/use-cases/syncs). By default, syncs poll data at a set frequency, but they can also be configured to handle webhooks for real-time updates.
+
+When processed in a sync:
+- The webhook triggers the execution of a Nango sync script
+- The script extracts data from the webhook and optionally fetches additional data from the external API
+- The modified data is stored in the Nango cache
+
+Whenever the cache is updated, Nango sends a [sync completion webhook](/implementation-guides/platform/webhooks-from-nango#sync-webhooks) to notify your application of new data. This entire process happens in real-time.
+
+### Webhooks & periodic polling
+
+Webhooks can fail due to external API outages or unordered events. Periodic polling ensures data consistency by reconciling any missed updates.
+
+If you use webhooks for realtime syncs, we recommend to always combine them with a polling sync.
+
+### Near realtime syncing
+
+As an alternative to real-time syncing, consider **near**-real-time syncing by polling at a higher frequency, which is simpler. Our high-frequency syncing add-on allows polling every 30 seconds.
+
+This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/use-cases/api-auth#what-is-a-connection%3F).
+
+## Implement a realtime sync
+
+### Step 1 - Setup prerequisites
+
+To create a realtime sync, you need to have:
+- Webhooks from the external API enabled. Follow our [implement webhooks processing](/implementation-guides/webhooks/implement-webhooks) guide.
+- A sync for the object you want to sync. Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync#how-to-build-a-sync) guide.
+
+### Step 2 - Enable webhooks processing
+
+To enable the real-time sync, define `webhookSubscriptions` and `onWebhook` in your sync function:
+
+```typescript
+export default createSync({
+  exec: async (nango) => {
+        // Use for periodic polling.
+  },
+
+  webhookSubscriptions: ['contact.propertyChange'], // Webhook event type to listen to
+
+  // Webhook handler
+  onWebhook: async (nango, payload) => {
+    if (payload.subscriptionType === 'contact.propertyChange') {
+      const updatedObject = {
+        id: payload.objectId,
+        [payload.propertyName]: payload.propertyValue
+      };
+
+      // Use nango.batchSave() or nango.batchUpdate() to save/update records.
+    }
+  }
+});
+```
+
+After processing an external webhook, Nango sends [a sync finished webhook](/implementation-guides/platform/webhooks-from-nango#sync-webhooks) to your app with `"syncType": "WEBHOOK"`.
+
+To check if a sync supports webhooks, navigate to the _Integrations_ tab > select an integration > _Endpoints_ sub-tab > check the script settings for webhook subscriptions.
+
+## Sync concurrency considerations
+
+When multiple syncs or webhooks modify the same records simultaneously, data conflicts can arise. Nango provides merging strategies to manage concurrency.
+
+### Key Concepts
+
+- **Race conditions:** Webhooks and syncs may attempt concurrent modifications, causing inconsistencies.
+- **Modification tracking:** Nango records when a record was last modified to prevent unintended overwrites.
+- **Configurable behavior:** Define whether newer updates should be preserved or overwritten.
+
+### Available Strategies
+
+Use `setMergingStrategy` to control sync behavior:
+
+1. **override (default):** Updates records regardless of modification time.
+2. **ignore_if_modified_after:** Prevents older batch operations from overwriting newer records.
+
+### Example usage
+
+<Tabs>
+<Tab title="TypeScript">
+```typescript
+export default createSync({
+  exec: async (nango) => {
+    // Set merging strategy at the start of the script
+    await nango.setMergingStrategy(
+        { strategy: 'ignore_if_modified_after' },
+        'Contact'
+    );
+
+    // Persist records to the Nango cache.
+    const contacts: Contact[] = []
+    await nango.batchSave(contacts, 'Contact');
+  }
+});
+```
+</Tab>
+</Tabs>
+
+### Strategy details
+
+**`override` (default)**
+- Applies updates regardless of last modification time.
+- Useful when sync script data should take priority.
+- **Warning:** May overwrite real-time updates from webhooks.
+
+```typescript
+// This is the default behavior if no merging strategy is set in the script
+await nango.setMergingStrategy(
+    { strategy: 'override' },
+    'Contact'
+);
+```
+
+**`ignore_if_modified_after`**
+- Preserves records modified after the last batch operation.
+- Recommended for real-time webhook updates.
+
+```typescript
+await nango.setMergingStrategy(
+    { strategy: 'ignore_if_modified_after' },
+    'Contact'
+);
+```
+
+### Best Practices
+
+1. **Batch records sequentially:** `batchSave`, `batchUpdate`, and `batchDelete` operations should run sequentially.
+2. **Persist data promptly:** Fetched data should be saved in the next `batchSave`, `batchUpdate`, or `batchDelete` call.
+3. **Avoid concurrent fetch operations:** Do not fetch data concurrently with `setMergingStrategy` or batch operations.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

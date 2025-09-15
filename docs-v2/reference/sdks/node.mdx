@@ -6,7 +6,7 @@ icon: 'node'
 
 The backend SDK lets you interact with the Nango API. It is available on [NPM](https://www.npmjs.com/package/@nangohq/node) as `@nangohq/node`.
 
-# Instantiate the backend SDK
+## Instantiate the backend SDK
 
 Install it with your favorite package manager, e.g.:
 
@@ -38,7 +38,7 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
   </ResponseField>
 </Expandable>
 
-# Rate limits
+## Rate limits
 
 The Nango SDK is rate-limited to prevent abuse and ensure fair usage across all clients. The rate limit is enforced on a per-account basis, with a fixed window of time and a maximum number of requests allowed within that window.
 
@@ -61,7 +61,7 @@ try {
 }
 ```
 
-# Providers
+## Providers
 
 ### List all providers
 
@@ -118,7 +118,7 @@ await nango.getProvider({ provider: <NAME> })
 ```
 </Expandable>
 
-# Integrations
+## Integrations
 
 ### List all integrations
 
@@ -307,7 +307,7 @@ await nango.deleteIntegration(<UNIQUE_KEY>);
 ```
 </Expandable>
 
-# Connections
+## Connections
 
 ### List connections
 
@@ -387,7 +387,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/implementation-guides/requests-proxy/implement-requests-proxy)).
 </Info>
 
 <Tip>
@@ -626,12 +626,12 @@ await nango.deleteConnection('<INTEGRATION-ID>', 'CONNECTION-ID');
 
 Empty response.
 
-# Integration scripts
+## Integration functions
 
 
-### Get integration scripts config
+### Get integration functions config
 
-Return the configuration for all integration scripts
+Return the configuration for all integration functions
 
 ```ts
 const scriptsConfig = await nango.getScriptsConfig();
@@ -1107,7 +1107,7 @@ const scriptsConfig = await nango.getScriptsConfig('openai');
 ```
 </Expandable>
 
-# Syncs
+## Syncs
 
 ### Get records
 
@@ -1546,7 +1546,7 @@ No parameters.
 ```
 </Expandable>
 
-# Actions
+## Actions
 
 ### Trigger an action
 
@@ -1660,9 +1660,9 @@ const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123
 ```
 </Expandable>
 
-# Proxy
+## Proxy
 
-Makes an HTTP request using the [proxy](/guides/proxy-requests):
+Makes an HTTP request using the [proxy](/guides/use-cases/proxy):
 
 ```js
 const config = {
@@ -1729,7 +1729,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 - response body
 </Expandable>
 
-# Connect
+## Connect
 
 ### Create a connect session
 
@@ -1895,7 +1895,7 @@ const { data } = await nango.createReconnectSession({
 ```
 </Expandable>
 
-# Webhook
+## Webhooks from Nango
 
 ### Verify Webhook Signature
 

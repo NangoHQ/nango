@@ -43,7 +43,11 @@ export const AuthorizationSettings: React.FC = () => {
         <div className="text-grayscale-100 flex flex-col gap-10">
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <fieldset className="flex flex-col gap-4">
-                    <Link to="https://docs.nango.dev/guides/api-authorization/public-key-deprecation" className="flex gap-2 items-center" target="_blank">
+                    <Link
+                        to="https://docs.nango.dev/implementation-guides/migrations/migrate-from-public-key"
+                        className="flex gap-2 items-center"
+                        target="_blank"
+                    >
                         <label htmlFor="publicKey" className="font-semibold">
                             Public Key
                         </label>
@@ -60,7 +64,11 @@ export const AuthorizationSettings: React.FC = () => {
                 </fieldset>
 
                 <div className="flex flex-col gap-4">
-                    <Link to="https://docs.nango.dev/guides/api-authorization/public-key-deprecation" className="flex gap-2 items-center" target="_blank">
+                    <Link
+                        to="https://docs.nango.dev/implementation-guides/migrations/migrate-from-public-key"
+                        className="flex gap-2 items-center"
+                        target="_blank"
+                    >
                         <label htmlFor="hmac_enabled" className="font-semibold">
                             HMAC
                         </label>

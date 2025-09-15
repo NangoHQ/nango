@@ -7,28 +7,40 @@
         --radius: 0.5rem;
 
         /* Nango */
-        --color-background: #ffffff;
-        --color-foreground: #e4e4e7;
-        --color-primary: #000000;
-        --color-primary-foreground: #ffffff;
-        --color-text-primary: #09090b;
-        --color-text-muted: #71717a;
+        --color-background-surface: #ffffff;
+        --color-background-elevated: #f2f2f2;
+        --color-background-sub-surface: #fafafa;
+        --color-primary: #00b2e3;
+        --color-on-primary: #ffffff;
+        --color-text-primary: #18191b;
+        --color-text-secondary: #35363a;
+        --color-text-tertiary: #626366;
 
-        /* Clean Slate */
-        /* --color-background: #0f172a;
-        --color-foreground: #1e293b;
-        --color-primary: #818cf8;
-        --color-primary-foreground: #0f172a;
-        --color-text-primary: #e2e8f0;
-        --color-text-muted: #a9acb3; */
+        --color-background-subtle: #f0f0f0;
 
-        /* Amber Minimal */
-        /* --color-background: #171717;
-        --color-foreground: #262626;
-        --color-primary: #f59e0b;
-        --color-primary-foreground: #000000;
-        --color-text-primary: #e5e5e5;
-        --color-text-muted: #a3a3a3; */
+        --color-border-muted: #e7e7e7;
+        --color-border-default: #c4c5c7;
+
+        --color-error: #e81818;
+    }
+
+    .dark {
+        /* Nango */
+        --color-background-surface: #0b0b0c;
+        --color-background-elevated: #18191b;
+        --color-background-sub-surface: #121212;
+        --color-primary: #00b2e3;
+        --color-on-primary: #ffffff;
+        --color-text-primary: #ffffff;
+        --color-text-secondary: #c4c5c7;
+        --color-text-tertiary: #8b8c8f;
+
+        --color-background-subtle: #2a2b2f;
+
+        --color-border-muted: #2a2b2f;
+        --color-border-default: #424347;
+
+        --color-error: #ee4242;
     }
 }
 
