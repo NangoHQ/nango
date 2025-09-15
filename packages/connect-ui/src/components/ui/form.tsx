@@ -1,5 +1,4 @@
 import { Slot } from '@radix-ui/react-slot';
-import { IconExclamationCircle } from '@tabler/icons-react';
 import * as React from 'react';
 import { Controller, FormProvider, useFormContext } from 'react-hook-form';
 
@@ -107,8 +106,8 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
     }
 
     return (
-        <p ref={ref} className={cn('text-sm text-red-base dark:text-red-base flex gap-2 items-center pt-2', className)} id={formMessageId} {...props}>
-            <IconExclamationCircle size={17} /> {body}
+        <p ref={ref} className={cn('text-xs text-error flex gap-2 items-center pt-2', className)} id={formMessageId} {...props}>
+            {body}
         </p>
     );
 });
