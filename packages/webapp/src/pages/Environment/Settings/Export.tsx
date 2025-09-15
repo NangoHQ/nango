@@ -109,7 +109,7 @@ export const ExportSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Export Settings</h3>
             </Link>
             <div className="px-8 flex flex-col gap-4 w-3/5">
-                <Link to="https://docs.nango.dev/guides/logs/opentelemetry-exporter" className="flex gap-2 items-center" target="_blank">
+                <Link to="https://docs.nango.dev/implementation-guides/platform/open-telemetry-logs-export" className="flex gap-2 items-center" target="_blank">
                     <label className="font-semibold">OpenTelemetry</label> <IconExternalLink stroke={1} size={18} />
                 </Link>
 

@@ -237,7 +237,7 @@ export const ConnectionList: React.FC = () => {
                         </div>
                     )}
                     <div className="flex gap-2 relative my-3">
-                        <div className="flex-grow">
+                        <div className="grow">
                             <Input
                                 inputSize={'sm'}
                                 before={<MagnifyingGlassIcon className="w-4" />}
@@ -348,10 +348,7 @@ export const ConnectionList: React.FC = () => {
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
-                        <Link
-                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
-                            className="text-blue-500"
-                        >
+                        <Link to="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth" className="text-blue-500">
                             Nango Connect
                         </Link>
                         , or manually here.

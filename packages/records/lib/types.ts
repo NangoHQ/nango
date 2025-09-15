@@ -71,5 +71,6 @@ export interface RecordCount {
     connection_id: number;
     environment_id: number;
     count: number;
+    size_bytes: number;
     updated_at: string;
 }

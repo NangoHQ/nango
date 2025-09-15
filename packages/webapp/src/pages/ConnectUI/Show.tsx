@@ -25,28 +25,28 @@ type ThemePath = {
 
 const lightThemeFields: { name: ThemePath; label: string }[] = [
     {
-        name: 'theme.light.background',
-        label: 'Background'
+        name: 'theme.light.backgroundSurface',
+        label: 'Background Surface'
     },
     {
-        name: 'theme.light.foreground',
-        label: 'Foreground'
+        name: 'theme.light.backgroundElevated',
+        label: 'Background Elevated'
     },
     {
         name: 'theme.light.primary',
         label: 'Primary'
     },
     {
-        name: 'theme.light.primaryForeground',
-        label: 'Primary Foreground'
+        name: 'theme.light.onPrimary',
+        label: 'On Primary'
     },
     {
         name: 'theme.light.textPrimary',
         label: 'Text Primary'
     },
     {
-        name: 'theme.light.textMuted',
-        label: 'Text Muted'
+        name: 'theme.light.textSecondary',
+        label: 'Text Secondary'
     }
 ];
 

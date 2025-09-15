@@ -25,6 +25,81 @@
       "claude"
     ]
   },
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Nango Docs"
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Sign Up",
+        "href": "https://app.nango.dev/signup"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/nangoHQ/nango"
+    }
+  },
+  "footer": {
+    "socials": {
+      "twitter": "https://twitter.com/NangoHQ",
+      "linkedin": "https://www.linkedin.com/company/nangohq/",
+      "github": "https://github.com/NangoHQ/nango",
+      "slack": "https://nango.dev/slack",
+      "website": "https://www.nango.dev/"
+    }
+  },
+  "integrations": {
+    "gtm": {
+      "tagId": "GTM-N4KVPWR"
+    }
+  },
+  "redirects": [
+    {
+      "source": "/introduction",
+      "destination": "/"
+    },
+    {
+      "source": "/guides/mcs",
+      "destination": "/guides/use-cases/mcp-server"
+    },
+    {
+      "source": "/guides/api-authorization/authorize-in-your-app-default-ui",
+      "destination": "/implementation-guides/api-auth/implement-api-auth"
+    },
+    {
+      "source": "/guides/custom-integrations/overview",
+      "destination": "/guides/platform/functions"
+    },
+    {
+      "source": "/guides/webhooks/webhooks-from-nango",
+      "destination": "/guides/platform/webhooks-from-nango"
+    },
+    {
+      "source": "/guides/syncs/overview",
+      "destination": "/guides/use-cases/syncs"
+    },
+    {
+      "source": "/guides/actions/overview",
+      "destination": "/guides/use-cases/actions"
+    },
+    {
+      "source": "/guides/api-authorization/overview",
+      "destination": "/guides/use-cases/api-auth"
+    },
+    {
+      "source": "/guides/new-api-support",
+      "destination": "/implementation-guides/platform/contribute-new-api"
+    },
+    {
+      "source": "/reference/scripts",
+      "destination": "/reference/functions"
+    }
+  ],
   "navigation": {
     "anchors": [
       {
@@ -40,95 +115,34 @@
                   "getting-started/quickstart/access-an-api",
                   "getting-started/quickstart/embed-in-your-app"
                 ]
-              }
+              },
+              "getting-started/sample-app"
             ]
           },
           {
-            "group": "Advanced Guides & Resources",
+            "group": "Use Cases",
             "pages": [
-              "getting-started/sample-app",
-              {
-                "group": "API authorization",
-                "pages": [
-                  "guides/api-authorization/overview",
-                  "guides/api-authorization/configuration",
-                  "guides/api-authorization/authorize-in-your-app-default-ui",
-                  "guides/api-authorization/authorize-in-your-app-custom-ui",
-                  "guides/api-authorization/re-authorize-a-connection",
-                  "guides/api-authorization/whitelabel-the-oauth-flow",
-                  "guides/api-authorization/credentials-refresh-and-validity",
-                  "guides/api-authorization/authorization-logs",
-                  "guides/api-authorization/new-api-support",
-                  "guides/api-authorization/public-key-deprecation"
-                ]
-              },
-              {
-                "group": "Pre-built integrations",
-                "pages": [
-                  "guides/pre-built-integrations/overview",
-                  "guides/pre-built-integrations/use-a-pre-built-integration"
-                ]
-              },
-              {
-                "group": "Custom integrations",
-                "pages": [
-                  "guides/custom-integrations/overview",
-                  "guides/custom-integrations/build-a-custom-integration",
-                  "guides/custom-integrations/extend-a-pre-built-integration",
-                  "guides/custom-integrations/generate-integrations-with-ai",
-                  "guides/custom-integrations/event-based-scripts",
-                  "guides/custom-integrations/migrate-to-zero-yaml",
-                  "guides/custom-integrations/faq"
-                ]
-              },
-              {
-                "group": "Syncs",
-                "pages": [
-                  "guides/syncs/overview",
-                  "guides/syncs/use-a-sync",
-                  "guides/syncs/detecting-deletes",
-                  "guides/syncs/large-datasets",
-                  "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
-                  "guides/syncs/sync-partitioning"
-                ]
-              },
-              {
-                "group": "Actions",
-                "pages": [
-                  "guides/actions/overview",
-                  "guides/actions/use-an-action"
-                ]
-              },
-              "guides/mcp",
-              "guides/proxy-requests",
-              {
-                "group": "Webhooks",
-                "pages": [
-                  "guides/webhooks/webhooks-from-nango",
-                  {
-                    "group": "Webhooks from APIs",
-                    "pages": [
-                      "guides/webhooks/webhooks-from-apis/overview",
-                      "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
-                      "guides/webhooks/webhooks-from-apis/webhook-forwarding"
-                    ]
-                  }
-                ]
-              },
-              "guides/customer-configuration",
-              "guides/api-unification",
-              {
-                "group": "Logs",
-                "pages": [
-                  "guides/logs/opentelemetry-exporter",
-                  "guides/api-authorization/authorization-logs"
-                ]
-              },
-              "guides/data-validation",
-              "guides/rate-limits",
-              "guides/environments",
-              "guides/common-issues",
-              "guides/resource-limits",
+              "guides/use-cases/api-auth",
+              "guides/use-cases/proxy",
+              "guides/use-cases/syncs",
+              "guides/use-cases/actions",
+              "guides/use-cases/webhooks",
+              "guides/use-cases/mcp-server"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "guides/platform/ai-generated-integrations",
+              "guides/platform/unified-apis",
+              "guides/platform/customer-configuration",
+              "guides/platform/functions",
+              "guides/platform/lifecycle-events",
+              "guides/platform/webhooks-from-nango",
+              "guides/platform/data-validation",
+              "guides/platform/logs",
+              "guides/platform/environments",
+              "guides/platform/resource-limits",
               {
                 "group": "Self-hosting",
                 "pages": [
@@ -153,6 +167,84 @@
                   }
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "anchor": "Implementation Guides",
+        "icon": "pen",
+        "groups": [
+          { 
+            "group": "API Auth",
+            "pages": [
+              "implementation-guides/api-auth/configure-integration",
+              "implementation-guides/api-auth/implement-api-auth",
+              "implementation-guides/api-auth/customize-connect-ui"
+            ]
+          },
+          {
+            "group": "Requests Proxy",
+            "pages": [
+              "implementation-guides/requests-proxy/implement-requests-proxy"
+            ]
+          },
+          { 
+            "group": "Syncs",
+            "pages": [
+              "implementation-guides/syncs/implement-a-sync",
+              "implementation-guides/syncs/deletion-detection",
+              "implementation-guides/syncs/realtime-syncs",
+              "implementation-guides/syncs/large-datasets",
+              "implementation-guides/syncs/sync-partitioning"
+            ]
+          },
+          {
+            "group": "Actions",
+            "pages": [
+              "implementation-guides/actions/implement-an-action",
+              "implementation-guides/actions/async-actions"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "implementation-guides/webhooks/implement-webhooks"
+            ]
+          },
+          {
+            "group": "MCP Server",
+            "pages": [
+              "implementation-guides/mcp-server/implement-mcp-server"
+            ]
+          },
+          {
+            "group": "Building integrations",
+            "pages": [
+              "implementation-guides/building-integrations/functions-setup",
+              "implementation-guides/building-integrations/leverage-ai-agents",
+              "implementation-guides/building-integrations/extend-reference-implementation",
+              "implementation-guides/building-integrations/unified-apis",
+              "implementation-guides/building-integrations/rate-limits",
+              "implementation-guides/building-integrations/customer-configuration",
+              "implementation-guides/building-integrations/data-validation"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "implementation-guides/platform/webhooks-from-nango",
+              "implementation-guides/platform/contribute-new-api",
+              "implementation-guides/platform/implement-event-handler",
+              "implementation-guides/platform/open-telemetry-logs-export",
+              "implementation-guides/platform/common-issues"
+            ]
+          },
+          {
+            "group": "Migrations",
+            "pages": [
+              "implementation-guides/migrations/migrate-from-public-key",
+              "implementation-guides/migrations/migrate-to-zero-yaml"
             ]
           }
         ]
@@ -768,7 +860,7 @@
                     ]
                   },
                   {
-                    "group": "Scripts",
+                    "group": "Functions",
                     "pages": [
                       "reference/api/scripts/config"
                     ]
@@ -833,8 +925,8 @@
             "group": "Build Integrations - Reference",
             "pages": [
               "reference/cli",
+              "reference/functions",
               "reference/api-configuration",
-              "reference/scripts",
               "reference/integration-configuration"
             ]
           }
@@ -852,11 +944,6 @@
             ]
           }
         ]
-      },
-      {
-        "anchor": "Community",
-        "href": "https://nango.dev/slack",
-        "icon": "slack"
       }
     ]
   },
@@ -870,105 +957,5 @@
         "method": "bearer"
       }
     }
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
-      }
-    ],
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
-    }
-  },
-  "footer": {
-    "socials": {
-      "twitter": "https://twitter.com/NangoHQ",
-      "linkedin": "https://www.linkedin.com/company/nangohq/",
-      "github": "https://github.com/NangoHQ/nango",
-      "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
-    }
-  },
-  "integrations": {
-    "gtm": {
-      "tagId": "GTM-N4KVPWR"
-    }
-  },
-  "redirects": [
-    {
-      "source": "/introduction",
-      "destination": "/"
-    },
-    {
-      "source": "/integrate/guides/authorize-an-api",
-      "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
-    },
-    {
-      "source": "/customize/guides/create-a-custom-integration",
-      "destination": "/guides/custom-integrations/overview"
-    },
-    {
-      "source": "/guides/customize/extend-an-integration-template",
-      "destination": "/guides/custom-integrations/extend-a-pre-built-integration"
-    },
-    {
-      "source": "/guides/customize/contribute-an-api",
-      "destination": "/guides/new-api-support"
-    },
-    {
-      "source": "/guides/getting-started/authorize-an-api-from-your-app",
-      "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
-    },
-    {
-      "source": "/guides/getting-started/write-to-an-api",
-      "destination": "/guides/actions/use-an-action"
-    },
-    {
-      "source": "/guides/getting-started/read-from-an-api",
-      "destination": "/guides/syncs/use-a-sync"
-    },
-    {
-      "source": "/what-is-nango",
-      "destination": "/getting-started/intro-to-nango"
-    },
-    {
-      "source": "/home",
-      "destination": "/"
-    },
-    {
-      "source": "guides/custom-integration-builder/overview",
-      "destination": "guides/custom-integrations/overview"
-    },
-    {
-      "source": "guides/custom-integration-builder/build-a-custom-integration",
-      "destination": "guides/custom-integrations/build-a-custom-integration"
-    },
-    {
-      "source": "guides/custom-integration-builder/extend-a-pre-built-integration",
-      "destination": "guides/custom-integrations/extend-a-pre-built-integration"
-    },
-    {
-      "source": "guides/custom-integration-builder/event-based-scripts",
-      "destination": "guides/custom-integrations/event-based-scripts"
-    },
-    {
-      "source": "guides/services",
-      "destination": "guides/custom-integrations/service"
-    },
-    {
-      "source": "guides/individual-requests",
-      "destination": "guides/proxy-requests"
-    },
-    {
-      "source": "guides/infrastructure",
-      "destination": "guides/self-hosting/infrastructure"
-    },
-    {
-      "source": "guides/new-api-support",
-      "destination": "guides/api-authorization/new-api-support"
-    }
-  ]
+  }
 }

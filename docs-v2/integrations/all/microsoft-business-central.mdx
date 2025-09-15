@@ -56,7 +56,6 @@ _No setup guide yet._
 
 ## API gotchas
 -   See particularly the `tenantId` parameter under [Get a token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow#get-a-token).
--   This `tenantId` parameter must be provided as [extra configuration to the frontend SDK](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 -   When requesting **Application Permissions** that require admin consent, an Microsoft Entra ID administrator must pre-authorize the permissions. Without admin consent, the app cannot obtain tokens for those scopes.
 -   For multitenant applications, each tenant administrator must grant consent to the app’s required permissions before access is granted in their tenant.
 -  The [.default scope](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) is a special scope that tells Azure AD to issue a token containing all the **Application Permissions** that have already been granted (consented) for your app on that resource. Using `.default` ensures your app receives permissions consistent with those configured and consented at the tenant or organization level.

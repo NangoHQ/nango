@@ -59,7 +59,6 @@ class PaginationService {
         const cursorPagination: CursorPagination = paginationConfig;
 
         let nextCursor: string | number | undefined;
-        let isFirstPage = true;
 
         do {
             if (typeof nextCursor !== 'undefined') {
@@ -69,11 +68,6 @@ class PaginationService {
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
             const response = await proxy(config);
-
-            if (isFirstPage) {
-                this.validateFirstPageResponse(response, paginationConfig.response_path);
-                isFirstPage = false;
-            }
 
             const responseData: T[] = cursorPagination.response_path ? get(response.data, cursorPagination.response_path) : response.data;
 
@@ -114,15 +108,9 @@ class PaginationService {
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
         let previousPageLink: string | undefined;
-        let isFirstPage = true;
 
         while (true) {
             const response = await proxy(config);
-
-            if (isFirstPage) {
-                this.validateFirstPageResponse(response, paginationConfig.response_path);
-                isFirstPage = false;
-            }
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
 
@@ -167,7 +155,6 @@ class PaginationService {
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
         const offsetCalculationMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
         let offset = offsetPagination.offset_start_value || 0;
-        let isFirstPage = true;
 
         while (true) {
             updatedBodyOrParams[offsetParameterName] = passPaginationParamsInBody ? offset : String(offset);
@@ -175,11 +162,6 @@ class PaginationService {
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
             const response = await proxy(config);
-
-            if (isFirstPage) {
-                this.validateFirstPageResponse(response, paginationConfig.response_path);
-                isFirstPage = false;
-            }
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
             if (!responseData || !responseData.length) {
@@ -246,22 +228,6 @@ class PaginationService {
         }
 
         return nextPageLink;
-    }
-
-    private validateFirstPageResponse(response: AxiosResponse, responsePath?: string): void {
-        if (responsePath) {
-            const resolvedAtPath = get(response.data, responsePath);
-            if (typeof resolvedAtPath === 'undefined') {
-                throw new Error(`Missing expected response_path '${responsePath}' on first page`);
-            }
-            if (!Array.isArray(resolvedAtPath)) {
-                throw new Error(`Expected an array at response_path '${responsePath}' on first page`);
-            }
-        } else {
-            if (!Array.isArray(response.data)) {
-                throw new Error('Expected response.data to be an array on first page');
-            }
-        }
     }
 }
 

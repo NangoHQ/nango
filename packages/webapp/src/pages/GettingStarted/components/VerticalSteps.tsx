@@ -44,7 +44,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                             {/* Step */}
                             <div
                                 className={cn(
-                                    'flex-shrink-0 flex items-center justify-center w-10 h-10 bg-dark-glow rounded-md p-[1px]',
+                                    'shrink-0 flex items-center justify-center w-10 h-10 bg-dark-glow rounded-md p-px',
                                     isCurrent && 'bg-grayscale-10',
                                     isDone && 'bg-success-4'
                                 )}
@@ -64,7 +64,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                             {/* Connector line - Render it transparent if the step is blocked (to keep spacing consistent) */}
                             <div
                                 className={cn(
-                                    'mr-10 w-[1px] h-auto bg-grayscale-5',
+                                    'mr-10 w-px h-auto bg-grayscale-5',
                                     isCurrent && 'bg-grayscale-10',
                                     isDone && 'bg-success-4',
                                     isLast && 'opacity-0'

@@ -128,7 +128,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                                         <CommandCheck checked={checked} />
                                         <div className="overflow-hidden">
                                             <div className="whitespace-pre w-fit">
-                                                <div className={cn(option.name.length > 39 && 'duration-[2000ms] group-hover:translate-x-[calc(-100%+258px)]')}>
+                                                <div className={cn(option.name.length > 39 && 'duration-2000 group-hover:translate-x-[calc(-100%+258px)]')}>
                                                     {option.name}
                                                 </div>
                                             </div>

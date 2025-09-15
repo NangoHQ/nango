@@ -308,7 +308,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         return Promise.resolve();
     }
 
-    public override async deleteRecordsFromPreviousExecution(_model: string): Promise<{ deletedKeys: string[] }> {
+    public override async deleteRecordsFromPreviousExecutions(_model: string): Promise<{ deletedKeys: string[] }> {
         this.log(`This has no effect but on a remote Nango instance would delete records that were not added or updated during the current execution.`);
         return Promise.resolve({ deletedKeys: [] });
     }

@@ -9,7 +9,7 @@ import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
-import type { MergingStrategy } from '@nangohq/types';
+import type { MergingStrategy, Result } from '@nangohq/types';
 
 describe('Records service', () => {
     beforeAll(async () => {
@@ -80,10 +80,13 @@ describe('Records service', () => {
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
         });
+        let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(4);
+        expect(stats[model]?.size_bytes).toBe(536);
 
         const newRecords = [
             { id: '1', name: 'John Doe' }, // same
-            { id: '2', name: 'Jane Moe' } // updated
+            { id: '2', name: 'Jane Much Longer Name Doe' } // updated
         ];
         const upserted = await upsertRecords({ records: newRecords, connectionId, environmentId, model, syncId, syncJobId: 2 });
         expect(upserted).toStrictEqual({
@@ -95,6 +98,9 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
+        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(4);
+        expect(stats[model]?.size_bytes).toBe(556);
 
         const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
         expect(after.find((r) => r.external_id === '1')?.sync_job_id).toBe(2);
@@ -112,6 +118,9 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
+        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(4);
+        expect(stats[model]?.size_bytes).toBe(560);
     });
 
     describe('upserting records', () => {
@@ -324,25 +333,21 @@ describe('Records service', () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
-            const records = formatRecords({
-                data: [{ id: '1', name: 'John Doe' }],
-                connectionId,
-                model,
-                syncId: '00000000-0000-0000-0000-000000000000',
-                syncJobId: 1,
-                softDelete: false
-            }).unwrap();
 
             // upserting the same record concurrently
-            const res = (
-                await Promise.all([
-                    Records.upsert({ records, connectionId, environmentId, model }),
-                    Records.upsert({ records, connectionId, environmentId, model }),
-                    Records.upsert({ records, connectionId, environmentId, model }),
-                    Records.upsert({ records, connectionId, environmentId, model }),
-                    Records.upsert({ records, connectionId, environmentId, model })
-                ])
-            ).map((r) => r.unwrap());
+            const upsert = async (): Promise<Result<UpsertSummary>> => {
+                const records = formatRecords({
+                    data: [{ id: '1', name: 'John Doe!!!!' }],
+                    connectionId,
+                    model,
+                    syncId: '00000000-0000-0000-0000-000000000000',
+                    syncJobId: 1,
+                    softDelete: false
+                }).unwrap();
+                return Records.upsert({ records, connectionId, environmentId, model });
+            };
+            const res = (await Promise.all([upsert(), upsert(), upsert(), upsert(), upsert()])).map((r) => r.unwrap());
+
             const agg = res.reduce((acc, curr) => {
                 return {
                     addedKeys: acc.addedKeys.concat(curr.addedKeys),
@@ -363,6 +368,9 @@ describe('Records service', () => {
                 unchangedKeys: ['1', '1', '1', '1'],
                 nextMerging: { strategy: 'override' }
             });
+            const stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(1);
+            expect(stats[model]?.size_bytes).toBe(139);
         });
     });
 
@@ -583,6 +591,9 @@ describe('Records service', () => {
             { id: '3', name: 'Max Doe' }
         ];
         await upsertRecords({ records, connectionId, environmentId, model, syncId });
+        let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(3);
+        expect(stats[model]?.size_bytes).toBe(401);
 
         const toDelete = [
             { id: '1', name: 'John Doe' },
@@ -599,6 +610,10 @@ describe('Records service', () => {
             nextMerging: { strategy: 'override' }
         });
 
+        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(1);
+        expect(stats[model]?.size_bytes).toBe(401); // size remains the same since we are soft deleting
+
         // Try to delete the same records again
         // Should not have any effect
         const res2 = await upsertRecords({ records: toDelete, connectionId, environmentId, model, syncId, softDelete: true });
@@ -611,6 +626,9 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
+        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(1);
+        expect(stats[model]?.size_bytes).toBe(401);
     });
 
     describe('getRecords', () => {
@@ -883,8 +901,8 @@ describe('Records service', () => {
 
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
 
-            const initialCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(initialCounts[model]?.count).toBe(3);
+            const initialStats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            expect(initialStats[model]?.count).toBe(3);
 
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
@@ -896,8 +914,8 @@ describe('Records service', () => {
             ).unwrap();
             expect(deletedIds).toHaveLength(3);
 
-            const finalCounts = (await Records.getRecordCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(finalCounts[model]?.count).toBe(0);
+            const finalStats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(0);
         });
     });
 });

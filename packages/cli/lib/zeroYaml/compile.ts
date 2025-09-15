@@ -89,6 +89,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return Err(def.error);
         }
 
+        for (const integration of def.value.integrations) {
+            for (const sync of integration.syncs) {
+                if (sync.track_deletes) {
+                    console.warn(
+                        chalk.yellow(
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                        )
+                    );
+                }
+            }
+        }
+
         generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
@@ -237,25 +249,25 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 })
             );
         }
-        if (bag.deleteRecordsFromPreviousExecutionLines.length > 1) {
+        if (bag.deleteRecordsFromPreviousExecutionsLines.length > 1) {
             return Err(
                 fileErrorToText({
                     filePath: friendlyPath,
-                    msg: `deleteRecordsFromPreviousExecution should be called only once per sync`,
-                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionLines)
+                    msg: `deleteRecordsFromPreviousExecutions should be called only once per sync`,
+                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionsLines)
                 })
             );
         }
         if (
-            bag.deleteRecordsFromPreviousExecutionLines.length > 0 &&
+            bag.deleteRecordsFromPreviousExecutionsLines.length > 0 &&
             bag.batchingRecordsLines.length > 0 &&
-            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionLines))
+            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionsLines))
         ) {
             return Err(
                 fileErrorToText({
                     filePath: friendlyPath,
-                    msg: `deleteRecordsFromPreviousExecution should be called after any batching records function`,
-                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionLines)
+                    msg: `deleteRecordsFromPreviousExecutions should be called after any batching records function`,
+                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionsLines)
                 })
             );
         }
@@ -320,12 +332,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
-    const deleteRecordsFromPreviousExecutionLines: number[] = [];
+    const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
-        deleteRecordsFromPreviousExecutionLines
+        deleteRecordsFromPreviousExecutionsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -352,7 +364,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'getEnvironmentVariables',
         'triggerAction',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecution'
+        'deleteRecordsFromPreviousExecutions'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -458,8 +470,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                         setMergingStrategyLines.push(lineNumber);
                                     }
 
-                                    if (callee.property.name === 'deleteRecordsFromPreviousExecution') {
-                                        deleteRecordsFromPreviousExecutionLines.push(lineNumber);
+                                    if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
+                                        deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                                     }
                                 }
                             }
