@@ -7,21 +7,15 @@ sidebarTitle: Google Service Account
 
 To authenticate with Google Service Account, you need:  
 1. **Service Account Email Address** – The unique email assigned to your service account.  
-2. **Private Key** – The private key file (JSON) generated when creating the service account.  
-3. **Scopes** – The list of Google APIs your application should have access to.  
-4. **Delegated Access Email Address (optional)** – The user’s email if you need domain-wide delegation in Google Workspace.  
+2. **Private Key** – The private key generated when creating a service account key.  
+3. **Scopes** – A list of Google APIs scopes space separated your application should have access to.  
+4. **Delegated Access Email Address (optional)** – The user’s email if you need domain-wide delegation in Google Workspace.
 
 This guide will walk you through creating and obtaining your **Service Account credentials** in Google Cloud.
-
----
 
 ### Prerequisites
 
 - If you don’t already have one, sign up for a [Google Cloud account](https://console.cloud.google.com/).  
-- You must have permissions to create service accounts within a Google Cloud project.  
-- If you are using Google Workspace and need access on behalf of users, you must be a Workspace **super administrator** to enable domain-wide delegation.  
-
----
 
 ### Instructions
 
@@ -29,8 +23,8 @@ This guide will walk you through creating and obtaining your **Service Account c
 1. Go to the [Service Accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts).  
 2. Select an existing project, or create a new one.  
 3. Click **+ Create Service Account**.  
-4. Enter a **Service account name**, ID, and description, then click **Create and continue**.  
-5. (Optional) Assign roles under **Grant this service account access to project**.  
+4. Fill in all the required information, then click **Create and continue**.  
+5. (Optional) Assign **Permissions** and **Principals with access**.  
 6. Click **Done**.  
 
 ---
@@ -56,18 +50,12 @@ If your application needs to act on behalf of users in your domain (e.g. read al
 5. In **OAuth scopes**, enter the list of scopes you want to grant, for example:  
 
 #### Step 4: Enter credentials in the Connect UI
-Once you’ve created your service account, you’ll have the required credentials:  
-
-- **Service Account Email Address** → found on the Service Accounts page.  
-- **Private Key** → from the downloaded JSON key file.  
-- **Scopes** → enter the list of scopes you want to request, separated by spaces (e.g. `https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar`).  
-- **Delegated Access Email Address** (optional) → the Workspace user’s email you want to impersonate.  
-
-In the Connect UI:  
+Once you’ve all the required credentials:  
+ 
 1. Open the form to authenticate with Google Service Account.  
-2. Enter the above credentials in their respective fields.  
-3. Submit the form to establish the connection.  
+2. Enter your credentials in their respective fields.  
+3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/google-service-account/form.png" style={{maxWidth: "450px" }}/>  
 
-You are now connected to Google via a Service Account.  
+You are now connected to Google Service Account.
