@@ -138,7 +138,7 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
 
 export interface ProviderMCP extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP';
-    registration_url: string;
+    registration_url?: string;
 }
 
 export interface ProviderJwt extends BaseProvider {

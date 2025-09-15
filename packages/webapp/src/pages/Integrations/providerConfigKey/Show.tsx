@@ -116,12 +116,10 @@ export const ShowIntegration: React.FC = () => {
             </div>
 
             <nav className="flex gap-2 my-11">
-                {data.template.auth_mode !== 'MCP' && (
-                    <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
-                        Endpoints
-                    </ButtonLink>
-                )}
-                <ButtonLink to="./settings" variant={tab === 'settings' || data.template.auth_mode === 'MCP' ? 'active' : 'zombie'}>
+                <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
+                    Endpoints
+                </ButtonLink>
+                <ButtonLink to="./settings" variant={tab === 'settings' ? 'active' : 'zombie'}>
                     Settings
                     {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                 </ButtonLink>

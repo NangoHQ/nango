@@ -6879,6 +6879,23 @@ linear:
     webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/linear
 
+linear-mcp:
+    display_name: Linear (MCP)
+    categories:
+        - popular
+        - productivity
+        - ticketing
+    auth_mode: MCP
+    authorization_url: https://mcp.linear.app/authorize
+    token_url: https://mcp.linear.app/token
+    registration_url: https://mcp.linear.app/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+
 linkedin:
     display_name: LinkedIn
     categories:
@@ -7855,6 +7872,8 @@ notion-mcp:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 
 notion-scim:
     display_name: Notion (SCIM API)

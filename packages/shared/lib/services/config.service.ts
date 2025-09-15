@@ -112,11 +112,12 @@ class ConfigService {
         return res[0] ?? null;
     }
 
-    async createEmptyProviderConfigWithClientId(
+    async createEmptyProviderConfigWithCreds(
         providerName: string,
         environment_id: number,
         provider: Provider,
-        client_id: string
+        client_id: string,
+        client_secret: string
     ): Promise<IntegrationConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
@@ -130,6 +131,7 @@ class ConfigService {
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName,
                 oauth_client_id: client_id,
+                oauth_client_secret: client_secret,
                 forward_webhooks: true,
                 shared_credentials_id: null
             },

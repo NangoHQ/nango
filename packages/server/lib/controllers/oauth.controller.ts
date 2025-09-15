@@ -55,6 +55,7 @@ import type {
     Provider,
     ProviderCustom,
     ProviderGithubApp,
+    ProviderMCP,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -231,7 +232,7 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (provider.auth_mode !== 'APP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
+            if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'MCP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 void logCtx.error(error.message);
                 await logCtx.failed();
@@ -255,6 +256,9 @@ class OAuthController {
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
                 await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                return;
+            } else if (provider.auth_mode === 'MCP') {
+                await this.mcpRequest({ provider: provider as ProviderMCP, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -752,6 +756,84 @@ class OAuthController {
         }
     }
 
+    private async mcpRequest({
+        provider,
+        config,
+        session,
+        res,
+        connectionConfig,
+        callbackUrl,
+        logCtx
+    }: {
+        provider: ProviderMCP;
+        config: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        connectionConfig: Record<string, string>;
+        callbackUrl: string;
+        logCtx: LogContext;
+    }) {
+        const channel = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+
+        try {
+            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
+
+                void logCtx.error(error.message, { connectionConfig });
+                await logCtx.failed();
+
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
+            }
+            const codeChallenge = crypto
+                .createHash('sha256')
+                .update(session.codeVerifier)
+                .digest('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            await oAuthSessionService.create(session);
+
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
+
+            const authParams = {
+                response_type: 'code',
+                code_challenge: codeChallenge,
+                code_challenge_method: 'S256'
+            };
+
+            const authorizationUri = simpleOAuthClient.authorizeURL({
+                client_id: config.oauth_client_id,
+                redirect_uri: callbackUrl,
+                scope: config.oauth_scopes || '',
+                state: session.id,
+                ...authParams
+            });
+
+            void logCtx.info('Redirecting', {
+                authorizationUri,
+                providerConfigKey,
+                connectionId,
+                allAuthParams: authParams,
+                connectionConfig,
+                grantType: provider.token_params?.['grant_type'] as string,
+                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+            });
+
+            res.redirect(authorizationUri);
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            void logCtx.error('Unknown error', { connectionConfig });
+            await logCtx.failed();
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+        }
+    }
+
     // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
@@ -871,7 +953,7 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
+            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
@@ -1149,6 +1231,7 @@ class OAuthController {
             ...webhookMetadata,
             ...session.connectionConfig
         };
+
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
         let additionalTokenParams: Record<string, string | undefined> = {};
         if (provider.token_params !== undefined) {

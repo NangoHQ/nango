@@ -67,9 +67,7 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         password: z.string().min(1)
     }),
     CUSTOM: z.object({}),
-    MCP: z.object({
-        client_id: z.string().min(1)
-    })
+    MCP: z.object({})
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
@@ -252,7 +250,8 @@ export const Go: React.FC = () => {
                     (provider.auth_mode === 'OAUTH2' && !provider.installation) ||
                     provider.auth_mode === 'OAUTH1' ||
                     provider.auth_mode === 'CUSTOM' ||
-                    provider.auth_mode === 'APP'
+                    provider.auth_mode === 'APP' ||
+                    provider.auth_mode === 'MCP'
                 ) {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
