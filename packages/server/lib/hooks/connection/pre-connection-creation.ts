@@ -9,8 +9,6 @@ import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
 
-let updatedConnectionConfig: ConnectionConfig | null = null;
-
 type PreConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
 type PreConnectionHandlersMap = Record<string, PreConnectionHandler>;
@@ -25,8 +23,6 @@ async function execute(
     config: Config
 ): Promise<ConnectionConfig | void> {
     let logCtx: LogContextOrigin | undefined = undefined;
-
-    updatedConnectionConfig = null;
 
     const { provider: providerName, unique_key: providerConfigKey } = config;
     const provider = getProvider(providerName);
@@ -63,7 +59,7 @@ async function execute(
     try {
         if (handler) {
             logCtx = await logContextGetter.create(
-                { operation: { type: 'events', action: 'post_connection_creation' } },
+                { operation: { type: 'events', action: 'pre_connection_creation_script' } },
                 {
                     account,
                     environment,
@@ -77,20 +73,14 @@ async function execute(
             const internalNango = {
                 getConnection: baseInternalNango.getConnection,
                 proxy: baseInternalNango.proxy,
-                updateConnectionConfig: (config: ConnectionConfig) => {
-                    updatedConnectionConfig = config;
-                    return Promise.resolve(config);
-                },
+                updateConnectionConfig: (config: ConnectionConfig) => Promise.resolve(config),
                 unsetConnectionConfigAttributes: (...keys: string[]) => {
-                    const currentConfig = updatedConnectionConfig || connection.connection_config;
-                    const updatedConfig = Object.fromEntries(Object.entries(currentConfig).filter(([key]) => !keys.includes(key)));
-
-                    updatedConnectionConfig = updatedConfig;
+                    const updatedConfig = Object.fromEntries(Object.entries(connection.connection_config).filter(([key]) => !keys.includes(key)));
                     return Promise.resolve(updatedConfig);
                 }
             };
 
-            await handler(internalNango);
+            const updatedConnectionConfig = await handler(internalNango);
             void logCtx.info(`pre-connection-creation script succeeded`);
             await logCtx.success();
             metrics.increment(metrics.Types.PRE_CONNECTION__CREATION_SUCCESS);
@@ -103,6 +93,7 @@ async function execute(
         metrics.increment(metrics.Types.PRE_CONNECTION__CREATION_FAILURE);
         void logCtx?.error('pre-connection-creation script failed', { error: err });
         await logCtx?.failed();
+        throw err;
     }
 }
 
