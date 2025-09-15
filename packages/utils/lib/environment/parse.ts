@@ -76,6 +76,10 @@ export const ENVS = z.object({
     ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
     WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
     ONEVENT_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),

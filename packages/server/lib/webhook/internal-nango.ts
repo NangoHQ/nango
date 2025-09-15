@@ -2,6 +2,7 @@ import get from 'lodash-es/get.js';
 
 import { connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
 
+import { envs } from '../env.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
@@ -112,6 +113,7 @@ export class InternalNango {
                             webhookName: webhook,
                             syncConfig,
                             input: body,
+                            maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
                             logContextGetter: this.logContextGetter
                         });
                     }
