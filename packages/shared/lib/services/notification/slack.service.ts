@@ -1,5 +1,5 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
+import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
 
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
@@ -660,10 +660,12 @@ export class SlackService {
         const res = await this.proxySlackMessage({ slackConnection: refreshedConnection.value, payload, integration });
 
         if (res.isErr()) {
+            metrics.increment(metrics.Types.SLACK_NOTIFICATION_FAILURE, 1, { accountId: account.id });
             void logCtx.error(`Failed to send Slack notification`, { error: res.error });
             await logCtx.failed();
             return Err(res.error);
         }
+        metrics.increment(metrics.Types.SLACK_NOTIFICATION_SUCCESS, 1, { accountId: account.id });
 
         const ts = res.value.ts || res.value.message.ts;
         if (ts) {
@@ -716,7 +718,7 @@ export class SlackService {
         });
         const join = await proxy.request();
         if (join.isErr()) {
-            return Err('slack_join_channel_failed');
+            return Err(new Error('slack_join_channel_failed', { cause: join.error }));
         }
         if (!join.value.data.ok) {
             return Err(join.value.data.error);
@@ -779,7 +781,7 @@ export class SlackService {
         });
         const slackMessage = await proxy.request();
         if (slackMessage.isErr()) {
-            return Err('slack_post_failed');
+            return Err(new Error('slack_post_failed', { cause: slackMessage.error }));
         }
 
         return Ok(slackMessage.value.data as PostSlackMessageResponse);
