@@ -112,7 +112,7 @@ jobs:
                   echo "commit_hash: ${{ inputs.commit_hash }}"
 
                   # Debug: Show the exact command
-                  HELM_CMD="helm upgrade --install nango nangohq/nango --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --version 1.1.5 --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --wait=false"
                   echo "Executing: $HELM_CMD"
 
                   # Execute the command
