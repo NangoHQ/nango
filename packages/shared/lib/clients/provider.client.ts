@@ -1,7 +1,7 @@
 import braintree from 'braintree';
 import qs from 'qs';
 
-import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
@@ -327,17 +327,17 @@ class ProviderClient {
 
                 const { restUrl, BhRestToken } = sessionResponse.data;
 
-                return {
+                return Ok({
                     restUrl,
                     expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
-                };
+                });
             }
 
-            throw new NangoError('bullhorn_session_request_error', response.data);
+            return Err(new Error('bullhorn_session_request_error', { cause: response.data }));
         } catch (err: any) {
-            throw new NangoError('bullhorn_session_request_error', err);
+            return Err(new Error('bullhorn_session_request_error', { cause: err }));
         }
     }
 
@@ -373,17 +373,17 @@ class ProviderClient {
 
                 const { BhRestToken, restUrl } = sessionResponse.data;
 
-                return {
+                return Ok({
                     restUrl,
                     expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
-                };
+                });
             }
 
-            throw new NangoError('bullhorn_session_refresh_error', response.data);
+            return Err(new Error('bullhorn_session_refresh_error', { cause: response.data }));
         } catch (err: any) {
-            throw new NangoError('bullhorn_session_refresh_error', err);
+            return Err(new Error('bullhorn_session_refresh_error', { cause: err }));
         }
     }
 

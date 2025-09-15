@@ -20,12 +20,13 @@ export default async function execute(nango: InternalNango): Promise<void> {
         }
     });
 
-    if (!response || axios.isAxiosError(response) || !response.data) {
+    if (!response || axios.isAxiosError(response) || !response.data || !response.data.restUrl) {
         return;
     }
 
     const restUrl = response.data.restUrl;
-    const subdomain = restUrl.split('https://rest-')[1]?.split('.bullhornstaffing.com')[0];
+    const match = restUrl.match(/^https:\/\/rest-(.+?)\.bullhornstaffing\.com/);
+    const subdomain = match ? match[1] : undefined;
 
     await nango.updateConnectionConfig({
         ...connection_config,
