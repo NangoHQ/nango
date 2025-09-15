@@ -15,20 +15,20 @@ function getCustomSettings(): ConnectUISettings {
         showWatermark: false,
         theme: {
             light: {
-                background: '#eeeeee',
-                foreground: '#eeeeee',
+                backgroundSurface: '#eeeeee',
+                backgroundElevated: '#eeeeee',
                 primary: '#eeeeee',
-                primaryForeground: '#eeeeee',
+                onPrimary: '#eeeeee',
                 textPrimary: '#eeeeee',
-                textMuted: '#eeeeee'
+                textSecondary: '#eeeeee'
             },
             dark: {
-                background: '#111111',
-                foreground: '#111111',
+                backgroundSurface: '#111111',
+                backgroundElevated: '#111111',
                 primary: '#111111',
-                primaryForeground: '#111111',
+                onPrimary: '#111111',
                 textPrimary: '#111111',
-                textMuted: '#111111'
+                textSecondary: '#111111'
             }
         }
     };

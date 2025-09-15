@@ -514,7 +514,7 @@ export class SyncManagerService {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
 
-        const countRes = await recordsService.getRecordCountsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
+        const countRes = await recordsService.getRecordStatsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }
