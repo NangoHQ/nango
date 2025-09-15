@@ -1191,7 +1191,8 @@ class OAuthController {
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
-                    session.codeVerifier
+                    session.codeVerifier,
+                    connectionConfig
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
