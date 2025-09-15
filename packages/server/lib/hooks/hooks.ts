@@ -88,7 +88,7 @@ export const connectionPreCreation = async (
     logCtx: LogContextStateless,
     account: DBTeam,
     environment: DBEnvironment
-): Promise<Result<ConnectionConfig | void, NangoError>> => {
+): Promise<Result<ConnectionConfig | void>> => {
     try {
         if (provider.pre_connection_creation_script) {
             void logCtx.info('Running pre-connection creation script');
@@ -98,7 +98,7 @@ export const connectionPreCreation = async (
         return Ok(undefined);
     } catch (err) {
         void logCtx.error('Pre Connection creation failed');
-        return Err(new NangoError('pre_connection_creation_failed', { err }));
+        return Err(new Error('pre_connection_creation_failed', { err }));
     }
 };
 

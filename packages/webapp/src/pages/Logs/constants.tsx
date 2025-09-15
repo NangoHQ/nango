@@ -151,6 +151,7 @@ export const typesList = Object.keys({
     'deploy:custom': null,
     'deploy:prebuilt': null,
     'events:post_connection_creation': null,
+    'events:pre_connection_creation': null,
     'events:pre_connection_deletion': null,
     'events:validate_connection': null,
     'proxy:call': null,

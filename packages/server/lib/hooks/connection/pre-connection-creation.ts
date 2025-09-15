@@ -59,7 +59,7 @@ async function execute(
     try {
         if (handler) {
             logCtx = await logContextGetter.create(
-                { operation: { type: 'events', action: 'pre_connection_creation_script' } },
+                { operation: { type: 'events', action: 'pre_connection_creation' } },
                 {
                     account,
                     environment,

@@ -127,5 +127,6 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:connection_refresh': 'Token refresh webhooks',
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions',
-    'events:validate_connection': 'Event-based executions'
+    'events:validate_connection': 'Event-based executions',
+    'events:pre_connection_creation': 'Event-based executions'
 };
