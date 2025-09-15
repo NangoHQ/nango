@@ -6895,6 +6895,7 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/linear
 
 linkedin:
     display_name: LinkedIn
@@ -7874,6 +7875,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/notion
 
 notion-scim:
     display_name: Notion (SCIM API)
