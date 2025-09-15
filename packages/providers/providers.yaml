@@ -806,6 +806,24 @@ asana:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
 
+asana-mcp:
+    display_name: Asana (MCP)
+    categories:
+        - productivity
+        - ticketing
+        - mcp
+    auth_mode: MCP
+    authorization_url: https://mcp.asana.com/authorize
+    token_url: https://mcp.asana.com/token
+    registration_url: https://mcp.asana.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/asana
+
 asana-scim:
     display_name: Asana (SCIM API)
     categories:
@@ -6885,6 +6903,7 @@ linear-mcp:
         - popular
         - productivity
         - ticketing
+        - mcp
     auth_mode: MCP
     authorization_url: https://mcp.linear.app/authorize
     token_url: https://mcp.linear.app/token
