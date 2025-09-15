@@ -325,6 +325,10 @@ class ProviderClient {
 
                 const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
 
+                if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
+                    return Err(new Error('bullhorn_session_creation_failed', { cause: sessionResponse.data }));
+                }
+
                 const { restUrl, BhRestToken } = sessionResponse.data;
 
                 return Ok({
@@ -370,6 +374,10 @@ class ProviderClient {
                 };
 
                 const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
+
+                if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
+                    return Err(new Error('bullhorn_session_refresh_failed', { cause: sessionResponse.data }));
+                }
 
                 const { BhRestToken, restUrl } = sessionResponse.data;
 
