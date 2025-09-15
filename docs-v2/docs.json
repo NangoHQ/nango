@@ -432,6 +432,8 @@
               "integrations/all/figma",
               "integrations/all/figma-scim",
               "integrations/all/findymail",
+              "integrations/all/fillout",
+              "integrations/all/fillout-api-key",
               "integrations/all/firefish",
               "integrations/all/fireflies",
               "integrations/all/fiserv",
