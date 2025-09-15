@@ -1,17 +1,39 @@
-import type { ConnectUIThemeSettings } from '@nangohq/types';
+import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
-export function setTheme(theme: ConnectUIThemeSettings) {
+export function setTheme(theme: Theme) {
+    document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && getSystemTheme() === 'dark'));
+}
+
+/* Resolves system theme to light or dark, otherwise returns the theme */
+export function getEffectiveTheme(theme: Theme): 'light' | 'dark' {
+    return theme === 'system' ? getSystemTheme() : theme;
+}
+
+export function getSystemTheme(): 'light' | 'dark' {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export function setColors(theme: ConnectUIThemeSettings, themeToUse: Theme): void {
     const root = document.documentElement;
 
-    const primary = theme.light.primary;
-    if (!primary) {
-        return;
+    const effectiveTheme = getEffectiveTheme(themeToUse);
+    if (effectiveTheme === 'light') {
+        const lightPrimary = theme.light.primary;
+        if (lightPrimary) {
+            root.style.setProperty('--color-primary', lightPrimary);
+            const lightBrandHex = cssColorToHex(lightPrimary);
+            root.style.setProperty('--color-on-primary', hexColorIsDark(lightBrandHex) ? '#ffffff' : '#000000');
+        }
     }
 
-    root.style.setProperty('--color-primary', primary);
-
-    const brandHex = cssColorToHex(primary);
-    root.style.setProperty('--color-on-primary', hexColorIsDark(brandHex) ? '#ffffff' : '#000000');
+    if (effectiveTheme === 'dark') {
+        const darkPrimary = theme.dark.primary;
+        if (darkPrimary) {
+            root.style.setProperty('--color-primary', darkPrimary);
+            const darkBrandHex = cssColorToHex(darkPrimary);
+            root.style.setProperty('--color-on-primary', hexColorIsDark(darkBrandHex) ? '#ffffff' : '#000000');
+        }
+    }
 }
 
 /**

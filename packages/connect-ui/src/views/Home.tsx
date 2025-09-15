@@ -12,6 +12,7 @@ import { telemetry } from '@/lib/telemetry';
 import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
+import type { Theme } from '@nangohq/types';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export const Home: React.FC = () => {
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
+    const theme = useSearchParam('theme');
     const isEmbedded = useSearchParam('embedded');
     const isPreview = useSearchParam('preview') === 'true';
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
@@ -81,7 +83,8 @@ export const Home: React.FC = () => {
     useEffect(() => {
         if (data) {
             setSession(data.data);
-            updateSettings(data.data.connectUISettings);
+            const themeOverride = theme && theme in ['light', 'dark', 'system'] ? (theme as Theme) : undefined;
+            updateSettings(data.data.connectUISettings, themeOverride);
             void navigate({ to: '/integrations' });
         }
     }, [data]);
