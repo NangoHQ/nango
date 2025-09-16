@@ -59,7 +59,6 @@ export interface BaseProvider {
             base_url_override?: string;
             headers?: Record<string, string>;
             data?: unknown;
-            skip_automatic_headers?: boolean;
         };
     };
     authorization_url?: string;
