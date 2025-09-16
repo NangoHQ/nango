@@ -15,20 +15,10 @@ function getCustomSettings(): ConnectUISettings {
         showWatermark: false,
         theme: {
             light: {
-                backgroundSurface: '#eeeeee',
-                backgroundElevated: '#eeeeee',
-                primary: '#eeeeee',
-                onPrimary: '#eeeeee',
-                textPrimary: '#eeeeee',
-                textSecondary: '#eeeeee'
+                primary: '#eeeeee'
             },
             dark: {
-                backgroundSurface: '#111111',
-                backgroundElevated: '#111111',
-                primary: '#111111',
-                onPrimary: '#111111',
-                textPrimary: '#111111',
-                textSecondary: '#111111'
+                primary: '#111111'
             }
         }
     };
@@ -109,24 +99,14 @@ describe(`PUT ${route}`, () => {
         await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, initialSettings);
 
         // Update the settings
-        const updatedSettings = {
+        const updatedSettings: ConnectUISettings = {
             showWatermark: false,
             theme: {
                 light: {
-                    backgroundSurface: '#dddddd',
-                    backgroundElevated: '#dddddd',
-                    primary: '#dddddd',
-                    onPrimary: '#dddddd',
-                    textPrimary: '#dddddd',
-                    textSecondary: '#dddddd'
+                    primary: '#dddddd'
                 },
                 dark: {
-                    backgroundSurface: '#222222',
-                    backgroundElevated: '#222222',
-                    primary: '#222222',
-                    onPrimary: '#222222',
-                    textPrimary: '#222222',
-                    textSecondary: '#222222'
+                    primary: '#222222'
                 }
             }
         };
@@ -188,20 +168,10 @@ describe(`PUT ${route}`, () => {
             // Missing showWatermark
             theme: {
                 light: {
-                    backgroundSurface: '#eeeeee',
-                    backgroundElevated: '#eeeeee',
-                    primary: '#eeeeee',
-                    onPrimary: '#eeeeee',
-                    textPrimary: '#eeeeee'
-                    // Missing textMuted
+                    // Missing primary
                 },
                 dark: {
-                    // Missing textMuted
-                    backgroundElevated: '#111111',
-                    primary: '#111111',
-                    onPrimary: '#111111',
-                    textPrimary: '#111111',
-                    textSecondary: '#111111'
+                    // Missing primary
                 }
             }
         } as ConnectUISettings;
@@ -222,12 +192,12 @@ describe(`PUT ${route}`, () => {
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'light', 'textSecondary']
+                        path: ['theme', 'light', 'primary']
                     },
                     {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
-                        path: ['theme', 'dark', 'backgroundSurface']
+                        path: ['theme', 'dark', 'primary']
                     },
                     {
                         code: 'invalid_type',
