@@ -319,6 +319,7 @@ class OAuthController {
         }
 
         let logCtx: LogContext | undefined;
+        let config: ProviderConfig | null = null;
 
         try {
             logCtx =
@@ -348,7 +349,7 @@ class OAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+            config = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!config) {
                 void logCtx.error('Unknown provider config');
                 await logCtx.failed();
@@ -470,7 +471,7 @@ class OAuthController {
                 logContextGetter
             );
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
@@ -505,7 +506,7 @@ class OAuthController {
                 }
             });
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC', ...(config ? { provider: config.provider } : {}) });
 
             next(err);
         }
@@ -959,7 +960,7 @@ class OAuthController {
             void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx?.failed();
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -1506,7 +1507,7 @@ class OAuthController {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
             if (res) {
                 await publisher.notifySuccess({
@@ -1550,7 +1551,7 @@ class OAuthController {
                 config
             );
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1680,7 +1681,7 @@ class OAuthController {
                 );
                 await logCtx.success();
 
-                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
                 return publisher.notifySuccess({
                     res,
@@ -1721,7 +1722,7 @@ class OAuthController {
                     account,
                     config
                 );
-                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1' });
+                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider });
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
