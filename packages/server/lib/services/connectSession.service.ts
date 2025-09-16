@@ -22,7 +22,7 @@ export interface DBConnectSession {
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
     readonly end_user: InternalEndUser | null;
 }
-type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'end_user_id' | 'created_at' | 'updated_at'>;
+type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
 const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
@@ -77,6 +77,7 @@ export interface ConnectSessionAndEndUser {
 export async function createConnectSession(
     db: Knex,
     {
+        endUserId,
         accountId,
         environmentId,
         connectionId,
@@ -88,12 +89,21 @@ export async function createConnectSession(
     }: SetOptional<
         Pick<
             ConnectSession,
-            'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId' | 'overrides' | 'endUser'
+            | 'allowedIntegrations'
+            | 'connectionId'
+            | 'integrationsConfigDefaults'
+            | 'accountId'
+            | 'environmentId'
+            | 'operationId'
+            | 'overrides'
+            | 'endUser'
+            | 'endUserId'
         >,
         'connectionId'
     >
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
+        end_user_id: endUserId || null,
         account_id: accountId,
         environment_id: environmentId,
         connection_id: connectionId || null,

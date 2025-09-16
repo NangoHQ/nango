@@ -186,13 +186,13 @@ export const BackendSettings: React.FC = () => {
                     title="Callback URL"
                     placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
-                    docs="https://docs.nango.dev/guides/api-authorization/configuration#2-create-an-integration"
+                    docs="https://docs.nango.dev/implementation-guides/api-auth/configure-integration#2-create-an-integration"
                     editInfo={
                         <Info>
                             Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers.
                             Otherwise authorization attempts will fail. Details in{' '}
                             <Link
-                                to="https://docs.nango.dev/guides/api-authorization/whitelabel-the-oauth-flow#use-a-custom-callback-url"
+                                to="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional"
                                 className="underline"
                             >
                                 docs

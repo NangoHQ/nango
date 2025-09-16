@@ -6,6 +6,7 @@ import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq
 import { configService, connectionService, errorManager, getSyncConfigRaw, productTracking } from '@nangohq/shared';
 import { getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -129,6 +130,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                 input,
                 async,
                 retryMax,
+                maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
                 logCtx
             });
 
@@ -139,7 +141,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                 if (payloadSizeInMb > 2) {
                     if (actionPayloadAllowList.includes(account.id)) {
                         void logCtx.warn(
-                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large will soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/proxy-requests#proxy-requests.`,
+                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large will soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://docs.nango.dev/guides/use-cases/proxy.`,
                             {
                                 payloadSize,
                                 actionName: action_name,
