@@ -102,7 +102,7 @@ export class RoutingSpanProcessor implements SpanProcessor {
         return new LoggingSpanExporter({
             routeConfig: route,
             exporter: new OTLPTraceExporter({
-                url: `${route.routingEndpoint}/traces`,
+                url: `${route.routingEndpoint}/v1/traces`.replace(/\/v1\/v1\//g, '/v1/'),
                 headers: route.routingHeaders
             })
         });
