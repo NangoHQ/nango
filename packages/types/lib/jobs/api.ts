@@ -24,7 +24,7 @@ export type PutTask = Endpoint<{
         nangoProps?: NangoProps | undefined;
         error?: RunnerOutputError | undefined;
         output?: JsonValue | undefined;
-        telemetryBag?: TelemetryBag | undefined;
+        telemetryBag: TelemetryBag;
     };
     Error: ApiError<'put_task_failed'>;
     Success: never;

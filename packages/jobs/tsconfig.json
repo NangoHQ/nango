@@ -48,6 +48,9 @@
             "path": "../fleet"
         },
         {
+            "path": "../pubsub"
+        },
+        {
             "path": "../account-usage"
         }
     ],
