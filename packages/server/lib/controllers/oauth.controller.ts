@@ -538,42 +538,11 @@ class OAuthController {
         const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
-
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({ provider, connectionConfig, tokenUrl, logCtx, channel, connectionId });
+            if (!passedInterpolationCheck) {
                 return;
             }
 
-            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
             if (
                 provider.token_params == undefined ||
                 provider.token_params.grant_type == undefined ||
@@ -776,17 +745,14 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
-
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({ provider, connectionConfig, tokenUrl, logCtx, channel, connectionId });
+            if (!passedInterpolationCheck) {
                 return;
             }
+
             const codeChallenge = crypto
                 .createHash('sha256')
                 .update(session.codeVerifier)
@@ -1728,6 +1694,65 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
+    }
+
+    private async passesInterpolationParamsCheck({
+        provider,
+        connectionConfig,
+        tokenUrl,
+        logCtx,
+        channel,
+        providerConfigKey,
+        connectionId,
+        res
+    }: {
+        provider: ProviderOAuth2 | ProviderMCP;
+        connectionConfig: Record<string, string>;
+        tokenUrl: string;
+        logCtx: LogContext;
+        channel: string;
+        providerConfigKey: string;
+        connectionId: string;
+        res: Response;
+    }): Promise<boolean> {
+        if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
+
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        return true;
     }
 }
 
