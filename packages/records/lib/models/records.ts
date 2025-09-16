@@ -88,14 +88,25 @@ export async function getRecordStatsByModel({
     }
 }
 
-export async function countMetric(): Promise<Result<{ count: string }>> {
-    // Note: count is a string because pg returns bigint as string
+export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeInBytes: number }[]>> {
     try {
-        const [count] = await db.from(RECORD_COUNTS_TABLE).sum('count as count');
-        if (!count) {
+        const res = await db
+            .from(RECORD_COUNTS_TABLE)
+            .select<
+                { environment_id: number; count: number; size_bytes: number }[]
+            >('environment_id', db.raw('SUM(count) as count'), db.raw('SUM(size_bytes) as size_bytes'))
+            .groupBy('environment_id')
+            .having(db.raw('sum(size_bytes) > 10000000 OR sum(count) > 1000000')); // only return if > 10MB or > 1M records to avoid sending too many metrics
+
+        if (!res) {
             return Err(new Error(`Failed to count records`));
         }
-        return Ok({ count });
+        const metrics = res.map((r) => ({
+            environmentId: r.environment_id,
+            count: Number(r.count),
+            sizeInBytes: Number(r.size_bytes)
+        }));
+        return Ok(metrics);
     } catch {
         return Err(new Error(`Failed to count records`));
     }
