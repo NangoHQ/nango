@@ -538,7 +538,16 @@ class OAuthController {
         const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({ provider, connectionConfig, tokenUrl, logCtx, channel, connectionId });
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
             if (!passedInterpolationCheck) {
                 return;
             }
@@ -748,7 +757,16 @@ class OAuthController {
         const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({ provider, connectionConfig, tokenUrl, logCtx, channel, connectionId });
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
             if (!passedInterpolationCheck) {
                 return;
             }
@@ -1710,7 +1728,7 @@ class OAuthController {
         connectionConfig: Record<string, string>;
         tokenUrl: string;
         logCtx: LogContext;
-        channel: string;
+        channel: string | undefined;
         providerConfigKey: string;
         connectionId: string;
         res: Response;
