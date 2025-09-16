@@ -31,7 +31,6 @@ export const logContextGetter = {
 
         try {
             if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
-                // TODO: remove this after full deploy
                 await createOperation(msg);
             } else if (options?.logToConsole !== false) {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
