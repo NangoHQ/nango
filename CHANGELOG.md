@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.7] - 2025-09-16
+
+### Added
+
+- Store records size in bytes (#4639) by @TBonnin
+- *(connect-ui)* Full redesign (#4622) by @kaposke
+- *(integrations)* Add support for fillout (#4636) by @hassan254-prog
+- Add slack notification success/failure metrics (#4651) by @TBonnin
+- Max concurrency per environment for function executions (#4650) by @TBonnin
+
+### Changed
+
+- Rework docs (#4631) by @rguldener
+- Update docs links in app (#4643) by @rguldener
+- Clarify Actions intro (#4647) by @mintlify[bot]
+- Update Linear docs to include refresh token functionality (#4645) by @hassan254-prog
+- Update version in manifest by @actions-user
+- ConnectUI tailwind v4 upgrade (#4653) by @kaposke
+
+### Fixed
+
+- *(slack)* Disable pkce (#4640) by @hassan254-prog
+- *(reconnect-flow)* Attach end user id on reconnect flow (#4648) by @khaliqgant
+- Set helm chart version to 1.1.5 (#4659) by @rossmcewan
+- Skip render deployment for staging (#4646) by @rossmcewan
+- Allow longer oauth tokens when importing connection (#4661) by @TBonnin
+- *(zero)* Nullable is not optional (#4638) by @bodinsamuel
+
 ## [v0.67.6] - 2025-09-10
 
 ### Added
@@ -4842,6 +4870,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.7]: https://github.com/NangoHQ/nango/compare/v0.67.6..v0.67.7
 [v0.67.6]: https://github.com/NangoHQ/nango/compare/v0.67.5..v0.67.6
 [v0.67.5]: https://github.com/NangoHQ/nango/compare/v0.67.4..v0.67.5
 [v0.67.4]: https://github.com/NangoHQ/nango/compare/v0.67.3..v0.67.4
