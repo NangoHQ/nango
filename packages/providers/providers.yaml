@@ -6237,8 +6237,9 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            pattern: '^https://[a-z0-9.-]+.atlassian.net$'
-            example: https://foobar.atlassian.net
+            format: hostname
+            prefix: https://
+            example: foobar.atlassian.net
 
 jira-data-center-api-key:
     display_name: Jira Data Center (API Key)

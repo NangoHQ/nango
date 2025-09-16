@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.67.8] - 2025-09-16
+
+### Changed
+
+- Change url to platform functions, api spec (#4663) by @bodinsamuel
+
+### Fixed
+
+- *(providers)* Fix regex pattern for endpointURL (#4667) by @hassan254-prog
+- *(deps)* Upgrade axios (#4664) by @bodinsamuel
+- *(api)* Finish end user migration (#4665) by @bodinsamuel
+- *(runner-sdk)* Types of deleteRecordsFromPreviousExecutions function (#4668) by @TBonnin
+
 ## [v0.67.7] - 2025-09-16
 
 ### Added
@@ -4870,6 +4883,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.67.8]: https://github.com/NangoHQ/nango/compare/v0.67.7..v0.67.8
 [v0.67.7]: https://github.com/NangoHQ/nango/compare/v0.67.6..v0.67.7
 [v0.67.6]: https://github.com/NangoHQ/nango/compare/v0.67.5..v0.67.6
 [v0.67.5]: https://github.com/NangoHQ/nango/compare/v0.67.4..v0.67.5
