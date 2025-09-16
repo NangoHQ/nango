@@ -55,7 +55,7 @@ import type {
     Provider,
     ProviderCustom,
     ProviderGithubApp,
-    ProviderMCP,
+    ProviderMcpOAUTH2,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -232,7 +232,7 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'MCP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
+            if (provider.auth_mode !== 'APP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 void logCtx.error(error.message);
                 await logCtx.failed();
@@ -257,8 +257,8 @@ class OAuthController {
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
                 await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
                 return;
-            } else if (provider.auth_mode === 'MCP') {
-                await this.mcpRequest({ provider: provider as ProviderMCP, config, session, res, connectionConfig, callbackUrl, logCtx });
+            } else if (provider.auth_mode === 'MCP_OAUTH2') {
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -734,7 +734,7 @@ class OAuthController {
         }
     }
 
-    private async mcpRequest({
+    private async mcpOauth2Request({
         provider,
         config,
         session,
@@ -743,7 +743,7 @@ class OAuthController {
         callbackUrl,
         logCtx
     }: {
-        provider: ProviderMCP;
+        provider: ProviderMcpOAUTH2;
         config: ProviderConfig;
         session: OAuthSession;
         res: Response;
@@ -937,7 +937,7 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP') {
+            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
@@ -1724,7 +1724,7 @@ class OAuthController {
         connectionId,
         res
     }: {
-        provider: ProviderOAuth2 | ProviderMCP;
+        provider: ProviderOAuth2 | ProviderMcpOAUTH2;
         connectionConfig: Record<string, string>;
         tokenUrl: string;
         logCtx: LogContext;

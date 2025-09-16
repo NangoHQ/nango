@@ -52,7 +52,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
             return;
         }
         integration = result.value;
-    } else if (provider.auth_mode === 'MCP') {
+    } else if (provider.auth_mode === 'MCP_OAUTH2') {
         const client_id = await mcpClient.registerClientId({ provider, environment, team: account });
         integration = await configService.createEmptyProviderConfigWithCreds(body.provider, environment.id, provider, client_id, '');
     } else {

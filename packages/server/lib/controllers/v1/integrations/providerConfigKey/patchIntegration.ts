@@ -49,7 +49,7 @@ const validationBody = z
                     .strict(),
                 z
                     .object({
-                        authType: z.enum(['MCP']),
+                        authType: z.enum(['MCP_OAUTH2']),
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
                     .strict()
@@ -147,7 +147,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.app_link = body.appLink;
             // This is a legacy thing
             integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
-        } else if (body.authType === 'MCP') {
+        } else if (body.authType === 'MCP_OAUTH2') {
             integration.oauth_scopes = body.scopes || '';
         }
     }

@@ -15,7 +15,7 @@ export interface AuthModes {
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
-    MCP: 'MCP';
+    MCP_OAUTH2: 'MCP_OAUTH2';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];

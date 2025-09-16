@@ -159,7 +159,7 @@ export type PatchIntegration = Endpoint<{
               privateKey: string;
           }
         | {
-              authType: Extract<AuthModeType, 'MCP'>;
+              authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
               scopes?: string | undefined;
           };
     Success: {

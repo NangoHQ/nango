@@ -14,7 +14,7 @@ import { defaultCallback } from '../../../../../utils/utils';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
-export const SettingsMCP: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
+export const SettingsMcpOAuth: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
     data: { integration, template },
     environment
 }) => {

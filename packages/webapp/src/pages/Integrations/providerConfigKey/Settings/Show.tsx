@@ -2,7 +2,7 @@ import { SettingsApp } from './components/App';
 import { SettingsCustom } from './components/Custom';
 import { SettingsDefault } from './components/Default';
 import { SettingsGeneral } from './components/General';
-import { SettingsMCP } from './components/MCP';
+import { SettingsMcpOAuth } from './components/McpOAuth';
 import { SettingsOAuth } from './components/OAuth';
 import { useEnvironment } from '../../../../hooks/useEnvironment';
 import { useStore } from '../../../../store';
@@ -32,8 +32,8 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'SIGNATURE':
         case 'TWO_STEP':
             return <SettingsDefault data={data} environment={environment} />;
-        case 'MCP':
-            return <SettingsMCP data={data} environment={environment} />;
+        case 'MCP_OAUTH2':
+            return <SettingsMcpOAuth data={data} environment={environment} />;
 
         default:
             return <div>Unsupported</div>;

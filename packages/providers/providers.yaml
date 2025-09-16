@@ -812,7 +812,7 @@ asana-mcp:
         - productivity
         - ticketing
         - mcp
-    auth_mode: MCP
+    auth_mode: MCP_OAUTH2
     authorization_url: https://mcp.asana.com/authorize
     token_url: https://mcp.asana.com/token
     registration_url: https://mcp.asana.com/register
@@ -6904,7 +6904,7 @@ linear-mcp:
         - productivity
         - ticketing
         - mcp
-    auth_mode: MCP
+    auth_mode: MCP_OAUTH2
     authorization_url: https://mcp.linear.app/authorize
     token_url: https://mcp.linear.app/token
     registration_url: https://mcp.linear.app/register
@@ -7884,7 +7884,7 @@ notion-mcp:
         - knowledge-base
         - productivity
         - mcp
-    auth_mode: MCP
+    auth_mode: MCP_OAUTH2
     authorization_url: https://mcp.notion.com/authorize
     token_url: https://mcp.notion.com/token
     registration_url: https://mcp.notion.com/register

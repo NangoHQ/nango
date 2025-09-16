@@ -136,8 +136,8 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
     };
 }
 
-export interface ProviderMCP extends Omit<BaseProvider, 'body_format'> {
-    auth_mode: 'MCP';
+export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
+    auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
 }
 
@@ -222,7 +222,7 @@ export type Provider =
     | ProviderGithubApp
     | ProviderAppleAppStore
     | ProviderCustom
-    | ProviderMCP;
+    | ProviderMcpOAUTH2;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

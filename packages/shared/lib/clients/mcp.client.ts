@@ -16,7 +16,7 @@ interface McpRegisterResponse {
 }
 
 export async function registerClientId({ provider, environment, team }: { provider: Provider; environment: DBEnvironment; team: DBTeam }): Promise<string> {
-    if (provider.auth_mode !== 'MCP' || !('registration_url' in provider)) {
+    if (provider.auth_mode !== 'MCP_OAUTH2' || !('registration_url' in provider)) {
         throw new Error('Provider is not MCP');
     }
     try {
