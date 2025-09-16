@@ -164,9 +164,10 @@ export const ConnectUISettingsPage = () => {
                                 variant="primary"
                                 size="md"
                                 className="self-start"
-                                disabled={!canSubmit || !isDirty || isUpdatingConnectUISettings}
+                                disabled={!canSubmit || !isDirty}
+                                isLoading={isUpdatingConnectUISettings}
                             >
-                                {isUpdatingConnectUISettings ? 'Saving...' : 'Save settings'}
+                                Save settings
                             </Button>
                         )}
                     </form.Subscribe>
