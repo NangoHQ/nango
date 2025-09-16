@@ -29,7 +29,6 @@ export async function up(knex: Knex): Promise<void> {
             ALTER TABLE ${TASKS_TABLE}
             ADD COLUMN IF NOT EXISTS schedule_id uuid REFERENCES ${SCHEDULES_TABLE}(id) ON DELETE CASCADE;
         `);
-        // TODO: add indexes
     });
 }
 
