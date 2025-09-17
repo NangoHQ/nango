@@ -124,7 +124,7 @@ jobs:
                   git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
                   git push origin main
     deploy_runners_aws:
-        if: inputs.stage == 'staging' && inputs.service == 'runner'
+        if: inputs.service == 'runner'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
