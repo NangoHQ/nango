@@ -1,1 +1,0 @@
-trello.svg
