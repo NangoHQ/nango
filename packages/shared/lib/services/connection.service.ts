@@ -74,6 +74,7 @@ import type {
     ProviderCustom,
     ProviderGithubApp,
     ProviderJwt,
+    ProviderMcpOAUTH2,
     ProviderOAuth2,
     ProviderSignature,
     ProviderTwoStep,
@@ -857,7 +858,11 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom): AuthCredentials {
+    public parseRawCredentials(
+        rawCredentials: object,
+        authMode: AuthModeType,
+        template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom | ProviderMcpOAUTH2
+    ): AuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
