@@ -10630,6 +10630,25 @@ smugmug:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
 
+snapchat:
+    display_name: Snapchat (Ads API)
+    auth_mode: OAUTH2
+    categories:
+        - video
+        - social
+    authorization_url: https://accounts.snapchat.com/login/oauth2/authorize
+    disable_pkce: true
+    token_url: https://accounts.snapchat.com/login/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://adsapi.snapchat.com
+    docs: https://docs.nango.dev/integrations/all/snapchat
+
 snowflake:
     display_name: Snowflake
     categories:
