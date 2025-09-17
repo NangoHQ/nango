@@ -9,12 +9,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { ConnectUISettings, PutConnectUISettings } from '@nangohq/types';
 
 const colorPaletteSchema = z.strictObject({
-    backgroundSurface: z.string(),
-    backgroundElevated: z.string(),
-    primary: z.string(),
-    onPrimary: z.string(),
-    textPrimary: z.string(),
-    textSecondary: z.string()
+    primary: z.string()
 });
 
 const bodyValidation = z.strictObject({

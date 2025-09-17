@@ -796,9 +796,13 @@ paths:
                                           title: GitHub App
                                           additionalProperties: false
                                           required:
+                                              - type
                                               - app_id
                                               - installation_id
                                           properties:
+                                              type:
+                                                  type: string
+                                                  enum: [APP]
                                               app_id:
                                                   type: string
                                               installation_id:
