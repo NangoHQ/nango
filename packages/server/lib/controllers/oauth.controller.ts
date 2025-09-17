@@ -1482,7 +1482,20 @@ class OAuthController {
                     connCreatedHook
                 );
                 if (createRes.isErr()) {
-                    void logCtx.error('Failed to create credentials');
+                    let responseData = null;
+                    if (
+                        createRes.error instanceof Error &&
+                        'cause' in createRes.error &&
+                        createRes.error.cause &&
+                        typeof createRes.error.cause === 'object' &&
+                        'response' in createRes.error.cause
+                    ) {
+                        responseData = (createRes.error.cause as any).response?.data;
+                    }
+
+                    void logCtx.error('Failed to create credentials', {
+                        responseData: responseData ? JSON.stringify(responseData, null, 2) : null
+                    });
                     await logCtx.failed();
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
