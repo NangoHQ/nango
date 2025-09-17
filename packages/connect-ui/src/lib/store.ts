@@ -15,6 +15,7 @@ interface State {
     detectClosedAuthWindow: boolean;
     isEmbedded: boolean;
     isPreview: boolean;
+    showWatermark: boolean;
     setApiURL: (value: string) => void;
     setDetectClosedAuthWindow: (value: boolean) => void;
     setIsEmbedded: (value: boolean) => void;
@@ -24,6 +25,7 @@ interface State {
     setNango: (value: Nango) => void;
     setIsDirty: (value: boolean) => void;
     setIsSingleIntegration: (value: boolean) => void;
+    setShowWatermark: (value: boolean) => void;
     set: (provider: GetPublicProvider['Success']['data'], integration: GetPublicIntegration['Success']['data']) => void;
     reset: () => void;
 }
@@ -40,6 +42,7 @@ export const useGlobal = create<State>((set) => ({
     isEmbedded: false,
     detectClosedAuthWindow: false,
     isPreview: false,
+    showWatermark: false,
     setApiURL: (value) => set({ apiURL: value }),
     setIsEmbedded: (value) => set({ isEmbedded: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
@@ -49,6 +52,7 @@ export const useGlobal = create<State>((set) => ({
     setNango: (value) => set({ nango: value }),
     setIsDirty: (value) => set({ isDirty: value }),
     setIsSingleIntegration: (value) => set({ isSingleIntegration: value }),
+    setShowWatermark: (value) => set({ showWatermark: value }),
     set: (provider, integration) => {
         set({ provider, integration });
     },

@@ -55,6 +55,7 @@ import type {
     Provider,
     ProviderCustom,
     ProviderGithubApp,
+    ProviderMcpOAUTH2,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -255,6 +256,9 @@ class OAuthController {
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
                 await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                return;
+            } else if (provider.auth_mode === 'MCP_OAUTH2') {
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -534,42 +538,20 @@ class OAuthController {
         const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
-
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
+            if (!passedInterpolationCheck) {
                 return;
             }
 
-            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
             if (
                 provider.token_params == undefined ||
                 provider.token_params.grant_type == undefined ||
@@ -752,6 +734,90 @@ class OAuthController {
         }
     }
 
+    private async mcpOauth2Request({
+        provider,
+        config,
+        session,
+        res,
+        connectionConfig,
+        callbackUrl,
+        logCtx
+    }: {
+        provider: ProviderMcpOAUTH2;
+        config: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        connectionConfig: Record<string, string>;
+        callbackUrl: string;
+        logCtx: LogContext;
+    }) {
+        const channel = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
+
+        try {
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
+            if (!passedInterpolationCheck) {
+                return;
+            }
+
+            const codeChallenge = crypto
+                .createHash('sha256')
+                .update(session.codeVerifier)
+                .digest('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            await oAuthSessionService.create(session);
+
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
+
+            const authParams = {
+                response_type: 'code',
+                code_challenge: codeChallenge,
+                code_challenge_method: 'S256'
+            };
+
+            const authorizationUri = simpleOAuthClient.authorizeURL({
+                client_id: config.oauth_client_id,
+                redirect_uri: callbackUrl,
+                scope: config.oauth_scopes || '',
+                state: session.id,
+                ...authParams
+            });
+
+            void logCtx.info('Redirecting', {
+                authorizationUri,
+                providerConfigKey,
+                connectionId,
+                allAuthParams: authParams,
+                connectionConfig,
+                grantType: provider.token_params?.['grant_type'] as string,
+                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+            });
+
+            res.redirect(authorizationUri);
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            void logCtx.error('Unknown error', { connectionConfig });
+            await logCtx.failed();
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+        }
+    }
+
     // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
@@ -871,7 +937,7 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
+            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
@@ -1149,6 +1215,7 @@ class OAuthController {
             ...webhookMetadata,
             ...session.connectionConfig
         };
+
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
         let additionalTokenParams: Record<string, string | undefined> = {};
         if (provider.token_params !== undefined) {
@@ -1645,6 +1712,65 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
+    }
+
+    private async passesInterpolationParamsCheck({
+        provider,
+        connectionConfig,
+        tokenUrl,
+        logCtx,
+        channel,
+        providerConfigKey,
+        connectionId,
+        res
+    }: {
+        provider: ProviderOAuth2 | ProviderMcpOAUTH2;
+        connectionConfig: Record<string, string>;
+        tokenUrl: string;
+        logCtx: LogContext;
+        channel: string | undefined;
+        providerConfigKey: string;
+        connectionId: string;
+        res: Response;
+    }): Promise<boolean> {
+        if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
+
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        return true;
     }
 }
 

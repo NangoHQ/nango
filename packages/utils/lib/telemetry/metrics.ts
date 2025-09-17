@@ -89,6 +89,9 @@ export enum Types {
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
 
+    SLACK_NOTIFICATION_SUCCESS = 'nango.slack.notification.success',
+    SLACK_NOTIFICATION_FAILURE = 'nango.slack.notification.failure',
+
     GET_RECORDS_COUNT = 'nango.server.getRecords.count',
     GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
 
@@ -98,6 +101,7 @@ export enum Types {
     CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
+    RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 

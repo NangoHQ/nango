@@ -806,6 +806,24 @@ asana:
             limit_name_in_request: limit
     docs: https://docs.nango.dev/integrations/all/asana
 
+asana-mcp:
+    display_name: Asana (MCP)
+    categories:
+        - productivity
+        - ticketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    authorization_url: https://mcp.asana.com/authorize
+    token_url: https://mcp.asana.com/token
+    registration_url: https://mcp.asana.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/asana
+
 asana-scim:
     display_name: Asana (SCIM API)
     categories:
@@ -6281,8 +6299,9 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            pattern: '^https://[a-z0-9.-]+.atlassian.net$'
-            example: https://foobar.atlassian.net
+            format: hostname
+            prefix: https://
+            example: foobar.atlassian.net
 
 jira-data-center-api-key:
     display_name: Jira Data Center (API Key)
@@ -6939,6 +6958,25 @@ linear:
     post_connection_script: linearPostConnection
     pre_connection_deletion_script: linearPreConnectionDeletion
     webhook_user_defined_secret: true
+    docs: https://docs.nango.dev/integrations/all/linear
+
+linear-mcp:
+    display_name: Linear (MCP)
+    categories:
+        - popular
+        - productivity
+        - ticketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    authorization_url: https://mcp.linear.app/authorize
+    token_url: https://mcp.linear.app/token
+    registration_url: https://mcp.linear.app/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/linear
 
 linkedin:
@@ -7901,6 +7939,24 @@ notion:
             cursor_name_in_request: start_cursor
             limit_name_in_request: page_size
             response_path: results
+    docs: https://docs.nango.dev/integrations/all/notion
+
+notion-mcp:
+    display_name: Notion (MCP)
+    categories:
+        - knowledge-base
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    authorization_url: https://mcp.notion.com/authorize
+    token_url: https://mcp.notion.com/token
+    registration_url: https://mcp.notion.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/notion
 
 notion-scim:
