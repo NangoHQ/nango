@@ -98,7 +98,6 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
     }
-    console.log('telemetryBag', telemetryBag);
     if (error) {
         await handleError({ taskId, nangoProps, error, telemetryBag });
     } else {
