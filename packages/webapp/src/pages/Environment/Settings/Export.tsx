@@ -120,7 +120,7 @@ export const ExportSettings: React.FC = () => {
                     originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
                     apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
                     onSuccess={() => void mutate()}
-                    placeholder="https://my.otlp.commector:4318/v1"
+                    placeholder="https://my.otlp.commector:4318"
                 />
                 <fieldset className="flex flex-col gap-1">
                     <label htmlFor="otlp_headers" className="text-s">

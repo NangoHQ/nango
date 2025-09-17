@@ -44,6 +44,7 @@ export * as connectUISettingsService from './services/connect-ui-settings.servic
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
+export * as mcpClient from './clients/mcp.client.js';
 
 export * from './models/index.js';
 

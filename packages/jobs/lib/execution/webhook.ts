@@ -23,10 +23,11 @@ import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -171,7 +172,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     }
 }
 
-export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+export async function handleWebhookSuccess({
+    taskId,
+    nangoProps,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
     const content = `The webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
@@ -264,13 +273,38 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
         }
     }
 
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.function_executions',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: team.id,
+                connectionId: nangoProps.nangoConnectionId,
+                type: 'webhook',
+                success: true,
+                telemetryBag
+            }
+        }
+    });
+
     await logCtx.success();
 
     metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
     metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
-export async function handleWebhookError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleWebhookError({
+    taskId,
+    nangoProps,
+    error,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    error: NangoError;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
@@ -312,7 +346,8 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         error,
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
-        startedAt: nangoProps.startedAt
+        startedAt: nangoProps.startedAt,
+        telemetryBag
     });
 }
 
@@ -332,7 +367,8 @@ async function onFailure({
     runTime,
     error,
     endUser,
-    startedAt
+    startedAt,
+    telemetryBag
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -350,6 +386,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
     startedAt: Date;
+    telemetryBag?: TelemetryBag | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -419,6 +456,20 @@ async function onFailure({
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
+        });
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'webhook',
+                    success: false,
+                    telemetryBag
+                }
+            }
         });
     }
 
