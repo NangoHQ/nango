@@ -32,11 +32,11 @@ jobs:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
         env:
-            API_DOMAIN: (inputs.stage == 'production' && 'https://api.nango.dev' || 'https://api-staging.nango.dev')
-            DEPLOY_APP_UI_ROLE: (inputs.stage == 'production' && secrets.PROD_DEPLOY_APP_UI_ROLE || secrets.STAGING_DEPLOY_APP_UI_ROLE)
-            AWS_REGION: (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION)
-            APP_UI_BUCKET: (inputs.stage == 'production' && secrets.PROD_APP_UI_BUCKET || secrets.STAGING_APP_UI_BUCKET)
-            APP_UI_DISTRIBUTION_ID: (inputs.stage == 'production' && secrets.PROD_APP_UI_DISTRIBUTION_ID || secrets.STAGING_APP_UI_DISTRIBUTION_ID)
+            API_DOMAIN: ${{ (inputs.stage == 'production' && 'https://api.nango.dev' || 'https://api-staging.nango.dev') }}
+            DEPLOY_APP_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_APP_UI_ROLE || secrets.STAGING_DEPLOY_APP_UI_ROLE) }}
+            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
+            APP_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_BUCKET || secrets.STAGING_APP_UI_BUCKET) }}
+            APP_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_DISTRIBUTION_ID || secrets.STAGING_APP_UI_DISTRIBUTION_ID) }}
         permissions:
             id-token: write
             contents: read
@@ -70,10 +70,10 @@ jobs:
             id-token: write
             contents: read
         env:
-            DEPLOY_CONNECT_UI_ROLE: (inputs.stage == 'production' && secrets.PROD_DEPLOY_CONNECT_UI_ROLE || secrets.STAGING_DEPLOY_CONNECT_UI_ROLE)
-            AWS_REGION: (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION)
-            CONNECT_UI_BUCKET: (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_BUCKET || secrets.STAGING_CONNECT_UI_BUCKET)
-            CONNECT_UI_DISTRIBUTION_ID: (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_DISTRIBUTION_ID || secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID)
+            DEPLOY_CONNECT_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_CONNECT_UI_ROLE || secrets.STAGING_DEPLOY_CONNECT_UI_ROLE) }}
+            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
+            CONNECT_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_BUCKET || secrets.STAGING_CONNECT_UI_BUCKET) }}
+            CONNECT_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_DISTRIBUTION_ID || secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID) }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
