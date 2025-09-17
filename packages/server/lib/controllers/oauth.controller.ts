@@ -1416,10 +1416,14 @@ class OAuthController {
                 );
                 if (createRes.isErr()) {
                     let responseData = null;
-                    const errorWithCause = createRes.error as any;
-                    if (errorWithCause.cause && typeof errorWithCause.cause === 'object' && 'response' in errorWithCause.cause) {
-                        const axiosError = errorWithCause.cause;
-                        responseData = axiosError.response?.data;
+                    if (
+                        createRes.error instanceof Error &&
+                        'cause' in createRes.error &&
+                        createRes.error.cause &&
+                        typeof createRes.error.cause === 'object' &&
+                        'response' in createRes.error.cause
+                    ) {
+                        responseData = (createRes.error.cause as any).response?.data;
                     }
 
                     void logCtx.error('Failed to create credentials', {
