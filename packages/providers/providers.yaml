@@ -11949,8 +11949,13 @@ webex:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
-        base_url: https://webexapis.com/v1
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
     docs: https://docs.nango.dev/integrations/all/webex
 
 whatsapp-business:
