@@ -43,9 +43,9 @@ export const EndUserMapper = {
             displayName: dbEndUser.display_name || null,
             organization: dbEndUser.organization_id
                 ? {
-                    organizationId: dbEndUser.organization_id,
-                    displayName: dbEndUser.organization_display_name || null
-                }
+                      organizationId: dbEndUser.organization_id,
+                      displayName: dbEndUser.organization_display_name || null
+                  }
                 : null,
             tags: dbEndUser.tags || null,
             createdAt: dbEndUser.created_at,
@@ -60,9 +60,9 @@ export const EndUserMapper = {
             tags: endUser.tags || null,
             organization: organization
                 ? {
-                    organizationId: organization.id,
-                    displayName: organization.display_name || null
-                }
+                      organizationId: organization.id,
+                      displayName: organization.display_name || null
+                  }
                 : null
         };
     }
@@ -263,7 +263,7 @@ async function getAndUpdateIfModifiedEndUser(
         ...endUser,
         id: previousEndUser.id,
         accountId: account.id,
-        environmentId: environment.id,
+        environmentId: environment.id
     });
     if (updatedEndUser.isErr()) {
         return updatedEndUser;
