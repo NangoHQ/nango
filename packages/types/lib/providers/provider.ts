@@ -172,10 +172,10 @@ export interface ProviderGithubApp extends BaseProvider {
 
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
-    signature: {
+    signature?: {
         protocol: 'RSA';
     };
-    token: {
+    token?: {
         signing_key: string;
         expires_in_ms: number;
         header: {

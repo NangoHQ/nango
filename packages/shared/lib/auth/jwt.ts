@@ -21,6 +21,13 @@ export function createCredentials({
     dynamicCredentials: Record<string, any>;
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
+        if (!provider.token) {
+            return Err(new AuthCredentialsError('missing_toke_body'));
+        }
+
+        if (!provider.signature) {
+            return Err(new AuthCredentialsError('missing_signature_type'));
+        }
         //Check if the provider is 'ghost-admin' and if privateKey is a string
         if (config.includes('ghost-admin') && typeof dynamicCredentials['privateKey'] === 'string') {
             const privateKeyString = dynamicCredentials['privateKey'];

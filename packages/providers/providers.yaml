@@ -5286,8 +5286,8 @@ google-service-account:
             type: string
             title: Service Account Email Address
             description: The email address of the service account
-            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-            example: 'test@planar-berm-279220.iam.gserviceaccount.com'
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com$'
+            example: 'test@project.iam.gserviceaccount.com'
             doc_section: '#step-1-create-a-service-account'
         scopes:
             type: string
@@ -5307,7 +5307,7 @@ google-service-account:
             type: string
             title: Delegated Access Email Address
             description: The email address of the user for which the application is requesting delegated access
-            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            format: email
             example: 'some.user@example.com'
             optional: true
             doc_section: '#step-2-generate-a-service-account-key'
