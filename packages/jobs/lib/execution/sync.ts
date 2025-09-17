@@ -17,6 +17,7 @@ import {
     errorNotificationService,
     externalWebhookService,
     getApiUrl,
+    getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
     getPlan,
@@ -27,7 +28,7 @@ import {
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, getFrequencyMs, metrics, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
@@ -488,6 +489,16 @@ export async function handleSyncSuccess({
         metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
         metrics.increment(metrics.Types.SYNC_SUCCESS);
 
+        const sync = await getSyncById(nangoProps.syncId);
+        const frequency = sync?.frequency || nangoProps.syncConfig.runs;
+        let frequencyMs = 0;
+        if (frequency) {
+            const res: Result<number> = getFrequencyMs(frequency);
+            if (res.isOk()) {
+                frequencyMs = res.value;
+            }
+        }
+
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.function_executions',
@@ -498,6 +509,7 @@ export async function handleSyncSuccess({
                     connectionId: connection.id,
                     type: 'sync',
                     success: true,
+                    frequencyMs,
                     telemetryBag
                 }
             }
