@@ -1,5 +1,9 @@
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
+export function isValidTheme(theme: string): theme is Theme {
+    return ['light', 'dark', 'system'].includes(theme);
+}
+
 export function setTheme(theme: Theme) {
     document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && getSystemTheme() === 'dark'));
 }

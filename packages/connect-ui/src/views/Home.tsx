@@ -9,10 +9,10 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
+import { isValidTheme, setTheme } from '@/lib/theme';
 import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
-import type { Theme } from '@nangohq/types';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -78,12 +78,13 @@ export const Home: React.FC = () => {
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
         if (isPreview) setIsPreview(isPreview);
-    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
+        if (theme && isValidTheme(theme)) setTheme(theme);
+    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview, theme]);
 
     useEffect(() => {
         if (data) {
             setSession(data.data);
-            const themeOverride = theme && theme in ['light', 'dark', 'system'] ? (theme as Theme) : undefined;
+            const themeOverride = theme && isValidTheme(theme) ? theme : undefined;
             updateSettings(data.data.connectUISettings, themeOverride);
             void navigate({ to: '/integrations' });
         }
