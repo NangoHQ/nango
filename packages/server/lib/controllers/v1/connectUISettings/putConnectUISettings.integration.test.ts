@@ -13,6 +13,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 function getCustomSettings(): ConnectUISettings {
     return {
         showWatermark: false,
+        defaultTheme: 'system',
         theme: {
             light: {
                 primary: '#eeeeee'
@@ -101,6 +102,7 @@ describe(`PUT ${route}`, () => {
         // Update the settings
         const updatedSettings: ConnectUISettings = {
             showWatermark: false,
+            defaultTheme: 'light',
             theme: {
                 light: {
                     primary: '#dddddd'
@@ -134,9 +136,10 @@ describe(`PUT ${route}`, () => {
         const { env } = await seeders.seedAccountEnvAndUser();
 
         const invalidBody = {
-            showWatermark: true
+            showWatermark: true,
+            defaultTheme: 'invalid'
             // Missing theme field
-        } as ConnectUISettings;
+        } as unknown as ConnectUISettings;
 
         const res = await api.fetch(route, {
             method: 'PUT',
@@ -155,6 +158,11 @@ describe(`PUT ${route}`, () => {
                         code: 'invalid_type',
                         message: 'Invalid input: expected object, received undefined',
                         path: ['theme']
+                    },
+                    {
+                        code: 'invalid_value',
+                        message: 'Invalid option: expected one of "light"|"dark"|"system"',
+                        path: ['defaultTheme']
                     }
                 ]
             }
@@ -198,6 +206,11 @@ describe(`PUT ${route}`, () => {
                         code: 'invalid_type',
                         message: 'Invalid input: expected string, received undefined',
                         path: ['theme', 'dark', 'primary']
+                    },
+                    {
+                        code: 'invalid_value',
+                        message: 'Invalid option: expected one of "light"|"dark"|"system"',
+                        path: ['defaultTheme']
                     },
                     {
                         code: 'invalid_type',
