@@ -1,0 +1,119 @@
+---
+title: 'Sellsy'
+sidebarTitle: 'Sellsy'
+description: 'Access the Sellsy API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Sellsy_. Nango doesn't provide a test OAuth app for Sellsy yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Sellsy">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Sellsy. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Sellsy API">
+        Let's make your first request to the Sellsy API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/contacts" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v2/contacts',
+                params: {
+                  maxResults: 10
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Sellsy accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create Sellsy account">
+        If you don't already have one, sign up for an [Sellsy account](https://www.sellsy.com/onboarding/quicktrial?lang=fr).
+      </Step>
+      <Step title="Create an API access">
+        1. Navigate to your [Developer page](https://www.sellsy.com/developer/api-v2).
+        2. Click **Create API access** and select between:
+        - **Private** - API access limited to staffs of your SELLSY account.
+        - **Public** - API access to connect to all SELLSY accounts. A validation of SELLSY is also required.
+        3. Fill in all the required information. For **Redirect URL**, add `https://api.nango.dev/oauth/callback` and select the permissions you want to give to your API access.
+        4. Click **Save**.
+      </Step>
+      <Step title="Obtain your client credentials">
+        1. After creating the app, copy the **Client ID** and **Client Secret** that Sellsy will generate. You'll need these when configuring your integration in Nango.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+    | Scope          | Description                     |
+    | -------------- | ------------------------------- |
+    | contacts.read  | Grants read access to contacts  |
+    | contacts.write | Grants write access to contacts |
+    | companies.read | Grants read access to companies |
+    | orders.read    | Grants read access to orders    |
+    | invoices.read  | Grants read access to invoices  |
+    | tasks.read     | Grants read access to tasks     |
+    | emails.read    | Grants read access to emails    |
+    | files.read     | Grants read access to files     |
+
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Sellsy Website](https://sellsy.com/) |
+    | Developer | [Sellsy API Documentation](https://docs.sellsy.com/api/v2/) |
+    | | [Generate your client Credentials](https://www.sellsy.com/developer/api-v2) |
+    | | [API Versioning](https://docs.sellsy.com/api/v2/#section/Versioning) |
+    | | [Rate limiting](https://docs.sellsy.com/api/v2/#section/Quotas) |
+    | | [API Authentication](https://docs.sellsy.com/api/v2/#section/Authentication) |
+    | | [Scopes list](https://docs.sellsy.com/api/v2/#section/Authentication) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sellsy.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sellsy.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

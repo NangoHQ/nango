@@ -10171,6 +10171,39 @@ setmore:
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
 
+sellsy:
+    display_name: Sellsy
+    auth_mode: OAUTH2
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    authorization_url: https://login.sellsy.com/oauth2/authorization
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy
+
+sellsy-oauth2-cc:
+    display_name: Sellsy (Client Credentials)
+    auth_mode: OAUTH2_CC
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc
+
 servicem8:
     display_name: ServiceM8
     categories:

@@ -1,0 +1,85 @@
+---
+title: 'Sellsy (Client Credentials)'
+sidebarTitle: 'Sellsy (Client Credentials)'
+description: 'Connect to the Sellsy API using client credentials in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Sellsy_.
+      </Step>
+
+      <Step title="Authorize Sellsy (Client Credentials)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Sellsy **Client Id** and **Client Secret**. Later, you'll let your users do the same directly from your app.
+      </Step> 
+
+      <Step title="Call the Sellsy API">
+        Let's make your first request to Sellsy (fetch a list of contacts). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/v2/contacts" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
+
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Fetch a list of contacts from Sellsy
+            const res = await nango.get({
+              endpoint: '/v2/contacts',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
+
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Sellsy accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Sellsy (Client Credentials) using Connect UI](/integrations/all/sellsy-oauth2-cc/connect) |
+    | General | [Sellsy Website](https://sellsy.com/) |
+    | Developer | [Sellsy API Documentation](https://docs.sellsy.com/api/v2/) |
+    | | [Generate your client Credentials](https://www.sellsy.com/developer/api-v2) |
+    | | [API Versioning](https://docs.sellsy.com/api/v2/#section/Versioning) |
+    | | [Rate limiting](https://docs.sellsy.com/api/v2/#section/Quotas) |
+    | | [API Authentication](https://docs.sellsy.com/api/v2/#section/Authentication) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sellsy-oauth2-cc.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sellsy-oauth2-cc.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

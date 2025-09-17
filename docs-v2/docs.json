@@ -678,6 +678,8 @@
               "integrations/all/servicem8",
               "integrations/all/servicenow",
               "integrations/all/setmore",
+              "integrations/all/sellsy",
+              "integrations/all/sellsy-oauth-cc",
               "integrations/all/sharepoint-online",
               "integrations/all/sharepoint-online-v1",
               "integrations/all/sharepoint-online-oauth2-cc",
