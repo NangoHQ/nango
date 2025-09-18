@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 
 import { AppSidebar } from '../components-v2/AppSidebar';
+import TopNavBar from '@/components/TopNavBar';
 import { SidebarProvider } from '@/components-v2/ui/sidebar';
 
 import type { LeftNavBarItems } from '../components/LeftNavBar';
@@ -17,7 +18,10 @@ const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function Da
     return (
         <SidebarProvider className="bg-nav-gradient">
             <AppSidebar />
-            <main className="w-full rounded-tl-sm bg-background-surface p-11">{children}</main>
+            <main className="w-full">
+                <TopNavBar />
+                <div className="w-full rounded-tl-sm bg-background-surface p-11">{children}</div>
+            </main>
         </SidebarProvider>
     );
     // return (

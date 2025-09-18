@@ -17,7 +17,7 @@ export default function NavBar() {
     };
 
     return (
-        <div className="bg-pure-black flex justify-between border-b border-border-gray py-3">
+        <div className="flex justify-between p-2.5">
             <div className="text-white px-6 text-sm">
                 {isHNDemo && (
                     <Info>

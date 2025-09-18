@@ -13,7 +13,6 @@ import {
     SidebarMenuItem
 } from './ui/sidebar';
 import { useStore } from '@/store';
-import { cn } from '@/utils/utils';
 
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -37,12 +36,7 @@ export const AppSidebar: React.FC = () => {
                         <SidebarMenu>
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        className={cn(
-                                            item.url === window.location.pathname && 'bg-background-press text-text-primary hover:bg-background-press'
-                                        )}
-                                    >
+                                    <SidebarMenuButton asChild data-active={item.url === window.location.pathname}>
                                         <a href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
