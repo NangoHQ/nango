@@ -1,9 +1,11 @@
 import { useGlobal } from './store';
-import { setTheme } from './theme';
+import { getEffectiveTheme, setColors, setTheme } from './theme';
 
-import type { ConnectUISettings } from '@nangohq/types';
+import type { ConnectUISettings, Theme } from '@nangohq/types';
 
-export function updateSettings(settings: ConnectUISettings) {
-    setTheme(settings.theme);
+export function updateSettings(settings: ConnectUISettings, themeOverride?: Theme) {
+    const themeToUse = getEffectiveTheme(themeOverride ?? settings.defaultTheme);
+    setTheme(themeToUse);
+    setColors(settings.theme, themeToUse);
     useGlobal.getState().setShowWatermark(settings.showWatermark);
 }

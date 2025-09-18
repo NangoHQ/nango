@@ -1,5 +1,5 @@
 import type { ConnectUIEvent, ConnectUIEventToken } from './types.js';
-import type { MaybePromise } from '@nangohq/types';
+import type { MaybePromise, Theme } from '@nangohq/types';
 
 export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
@@ -33,6 +33,12 @@ export interface ConnectUIProps {
      * @example `en` or `fr`
      */
     lang?: string;
+
+    /**
+     * The theme (light, dark, system) to use for the UI.
+     * Overrides your global setting in the dashboard.
+     */
+    themeOverride?: Theme;
 }
 
 export class ConnectUI {
@@ -46,6 +52,7 @@ export class ConnectUI {
     private onEvent;
     private detectClosedAuthWindow?: boolean | undefined;
     private lang?: string | undefined;
+    private themeOverride?: Theme | undefined;
 
     constructor({
         sessionToken,
@@ -53,7 +60,8 @@ export class ConnectUI {
         apiURL = 'https://api.nango.dev',
         detectClosedAuthWindow,
         onEvent,
-        lang
+        lang,
+        themeOverride
     }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
@@ -61,6 +69,7 @@ export class ConnectUI {
         this.onEvent = onEvent;
         this.detectClosedAuthWindow = detectClosedAuthWindow;
         this.lang = lang;
+        this.themeOverride = themeOverride;
     }
 
     /**
@@ -85,6 +94,9 @@ export class ConnectUI {
         }
         if (this.lang) {
             baseURL.searchParams.append('lang', this.lang);
+        }
+        if (this.themeOverride) {
+            baseURL.searchParams.append('theme', this.themeOverride);
         }
 
         const iframe = document.createElement('iframe');
