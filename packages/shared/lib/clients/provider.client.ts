@@ -1,7 +1,7 @@
 import braintree from 'braintree';
 import qs from 'qs';
 
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
@@ -13,6 +13,7 @@ const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
 const workdayOauthExpiresIn = 3600;
 const bullhornExpiresInMinutes = 10080;
+const bullhornLoginUrl = 'https://rest-west.bullhornstaffing.com/rest-services/login';
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -49,29 +50,13 @@ class ProviderClient {
         }
     }
 
-    public async getToken(
-        config: ProviderConfig,
-        tokenUrl: string,
-        code: string,
-        callBackUrl: string,
-        codeVerifier: string,
-        connectionConfig: Record<string, any>
-    ): Promise<object> {
-        const interpolatedTokenUrl = makeUrl(tokenUrl, connectionConfig);
-
+    public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string, codeVerifier: string): Promise<object> {
         switch (config.provider) {
             case 'braintree':
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'bullhorn':
-                return this.createBullhornSession(
-                    interpolatedTokenUrl.href,
-                    code,
-                    config.oauth_client_id,
-                    config.oauth_client_secret,
-                    callBackUrl,
-                    connectionConfig
-                );
+                return this.createBullhornSession(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'coros':
             case 'coros-sandbox':
                 return this.createCorosToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -113,11 +98,10 @@ class ProviderClient {
         switch (config.provider) {
             case 'bullhorn':
                 return this.refreshBullhornSession(
-                    interpolatedTokenUrl.href,
+                    provider.token_url as string,
                     credentials.refresh_token!,
                     config.oauth_client_id,
-                    config.oauth_client_secret,
-                    connection.connection_config
+                    config.oauth_client_secret
                 );
             case 'braintree':
             case 'braintree-sandbox':
@@ -295,14 +279,7 @@ class ProviderClient {
         }
     }
 
-    private async createBullhornSession(
-        tokenUrl: string,
-        code: string,
-        client_id: string,
-        client_secret: string,
-        redirect_uri: string,
-        connectionConfig: Record<string, any>
-    ): Promise<object> {
+    private async createBullhornSession(tokenUrl: string, code: string, client_id: string, client_secret: string, redirect_uri: string): Promise<object> {
         const tokenParams = {
             client_id,
             client_secret,
@@ -313,9 +290,8 @@ class ProviderClient {
 
         try {
             const response = await axios.post(tokenUrl, null, { params: tokenParams });
-            if (response.status === 200 && response.data && response.data.access_token && response.data.refresh_token) {
+            if (response.status === 200 && response.data?.access_token && response.data?.refresh_token) {
                 const { access_token, refresh_token } = response.data;
-                const sessionUrl = `https://rest-${connectionConfig['subdomain']}.bullhornstaffing.com/rest-services/login`;
 
                 const sessionParams = {
                     version: '*',
@@ -323,35 +299,29 @@ class ProviderClient {
                     ttl: bullhornExpiresInMinutes
                 };
 
-                const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
+                const sessionResponse = await axios.post(bullhornLoginUrl, null, { params: sessionParams });
 
                 if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
-                    return Err(new Error('bullhorn_session_creation_failed', { cause: sessionResponse.data }));
+                    throw new NangoError('bullhorn_session_creation_failed', { cause: sessionResponse.data });
                 }
 
                 const { restUrl, BhRestToken } = sessionResponse.data;
 
-                return Ok({
+                return {
                     restUrl,
                     expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
-                });
+                };
             }
 
-            return Err(new Error('bullhorn_session_request_error', { cause: response.data }));
+            throw new NangoError('bullhorn_session_request_error', { cause: response.data });
         } catch (err: any) {
-            return Err(new Error('bullhorn_session_request_error', { cause: err }));
+            throw new NangoError('bullhorn_session_request_error', { cause: err });
         }
     }
 
-    private async refreshBullhornSession(
-        tokenUrl: string,
-        refresh_token: string,
-        client_id: string,
-        client_secret: string,
-        connectionConfig: Record<string, any>
-    ): Promise<object> {
+    private async refreshBullhornSession(tokenUrl: string, refresh_token: string, client_id: string, client_secret: string): Promise<object> {
         try {
             const tokenParams = {
                 client_id,
@@ -362,10 +332,8 @@ class ProviderClient {
 
             const response = await axios.post(tokenUrl, null, { params: tokenParams });
 
-            if (response.status === 200 && response.data && response.data.access_token && response.data.refresh_token) {
+            if (response.status === 200 && response.data?.access_token && response.data?.refresh_token) {
                 const { access_token, refresh_token } = response.data;
-
-                const sessionUrl = `https://rest-${connectionConfig['subdomain']}.bullhornstaffing.com/rest-services/login`;
 
                 const sessionParams = {
                     version: '*',
@@ -373,25 +341,25 @@ class ProviderClient {
                     ttl: bullhornExpiresInMinutes
                 };
 
-                const sessionResponse = await axios.post(sessionUrl, null, { params: sessionParams });
+                const sessionResponse = await axios.post(bullhornLoginUrl, null, { params: sessionParams });
 
                 if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
-                    return Err(new Error('bullhorn_session_refresh_failed', { cause: sessionResponse.data }));
+                    throw new NangoError('bullhorn_session_refresh_failed', { cause: sessionResponse.data });
                 }
 
                 const { BhRestToken, restUrl } = sessionResponse.data;
 
-                return Ok({
+                return {
                     restUrl,
                     expires_in: bullhornExpiresInMinutes * 60,
                     access_token: BhRestToken,
                     refresh_token
-                });
+                };
             }
 
-            return Err(new Error('bullhorn_session_refresh_error', { cause: response.data }));
+            throw new NangoError('bullhorn_session_refresh_error', { cause: response.data });
         } catch (err: any) {
-            return Err(new Error('bullhorn_session_refresh_error', { cause: err }));
+            throw new NangoError('bullhorn_session_refresh_error', { cause: err });
         }
     }
 

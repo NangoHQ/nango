@@ -1971,8 +1971,8 @@ bullhorn:
     categories:
         - hr
     auth_mode: OAUTH2
-    authorization_url: https://auth-${connectionConfig.subdomain}.bullhornstaffing.com/oauth/authorize
-    token_url: https://auth-${connectionConfig.subdomain}.bullhornstaffing.com/oauth/token
+    authorization_url: https://auth-west.bullhornstaffing.com/oauth/authorize
+    token_url: https://auth-west.bullhornstaffing.com/oauth/token
     disable_pkce: true
     authorization_params:
         response_type: code
@@ -1987,7 +1987,6 @@ bullhorn:
         base_url: ${connectionConfig.restUrl}
         headers:
             bhresttoken: ${accessToken}
-    pre_connection_creation_script: bullhornPreConnectionCreation
     post_connection_script: bullhornPostConnection
     token_response_metadata:
         - restUrl
@@ -2001,11 +2000,6 @@ bullhorn:
             title: ''
             description: ''
             automated: true
-        subdomain:
-            type: string
-            title: ''
-            description: ''
-            automated: true
         username:
             type: string
             title: Username
@@ -2015,6 +2009,7 @@ bullhorn:
             type: string
             title: Password
             description: Your API Password
+            secret: true
             doc_section: '#step-1-obtain-your-api-credentials'
 
 cal-com-v1:
