@@ -12,30 +12,34 @@ export class Processor {
     constructor(orchestratorServiceUrl: string) {
         const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
         this.processors = [
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'sync',
-                maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'action',
-                maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'webhook',
-                maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'on-event',
-                maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
-            })
+            envs.SYNC_PROCESSOR_MAX_CONCURRENCY > 0 &&
+                new OrchestratorProcessor({
+                    handler,
+                    orchestratorClient: orchestratorClient,
+                    groupKey: 'sync',
+                    maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY
+                }),
+            envs.ACTION_PROCESSOR_MAX_CONCURRENCY > 0 &&
+                new OrchestratorProcessor({
+                    handler,
+                    orchestratorClient: orchestratorClient,
+                    groupKey: 'action',
+                    maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY
+                }),
+            envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY > 0 &&
+                new OrchestratorProcessor({
+                    handler,
+                    orchestratorClient: orchestratorClient,
+                    groupKey: 'webhook',
+                    maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY
+                }),
+            envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY > 0 &&
+                new OrchestratorProcessor({
+                    handler,
+                    orchestratorClient: orchestratorClient,
+                    groupKey: 'on-event',
+                    maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
+                }).filter(Boolean)
         ];
     }
 
