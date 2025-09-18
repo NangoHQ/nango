@@ -85,26 +85,22 @@ export const ENVS = z.object({
         )
         .default([
             {
-                groupKeyPattern: 'sync',
+                groupKeyPattern: 'sync*',
                 maxConcurrency: 200
             },
             {
-                groupKeyPattern: 'action',
+                groupKeyPattern: 'action*',
                 maxConcurrency: 200
             },
             {
-                groupKeyPattern: 'webhook',
+                groupKeyPattern: 'webhook*',
                 maxConcurrency: 200
             },
             {
-                groupKeyPattern: 'on-event',
+                groupKeyPattern: 'on-event*',
                 maxConcurrency: 50
             }
         ]),
-    SYNC_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ONEVENT_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
     SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
     ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
     WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
