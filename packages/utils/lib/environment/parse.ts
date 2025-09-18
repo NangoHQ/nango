@@ -72,9 +72,16 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
-    JOB_PROCESSOR_CONFIG: z
+    JOBS_PROCESSOR_CONFIG: z
         .string()
-        .transform((s) => JSON.parse(s))
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`Invalid JSON in JOBS_PROCESSOR_CONFIG`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
         .pipe(
             z.array(
                 z.object({

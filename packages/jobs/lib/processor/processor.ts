@@ -12,7 +12,7 @@ export class Processor {
     constructor(orchestratorServiceUrl: string) {
         const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
 
-        const processorConfigs = envs.JOB_PROCESSOR_CONFIG;
+        const processorConfigs = envs.JOBS_PROCESSOR_CONFIG;
 
         this.processors = processorConfigs
             .filter((config) => config.maxConcurrency > 0)

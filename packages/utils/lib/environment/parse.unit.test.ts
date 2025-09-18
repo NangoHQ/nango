@@ -24,13 +24,19 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });
     });
 
-    it('should parse JOB_PROCESSOR_CONFIG', () => {
+    it('should throw on invalid JSON', () => {
+        expect(() => {
+            parseEnvs(ENVS, { JOB_PROCESSOR_CONFIG: 'invalid' });
+        }).toThrow('Invalid JSON in JOBS_PROCESSOR_CONFIG');
+    });
+
+    it('should parse JOBS_PROCESSOR_CONFIG', () => {
         const res = parseEnvs(ENVS, {
-            JOB_PROCESSOR_CONFIG:
+            JOBS_PROCESSOR_CONFIG:
                 '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
         });
         expect(res).toMatchObject({
-            JOB_PROCESSOR_CONFIG: [
+            JOBS_PROCESSOR_CONFIG: [
                 { groupKeyPattern: 'sync', maxConcurrency: 200 },
                 { groupKeyPattern: 'action', maxConcurrency: 200 },
                 { groupKeyPattern: 'webhook', maxConcurrency: 200 },
