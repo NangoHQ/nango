@@ -26,7 +26,7 @@ describe('parse', () => {
 
     it('should throw on invalid JSON', () => {
         expect(() => {
-            parseEnvs(ENVS, { JOB_PROCESSOR_CONFIG: 'invalid' });
+            parseEnvs(ENVS, { JOBS_PROCESSOR_CONFIG: 'invalid' });
         }).toThrow('Invalid JSON in JOBS_PROCESSOR_CONFIG');
     });
 

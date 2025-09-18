@@ -24,7 +24,7 @@ vi.mock('@nangohq/utils', () => ({
 // Mock the env module
 vi.mock('../env.js', () => ({
     envs: {
-        JOB_PROCESSOR_CONFIG: [
+        JOBS_PROCESSOR_CONFIG: [
             { groupKeyPattern: 'sync*', maxConcurrency: 200 },
             { groupKeyPattern: 'action*', maxConcurrency: 100 },
             { groupKeyPattern: 'webhook*', maxConcurrency: 0 },
