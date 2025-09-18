@@ -12,12 +12,7 @@ export class Processor {
     constructor(orchestratorServiceUrl: string) {
         const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
 
-        const processorConfigs = [
-            { groupKey: 'sync', maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY },
-            { groupKey: 'action', maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY },
-            { groupKey: 'webhook', maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY },
-            { groupKey: 'on-event', maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY }
-        ];
+        const processorConfigs = envs.JOBS_PROCESSOR_CONFIG;
 
         this.processors = processorConfigs
             .filter((config) => config.maxConcurrency > 0)
@@ -26,7 +21,7 @@ export class Processor {
                     new OrchestratorProcessor({
                         handler,
                         orchestratorClient,
-                        groupKey: config.groupKey,
+                        groupKey: config.groupKeyPattern,
                         maxConcurrency: config.maxConcurrency
                     })
             );
