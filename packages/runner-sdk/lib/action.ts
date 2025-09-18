@@ -61,6 +61,7 @@ export abstract class NangoActionBase<
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
     scriptType: NangoProps['scriptType'];
+    startTime: number;
 
     public isCLI: NangoProps['isCLI'];
     public connectionId: string;
@@ -69,9 +70,10 @@ export abstract class NangoActionBase<
 
     public ActionError = ActionError;
 
-    public telemetryBag: TelemetryBag = {
+    protected telemetryBag: TelemetryBag = {
         customLogs: 0,
-        proxyCalls: 0
+        proxyCalls: 0,
+        durationMs: 0
     };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
@@ -85,6 +87,7 @@ export abstract class NangoActionBase<
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
+        this.startTime = Date.now();
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -425,4 +428,9 @@ export abstract class NangoActionBase<
      * Release all locks acquired during the execution of a script.
      */
     public abstract releaseAllLocks(): Promise<void>;
+
+    public getTelemetryBag(): TelemetryBag {
+        this.telemetryBag.durationMs = Date.now() - this.startTime;
+        return this.telemetryBag;
+    }
 }

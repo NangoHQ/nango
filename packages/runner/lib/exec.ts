@@ -121,7 +121,7 @@ export async function exec({
                     }
 
                     const output = await payload.onWebhook(nango as any, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag });
+                    return Ok({ output, telemetryBag: nango.getTelemetryBag() });
                 } else {
                     if (!scriptExports.onWebhookPayloadReceived) {
                         const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
@@ -130,7 +130,7 @@ export async function exec({
                     }
 
                     const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag });
+                    return Ok({ output, telemetryBag: nango.getTelemetryBag() });
                 }
             }
 
@@ -155,7 +155,7 @@ export async function exec({
                     output = await def(nango, inputParams);
                 }
 
-                return Ok({ output, telemetryBag: nango.telemetryBag });
+                return Ok({ output, telemetryBag: nango.getTelemetryBag() });
             }
 
             // Action
@@ -173,7 +173,7 @@ export async function exec({
                 } else {
                     output = await def(nango);
                 }
-                return Ok({ output, telemetryBag: nango.telemetryBag });
+                return Ok({ output, telemetryBag: nango.getTelemetryBag() });
             }
 
             // Sync
@@ -187,10 +187,10 @@ export async function exec({
                 }
 
                 await payload.exec(nango as any);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag });
+                return Ok({ output: true, telemetryBag: nango.getTelemetryBag() });
             } else {
                 await def(nango);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag });
+                return Ok({ output: true, telemetryBag: nango.getTelemetryBag() });
             }
         } catch (err) {
             if (err instanceof ActionError) {
@@ -204,7 +204,7 @@ export async function exec({
                             Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
                         ), // TODO: fix ActionError so payload is always an object
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.getTelemetryBag()
                     })
                 );
             }
@@ -216,7 +216,7 @@ export async function exec({
                         type: err.code,
                         payload: truncateJson(err.payload),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.getTelemetryBag()
                     })
                 );
             } else if (isAxiosError<unknown, unknown>(err)) {
@@ -265,7 +265,7 @@ export async function exec({
                                     body: responseBody
                                 }
                             },
-                            telemetryBag: nango.telemetryBag
+                            telemetryBag: nango.getTelemetryBag()
                         })
                     );
                 } else {
@@ -275,7 +275,7 @@ export async function exec({
                             type: 'script_network_error',
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500,
-                            telemetryBag: nango.telemetryBag
+                            telemetryBag: nango.getTelemetryBag()
                         })
                     );
                 }
@@ -288,7 +288,7 @@ export async function exec({
                         type: 'script_internal_error',
                         payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.getTelemetryBag()
                     })
                 );
             } else {
@@ -313,7 +313,7 @@ export async function exec({
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.getTelemetryBag()
                     })
                 );
             }
