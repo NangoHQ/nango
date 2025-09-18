@@ -78,26 +78,26 @@ export const ENVS = z.object({
         .pipe(
             z.array(
                 z.object({
-                    groupKeyPrefix: z.string(),
+                    groupKeyPattern: z.string(),
                     maxConcurrency: z.coerce.number()
                 })
             )
         )
         .default([
             {
-                groupKeyPrefix: 'sync',
+                groupKeyPattern: 'sync',
                 maxConcurrency: 200
             },
             {
-                groupKeyPrefix: 'action',
+                groupKeyPattern: 'action',
                 maxConcurrency: 200
             },
             {
-                groupKeyPrefix: 'webhook',
+                groupKeyPattern: 'webhook',
                 maxConcurrency: 200
             },
             {
-                groupKeyPrefix: 'on-event',
+                groupKeyPattern: 'on-event',
                 maxConcurrency: 50
             }
         ]),
