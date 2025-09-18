@@ -32,6 +32,7 @@ export type CompileErrorType =
     | 'nango_invalid_function_param'
     | 'nango_invalid_default_export'
     | 'nango_invalid_export_constant'
+    | 'nango_named_export_not_allowed'
     | 'failed_to_build_unknown'
     | 'method_need_await'
     | 'retryon_need_retries'
