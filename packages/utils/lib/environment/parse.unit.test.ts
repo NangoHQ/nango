@@ -23,4 +23,19 @@ describe('parse', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });
     });
+
+    it('should parse JOB_PROCESSOR_CONFIG', () => {
+        const res = parseEnvs(ENVS, {
+            JOB_PROCESSOR_CONFIG:
+                '[{"groupKeyPrefix":"sync","maxConcurrency":200},{"groupKeyPrefix":"action","maxConcurrency":200},{"groupKeyPrefix":"webhook","maxConcurrency":200},{"groupKeyPrefix":"on-event","maxConcurrency":50}]'
+        });
+        expect(res).toMatchObject({
+            JOB_PROCESSOR_CONFIG: [
+                { groupKeyPrefix: 'sync', maxConcurrency: 200 },
+                { groupKeyPrefix: 'action', maxConcurrency: 200 },
+                { groupKeyPrefix: 'webhook', maxConcurrency: 200 },
+                { groupKeyPrefix: 'on-event', maxConcurrency: 50 }
+            ]
+        });
+    });
 });

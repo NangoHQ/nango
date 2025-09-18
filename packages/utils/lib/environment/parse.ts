@@ -72,6 +72,35 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    JOB_PROCESSOR_CONFIG: z
+        .string()
+        .transform((s) => JSON.parse(s))
+        .pipe(
+            z.array(
+                z.object({
+                    groupKeyPrefix: z.string(),
+                    maxConcurrency: z.coerce.number()
+                })
+            )
+        )
+        .default([
+            {
+                groupKeyPrefix: 'sync',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPrefix: 'action',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPrefix: 'webhook',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPrefix: 'on-event',
+                maxConcurrency: 50
+            }
+        ]),
     SYNC_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
     ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
     WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
