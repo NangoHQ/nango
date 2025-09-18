@@ -43,7 +43,7 @@ exports.up = async function (knex) {
     }));
 
     if (settingsToInsert.length > 0) {
-        await knex('connect_ui_settings').insert(settingsToInsert);
+        await knex('connect_ui_settings').insert(settingsToInsert).onConflict('environment_id').ignore();
     }
 };
 
