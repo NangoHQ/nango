@@ -11,36 +11,25 @@ export class Processor {
 
     constructor(orchestratorServiceUrl: string) {
         const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
-        this.processors = [
-            envs.SYNC_PROCESSOR_MAX_CONCURRENCY > 0 &&
-                new OrchestratorProcessor({
-                    handler,
-                    orchestratorClient: orchestratorClient,
-                    groupKey: 'sync',
-                    maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY
-                }),
-            envs.ACTION_PROCESSOR_MAX_CONCURRENCY > 0 &&
-                new OrchestratorProcessor({
-                    handler,
-                    orchestratorClient: orchestratorClient,
-                    groupKey: 'action',
-                    maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY
-                }),
-            envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY > 0 &&
-                new OrchestratorProcessor({
-                    handler,
-                    orchestratorClient: orchestratorClient,
-                    groupKey: 'webhook',
-                    maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY
-                }),
-            envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY > 0 &&
-                new OrchestratorProcessor({
-                    handler,
-                    orchestratorClient: orchestratorClient,
-                    groupKey: 'on-event',
-                    maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
-                })
-        ].filter(Boolean) as OrchestratorProcessor[];
+
+        const processorConfigs = [
+            { groupKey: 'sync', maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY },
+            { groupKey: 'action', maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY },
+            { groupKey: 'webhook', maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY },
+            { groupKey: 'on-event', maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY }
+        ];
+
+        this.processors = processorConfigs
+            .filter((config) => config.maxConcurrency > 0)
+            .map(
+                (config) =>
+                    new OrchestratorProcessor({
+                        handler,
+                        orchestratorClient,
+                        groupKey: config.groupKey,
+                        maxConcurrency: config.maxConcurrency
+                    })
+            );
     }
 
     start() {
