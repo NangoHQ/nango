@@ -40,7 +40,7 @@ export class Processor {
                     groupKey: 'on-event',
                     maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
                 })
-        ].filter(Boolean);
+        ].filter(Boolean) as OrchestratorProcessor[];
     }
 
     start() {
