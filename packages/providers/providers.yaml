@@ -10203,6 +10203,16 @@ sellsy-oauth2-cc:
     proxy:
         base_url: https://api.sellsy.com
     docs: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Client ID
+        client_secret:
+            type: string
+            title: Secret shopper
+            description: Your Secret shopper
 
 servicem8:
     display_name: ServiceM8
