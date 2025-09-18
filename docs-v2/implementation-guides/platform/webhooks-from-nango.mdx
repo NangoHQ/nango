@@ -159,7 +159,7 @@ Payload received following a connection creation:
     "success": true,
     "endUser": { 
         "endUserId": "<your-end-user-id>", 
-        "organizationId": "<your-organization-id>"
+        "tags": { "organizationId": "<your-organization-id>" }
     }
 }
 ```
@@ -167,7 +167,7 @@ Payload received following a connection creation:
 <Warning>
   Processing webhooks with `"type": "auth"` and `"operation": "creation"` is **necessary**. After a connection is created, these webhooks give you the generated connection ID which lets you access the connection later on.
 
-  Use the values of `endUser.endUserId` (and optionally `endUser.organizationId`) to reconcile and save the connection ID with the user/org who initiated the connection.
+  Use the values of `endUser.endUserId` (and optionally `endUser.tags`) to reconcile and save the connection ID with the user/org who initiated the connection.
 </Warning>
 
 All `authMode` values can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/auth/api.ts). The `authMode` value depends on the `provider` value.
@@ -192,7 +192,7 @@ Payload received following a refresh token error:
     "success": false,
     "endUser": { 
         "endUserId": "<your-end-user-id>", 
-        "organizationId": "<your-organization-id>"
+        "tags": { "organizationId": "<your-organization-id>" }
     },
     "error": {
         "type": "<string>",

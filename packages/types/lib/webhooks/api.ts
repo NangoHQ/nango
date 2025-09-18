@@ -56,7 +56,7 @@ export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     /**
      * Only presents if the connection happened with a session token
      */
-    endUser?: { endUserId: string; organizationId?: string | undefined } | undefined;
+    endUser?: { endUserId: string; organizationId?: string | undefined; tags: Record<string, string> } | undefined;
 }
 
 export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {
