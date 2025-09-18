@@ -33,7 +33,7 @@ export class Processor {
     }
 
     start() {
-        logger.info('Starting task processors');
+        logger.info(`Starting ${this.processors.length} task processors`);
         this.processors.forEach((p) => p.start());
     }
 
