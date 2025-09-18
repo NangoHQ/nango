@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 
 import { bundleFile, compileAll } from './compile.js';
 import { CompileError } from './utils.js';
@@ -61,17 +61,15 @@ describe('edge cases', () => {
 
     it('should catch multiple exports', async () => {
         const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/multipleExports.js'), projectRootPath: fixturesPath });
-        if (result.isErr()) {
-            expect(result.error).toEqual(
-                new CompileError(
-                    'nango_named_export_not_allowed',
-                    25,
-                    "Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent are permitted.",
-                    './zero/cases/multipleExports.ts'
-                )
-            );
-        } else {
-            throw new Error('should be an error');
-        }
+        assert(result.isErr(), 'Should be an error');
+
+        expect(result.error).toEqual(
+            new CompileError(
+                'nango_named_export_not_allowed',
+                25,
+                "Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent are permitted.",
+                './zero/cases/multipleExports.ts'
+            )
+        );
     });
 });

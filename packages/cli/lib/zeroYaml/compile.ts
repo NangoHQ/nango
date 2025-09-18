@@ -321,6 +321,9 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+
 /**
  * This plugin is used to remove the create wrappers from the exports.
  *
@@ -480,7 +483,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
                     ExportNamedDeclaration(astPath) {
                         // Skip internally transformed exports
-                        if ((astPath.node as any).__transformedByRemoveCreateWrappers) {
+                        if ((astPath.node as AugmentedExport).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
@@ -501,17 +504,21 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             return; // Allow re-exports
                         }
 
+                        const namedExportError = (exportedName: string) => {
+                            throw new CompileError(
+                                'nango_named_export_not_allowed',
+                                lineNumber,
+                                `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
+                            );
+                        };
+
                         // Check if any exported specifiers are not in allowedExports
                         if (node.specifiers) {
                             for (const specifier of node.specifiers) {
                                 if (t.isExportSpecifier(specifier) && t.isIdentifier(specifier.exported)) {
                                     const exportedName = specifier.exported.name;
                                     if (!allowedExports.includes(exportedName)) {
-                                        throw new CompileError(
-                                            'nango_named_export_not_allowed',
-                                            lineNumber,
-                                            `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
-                                        );
+                                        namedExportError(exportedName);
                                     }
                                 }
                             }
@@ -533,18 +540,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
                             for (const exportedName of exportedNames) {
                                 if (!allowedExports.includes(exportedName)) {
-                                    throw new CompileError(
-                                        'nango_named_export_not_allowed',
-                                        lineNumber,
-                                        `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
-                                    );
+                                    namedExportError(exportedName);
                                 }
                             }
                         }
                     },
 
                     ExportDefaultDeclaration(astPath) {
-                        if ((astPath.node as any).__transformedByRemoveCreateWrappers) {
+                        if ((astPath.node as AugmentedExportDefault).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
@@ -585,8 +588,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             );
                             // Insert: export default <varName>;
                             const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
-                            (exportConst as any).__transformedByRemoveCreateWrappers = true;
-                            (exportDefault as any).__transformedByRemoveCreateWrappers = true;
+                            (exportConst as AugmentedExport).__transformedByRemoveCreateWrappers = true;
+                            (exportDefault as AugmentedExportDefault).__transformedByRemoveCreateWrappers = true;
                             astPath.replaceWithMultiple([exportConst, exportDefault]);
                         }
                         // Case 2: export default action; (or sync/onEvent)
