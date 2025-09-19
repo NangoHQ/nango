@@ -527,6 +527,8 @@
               "integrations/all/jumpcloud",
               "integrations/all/kandji",
               "integrations/all/keap",
+              "integrations/all/kintone",
+              "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
               "integrations/all/knowbe4",
               "integrations/all/klaviyo",

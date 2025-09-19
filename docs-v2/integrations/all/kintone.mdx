@@ -1,0 +1,125 @@
+---
+title: 'Kintone'
+sidebarTitle: 'Kintone'
+description: 'Access the Kintone API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Kintone_. Nango doesn't provide a test OAuth app for Kintone yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Kintone">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Kintone. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Kintone API">
+        Let's make your first request to the Kintone API (fetch records from an app). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/k/v1/record.json?app={appId}" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/k/v1/record.json',
+                params: {
+                  app: {appId}
+                }
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        <Note>
+        Replace `{appId}` with the actual ID of the Kintone app you want to fetch records from. You can find the app ID in your Kintone app's URL: `https://{subdomain}.kintone.com/k/{appId}/`
+        </Note>
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Kintone accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Kintone account">
+        If you don't already have one, sign up for a [Kintone account](https://www.kintone.com/en-us/signup/).
+      </Step>
+      <Step title="Create a new OAuth Client">
+        1. Log in to your Kintone account, click the gear icon on the upper right menu of Kintone and select **User & System Administration**.
+        2. From the left navbar, go to **System Administration** > **Integrations**, and click on **OAuth**.
+        3. Fill in all the required information. For **Redirect endpoint** enter `https://api.nango.dev/oauth/callback`.
+        4. Click **Save**. Your **Client ID** and **Client Secret** will be generated automatically. Copy these credentials as you'll need them when configuring your integration in Nango.
+      </Step>
+       <Step title="Configure users">
+         <Note> In order for a user to use the OAuth client, they must be explicitly granted permission to interact with it. By default, no users have access to a newly created OAuth client.</Note>
+         
+         1. Click on **Configure users** next to your newly created OAuth client.
+         2. From the Configure Users settings screen, select the user(s) who will be able to interact with the client to process the OAuth flow, then click **Save**.
+         
+         <Tip>When new users are created in Kintone, their checkbox for any OAuth client is unchecked by default, meaning the OAuth client is disabled for them until manually enabled.</Tip>
+       </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+
+    | Scope                    | Description                           |
+    | ----------------------   | ------------------------------------- |
+    | `k:app_record:read`      | Read records and their related data   |
+    | `k:app_record:write`     | Create, update, and delete records    |
+    | `k:app_settings:read`    | Read app configuration and settings   |
+    | `k:app_settings:write`   | Create and update app configuration   |
+    | `k:file:read`            | Download files                        |
+    | `k:file:write`           | Upload files                          |
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - |
+    | Authorization | [Guide to connect to Kintone using Connect UI](/integrations/all/kintone/connect) |
+    | General | [Kintone Website](https://www.kintone.com/en-us/) |
+    | | [Kintone Developer Program](https://kintone.dev/en/) |
+    | Developer | [How to Add an OAuth client](https://kintone.dev/en/docs/common/authentication/how-to-add-oauth-clients/) |
+    | | [OAuth Documentation](https://kintone.dev/en/docs/common/authentication/how-to-add-oauth-clients/#authorization-request) |
+    | | [OAuth Permission Scopes](https://kintone.dev/en/docs/common/authentication/oauth-permission-scope/) |
+    | | [Kintone REST API Documentation](https://kintone.dev/en/docs/kintone/rest-api/overview/kintone-rest-api-overview/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/kintone.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Up to 20 OAuth clients can be registered, and each client can generate up to 10 refresh tokens per user.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/kintone.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

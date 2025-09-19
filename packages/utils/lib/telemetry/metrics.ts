@@ -101,6 +101,7 @@ export enum Types {
     CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
+    RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 

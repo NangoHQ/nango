@@ -47,7 +47,8 @@
                         "JWT",
                         "BILL",
                         "TWO_STEP",
-                        "SIGNATURE"
+                        "SIGNATURE",
+                        "MCP_OAUTH2"
                     ]
                 },
                 "authorization_method": {
@@ -139,6 +140,7 @@
                             "knowledge-base",
                             "legal",
                             "marketing",
+                            "mcp",
                             "other",
                             "payment",
                             "popular",
@@ -374,6 +376,9 @@
                             "enum": ["refresh_token"]
                         }
                     }
+                },
+                "registration_url": {
+                    "type": "string"
                 },
                 "request_params": {
                     "type": "object",

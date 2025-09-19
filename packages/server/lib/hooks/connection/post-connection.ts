@@ -46,10 +46,10 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
             await handler(internalNango);
             void logCtx.info(`post-connection-creation script succeeded`);
             await logCtx.success();
-            metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS);
+            metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS, 1, { provider: providerName });
         }
     } catch (err) {
-        metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);
+        metrics.increment(metrics.Types.POST_CONNECTION_FAILURE, 1, { provider: providerName });
         void logCtx?.error('Post-connection script failed', { error: err });
         await logCtx?.failed();
     }

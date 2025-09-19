@@ -2,7 +2,7 @@ import type { NangoModelField } from '@nangohq/types';
 import type * as z from 'zod';
 
 export function zodToNangoModelField(name: string, schema: z.core.$ZodType): NangoModelField {
-    const optional = (schema as z.ZodType).isOptional();
+    const optional = (schema as z.ZodType).safeParse(undefined).success;
 
     if (isZodObject(schema)) {
         const values: NangoModelField['value'] = [];
@@ -28,7 +28,7 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
     } else if (isZodNull(schema)) {
         return { name, value: null, tsType: true, optional };
     } else if (isZodNullable(schema)) {
-        return { ...zodToNangoModelField(name, schema.def.innerType), optional: true };
+        return { ...zodToNangoModelField(name, schema.def.innerType), optional };
     } else if (isZodEnum(schema)) {
         const values: NangoModelField['value'] = [];
         let i = 0;

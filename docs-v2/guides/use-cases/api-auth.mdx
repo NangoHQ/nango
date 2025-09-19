@@ -77,3 +77,8 @@ Watch a quick demo of the API auth flow and the detailed logs it creates.
 
 ### OAuth token refresh & validity
 
+If the external API requires OAuth access tokens to be refreshed, Nango will do this automatically for you before the token expires. If the refresh fails, it can [inform your app with a webhook](/guides/platform/webhooks-from-nango), and you can ask the user to reconnect.
+
+Some APIs revoke refresh tokens that are unused. To avoid this, Nango refreshes each access token at least once every 24h.
+
+Revoked access tokens, and refresh failures, happen to all integrations. Read our [best practice guide on handling revoked access tokens](/implementation-guides/platform/common-issues#token-refresh-error-from-the-external-api) and make sure you [implement the re-authentication flow](/implementation-guides/api-auth/implement-api-auth#6-re-authorize-an-existing-connection) so your users can re-authenticate broken connections.

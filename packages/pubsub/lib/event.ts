@@ -25,7 +25,7 @@ export type UserCreatedEvent = EventBase<
 
 export type UsageEvent = EventBase<
     'usage',
-    'usage.monthly_active_records' | 'usage.actions' | 'usage.connections',
+    'usage.monthly_active_records' | 'usage.actions' | 'usage.connections' | 'usage.function_executions' | 'usage.proxy',
     {
         value: number;
         properties: {

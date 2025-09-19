@@ -2,6 +2,14 @@
 
 @import 'tailwindcss';
 
+@import 'tw-animate-css';
+
+/*
+  ---break---
+*/
+
+@custom-variant dark (&:is(.dark *));
+
 @plugin '@tailwindcss/forms';
 
 @theme {

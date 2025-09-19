@@ -203,7 +203,8 @@ export async function exec({
                         payload: truncateJson(
                             Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
                         ), // TODO: fix ActionError so payload is always an object
-                        status: 500
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
                     })
                 );
             }
@@ -214,7 +215,8 @@ export async function exec({
                     new ExecutionError({
                         type: err.code,
                         payload: truncateJson(err.payload),
-                        status: 500
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
                     })
                 );
             } else if (isAxiosError<unknown, unknown>(err)) {
@@ -262,7 +264,8 @@ export async function exec({
                                     headers,
                                     body: responseBody
                                 }
-                            }
+                            },
+                            telemetryBag: nango.telemetryBag
                         })
                     );
                 } else {
@@ -271,7 +274,8 @@ export async function exec({
                         new ExecutionError({
                             type: 'script_network_error',
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
-                            status: 500
+                            status: 500,
+                            telemetryBag: nango.telemetryBag
                         })
                     );
                 }
@@ -283,7 +287,8 @@ export async function exec({
                     new ExecutionError({
                         type: 'script_internal_error',
                         payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
-                        status: 500
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
                     })
                 );
             } else {
@@ -307,7 +312,8 @@ export async function exec({
                             message: tmp.message,
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
-                        status: 500
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
                     })
                 );
             }

@@ -163,7 +163,7 @@ export function fieldToTypescript({ field }: { field: NangoModelField }): string
         output = `${field.value}${field.array ? '[]' : ''}`;
     }
 
-    if (field.optional) {
+    if (field.optional && !output.includes('undefined')) {
         output = `${output} | undefined`;
     }
 

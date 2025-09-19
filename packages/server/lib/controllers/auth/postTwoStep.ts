@@ -23,6 +23,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/aut
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
@@ -82,6 +83,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     }
 
     let logCtx: LogContext | undefined;
+    let config: ProviderConfig | null = null;
 
     try {
         logCtx =
@@ -103,7 +105,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             }
         }
 
-        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             void logCtx.error('Unknown provider config');
             await logCtx.failed();
@@ -234,7 +236,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -266,7 +268,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TWO_STEP' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TWO_STEP', ...(config ? { provider: config.provider } : {}) });
 
         next(err);
     }

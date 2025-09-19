@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
@@ -40,7 +40,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
 
     let integration: IntegrationConfig;
     if (body.useSharedCredentials) {
@@ -52,6 +52,9 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
             return;
         }
         integration = result.value;
+    } else if (provider.auth_mode === 'MCP_OAUTH2') {
+        const client_id = await mcpClient.registerClientId({ provider, environment, team: account });
+        integration = await configService.createEmptyProviderConfigWithCreds(body.provider, environment.id, provider, client_id, '');
     } else {
         integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
     }

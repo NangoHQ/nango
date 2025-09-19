@@ -41,7 +41,6 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
 
     res.status(200).send({
         connections: connections.map((data) => {
-            // TODO: return end_user
             return connectionSimpleToPublicApi({
                 data: data.connection,
                 activeLog: data.active_logs,

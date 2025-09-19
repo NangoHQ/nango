@@ -1740,11 +1740,8 @@ const { data } = await nango.createConnectSession({
   end_user: {
     id: '<END-USER-ID>',
     email: '<END-USER-EMAIL>',
-    display_name: '<END-USER-NAME>'
-  },
-  organization: {
-    id: '<ORGANIZATION-ID>',
-    display_name: '<ORGANIZATION-NAME>'
+    display_name: '<END-USER-NAME>',
+    tags: { organizationId: '<ORGANIZATION-ID>' }
   },
   allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
   integrations_config_defaults: {
@@ -1825,11 +1822,8 @@ const { data } = await nango.createReconnectSession({
   end_user: {
     id: '<END-USER-ID>',
     email: '<END-USER-EMAIL>',
-    display_name: '<END-USER-NAME>'
-  },
-  organization: {
-    id: '<ORGANIZATION-ID>',
-    display_name: '<ORGANIZATION-NAME>'
+    display_name: '<END-USER-NAME>',
+    tags: { organizationId: '<ORGANIZATION-ID>' }
   },
   integrations_config_defaults: {
     <INTEGRATION-ID-1>: {

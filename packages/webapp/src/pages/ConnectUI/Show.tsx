@@ -1,3 +1,4 @@
+import { IconHelpCircle, IconMoon, IconSun } from '@tabler/icons-react';
 import { useForm } from '@tanstack/react-form';
 import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
@@ -6,7 +7,9 @@ import { ColorInput, isValidCSSColor } from './components/ColorInput';
 import { ConnectUIPreview } from './components/ConnectUIPreview';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import LinkWithIcon from '../../components/LinkWithIcon';
-import { Checkbox } from '../../components/ui/Checkbox';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/Select';
+import { Switch } from '../../components/ui/Switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
 import { Button } from '../../components/ui/button/Button';
 import { useConnectUISettings, useUpdateConnectUISettings } from '../../hooks/useConnectUISettings';
@@ -16,7 +19,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
-import type { ConnectUIColorPalette } from '@nangohq/types';
+import type { ConnectUIColorPalette, Theme } from '@nangohq/types';
 
 // Utility type to generate all possible theme paths
 type ThemePath = {
@@ -25,28 +28,15 @@ type ThemePath = {
 
 const lightThemeFields: { name: ThemePath; label: string }[] = [
     {
-        name: 'theme.light.backgroundSurface',
-        label: 'Background Surface'
-    },
-    {
-        name: 'theme.light.backgroundElevated',
-        label: 'Background Elevated'
-    },
-    {
         name: 'theme.light.primary',
-        label: 'Primary'
-    },
+        label: 'Primary color'
+    }
+];
+
+const darkThemeFields: { name: ThemePath; label: string }[] = [
     {
-        name: 'theme.light.onPrimary',
-        label: 'On Primary'
-    },
-    {
-        name: 'theme.light.textPrimary',
-        label: 'Text Primary'
-    },
-    {
-        name: 'theme.light.textSecondary',
-        label: 'Text Secondary'
+        name: 'theme.dark.primary',
+        label: 'Primary color'
     }
 ];
 
@@ -68,7 +58,7 @@ export const ConnectUISettingsPage = () => {
                     connectUIPreviewRef.current.sendSettingsChanged(state.formApi.state.values);
                 }
             },
-            onChangeDebounceMs: 500
+            onChangeDebounceMs: 100
         },
         onSubmit: (state) => {
             updateConnectUISettings(state.formApi.state.values, {
@@ -77,6 +67,7 @@ export const ConnectUISettingsPage = () => {
                         title: 'Connect UI settings updated',
                         variant: 'success'
                     });
+                    state.formApi.reset();
                 },
                 onError: () => {
                     toast.toast({
@@ -89,41 +80,79 @@ export const ConnectUISettingsPage = () => {
     });
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.ConnectUI} className="p-6 w-full">
+        <DashboardLayout selectedItem={LeftNavBarItems.ConnectUI} className="w-full h-full">
             <Helmet>
                 <title>Connect UI - Nango</title>
             </Helmet>
-            <div className="flex flex-col h-full">
-                <h2 className="mb-8 text-3xl font-semibold tracking-tight text-white">Connect UI Settings</h2>
-                <div className="flex justify-center gap-8">
-                    {/** Form */}
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            void form.handleSubmit();
-                        }}
-                        className="flex flex-col gap-8 mr-24"
-                    >
-                        {/** Other settings */}
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-bold text-grayscale-100">Settings</h2>
-                            <form.Field name="showWatermark">
-                                {(field) => (
+            <div className="flex w-full h-full min-w-[1000px] overflow-w-auto">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void form.handleSubmit();
+                    }}
+                    className="w-full flex flex-col gap-10 p-11 border-r border-grayscale-4"
+                >
+                    <h2 className="text-2xl font-bold text-white">Connect UI Settings</h2>
+                    <div className="flex flex-col gap-6">
+                        <form.Field name="defaultTheme">
+                            {(field) => (
+                                <div className="w-full flex gap-2 justify-between items-center">
+                                    <label htmlFor={field.name} className="text-sm font-medium text-grayscale-300 flex items-center gap-1">
+                                        Default theme{' '}
+                                        <SimpleTooltip
+                                            side="right"
+                                            tooltipContent={
+                                                <p>
+                                                    You can override the theme per session from the{' '}
+                                                    <LinkWithIcon to="https://docs.nango.dev/reference/sdks/frontend#param-theme-override" type="external">
+                                                        Frontend SDK
+                                                    </LinkWithIcon>
+                                                </p>
+                                            }
+                                        >
+                                            <IconHelpCircle className="w-4 h-4" />
+                                        </SimpleTooltip>
+                                    </label>
+                                    <div className="flex items-center">
+                                        <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
+                                            <SelectTrigger className="w-[180px] text-text-primary text-sm">
+                                                <SelectValue placeholder="Default theme" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="system">System</SelectItem>
+                                                <SelectItem value="light">Light</SelectItem>
+                                                <SelectItem value="dark">Dark</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    {!environment.plan?.can_disable_connect_ui_watermark && (
+                                        <TooltipContent className="text-grayscale-300">
+                                            Disabling the watermark is only available for Growth plans.{' '}
+                                            <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
+                                        </TooltipContent>
+                                    )}
+                                </div>
+                            )}
+                        </form.Field>
+
+                        <form.Field name="showWatermark">
+                            {(field) => (
+                                <div className="flex gap-5 items-center">
+                                    <label htmlFor={field.name} className={`text-sm font-medium text-grayscale-300`}>
+                                        Nango watermark
+                                    </label>
                                     <Tooltip delayDuration={0}>
                                         <TooltipTrigger asChild>
-                                            <div className="flex gap-2 items-center">
-                                                <Checkbox
+                                            <div className="flex items-center">
+                                                <Switch
                                                     id={field.name}
                                                     name={field.name}
                                                     checked={field.state.value}
-                                                    onCheckedChange={(checked) => field.handleChange(checked === 'indeterminate' ? true : checked)}
+                                                    onCheckedChange={(checked) => field.handleChange(checked)}
                                                     onBlur={field.handleBlur}
                                                     disabled={!environment.plan?.can_disable_connect_ui_watermark}
                                                 />
-                                                <label htmlFor={field.name} className={`text-sm font-medium text-grayscale-300`}>
-                                                    Show watermark
-                                                </label>
                                             </div>
                                         </TooltipTrigger>
                                         {!environment.plan?.can_disable_connect_ui_watermark && (
@@ -133,72 +162,122 @@ export const ConnectUISettingsPage = () => {
                                             </TooltipContent>
                                         )}
                                     </Tooltip>
-                                )}
-                            </form.Field>
-                        </div>
-
-                        {/** Theme */}
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-bold text-grayscale-100">Theme</h2>
-                            <div className="flex gap-8 h-fit">
-                                <div className="flex flex-col gap-4">
-                                    {lightThemeFields.map((themeField) => (
-                                        <Tooltip key={themeField.name} delayDuration={0}>
-                                            <TooltipTrigger asChild>
-                                                <form.Field
-                                                    name={themeField.name}
-                                                    validators={{
-                                                        onChange: ({ value }: { value: string }) => (!isValidCSSColor(value) ? 'Invalid CSS color' : undefined)
-                                                    }}
-                                                >
-                                                    {(field) => (
-                                                        <div className="flex flex-col gap-1">
-                                                            <ColorInput
-                                                                value={field.state.value}
-                                                                label={themeField.label}
-                                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                                onBlur={field.handleBlur}
-                                                                disabled={!environment.plan?.can_customize_connect_ui_theme}
-                                                            />
-                                                            {!field.state.meta.isValid && (
-                                                                <em role="alert" className="text-sm text-red-500">
-                                                                    {field.state.meta.errors.join(', ')}
-                                                                </em>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </form.Field>
-                                            </TooltipTrigger>
-                                            {!environment.plan?.can_customize_connect_ui_theme && (
-                                                <TooltipContent side="bottom" className="text-grayscale-300">
-                                                    Customizing the theme is only available for Growth plans.{' '}
-                                                    <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
-                                                </TooltipContent>
-                                            )}
-                                        </Tooltip>
-                                    ))}
                                 </div>
+                            )}
+                        </form.Field>
+                    </div>
+
+                    <div className="flex flex-col border border-grayscale-4">
+                        <div className="flex justify-between items-center p-4 py-3 border-b border-grayscale-4">
+                            <div className="w-full">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-1.5">
+                                    Light Theme <IconSun className="w-5 h-5" />
+                                </h3>
+                            </div>
+                            <div className="w-full">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-1.5">
+                                    Dark Theme <IconMoon className="w-5 h-5" />
+                                </h3>
                             </div>
                         </div>
+                        <div className="flex justify-between">
+                            <div className="w-full flex flex-col gap-6 p-4">
+                                {lightThemeFields.map((themeField) => (
+                                    <form.Field
+                                        key={themeField.name}
+                                        name={themeField.name}
+                                        validators={{
+                                            onChange: ({ value }: { value: string }) => (!isValidCSSColor(value) ? 'Invalid CSS color' : undefined)
+                                        }}
+                                    >
+                                        {(field) => (
+                                            <Tooltip delayDuration={0}>
+                                                <TooltipTrigger asChild>
+                                                    <div className="flex flex-col gap-1">
+                                                        <ColorInput
+                                                            label={themeField.label}
+                                                            value={field.state.value}
+                                                            onChange={(e) => field.handleChange(e.target.value)}
+                                                            onBlur={field.handleBlur}
+                                                            disabled={!environment.plan?.can_customize_connect_ui_theme}
+                                                        />
+                                                        {!field.state.meta.isValid && (
+                                                            <em role="alert" className="text-sm text-red-500">
+                                                                {field.state.meta.errors.join(', ')}
+                                                            </em>
+                                                        )}
+                                                    </div>
+                                                </TooltipTrigger>
+                                                {!environment.plan?.can_customize_connect_ui_theme && (
+                                                    <TooltipContent side="bottom" className="text-grayscale-300">
+                                                        Customizing the theme is only available for Growth plans.{' '}
+                                                        <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
+                                                    </TooltipContent>
+                                                )}
+                                            </Tooltip>
+                                        )}
+                                    </form.Field>
+                                ))}
+                            </div>
+                            <div className="w-full flex flex-col gap-6 p-4">
+                                {darkThemeFields.map((themeField) => (
+                                    <form.Field
+                                        key={themeField.name}
+                                        name={themeField.name}
+                                        validators={{
+                                            onChange: ({ value }: { value: string }) => (!isValidCSSColor(value) ? 'Invalid CSS color' : undefined)
+                                        }}
+                                    >
+                                        {(field) => (
+                                            <Tooltip delayDuration={0}>
+                                                <TooltipTrigger asChild>
+                                                    <div className="flex flex-col gap-1">
+                                                        <ColorInput
+                                                            label={themeField.label}
+                                                            value={field.state.value}
+                                                            onChange={(e) => field.handleChange(e.target.value)}
+                                                            onBlur={field.handleBlur}
+                                                            disabled={!environment.plan?.can_customize_connect_ui_theme}
+                                                        />
+                                                        {!field.state.meta.isValid && (
+                                                            <em role="alert" className="text-sm text-red-500">
+                                                                {field.state.meta.errors.join(', ')}
+                                                            </em>
+                                                        )}
+                                                    </div>
+                                                </TooltipTrigger>
+                                                {!environment.plan?.can_customize_connect_ui_theme && (
+                                                    <TooltipContent side="bottom" className="text-grayscale-300">
+                                                        Customizing the theme is only available for Growth plans.{' '}
+                                                        <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
+                                                    </TooltipContent>
+                                                )}
+                                            </Tooltip>
+                                        )}
+                                    </form.Field>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
-                        {/** Save Button */}
-                        <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
-                            {([canSubmit, isDirty]) => (
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    size="md"
-                                    className="self-end"
-                                    disabled={!canSubmit || !isDirty || isUpdatingConnectUISettings}
-                                >
-                                    {isUpdatingConnectUISettings ? 'Saving...' : 'Save settings'}
-                                </Button>
-                            )}
-                        </form.Subscribe>
-                    </form>
-
-                    {/** Preview */}
-                    <ConnectUIPreview ref={connectUIPreviewRef} className="h-auto w-[500px]" />
+                    {/** Save Button */}
+                    <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
+                        {([canSubmit, isDirty]) => (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="md"
+                                className="self-start"
+                                disabled={!canSubmit || !isDirty}
+                                isLoading={isUpdatingConnectUISettings}
+                            >
+                                Save settings
+                            </Button>
+                        )}
+                    </form.Subscribe>
+                </form>
+                <div className="w-full h-full p-11 flex justify-center items-center">
+                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[500px] max-h-[700px]" />
                 </div>
             </div>
         </DashboardLayout>
