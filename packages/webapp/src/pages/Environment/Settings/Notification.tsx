@@ -69,7 +69,7 @@ export const NotificationSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Notification Settings</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-10 w-3/5">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
                 <div className="flex flex-col gap-4">
                     <Link to="https://docs.nango.dev/implementation-guides/platform/webhooks-from-nango" className="flex gap-2 items-center" target="_blank">
                         <label className="font-semibold">Webhooks URLs</label> <IconExternalLink stroke={1} size={18} />
