@@ -2,9 +2,9 @@ import * as z from 'zod';
 
 import { configService } from '@nangohq/shared';
 
-import { auth } from '../../../middlewares/auth.js';
-import { resNotFound, resServerError, schemaNotFound, schemaServerError } from '../../../schemas/errors.js';
-import { formatIntegration, schemaIntegration } from '../../../schemas/integrations.js';
+import { auth } from '../../../../middlewares/auth.js';
+import { resNotFound, resServerError, schemaNotFound, schemaServerError } from '../../../../schemas/errors.js';
+import { formatIntegration, schemaIntegration } from '../../../../schemas/integrations.js';
 
 import type { FastifyPluginCallback } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -13,7 +13,13 @@ const plugin: FastifyPluginCallback = (fastify) => {
     fastify.withTypeProvider<ZodTypeProvider>().route({
         method: 'GET',
         url: '/',
+
         schema: {
+            description: 'Get an integration by its unique name',
+            tags: ['Integrations'],
+            summary: 'Get an integration by its unique name',
+            operationId: 'getIntegration',
+            security: [{ secretKey: [] }],
             querystring: z.strictObject({}),
             params: z.strictObject({
                 uniqueName: z.string()

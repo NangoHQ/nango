@@ -1,0 +1,411 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Nango API",
+        "description": "Nango API specs used to authorize & sync data with external APIs.",
+        "version": "2.0.0"
+    },
+    "components": {
+        "securitySchemes": {
+            "secretKey": {
+                "type": "apiKey",
+                "name": "secretKey",
+                "in": "header"
+            }
+        },
+        "schemas": {
+            "ResponseNotFoundInput": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "not_found"
+                            },
+                            "errorId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"]
+            },
+            "ResponseServerErrorInput": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "server_error"
+                            },
+                            "errorId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"]
+            },
+            "ResponseUnauthorizedInput": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "unauthorized"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"]
+            },
+            "IntegrationInput": {
+                "type": "object",
+                "properties": {
+                    "uniqueName": {
+                        "type": "string"
+                    },
+                    "displayName": {
+                        "type": "string"
+                    },
+                    "provider": {
+                        "type": "string"
+                    },
+                    "logoUrl": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    }
+                },
+                "required": ["uniqueName", "displayName", "provider", "logoUrl", "createdAt", "updatedAt"],
+                "additionalProperties": false
+            },
+            "ResponseNotFound": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "not_found"
+                            },
+                            "errorId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"],
+                "additionalProperties": false
+            },
+            "ResponseServerError": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "server_error"
+                            },
+                            "errorId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"],
+                "additionalProperties": false
+            },
+            "ResponseUnauthorized": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "unauthorized"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"],
+                "additionalProperties": false
+            },
+            "Integration": {
+                "type": "object",
+                "properties": {
+                    "uniqueName": {
+                        "type": "string"
+                    },
+                    "displayName": {
+                        "type": "string"
+                    },
+                    "provider": {
+                        "type": "string"
+                    },
+                    "logoUrl": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    }
+                },
+                "required": ["uniqueName", "displayName", "provider", "logoUrl", "createdAt", "updatedAt"],
+                "additionalProperties": false
+            }
+        }
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["success"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseNotFound"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/integrations/": {
+            "get": {
+                "operationId": "listIntegrations",
+                "summary": "List all integrations",
+                "tags": ["Integrations"],
+                "description": "List all integrations",
+                "parameters": [
+                    {
+                        "schema": {
+                            "default": 10,
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 100
+                        },
+                        "in": "query",
+                        "name": "limit",
+                        "required": false
+                    }
+                ],
+                "security": [
+                    {
+                        "secretKey": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Integration"
+                                            }
+                                        }
+                                    },
+                                    "required": ["success", "data"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseServerError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/integrations/{uniqueName}/": {
+            "get": {
+                "operationId": "getIntegration",
+                "summary": "Get an integration by its unique name",
+                "tags": ["Integrations"],
+                "description": "Get an integration by its unique name",
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "uniqueName",
+                        "required": true
+                    }
+                ],
+                "security": [
+                    {
+                        "secretKey": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Integration"
+                                        }
+                                    },
+                                    "required": ["success", "data"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseServerError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://public.nango.dev",
+            "description": "Production server"
+        },
+        {
+            "url": "http://localhost:3003",
+            "description": "Local server"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Integrations",
+            "description": "Integrations"
+        }
+    ],
+    "externalDocs": {
+        "url": "https://docs.nango.dev",
+        "description": "Documentation"
+    }
+}

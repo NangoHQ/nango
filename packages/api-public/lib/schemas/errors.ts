@@ -27,6 +27,10 @@ export const schemaUnauthorized = z.object({
     })
 });
 
+z.globalRegistry.add(schemaNotFound, { id: 'ResponseNotFound' });
+z.globalRegistry.add(schemaServerError, { id: 'ResponseServerError' });
+z.globalRegistry.add(schemaUnauthorized, { id: 'ResponseUnauthorized' });
+
 type FastifyReplyError<TCode extends number, TError extends z.ZodObject<any>> = FastifyReply<
     RouteGenericInterface,
     RawServerDefault,

@@ -3,9 +3,9 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { configService } from '@nangohq/shared';
 
-import { auth } from '../../middlewares/auth.js';
-import { resServerError, schemaNotFound, schemaServerError } from '../../schemas/errors.js';
-import { formatIntegration, schemaIntegration } from '../../schemas/integrations.js';
+import { auth } from '../../../middlewares/auth.js';
+import { resServerError, schemaNotFound, schemaServerError } from '../../../schemas/errors.js';
+import { formatIntegration, schemaIntegration } from '../../../schemas/integrations.js';
 
 import type { FastifyPluginCallback } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -16,9 +16,10 @@ const plugin: FastifyPluginCallback = (fastify) => {
         url: '/',
         schema: {
             description: 'List all integrations',
-            tags: ['integrations'],
+            tags: ['Integrations'],
             summary: 'List all integrations',
             operationId: 'listIntegrations',
+            security: [{ secretKey: [] }],
             querystring: z.strictObject({
                 limit: z.coerce.number().min(1).max(100).optional().default(10)
             }),

@@ -13,6 +13,8 @@ export const schemaIntegration = z.strictObject({
     updatedAt: z.iso.datetime()
 });
 
+z.globalRegistry.add(schemaIntegration, { id: 'Integration' });
+
 export type APIIntegration = z.infer<typeof schemaIntegration>;
 
 export function formatIntegration(integration: IntegrationConfig): APIIntegration {

@@ -1,9 +1,7 @@
 import path from 'node:path';
 
-import { fastifyAutoload } from '@fastify/autoload';
 import cors from '@fastify/cors';
-import fastifySwagger from '@fastify/swagger';
-import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import { jsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
 import { report } from '@nangohq/utils';
 
@@ -12,9 +10,9 @@ import { resNotFound, resServerError } from './schemas/errors.js';
 import { envs } from './utils/envs.js';
 import { logger } from './utils/logger.js';
 
-import type { FastifyInstance, FastifyPluginOptions, FastifyServerOptions } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
-export default async function createApp(f: FastifyInstance, opts: FastifyPluginOptions): Promise<void> {
+export default async function createApp(f: FastifyInstance): Promise<void> {
     f.addHook('onRequest', (req, _res, done) => {
         logger.info(`#${req.id} <- ${req.method} ${req.url}`);
         done();
@@ -36,21 +34,34 @@ export default async function createApp(f: FastifyInstance, opts: FastifyPluginO
     f.setSerializerCompiler(serializerCompiler);
 
     // Generate openapi specs
-    await f.register(fastifySwagger, {
-        openapi: {
-            info: {
-                title: 'Nango API',
-                description: 'Nango API specs used to authorize & sync data with external APIs.',
-                version: '2.0.0'
-            },
-            servers: [
-                {
-                    url: envs.NANGO_PUBLIC_API_URL,
-                    description: 'Production server'
+    if (envs.NODE_ENV !== 'production') {
+        await f.register(import('@fastify/swagger'), {
+            openapi: {
+                openapi: '3.0.0',
+                info: {
+                    title: 'Nango API',
+                    description: 'Nango API specs used to authorize & sync data with external APIs.',
+                    version: '2.0.0'
+                },
+                servers: [
+                    { url: 'https://public.nango.dev', description: 'Production server' },
+                    { url: 'http://localhost:3003', description: 'Local server' }
+                ],
+                tags: [{ name: 'Integrations', description: 'Integrations' }],
+                components: {
+                    securitySchemes: {
+                        secretKey: { type: 'apiKey', name: 'secretKey', in: 'header' }
+                    }
+                },
+                externalDocs: {
+                    url: 'https://docs.nango.dev',
+                    description: 'Documentation'
                 }
-            ]
-        }
-    });
+            },
+            transform: jsonSchemaTransform,
+            transformObject: jsonSchemaTransformObject
+        });
+    }
 
     f.setErrorHandler(function (error, _req, res) {
         return resServerError(res as any, error instanceof Error ? error.message : 'Server Error', report(error));
@@ -70,24 +81,19 @@ export default async function createApp(f: FastifyInstance, opts: FastifyPluginO
         }
     });
 
-    f.addHook('onRoute', (route) => {
-        console.log('onRoute', route.method, route.path);
-    });
+    // debug
+    // f.addHook('onRoute', (route) => {
+    //     console.log('onRoute', route.method, route.path);
+    // });
 
     f.register(authPlugin);
 
     // This loads all plugins defined in routes
     // define your routes in one of these
-    f.register(fastifyAutoload, {
+    f.register(import('@fastify/autoload'), {
         dir: path.join(import.meta.dirname, 'routes'),
         autoHooks: true,
         cascadeHooks: true,
-        options: { ...opts },
         routeParams: true
     });
 }
-
-export const options: FastifyServerOptions = {
-    trustProxy: true,
-    logger: false
-};

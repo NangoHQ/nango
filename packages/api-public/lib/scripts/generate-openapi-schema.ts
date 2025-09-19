@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import Fastify from 'fastify';
 
 import createApp from '../fastify.js';
 
 const app = Fastify();
-await app.register(createApp);
+await createApp(app);
 
 await app.ready();
 
@@ -14,8 +15,8 @@ if (app.swagger === null || app.swagger === undefined) {
     throw new Error('@fastify/swagger plugin is not loaded');
 }
 
-const schema = JSON.stringify(app.swagger());
+const schema = JSON.stringify(app.swagger(), null, 2);
 // const schema = JSON.stringify(app.swagger(), undefined, 2); for pretty print
-await writeFile('doc/openapi.json', schema, { flag: 'w+' });
+await writeFile(path.join(import.meta.dirname, '..', '..', 'openapi.json'), schema, { flag: 'w+' });
 
 await app.close();

@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 
 import { initSentry, once, report } from '@nangohq/utils';
 
-import createApp, { options } from './fastify.js';
+import createApp from './fastify.js';
 import { envs } from './utils/envs.js';
 import { logger } from './utils/logger.js';
 
@@ -20,10 +20,10 @@ try {
     initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
     // Instantiate Fastify with some config
-    const app = Fastify(options);
+    const app = Fastify();
 
     // Register your application as a normal plugin.
-    void app.register(createApp);
+    await createApp(app);
 
     // Graceful shutdown
     const close = once(async () => {
@@ -33,12 +33,12 @@ try {
 
     process.on('SIGINT', () => {
         logger.info('Received SIGINT...');
-        close();
+        void close();
     });
 
     process.on('SIGTERM', () => {
         logger.info('Received SIGTERM...');
-        close();
+        void close();
     });
 
     app.listen({ host: '0.0.0.0', port: envs.NANGO_PUBLIC_API_PORT }, (err) => {
@@ -49,6 +49,8 @@ try {
 
         logger.info(`Started http://localhost:${envs.NANGO_PUBLIC_API_PORT}`);
     });
-} catch {
+    await app.ready();
+} catch (err) {
+    console.error('critical error', err);
     process.exit(1);
 }
