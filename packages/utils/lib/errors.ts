@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import * as Sentry from '@sentry/node';
 import { serializeError } from 'serialize-error';
 
@@ -46,19 +48,20 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
 }
 
 const logger = getLogger('err');
-export function report(err: unknown, extra?: Record<string, unknown>) {
+export function report(err: unknown, extra?: Record<string, unknown>): string {
     if (!sentry) {
-        logger.error(stringifyError(err, { stack: true, pretty: true }), extra);
-        return;
+        const errorId = randomUUID();
+        logger.error(stringifyError(err, { stack: true, pretty: true }), { ...extra, errorId });
+        return errorId;
     }
 
     logger.error(err as any, extra);
 
-    Sentry.withScope((scope) => {
+    return Sentry.withScope((scope) => {
         if (extra) {
             scope.setExtras(extra);
         }
 
-        Sentry.captureException(err);
+        return Sentry.captureException(err);
     });
 }
