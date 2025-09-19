@@ -1,0 +1,29 @@
+---
+
+title: Addepar - How do I link my account?
+sidebarTitle: Addepar
+
+---
+
+# Overview
+
+To authenticate with Addepar, you will need:
+1. **Firm ID** – A unique identifier for your Addepar firm, found in the API URL.
+
+This guide will walk you through finding your **Firm ID** and **Firm Domain**
+
+### Prerequisites
+
+- You must have an Addepar account.
+
+### Instructions
+
+#### Step 1: Finding Your Firm ID
+1. Open the Analysis Tool in Addepar.
+2. Click Export above the table and select **Generate API URL**.
+3. Look at the generated URL. Your **Firm ID** is the value of `addepar_firm=` in the query string.
+- Example: https://terrabella.addepar.com/api/v1?...addepar_firm=12345 → Firm ID is `12345`.
+
+<img src="/integrations/all/addepar/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Addepar.
