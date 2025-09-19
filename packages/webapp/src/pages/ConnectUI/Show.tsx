@@ -126,12 +126,6 @@ export const ConnectUISettingsPage = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    {!environment.plan?.can_disable_connect_ui_watermark && (
-                                        <TooltipContent className="text-grayscale-300">
-                                            Disabling the watermark is only available for Growth plans.{' '}
-                                            <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
-                                        </TooltipContent>
-                                    )}
                                 </div>
                             )}
                         </form.Field>
