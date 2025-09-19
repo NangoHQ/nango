@@ -1188,10 +1188,26 @@ class ConnectionService {
     }
 
     public async getTwoStepCredentials(
+        providerConfig: string,
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        if (provider.signature) {
+            const create = jwtClient.createCredentials({
+                config: providerConfig,
+                provider,
+                dynamicCredentials
+            });
+
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
+            }
+
+            const { token } = create.value;
+            dynamicCredentials['token'] = token;
+        }
+
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
         const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
@@ -1332,6 +1348,11 @@ class ConnectionService {
                     stepResponses.push(stepResponse.data);
                 }
             }
+
+            if ('token' in dynamicCredentials) {
+                delete dynamicCredentials['token'];
+            }
+
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
@@ -1460,7 +1481,7 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getTwoStepCredentials(provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
+            } = await this.getTwoStepCredentials(providerConfig.unique_key, provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
 
             if (!success || !credentials) {
                 return { success, error, response: null };
