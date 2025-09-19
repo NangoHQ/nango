@@ -10931,14 +10931,25 @@ smartsheet:
     display_name: Smartsheet
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
-    token_url: https://api.smartsheet.com/2.0/token
+    token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
-        base_url: https://api.smartsheet.com
+        base_url: https://api.${connectionConfig.domain}
     docs: https://docs.nango.dev/integrations/all/smartsheet
+    docs_connect: https://docs.nango.dev/integrations/all/smartsheet/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain where your account is hosted
+            example: smartsheet.com
+            prefix: https://api.
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
 
 smugmug:
     display_name: Smugmug
