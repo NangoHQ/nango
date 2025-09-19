@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.68.1] - 2025-09-19
+
+### Added
+
+- *(integrations)* Add support for kintone (#4641) by @hassan254-prog
+- Add frequency to usage.function_execution metering event (#4685) by @TBonnin
+- Migration to backfill connect-ui settings and flags (#4696) by @kaposke
+- *(credentials)* Keep credentials until they are hard deleted at 30 days (#4692) by @khaliqgant
+
+### Changed
+
+- Add content for missing section in API Auth (#4693) by @rguldener
+
+### Fixed
+
+- *(webapp)* Wait for ConnectUI preview to be ready to receive events (#4687) by @kaposke
+- *(connect)* Document tags, always send tags in webhooks (#4689) by @bodinsamuel
+- *(jobs)* Only start processors if max concurrency > 0 (#4691) by @rossmcewan
+- *(jobs)* Configurable job processors (#4695) by @rossmcewan
+- *(cli)* Support optional and undefined for nango.yaml (#4699) by @bodinsamuel
+- *(debug)* Logging to capture the error (#4701) by @khaliqgant
+
 ## [v0.68.0] - 2025-09-18
 
 ### Added
@@ -4910,6 +4932,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.68.1]: https://github.com/NangoHQ/nango/compare/v0.68.0..v0.68.1
 [v0.68.0]: https://github.com/NangoHQ/nango/compare/v0.67.8..v0.68.0
 [v0.67.8]: https://github.com/NangoHQ/nango/compare/v0.67.7..v0.67.8
 [v0.67.7]: https://github.com/NangoHQ/nango/compare/v0.67.6..v0.67.7
