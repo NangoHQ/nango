@@ -90,6 +90,9 @@
         },
         {
             "path": "packages/metering"
-        }
+        },
+        {
+            "path": "packages/api-public"
+        },
     ]
 }

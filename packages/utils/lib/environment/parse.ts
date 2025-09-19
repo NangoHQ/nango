@@ -17,7 +17,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
 
-    // API
+    // SERVER
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
@@ -26,6 +26,10 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+
+    // API
+    NANGO_PUBLIC_API_URL: z.url().optional().default('http://localhost:3003'),
+    NANGO_PUBLIC_API_PORT: z.coerce.number().optional().default(3013),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -225,10 +229,6 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
-
-    // Koala
-    PUBLIC_KOALA_API_URL: z.url().optional(),
-    PUBLIC_KOALA_CDN_URL: z.url().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
