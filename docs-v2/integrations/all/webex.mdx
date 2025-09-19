@@ -1,0 +1,111 @@
+---
+title: 'Webex'
+sidebarTitle: 'Webex'
+description: 'Access the Webex API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+       In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Webex_. Nango doesn't provide a test OAuth app for Webex yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Webex">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Webex. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Webex API">
+        Let's make your first request to the Webex API (fetch a list of people). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/people" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/people',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You’re connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Webex accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
+  <Step title="Create a developer account">
+    Go to [Webex's developer signup page](https://developer.webex.com) and create an account. 
+  </Step>
+  <Step title="Create & configure a Webex app">
+    Start creating a Webex app by clicking on the _Create a New App_ button. 
+
+    Select _Create an Integration_. 
+
+    Fill in your integration name, select an icon, and add a description for the App Hub.
+
+    In _Redirect URI(s)_, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+
+    In _Scopes_, select the scopes relevant for your integration.
+
+    Create the Webex app. Copy/paste the `Client ID` and `Client secret`, you will need to specify it in Nango later on. 
+  </Step>
+  <Step title="Create a Webex test account">
+    If you don't have a Webex account already, create one to test your integration. 
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.webex.com/) |
+    | | [Create a test account](https://signup.webex.com/) |
+    | Developer | [API documentation](https://developer.webex.com/calling/docs) |
+    | | [Create a developer account](https://developer.webex.com/signup) |
+    | | [Authorization documentation](https://developer.webex.com/create/docs/authentication) |
+    | | [List of OAuth scopes](https://developer.webex.com/create/docs/integrations#scopes) |
+    | | [Details on rate limits](https://developer.webex.com/messaging/docs/basics#rate-limiting) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/webex.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _No reported gotchas._
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/webex.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
