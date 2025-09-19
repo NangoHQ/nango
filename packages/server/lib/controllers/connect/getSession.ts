@@ -48,7 +48,7 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         report(connectUISettingsResult.error);
     }
 
-    let connectUISettings = connectUISettingsService.defaultConnectUISettings;
+    let connectUISettings = connectUISettingsService.getDefaultConnectUISettings();
     if (connectUISettingsResult.isOk() && connectUISettingsResult.value) {
         connectUISettings = connectUISettingsResult.value;
     }

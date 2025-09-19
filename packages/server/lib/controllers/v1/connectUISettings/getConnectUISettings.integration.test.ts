@@ -63,7 +63,7 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            data: connectUISettingsService.defaultConnectUISettings
+            data: connectUISettingsService.getDefaultConnectUISettings()
         });
     });
 
@@ -115,7 +115,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
 
         // Theme should be overridden to defaults, but showWatermark should remain custom
-        expect(res.json.data.theme).toStrictEqual(connectUISettingsService.defaultConnectUISettings.theme);
+        expect(res.json.data.theme).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings().theme);
         expect(res.json.data.showWatermark).toBe(false); // Should preserve custom value
     });
 
@@ -144,7 +144,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
 
         // showWatermark should be overridden to default, but theme should remain custom
-        expect(res.json.data.showWatermark).toBe(connectUISettingsService.defaultConnectUISettings.showWatermark);
+        expect(res.json.data.showWatermark).toBe(connectUISettingsService.getDefaultConnectUISettings().showWatermark);
         expect(res.json.data.theme).toStrictEqual(testSettings.theme); // Should preserve custom theme
     });
 
@@ -170,7 +170,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
 
         // Both should be overridden to defaults
-        expect(res.json.data).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
+        expect(res.json.data).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
     });
 
     it('should return default settings when no custom settings exist and plan has no feature flags', async () => {
@@ -192,6 +192,6 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
 
         // Should return default settings
-        expect(res.json.data).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
+        expect(res.json.data).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
     });
 });
