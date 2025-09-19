@@ -502,6 +502,7 @@ export interface Base {
   literalNull: null[];
   obj: {  nested: string;};
   optional?: string | undefined;
+  optional2?: string | undefined;
   arrayLiteral: any[];
   objectLiteral: Record<string, any>;
   any: any;
