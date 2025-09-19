@@ -3172,6 +3172,49 @@ datev:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
 
+datacandy:
+    display_name: DataCandy
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.application_url}/api2
+        query:
+            application_key: ${connectionConfig.application_key}
+            accesskey: ${connectionConfig.access_key}
+        verification:
+            method: GET
+            endpoints:
+                - /merchant?application_key=${connectionConfig.application_key}&accesskey=${connectionConfig.access_key}&limit=1
+    connection_config:
+        application_url:
+            type: string
+            title: Application URL
+            description: The application URL for DataCandy
+            example: app.datacandy.com
+            format: hostname
+        application_key:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            example: c4f9375f9834b4e7f0a528cc65c055702bf5f24a
+        access_key:
+            type: string
+            title: Access Key
+            description: The access key required for read data access
+            example: '3CLJII'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: DataCandy username
+        password:
+            type: string
+            title: Password
+            description: DataCandy password
+            secret: true
+    docs: https://docs.nango.dev/integrations/all/datacandy
+
 datadog:
     display_name: Datadog
     categories:
