@@ -15,7 +15,7 @@ export const schemaNotFound = z.object({
 export const schemaServerError = z.object({
     error: z.strictObject({
         code: z.literal('server_error'),
-        errorId: z.uuid(),
+        errorId: z.uuid().optional(),
         message: z.string()
     })
 });
@@ -49,7 +49,7 @@ export async function resNotFound(res: FastifyReplyError<404, typeof schemaNotFo
     return res.status(404).send(err);
 }
 
-export async function resServerError(res: FastifyReplyError<500, typeof schemaServerError>, message: string, errorId: string): Promise<void> {
+export async function resServerError(res: FastifyReplyError<500, typeof schemaServerError>, message: string, errorId?: string): Promise<void> {
     const err: z.infer<typeof schemaServerError> = {
         error: {
             code: 'server_error',

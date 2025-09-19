@@ -52,8 +52,6 @@ export default async function createApp(f: FastifyInstance, opts: FastifyPluginO
         }
     });
 
-    f.register(authPlugin);
-
     f.setErrorHandler(function (error, _req, res) {
         return resServerError(res as any, error instanceof Error ? error.message : 'Server Error', report(error));
     });
@@ -72,13 +70,20 @@ export default async function createApp(f: FastifyInstance, opts: FastifyPluginO
         }
     });
 
+    f.addHook('onRoute', (route) => {
+        console.log('onRoute', route.method, route.path);
+    });
+
+    f.register(authPlugin);
+
     // This loads all plugins defined in routes
     // define your routes in one of these
     f.register(fastifyAutoload, {
         dir: path.join(import.meta.dirname, 'routes'),
         autoHooks: true,
         cascadeHooks: true,
-        options: { ...opts }
+        options: { ...opts },
+        routeParams: true
     });
 }
 

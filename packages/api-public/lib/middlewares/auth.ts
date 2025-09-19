@@ -1,21 +1,43 @@
+import fp from 'fastify-plugin';
+
 import db from '@nangohq/database';
 import { environmentService, getPlan } from '@nangohq/shared';
 import { flagHasPlan } from '@nangohq/utils';
 
 import { resUnauthorized } from '../schemas/errors.js';
 
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const secretKeyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
-export function authPlugin(fastify: FastifyInstance) {
-    fastify.decorateRequest('team', null);
-    fastify.decorateRequest('environment', null);
-    fastify.decorateRequest('plan', null);
-    fastify.decorateRequest('authType', null);
+declare module 'fastify' {
+    export interface FastifyRequest {
+        environment: DBEnvironment | null;
+        team: DBTeam | null;
+        plan: DBPlan | null;
+        authType: 'secretKey' | null;
+    }
 }
 
-const auth = async (req: FastifyRequest, res: FastifyReply) => {
+export const authPlugin = fp(
+    (fastify) => {
+        fastify.decorateRequest('team', null);
+        fastify.decorateRequest('environment', null);
+        fastify.decorateRequest('plan', null);
+        fastify.decorateRequest('authType', null);
+    },
+    { name: 'authorization' }
+);
+
+export interface AuthDecorator {
+    environment: DBEnvironment | null;
+    plan: DBPlan | null;
+    team: DBTeam | null;
+    authType: 'secretKey';
+}
+
+export async function auth(req: FastifyRequest, res: FastifyReply) {
     const { authorization } = req.headers;
     if (!authorization) {
         await resUnauthorized(res as any, 'No authorization header');
@@ -35,7 +57,7 @@ const auth = async (req: FastifyRequest, res: FastifyReply) => {
 
     const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
     if (!result) {
-        await resUnauthorized(res as any, 'Unknown account');
+        await resUnauthorized(res as any, 'Unknown secret key');
         return;
     }
 
@@ -51,15 +73,4 @@ const auth = async (req: FastifyRequest, res: FastifyReply) => {
     req.setDecorator('team', result.account);
     req.setDecorator('environment', result.environment);
     req.setDecorator('authType', 'secretKey');
-};
-
-export function withAuth<TRequest extends FastifyRequest, TReply extends FastifyReply>(handler: (req: TRequest, res: TReply) => unknown) {
-    return async (req: TRequest, res: TReply) => {
-        await auth(req, res);
-        if (res.statusCode) {
-            return;
-        }
-
-        return handler(req, res);
-    };
 }

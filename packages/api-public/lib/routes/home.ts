@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { schemaNotFound } from '../utils/responseSchema.js';
+import { schemaNotFound } from '../schemas/errors.js';
 
 import type { FastifyPluginCallback } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -10,7 +10,7 @@ const plugin: FastifyPluginCallback = (fastify) => {
         method: 'GET',
         url: '/',
         schema: {
-            querystring: z.never(),
+            querystring: z.strictObject({}),
             response: {
                 200: z.object({
                     success: z.boolean()

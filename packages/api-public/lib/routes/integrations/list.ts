@@ -3,7 +3,8 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { configService } from '@nangohq/shared';
 
-import { schemaNotFound, schemaServerError } from '../../schemas/errors.js';
+import { auth } from '../../middlewares/auth.js';
+import { resServerError, schemaNotFound, schemaServerError } from '../../schemas/errors.js';
 import { formatIntegration, schemaIntegration } from '../../schemas/integrations.js';
 
 import type { FastifyPluginCallback } from 'fastify';
@@ -12,7 +13,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 const plugin: FastifyPluginCallback = (fastify) => {
     fastify.withTypeProvider<ZodTypeProvider>().route({
         method: 'GET',
-        url: '/integrations',
+        url: '/',
         schema: {
             description: 'List all integrations',
             tags: ['integrations'],
@@ -30,8 +31,15 @@ const plugin: FastifyPluginCallback = (fastify) => {
                 500: schemaServerError
             }
         },
-        handler: async (_, res) => {
-            const configs = await configService.listProviderConfigs(db.knex, environment.id);
+        preHandler: [auth],
+        handler: async (req, res) => {
+            const env = req.environment;
+            if (!env) {
+                await resServerError(res, 'Failed to get environment');
+                return;
+            }
+
+            const configs = await configService.listProviderConfigs(db.knex, env.id);
             res.status(200).send({ success: true, data: configs.map(formatIntegration) });
         }
     });
