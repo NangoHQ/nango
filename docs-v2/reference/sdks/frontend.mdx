@@ -81,6 +81,10 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   <ResponseField name="lang" type="string">
     The language to use for the UI. Defaults to browser language or english if not supported.
   </ResponseField>
+
+  <ResponseField name="themeOverride" type="string">
+    The theme (light, dark, system) to use for the UI. Overrides your global setting in the dashboard.
+  </ResponseField>
 </Expandable>
 
 **Response**

@@ -2809,6 +2809,8 @@ components:
                     $ref: '#/components/schemas/EndUser'
                 organization:
                     type: object
+                    deprecated: true
+                    description: Deprecated, use tags instead
                     required:
                         - id
                     properties:

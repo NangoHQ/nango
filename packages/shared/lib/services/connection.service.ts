@@ -841,7 +841,7 @@ class ConnectionService {
                 environment_id: environmentId,
                 deleted: false
             })
-            .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
+            .update({ deleted: true, deleted_at: new Date() });
 
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator dependencies

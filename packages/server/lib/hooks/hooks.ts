@@ -347,9 +347,6 @@ export async function credentialsTest({
             provider,
             providerName: config.provider,
             providerConfigKey: config.unique_key,
-            headers: {
-                'Content-Type': 'application/json'
-            },
             decompress: false
         };
 

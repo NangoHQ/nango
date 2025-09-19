@@ -793,7 +793,12 @@ export class SlackService {
                 return Err('not_in_channel');
             }
 
-            return Ok(slackMessage.value.data as PostSlackMessageResponse);
+            if (!slackMessage.value.data) {
+                logger.error('No response data from Slack');
+                logger.error(slackMessage.value);
+            }
+
+            return Ok(slackMessage.value.data);
         };
 
         const send = await sendMessage();

@@ -79,6 +79,11 @@ const schemaBody = z.strictObject({
             .strictObject({
                 type: z.literal('APP')
             })
+            .extend(connectionCredentialsGithubAppSchema.shape),
+        z
+            .strictObject({
+                type: z.literal('CUSTOM')
+            })
             .extend(connectionCredentialsGithubAppSchema.shape)
     ]),
     end_user: endUserSchema.optional()
@@ -194,6 +199,38 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             const connectionConfig: ConnectionConfig = {
                 app_id: body.credentials.app_id,
                 installation_id: body.credentials.installation_id
+            };
+
+            const credentialsRes = await githubAppClient.createCredentials({
+                provider: provider as ProviderGithubApp,
+                integration,
+                connectionConfig
+            });
+            if (credentialsRes.isErr()) {
+                res.status(500).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
+                return;
+            }
+
+            const [imported] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey: body.provider_config_key,
+                parsedRawCredentials: credentialsRes.value,
+                connectionConfig: body.connection_config || {},
+                environmentId: environment.id,
+                metadata: body.metadata || {}
+            });
+
+            if (imported) {
+                updatedConnection = imported;
+                connCreatedHook(updatedConnection);
+            }
+            break;
+        }
+        case 'CUSTOM': {
+            const connectionConfig: ConnectionConfig = {
+                app_id: body.credentials.app_id,
+                installation_id: body.credentials.installation_id,
+                ...body.connection_config
             };
 
             const credentialsRes = await githubAppClient.createCredentials({

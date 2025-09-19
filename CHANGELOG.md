@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.68.0] - 2025-09-18
+
+### Added
+
+- ConnectUI settings rework (#4662) by @kaposke
+- *(mcp-auth)* Add remote mcp server authorization flow (#4660) by @khaliqgant
+- Records size and count to DD with account dimension (#4669) by @TBonnin
+- *(github-app-oauth)* Add more context to error logs (#4666) by @hassan254-prog
+- *(billing)* Send runner telemetry to orb (#4670) by @bodinsamuel
+- Adding provider dimensions to auth and connection creation/deletion metrics  (#4674) by @TBonnin
+- Migration to add `default_theme` (dark/light/system) to `connect_ui_settings` (#4672) by @kaposke
+- ConnectUI dark theme support (#4673) by @kaposke
+
+### Changed
+
+- *(webapp)* Setup modern shadcn (#4671) by @kaposke
+
+### Fixed
+
+- Do not join Slack channel on every message (#4652) by @TBonnin
+- *(mcp)* Restrict mcp (#4678) by @khaliqgant
+- *(otlp-exporter)* Include /v1 prefix automitically (#4675) by @TBonnin
+- *(otlp-exporter)* Remove temporary url fix (#4676) by @TBonnin
+- *(deploy)* Deploy to new production environment (#4679) by @rossmcewan
+- *(import)* Allow github-app-oauth (#4680) by @khaliqgant
+- *(zero)* Prevent multiple exports (#4683) by @bodinsamuel
+
 ## [v0.67.8] - 2025-09-16
 
 ### Changed
@@ -4883,6 +4910,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.68.0]: https://github.com/NangoHQ/nango/compare/v0.67.8..v0.68.0
 [v0.67.8]: https://github.com/NangoHQ/nango/compare/v0.67.7..v0.67.8
 [v0.67.7]: https://github.com/NangoHQ/nango/compare/v0.67.6..v0.67.7
 [v0.67.6]: https://github.com/NangoHQ/nango/compare/v0.67.5..v0.67.6

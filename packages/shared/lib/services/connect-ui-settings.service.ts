@@ -5,6 +5,7 @@ import type { Knex } from 'knex';
 
 export const defaultConnectUISettings: ConnectUISettings = {
     showWatermark: true,
+    defaultTheme: 'system',
     theme: {
         light: {
             primary: '#00B2E3'
@@ -23,7 +24,8 @@ export async function getConnectUISettings(db: Knex, environmentId: number): Pro
         }
         return Ok({
             showWatermark: settings.show_watermark,
-            theme: settings.theme
+            theme: settings.theme,
+            defaultTheme: settings.default_theme
         });
     } catch (err) {
         return Err(new Error('failed_to_get_connect_ui_settings', { cause: err }));
@@ -36,7 +38,8 @@ export async function upsertConnectUISettings(db: Knex, environmentId: number, s
             .insert({
                 environment_id: environmentId,
                 theme: settings.theme,
-                show_watermark: settings.showWatermark
+                show_watermark: settings.showWatermark,
+                default_theme: settings.defaultTheme
             })
             .onConflict('environment_id')
             .merge();
