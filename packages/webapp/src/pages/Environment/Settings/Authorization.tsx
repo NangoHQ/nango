@@ -41,7 +41,7 @@ export const AuthorizationSettings: React.FC = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="px-8 flex flex-col gap-10 w-3/5">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
                 <fieldset className="flex flex-col gap-4">
                     <Link
                         to="https://docs.nango.dev/implementation-guides/migrations/migrate-from-public-key"

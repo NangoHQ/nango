@@ -23,8 +23,8 @@ export const MainSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Main</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-10 w-3/5">
-                <div className="flex flex-col gap-4">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
+                <div className="flex flex-col gap-4 w-full">
                     <EditableInput
                         title="Environment Name"
                         name="environmentName"

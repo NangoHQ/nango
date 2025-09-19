@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { apiConnectSessions } from '../../../hooks/useConnect';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
-import { createConnectUIPreviewIFrame } from '../../../utils/connect-ui';
-import { globalEnv } from '../../../utils/env';
-import { cn } from '../../../utils/utils';
+import { apiConnectSessions } from '@/hooks/useConnect';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
+import { createConnectUIPreviewIFrame } from '@/utils/connect-ui';
+import { globalEnv } from '@/utils/env';
+import { cn } from '@/utils/utils';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend/lib/types';
 
@@ -110,7 +110,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
         connectUIContainer.current.appendChild(iframe);
     }, [env, environmentAndAccount, trySendSessionToken, sessionToken]);
 
-    return <div ref={connectUIContainer} className={cn('overflow-hidden', className)} />;
+    return <div ref={connectUIContainer} className={cn('overflow-hidden h-full w-full', className)} />;
 });
 
 ConnectUIPreview.displayName = 'ConnectUIPreview';
