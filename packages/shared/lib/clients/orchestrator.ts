@@ -3,7 +3,7 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, errorToObject, metrics, stringifyError } from '@nangohq/utils';
+import { Err, Ok, errorToObject, getFrequencyMs, metrics, stringifyError } from '@nangohq/utils';
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
@@ -42,7 +42,6 @@ import type {
     DBTeam
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { StringValue } from 'ms';
 import type { JsonValue } from 'type-fest';
 
 export interface RecordsServiceInterface {
@@ -799,29 +798,18 @@ export class Orchestrator {
     }
 
     private getFrequencyMs(runs: string): Result<number> {
-        const runsMap = new Map([
-            ['every half day', '12h'],
-            ['every half hour', '30m'],
-            ['every quarter hour', '15m'],
-            ['every hour', '1h'],
-            ['every day', '1d'],
-            ['every month', '30d'],
-            ['every week', '7d']
-        ]);
-        const interval = runsMap.get(runs) || runs.replace('every ', '');
+        const res = getFrequencyMs(runs);
 
-        const intervalMs = ms(interval as StringValue);
-        if (!intervalMs) {
-            const error = new NangoError('sync_interval_invalid');
-            return Err(error);
+        if (res.isErr()) {
+            return Err(new NangoError('sync_interval_invalid'));
         }
 
-        if (intervalMs < ms('30s')) {
+        if (res.value < ms('30s')) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }
 
-        return Ok(intervalMs);
+        return res;
     }
 }
 

@@ -28,6 +28,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/account-usage": "file:../account-usage",
+        "@nangohq/pubsub": "file:../pubsub",
         "axios": "1.12.0",
         "dd-trace": "5.52.0",
         "express": "5.1.0",

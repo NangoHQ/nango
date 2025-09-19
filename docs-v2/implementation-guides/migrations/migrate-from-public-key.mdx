@@ -46,7 +46,7 @@ The deprecated public key, however, was only compatible with custom authorizatio
 Follow the steps in this [guide](/implementation-guides/api-auth/implement-api-auth), focusing on these key changes:
 
 - Fetch a **Connect session token** from your backend, pass it to your frontend, and update Nango frontend SDK method signatures accordingly
-- Connection credentials are now **received via webhooks**, not the frontend SDK. You must specify a **user ID** (and optionally an **organization ID**) when fetching the Connect session token to correctly attribute webhooks. You can also attach additional information to connections for better UI display
+- Connection credentials are now **received via webhooks**, not the frontend SDK. You must specify a **user ID** (and optionally some **tags**) when fetching the Connect session token to correctly attribute webhooks. You can also attach additional information to connections for better UI display
 - Store all **existing and future connection IDs** with your customer data. Since Nango now generates connection IDs randomly, they can no longer be inferred from other identifiers
 
 Finally, remove all usage of the **public key and HMAC** from your frontend.

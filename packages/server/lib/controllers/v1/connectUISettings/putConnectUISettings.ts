@@ -17,6 +17,7 @@ const bodyValidation = z.strictObject({
         light: colorPaletteSchema,
         dark: colorPaletteSchema
     }),
+    defaultTheme: z.enum(['light', 'dark', 'system']),
     showWatermark: z.boolean()
 });
 

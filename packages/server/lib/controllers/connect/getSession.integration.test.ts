@@ -99,6 +99,7 @@ describe(`GET ${endpoint}`, () => {
         // Create custom connect UI settings
         const customConnectUISettings: ConnectUISettings = {
             showWatermark: true,
+            defaultTheme: 'system',
             theme: {
                 light: {
                     primary: '#ffffff'

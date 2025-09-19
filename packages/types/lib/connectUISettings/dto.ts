@@ -1,5 +1,6 @@
 export interface ConnectUISettings {
     theme: ConnectUIThemeSettings;
+    defaultTheme: Theme;
     showWatermark: boolean;
 }
 
@@ -11,3 +12,5 @@ export interface ConnectUIThemeSettings {
 export interface ConnectUIColorPalette {
     primary: string;
 }
+
+export type Theme = 'light' | 'dark' | 'system';

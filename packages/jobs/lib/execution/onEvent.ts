@@ -7,10 +7,11 @@ import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -134,7 +135,15 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     }
 }
 
-export async function handleOnEventSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+export async function handleOnEventSuccess({
+    taskId,
+    nangoProps,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     await setTaskSuccess({ taskId, output: null });
 
     const logCtx = logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
@@ -161,9 +170,33 @@ export async function handleOnEventSuccess({ taskId, nangoProps }: { taskId: str
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
         endUser: nangoProps.endUser
     });
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.function_executions',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: nangoProps.team.id,
+                connectionId: nangoProps.nangoConnectionId,
+                type: 'on-event',
+                success: true,
+                telemetryBag
+            }
+        }
+    });
 }
 
-export async function handleOnEventError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleOnEventError({
+    taskId,
+    nangoProps,
+    error,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    error: NangoError;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     await setTaskFailed({ taskId, error });
 
     onFailure({
@@ -181,7 +214,8 @@ export async function handleOnEventError({ taskId, nangoProps, error }: { taskId
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
         syncConfig: nangoProps.syncConfig,
         ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {}),
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        telemetryBag
     });
 }
 
@@ -195,7 +229,8 @@ function onFailure({
     syncConfig,
     runTime,
     error,
-    endUser
+    endUser,
+    telemetryBag
 }: {
     connection: ConnectionJobs;
     team?: { id: number; name: string };
@@ -207,6 +242,7 @@ function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
+    telemetryBag?: TelemetryBag | undefined;
 }): void {
     const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
     void logCtx?.error(error.message, { error });
@@ -231,6 +267,21 @@ function onFailure({
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
+        });
+
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'on-event',
+                    success: false,
+                    telemetryBag
+                }
+            }
         });
     }
 }
