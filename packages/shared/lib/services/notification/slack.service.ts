@@ -720,6 +720,9 @@ export class SlackService {
             if (join.isErr()) {
                 return Err(new Error('slack_join_channel_failed', { cause: join.error }));
             }
+            if (!join.value.data) {
+                return Err(new Error('slack_join_no_response'));
+            }
             if (!join.value.data.ok) {
                 return Err(join.value.data.error);
             }
@@ -788,14 +791,13 @@ export class SlackService {
                 return Err(new Error('slack_post_failed', { cause: slackMessage.error }));
             }
 
-            // https://docs.slack.dev/reference/methods/chat.postMessage/
-            if (slackMessage.value.data?.error === 'not_in_channel') {
-                return Err('not_in_channel');
+            if (!slackMessage.value.data) {
+                return Err(new Error('slack_post_no_response'));
             }
 
-            if (!slackMessage.value.data) {
-                logger.error('No response data from Slack');
-                logger.error(slackMessage.value);
+            // Slack returns `200 OK { ok: false, error: "..."}` when the request failed :(
+            if (!slackMessage.value.data.ok) {
+                return Err(slackMessage.value.data.error);
             }
 
             return Ok(slackMessage.value.data);
@@ -805,18 +807,14 @@ export class SlackService {
 
         if (send.isErr()) {
             // if we get `not_in_channel` error we try to join the channel and resend the message
+            // https://docs.slack.dev/reference/methods/chat.postMessage/
             if (send.error.message === 'not_in_channel') {
                 const join = await joinChannel();
                 if (join.isErr()) {
                     return Err(join.error);
                 }
-                const resend = await sendMessage();
-                if (resend.isErr()) {
-                    return Err(resend.error);
-                }
-                return resend;
+                return sendMessage();
             }
-            return Err(send.error);
         }
         return send;
     }
