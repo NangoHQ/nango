@@ -12,6 +12,8 @@ import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
 const workdayOauthExpiresIn = 3600;
+const jobberExpiresIn = 3600;
+
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -24,6 +26,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'jobber':
             case 'tiktok-ads':
             case 'tiktok-accounts':
             case 'sentry-oauth':
@@ -58,6 +61,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'jobber':
+                return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'tiktok-ads':
@@ -106,6 +111,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
                 return this.refreshFigmaToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'jobber':
+                return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'tiktok-accounts':
@@ -264,6 +271,61 @@ class ProviderClient {
             throw new NangoError('sentry_oauth_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sentry_oauth_token_request_error', err);
+        }
+    }
+
+    private async createJobberToken(tokenUrl: string, code: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'authorization_code',
+                code
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    expires_in: jobberExpiresIn
+                };
+            }
+
+            throw new NangoError('jobber_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('jobber_token_request_error', err);
+        }
+    }
+
+    private async refreshJobberToken(refreshTokenUrl: string, refresh_token: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'refresh_token',
+                refresh_token
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    expires_in: jobberExpiresIn
+                };
+            }
+
+            throw new NangoError('jobber_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('jobber_refresh_token_request_error', err);
         }
     }
 
