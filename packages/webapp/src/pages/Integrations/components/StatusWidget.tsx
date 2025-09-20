@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const publicKey = 'pk_wDkTwEJORAN3jhVBZoSyIGObbcE77JrRKnZ-bgQtq6c';
+const publicKey = 'pk_821F1oqfI6zadHRd4rkv7Ij6MwF2o0XrZDHAuOubRDQ';
 //const host = 'https://api.apidownwatch.com';
 const host = 'http://localhost:8080';
 const refreshRate = 5;
