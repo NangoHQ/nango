@@ -13,22 +13,13 @@ let api: Awaited<ReturnType<typeof runServer>>;
 function getCustomSettings(): ConnectUISettings {
     return {
         showWatermark: false,
+        defaultTheme: 'system',
         theme: {
             light: {
-                backgroundSurface: '#eeeeee',
-                backgroundElevated: '#eeeeee',
-                primary: '#eeeeee',
-                onPrimary: '#eeeeee',
-                textPrimary: '#eeeeee',
-                textSecondary: '#eeeeee'
+                primary: '#eeeeee'
             },
             dark: {
-                backgroundSurface: '#111111',
-                backgroundElevated: '#111111',
-                primary: '#111111',
-                onPrimary: '#111111',
-                textPrimary: '#111111',
-                textSecondary: '#111111'
+                primary: '#111111'
             }
         }
     };

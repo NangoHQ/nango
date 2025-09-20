@@ -1,0 +1,37 @@
+---
+title: Kintone User API - How do I link my account?
+sidebarTitle: Kintone User API
+---
+
+# Overview
+
+To authenticate with Kintone User API, you need:
+1. **Subdomain** – The subdomain used to access your Kintone instance.
+2. **API Token** - A key that grants Nango permission to interact with the Kintone User API.
+
+This guide will walk you through finding your **Subdomain** and **API Token** within Kintone.
+
+## Prerequisites
+- You must have a Kintone account.
+
+## Step 1: Finding your Subdomain
+1. Log in to your [Kintone account](https://www.kintone.com/en-us/).
+2. Look at the URL in your browser's address bar. Your **Subdomain** is the text after `https://` and before `.kintone.com`.
+
+## Step 2: Generating your API Token
+1. Log in to your Kintone account, click the gear icon on the upper right menu of Kintone and select **User & System Administration**.
+2. From the left navbar, go to **System Administration** > **Integrations**, and click on **API tokens**.
+3. Click **+ Generate API token**
+<img src="/integrations/all/kintone-user-api/generate_key.png"/>
+4. Fill in the required information. For Scope, select your desired [scope](https://get.kintone.help/general/en/admin/list_externalservices/api_token/api_scope.html?sl=d) based on your specific needs. For the Validity Period, choose a longer duration to avoid disruption.
+
+## Step 2: Enter credentials in the Connect UI
+
+Once you have your **Subdomain** and **API Token**:
+1. Open the form where you need to authenticate with Kintone User API.
+2. Enter your **Subdomain** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/kintone-user-api/form.png" style={{maxWidth: "450px"}} />
+
+You are now connected to Kintone User API.

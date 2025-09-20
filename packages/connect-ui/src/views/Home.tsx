@@ -9,7 +9,8 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { setTheme } from '@/lib/theme';
+import { isValidTheme, setTheme } from '@/lib/theme';
+import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
 
@@ -19,6 +20,7 @@ export const Home: React.FC = () => {
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
+    const theme = useSearchParam('theme');
     const isEmbedded = useSearchParam('embedded');
     const isPreview = useSearchParam('preview') === 'true';
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
@@ -42,7 +44,7 @@ export const Home: React.FC = () => {
                         break;
                     }
                     const data = evt.data as ConnectUIEventSettingsChanged;
-                    setTheme(data.payload.theme);
+                    updateSettings(data.payload);
                     break;
                 }
             }
@@ -76,12 +78,14 @@ export const Home: React.FC = () => {
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
         if (isPreview) setIsPreview(isPreview);
-    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview]);
+        if (theme && isValidTheme(theme)) setTheme(theme);
+    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview, theme]);
 
     useEffect(() => {
         if (data) {
             setSession(data.data);
-            setTheme(data.data.connectUISettings.theme);
+            const themeOverride = theme && isValidTheme(theme) ? theme : undefined;
+            updateSettings(data.data.connectUISettings, themeOverride);
             void navigate({ to: '/integrations' });
         }
     }, [data]);

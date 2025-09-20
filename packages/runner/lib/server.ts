@@ -100,7 +100,7 @@ function startProcedure() {
                         taskId,
                         nangoProps,
                         ...(execRes.isErr()
-                            ? { error: execRes.error.toJSON() }
+                            ? { error: execRes.error.toJSON(), telemetryBag: execRes.error.telemetryBag }
                             : { output: execRes.value.output as any, telemetryBag: execRes.value.telemetryBag })
                     });
                 } finally {

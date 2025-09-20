@@ -3,7 +3,7 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, errorToObject, metrics, stringifyError } from '@nangohq/utils';
+import { Err, Ok, errorToObject, getFrequencyMs, metrics, stringifyError } from '@nangohq/utils';
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
@@ -28,7 +28,6 @@ import type {
     OrchestratorTask,
     RecurringProps,
     SchedulesReturn,
-    TaskType,
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
@@ -43,7 +42,6 @@ import type {
     DBTeam
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { StringValue } from 'ms';
 import type { JsonValue } from 'type-fest';
 
 export interface RecordsServiceInterface {
@@ -121,6 +119,7 @@ export class Orchestrator {
         input,
         retryMax,
         async,
+        maxConcurrency,
         logCtx
     }: {
         accountId: number;
@@ -129,6 +128,7 @@ export class Orchestrator {
         input: unknown;
         retryMax: number;
         async: boolean;
+        maxConcurrency: number;
         logCtx: LogContext;
     }): Promise<Result<AsyncActionResponse | { data: T }, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -156,8 +156,8 @@ export class Orchestrator {
                 const error = new NangoError('action_failure', { error: errorMsg });
                 throw error;
             }
-            const groupKey: TaskType = 'action';
-            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
+            const groupKey = `action:environment:${connection.environment_id}`;
+            const executionId = `${groupKey}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 actionName,
                 connection: {
@@ -174,7 +174,7 @@ export class Orchestrator {
             if (async) {
                 const res = await this.client.executeActionAsync({
                     name: executionId,
-                    group: { key: `action:environment:${connection.environment_id}`, maxConcurrency: 1 }, // async actions runs sequentially per environment
+                    group: { key: groupKey, maxConcurrency: 1 }, // async actions runs sequentially per environment
                     retry: { count: 0, max: retryMax },
                     ownerKey: `environment:${connection.environment_id}`,
                     args
@@ -193,7 +193,7 @@ export class Orchestrator {
 
             const actionResult = await this.client.executeAction({
                 name: executionId,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: { key: groupKey, maxConcurrency },
                 ownerKey: getActionOwnerKey(connection.environment_id),
                 args
             });
@@ -246,6 +246,7 @@ export class Orchestrator {
         webhookName,
         syncConfig,
         input,
+        maxConcurrency,
         logContextGetter
     }: {
         account: DBTeam;
@@ -255,6 +256,7 @@ export class Orchestrator {
         webhookName: string;
         syncConfig: DBSyncConfig;
         input: object;
+        maxConcurrency: number;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -291,8 +293,8 @@ export class Orchestrator {
                 const error = new NangoError('webhook_failure', { error: errorMsg });
                 throw error;
             }
-            const groupKey: TaskType = 'webhook';
-            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
+            const groupKey = `webhook:environment:${connection.environment_id}`;
+            const executionId = `${groupKey}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 webhookName,
                 parentSyncName: syncConfig.sync_name,
@@ -307,7 +309,7 @@ export class Orchestrator {
             };
             const webhookResult = await this.client.executeWebhook({
                 name: executionId,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: { key: groupKey, maxConcurrency },
                 args
             });
             const res = webhookResult.mapError((err) => {
@@ -372,6 +374,7 @@ export class Orchestrator {
         fileLocation,
         sdkVersion,
         async,
+        maxConcurrency,
         logCtx
     }: {
         accountId: number;
@@ -381,6 +384,7 @@ export class Orchestrator {
         fileLocation: string;
         sdkVersion: string | null;
         async: boolean;
+        maxConcurrency: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -398,8 +402,8 @@ export class Orchestrator {
         });
         const startTime = Date.now();
         try {
-            const groupKey: TaskType = 'on-event';
-            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
+            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
                 connection: {
@@ -415,7 +419,7 @@ export class Orchestrator {
             };
             const result = await this.client.executeOnEvent({
                 name: executionId,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: { key: groupKey, maxConcurrency },
                 args,
                 async
             });
@@ -736,7 +740,7 @@ export class Orchestrator {
                 return Err(frequencyMs.error);
             }
 
-            const groupKey: TaskType = 'sync';
+            const groupKey = `sync`;
             const schedule = await this.client.recurring({
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
@@ -794,29 +798,18 @@ export class Orchestrator {
     }
 
     private getFrequencyMs(runs: string): Result<number> {
-        const runsMap = new Map([
-            ['every half day', '12h'],
-            ['every half hour', '30m'],
-            ['every quarter hour', '15m'],
-            ['every hour', '1h'],
-            ['every day', '1d'],
-            ['every month', '30d'],
-            ['every week', '7d']
-        ]);
-        const interval = runsMap.get(runs) || runs.replace('every ', '');
+        const res = getFrequencyMs(runs);
 
-        const intervalMs = ms(interval as StringValue);
-        if (!intervalMs) {
-            const error = new NangoError('sync_interval_invalid');
-            return Err(error);
+        if (res.isErr()) {
+            return Err(new NangoError('sync_interval_invalid'));
         }
 
-        if (intervalMs < ms('30s')) {
+        if (res.value < ms('30s')) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }
 
-        return Ok(intervalMs);
+        return res;
     }
 }
 

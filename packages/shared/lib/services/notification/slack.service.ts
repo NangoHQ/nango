@@ -1,5 +1,5 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
+import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
 
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
@@ -660,10 +660,12 @@ export class SlackService {
         const res = await this.proxySlackMessage({ slackConnection: refreshedConnection.value, payload, integration });
 
         if (res.isErr()) {
+            metrics.increment(metrics.Types.SLACK_NOTIFICATION_FAILURE, 1, { accountId: account.id });
             void logCtx.error(`Failed to send Slack notification`, { error: res.error });
             await logCtx.failed();
             return Err(res.error);
         }
+        metrics.increment(metrics.Types.SLACK_NOTIFICATION_SUCCESS, 1, { accountId: account.id });
 
         const ts = res.value.ts || res.value.message.ts;
         if (ts) {
@@ -692,97 +694,129 @@ export class SlackService {
             return Err('slack_hook_channel_id_not_configured');
         }
 
-        // Join the Slack channel
-        let proxyConfig = getProxyConfiguration({
-            externalConfig: {
-                method: 'POST',
-                endpoint: 'conversations.join',
-                headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                data: { channel },
-                decompress: false,
-                providerConfigKey: integration.unique_key
-            },
-            internalConfig: {
-                providerName: integration.provider
-            }
-        });
-        if (proxyConfig.isErr()) {
-            return Err('failed_to_get_proxy_config');
-        }
-        let proxy = new ProxyRequest({
-            logger: () => {},
-            proxyConfig: proxyConfig.value,
-            getConnection: () => slackConnection
-        });
-        const join = await proxy.request();
-        if (join.isErr()) {
-            return Err('slack_join_channel_failed');
-        }
-        if (!join.value.data.ok) {
-            return Err(join.value.data.error);
-        }
-
-        // Send/update chat message
-        const data = {
-            channel,
-            ts: payload.ts || '',
-            attachments: [
-                {
-                    color: color,
-                    blocks: [
-                        {
-                            type: 'section',
-                            text: {
-                                type: 'mrkdwn',
-                                text: payload.content
-                            }
-                        },
-                        ...(payload.meta
-                            ? [
-                                  {
-                                      type: 'context',
-                                      elements: [
-                                          {
-                                              type: 'mrkdwn',
-                                              text: `${payload.meta.accountName} (uuid: ${payload.meta.accountUuid})`
-                                          }
-                                      ]
-                                  }
-                              ]
-                            : [])
-                    ]
+        const joinChannel = async (): Promise<Result<void>> => {
+            const proxyConfig = getProxyConfiguration({
+                externalConfig: {
+                    method: 'POST',
+                    endpoint: 'conversations.join',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    data: { channel },
+                    decompress: false,
+                    providerConfigKey: integration.unique_key
+                },
+                internalConfig: {
+                    providerName: integration.provider
                 }
-            ]
+            });
+            if (proxyConfig.isErr()) {
+                return Err('failed_to_get_proxy_config');
+            }
+            const proxy = new ProxyRequest({
+                logger: () => {},
+                proxyConfig: proxyConfig.value,
+                getConnection: () => slackConnection
+            });
+            const join = await proxy.request();
+            if (join.isErr()) {
+                return Err(new Error('slack_join_channel_failed', { cause: join.error }));
+            }
+            if (!join.value.data) {
+                return Err(new Error('slack_join_no_response'));
+            }
+            if (!join.value.data.ok) {
+                return Err(join.value.data.error);
+            }
+            return Ok(undefined);
         };
 
-        proxyConfig = getProxyConfiguration({
-            externalConfig: {
-                method: 'POST',
-                endpoint: data.ts ? 'chat.update' : 'chat.postMessage',
-                headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                data,
-                decompress: false,
-                providerConfigKey: integration.unique_key,
-                retries: 10
-            },
-            internalConfig: {
-                providerName: integration.provider
-            }
-        });
-        if (proxyConfig.isErr()) {
-            return Err('failed_to_get_proxy_config');
-        }
-        proxy = new ProxyRequest({
-            logger: () => {},
-            proxyConfig: proxyConfig.value,
-            getConnection: () => slackConnection
-        });
-        const slackMessage = await proxy.request();
-        if (slackMessage.isErr()) {
-            return Err('slack_post_failed');
-        }
+        const sendMessage = async (): Promise<Result<PostSlackMessageResponse>> => {
+            // Send/update chat message
+            const data = {
+                channel,
+                ts: payload.ts || '',
+                attachments: [
+                    {
+                        color: color,
+                        blocks: [
+                            {
+                                type: 'section',
+                                text: {
+                                    type: 'mrkdwn',
+                                    text: payload.content
+                                }
+                            },
+                            ...(payload.meta
+                                ? [
+                                      {
+                                          type: 'context',
+                                          elements: [
+                                              {
+                                                  type: 'mrkdwn',
+                                                  text: `${payload.meta.accountName} (uuid: ${payload.meta.accountUuid})`
+                                              }
+                                          ]
+                                      }
+                                  ]
+                                : [])
+                        ]
+                    }
+                ]
+            };
 
-        return Ok(slackMessage.value.data as PostSlackMessageResponse);
+            const proxyConfig = getProxyConfiguration({
+                externalConfig: {
+                    method: 'POST',
+                    endpoint: data.ts ? 'chat.update' : 'chat.postMessage',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    data,
+                    decompress: false,
+                    providerConfigKey: integration.unique_key,
+                    retries: 10
+                },
+                internalConfig: {
+                    providerName: integration.provider
+                }
+            });
+            if (proxyConfig.isErr()) {
+                return Err('failed_to_get_proxy_config');
+            }
+            const proxy = new ProxyRequest({
+                logger: () => {},
+                proxyConfig: proxyConfig.value,
+                getConnection: () => slackConnection
+            });
+            const slackMessage = await proxy.request();
+
+            if (slackMessage.isErr()) {
+                return Err(new Error('slack_post_failed', { cause: slackMessage.error }));
+            }
+
+            if (!slackMessage.value.data) {
+                return Err(new Error('slack_post_no_response'));
+            }
+
+            // Slack returns `200 OK { ok: false, error: "..."}` when the request failed :(
+            if (!slackMessage.value.data.ok) {
+                return Err(slackMessage.value.data.error);
+            }
+
+            return Ok(slackMessage.value.data);
+        };
+
+        const send = await sendMessage();
+
+        if (send.isErr()) {
+            // if we get `not_in_channel` error we try to join the channel and resend the message
+            // https://docs.slack.dev/reference/methods/chat.postMessage/
+            if (send.error.message === 'not_in_channel') {
+                const join = await joinChannel();
+                if (join.isErr()) {
+                    return Err(join.error);
+                }
+                return sendMessage();
+            }
+        }
+        return send;
     }
 
     public async closeOpenNotificationForConnection({ connectionId, environmentId }: { connectionId: number; environmentId: number }) {

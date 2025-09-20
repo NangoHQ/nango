@@ -1,3 +1,5 @@
+import { flattenObject } from 'es-toolkit';
+
 import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
@@ -83,6 +85,20 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                     delta: event.payload.value
                 });
                 // No billing action for connections, just tracking usage
+                return Ok(undefined);
+            }
+            case 'usage.function_executions': {
+                const { telemetryBag, ...rest } = event.payload.properties;
+                billing.add('function_executions', event.payload.value, {
+                    idempotencyKey: event.idempotencyKey,
+                    timestamp: event.createdAt,
+                    ...rest,
+                    ...(telemetryBag ? flattenObject({ telemetry: telemetryBag as Record<string, unknown> }) : {})
+                });
+                return Ok(undefined);
+            }
+            case 'usage.proxy': {
+                // TODO: ingest to Orb
                 return Ok(undefined);
             }
             default:

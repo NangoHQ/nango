@@ -172,7 +172,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/guides/custom-integrations/overview"
+                    href="https://docs.nango.dev/guides/platform/functions"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
                     rel="noreferrer"

@@ -29,7 +29,7 @@ export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
 
 export const ErrorFallbackGlobal: React.FC = () => {
     return (
-        <div className="absolute h-screen  w-screen overflow-hidden flex flex-col items-center pt-[50px] pb-[50px] bg-dark-800 bg-opacity-60">
+        <div className="absolute h-screen w-screen overflow-hidden flex flex-col items-center pt-[50px] pb-[50px] bg-dark-800 bg-opacity-60">
             <div className="relative overflow-hidden bg-background text-text-primary rounded-xl w-[500px] h-full min-h-[500px]">
                 <ErrorFallback />
             </div>

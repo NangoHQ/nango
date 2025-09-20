@@ -453,7 +453,7 @@ export declare class NangoSync extends NangoAction {
     batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
-    deleteRecordsFromPreviousExecutions(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;
+    deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }>;
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
 }
 /**
@@ -502,6 +502,7 @@ export interface Base {
   literalNull: null[];
   obj: {  nested: string;};
   optional?: string | undefined;
+  optional2?: string | undefined;
   arrayLiteral: any[];
   objectLiteral: Record<string, any>;
   any: any;
