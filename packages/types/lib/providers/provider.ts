@@ -94,9 +94,7 @@ export interface BaseProvider {
     require_client_certificate?: boolean;
 }
 
-export interface ProviderOAuth2 extends BaseProvider {
-    auth_mode: 'OAUTH2';
-
+interface BaseOAuth2Provider extends BaseProvider {
     disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
 
     token_params?: {
@@ -113,6 +111,10 @@ export interface ProviderOAuth2 extends BaseProvider {
     expires_in_unit?: 'milliseconds';
 
     token_request_auth_method?: 'basic' | 'custom';
+}
+
+export interface ProviderOAuth2 extends BaseOAuth2Provider {
+    auth_mode: 'OAUTH2';
 }
 
 export interface ProviderOAuth1 extends BaseProvider {
@@ -136,7 +138,7 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
     };
 }
 
-export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
+export interface ProviderMcpOAUTH2 extends BaseOAuth2Provider {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
 }
