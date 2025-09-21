@@ -269,11 +269,25 @@ export class OrbClient implements BillingClient {
 
 function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
     const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
+
+    // orb doesn't accept nested properties, we need to flatten them with dot notation
+    const properties: Record<string, string | number | boolean> = {};
+    for (const [topLevelKey, value] of Object.entries(rest)) {
+        if (!value) continue;
+        if (typeof value === 'object') {
+            for (const [k, v] of Object.entries(value)) {
+                properties[`${topLevelKey}.${k}`] = v;
+            }
+        } else {
+            properties[topLevelKey] = value;
+        }
+    }
+
     return {
         event_name: event.type,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),
-        properties: rest
+        properties
     };
 }

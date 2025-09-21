@@ -47,9 +47,10 @@ export interface BillingPlan {
     external_plan_id: string;
 }
 
-type BillingProperties = string | number | boolean | Date | { [key: string]: BillingProperties } | undefined;
+type BillingPropertyValue = string | number | boolean | Date | undefined;
+type BillingProperties = Record<string, BillingPropertyValue | Record<string, BillingPropertyValue>>;
 
-interface BillingEventBase<TType extends string, TProperties extends BillingProperties = unknown> {
+interface BillingEventBase<TType extends string, TProperties extends BillingProperties = BillingProperties> {
     type: TType;
     properties: {
         timestamp: Date;
@@ -86,10 +87,12 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
         type: string;
         connectionId: number;
         telemetry: {
-            customLogs: number;
-            proxyCalls: number;
             successes: number;
             failures: number;
+            durationMs: number;
+            memoryGb: number;
+            customLogs: number;
+            proxyCalls: number;
         };
         frequencyMs?: number | undefined;
     }

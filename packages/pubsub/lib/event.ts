@@ -97,6 +97,8 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
             connectionId: number;
             telemetryBag:
                 | {
+                      durationMs: number;
+                      memoryGb: number;
                       customLogs: number;
                       proxyCalls: number;
                   }

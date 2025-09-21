@@ -30,10 +30,12 @@ describe('BillingEventGrouping', () => {
                     connectionId: 2,
                     type: 'action',
                     telemetry: {
-                        customLogs: 7,
-                        proxyCalls: 3,
                         successes: 2,
-                        failures: 1
+                        failures: 1,
+                        durationMs: 150,
+                        memoryGb: 1,
+                        customLogs: 7,
+                        proxyCalls: 3
                     },
                     count: 10,
                     timestamp: new Date()
@@ -49,6 +51,8 @@ describe('BillingEventGrouping', () => {
                     telemetry: {
                         customLogs: 10,
                         proxyCalls: 3,
+                        durationMs: 200,
+                        memoryGb: 1,
                         successes: 6,
                         failures: 1
                     },
@@ -228,10 +232,12 @@ describe('BillingEventGrouping', () => {
                     type: 'sync',
                     frequencyMs: 100,
                     telemetry: {
-                        customLogs: 10,
-                        proxyCalls: 3,
                         successes: 6,
-                        failures: 1
+                        failures: 1,
+                        durationMs: 200,
+                        memoryGb: 1,
+                        customLogs: 10,
+                        proxyCalls: 3
                     },
                     count: 20,
                     timestamp: new Date('2024-01-01T00:00:00Z')
@@ -245,10 +251,12 @@ describe('BillingEventGrouping', () => {
                     type: 'sync',
                     frequencyMs: 100,
                     telemetry: {
-                        customLogs: 5,
-                        proxyCalls: 1,
                         successes: 7,
-                        failures: 2
+                        failures: 2,
+                        durationMs: 100,
+                        memoryGb: 0.5,
+                        customLogs: 5,
+                        proxyCalls: 1
                     },
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z')
@@ -267,6 +275,8 @@ describe('BillingEventGrouping', () => {
                     telemetry: {
                         customLogs: 15,
                         failures: 3,
+                        durationMs: 300,
+                        memoryGb: 1.5,
                         proxyCalls: 4,
                         successes: 13
                     }
