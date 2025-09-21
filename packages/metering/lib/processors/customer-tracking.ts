@@ -8,7 +8,7 @@ import { logger } from '../utils.js';
 import type { Transport, UsageEvent } from '@nangohq/pubsub';
 import type { Result } from '@nangohq/utils';
 
-export class CustomerTracking {
+export class CustomerTrackingProcessor {
     private subscriber: Subscriber;
 
     constructor(transport: Transport) {

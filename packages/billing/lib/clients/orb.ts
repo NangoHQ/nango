@@ -1,10 +1,11 @@
 import Orb from 'orb-billing';
+import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -16,7 +17,7 @@ export class OrbClient implements BillingClient {
         });
     }
 
-    async ingest(events: BillingIngestEvent[]) {
+    async ingest(events: BillingEvent[]) {
         // Orb limit the number of events per batch to 500
         const batchSize = 500;
 
@@ -266,12 +267,13 @@ export class OrbClient implements BillingClient {
     }
 }
 
-function toOrbEvent(event: BillingIngestEvent): Orb.Events.EventIngestParams.Event {
+function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
+    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
     return {
         event_name: event.type,
-        idempotency_key: event.idempotencyKey,
-        external_customer_id: event.accountId.toString(),
-        timestamp: event.timestamp.toISOString(),
-        properties: event.properties
+        idempotency_key: idempotencyKey || uuidv7(),
+        external_customer_id: accountId.toString(),
+        timestamp: timestamp.toISOString(),
+        properties: rest
     };
 }
