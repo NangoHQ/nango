@@ -74,7 +74,7 @@ export abstract class NangoActionBase<
         customLogs: 0,
         proxyCalls: 0,
         durationMs: 0,
-        memoryInGb: 1
+        memoryGb: 1
     };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();

@@ -55,7 +55,7 @@ class JobsClient {
                                 message: 'Output is too large'
                             }
                         },
-                        telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryInGb: 1 }
+                        telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 }
                     });
                 }
                 return Err(`putTask_failed`);
