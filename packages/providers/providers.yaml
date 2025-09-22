@@ -9116,13 +9116,13 @@ plain:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: https://core-api.uk.plain.com/graphql/v1
+        base_url: https://core-api.uk.plain.com/graphql
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /v1?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
