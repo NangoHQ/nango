@@ -8,7 +8,8 @@ const route: WebhookHandler = async (nango, _headers, body) => {
     // https://www.fillout.com/help/webhook#available-webhook-options
 
     if (Array.isArray(body)) {
-        let connectionIds: string[] = [];
+        const connectionIds = new Set<string>();
+
         for (const event of body) {
             const response = await nango.executeScriptForWebhooks({
                 body: event,
@@ -16,13 +17,20 @@ const route: WebhookHandler = async (nango, _headers, body) => {
                 connectionIdentifier: 'formId',
                 propName: 'metadata.formId'
             });
-            if (response && response.connectionIds?.length > 0) {
-                connectionIds = connectionIds.concat(response.connectionIds);
+
+            if (response?.connectionIds?.length) {
+                for (const id of response.connectionIds) {
+                    connectionIds.add(id);
+                }
             }
         }
-        const uniqueConnectionIds = Array.from(new Set(connectionIds));
 
-        return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds: uniqueConnectionIds, toForward: body });
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds: Array.from(connectionIds),
+            toForward: body
+        });
     } else {
         const response = await nango.executeScriptForWebhooks({
             body,
