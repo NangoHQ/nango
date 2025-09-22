@@ -4305,6 +4305,7 @@ fillout-api-key:
             method: GET
             endpoints:
                 - /v1/api/forms
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout-api-key
     docs_connect: https://docs.nango.dev/integrations/all/fillout-api-key/connect
     connection_config:
@@ -4336,6 +4337,7 @@ fillout:
         base_url: ${connectionConfig.base_url}
     token_response_metadata:
         - base_url
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout
     connection_config:
         base_url:
