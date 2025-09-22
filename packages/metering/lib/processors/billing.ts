@@ -140,6 +140,10 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 ]);
                 return Ok(undefined);
             }
+            case 'usage.webhook_forward': {
+                logger.info('Billing webhook forwards is not implemented yet');
+                return Ok(undefined);
+            }
             default:
                 ((_exhaustiveCheck: never) => {
                     throw new Error(`Unhandled event type`);

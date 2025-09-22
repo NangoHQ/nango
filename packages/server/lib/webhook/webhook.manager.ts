@@ -6,6 +6,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
+import { pubsub } from '../pubsub.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -113,7 +114,26 @@ export async function routeWebhook({
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
             logContextGetter
-        }).finally(() => forwardSpan.finish());
+        })
+            .then((res) => {
+                if (res.isOk()) {
+                    pubsub.publisher.publish({
+                        subject: 'usage',
+                        type: 'usage.webhook_forward',
+                        payload: {
+                            value: res.value.forwarded,
+                            properties: {
+                                accountId: account.id,
+                                environmentId: environment.id,
+                                provider: integration.provider,
+                                providerConfigKey: integration.unique_key,
+                                success: true
+                            }
+                        }
+                    });
+                }
+            })
+            .finally(() => forwardSpan.finish());
     }
 
     return res;

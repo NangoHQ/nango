@@ -40,7 +40,7 @@ interface UsageEventBase<TType extends string, TPayload extends Serializable> ex
     type: TType;
     payload: TPayload & {
         value: number;
-        properties: { accountId: number; connectionId: number };
+        properties: { accountId: number };
     };
 }
 
@@ -49,7 +49,6 @@ export type UsageMarEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            accountId: number;
             environmentId: number;
             providerConfigKey: string;
             connectionId: number;
@@ -64,7 +63,6 @@ export type UsageActionsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            accountId: number;
             connectionId: number;
             environmentId: number;
             providerConfigKey: string;
@@ -78,7 +76,6 @@ export type UsageConnectionsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            accountId: number;
             environmentId: number;
             providerConfigKey: string;
             connectionId: number;
@@ -123,5 +120,20 @@ export type UsageProxyEvent = UsageEventBase<
     }
 >;
 
+export type UsageWebhookForwardEvent = UsageEventBase<
+    'usage.webhook_forward',
+    {
+        value: number;
+        properties: {
+            environmentId: number;
+            provider: string;
+            providerConfigKey: string;
+            success: boolean;
+        };
+    }
+>;
+
 type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
-export type UsageEvent = EnforceUsageEventBase<UsageMarEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent>;
+export type UsageEvent = EnforceUsageEventBase<
+    UsageMarEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+>;
