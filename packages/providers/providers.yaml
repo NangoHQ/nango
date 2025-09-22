@@ -12350,6 +12350,27 @@ webflow:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
 
+webex:
+    display_name: Webex
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://webexapis.com/v1/authorize
+    token_url: https://webexapis.com/v1/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/webex
+
 whatsapp-business:
     display_name: WhatsApp Business
     categories:
