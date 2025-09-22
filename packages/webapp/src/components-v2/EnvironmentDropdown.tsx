@@ -52,7 +52,7 @@ export const EnvironmentDropdown: React.FC = () => {
                             <LogoInverted className="h-6 w-6 text-text-primary" />
                             <div className="flex flex-col items-start">
                                 <span className="text-s text-text-secondary">Environment</span>
-                                <span className="text-sm leading-4 text-text-primary font-semibold capitalize">{env}</span>
+                                <span className="text-sm leading-4 text-text-primary font-semibold capitalize truncate max-w-28">{env}</span>
                             </div>
                         </div>
                         <ChevronsUpDown className="w-4.5 h-4.5 text-text-primary" />

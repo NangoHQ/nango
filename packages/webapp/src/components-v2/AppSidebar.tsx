@@ -1,7 +1,8 @@
-import { Blocks, ChartBar, Logs, Plug, Settings2, User } from 'lucide-react';
+import { Blocks, ChartBar, Logs, Plug, Settings2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { EnvironmentDropdown } from './EnvironmentDropdown';
+import { ProfileDropdown } from './ProfileDropdown';
 import {
     Sidebar,
     SidebarContent,
@@ -51,13 +52,8 @@ export const AppSidebar: React.FC = () => {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter>
-                <SidebarMenuButton asChild>
-                    <a href={`/${env}/user-settings`}>
-                        <User />
-                        <span>User Settings</span>
-                    </a>
-                </SidebarMenuButton>
+            <SidebarFooter className="p-0">
+                <ProfileDropdown />
             </SidebarFooter>
         </Sidebar>
     );
