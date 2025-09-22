@@ -261,7 +261,7 @@ export async function transitionState(
 
 export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
     try {
-        const groupKeyPattern = groupKey.replace(/\*/g, '%');
+        const groupKeyPattern = groupKey.replace(/\*{1,2}/g, '%');
 
         const tasks = await db.transaction(async (trx) => {
             // Acquire a lock to prevent concurrent dequeueing of the same group

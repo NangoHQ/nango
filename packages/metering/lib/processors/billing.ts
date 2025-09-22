@@ -97,6 +97,10 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 });
                 return Ok(undefined);
             }
+            case 'usage.proxy': {
+                // TODO: ingest to Orb
+                return Ok(undefined);
+            }
             default:
                 return Err(`Unknown billing event type: ${event.type}`);
         }

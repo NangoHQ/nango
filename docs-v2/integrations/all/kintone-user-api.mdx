@@ -1,0 +1,81 @@
+---
+title: 'Kintone User API'
+sidebarTitle: 'Kintone User API'
+description: 'Access the Kintone User API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Kintone User API_.
+      </Step>
+      <Step title="Authorize Kintone User API">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Kintone User API token. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Kintone User API">
+        Let's make your first request to the Kintone User API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/users.json" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const res = await nango.get({
+              endpoint: '/v1/users.json',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data.users, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Ashby accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Kintone User API using Connect UI](/integrations/all/kintone-user-api/connect) |
+    | General | [Kintone Website](https://www.kintone.com/en-us/) |
+    | Developer | [Kintone Developer Program](https://kintone.dev/en/) |
+    | | [User API Token Authentication](https://kintone.dev/en/docs/common/user-api/overview/user-api-overview/#user-authentication) |
+    | | [User API Documentation](https://kintone.dev/en/docs/common/user-api/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/kintone.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    
+    _None yet, add yours!_
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ashby.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
