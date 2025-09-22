@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 
 export const StatusWidget = ({ service }) => {
   const [widgetHtml, setWidgetHtml] = useState('');
-  const apiDownWatchPublicKey = 'pk_821F1oqfI6zadHRd4rkv7Ij6MwF2o0XrZDHAuOubRDQ';
-  //const apiDownWatchHost = 'https://api.apidownwatch.com';
-  const apiDownWatchHost = 'http://localhost:8080';
+  const apiDownWatchPublicKey = 'pk_Osn50U6lzOCALPAuP46SfE42xJfMKY914TMzrWE3Tr4';
+  const apiDownWatchHost = 'https://api.apidownwatch.com';
   const refreshRate = 5;
 
   useEffect(() => {
