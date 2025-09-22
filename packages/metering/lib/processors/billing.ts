@@ -141,12 +141,22 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 return Ok(undefined);
             }
             case 'usage.webhook_forward': {
-                logger.info('Billing webhook forwards is not implemented yet');
+                billing.add([
+                    {
+                        type: 'webhook_forwards',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...event.payload.properties
+                        }
+                    }
+                ]);
                 return Ok(undefined);
             }
             default:
                 ((_exhaustiveCheck: never) => {
-                    throw new Error(`Unhandled event type`);
+                    throw new Error(`Unhandled event type: ${JSON.stringify(_exhaustiveCheck)}`);
                 })(event);
         }
     } catch (err) {
