@@ -75,6 +75,16 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err(updated.error);
             }
 
+            // We added a new card, so we need to set it as the default payment method
+            if (plan.stripe_payment_id) {
+                await stripe.customers.update(data.customer, {
+                    invoice_settings: {
+                        default_payment_method: data.payment_method as string
+                    }
+                });
+                await stripe.paymentMethods.detach(plan.stripe_payment_id);
+            }
+
             return Ok(undefined);
         }
 
