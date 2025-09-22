@@ -9116,13 +9116,13 @@ plain:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: https://core-api.uk.plain.com/graphql/v1
+        base_url: https://core-api.uk.plain.com/graphql
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /v1?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
@@ -10931,14 +10931,25 @@ smartsheet:
     display_name: Smartsheet
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
-    token_url: https://api.smartsheet.com/2.0/token
+    token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
-        base_url: https://api.smartsheet.com
+        base_url: https://api.${connectionConfig.domain}
     docs: https://docs.nango.dev/integrations/all/smartsheet
+    docs_connect: https://docs.nango.dev/integrations/all/smartsheet/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain where your account is hosted
+            example: smartsheet.com
+            prefix: https://api.
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
 
 smugmug:
     display_name: Smugmug
@@ -11030,7 +11041,6 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
-            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string
@@ -12339,6 +12349,27 @@ webflow:
     proxy:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
+
+webex:
+    display_name: Webex
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://webexapis.com/v1/authorize
+    token_url: https://webexapis.com/v1/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/webex
 
 whatsapp-business:
     display_name: WhatsApp Business
