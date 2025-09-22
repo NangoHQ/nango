@@ -50,4 +50,5 @@ export interface TelemetryBag extends Record<string, number> {
     customLogs: number;
     proxyCalls: number;
     durationMs: number;
+    memoryInGb: number;
 }

@@ -70,10 +70,11 @@ export abstract class NangoActionBase<
 
     public ActionError = ActionError;
 
-    protected telemetryBag: TelemetryBag = {
+    public telemetryBag: TelemetryBag = {
         customLogs: 0,
         proxyCalls: 0,
-        durationMs: 0
+        durationMs: 0,
+        memoryInGb: 1
     };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
@@ -428,9 +429,4 @@ export abstract class NangoActionBase<
      * Release all locks acquired during the execution of a script.
      */
     public abstract releaseAllLocks(): Promise<void>;
-
-    public getTelemetryBag(): TelemetryBag {
-        this.telemetryBag.durationMs = Date.now() - this.startTime;
-        return this.telemetryBag;
-    }
 }
