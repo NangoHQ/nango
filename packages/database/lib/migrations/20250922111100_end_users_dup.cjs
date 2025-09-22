@@ -29,7 +29,7 @@ exports.up = async function (knex) {
 	row_to_json(end_users.*) as end_user, _nango_connections.id as connection_id
 FROM
 	end_users
-	JOIN _nango_connections ON end_users.id = end_users.id
+	JOIN _nango_connections ON end_users.id = _nango_connections.end_user_id
     WHERE end_users.id IN (${endUsers.rows.map((endUser) => endUser.id).join(',')})`);
 
         console.log('[endUser dup] changing', endUsers.rows[0].total, 'connections, for end user', endUsers.rows[0].id);
