@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/Switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { Button } from '@/components/ui/button/Button';
+import { Tag } from '@/components/ui/label/Tag';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
@@ -80,11 +81,16 @@ export const ConnectUISettings = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10 h-[700px] min-w-[900px]">
-            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#connect-ui" id="connect-ui">
-                <div>
-                    <Cable className="w-4.5 h-4.5" />
+            <Link className="flex gap-6 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#connect-ui" id="connect-ui">
+                <div className="flex gap-2 items-center">
+                    <div>
+                        <Cable className="w-4.5 h-4.5" />
+                    </div>
+                    <h3 className="uppercase text-sm">Connect UI settings</h3>
                 </div>
-                <h3 className="uppercase text-sm">ConnectUI settings</h3>
+                <Tag variant="success" textCase="normal">
+                    NEW
+                </Tag>
             </Link>
             <div className="flex w-full h-full">
                 <form
@@ -266,7 +272,7 @@ export const ConnectUISettings = () => {
                                 disabled={!canSubmit || !isDirty}
                                 isLoading={isUpdatingConnectUISettings}
                             >
-                                Save settings
+                                Save Connect UI settings
                             </Button>
                         )}
                     </form.Subscribe>

@@ -112,8 +112,8 @@ export const EnvironmentSettings: React.FC = () => {
 
             <div className="flex flex-col gap-20 h-fit" key={env}>
                 <MainSettings />
-                <ConnectUISettings />
                 <BackendSettings />
+                <ConnectUISettings />
                 <NotificationSettings />
                 <VariablesSettings />
                 <ExportSettings />
