@@ -1,9 +1,9 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, isEnterprise } from '@nangohq/utils';
 
-import type { ConnectUISettings, DBConnectUISettings, Result } from '@nangohq/types';
+import type { ConnectUISettings, DBConnectUISettings, DBPlan, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
-export const defaultConnectUISettings: ConnectUISettings = {
+const defaultConnectUISettings: ConnectUISettings = {
     showWatermark: true,
     defaultTheme: 'system',
     theme: {
@@ -15,6 +15,13 @@ export const defaultConnectUISettings: ConnectUISettings = {
         }
     }
 };
+
+export function getDefaultConnectUISettings(): ConnectUISettings {
+    return {
+        ...defaultConnectUISettings,
+        showWatermark: isEnterprise ? false : true
+    };
+}
 
 export async function getConnectUISettings(db: Knex, environmentId: number): Promise<Result<ConnectUISettings | null>> {
     try {
@@ -47,4 +54,20 @@ export async function upsertConnectUISettings(db: Knex, environmentId: number, s
     } catch (err) {
         return Err(new Error('failed_to_upsert_connect_ui_settings', { cause: err }));
     }
+}
+
+export function canCustomizeConnectUITheme(plan?: DBPlan | null): boolean {
+    if (!flagHasPlan || !plan) {
+        return isEnterprise;
+    }
+
+    return plan.can_customize_connect_ui_theme;
+}
+
+export function canDisableConnectUIWatermark(plan?: DBPlan | null): boolean {
+    if (!flagHasPlan || !plan) {
+        return isEnterprise;
+    }
+
+    return plan.can_disable_connect_ui_watermark;
 }
