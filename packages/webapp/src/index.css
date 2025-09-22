@@ -8,7 +8,7 @@
   ---break---
 */
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @plugin '@tailwindcss/forms';
 
@@ -303,22 +303,26 @@
     --color-file: #f4f2eb;
 
     /* Functional */
-    --color-background-surface: var(--color-gray-1000);
-    --color-background-elevated: var(--color-gray-900);
-    --color-background-hover: var(--color-gray-850);
-    --color-background-press: var(--color-gray-700);
+    --color-background-surface: var(--color-gray-50);
+    --color-background-elevated: var(--color-gray-75);
+    --color-bg-muted: var(--color-gray-300);
 
-    --color-text-primary: var(--color-gray-50);
-    --color-text-secondary: var(--color-gray-300);
+    /* Nav */
+    --color-nav-bg-hover: var(--color-gray-50);
+    --color-nav-bg-press: var(--color-gray-200);
 
-    --color-border-muted: var(--color-gray-800);
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-750);
+    --color-text-tertiary: var(--color-gray-600);
+
+    --color-border-muted: var(--color-gray-200);
 
     --color-focus-ring: var(--color-brand-500);
 
     /* Dropdown */
-    --color-dropdown-bg-default: var(--color-gray-825);
-    --color-dropdown-bg-hover: var(--color-gray-850);
-    --color-dropdown-bg-press: var(--color-gray-1000);
+    --color-dropdown-bg-default: var(--color-gray-75);
+    --color-dropdown-bg-hover: var(--color-gray-150);
+    --color-dropdown-bg-press: var(--color-gray-50);
 
     /* Button */
     --color-btn-primary-bg: var(--color-brand-500);
@@ -326,20 +330,70 @@
     --color-btn-primary-hover: var(--color-brand-700);
     --color-btn-primary-press: var(--color-brand-900);
 
-    --color-btn-secondary-bg: var(--color-gray-800);
-    --color-btn-secondary-fg: var(--color-gray-150);
-    --color-btn-secondary-hover: var(--color-gray-650);
-    --color-btn-secondary-press: var(--color-gray-500);
+    --color-btn-secondary-bg: var(--color-gray-200);
+    --color-btn-secondary-fg: var(--color-gray-600);
+    --color-btn-secondary-hover: var(--color-gray-50);
+    --color-btn-secondary-press: var(--color-gray-400);
 
-    --color-btn-tertiary-bg: var(--color-gray-850);
-    --color-btn-tertiary-fg: var(--color-gray-200);
-    --color-btn-tertiary-hover: var(--color-gray-800);
-    --color-btn-tertiary-press: var(--color-gray-700);
+    --color-btn-tertiary-bg: var(--color-gray-50);
+    --color-btn-tertiary-fg: var(--color-gray-750);
+    --color-btn-tertiary-hover: var(--color-gray-100);
+    --color-btn-tertiary-press: var(--color-gray-200);
 
     --color-btn-destructive-bg: var(--color-red-500);
     --color-btn-destructive-fg: var(--color-gray-50);
     --color-btn-destructive-hover: var(--color-red-700);
     --color-btn-destructive-press: var(--color-red-900);
+}
+
+@layer theme {
+    :root,
+    :host {
+        @variant dark {
+            /* Functional */
+            --color-background-surface: var(--color-gray-1000);
+            --color-background-elevated: var(--color-gray-900);
+            --color-bg-muted: var(--color-gray-700);
+
+            /* Nav */
+            --color-nav-bg-hover: var(--color-gray-850);
+            --color-nav-bg-press: var(--color-gray-700);
+
+            --color-text-primary: var(--color-gray-50);
+            --color-text-secondary: var(--color-gray-300);
+            --color-text-tertiary: var(--color-gray-500);
+
+            --color-border-muted: var(--color-gray-800);
+
+            --color-focus-ring: var(--color-brand-500);
+
+            /* Dropdown */
+            --color-dropdown-bg-default: var(--color-gray-825);
+            --color-dropdown-bg-hover: var(--color-gray-850);
+            --color-dropdown-bg-press: var(--color-gray-1000);
+
+            /* Button */
+            --color-btn-primary-bg: var(--color-brand-500);
+            --color-btn-primary-fg: var(--color-gray-50);
+            --color-btn-primary-hover: var(--color-brand-700);
+            --color-btn-primary-press: var(--color-brand-900);
+
+            --color-btn-secondary-bg: var(--color-gray-800);
+            --color-btn-secondary-fg: var(--color-gray-150);
+            --color-btn-secondary-hover: var(--color-gray-650);
+            --color-btn-secondary-press: var(--color-gray-500);
+
+            --color-btn-tertiary-bg: var(--color-gray-850);
+            --color-btn-tertiary-fg: var(--color-gray-200);
+            --color-btn-tertiary-hover: var(--color-gray-800);
+            --color-btn-tertiary-press: var(--color-gray-700);
+
+            --color-btn-destructive-bg: var(--color-red-500);
+            --color-btn-destructive-fg: var(--color-gray-50);
+            --color-btn-destructive-hover: var(--color-red-700);
+            --color-btn-destructive-press: var(--color-red-900);
+        }
+    }
 }
 
 @utility bg-nav-gradient {
@@ -396,14 +450,15 @@
 */
 
 :root {
-    --sidebar: hsl(0 0% 98%);
+    /* Added by shadcn (customized by us)*/
+    --sidebar: #00000000;
     --sidebar-foreground: var(--color-text-secondary);
-    --sidebar-primary: hsl(240 5.9% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: var(--color-background-hover);
-    --sidebar-accent-foreground: hsl(240 5.9% 10%);
-    --sidebar-border: hsl(220 13% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --sidebar-primary: hsl(224.3 76.3% 48%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: var(--color-nav-bg-hover);
+    --sidebar-accent-foreground: var(--color-text-primary);
+    --sidebar-border: hsl(240 3.7% 15.9%);
+    --sidebar-ring: var(--color-focus-ring);
 }
 
 /*
@@ -416,7 +471,7 @@
     --sidebar-foreground: var(--color-text-secondary);
     --sidebar-primary: hsl(224.3 76.3% 48%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: var(--color-background-hover);
+    --sidebar-accent: var(--color-nav-bg-hover);
     --sidebar-accent-foreground: var(--color-text-primary);
     --sidebar-border: hsl(240 3.7% 15.9%);
     --sidebar-ring: var(--color-focus-ring);
