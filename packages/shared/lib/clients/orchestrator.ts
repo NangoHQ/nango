@@ -740,12 +740,14 @@ export class Orchestrator {
                 return Err(frequencyMs.error);
             }
 
-            const groupKey = `sync`;
             const schedule = await this.client.recurring({
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: frequencyMs.value,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: {
+                    key: `sync:environment:${nangoConnection.environment_id}`,
+                    maxConcurrency: 0
+                },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
