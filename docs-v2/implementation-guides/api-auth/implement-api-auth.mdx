@@ -32,10 +32,7 @@ Here's an example of how your backend can retrieve a session token from Nango ([
           id: '<END-USER-ID>',
           email: '<OPTIONAL-END-USER-EMAIL>',
           display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
-        },
-        organization: {
-          id: '<OPTIONAL-ORG-ID>',
-          display_name: '<OPTIONAL-ORG-DISPLAY-NAME>'
+          tags: { organizationId: '<ORGANIZATION-ID>' }
         },
         allowed_integrations: ['<INTEGRATION-ID>'],
       });
@@ -73,20 +70,16 @@ Here's an example of how your backend can retrieve a session token from Nango ([
 </Tabs>
 
 <Accordion title="ℹ️ Details on end user and organization information">
-  The `end_user` and `organization` information fields help identify which connection belongs to which end user and organization. This information is also used for display purposes in the Nango UI.
+  The `end_user` fields help identify which connection belongs to which end user. This information is also used for display purposes in the Nango UI.
 
   <Info>
-    The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-and-save-the-connection-id-backend)).
+    The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `tags`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-%26-save-the-connection-id-backend)).
   </Info>
   <Info>
     It's possible that the end use's email in your app will not match the email they use to connect their external account, which is fine.
   </Info>
   <Info>
-    **Editing user and org data**
-
-    Updating data for a user ID or org ID will apply the changes to all connections linked to that ID.
-
-    For example, if you create connection `A` with user ID `X` and email `a@a.com`, then connection `B` with the same user ID `X` and email `b@b.com`, both connections will reflect the latest data: `b@b.com`. The same applies to org data—editing it updates all connections tied to that org ID.
+    An endUser is linked to a single connection even if the `end_user.id` is the same across multiple connections.
   </Info>
 </Accordion>
 
@@ -185,7 +178,10 @@ Successful authorization webhooks sent by Nango are `POST` requests with the fol
     "operation": "creation",
     "success": true,
     "connectionId": "<CONNECTION-ID>",
-    "endUser": { "endUserId": "<END-USER-ID>", "organizationId": "<ORGANIZATION-ID>" },
+    "endUser": {
+      "endUserId": "<END-USER-ID>",
+      "tags": { "organizationId": "<ORGANIZATION-ID>" }
+    },
     ...
 }
 ```

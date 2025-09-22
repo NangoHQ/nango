@@ -25,3 +25,4 @@ export * from './http.js';
 export * from './version.js';
 export * from './wait.js';
 export * from './date.js';
+export * from './frequency.js';

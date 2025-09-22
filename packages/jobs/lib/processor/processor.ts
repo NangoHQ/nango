@@ -11,36 +11,24 @@ export class Processor {
 
     constructor(orchestratorServiceUrl: string) {
         const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
-        this.processors = [
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'sync',
-                maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'action',
-                maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'webhook',
-                maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY
-            }),
-            new OrchestratorProcessor({
-                handler,
-                orchestratorClient: orchestratorClient,
-                groupKey: 'on-event',
-                maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
-            })
-        ];
+
+        const processorConfigs = envs.JOBS_PROCESSOR_CONFIG;
+
+        this.processors = processorConfigs
+            .filter((config) => config.maxConcurrency > 0)
+            .map(
+                (config) =>
+                    new OrchestratorProcessor({
+                        handler,
+                        orchestratorClient,
+                        groupKey: config.groupKeyPattern,
+                        maxConcurrency: config.maxConcurrency
+                    })
+            );
     }
 
     start() {
-        logger.info('Starting task processors');
+        logger.info(`Starting ${this.processors.length} task processors`);
         this.processors.forEach((p) => p.start());
     }
 

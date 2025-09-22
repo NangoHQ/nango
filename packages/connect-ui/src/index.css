@@ -104,7 +104,8 @@
 }
 
 @layer theme {
-    :root {
+    :root,
+    :host {
         @variant dark {
             --color-primary: var(--color-brand-500);
             --color-on-primary: var(--color-gray-50);

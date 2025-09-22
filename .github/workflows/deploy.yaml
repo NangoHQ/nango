@@ -29,8 +29,14 @@ on:
 
 jobs:
     deploy_app_ui_aws:
-        if: inputs.stage == 'staging' && inputs.service == 'app_ui'
+        if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
+        env:
+            API_DOMAIN: ${{ (inputs.stage == 'production' && 'https://api.nango.dev' || 'https://api-staging.nango.dev') }}
+            DEPLOY_APP_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_APP_UI_ROLE || secrets.STAGING_DEPLOY_APP_UI_ROLE) }}
+            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
+            APP_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_BUCKET || secrets.STAGING_APP_UI_BUCKET) }}
+            APP_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_DISTRIBUTION_ID || secrets.STAGING_APP_UI_DISTRIBUTION_ID) }}
         permissions:
             id-token: write
             contents: read
@@ -42,29 +48,32 @@ jobs:
             - name: Build Webapp
               run: npm run ts-build && npm run -w @nangohq/webapp build
             - name: Replace env.js source with api path in dist/index.html
-              env:
-                  API_DOMAIN: 'https://api-staging.nango.dev'
               run: |
                   FILE="packages/webapp/dist/index.html"
                   sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ env.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ secrets.STAGING_DEPLOY_APP_UI_ROLE }}
+                  role-to-assume: ${{ env.DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ secrets.STAGING_AWS_REGION }}
+                  aws-region: ${{ env.AWS_REGION }}
             - name: Deploy Webapp to S3
               run: |
-                  aws s3 sync packages/webapp/dist/ s3://${{ secrets.STAGING_APP_UI_BUCKET }} --delete
+                  aws s3 sync packages/webapp/dist/ s3://${{ env.APP_UI_BUCKET }} --delete
             - name: Create invalidation
               run: |
-                  aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_APP_UI_DISTRIBUTION_ID }} --paths "/*"
+                  aws cloudfront create-invalidation --distribution-id ${{ env.APP_UI_DISTRIBUTION_ID }} --paths "/*"
     deploy_connect_ui_aws:
-        if: inputs.stage == 'staging' && inputs.service == 'connect_ui'
+        if: inputs.service == 'connect_ui'
         runs-on: ubuntu-latest
         permissions:
             id-token: write
             contents: read
+        env:
+            DEPLOY_CONNECT_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_CONNECT_UI_ROLE || secrets.STAGING_DEPLOY_CONNECT_UI_ROLE) }}
+            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
+            CONNECT_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_BUCKET || secrets.STAGING_CONNECT_UI_BUCKET) }}
+            CONNECT_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_DISTRIBUTION_ID || secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID) }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -75,18 +84,18 @@ jobs:
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ secrets.STAGING_DEPLOY_CONNECT_UI_ROLE }}
+                  role-to-assume: ${{ env.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ secrets.STAGING_AWS_REGION }}
+                  aws-region: ${{ env.AWS_REGION }}
             - name: Deploy Connect UI to S3
               run: |
-                  aws s3 sync packages/connect-ui/dist/ s3://${{ secrets.STAGING_CONNECT_UI_BUCKET }} --delete
+                  aws s3 sync packages/connect-ui/dist/ s3://${{ env.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
               run: |
-                  aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
+                  aws cloudfront create-invalidation --distribution-id ${{ env.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
 
     deploy_aws:
-        if: inputs.stage == 'staging' && inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -115,7 +124,7 @@ jobs:
                   git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
                   git push origin main
     deploy_runners_aws:
-        if: inputs.stage == 'staging' && inputs.service == 'runner'
+        if: inputs.service == 'runner'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
