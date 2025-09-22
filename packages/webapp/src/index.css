@@ -311,7 +311,35 @@
     --color-text-primary: var(--color-gray-50);
     --color-text-secondary: var(--color-gray-300);
 
+    --color-border-muted: var(--color-gray-800);
+
     --color-focus-ring: var(--color-brand-500);
+
+    /* Dropdown */
+    --color-dropdown-bg-default: var(--color-gray-825);
+    --color-dropdown-bg-hover: var(--color-gray-850);
+    --color-dropdown-bg-press: var(--color-gray-1000);
+
+    /* Button */
+    --color-btn-primary-bg: var(--color-brand-500);
+    --color-btn-primary-fg: var(--color-gray-50);
+    --color-btn-primary-hover: var(--color-brand-700);
+    --color-btn-primary-press: var(--color-brand-900);
+
+    --color-btn-secondary-bg: var(--color-gray-800);
+    --color-btn-secondary-fg: var(--color-gray-150);
+    --color-btn-secondary-hover: var(--color-gray-650);
+    --color-btn-secondary-press: var(--color-gray-500);
+
+    --color-btn-tertiary-bg: var(--color-gray-850);
+    --color-btn-tertiary-fg: var(--color-gray-200);
+    --color-btn-tertiary-hover: var(--color-gray-800);
+    --color-btn-tertiary-press: var(--color-gray-700);
+
+    --color-btn-destructive-bg: var(--color-red-500);
+    --color-btn-destructive-fg: var(--color-gray-50);
+    --color-btn-destructive-hover: var(--color-red-700);
+    --color-btn-destructive-press: var(--color-red-900);
 }
 
 @utility bg-nav-gradient {

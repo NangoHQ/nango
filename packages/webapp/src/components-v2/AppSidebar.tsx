@@ -1,6 +1,7 @@
 import { Blocks, ChartBar, Logs, Plug, Settings2, User } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { EnvironmentDropdown } from './EnvironmentDropdown';
 import {
     Sidebar,
     SidebarContent,
@@ -29,7 +30,9 @@ export const AppSidebar: React.FC = () => {
 
     return (
         <Sidebar collapsible="none">
-            <SidebarHeader />
+            <SidebarHeader className="p-3 py-2.5">
+                <EnvironmentDropdown />
+            </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
