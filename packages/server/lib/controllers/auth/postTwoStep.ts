@@ -150,7 +150,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             success,
             error,
             response: credentials
-        } = await connectionService.getTwoStepCredentials(provider as ProviderTwoStep, bodyData, connectionConfig);
+        } = await connectionService.getTwoStepCredentials(providerConfigKey, provider as ProviderTwoStep, bodyData, connectionConfig);
 
         if (!success || !credentials) {
             void logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
