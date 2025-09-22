@@ -17,35 +17,43 @@ exports.up = async function (knex) {
 		GROUP BY
 			end_users.id
 		HAVING
-			COUNT(1) > 1
-		LIMIT 1`);
+			COUNT(1) > 1`);
 
         if (endUsers.rows.length === 0) {
             break;
         }
 
-        // Grab all connections for the end user that needs to be duplicated
-        const connections = await knex.raw(`SELECT
+        for (const endUser of endUsers.rows) {
+            // Grab all connections for the end user that needs to be duplicated
+            const connections = await knex.raw(
+                `SELECT
 	row_to_json(end_users.*) as end_user, _nango_connections.id as connection_id
 FROM
 	end_users
 	JOIN _nango_connections ON end_users.id = _nango_connections.end_user_id
-    WHERE end_users.id IN (${endUsers.rows.map((endUser) => endUser.id).join(',')})`);
+    WHERE end_users.id = ?`,
+                [endUser.id]
+            );
 
-        console.log('[endUser dup] changing', endUsers.rows[0].total, 'connections, for end user', endUsers.rows[0].id);
+            console.log('[endUser dup] changing', endUser.total, 'connections, for end user', endUser.id);
 
-        // Insert a new end user for each connection
-        // And update the related connection with the new end_users.id
-        for (const connection of connections.rows) {
-            const inserted = await knex
-                .from('end_users')
-                .insert({ ...connection.end_user, id: undefined })
-                .returning('id');
-            await knex.raw(`UPDATE _nango_connections SET end_user_id = ${inserted[0].id} WHERE id = ${connection.connection_id}`);
+            // Insert a new end user for each connection
+            // And update the related connection with the new end_users.id
+            // skip 1 so we keep the original end user
+            for (let i = 1; i < connections.rows.length; i++) {
+                const connection = connections.rows[i];
+                const inserted = await knex
+                    .from('end_users')
+                    .insert({ ...connection.end_user, id: undefined })
+                    .returning('id');
+                await knex.raw(`UPDATE _nango_connections SET end_user_id = ${inserted[0].id} WHERE id = ${connection.connection_id}`);
+            }
+
+            // Be nice to the database and cpu
+            await wait(100);
         }
 
-        // Be nice to the database and cpu
-        await wait(100);
+        console.log('[endUser dup] done');
     }
 };
 
