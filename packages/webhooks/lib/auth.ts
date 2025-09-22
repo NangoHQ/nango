@@ -45,11 +45,17 @@ export async function sendAuth({
         return;
     }
 
-    if (operation !== 'creation' && operation !== 'refresh') {
+    if (operation === 'unknown') {
         return;
     }
 
-    if (!shouldSend({ success, type: operation === 'creation' ? 'auth_creation' : 'auth_refresh', webhookSettings })) {
+    if (
+        !shouldSend({
+            success,
+            type: operation === 'creation' ? 'auth_creation' : operation === 'override' ? 'auth_override' : 'auth_refresh',
+            webhookSettings
+        })
+    ) {
         return;
     }
 
