@@ -16,6 +16,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
             switch (event.type) {
                 case 'billable_actions':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                case 'proxy':
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'function_executions':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'monthly_active_records':
@@ -64,6 +66,26 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         count: a.properties.count + b.properties.count
                     }
                 };
+            case 'proxy': {
+                const _a = a as typeof b; // To satisfy ts compiler that b has the same type as a
+                return {
+                    type: b.type,
+                    properties: {
+                        count: _a.properties.count + b.properties.count,
+                        timestamp: b.properties.timestamp,
+                        idempotencyKey: b.properties.idempotencyKey,
+                        accountId: b.properties.accountId,
+                        environmentId: b.properties.environmentId,
+                        connectionId: b.properties.connectionId,
+                        providerConfigKey: b.properties.providerConfigKey,
+                        provider: b.properties.provider,
+                        telemetry: {
+                            successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
+                            failures: _a.properties.telemetry.failures + b.properties.telemetry.failures
+                        }
+                    }
+                };
+            }
             case 'monthly_active_records':
                 return {
                     type: b.type,

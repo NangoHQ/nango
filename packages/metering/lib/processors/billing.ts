@@ -122,7 +122,22 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 return Ok(undefined);
             }
             case 'usage.proxy': {
-                // TODO: ingest to Orb
+                const { success, ...rest } = event.payload.properties;
+                billing.add([
+                    {
+                        type: 'proxy',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...rest,
+                            telemetry: {
+                                successes: success ? event.payload.value : 0,
+                                failures: success ? 0 : event.payload.value
+                            }
+                        }
+                    }
+                ]);
                 return Ok(undefined);
             }
             default:
