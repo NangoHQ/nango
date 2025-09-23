@@ -47,9 +47,7 @@ export interface BaseProvider {
         base_url: string;
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
-        query?: {
-            api_key: string;
-        };
+        query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;

@@ -637,6 +637,130 @@ describe('buildProxyURL', () => {
 
         expect(url).toBe('https://example.com/api/test?ids=1%2C2');
     });
+
+    it('should handle proxy query parameters with connection config interpolation', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://example.com',
+                        query: {
+                            application_key: '${connectionConfig.application_key}',
+                            accesskey: '${connectionConfig.access_key}',
+                            version: 'v1'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                connection_config: {
+                    application_key: 'app-key-123',
+                    access_key: 'access-key-456'
+                }
+            })
+        });
+
+        expect(url).toBe('https://example.com/api/test?application_key=app-key-123&accesskey=access-key-456&version=v1');
+    });
+
+    it('should handle proxy query parameters with simple key-value pairs', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://example.com',
+                        query: {
+                            api_version: 'v2',
+                            format: 'json',
+                            debug: 'true'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection()
+        });
+
+        expect(url).toBe('https://example.com/api/test?api_version=v2&format=json&debug=true');
+    });
+
+    it('should handle mixed proxy query parameters (connection config and simple values)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://example.com',
+                        query: {
+                            application_key: '${connectionConfig.application_key}',
+                            version: 'v1',
+                            accesskey: '${connectionConfig.access_key}',
+                            format: 'json'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                connection_config: {
+                    application_key: 'app-key-789',
+                    access_key: 'access-key-101'
+                }
+            })
+        });
+
+        expect(url).toBe('https://example.com/api/test?application_key=app-key-789&version=v1&accesskey=access-key-101&format=json');
+    });
+
+    it('should handle proxy query parameters with missing connection config values', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://example.com',
+                        query: {
+                            application_key: '${connectionConfig.application_key}',
+                            version: 'v1',
+                            missing_key: '${connectionConfig.missing_key}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                connection_config: {
+                    application_key: 'app-key-123'
+                }
+            })
+        });
+
+        expect(url).toBe('https://example.com/api/test?application_key=app-key-123&version=v1');
+    });
+
+    it('should handle proxy query parameters with existing URL query params', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://example.com',
+                        query: {
+                            application_key: '${connectionConfig.application_key}',
+                            version: 'v1'
+                        }
+                    }
+                },
+                endpoint: '/api/test?existing=param'
+            }),
+            connection: getTestConnection({
+                connection_config: {
+                    application_key: 'app-key-123'
+                }
+            })
+        });
+
+        expect(url).toBe('https://example.com/api/test?existing=param&application_key=app-key-123&version=v1');
+    });
 });
 
 describe('getProxyConfiguration', () => {

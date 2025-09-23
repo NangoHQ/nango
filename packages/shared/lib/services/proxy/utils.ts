@@ -230,11 +230,29 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         }
     }
 
-    if (connection.credentials.type === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
-        const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
-        url.searchParams.set(apiKeyProp!, connection.credentials.apiKey);
-    }
+    if (config.provider?.proxy?.query) {
+        for (const [key, value] of Object.entries(config.provider.proxy.query)) {
+            if (typeof value !== 'string') {
+                continue;
+            }
+            if (connection.credentials.type === 'API_KEY' && value === '${apiKey}') {
+                url.searchParams.set(key, connection.credentials.apiKey);
+                continue;
+            }
 
+            if (value.includes('connectionConfig.')) {
+                const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
+
+                if (interpolatedValue && !interpolatedValue.includes('${')) {
+                    url.searchParams.set(key, interpolatedValue);
+                }
+                continue;
+            }
+            if (!value.includes('$')) {
+                url.searchParams.set(key, value);
+            }
+        }
+    }
     return url.toString();
 }
 
