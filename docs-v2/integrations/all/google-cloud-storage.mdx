@@ -10,7 +10,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Cloud Storage_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Cloud Storage_. Nango doesn't provide a test OAuth app for Google Cloud Storage yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
       <Note>
         Nango has credentials you can use for testing. Activate them in the dashboard.
@@ -21,12 +21,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Cloud. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Google Cloud Storage API">
-        Let's make your first request to the Google Cloud Storage API (list buckets). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Google Cloud Storage API (fetch a list of project buckets). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/storage/v1/b" \
+                curl "https://api.nango.dev/proxy/storage/v1/b?project={projectId}&maxResults=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -45,7 +45,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
 
             const res = await nango.get({
                 endpoint: '/storage/v1/b',
-                params: { maxResults: 10 },
+                params: { maxResults: 10, project: {projectId} },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
@@ -59,19 +59,22 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
 
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
+      <Note>
+        The `{projectId}` in the URL represents the `ID` of a valid project to retrieve a list of buckets from.
+      </Note>
       </Step>
     </Steps>
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Cloud Storage accounts
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Cloud Storage accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
 
     <Info>
-      You will need to pass a Google review to go live with your integration.
+      You will need to pass a security review to go live with your integration.
 
       [Follow our guide](/integrations/google-security-review) to get approved as fast as possible.
     </Info>
@@ -84,7 +87,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -92,7 +95,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
-        2. Search for **Cloud Storage API** and select the ones you wish to integrate with, such as **Cloud Storage**, **Google Cloud Storage JSON API**, etc., then click **Enable** for each.
+        2. Search for **Cloud Storage API** and select the APIs you wish to integrate with, such as **Cloud Storage**, **Google Cloud Storage JSON API**, etc., then click **Enable** for each.
       </Step>
       <Step title="Configure the OAuth consent screen">
         1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
@@ -101,7 +104,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -119,7 +122,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-        Most Google Cloud Storage scopes are marked "sensitive" by Google. You need to pass a Google review to go live.
+        Most Google Cloud Storage scopes are marked "sensitive" by Google. You need to pass a security review to go live.
 
        [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
       </Step>

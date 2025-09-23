@@ -84,7 +84,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -92,7 +92,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
-        2. Search for **Google Calendar API** and select the ones you wish to integrate with, such as **Google Calendar API**, **CalDAV API**, etc., then click **Enable** for each.
+        2. Search for **Google Calendar API** and select the APIs you wish to integrate with, such as **Google Calendar API**, **CalDAV API**, etc., then click **Enable** for each.
       </Step>
       <Step title="Configure the OAuth consent screen">
         1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
@@ -101,7 +101,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -119,7 +119,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-        Most Google Calendar scopes are marked "sensitive" by Google. You need to pass a Google review to go live.
+        Most Google Calendar scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
       </Step>
@@ -156,7 +156,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     | | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
     | | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
     | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
-    | | [Google Calendar API](https://developers.google.com/workspace/calendar/api/guides/overview) |
+    | | [Google Calendar API](https://developers.google.com/workspace/calendar/api/v3/reference) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-calendar.mdx)</Note>
   </Tab>

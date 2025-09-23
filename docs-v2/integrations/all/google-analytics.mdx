@@ -12,7 +12,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Gmail_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Analytics_. Nango doesn't provide a test OAuth app for Google Analytics yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
       <Note>
         Nango has credentials you can use for testing. Activate them in the dashboard.
@@ -23,14 +23,15 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Analytics. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Google Analytics API">
-        Let's make your first request to the Google Analytics API to fetch your profile information. This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Google Analytics Admin API (fetch a list of accounts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/gmail/v1/users/me/profile" \
+                curl "https://api.nango.dev/proxy/v1beta/accounts?pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Base-Url-Override: https://analyticsadmin.googleapis.com" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
 
@@ -46,9 +47,15 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/gmail/v1/users/me/profile',
+                endpoint: '/v1beta/accounts',
+                params: {
+                  pageSize: 10
+                },
                 providerConfigKey: '<INTEGRATION-ID>',
-                connectionId: '<CONNECTION-ID>'
+                connectionId: '<CONNECTION-ID>',
+                // Base Override here as we are accessing the Admin Rest API
+                // https://developers.google.com/analytics/devguides/config/admin/v1/rest/v1beta/accounts/list
+                baseUrlOverride: 'https://analyticsadmin.googleapis.com',
             });
 
             console.log(res.data);
@@ -66,7 +73,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GMail accounts.
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google Analytics accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -86,7 +93,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -94,7 +101,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
-        2. Search for **Google Analytics API** and select the ones you wish to integrate with, such as **Analytics Admin API**, **Analytics Hub API**, etc., then click **Enable** for each.
+        2. Search for **Google Analytics API** and select the APIs you wish to integrate with, such as **Google Analytics Admin API**, **Analytics Hub API**, etc., then click **Enable** for each.
       </Step>
       <Step title="Configure the OAuth consent screen">
         1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
@@ -103,7 +110,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -121,7 +128,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-       Most Google Analytics scopes are marked "restricted" by Google.
+       Most Google Analytics scopes are marked "sensitive" by Google.
 
        You can develop your integration in test mode, but you need to pass a security review to go live.
 
@@ -161,12 +168,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
     | | [Google Analytics API](https://developers.google.com/analytics/devguides/reporting/data/v1/rest) |
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-analytics.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
     <ApiGotchas />
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-analytics.mdx)</Note>
   </Tab>
 </Tabs>
 

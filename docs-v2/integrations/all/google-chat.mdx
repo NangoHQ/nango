@@ -10,7 +10,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Chat_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Chat_. Nango doesn't provide a test OAuth app for Google Chat yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
       <Note>
         Nango has credentials you can use for testing. Activate them in the dashboard.
@@ -26,7 +26,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/v1/spaces" \
+                curl "https://api.nango.dev/proxy/v1/spaces?pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -84,7 +84,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -101,7 +101,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -119,7 +119,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-        Most Google Chat scopes are marked "sensitive" by Google. You need to pass a Google review to go live.
+        Most Google Chat scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
       </Step>
@@ -159,12 +159,13 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     | | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
     | | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
     | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
-    | | [Google Chat API](https://developers.google.com/workspace/chat/api/guides) |
+    | | [Google Chat API](https://developers.google.com/workspace/chat/api/reference/rest) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-chat.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
     <ApiGotchas />
+    - Google Chat API is only available to Google Workspace users.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-chat.mdx)</Note>
   </Tab>

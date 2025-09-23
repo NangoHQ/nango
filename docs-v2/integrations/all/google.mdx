@@ -10,7 +10,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google_. Nango doesn't provide a test OAuth app for Google yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
       <Note>
         Nango has credentials you can use for testing. Activate them in the dashboard.
@@ -21,12 +21,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call Google APIs">
-        Let's make your first request to a Google API (fetch user profile). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to a Google API (fetch a list of files). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/oauth2/v2/userinfo" \
+                curl "https://api.nango.dev/proxy/drive/v3/files?pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -44,7 +44,8 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/oauth2/v2/userinfo',
+                endpoint: '/drive/v3/files',
+                params: { pageSize: 10 },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
@@ -64,7 +65,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google accounts
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Google accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -83,7 +84,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -102,7 +103,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -120,7 +121,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-        Most Google scopes are marked "sensitive" by Google. You need to pass a Google review to go live.
+        Most Google scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
       </Step>
@@ -165,26 +166,8 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
   </Tab>
   <Tab title="🚨 API gotchas">
     <ApiGotchas />
-
-    ## Additional Google-specific gotchas
-
     -   Google has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Google Sheets, Gmail, Google Calendar, etc.).
     -   You need to enable individual Google APIs on the [Google API Console](https://console.cloud.google.com/apis/dashboard) before using them.
-    -   Under certain circumstances, Google expires a user's refresh token and the token refresh in Nango will fail. You can find a [list of reasons from Google here](https://developers.google.com/identity/protocols/oauth2#expiration), including:
-    1.   The user has [revoked your app's access](https://support.google.com/accounts/answer/3466521#remove-access).
-    2.  The user changed passwords and the refresh token contains Gmail scopes.
-    3.  The user account has exceeded a maximum number of granted (live) refresh tokens.
-    4.  The user granted [time-based access](https://developers.google.com/identity/protocols/oauth2/web-server#time-based-access) to your app and the access expired.
-    5.  If an admin [set any of the services requested in your app's scopes to Restricted](https://support.google.com/a/answer/7281227#restrictaccess).
-    6.  For [Google Cloud Platform APIs](https://developers.google.com/identity/protocols/oauth2#gcp) - the session length set by the admin could have been exceeded.
-    7.  In "Testing" mode with an external user type, refresh tokens expire in 7 days unless only basic scopes are used — userinfo.email, userinfo.profile, openid, or their [OpenID Connect equivalents](https://developers.google.com/identity/protocols/oauth2/scopes#openid-connect). You can remove this 7-day limit by switch from Testing to Production. Follow step 6 in the [Setup Guide](#setup-guide) above.
-    8.  Google allows up to 100 refresh tokens per account per OAuth client ID; new tokens overwrite the oldest without warning when the limit is reached.
-    -   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`https://app.nango.dev` if you're testing from the Nango UI).
-    -   For applications using sensitive or restricted scopes, Google requires verification and a security assessment. This process can take several weeks to complete.
-    -   Google's OAuth consent screen has different configurations for "External" and "Internal" user types. Internal is only available for Google Workspace users and limits access to users within your organization.
-    -   Google implements incremental authorization, allowing you to request additional scopes over time without requiring users to re-authorize all previously granted scopes.
-    -   Google enforces [rate limits](https://developers.google.com/workspace/admin/reports/v1/limits) on API requests, which vary depending on the specific API being used.
-
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google.mdx)</Note>
   </Tab>
 </Tabs>

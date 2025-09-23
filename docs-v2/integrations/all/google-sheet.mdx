@@ -21,12 +21,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to GSheet. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Google Sheets API">
-        Let's make your first request to the Google Sheets API (fetch a list of spreadsheets). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Google Sheets API (fetch a specific spreadsheet). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/v1/spreadsheets" \
+                curl "https://api.nango.dev/proxy/v4/spreadsheets/{sheetId}" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -44,13 +44,12 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/v1/spreadsheets',
-                params: { maxResults: 10 },
+                endpoint: '/v4/spreadsheets/{sheetId}',
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
 
-            console.log(res.data);
+            console.log(JSON.stringify(res.data, 2, null));
             ```
             </Tab>
 
@@ -59,13 +58,16 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
 
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
+       <Note>
+        The `{sheetId}` in the URL represents the `ID` of the spreadsheet to retrieve.
+      </Note>
       </Step>
     </Steps>
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GSheet accounts
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GSheet accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -84,7 +86,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -101,7 +103,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -154,7 +156,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     | | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
     | | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
     | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
-    | | [GSheet API](https://developers.google.com/workspace/sheets/api/guides/concepts) |
+    | | [GSheet API](https://developers.google.com/workspace/sheets/api/reference/rest) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-sheet.mdx)</Note>
   </Tab>

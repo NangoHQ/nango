@@ -22,7 +22,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Gmail API">
-        Let's make your first request to the Gmail API to fetch your profile information. This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Gmail API (fetch the profile of the currently signed-in user). This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
@@ -65,7 +65,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GMail accounts.
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Gmail accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -85,7 +85,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -100,11 +100,11 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         2. Click **Get started**.
         3. Fill in the **App Information** form.
           - **App Name**: The name of the app asking for consent.
-          - **User support email**: For users to contact you with questions about their consent
+          - **User support email**: For users to contact you with questions about their consent.
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -122,7 +122,7 @@ import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-       Most Gmail scopes are marked "restricted" by Google.
+       Most Gmail scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        You can develop your integration in test mode, but you need to pass a security review to go live.
 
