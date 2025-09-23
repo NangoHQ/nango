@@ -66,10 +66,10 @@ const observability = {
                     throw connRes.error;
                 }
                 for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
-                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks);
                 }
             } catch (err) {
                 span.setTag('error', err);
