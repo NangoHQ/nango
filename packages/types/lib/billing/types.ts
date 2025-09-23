@@ -98,8 +98,28 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
     }
 >;
 
+export type ProxyBillingEvent = BillingEventBase<
+    'proxy',
+    {
+        connectionId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        provider: string;
+        telemetry: {
+            successes: number;
+            failures: number;
+        };
+    }
+>;
+
 export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
 
 export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
 
-export type BillingEvent = MarBillingEvent | ActionsBillingEvent | ConnectionsBillingEvent | FunctionExecutionsBillingEvent | ActiveConnectionsBillingEvent;
+export type BillingEvent =
+    | MarBillingEvent
+    | ActionsBillingEvent
+    | ProxyBillingEvent
+    | FunctionExecutionsBillingEvent
+    | ConnectionsBillingEvent
+    | ActiveConnectionsBillingEvent;

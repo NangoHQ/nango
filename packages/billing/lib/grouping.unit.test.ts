@@ -24,6 +24,22 @@ describe('BillingEventGrouping', () => {
                 }
             },
             {
+                type: 'proxy',
+                properties: {
+                    accountId: 1,
+                    connectionId: 2,
+                    environmentId: 3,
+                    providerConfigKey: 'providerConfigKey1',
+                    provider: 'provider1',
+                    telemetry: {
+                        successes: 4,
+                        failures: 0
+                    },
+                    count: 8,
+                    timestamp: new Date()
+                }
+            },
+            {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
@@ -31,7 +47,7 @@ describe('BillingEventGrouping', () => {
                     type: 'action',
                     telemetry: {
                         successes: 2,
-                        failures: 1,
+                        failures: 0,
                         durationMs: 150,
                         memoryGb: 1,
                         customLogs: 7,
@@ -90,9 +106,10 @@ describe('BillingEventGrouping', () => {
                 }
             }
         ];
-        const keys = events.map((e) => grouping.groupingKey(e));
+        const keys = events.map((event) => grouping.groupingKey(event));
         expect(keys).toEqual([
             'billable_actions|accountId:1|actionName:action1|connectionId:2|environmentId:3|providerConfigKey:providerConfigKey1',
+            'proxy|accountId:1|connectionId:2|environmentId:3|provider:provider1|providerConfigKey:providerConfigKey1',
             'function_executions|accountId:1|connectionId:2|type:action',
             'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
@@ -102,7 +119,7 @@ describe('BillingEventGrouping', () => {
     });
 
     describe('aggregate', () => {
-        it('should work for billable_active_connections', () => {
+        it('should aggregate billable_active_connections', () => {
             const a: BillingEvent = {
                 type: 'billable_active_connections',
                 properties: {
@@ -122,7 +139,7 @@ describe('BillingEventGrouping', () => {
             const aggregated = grouping.aggregate(a, b);
             expect(aggregated).toEqual(b);
         });
-        it('should work for billable_connections', () => {
+        it('should aggregate billable_connections', () => {
             const a: BillingEvent = {
                 type: 'billable_connections',
                 properties: {
@@ -142,7 +159,7 @@ describe('BillingEventGrouping', () => {
             const aggregated = grouping.aggregate(a, b);
             expect(aggregated).toEqual(b);
         });
-        it('should work for billable_actions', () => {
+        it('should aggregate billable_actions', () => {
             const a: BillingEvent = {
                 type: 'billable_actions',
                 properties: {
@@ -181,7 +198,7 @@ describe('BillingEventGrouping', () => {
                 }
             });
         });
-        it('should work for monthly_active_records', () => {
+        it('should aggregate monthly_active_records', () => {
             const a: BillingEvent = {
                 type: 'monthly_active_records',
                 properties: {
@@ -223,7 +240,7 @@ describe('BillingEventGrouping', () => {
                 }
             });
         });
-        it('should work for function_executions', () => {
+        it('should aggregate function_executions', () => {
             const a: BillingEvent = {
                 type: 'function_executions',
                 properties: {
@@ -279,6 +296,57 @@ describe('BillingEventGrouping', () => {
                         memoryGb: 1.5,
                         proxyCalls: 4,
                         successes: 13
+                    }
+                }
+            });
+        });
+        it('should aggregate proxy', () => {
+            const a: BillingEvent = {
+                type: 'proxy',
+                properties: {
+                    accountId: 1,
+                    connectionId: 2,
+                    environmentId: 3,
+                    providerConfigKey: 'providerConfigKey1',
+                    provider: 'provider1',
+                    telemetry: {
+                        successes: 4,
+                        failures: 0
+                    },
+                    count: 8,
+                    timestamp: new Date('2024-01-01T00:00:00Z')
+                }
+            };
+            const b: BillingEvent = {
+                type: 'proxy',
+                properties: {
+                    accountId: 1,
+                    connectionId: 2,
+                    environmentId: 3,
+                    providerConfigKey: 'providerConfigKey1',
+                    provider: 'provider1',
+                    telemetry: {
+                        successes: 0,
+                        failures: 1
+                    },
+                    count: 12,
+                    timestamp: new Date('2024-01-02T00:00:00Z')
+                }
+            };
+            const aggregated = grouping.aggregate(a, b);
+            expect(aggregated).toMatchObject({
+                type: 'proxy',
+                properties: {
+                    count: 20,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    accountId: 1,
+                    connectionId: 2,
+                    environmentId: 3,
+                    providerConfigKey: 'providerConfigKey1',
+                    provider: 'provider1',
+                    telemetry: {
+                        successes: 4,
+                        failures: 1
                     }
                 }
             });
