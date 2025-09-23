@@ -185,7 +185,7 @@ export const CreateConnectionSelector: React.FC = () => {
                         <Command>
                             <CommandInput
                                 placeholder="Search integrations..."
-                                className="text-white ring-0 focus:ring-0 focus-visible:outline-none"
+                                className="text-white ring-0 focus:ring-0 focus-visible:outline-hidden"
                             ></CommandInput>
                             <CommandList className="max-h-[400px]">
                                 <CommandEmpty>{loading ? 'Loading integrations...' : 'No integrations found.'}</CommandEmpty>

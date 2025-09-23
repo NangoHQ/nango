@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconInfoCircle, IconX } from '@tabler/icons-react';
+import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
+import { ExternalLink, Info, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -9,6 +10,7 @@ import * as z from 'zod';
 import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
+import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { triggerClose, triggerConnection } from '@/lib/events';
@@ -64,7 +66,8 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         username: z.string().min(1),
         password: z.string().min(1)
     }),
-    CUSTOM: z.object({})
+    CUSTOM: z.object({}),
+    MCP_OAUTH2: z.object({})
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
@@ -247,7 +250,8 @@ export const Go: React.FC = () => {
                     (provider.auth_mode === 'OAUTH2' && !provider.installation) ||
                     provider.auth_mode === 'OAUTH1' ||
                     provider.auth_mode === 'CUSTOM' ||
-                    provider.auth_mode === 'APP'
+                    provider.auth_mode === 'APP' ||
+                    provider.auth_mode === 'MCP_OAUTH2'
                 ) {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
@@ -277,6 +281,10 @@ export const Go: React.FC = () => {
                         setConnectionFailed(true);
                         setError(t('go.invalidCredentials', { provider: displayName }));
                         return;
+                    } else if (err.type === 'connection_validation_failed') {
+                        setConnectionFailed(true);
+                        setError(err.message || t('go.invalidCredentials', { provider: displayName }));
+                        return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
                         setError(t('go.resourceCapped'));
@@ -299,73 +307,103 @@ export const Go: React.FC = () => {
 
     if (result) {
         return (
-            <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
-                <div></div>
-                <div className="flex flex-col items-center gap-5">
-                    <IconCircleCheckFilled className="text-green-base" size={44} />
-                    <h2 className="text-xl font-semibold">{t('go.success')}</h2>
-                    <p className="text-text-muted">{t('go.successMessage', { provider: provider.name })}</p>
-                </div>
-                <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
-                    {t('common.finish')}
-                </Button>
-            </main>
+            <>
+                <HeaderButtons />
+                <main className="flex-1 flex flex-col justify-center gap-10 px-4">
+                    <div className="flex flex-col gap-7 items-center">
+                        <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
+                            <img alt={`${integration.display_name} logo`} src={integration.logo} />
+                            <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
+                                <IconCircleCheckFilled className="w-full h-full text-green-600" />
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
+                        <p className="text-center text-text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
+                    </div>
+                    <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
+                        {t('common.finish')}
+                    </Button>
+                </main>
+            </>
         );
     }
 
     if (connectionFailed) {
         return (
-            <main className="h-full overflow-auto p-10 pt-1 flex flex-col justify-between ">
-                <div></div>
-                <div className="flex flex-col items-center gap-5">
-                    <IconExclamationCircleFilled className="text-text-primary" size={44} />
-                    <h2 className="text-xl font-semibold">{t('go.connectionFailed')}</h2>
-                    {error ? <p className="text-text-muted text-center w-[80%]">{error}</p> : <p>{t('go.tryAgain')}</p>}
-                </div>
-                <Button
-                    className="w-full"
-                    loading={loading}
-                    size={'lg'}
-                    onClick={() => {
-                        setConnectionFailed(false);
-                        setError(null);
-                    }}
-                >
-                    {t('common.back')}
-                </Button>
-            </main>
+            <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
+                <HeaderButtons />
+                <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
+                    <div className="flex flex-col gap-7 items-center">
+                        <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
+                            <img alt={`${integration.display_name} logo`} src={integration.logo} />
+                            <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
+                                <IconCircleXFilled className="w-full h-full text-red-700" />
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
+                        <p className="text-text-secondary text-center">{error || t('go.tryAgain')}</p>
+                    </div>
+                    <Button
+                        className="w-full"
+                        loading={loading}
+                        size={'lg'}
+                        onClick={() => {
+                            setConnectionFailed(false);
+                            setError(null);
+                        }}
+                    >
+                        {t('common.back')}
+                    </Button>
+                </main>
+                {docsConnectUrl && (
+                    <footer>
+                        <p className="text-text-tertiary text-center">
+                            {t('common.needHelp')}{' '}
+                            <Link className="underline text-text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                                {t('common.viewGuide')}
+                            </Link>{' '}
+                            <ExternalLink className="inline-block w-3.5 h-3.5 text-text-tertiary" />
+                        </p>
+                    </footer>
+                )}
+            </div>
         );
     }
 
     return (
-        <>
-            <header className="relative m-10">
-                <div className="absolute top-0 left-0 w-full flex justify-between">
-                    {!isSingleIntegration ? (
-                        <Link to="/integrations" onClick={() => setIsDirty(false)}>
-                            <Button className="gap-1" title={t('go.backToList')} variant={'transparent'}>
-                                <IconArrowLeft stroke={1} /> {t('common.back')}
-                            </Button>
-                        </Link>
-                    ) : (
-                        <div></div>
-                    )}
-                    <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={() => triggerClose('click:close')}>
-                        <IconX stroke={1} />
-                    </Button>
-                </div>
-                <div className="flex flex-col gap-5 items-center pt-10">
-                    <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
-                        <img src={integration.logo} />
+        <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
+            <HeaderButtons
+                backLink={!isSingleIntegration ? '/integrations' : undefined}
+                onClickBack={() => {
+                    setIsDirty(false);
+                }}
+            />
+            <main className="flex-1 flex flex-col gap-7 px-4 justify-center">
+                <div className="flex flex-col gap-7 items-center">
+                    <div className="w-16 h-16 p-2 rounded-sm bg-white border border-subtle">
+                        <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-xl text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
+                    <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
-            </header>
-            <main className="h-full overflow-auto p-10 pt-1">
+
+                {error && (
+                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                        <TriangleAlert className="w-5 h-5" />
+                        {error}
+                    </p>
+                )}
+
+                {!error && shouldAutoTrigger && !form.formState.isValid && (
+                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                        <TriangleAlert className="w-5 h-5" />
+                        {t('go.invalidPreconfigured')}
+                    </p>
+                )}
+
                 <Form {...form}>
-                    <form className="flex flex-col gap-4 justify-between grow min-h-full animate-in" onSubmit={form.handleSubmit(onSubmit)}>
+                    <form className="flex flex-col gap-7" onSubmit={form.handleSubmit(onSubmit)}>
                         {orderedFields.length > 0 && (
-                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger ? 'border border-foreground' : 'hidden')}>
+                            <div className={cn('flex flex-col gap-5')}>
                                 {orderedFields.map(([name]) => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params', string];
 
@@ -384,16 +422,19 @@ export const Go: React.FC = () => {
                                             name={name}
                                             render={({ field }) => {
                                                 return (
-                                                    <FormItem className={cn(isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null)}>
-                                                        <div>
-                                                            <div className="flex gap-2 items-center pb-1">
-                                                                <FormLabel className="leading-5">
-                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
+                                                    <FormItem
+                                                        className={cn(
+                                                            'bg-elevated p-5',
+                                                            isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null
+                                                        )}
+                                                    >
+                                                        <div className="flex flex-col gap-2">
+                                                            <div className="flex gap-2 items-center">
+                                                                <FormLabel className="text-xs font-semibold text-text-primary">
+                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
-                                                                    <span className="bg-foreground rounded-lg px-2 py-0.5 text-xs text-text-muted">
-                                                                        optional
-                                                                    </span>
+                                                                    <span className="bg-elevated rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
                                                                 )}
                                                                 {docsConnectUrl && (
                                                                     <Link
@@ -401,25 +442,25 @@ export const Go: React.FC = () => {
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
                                                                     >
-                                                                        <IconInfoCircle size={16} />
+                                                                        <Info className="w-4 h-4 text-text-secondary" />
                                                                     </Link>
                                                                 )}
                                                             </div>
-                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
+                                                            {definition?.description && (
+                                                                <FormDescription className="text-text-secondary">{definition.description}</FormDescription>
+                                                            )}
                                                         </div>
-                                                        <div>
-                                                            <FormControl>
-                                                                <CustomInput
-                                                                    placeholder={definition?.example || definition?.title || base?.example}
-                                                                    prefix={definition?.prefix}
-                                                                    suffix={definition?.suffix}
-                                                                    {...(field as InputHTMLAttributes<HTMLInputElement>)}
-                                                                    autoComplete="off"
-                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </div>
+                                                        <FormControl>
+                                                            <CustomInput
+                                                                placeholder={definition?.example || definition?.title || base?.example}
+                                                                prefix={definition?.prefix}
+                                                                suffix={definition?.suffix}
+                                                                {...(field as InputHTMLAttributes<HTMLInputElement>)}
+                                                                autoComplete="off"
+                                                                type={definition?.secret || base?.secret ? 'password' : 'text'}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage className="p-0" />
                                                     </FormItem>
                                                 );
                                             }}
@@ -428,54 +469,36 @@ export const Go: React.FC = () => {
                                 })}
                             </div>
                         )}
+
                         {shouldAutoTrigger && (
-                            <>
-                                <div></div>
-                                <div className="text-sm text-text-muted w-full text-center -mt-20">
-                                    {/* visual centering */}
-                                    {t('go.willConnect', { provider: displayName })}
-                                    {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
-                                </div>
-                            </>
+                            <div className="text-sm text-text-secondary text-center">
+                                {t('go.willConnect', { provider: displayName })}
+                                {provider.auth_mode === 'OAUTH2' && ` ${t('go.popupWarning')}`}
+                            </div>
                         )}
-                        <div className="flex flex-col gap-4">
-                            {error && (
-                                <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded-md gap-2">
-                                    <div>
-                                        <IconExclamationCircle size={20} stroke={1} />
-                                    </div>{' '}
-                                    {error}
-                                </div>
-                            )}
-                            {!error && shouldAutoTrigger && !form.formState.isValid && (
-                                <div className="border border-red-base bg-red-base-35 text-red-base flex items-center py-1 px-4 rounded-md gap-2">
-                                    <div>
-                                        <IconExclamationCircle size={20} stroke={1} />
-                                    </div>
-                                    {t('go.invalidPreconfigured')}
-                                </div>
-                            )}
-                            {docsConnectUrl && (
-                                <p className="text-text-muted text-center">
-                                    {t('common.needHelp')}{' '}
-                                    <Link className="underline text-text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
-                                        {t('common.viewGuide')}
-                                    </Link>
-                                </p>
-                            )}
-                            <Button
-                                className="w-full"
-                                disabled={!form.formState.isValid || Object.keys(form.formState.errors).length > 0}
-                                loading={loading}
-                                size={'lg'}
-                                type="submit"
-                            >
-                                {error ? t('common.tryAgain') : loading ? t('common.connecting') : t('go.connect')}
-                            </Button>
-                        </div>
+
+                        <Button
+                            className="w-full"
+                            disabled={!form.formState.isValid || Object.keys(form.formState.errors).length > 0}
+                            loading={loading}
+                            type="submit"
+                        >
+                            {error ? t('common.tryAgain') : loading ? t('common.connecting') : t('go.connect')}
+                        </Button>
                     </form>
                 </Form>
             </main>
-        </>
+            {docsConnectUrl && (
+                <footer>
+                    <p className="text-text-tertiary text-center">
+                        {t('common.needHelp')}{' '}
+                        <Link className="underline text-text-primary" target="_blank" to={docsConnectUrl} onClick={() => telemetry('click:doc')}>
+                            {t('common.viewGuide')}
+                        </Link>{' '}
+                        <ExternalLink className="inline-block w-3.5 h-3.5 text-text-tertiary" />
+                    </p>
+                </footer>
+            )}
+        </div>
     );
 };

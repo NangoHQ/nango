@@ -108,8 +108,8 @@ export const ExportSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Export Settings</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-4 w-3/5">
-                <Link to="https://docs.nango.dev/guides/logs/opentelemetry-exporter" className="flex gap-2 items-center" target="_blank">
+            <div className="px-8 flex flex-col gap-4 w-1/2">
+                <Link to="https://docs.nango.dev/implementation-guides/platform/open-telemetry-logs-export" className="flex gap-2 items-center" target="_blank">
                     <label className="font-semibold">OpenTelemetry</label> <IconExternalLink stroke={1} size={18} />
                 </Link>
 
@@ -120,7 +120,7 @@ export const ExportSettings: React.FC = () => {
                     originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
                     apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
                     onSuccess={() => void mutate()}
-                    placeholder="https://my.otlp.commector:4318/v1"
+                    placeholder="https://my.otlp.commector:4318"
                 />
                 <fieldset className="flex flex-col gap-1">
                     <label htmlFor="otlp_headers" className="text-s">

@@ -63,7 +63,7 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
     }, [id]);
 
     return (
-        <div className="relative flex bg-grayscale-4 w-[300px] py-6 px-5 rounded">
+        <div className="relative flex bg-grayscale-4 w-[300px] py-6 px-5 rounded-sm">
             <div className="absolute right-2 top-2">
                 <ConfirmModal
                     title="Delete payment method"
@@ -79,7 +79,7 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
                 />
             </div>
             <div className="text-sm text-white flex gap-4 items-start">
-                <div className="bg-grayscale-14 text-grayscale-4 w-10 h-10 rounded flex items-center justify-center">
+                <div className="bg-grayscale-14 text-grayscale-4 w-10 h-10 rounded-sm flex items-center justify-center">
                     <IconCreditCard size={30} stroke={1} />
                 </div>
                 <div className="flex flex-col gap-1">

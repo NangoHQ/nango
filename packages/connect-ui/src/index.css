@@ -1,34 +1,143 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-*: initial;
+    --font-sans: Inter, sans-serif;
+
+    --color-black: #0b0b0c;
+    --color-white: #ffffff;
+
+    --color-gray-1000: #0b0b0c;
+    --color-gray-950: #121212;
+    --color-gray-900: #18191b;
+    --color-gray-875: #1e1f21;
+    --color-gray-850: #202124;
+    --color-gray-825: #242528;
+    --color-gray-800: #2a2b2f;
+    --color-gray-750: #35363a;
+    --color-gray-700: #424347;
+    --color-gray-650: #505155;
+    --color-gray-600: #626366;
+    --color-gray-550: #76777a;
+    --color-gray-500: #8b8c8f;
+    --color-gray-400: #a1a2a5;
+    --color-gray-300: #c4c5c7;
+    --color-gray-250: #d6d7d8;
+    --color-gray-200: #e7e7e7;
+    --color-gray-150: #f0f0f0;
+    --color-gray-100: #f2f2f2;
+    --color-gray-75: #fafafa;
+    --color-gray-50: #ffffff;
+
+    --color-brand-100: #e0f7fc;
+    --color-brand-300: #66d6f0;
+    --color-brand-500: #00b2e3;
+    --color-brand-700: #0089b0;
+    --color-brand-900: #005771;
+
+    --color-orange-100: #ffe5d1;
+    --color-orange-300: #fbb47a;
+    --color-orange-500: #f09745;
+    --color-orange-700: #bd7736;
+    --color-orange-900: #6a3c1c;
+
+    --color-yellow-100: #fff8d1;
+    --color-yellow-300: #fed75b;
+    --color-yellow-500: #f7c752;
+    --color-yellow-700: #d6a81e;
+    --color-yellow-900: #5c4a0b;
+
+    --color-blue-100: #e6f0ff;
+    --color-blue-300: #afcbff;
+    --color-blue-500: #90a1f0;
+    --color-blue-700: #3e58a8;
+    --color-blue-900: #1f2a55;
+
+    --color-violet-100: #f2e6f7;
+    --color-violet-300: #d8b6e6;
+    --color-violet-500: #c695c6;
+    --color-violet-700: #ad82ad;
+    --color-violet-900: #5d3a63;
+
+    --color-mint-100: #e3f9f2;
+    --color-mint-300: #9ce7ce;
+    --color-mint-500: #6ed6ac;
+    --color-mint-700: #4aa981;
+    --color-mint-900: #1f4e39;
+
+    --color-pink-100: #fde6f2;
+    --color-pink-300: #f7a3cd;
+    --color-pink-500: #ef6cbd;
+    --color-pink-700: #c04e91;
+    --color-pink-900: #6a2851;
+
+    --color-red-100: #fdecec;
+    --color-red-300: #f7a6a6;
+    --color-red-500: #ee4242;
+    --color-red-700: #e81818;
+    --color-red-900: #5a0f0f;
+
+    --color-green-100: #e6f7ec;
+    --color-green-300: #a8e6b9;
+    --color-green-500: #4cd964;
+    --color-green-700: #1e9e3e;
+    --color-green-900: #0a3d16;
+
+    --color-primary: var(--color-brand-500);
+    --color-on-primary: var(--color-gray-50);
+    --color-surface: var(--color-gray-50);
+    --color-elevated: var(--color-gray-75);
+    --color-subtle: var(--color-gray-150);
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-750);
+    --color-text-tertiary: var(--color-gray-600);
+    --color-border-muted: var(--color-gray-300);
+    --color-border-default: var(--color-gray-200);
+
+    --color-error: var(--color-red-700);
+
+    --shadow-focus: 0 0 0 3px rgba(0, 178, 227, 0.2);
+}
+
+@layer theme {
+    :root,
+    :host {
+        @variant dark {
+            --color-primary: var(--color-brand-500);
+            --color-on-primary: var(--color-gray-50);
+            --color-surface: var(--color-gray-1000);
+            --color-elevated: var(--color-gray-900);
+            --color-subtle: var(--color-gray-800);
+            --color-text-primary: var(--color-gray-50);
+            --color-text-secondary: var(--color-gray-300);
+            --color-text-tertiary: var(--color-gray-500);
+            --color-border-muted: var(--color-gray-700);
+            --color-border-default: var(--color-gray-800);
+
+            --color-error: var(--color-red-500);
+        }
+    }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
 @layer base {
-    :root {
-        --radius: 0.5rem;
-
-        /* Nango */
-        --color-background: #ffffff;
-        --color-foreground: #e4e4e7;
-        --color-primary: #000000;
-        --color-primary-foreground: #ffffff;
-        --color-text-primary: #09090b;
-        --color-text-muted: #71717a;
-
-        /* Clean Slate */
-        /* --color-background: #0f172a;
-        --color-foreground: #1e293b;
-        --color-primary: #818cf8;
-        --color-primary-foreground: #0f172a;
-        --color-text-primary: #e2e8f0;
-        --color-text-muted: #a9acb3; */
-
-        /* Amber Minimal */
-        /* --color-background: #171717;
-        --color-foreground: #262626;
-        --color-primary: #f59e0b;
-        --color-primary-foreground: #000000;
-        --color-text-primary: #e5e5e5;
-        --color-text-muted: #a3a3a3; */
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
     }
 }
 

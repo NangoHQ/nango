@@ -5,7 +5,7 @@ description: '⏱️ 1 hour to complete'
 ---
 
 <Frame caption="Authorization overview.">
-  <img src="/images/auth.png"/>
+  <img src="/images/diagrams/auth.png"/>
 </Frame>
 
 <Steps>
@@ -30,10 +30,7 @@ description: '⏱️ 1 hour to complete'
           id: '<END-USER-ID>',
           email: '<OPTIONAL-END-USER-EMAIL>',
           display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
-        },
-        organization: {
-          id: '<OPTIONAL-ORG-ID>',
-          display_name: '<OPTIONAL-ORG-DISPLAY-NAME>'
+          tags: { organizationId: '<ORGANIZATION-ID>' }
         },
         allowed_integrations: ['<INTEGRATION-ID>'],
       });
@@ -78,7 +75,7 @@ description: '⏱️ 1 hour to complete'
       The `end_user` and `organization` information fields help identify which connection belongs to which end user and organization. This information is also used for display purposes in the Nango UI and, in some cases, for custom billing plans.
 
       <Info>
-        The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-and-save-the-connection-id-backend)).
+        The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `tags`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](/implementation-guides/api-auth/implement-api-auth#3-listen-for-webhooks-%26-save-the-connection-id-backend)).
       </Info>
 
       <Info>
@@ -97,11 +94,11 @@ description: '⏱️ 1 hour to complete'
     In **your frontend**, load the Nango frontend SDK, retrieve the session token from the backend, and trigger the authorization flow.
 
     <Frame caption="Nango's default authorization UI.">
-      <img src="/images/connect-ui.gif" />
+      <img src="/images/screenshots/connect-ui.gif" />
     </Frame>
 
     <Tip>
-      You can override the Nango default UI ([docs](/guides/api-authorization/authorize-in-your-app-custom-ui)).
+      You can override the Nango default UI by [following this guide](/implementation-guides/api-auth/customize-connect-ui)).
     </Tip>
 
     ```js
@@ -140,7 +137,10 @@ description: '⏱️ 1 hour to complete'
         "operation": "creation",
         "success": true,
         "connectionId": "<CONNECTION-ID>",
-        "endUser": { "endUserId": "<END-USER-ID>", "organizationId": "<ORGANIZATION-ID>" },
+        "endUser": {
+          "endUserId": "<END-USER-ID>",
+          "tags": { "organizationId": "<ORGANIZATION-ID>" }
+        },
         ...
     }
     ```

@@ -4,8 +4,9 @@ import tracer from 'dd-trace';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { Err, Ok, truncateJson } from '@nangohq/utils';
+import { Err, Ok, metrics, truncateJson } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -90,6 +91,8 @@ function callToolRequestHandler(
     providerConfig: Config
 ): (request: CallToolRequest) => Promise<CallToolResult> {
     return async (request: CallToolRequest) => {
+        metrics.increment(metrics.Types.ACTION_CALLED_BY_MCP_SERVER, 1, { account_id: account.id });
+
         const active = tracer.scope().active();
         const span = tracer.startSpan('server.mcp.triggerAction', {
             childOf: active as Span
@@ -131,6 +134,7 @@ function callToolRequestHandler(
             input,
             async: false,
             retryMax: 3,
+            maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
 

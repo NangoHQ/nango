@@ -49,6 +49,8 @@ integrations:
           - scope2
 
     on-events:
+        validate-connection:
+            - verify-credentials
         post-connection-creation:
             - setup
             - moreSetup
@@ -81,7 +83,7 @@ Integration configuration fields are under `integrations.<INTEGRATION-ID>`.
 </ResponseField>
 
 <ResponseField name="on-events" type="object">
-  Lists the events and scripts executed when those events occur.
+  Lists the events and functions executed when those events occur.
 </ResponseField>
 
 ### Sync fields
@@ -134,7 +136,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
   Possible method values are: `GET`
 
   The method/endpoint combination can be shared across syncs to unify the communication with external APIs.
-  The `group` is an optional value to group endpoints across scripts.
+  The `group` is an optional value to group endpoints across functions.
 
   Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
 </ResponseField>
@@ -142,7 +144,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
 <ResponseField name="sync_type" type="incremental | full" required>
   Specifies whether each sync execution replaces all of the data (`full`) or upserts it (`incremental`).
 
-  Learn more about [incremental vs. full refresh](/guides/syncs/overview#sync-modes-full-refresh-vs-incremental) syncing.
+  Learn more about [incremental vs. full refresh](/implementation-guides/syncs/large-datasets) syncing.
 </ResponseField>
 
 <ResponseField name="runs" type="string">
@@ -154,7 +156,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
 <ResponseField name="input" type="string">
   Defines the schema of the data required to run the sync. References a schema from the [models](#model-fields).
 
-  Sync inputs are passed from your app to the sync script via the connection metadata ([step-by-step guide](/guides/customer-configuration)).
+  Sync inputs are passed from your app to the sync function via the [connection metadata](/implementation-guides/building-integrations/customer-configuration).
 </ResponseField>
 
 <ResponseField name="scopes" type="string[]">
@@ -179,14 +181,14 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
   Defaults to `false`.
 
   <Info>
-    [Follow this guide](/guides/syncs/detecting-deletes) to add support for deletion detection to your syncs.
+    [Follow this guide](/implementation-guides/syncs/deletion-detection) to add support for deletion detection to your syncs.
 
-    This setting only applies if `sync_type: full` ([details](/guides/syncs/overview#detecting-deletions-incremental-vs-full-refresh-syncs)). For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync script using `nango.batchDelete()` ([reference](/reference/scripts)).
+    This setting only applies if `sync_type: full`. For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync function using `nango.batchDelete()` ([reference](/reference/functions)).
   </Info>
 </ResponseField>
 
 <ResponseField name="webhook-subscriptions" type="string | string[]">
-  Lists the types of external webhooks the sync script will handle. Multiple syncs can listen to the same subscription. Learn more about handling external webhooks in syncs: [step-by-step guide](/guides/webhooks/webhooks-from-apis#handle-external-webhooks-in-syncs).
+  Lists the types of external webhooks the sync function will handle. Multiple syncs can listen to the same subscription. Learn more about [handling external webhooks in syncs](/implementation-guides/syncs/realtime-syncs).
 </ResponseField>
 
 ### Action fields
@@ -215,7 +217,7 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
   Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
 
   The method/endpoint combination can be shared across actions to unify the communication with external APIs.
-  The `group` is an optional value to group endpoints across scripts.
+  The `group` is an optional value to group endpoints across functions.
 
   Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
 </ResponseField>
@@ -244,11 +246,11 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
   - post-connection-creation
   - pre-connection-deletion
 
-  Read the [Execute scripts based on events](/guides/custom-integrations/event-based-scripts) guide.
+  Read the [Execute functions based on events](/implementation-guides/platform/implement-event-handler) guide.
 </Tip>
 
 <ResponseField name="post-connection-creation" type="string[]">
-  Lists the scripts to execute after a new connection is created.
+  Lists the functions to execute after a new connection is created.
 
   Example:
 
@@ -257,13 +259,13 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     airtable:
       on-events:
         post-connection-creation:
-          - setup # Name of your event-based script (without the .ts extension)
+          - setup # Name of your event-based function (without the .ts extension)
           - initialize-webhooks
   ```
 </ResponseField>
 
 <ResponseField name="pre-connection-deletion" type="string[]">
-  Lists the scripts to execute before a connection is deleted.
+  Lists the functions to execute before a connection is deleted.
 
   Example:
 
@@ -468,9 +470,9 @@ This change will be reflected in the Nango UI in _Integrations_ \> _select your 
 
 ### Changing a model or script
 
-For [full refresh syncs](/guides/syncs/overview#full-refresh-syncs), as the data is replaced on each sync execution, the new model and script logic will apply to all records as soon as the sync executes following the deployment.
+For full refresh syncs, as the data is replaced on each sync execution, the new model and script logic will apply to all records as soon as the sync executes following the deployment.
 
-For [incremental syncs](/guides/syncs/overview#incremental-syncs), you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model.
+For incremental syncs, you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model.
 
 <Warning>
   Changing a model name in your configuration is the equivalent of deleting the model with the old name, and creating a new one.

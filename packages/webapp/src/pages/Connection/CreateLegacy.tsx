@@ -637,7 +637,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <select
                                             id="integration_unique_key"
                                             name="integration_unique_key"
-                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden"
                                             onChange={handleIntegrationUniqueKeyChange}
                                             defaultValue={integration?.unique_key}
                                         >
@@ -673,7 +673,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue={connectionId}
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionIdChange}
                                         />
                                     </div>
@@ -915,7 +915,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="text"
                                             required
                                             autoComplete="new-password"
-                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-active-gray text-text-light-gray focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionConfigParamsChange}
                                         />
                                     </div>
@@ -1061,7 +1061,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-active-gray block focus:border-white w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
@@ -1094,7 +1094,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="text"
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-xs focus:outline-hidden"
                                             value={privateKeyId}
                                             onChange={(e) => setPrivateKeyId(e.target.value)}
                                         />
@@ -1123,7 +1123,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="text"
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-xs focus:outline-hidden"
                                             value={issuerId}
                                             onChange={(e) => setIssuerId(e.target.value)}
                                         />
@@ -1187,7 +1187,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            } focus:ring-white bg-active-gray block focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
@@ -1250,7 +1250,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
                                 <a
-                                    href="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui"
+                                    href="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth"
                                     className="text-text-blue"
                                     target="_blank"
                                     rel="noreferrer"

@@ -72,7 +72,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
                         <button
                             onClick={onClickExecute}
                             disabled={isExecuting}
-                            className="flex flex-row items-center gap-2 px-4 py-1 rounded text-text-secondary text-sm hover:bg-grayscale-5 transition-transform"
+                            className="flex flex-row items-center gap-2 px-4 py-1 rounded-sm text-text-secondary text-sm hover:bg-grayscale-5 transition-transform"
                         >
                             {isExecuting ? (
                                 <>

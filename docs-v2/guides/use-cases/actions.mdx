@@ -1,0 +1,62 @@
+---
+title: 'Actions'
+sidebarTitle: 'Actions'
+description: 'Encapsulate logic to read & write to external API'
+---
+
+Nango Actions are functions that run on Nango’s platform to help you read from or write to external APIs in a clean, consistent, and composable way.
+
+You can invoke them from your backend, or expose them to LLMs with our built-in [MCP Server](/guides/use-cases/mcp-server).
+
+## When should you use actions?
+
+- You want to create a unified interface across different APIs
+- You want to write a lot of data asynchronously to external APIs
+- You want to abstract something that takes several external API requests into a single interface
+- You want strict, end-to-end type safety for interactions with external APIs
+
+Common examples:
+- Creating a unified interface to `create-contact` across several APIs (e.g., Salesforce, HubSpot, Attio, etc.)
+- Creating hundreds of invoices asynchronously, as fast as rate limits allow, in external APIs (e.g., after monthly billing run)
+- A simpler interface to create an opportunity and link it to a contact and a company, which takes 3 API requests
+
+You can think of actions as "virtual endpoints" on external APIs that you get to define.
+
+## Key facts
+
+- Actions run in Nango's infrastructure, powered by [Functions](/guides/platform/functions)
+    - Actions take an input and return an output
+    - You control the code of the action: API requests, transformations, data models, etc.
+    - All platform features, like data validation, per-customer config, retries, rate-limit handling, and pagination helpers, are available for actions
+- Actions can be used to read or write data on external APIs
+- Actions can call other actions
+- Actions run synchronously by default but can also run asynchronously (e.g., for batch writes)
+- Actions are invoked from your backend and run in the context of a [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (API key or access token of your user)
+- Actions can also be exposed to LLMs with our built-in [MCP Server](/guides/use-cases/mcp-server)
+- Actions can be used to build [unified APIs](/guides/platform/unified-apis) in Nango
+- All action invocations and API requests are logged in Nango's [logs](/guides/platform/logs)
+
+
+## How actions work
+
+<Frame caption="Overview of Actions in Nango">
+  ![](/images/diagrams/nango-actions-diagram.png)
+</Frame>
+
+Follow our [implement an action](/implementation-guides/actions/implement-an-action) guide to use actions in your product.
+
+## Actions in detail
+
+### Synchronous vs. async execution
+
+Nango supports both synchronous and asynchronous execution of actions. Synchronous is the default.
+
+Asynchronous execution is a better fit if you want Nango to transparently handle rate limits and retries. This is especially useful for bursty (or bulk) workloads, where you want to "fire and forget" the execution. In async mode, Nango can either send you a webhook when the execution finishes, or you can poll the status on the API.
+
+To implement an async action, follow our [async action implementation guide](/implementation-guides/actions/async-actions).
+
+### Actions calling actions (workflows)
+
+Nango supports calling an action from within another action. This lets you chain actions together and build entire workflows.
+
+Each action invocation will show up in the [logs](/guides/platform/logs).

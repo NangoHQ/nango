@@ -16,12 +16,14 @@ import {
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
@@ -81,6 +83,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     }
 
     let logCtx: LogContext | undefined;
+    let config: ProviderConfig | null = null;
 
     try {
         logCtx =
@@ -102,7 +105,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             }
         }
 
-        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             void logCtx.error('Unknown provider config');
             await logCtx.failed();
@@ -147,7 +150,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             success,
             error,
             response: credentials
-        } = await connectionService.getTwoStepCredentials(provider as ProviderTwoStep, bodyData, connectionConfig);
+        } = await connectionService.getTwoStepCredentials(providerConfigKey, provider as ProviderTwoStep, bodyData, connectionConfig);
 
         if (!success || !credentials) {
             void logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
@@ -182,6 +185,34 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
+        const customValidationResponse = await validateConnection({
+            connection: updatedConnection.connection,
+            config,
+            account,
+            logCtx
+        });
+
+        if (customValidationResponse.isErr()) {
+            void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+            await logCtx.failed();
+
+            if (updatedConnection.operation === 'creation') {
+                // since this is a new invalid connection, delete it with no trace of it
+                await connectionService.hardDelete(updatedConnection.connection.id);
+            }
+
+            const payload = customValidationResponse.error?.payload;
+            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+
+            res.status(400).send({
+                error: {
+                    code: 'connection_validation_failed',
+                    message
+                }
+            });
+            return;
+        }
+
         if (isConnectSession) {
             await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
@@ -205,7 +236,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -237,7 +268,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TWO_STEP' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TWO_STEP', ...(config ? { provider: config.provider } : {}) });
 
         next(err);
     }

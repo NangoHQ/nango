@@ -15,6 +15,7 @@ import {
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionCredentialsApiKeySchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -25,6 +26,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/aut
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { ApiKeyCredentials, PostPublicApiKeyAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
@@ -83,6 +85,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
     }
 
     let logCtx: LogContext | undefined;
+    let config: ProviderConfig | null = null;
     try {
         logCtx =
             isConnectSession && connectSession.operationId
@@ -103,7 +106,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             }
         }
 
-        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             void logCtx.error('Unknown provider config');
             await logCtx.failed();
@@ -174,6 +177,34 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             return;
         }
 
+        const customValidationResponse = await validateConnection({
+            connection: updatedConnection.connection,
+            config,
+            account,
+            logCtx
+        });
+
+        if (customValidationResponse.isErr()) {
+            void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+            await logCtx.failed();
+
+            if (updatedConnection.operation === 'creation') {
+                // since this is a new invalid connection, delete it with no trace of it
+                await connectionService.hardDelete(updatedConnection.connection.id);
+            }
+
+            const payload = customValidationResponse.error?.payload;
+            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+
+            res.status(400).send({
+                error: {
+                    code: 'connection_validation_failed',
+                    message
+                }
+            });
+            return;
+        }
+
         if (isConnectSession) {
             await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
@@ -196,7 +227,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -228,7 +259,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'API_KEY' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'API_KEY', ...(config ? { provider: config.provider } : {}) });
 
         next(err);
     }

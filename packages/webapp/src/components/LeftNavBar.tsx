@@ -202,7 +202,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </Button>
                         {userMenu.length > 0 && showUserSettings && (
                             <div
-                                className="absolute bottom-[45px] text-sm left-4 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded"
+                                className="absolute bottom-[45px] text-sm left-4 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded-sm"
                                 ref={refMenu}
                             >
                                 <ul className="text-gray-400 space-y-1 p-0.5 px-1">
@@ -212,7 +212,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                             <Link
                                                 key={item.name}
                                                 className={cn(
-                                                    'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-grayscale-2 rounded text-gray-400',
+                                                    'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-grayscale-2 rounded-sm text-gray-400',
                                                     props.selectedItem === item.value && `bg-grayscale-2 text-white`
                                                 )}
                                                 to={item.link}
@@ -225,7 +225,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
                                     <li
                                         className={cn(
-                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400 cursor-pointer'
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded-sm text-gray-400 cursor-pointer'
                                         )}
                                         onClick={async () => await signout()}
                                     >

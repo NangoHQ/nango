@@ -2,19 +2,14 @@ import z from 'zod';
 
 import db from '@nangohq/database';
 import { connectUISettingsService } from '@nangohq/shared';
-import { flagHasPlan, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { ConnectUISettings, PutConnectUISettings } from '@nangohq/types';
 
 const colorPaletteSchema = z.strictObject({
-    background: z.string(),
-    foreground: z.string(),
-    primary: z.string(),
-    primaryForeground: z.string(),
-    textPrimary: z.string(),
-    textMuted: z.string()
+    primary: z.string()
 });
 
 const bodyValidation = z.strictObject({
@@ -22,6 +17,7 @@ const bodyValidation = z.strictObject({
         light: colorPaletteSchema,
         dark: colorPaletteSchema
     }),
+    defaultTheme: z.enum(['light', 'dark', 'system']),
     showWatermark: z.boolean()
 });
 
@@ -43,13 +39,15 @@ export const putConnectUISettings = asyncWrapper<PutConnectUISettings>(async (re
 
     const newSettings: ConnectUISettings = body;
 
+    const defaultSettings = connectUISettingsService.getDefaultConnectUISettings();
+
     // Override settings to defaults if the plan does not have the feature
-    if (flagHasPlan && !plan?.can_customize_connect_ui_theme) {
-        newSettings.theme = connectUISettingsService.defaultConnectUISettings.theme;
+    if (!connectUISettingsService.canCustomizeConnectUITheme(plan)) {
+        newSettings.theme = defaultSettings.theme;
     }
 
-    if (flagHasPlan && !plan?.can_disable_connect_ui_watermark) {
-        newSettings.showWatermark = connectUISettingsService.defaultConnectUISettings.showWatermark;
+    if (!connectUISettingsService.canDisableConnectUIWatermark(plan)) {
+        newSettings.showWatermark = defaultSettings.showWatermark;
     }
 
     const settings = await connectUISettingsService.upsertConnectUISettings(db.knex, environment.id, body);

@@ -402,6 +402,45 @@ describe('Persist API', () => {
             });
         });
     });
+
+    describe('deleteOutdatedRecords', () => {
+        it('should delete outdated records', async () => {
+            const model = 'DeleteOutdatedModel';
+            await insertRecords(seed, model, [
+                { id: '1', name: 'new1' },
+                { id: '2', name: 'new2' },
+                { id: '3', name: 'new3' }
+            ]);
+
+            // increment the job id to simulate a new sync run
+            seed.syncJob.id += 1;
+            await insertRecords(seed, model, [
+                { id: '3', name: 'new3' },
+                { id: '4', name: 'new4' },
+                { id: '5', name: 'new5' }
+            ]);
+
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/outdated`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({
+                        model,
+                        activityLogId: seed.activityLogId
+                    }),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            expect(response.status).toEqual(200);
+            const body = await response.json();
+            expect(body).toMatchObject({
+                deletedKeys: expect.arrayContaining(['1', '2'])
+            });
+        });
+    });
 });
 
 const initDb = async () => {

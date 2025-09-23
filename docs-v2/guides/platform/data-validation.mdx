@@ -1,0 +1,24 @@
+---
+title: 'Data validation'
+sidebarTitle: 'Data validation'
+description: 'How Nango helps you with data validation for your integrations'
+---
+
+All inputs and outputs of [Functions](/guides/platform/functions) are strictly typed.
+
+This allows Nango to help you with automatic data validation for your integrations.
+
+## Built-in data validation
+
+Inputs and outputs of [Functions](/guides/platform/functions) are defined with zod models.
+
+[Zod](https://zod.dev/) is a very popular data validation package for TypeScript.
+
+Nango also automatically generates a [JSON Schema](https://json-schema.org/) definition of your zod models. This makes it easy to generate types for many different programming languages.
+
+Data validation is enabled by default:
+- During local development, Nango's CLI will log type errors as warnings
+    - You can optionally fail on type errors with a CLI flag
+- During production execution, type errors produce warnings in Nango's [logs](/guides/platform/logs) but do not fail the execution
+
+Refer to our [data validation implementation guide](/implementation-guides/building-integrations/data-validation) for more details.

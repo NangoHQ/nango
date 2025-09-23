@@ -1,12 +1,85 @@
-import type { ConnectUIThemeSettings } from '@nangohq/types';
+import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
-export function setTheme(theme: ConnectUIThemeSettings) {
+export function isValidTheme(theme: string): theme is Theme {
+    return ['light', 'dark', 'system'].includes(theme);
+}
+
+export function setTheme(theme: Theme) {
+    document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && getSystemTheme() === 'dark'));
+}
+
+/* Resolves system theme to light or dark, otherwise returns the theme */
+export function getEffectiveTheme(theme: Theme): 'light' | 'dark' {
+    return theme === 'system' ? getSystemTheme() : theme;
+}
+
+export function getSystemTheme(): 'light' | 'dark' {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export function setColors(theme: ConnectUIThemeSettings, themeToUse: Theme): void {
     const root = document.documentElement;
 
-    root.style.setProperty('--color-background', theme.light.background);
-    root.style.setProperty('--color-foreground', theme.light.foreground);
-    root.style.setProperty('--color-primary', theme.light.primary);
-    root.style.setProperty('--color-primary-foreground', theme.light.primaryForeground);
-    root.style.setProperty('--color-text-primary', theme.light.textPrimary);
-    root.style.setProperty('--color-text-muted', theme.light.textMuted);
+    const effectiveTheme = getEffectiveTheme(themeToUse);
+    if (effectiveTheme === 'light') {
+        const lightPrimary = theme.light.primary;
+        if (lightPrimary) {
+            root.style.setProperty('--color-primary', lightPrimary);
+            const lightBrandHex = cssColorToHex(lightPrimary);
+            root.style.setProperty('--color-on-primary', hexColorIsDark(lightBrandHex) ? '#ffffff' : '#000000');
+        }
+    }
+
+    if (effectiveTheme === 'dark') {
+        const darkPrimary = theme.dark.primary;
+        if (darkPrimary) {
+            root.style.setProperty('--color-primary', darkPrimary);
+            const darkBrandHex = cssColorToHex(darkPrimary);
+            root.style.setProperty('--color-on-primary', hexColorIsDark(darkBrandHex) ? '#ffffff' : '#000000');
+        }
+    }
+}
+
+/**
+ * Converts any CSS color (hex, rgb, hsl, named colors, etc.) to hex format
+ * @param cssColor - Any valid CSS color string
+ * @returns Hex color string (e.g., "red" -> "#ff0000")
+ */
+function cssColorToHex(cssColor: string): string {
+    if (cssColor.startsWith('#')) {
+        return cssColor;
+    }
+
+    // Create a temporary element to leverage browser's color parsing
+    const tempElement = document.createElement('div');
+    tempElement.style.color = cssColor;
+    document.body.appendChild(tempElement);
+
+    // Get the computed color value
+    const computedColor = window.getComputedStyle(tempElement).color;
+
+    // Clean up
+    document.body.removeChild(tempElement);
+
+    // Convert rgb(r,g,b) to hex
+    const rgbMatch = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (rgbMatch) {
+        const r = parseInt(rgbMatch[1], 10);
+        const g = parseInt(rgbMatch[2], 10);
+        const b = parseInt(rgbMatch[3], 10);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+
+    // Fallback: return the original color if parsing fails
+    return cssColor;
+}
+
+// From: https://stackoverflow.com/a/41491220
+
+function hexColorIsDark(bgColor: string) {
+    const color = bgColor.charAt(0) === '#' ? bgColor.substring(1, 7) : bgColor;
+    const r = parseInt(color.substring(0, 2), 16); // hexToR
+    const g = parseInt(color.substring(2, 4), 16); // hexToG
+    const b = parseInt(color.substring(4, 6), 16); // hexToB
+    return r * 0.299 + g * 0.587 + b * 0.114 <= 186;
 }

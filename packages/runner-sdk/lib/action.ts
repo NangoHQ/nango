@@ -27,6 +27,7 @@ import type {
     SetMetadata,
     SignatureCredentials,
     TbaCredentials,
+    TelemetryBag,
     TwoStepCredentials,
     UnauthCredentials,
     UpdateMetadata,
@@ -60,6 +61,7 @@ export abstract class NangoActionBase<
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
     scriptType: NangoProps['scriptType'];
+    startTime: number;
 
     public isCLI: NangoProps['isCLI'];
     public connectionId: string;
@@ -67,6 +69,13 @@ export abstract class NangoActionBase<
     public provider?: string;
 
     public ActionError = ActionError;
+
+    public telemetryBag: TelemetryBag = {
+        customLogs: 0,
+        proxyCalls: 0,
+        durationMs: 0,
+        memoryGb: 1
+    };
 
     protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
     protected memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
@@ -79,6 +88,7 @@ export abstract class NangoActionBase<
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
+        this.startTime = Date.now();
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -205,22 +215,39 @@ export abstract class NangoActionBase<
         return integration;
     }
 
-    public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
+    public async getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
+    ): Promise<GetPublicConnection['Success']> {
         this.throwIfAborted();
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
         const connectionId = connectionIdOverride || this.connectionId;
 
         const credentialsPair = `${providerConfigKey}${connectionId}`;
-        const cachedConnection = this.memoizedConnections.get(credentialsPair);
+        const cached = this.memoizedConnections.get(credentialsPair);
 
-        if (!cachedConnection || Date.now() - cachedConnection.timestamp > MEMOIZED_CONNECTION_TTL) {
-            const connection = await this.nango.getConnection(providerConfigKey, connectionId);
+        const shouldRefresh =
+            options?.forceRefresh ||
+            options?.refreshToken ||
+            options?.refreshGithubAppJwtToken ||
+            !cached ||
+            Date.now() - cached.timestamp > MEMOIZED_CONNECTION_TTL;
+
+        if (shouldRefresh) {
+            const connection = await this.nango.getConnection(
+                providerConfigKey,
+                connectionId,
+                options?.forceRefresh ?? false,
+                options?.refreshToken ?? false,
+                options?.refreshGithubAppJwtToken ?? false
+            );
             this.memoizedConnections.set(credentialsPair, { connection, timestamp: Date.now() });
             return connection;
         }
 
-        return cachedConnection.connection;
+        return cached.connection;
     }
 
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {

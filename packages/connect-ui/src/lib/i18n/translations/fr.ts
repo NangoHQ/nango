@@ -16,6 +16,8 @@ const fr: Translation = {
         title: 'Sélectionner une intégration',
         description: 'Veuillez sélectionner une intégration API dans la liste ci-dessous.',
         noIntegrations: 'Aucune intégration trouvée.',
+        noIntegrationsDescription:
+            "Vous n'avez pas configuré d'intégration dans cet environnement. Ajoutez votre première intégration dans le tableau de bord Nango.",
         connectTo: 'Se connecter à {provider}',
         error: 'Une erreur est survenue lors du chargement de la configuration'
     },
@@ -23,7 +25,7 @@ const fr: Translation = {
         linkAccount: 'Lier le compte {provider}',
         connect: 'Connecter',
         success: 'Succès !',
-        successMessage: 'Vous avez configuré avec succès votre intégration {provider}',
+        successMessage: 'Vous avez configuré avec succès votre intégration {provider}.',
         connectionFailed: 'Échec de la connexion',
         tryAgain: 'Veuillez réessayer',
         backToList: 'Retour à la liste des intégrations',

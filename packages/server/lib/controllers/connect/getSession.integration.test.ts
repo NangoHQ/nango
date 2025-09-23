@@ -5,6 +5,8 @@ import { connectUISettingsService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
+import type { ConnectUISettings } from '@nangohq/types';
+
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/connect/session';
@@ -84,7 +86,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.defaultConnectUISettings
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
             }
         });
         expect(res.res.status).toBe(200);
@@ -95,24 +97,15 @@ describe(`GET ${endpoint}`, () => {
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create custom connect UI settings
-        const customConnectUISettings = {
+        const customConnectUISettings: ConnectUISettings = {
             showWatermark: true,
+            defaultTheme: 'system',
             theme: {
                 light: {
-                    background: '#ffffff',
-                    foreground: '#ffffff',
-                    primary: '#ffffff',
-                    primaryForeground: '#ffffff',
-                    textPrimary: '#ffffff',
-                    textMuted: '#ffffff'
+                    primary: '#ffffff'
                 },
                 dark: {
-                    background: '#000000',
-                    foreground: '#000000',
-                    primary: '#000000',
-                    primaryForeground: '#000000',
-                    textPrimary: '#000000',
-                    textMuted: '#000000'
+                    primary: '#000000'
                 }
             }
         };

@@ -18,6 +18,12 @@ import type {
     NangoAuthWebhookBodySuccess
 } from '@nangohq/types';
 
+const AUTH_OPERATION_TO_TYPE = {
+    creation: 'auth_creation',
+    override: 'auth_override',
+    refresh: 'auth_refresh'
+} as const;
+
 export async function sendAuth({
     connection,
     environment,
@@ -45,11 +51,11 @@ export async function sendAuth({
         return;
     }
 
-    if (operation !== 'creation' && operation !== 'refresh') {
+    if (operation === 'unknown') {
         return;
     }
 
-    if (!shouldSend({ success, type: operation === 'creation' ? 'auth_creation' : 'auth_refresh', webhookSettings })) {
+    if (!shouldSend({ success, type: AUTH_OPERATION_TO_TYPE[operation], webhookSettings })) {
         return;
     }
 
@@ -65,7 +71,7 @@ export async function sendAuth({
         provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
         operation,
-        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId } : undefined
+        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId, tags: endUser.tags || {} } : undefined
     };
 
     if (success) {

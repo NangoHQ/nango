@@ -1,6 +1,6 @@
 import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicConnection, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
 
 export declare const oldLevelToNewLevel: {
@@ -314,7 +314,11 @@ export declare class NangoAction {
      * Get current integration
      */
     getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']>;
-    getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
+    getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
+    ): Promise<GetPublicConnection['Success']>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     /**
@@ -406,6 +410,7 @@ export declare class NangoSync extends NangoAction {
     batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
+    deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }>;
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
 }
 /**

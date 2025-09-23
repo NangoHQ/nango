@@ -9,7 +9,7 @@ The sample app contains:
 - **A backend**: listens to Nango webhooks and consumes the Nango API to read & write data.
 
 <Frame>
-  <img src="/images/sample-app.png" />
+  <img src="/images/screenshots/sample-app.png" />
 </Frame>
 
 The sample app uses both Slack and Google Drive as example integrations and is showcased in this [demo video](https://youtu.be/oTpWlmnv7dM).
@@ -80,7 +80,7 @@ The sample app uses both Slack and Google Drive as example integrations and is s
     ```
     - Go to: [http://localhost:3011](http://localhost:3011)
   </Step>
-  <Step title="Bonus: Deploy custom scripts">
+  <Step title="Bonus: Deploy custom functions">
     This above sample app uses pre-built integrations, but you can also use custom ones.
 
     - Set up the Nango CLI:
@@ -90,7 +90,7 @@ The sample app uses both Slack and Google Drive as example integrations and is s
     nango init
     ```
     - Add your Nango Secret Key in NANGO_SECRET_KEY_PROD in `./nango-integrations/.env`.
-    - Optionally customize the integration using this [guide](/guides/custom-integrations/build-a-custom-integration).
+    - Optionally customize the integration using [this guide](/guides/platform/functions).
     - Deploy the custom integration:
     ```sh
     nango deploy prod

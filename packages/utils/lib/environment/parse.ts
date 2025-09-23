@@ -72,10 +72,46 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
-    SYNC_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ACTION_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    WEBHOOK_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ONEVENT_PROCESSOR_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    JOBS_PROCESSOR_CONFIG: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`Invalid JSON in JOBS_PROCESSOR_CONFIG`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z.array(
+                z.object({
+                    groupKeyPattern: z.string(),
+                    maxConcurrency: z.coerce.number()
+                })
+            )
+        )
+        .default([
+            {
+                groupKeyPattern: 'sync*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'webhook*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'on-event*',
+                maxConcurrency: 50
+            }
+        ]),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),

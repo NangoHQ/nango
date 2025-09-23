@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.67.3",
+    "version": "0.68.0",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -35,14 +35,14 @@
         "@babel/traverse": "7.28.0",
         "@babel/types": "7.28.2",
         "@babel/preset-typescript": "7.27.1",
-        "@nangohq/nango-yaml": "0.67.3",
-        "@nangohq/node": "0.67.3",
-        "@nangohq/runner-sdk": "0.67.3",
+        "@nangohq/nango-yaml": "0.68.0",
+        "@nangohq/node": "0.68.0",
+        "@nangohq/runner-sdk": "0.68.0",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
         "ajv": "8.17.1",
         "ajv-errors": "3.0.0",
-        "axios": "1.11.0",
+        "axios": "1.12.0",
         "chalk": "5.4.1",
         "chokidar": "3.5.3",
         "columnify": "1.6.0",
@@ -70,7 +70,7 @@
         "zod": "4.0.5"
     },
     "devDependencies": {
-        "@nangohq/types": "0.67.3",
+        "@nangohq/types": "0.68.0",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",

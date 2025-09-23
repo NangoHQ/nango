@@ -188,7 +188,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     }, [flatData, period]);
 
     return (
-        <div className="flex-grow-0 overflow-hidden flex flex-col gap-4">
+        <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
                 <div className="flex gap-2 text-white text-xs">
@@ -230,7 +230,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     }
                     value={search}
                     placeholder="Search logs..."
-                    className="flex-grow border-border-gray-400"
+                    className="grow border-border-gray-400"
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="border border-transparent">

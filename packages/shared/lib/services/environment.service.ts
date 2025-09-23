@@ -255,6 +255,17 @@ class EnvironmentService {
         return result.map((env) => encryptionManager.decryptEnvironment(env));
     }
 
+    async getEnvironmentsByIds(environmentIds: number[]): Promise<DBEnvironment[]> {
+        if (environmentIds.length === 0) {
+            return [];
+        }
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereIn('id', environmentIds).andWhere({ deleted: false });
+        if (!result) {
+            return [];
+        }
+        return result;
+    }
+
     async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
         const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false });
 

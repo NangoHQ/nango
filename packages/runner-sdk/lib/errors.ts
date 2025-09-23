@@ -1,3 +1,5 @@
+import type { RunnerOutputError, TelemetryBag } from '@nangohq/types';
+
 export abstract class SDKError extends Error {
     abstract code: string;
     payload: Record<string, unknown>;
@@ -41,5 +43,31 @@ export class ActionError<T = Record<string, unknown>> extends Error {
         if (payload) {
             this.payload = payload;
         }
+    }
+}
+
+export class ExecutionError extends Error {
+    type: string;
+    payload: RunnerOutputError['payload'];
+    status: RunnerOutputError['status'];
+    additional_properties: RunnerOutputError['additional_properties'];
+    telemetryBag: TelemetryBag;
+
+    constructor(payload: RunnerOutputError & { telemetryBag: TelemetryBag }) {
+        super();
+        this.type = payload.type;
+        this.payload = payload.payload;
+        this.status = payload.status;
+        this.additional_properties = payload.additional_properties;
+        this.telemetryBag = payload.telemetryBag;
+    }
+
+    toJSON(): RunnerOutputError {
+        return {
+            type: this.type,
+            payload: this.payload,
+            status: this.status,
+            additional_properties: this.additional_properties
+        };
     }
 }
