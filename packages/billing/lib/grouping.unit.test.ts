@@ -40,6 +40,17 @@ describe('BillingEventGrouping', () => {
                 }
             },
             {
+                type: 'webhook_forwards',
+                properties: {
+                    accountId: 1,
+                    environmentId: 3,
+                    provider: 'provider1',
+                    providerConfigKey: 'providerConfigKey1',
+                    count: 6,
+                    timestamp: new Date()
+                }
+            },
+            {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
@@ -110,6 +121,7 @@ describe('BillingEventGrouping', () => {
         expect(keys).toEqual([
             'billable_actions|accountId:1|actionName:action1|connectionId:2|environmentId:3|providerConfigKey:providerConfigKey1',
             'proxy|accountId:1|connectionId:2|environmentId:3|provider:provider1|providerConfigKey:providerConfigKey1',
+            'webhook_forwards|accountId:1|environmentId:3|provider:provider1|providerConfigKey:providerConfigKey1',
             'function_executions|accountId:1|connectionId:2|type:action',
             'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
@@ -348,6 +360,42 @@ describe('BillingEventGrouping', () => {
                         successes: 4,
                         failures: 1
                     }
+                }
+            });
+        });
+        it('should aggregate webhook_forwards', () => {
+            const a: BillingEvent = {
+                type: 'webhook_forwards',
+                properties: {
+                    accountId: 1,
+                    environmentId: 3,
+                    provider: 'provider1',
+                    providerConfigKey: 'providerConfigKey1',
+                    count: 6,
+                    timestamp: new Date('2024-01-01T00:00:00Z')
+                }
+            };
+            const b: BillingEvent = {
+                type: 'webhook_forwards',
+                properties: {
+                    accountId: 1,
+                    environmentId: 3,
+                    provider: 'provider1',
+                    providerConfigKey: 'providerConfigKey1',
+                    count: 15,
+                    timestamp: new Date('2024-01-02T00:00:00Z')
+                }
+            };
+            const aggregated = grouping.aggregate(a, b);
+            expect(aggregated).toMatchObject({
+                type: 'webhook_forwards',
+                properties: {
+                    accountId: 1,
+                    environmentId: 3,
+                    provider: 'provider1',
+                    providerConfigKey: 'providerConfigKey1',
+                    count: 21,
+                    timestamp: new Date('2024-01-02T00:00:00Z')
                 }
             });
         });
