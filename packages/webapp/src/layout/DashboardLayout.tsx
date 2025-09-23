@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import { AppSidebar } from '../components-v2/AppSidebar';
 import TopNavBar from '@/components/TopNavBar';
-import { SidebarProvider } from '@/components-v2/ui/sidebar';
+import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
 
 import type { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ClassValue } from 'clsx';
@@ -16,12 +16,12 @@ interface DashboardLayoutI {
 
 const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function DashboardLayout({ children }, _) {
     return (
-        <SidebarProvider className="bg-nav-gradient">
+        <SidebarProvider>
             <AppSidebar />
-            <main className="w-full">
+            <SidebarInset className="max-h-screen overflow-y-scroll">
                 <TopNavBar />
-                <div className="w-full rounded-tl-sm bg-background-surface p-11">{children}</div>
-            </main>
+                <div className="w-full rounded-tl-sm border border-border-muted bg-background-surface p-11">{children}</div>
+            </SidebarInset>
         </SidebarProvider>
     );
     // return (
