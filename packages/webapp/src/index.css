@@ -315,7 +315,9 @@
     --color-text-secondary: var(--color-gray-750);
     --color-text-tertiary: var(--color-gray-600);
 
+    --color-border-default: var(--color-gray-300);
     --color-border-muted: var(--color-gray-200);
+    --color-border-strong: var(--color-gray-300);
 
     --color-focus-ring: var(--color-brand-500);
 
@@ -363,7 +365,9 @@
             --color-text-secondary: var(--color-gray-300);
             --color-text-tertiary: var(--color-gray-500);
 
+            --color-border-default: var(--color-gray-700);
             --color-border-muted: var(--color-gray-800);
+            --color-border-strong: var(--color-gray-500);
 
             --color-focus-ring: var(--color-brand-500);
 
@@ -398,6 +402,19 @@
 
 @utility bg-nav-gradient {
     background: linear-gradient(141deg, var(--color-background-elevated) 0%, var(--color-background-surface) 100%);
+}
+
+@utility focus-default {
+    @variant focus {
+        outline: 1px solid var(--color-focus-ring);
+        box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
+    }
+}
+
+@utility focus-shadow {
+    @variant focus {
+        box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
+    }
 }
 
 /*

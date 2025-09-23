@@ -1,9 +1,11 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from './ui/button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Input } from './ui/input';
 import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
 import { LogoInverted } from '@/assets/logo-inverted';
 import { useMeta } from '@/hooks/useMeta';
@@ -13,6 +15,8 @@ export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const { meta } = useMeta();
+    const [dropdownMenuOpen, setDropdownMenuOpen] = useState(false);
+    const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -46,7 +50,7 @@ export const EnvironmentDropdown: React.FC = () => {
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <DropdownMenu>
+                <DropdownMenu open={dropdownMenuOpen} onOpenChange={setDropdownMenuOpen}>
                     <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default hover:bg-dropdown-bg-press border border-border-muted hover:border-0 hover:my-px hover:border-l data-[state=open]:bg-dropdown-bg-press data-[state=open]:border ">
                         <div className="flex gap-2 items-center">
                             <LogoInverted className="h-6 w-6 text-text-primary" />
@@ -72,10 +76,48 @@ export const EnvironmentDropdown: React.FC = () => {
                                 <span className="capitalize">{environment.name}</span>
                             </DropdownMenuItem>
                         ))}
-                        <Button variant="primary">Create Environment</Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => {
+                                setDropdownMenuOpen(false);
+                                setEnvironmentDialogOpen(true);
+                            }}
+                        >
+                            Create Environment
+                        </Button>
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />
             </SidebarMenuItem>
         </SidebarMenu>
+    );
+};
+
+interface CreateEnvironmentDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = ({ open, onOpenChange }) => {
+    const [name, setName] = useState('');
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
+            <DialogContent className="gap-10">
+                <DialogHeader>
+                    <DialogTitle>Environment Name</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-2">
+                    <Input type="text" placeholder="my-environment-name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <span className="text-s leading-4 text-text-tertiary">*Must be lowercase letters, numbers, underscores and dashes.</span>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button variant="primary">Create Environment</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
