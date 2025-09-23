@@ -408,7 +408,6 @@ describe('buildProxyURL', () => {
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
-                        // @ts-expect-error not sure why
                         key: '${apiKey}'
                     }
                 }
