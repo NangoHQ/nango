@@ -43,10 +43,18 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     }
 
     logger.info('Received', event.type);
-    const handled = await handleWebhook(event, stripe);
-    if (handled.isErr()) {
-        report(handled.error, { body: req.body });
-        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+    try {
+        const handled = await handleWebhook(event, stripe);
+
+        if (handled.isErr()) {
+            report(handled.error, { body: req.body });
+            res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+            return;
+        }
+    } catch (err) {
+        report(new Error('[stripe] error handling webhook', { cause: err }));
+        // On purpose, we don't want to fail the webhook on unexpected errors
+        res.status(200).send({ success: true });
         return;
     }
 
