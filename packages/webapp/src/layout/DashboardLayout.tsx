@@ -18,30 +18,12 @@ const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function Da
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarInset className="max-h-screen overflow-y-scroll">
+            <SidebarInset className="max-h-screen overflow-hidden">
                 <TopNavBar />
-                <div className="w-full rounded-tl-sm border border-border-muted bg-background-surface p-11">{children}</div>
+                <div className="w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-background-surface p-11">{children}</div>
             </SidebarInset>
         </SidebarProvider>
     );
-    // return (
-    //     <div className="h-full min-h-screen flex bg-linear-to-br from-background-elevated to-background-surface">
-    //         <div className="absolute w-screen z-20">
-    //             <DebugMode />
-    //         </div>
-    //         <div className="z-10 grow-0">
-    //             <LeftNavBar />
-    //         </div>
-    //         <div className="grow relative h-screen flex flex-col">
-    //             <div className="h-[57px] w-full">
-    //                 <TopNavBar />
-    //             </div>
-    //             <div className="h-full overflow-auto" ref={ref}>
-    //                 <div className={cn('grow h-auto mx-auto bg-black w-full', className)}>{children}</div>
-    //             </div>
-    //         </div>
-    //     </div>
-    // );
 });
 
 export default DashboardLayout;
