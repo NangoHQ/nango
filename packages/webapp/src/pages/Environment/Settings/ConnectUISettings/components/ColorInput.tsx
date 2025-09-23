@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
-import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
+import { Input } from '@/components/ui/input/Input';
+import { cn } from '@/utils/utils';
 
 import type { InputHTMLAttributes } from 'react';
 

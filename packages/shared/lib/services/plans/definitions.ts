@@ -123,6 +123,7 @@ export const growthPlan: PlanDefinition = {
             { title: '50k synced records', sub: 'then $0.002 per record' },
             { title: '10 environments' },
             { title: 'Real-time syncing' },
+            { title: 'Remove Nango branding' },
             { title: 'Private Slack channel' },
             { title: 'Request new APIs' }
         ]

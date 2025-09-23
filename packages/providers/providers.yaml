@@ -2028,6 +2028,52 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+bullhorn:
+    display_name: Bullhorn
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://auth-west.bullhornstaffing.com/oauth/authorize
+    token_url: https://auth-west.bullhornstaffing.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+        username: ${connectionConfig.username}
+        password: ${connectionConfig.password}
+        action: Login
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: ${connectionConfig.restUrl}
+        headers:
+            bhresttoken: ${accessToken}
+    post_connection_script: bullhornPostConnection
+    token_response_metadata:
+        - restUrl
+    refresh_token_response_metadata:
+        - restUrl
+    docs: https://docs.nango.dev/integrations/all/bullhorn
+    docs_connect: https://docs.nango.dev/integrations/all/bullhorn/connect
+    connection_config:
+        restUrl:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        username:
+            type: string
+            title: Username
+            description: Your API Username
+            doc_section: '#step-1-obtain-your-api-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your API Password
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -4415,6 +4461,7 @@ fillout-api-key:
             method: GET
             endpoints:
                 - /v1/api/forms
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout-api-key
     docs_connect: https://docs.nango.dev/integrations/all/fillout-api-key/connect
     connection_config:
@@ -4446,6 +4493,7 @@ fillout:
         base_url: ${connectionConfig.base_url}
     token_response_metadata:
         - base_url
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout
     connection_config:
         base_url:
@@ -5403,6 +5451,68 @@ google-workspace-admin:
     proxy:
         base_url: https://admin.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-workspace-admin
+
+google-service-account:
+    display_name: Google Service Account
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.serviceAccountEmailAddress}
+            scope: ${credentials.scopes}
+            aud: https://oauth2.googleapis.com/token
+            sub: ${credentials.delegatedAccessEmailAddress}
+    token_url: https://oauth2.googleapis.com/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${token}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://www.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-service-account
+    docs_connect: https://docs.nango.dev/integrations/all/google-service-account/connect
+    credentials:
+        serviceAccountEmailAddress:
+            type: string
+            title: Service Account Email Address
+            description: The email address of the service account
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com$'
+            example: 'test@project.iam.gserviceaccount.com'
+            doc_section: '#step-1-create-a-service-account'
+        scopes:
+            type: string
+            title: Scopes
+            description: Scopes that your application should be granted access to
+            pattern: '^https://[^\s]+( https://[^\s]+)*$'
+            example: 'https://www.googleapis.com/auth/drive'
+            doc_section: '#step-4-finding-your-applications-scopes'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key associated with your Google service account
+            example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\\n([A-Za-z0-9+/=\\n]+)\\n-----END PRIVATE KEY-----\\n?$'
+            doc_section: '#step-3-delegate-domain-wide-authority-optional-for-google-workspace'
+        delegatedAccessEmailAddress:
+            type: string
+            title: Delegated Access Email Address
+            description: The email address of the user for which the application is requesting delegated access
+            format: email
+            example: 'some.user@example.com'
+            optional: true
+            doc_section: '#step-2-generate-a-service-account-key'
 
 gorgias:
     display_name: Gorgias
@@ -11041,7 +11151,6 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
-            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string
@@ -12350,6 +12459,27 @@ webflow:
     proxy:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
+
+webex:
+    display_name: Webex
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://webexapis.com/v1/authorize
+    token_url: https://webexapis.com/v1/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/webex
 
 whatsapp-business:
     display_name: WhatsApp Business
