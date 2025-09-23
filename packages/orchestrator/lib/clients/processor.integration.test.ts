@@ -71,7 +71,7 @@ async function processN({
     const processor = new OrchestratorProcessor({
         handler,
         orchestratorClient,
-        groupKey,
+        groupKeyPattern: groupKey,
         maxConcurrency: n
     });
     processor.start();

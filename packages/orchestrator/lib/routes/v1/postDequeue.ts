@@ -16,7 +16,8 @@ type PostDequeue = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        groupKey: string;
+        groupKey?: string | undefined;
+        groupKeyPattern?: string | undefined;
         limit: number;
         longPolling: boolean;
     };
@@ -28,9 +29,10 @@ const validate = validateRequest<PostDequeue>({
     parseBody: (data) =>
         z
             .object({
-                groupKey: z.string().min(1),
+                groupKey: z.string().min(1).optional(),
                 limit: z.coerce.number().positive(),
-                longPolling: z.coerce.boolean()
+                longPolling: z.coerce.boolean(),
+                groupKeyPattern: z.string().min(1).optional()
             })
             .strict()
             .parse(data)
@@ -48,10 +50,10 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, limit, longPolling } = res.locals.parsedBody;
+        const { groupKey, groupKeyPattern: optionalGroupKeyPattern, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
-        const eventId = taskEvents.taskCreated(groupKey);
-        const groupKeyPrefix = `${groupKey}*`; // Dequeuing all tasks with the same group key prefix
+        const groupKeyPattern = optionalGroupKeyPattern ?? groupKey!;
+        const eventId = taskEvents.taskCreated(groupKeyPattern);
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -65,7 +67,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
         };
         const onTaskStarted = () => {
             cleanupAndRespond(async (res) => {
-                const getTasks = await scheduler.dequeue({ groupKey: groupKeyPrefix, limit });
+                const getTasks = await scheduler.dequeue({ groupKeyPattern, limit });
                 if (getTasks.isErr()) {
                     res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
                 } else {
@@ -77,7 +79,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).send([]));
         }, longPollingTimeoutMs);
 
-        const getTasks = await scheduler.dequeue({ groupKey: groupKeyPrefix, limit });
+        const getTasks = await scheduler.dequeue({ groupKeyPattern, limit });
         if (getTasks.isErr()) {
             cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
             return;

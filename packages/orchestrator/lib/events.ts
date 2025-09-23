@@ -171,10 +171,10 @@ class PgEventEmitter extends EventEmitter {
 
 export const taskEvents = {
     taskCreated: (prop: Task | string): string => {
-        if (typeof prop === 'string') {
-            return `task:created:${prop}`;
-        }
-        const groupKeyPrefix = prop.groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
+        const groupKey = typeof prop === 'string' ? prop.replaceAll('*', '') : prop.groupKey;
+        // If the groupKey contains the separator, we only take the prefix part
+        // so that listeners can listen to a group of tasks
+        const groupKeyPrefix = groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
         return `task:created:${groupKeyPrefix}`;
     },
     taskCompleted: (prop: Task | string): string | undefined => {

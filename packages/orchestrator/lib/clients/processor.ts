@@ -13,25 +13,25 @@ const logger = getLogger('orchestrator.clients.processor');
 
 export class OrchestratorProcessor {
     private handler: (task: OrchestratorTask) => Promise<Result<void>>;
-    private groupKey: string;
+    private groupKeyPattern: string;
     private orchestratorClient: OrchestratorClient;
     private queue: PQueue;
     private status: 'running' | 'stopping' | 'stopped';
 
     constructor({
         orchestratorClient,
-        groupKey,
+        groupKeyPattern,
         maxConcurrency,
         handler
     }: {
         handler: (task: OrchestratorTask) => Promise<Result<void>>;
         orchestratorClient: OrchestratorClient;
-        groupKey: string;
+        groupKeyPattern: string;
         maxConcurrency: number;
     }) {
         this.status = 'stopped';
         this.handler = handler;
-        this.groupKey = groupKey;
+        this.groupKeyPattern = groupKeyPattern;
         this.orchestratorClient = orchestratorClient;
         this.queue = new PQueue({ concurrency: maxConcurrency });
     }
@@ -62,7 +62,7 @@ export class OrchestratorProcessor {
             await this.queue.onSizeLessThan(this.queue.concurrency);
             const available = this.queue.concurrency - this.queue.size;
             const limit = available + this.queue.concurrency; // fetching more than available to keep the queue full
-            const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit, longPolling: true });
+            const tasks = await this.orchestratorClient.dequeue({ groupKeyPattern: this.groupKeyPattern, limit, longPolling: true });
             if (tasks.isErr()) {
                 logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
                 await setTimeout(1000); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
