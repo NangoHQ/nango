@@ -46,9 +46,9 @@ export interface UserLogParameters {
     level?: 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 }
 
-export interface TelemetryBag extends Record<string, number | undefined> {
+export interface TelemetryBag extends Record<string, number> {
     customLogs: number;
     proxyCalls: number;
-    durationMs?: number | undefined;
-    memoryGb?: number | undefined;
+    durationMs: number;
+    memoryGb: number;
 }
