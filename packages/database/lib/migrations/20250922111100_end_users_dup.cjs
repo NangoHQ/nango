@@ -50,7 +50,7 @@ FROM
             }
 
             // Be nice to the database and cpu
-            await wait(100);
+            await wait(5);
         }
 
         console.log('[endUser dup] done');
