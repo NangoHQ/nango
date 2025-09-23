@@ -16,8 +16,7 @@ type PostDequeue = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        groupKey?: string | undefined;
-        groupKeyPattern?: string | undefined;
+        groupKeyPattern: string;
         limit: number;
         longPolling: boolean;
     };
@@ -29,10 +28,9 @@ const validate = validateRequest<PostDequeue>({
     parseBody: (data) =>
         z
             .object({
-                groupKey: z.string().min(1).optional(),
                 limit: z.coerce.number().positive(),
                 longPolling: z.coerce.boolean(),
-                groupKeyPattern: z.string().min(1).optional()
+                groupKeyPattern: z.string().min(1)
             })
             .strict()
             .parse(data)
@@ -50,9 +48,8 @@ export const routeHandler = (scheduler: Scheduler, eventEmitter: EventEmitter): 
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
-        const { groupKey, groupKeyPattern: optionalGroupKeyPattern, limit, longPolling } = res.locals.parsedBody;
+        const { groupKeyPattern, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
-        const groupKeyPattern = optionalGroupKeyPattern ?? groupKey!;
         const eventId = taskEvents.taskCreated(groupKeyPattern);
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
