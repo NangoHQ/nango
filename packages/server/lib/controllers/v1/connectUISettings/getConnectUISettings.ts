@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { connectUISettingsService } from '@nangohq/shared';
-import { flagHasPlan, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -22,8 +22,10 @@ export const getConnectUISettings = asyncWrapper<GetConnectUISettings>(async (re
         return;
     }
 
+    const defaultSettings = connectUISettingsService.getDefaultConnectUISettings();
+
     if (!connectUISettings.value) {
-        res.status(200).send({ data: connectUISettingsService.defaultConnectUISettings });
+        res.status(200).send({ data: defaultSettings });
         return;
     }
 
@@ -31,12 +33,12 @@ export const getConnectUISettings = asyncWrapper<GetConnectUISettings>(async (re
 
     // Override settings to defaults if the plan does not have the feature
     // This way if the plan downgrades, they go back to default without resetting settings in db
-    if (flagHasPlan && !plan?.can_customize_connect_ui_theme) {
-        finalSettings.theme = connectUISettingsService.defaultConnectUISettings.theme;
+    if (!connectUISettingsService.canCustomizeConnectUITheme(plan)) {
+        finalSettings.theme = defaultSettings.theme;
     }
 
-    if (flagHasPlan && !plan?.can_disable_connect_ui_watermark) {
-        finalSettings.showWatermark = connectUISettingsService.defaultConnectUISettings.showWatermark;
+    if (!connectUISettingsService.canDisableConnectUIWatermark(plan)) {
+        finalSettings.showWatermark = defaultSettings.showWatermark;
     }
 
     res.status(200).send({ data: finalSettings });

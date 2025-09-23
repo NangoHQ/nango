@@ -3,7 +3,7 @@ import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
-    ingest: (events: BillingIngestEvent[]) => Promise<void>;
+    ingest: (events: BillingEvent[]) => Promise<void>;
     upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
     updateCustomer: (customerId: string, name: string) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
@@ -47,16 +47,79 @@ export interface BillingPlan {
     external_plan_id: string;
 }
 
-export interface BillingIngestEvent {
-    type: 'monthly_active_records' | 'billable_connections' | 'billable_actions' | 'billable_active_connections' | 'function_executions';
-    idempotencyKey: string;
-    accountId: number;
-    timestamp: Date;
-    properties: Record<string, string | number | Date>;
+type BillingPropertyValue = string | number | boolean | Date | undefined;
+type BillingProperties = Record<string, BillingPropertyValue | Record<string, BillingPropertyValue>>;
+
+interface BillingEventBase<TType extends string, TProperties extends BillingProperties = BillingProperties> {
+    type: TType;
+    properties: {
+        timestamp: Date;
+        idempotencyKey?: string | undefined;
+        accountId: number;
+        count: number;
+    } & TProperties;
 }
 
-export interface BillingMetric {
-    type: BillingIngestEvent['type'];
-    value: number;
-    properties: { accountId: number; timestamp?: Date | undefined; idempotencyKey?: string | undefined } & BillingIngestEvent['properties'];
-}
+export type MarBillingEvent = BillingEventBase<
+    'monthly_active_records',
+    {
+        connectionId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        syncId: string;
+        model: string;
+    }
+>;
+
+export type ActionsBillingEvent = BillingEventBase<
+    'billable_actions',
+    {
+        connectionId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        actionName: string;
+    }
+>;
+
+export type FunctionExecutionsBillingEvent = BillingEventBase<
+    'function_executions',
+    {
+        type: string;
+        connectionId: number;
+        telemetry: {
+            successes: number;
+            failures: number;
+            durationMs: number;
+            memoryGb: number;
+            customLogs: number;
+            proxyCalls: number;
+        };
+        frequencyMs?: number | undefined;
+    }
+>;
+
+export type ProxyBillingEvent = BillingEventBase<
+    'proxy',
+    {
+        connectionId: number;
+        environmentId: number;
+        providerConfigKey: string;
+        provider: string;
+        telemetry: {
+            successes: number;
+            failures: number;
+        };
+    }
+>;
+
+export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
+
+export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
+
+export type BillingEvent =
+    | MarBillingEvent
+    | ActionsBillingEvent
+    | ProxyBillingEvent
+    | FunctionExecutionsBillingEvent
+    | ConnectionsBillingEvent
+    | ActiveConnectionsBillingEvent;

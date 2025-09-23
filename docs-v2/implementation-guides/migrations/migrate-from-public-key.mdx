@@ -43,11 +43,62 @@ The deprecated public key, however, was only compatible with custom authorizatio
 
 # Migration steps
 
+This migration is split into 3 steps. You can migrate at your own pace, but we recommend doing it in this order.
+During the migration, both connect session and public key authentication will work so you don't have to do all 3 steps at once.
+
+<Note>
+    Existing connections will keep the custom id you have used until now but new connections will have a random id. Your code will need to support both.
+</Note>
+
+## Step 1: Attach a user to all existing connections
+
+Attach a user to all existing connections.
+This step will allow you to use connect sessions with existing connections.
+This will also be used to attribute webhooks to the correct end user.
+
+<Tabs>
+  <Tab title="Node">
+  ```ts
+  import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+await nango.patchConnection({
+    connectionId: '<CONNECTION-ID>',
+    provider_config_key: '<INTEGRATION-ID>',
+}, {
+    end_user: {
+        id: '<USER-ID>',
+        [...]
+    }
+});
+```
+  </Tab>
+  <Tab title="cURL">
+```bash
+curl -X PATCH https://api.nango.dev/v1/connections/<CONNECTION-ID> \
+-H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+-H "Content-Type: application/json" \
+-d '{
+    "end_user": {
+        "id": "<USER-ID>",
+        [...]
+    }
+}'
+```
+  </Tab>
+</Tabs>
+
+
+Check endpoint documentation [here](/reference/api/connections/patch).
+
+
+## Step 2: Implement the Connect and reconnect flows
+
 Follow the steps in this [guide](/implementation-guides/api-auth/implement-api-auth), focusing on these key changes:
 
-- Fetch a **Connect session token** from your backend, pass it to your frontend, and update Nango frontend SDK method signatures accordingly
-- Connection credentials are now **received via webhooks**, not the frontend SDK. You must specify a **user ID** (and optionally some **tags**) when fetching the Connect session token to correctly attribute webhooks. You can also attach additional information to connections for better UI display
-- Store all **existing and future connection IDs** with your customer data. Since Nango now generates connection IDs randomly, they can no longer be inferred from other identifiers
+Connect session token is now required to be passed to the frontend SDK. This improves security and allows you to pass additional information to the connection.
+
+### Step 3: Clean up
 
 Finally, remove all usage of the **public key and HMAC** from your frontend.
 
