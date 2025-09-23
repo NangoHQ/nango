@@ -10,7 +10,6 @@ import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { BillingMetric } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -126,11 +125,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }
@@ -149,11 +148,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_active_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_active_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }
