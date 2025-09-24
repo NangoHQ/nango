@@ -57,7 +57,7 @@ export const EnvironmentDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu open={dropdownMenuOpen} onOpenChange={setDropdownMenuOpen}>
-                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default hover:bg-dropdown-bg-press border border-border-muted hover:border-0 hover:my-px hover:border-l data-[state=open]:bg-dropdown-bg-press data-[state=open]:border ">
+                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default hover:bg-dropdown-bg-press border border-border-muted hover:border-0 hover:my-px hover:border-l data-[state=open]:bg-dropdown-bg-press data-[state=open]:border">
                         <div className="flex gap-2 items-center">
                             <LogoInverted className="h-6 w-6 text-text-primary" />
                             <div className="flex flex-col items-start">
