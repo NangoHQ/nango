@@ -23,6 +23,9 @@ export const StatusWidget = ({ service }) => {
       return () => clearInterval(interval);
   }, [service]);
 
-  return <div className="mb-1 -mt-8" dangerouslySetInnerHTML={{ __html: widgetHtml }} />;
+  if (!widgetHtml) {
+      return <div className="min-h-[28x]"></div>;
+  }
+  return <div className="-mt-8" dangerouslySetInnerHTML={{ __html: widgetHtml }} />;
 }
 
