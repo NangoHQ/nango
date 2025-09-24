@@ -71,6 +71,16 @@ export type MarBillingEvent = BillingEventBase<
     }
 >;
 
+export type RecordsBillingEvent = BillingEventBase<
+    'records',
+    {
+        environmentId: number;
+        telemetry: {
+            sizeBytes: number;
+        };
+    }
+>;
+
 export type ActionsBillingEvent = BillingEventBase<
     'billable_actions',
     {
@@ -131,6 +141,7 @@ export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_co
 
 export type BillingEvent =
     | MarBillingEvent
+    | RecordsBillingEvent
     | ActionsBillingEvent
     | ProxyBillingEvent
     | WebhookForwardBillingEvent
