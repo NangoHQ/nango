@@ -271,6 +271,7 @@
               "integrations/all/adobe-umapi",
               "integrations/all/adp",
               "integrations/all/adp-run",
+              "integrations/all/adp-workforce-now",
               "integrations/all/adp-workforce-now-next-gen",
               "integrations/all/adyen",
               "integrations/all/affinity",
