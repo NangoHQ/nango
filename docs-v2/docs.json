@@ -386,6 +386,7 @@
               "integrations/all/cyberimpact",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
+              "integrations/all/datacandy",
               "integrations/all/datadog",
               "integrations/all/datev",
               "integrations/all/dayforce",
