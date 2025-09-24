@@ -49,7 +49,9 @@ describe('ActiveMQ Transport', () => {
                     properties: {
                         accountId: 1,
                         connectionId: 2,
-                        tag1: 'someTag1'
+                        environmentId: 3,
+                        providerConfigKey: 'provider-a',
+                        actionName: 'action-x'
                     }
                 },
                 createdAt: new Date()
@@ -76,9 +78,11 @@ describe('ActiveMQ Transport', () => {
                 payload: {
                     value: 20,
                     properties: {
-                        accountId: 2,
-                        connectionId: 3,
-                        tag2: 'someTag2'
+                        accountId: 1,
+                        connectionId: 2,
+                        environmentId: 3,
+                        providerConfigKey: 'provider-a',
+                        actionName: 'action-x'
                     }
                 },
                 createdAt: new Date()

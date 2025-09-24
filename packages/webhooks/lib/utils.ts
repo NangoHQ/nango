@@ -78,7 +78,7 @@ export const shouldSend = ({
 }: {
     webhookSettings: DBExternalWebhook;
     success: boolean;
-    type: 'auth_creation' | 'auth_refresh' | 'sync' | 'forward' | 'async_action';
+    type: 'auth_creation' | 'auth_refresh' | 'auth_override' | 'sync' | 'forward' | 'async_action';
 }): boolean => {
     const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 

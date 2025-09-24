@@ -110,6 +110,83 @@ acuity-scheduling:
         base_url: https://acuityscheduling.com/api/v1
     docs: https://docs.nango.dev/integrations/all/acuity-scheduling
 
+addepar:
+    display_name: Addepar (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://id.addepar.com/oauth2/authorize
+    disable_pkce: true
+    token_url: https://api.addepar.com/public/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://api.addepar.com
+    docs: https://docs.nango.dev/integrations/all/addepar
+    docs_connect: https://docs.nango.dev/integrations/all/addepar/connect
+    connection_config:
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-firm-id'
+
+addepar-basic:
+    display_name: Addepar (Basic Auth)
+    categories:
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://${connectionConfig.subdomain}.addepar.com/api
+    docs: https://docs.nango.dev/integrations/all/addepar-basic
+    docs_connect: https://docs.nango.dev/integrations/all/addepar-basic/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Addepar API Key
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Addepar API Secret
+            example: zidcISqfSGh05JsWwuY9ZdSCkXrhANHvCX0U0gkE
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Firm Domain
+            description: Your Addepar Firm domain
+            pattern: '^[a-z0-9_-]+$'
+            example: myfirm
+            order: 1
+            doc_section: '#step-1-finding-your-firm-domain'
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            order: 2
+            doc_section: '#step-2-finding-your-firm-id'
+
 adobe:
     display_name: Adobe
     categories:
@@ -2028,6 +2105,52 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+bullhorn:
+    display_name: Bullhorn
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://auth-west.bullhornstaffing.com/oauth/authorize
+    token_url: https://auth-west.bullhornstaffing.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+        username: ${connectionConfig.username}
+        password: ${connectionConfig.password}
+        action: Login
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: ${connectionConfig.restUrl}
+        headers:
+            bhresttoken: ${accessToken}
+    post_connection_script: bullhornPostConnection
+    token_response_metadata:
+        - restUrl
+    refresh_token_response_metadata:
+        - restUrl
+    docs: https://docs.nango.dev/integrations/all/bullhorn
+    docs_connect: https://docs.nango.dev/integrations/all/bullhorn/connect
+    connection_config:
+        restUrl:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        username:
+            type: string
+            title: Username
+            description: Your API Username
+            doc_section: '#step-1-obtain-your-api-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your API Password
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -3109,6 +3232,30 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+cursor:
+    display_name: Cursor
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cursor.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/me
+    docs: https://docs.nango.dev/integrations/all/cursor
+    docs_connect: https://docs.nango.dev/integrations/all/cursor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Cursor account
+            doc_section: '#step-1-finding-api-key'
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+
 databricks-account:
     display_name: Databricks (Account Level)
     categories:
@@ -3171,6 +3318,49 @@ datev:
     proxy:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
+
+datacandy:
+    display_name: DataCandy
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.application_url}/api2
+        query:
+            application_key: ${connectionConfig.application_key}
+            accesskey: ${connectionConfig.access_key}
+        verification:
+            method: GET
+            endpoints:
+                - /merchant?application_key=${connectionConfig.application_key}&accesskey=${connectionConfig.access_key}&limit=1
+    connection_config:
+        application_url:
+            type: string
+            title: Application URL
+            description: The application URL for DataCandy
+            example: app.datacandy.com
+            format: hostname
+        application_key:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            example: c4f9375f9834b4e7f0a528cc65c055702bf5f24a
+        access_key:
+            type: string
+            title: Access Key
+            description: The access key required for read data access
+            example: '3CLJII'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: DataCandy username
+        password:
+            type: string
+            title: Password
+            description: DataCandy password
+            secret: true
+    docs: https://docs.nango.dev/integrations/all/datacandy
 
 datadog:
     display_name: Datadog
@@ -4415,6 +4605,7 @@ fillout-api-key:
             method: GET
             endpoints:
                 - /v1/api/forms
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout-api-key
     docs_connect: https://docs.nango.dev/integrations/all/fillout-api-key/connect
     connection_config:
@@ -4446,6 +4637,7 @@ fillout:
         base_url: ${connectionConfig.base_url}
     token_response_metadata:
         - base_url
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout
     connection_config:
         base_url:
@@ -5403,6 +5595,68 @@ google-workspace-admin:
     proxy:
         base_url: https://admin.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-workspace-admin
+
+google-service-account:
+    display_name: Google Service Account
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.serviceAccountEmailAddress}
+            scope: ${credentials.scopes}
+            aud: https://oauth2.googleapis.com/token
+            sub: ${credentials.delegatedAccessEmailAddress}
+    token_url: https://oauth2.googleapis.com/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${token}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://www.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-service-account
+    docs_connect: https://docs.nango.dev/integrations/all/google-service-account/connect
+    credentials:
+        serviceAccountEmailAddress:
+            type: string
+            title: Service Account Email Address
+            description: The email address of the service account
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com$'
+            example: 'test@project.iam.gserviceaccount.com'
+            doc_section: '#step-1-create-a-service-account'
+        scopes:
+            type: string
+            title: Scopes
+            description: Scopes that your application should be granted access to
+            pattern: '^https://[^\s]+( https://[^\s]+)*$'
+            example: 'https://www.googleapis.com/auth/drive'
+            doc_section: '#step-4-finding-your-applications-scopes'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key associated with your Google service account
+            example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\\n([A-Za-z0-9+/=\\n]+)\\n-----END PRIVATE KEY-----\\n?$'
+            doc_section: '#step-3-delegate-domain-wide-authority-optional-for-google-workspace'
+        delegatedAccessEmailAddress:
+            type: string
+            title: Delegated Access Email Address
+            description: The email address of the user for which the application is requesting delegated access
+            format: email
+            example: 'some.user@example.com'
+            optional: true
+            doc_section: '#step-2-generate-a-service-account-key'
 
 gorgias:
     display_name: Gorgias
@@ -9116,13 +9370,13 @@ plain:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: https://core-api.uk.plain.com/graphql/v1
+        base_url: https://core-api.uk.plain.com/graphql
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /v1?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
@@ -10479,6 +10733,49 @@ setmore:
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
 
+sellsy:
+    display_name: Sellsy
+    auth_mode: OAUTH2
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    authorization_url: https://login.sellsy.com/oauth2/authorization
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy
+
+sellsy-oauth2-cc:
+    display_name: Sellsy (Client Credentials)
+    auth_mode: OAUTH2_CC
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Client ID
+        client_secret:
+            type: string
+            title: Secret shopper
+            description: Your Secret shopper
+
 servicem8:
     display_name: ServiceM8
     categories:
@@ -10931,14 +11228,25 @@ smartsheet:
     display_name: Smartsheet
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
-    token_url: https://api.smartsheet.com/2.0/token
+    token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
-        base_url: https://api.smartsheet.com
+        base_url: https://api.${connectionConfig.domain}
     docs: https://docs.nango.dev/integrations/all/smartsheet
+    docs_connect: https://docs.nango.dev/integrations/all/smartsheet/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain where your account is hosted
+            example: smartsheet.com
+            prefix: https://api.
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
 
 smugmug:
     display_name: Smugmug
@@ -10951,6 +11259,25 @@ smugmug:
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
+
+snapchat:
+    display_name: Snapchat (Ads API)
+    auth_mode: OAUTH2
+    categories:
+        - video
+        - social
+    authorization_url: https://accounts.snapchat.com/login/oauth2/authorize
+    disable_pkce: true
+    token_url: https://accounts.snapchat.com/login/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://adsapi.snapchat.com
+    docs: https://docs.nango.dev/integrations/all/snapchat
 
 snowflake:
     display_name: Snowflake
@@ -11030,7 +11357,6 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
-            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string
@@ -12339,6 +12665,27 @@ webflow:
     proxy:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
+
+webex:
+    display_name: Webex
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://webexapis.com/v1/authorize
+    token_url: https://webexapis.com/v1/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/webex
 
 whatsapp-business:
     display_name: WhatsApp Business

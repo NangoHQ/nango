@@ -23,7 +23,6 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.52.0",
-        "es-toolkit": "1.39.10",
         "node-cron": "3.0.2",
         "zod": "4.0.5"
     },

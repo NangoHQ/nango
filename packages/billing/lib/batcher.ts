@@ -1,5 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import { logger } from './logger.js';
+
 import type { Result } from '@nangohq/utils';
 
 interface Item<T> {
@@ -9,30 +11,31 @@ interface Item<T> {
 
 export class Batcher<T> {
     private readonly process: (events: T[]) => Promise<void>;
+    private readonly grouping: Grouping<T> | undefined;
     private readonly maxBatchSize: number;
     private readonly flushInterval: number;
     private queue: Item<T>[];
     private readonly maxQueueSize: number;
     private readonly maxProcessingRetry: number;
-    private isProcessing: boolean;
+    private isFlushing: boolean;
     private timer: NodeJS.Timeout | null;
 
-    constructor(
-        process: (events: T[]) => Promise<void>,
-        options: {
-            flushIntervalMs?: number;
-            maxBatchSize: number;
-            maxQueueSize?: number;
-            maxProcessingRetry?: number;
-        }
-    ) {
-        this.process = process;
+    constructor(options: {
+        process: (events: T[]) => Promise<void>;
+        grouping?: Grouping<T>;
+        flushIntervalMs?: number;
+        maxBatchSize: number;
+        maxQueueSize?: number;
+        maxProcessingRetry?: number;
+    }) {
+        this.process = options.process;
+        this.grouping = options.grouping;
         this.maxBatchSize = options.maxBatchSize;
         this.maxQueueSize = options.maxQueueSize ?? Infinity;
         this.flushInterval = options.flushIntervalMs ?? 0;
         this.maxProcessingRetry = options.maxProcessingRetry ?? 3;
         this.queue = [];
-        this.isProcessing = false;
+        this.isFlushing = false;
 
         this.timer = this.flushInterval > 0 ? setInterval(() => this.flush(), this.flushInterval) : null;
     }
@@ -44,6 +47,11 @@ export class Batcher<T> {
             const remaining = this.maxQueueSize - this.queue.length;
             discarded = t.length - remaining;
             t = t.slice(0, remaining);
+        }
+
+        if (discarded > 0) {
+            logger.error(`Billing batcher queue full. Discarding ${discarded} items.`);
+            // TODO: add metric + alert
         }
 
         this.queue.push(...t.map((item) => ({ item, retries: 0 })));
@@ -60,8 +68,27 @@ export class Batcher<T> {
         return Ok(undefined);
     }
 
+    private aggregateItems(items: Item<T>[]): Item<T>[] {
+        if (!this.grouping) {
+            return items;
+        }
+
+        const aggregated = new Map<string, Item<T>>();
+        for (const item of items) {
+            const key = this.grouping.groupingKey(item.item);
+            const existing = aggregated.get(key);
+            if (existing) {
+                const mergedItem = this.grouping.aggregate(existing.item, item.item);
+                aggregated.set(key, { item: mergedItem, retries: Math.min(existing.retries, item.retries) });
+            } else {
+                aggregated.set(key, item);
+            }
+        }
+        return Array.from(aggregated.values());
+    }
+
     public async flush(): Promise<Result<void>> {
-        if (this.isProcessing) {
+        if (this.isFlushing) {
             return Ok(undefined);
         }
 
@@ -69,12 +96,17 @@ export class Batcher<T> {
             return Ok(undefined);
         }
 
-        this.isProcessing = true;
+        this.isFlushing = true;
 
-        const batchToSend = this.queue.splice(0, Math.min(this.queue.length, this.maxBatchSize));
+        const batch = this.queue.splice(0, Math.min(this.queue.length, this.maxBatchSize));
+        const aggregated = this.aggregateItems(batch);
+
+        if (batch.length !== aggregated.length) {
+            logger.info(`Aggregated ${batch.length} items into ${aggregated.length} items`);
+        }
 
         try {
-            await this.process(batchToSend.map((data) => data.item));
+            await this.process(aggregated.map((data) => data.item));
 
             if (this.queue.length >= this.maxBatchSize) {
                 setImmediate(() => this.flush());
@@ -83,12 +115,12 @@ export class Batcher<T> {
         } catch (err) {
             // Put failed items back at the front of the queue
             // unless they have been retried too many times
-            const batchToRetry = batchToSend.filter((item) => item.retries < this.maxProcessingRetry).map((item) => ({ ...item, retries: item.retries + 1 }));
+            const batchToRetry = aggregated.filter((item) => item.retries < this.maxProcessingRetry).map((item) => ({ ...item, retries: item.retries + 1 }));
             this.queue.unshift(...batchToRetry);
 
             return Err(new Error('Batcher failed to process batch', { cause: err }));
         } finally {
-            this.isProcessing = false;
+            this.isFlushing = false;
         }
     }
 
@@ -105,7 +137,7 @@ export class Batcher<T> {
                 return Err(new Error('Batcher shutdown timed out'));
             }
             // processing is in progress, wait and loop again
-            if (this.isProcessing) {
+            if (this.isFlushing) {
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 continue;
             }
@@ -123,4 +155,10 @@ export class Batcher<T> {
         }
         return Ok(undefined);
     }
+}
+
+// A grouping and aggregation strategy for items of type T
+export interface Grouping<T> {
+    groupingKey: (t: T) => string;
+    aggregate: (t1: T, t2: T) => T;
 }

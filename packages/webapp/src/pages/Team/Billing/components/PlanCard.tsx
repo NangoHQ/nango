@@ -12,13 +12,14 @@ import { stripePromise } from '../../../../utils/stripe';
 import { cn } from '../../../../utils/utils';
 
 import type { PlanDefinitionList } from '../types';
-import type { PlanDefinition } from '@nangohq/types';
+import type { GetEnvironment, PlanDefinition } from '@nangohq/types';
 
 export const PlanCard: React.FC<{
     def: PlanDefinitionList;
     hasPaymentMethod: boolean;
     activePlan: PlanDefinition;
-}> = ({ def, hasPaymentMethod, activePlan }) => {
+    currentPlan: GetEnvironment['Success']['plan'];
+}> = ({ def, hasPaymentMethod, activePlan, currentPlan }) => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
@@ -183,16 +184,20 @@ export const PlanCard: React.FC<{
                         </Button>
                     )}
                     {!def.active && def.isUpgrade && activePlan.canChange && (
-                        <Button variant={'primary'} onClick={onClick}>
+                        <Button variant={'primary'} onClick={onClick} className="cursor-pointer">
                             {def.plan.cta ? def.plan.cta : 'Upgrade plan'}
                         </Button>
                     )}
                     {!def.active && def.isDowngrade && activePlan.canChange && (
                         <>
-                            {activePlan.prevPlan && (
-                                <Button variant={'primary'} onClick={onClick}>
-                                    Downgrade
-                                </Button>
+                            {currentPlan?.orb_future_plan && currentPlan?.orb_future_plan === def.plan.orbId ? (
+                                <div className="text-xs text-grayscale-500">Downgrade planned at the end of the month</div>
+                            ) : (
+                                activePlan.prevPlan && (
+                                    <Button variant={'primary'} onClick={onClick} className="cursor-pointer">
+                                        Downgrade
+                                    </Button>
+                                )
                             )}
                         </>
                     )}
