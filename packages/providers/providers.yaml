@@ -6781,6 +6781,28 @@ jobdiva:
             example: password
             doc_section: '#step-2-creating-an-api-user'
 
+jobber:
+    display_name: Jobber
+    categories:
+        - crm
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.getjobber.com/api/oauth/authorize
+    token_url: https://api.getjobber.com/api/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        headers:
+            x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
+        base_url: https://api.getjobber.com/api
+    docs: https://docs.nango.dev/integrations/all/jobber
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 jobvite:
     display_name: Jobvite
     categories:
