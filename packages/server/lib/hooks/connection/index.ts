@@ -2,7 +2,6 @@ export { default as githubAppOauthPostConnection } from './providers/github-app-
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
 export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
 export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';
-export { default as slackPreConnectionDeletion } from './providers/slack/pre-connection-deletion.js';
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
