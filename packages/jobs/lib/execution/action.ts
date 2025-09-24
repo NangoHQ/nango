@@ -236,7 +236,7 @@ export async function handleActionSuccess({
             properties: {
                 accountId: nangoProps.team.id,
                 connectionId: connection.id,
-                type: 'sync',
+                type: 'action',
                 success: true,
                 telemetryBag
             }

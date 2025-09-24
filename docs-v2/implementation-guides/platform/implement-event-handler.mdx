@@ -25,7 +25,8 @@ nango-integrations/
 ├── index.ts
 ├── package.json
 └── salesforce # this is the integration id and must match an integration id in your Nango dashboard
-    └── setup.ts # your new event handler function
+    └── on-events
+        └── setup.ts # your new event handler function
 ```
 
 Paste the following scaffold into the file:
@@ -47,7 +48,7 @@ The `exec` function kicks off when the associated event occurs.
 Also import your new event file in your `index.ts` file:
 
 ```typescript index.ts
-import './salesforce/setup';
+import './salesforce/on-events/setup';
 ```
 
 ### Step 3 - Implement the event function

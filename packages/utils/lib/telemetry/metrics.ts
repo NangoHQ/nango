@@ -105,7 +105,9 @@ export enum Types {
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
-    DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes'
+    DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
+
+    ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

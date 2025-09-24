@@ -17,7 +17,7 @@ interface DashboardLayoutI {
 
 const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function DashboardLayout({ children, selectedItem, fullWidth = false, className }, ref) {
     return (
-        <div className="h-full min-h-screen flex bg-pure-black">
+        <div className="h-full min-h-screen flex bg-pure-black overflow-hidden">
             <div className="absolute w-screen z-20">
                 <DebugMode />
             </div>

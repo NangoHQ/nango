@@ -1,0 +1,111 @@
+---
+title: 'Snapchat'
+sidebarTitle: 'Snapchat'
+description: 'Access the Snapchat API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Snapchat_. Nango doesn't provide a test OAuth app for Snapchat yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Snapchat">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Snapchat. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Snapchat API">
+        Let's make your first request to the Snapchat API (fetch your account profile). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/me" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v1/me',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Snapchat accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Snapchat Business account">
+        If you don’t already have one, sign up for a [Snapchat Business account](https://business.snapchat.com/).
+      </Step>
+      <Step title="Create a new Snap Kit OAuth app">
+        1. Go to your [Business portal](https://business.snapchat.com/), then select **Business Details**.
+        2. Click **+ OAuth App**.
+        3. Fill in all the required information. For **Snap Redirect URI**, add `https://api.nango.dev/oauth/callback`
+        4. Click **Create OAuth App** at the top right.
+      </Step>
+      <Step title="Obtain your client credentials">
+        1. After creating the app, copy the **Snap Client ID** and **Snap Client Secret Key** that Snapchat will generate. You’ll need these when configuring your integration in Nango.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+    | Scope | Description |
+    | ----- | ----------- |
+    | `snapchat-marketing-api` | Read and write to the Snapchat Marketing APIs |
+    | `snapchat-offline-conversions-api` | Read and write to the Snapchat Conversions APIs |
+    | `snapchat-profile-api` | Read the Snapchat Public Profile APIs |
+
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.snapchat.com/) |
+    | | [Snapchat Business Help Center](https://businesshelp.snapchat.com/) |
+    | Developer | [Authentication docs](https://developers.snap.com/api/marketing-api/Ads-API/authentication) |
+    | | [Ads API docs](https://developers.snap.com/api/marketing-api/Ads-API/introduction) |
+    | | [Business portal](https://business.snapchat.com/) |
+    | | [How to generate an OAuth app](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US) |
+    | | [Rate limiting](https://developers.snap.com/api/marketing-api/Ads-API/rate-limits) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/snapchat.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/snapchat.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
