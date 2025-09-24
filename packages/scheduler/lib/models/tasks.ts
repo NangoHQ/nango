@@ -281,14 +281,12 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                             .forUpdate()
                             .skipLocked();
                     })
-                    // 2. count the number of running tasks for each group
+                    // 2. count the number of running tasks
                     .with('running', (qb) => {
                         qb.select(db.raw('count(id) as running_count'), 'group_key')
                             .from(TASKS_TABLE)
                             .where('state', 'STARTED')
-                            .whereIn('group_key', function () {
-                                this.distinct('group_key').from('candidates');
-                            })
+                            .whereLike('group_key', groupKeyPattern)
                             .groupBy('group_key');
                     })
                     // 3. rank the candidate tasks by created_at for each group
