@@ -112,6 +112,15 @@ export type ProxyBillingEvent = BillingEventBase<
     }
 >;
 
+export type WebhookForwardBillingEvent = BillingEventBase<
+    'webhook_forwards',
+    {
+        environmentId: number;
+        providerConfigKey: string;
+        provider: string;
+    }
+>;
+
 export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
 
 export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
@@ -120,6 +129,7 @@ export type BillingEvent =
     | MarBillingEvent
     | ActionsBillingEvent
     | ProxyBillingEvent
+    | WebhookForwardBillingEvent
     | FunctionExecutionsBillingEvent
     | ConnectionsBillingEvent
     | ActiveConnectionsBillingEvent;

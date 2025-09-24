@@ -110,6 +110,83 @@ acuity-scheduling:
         base_url: https://acuityscheduling.com/api/v1
     docs: https://docs.nango.dev/integrations/all/acuity-scheduling
 
+addepar:
+    display_name: Addepar (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://id.addepar.com/oauth2/authorize
+    disable_pkce: true
+    token_url: https://api.addepar.com/public/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://api.addepar.com
+    docs: https://docs.nango.dev/integrations/all/addepar
+    docs_connect: https://docs.nango.dev/integrations/all/addepar/connect
+    connection_config:
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-firm-id'
+
+addepar-basic:
+    display_name: Addepar (Basic Auth)
+    categories:
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://${connectionConfig.subdomain}.addepar.com/api
+    docs: https://docs.nango.dev/integrations/all/addepar-basic
+    docs_connect: https://docs.nango.dev/integrations/all/addepar-basic/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Addepar API Key
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Addepar API Secret
+            example: zidcISqfSGh05JsWwuY9ZdSCkXrhANHvCX0U0gkE
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Firm Domain
+            description: Your Addepar Firm domain
+            pattern: '^[a-z0-9_-]+$'
+            example: myfirm
+            order: 1
+            doc_section: '#step-1-finding-your-firm-domain'
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            order: 2
+            doc_section: '#step-2-finding-your-firm-id'
+
 adobe:
     display_name: Adobe
     categories:
@@ -10632,6 +10709,49 @@ setmore:
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
 
+sellsy:
+    display_name: Sellsy
+    auth_mode: OAUTH2
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    authorization_url: https://login.sellsy.com/oauth2/authorization
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy
+
+sellsy-oauth2-cc:
+    display_name: Sellsy (Client Credentials)
+    auth_mode: OAUTH2_CC
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Client ID
+        client_secret:
+            type: string
+            title: Secret shopper
+            description: Your Secret shopper
+
 servicem8:
     display_name: ServiceM8
     categories:
@@ -11115,6 +11235,25 @@ smugmug:
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
+
+snapchat:
+    display_name: Snapchat (Ads API)
+    auth_mode: OAUTH2
+    categories:
+        - video
+        - social
+    authorization_url: https://accounts.snapchat.com/login/oauth2/authorize
+    disable_pkce: true
+    token_url: https://accounts.snapchat.com/login/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://adsapi.snapchat.com
+    docs: https://docs.nango.dev/integrations/all/snapchat
 
 snowflake:
     display_name: Snowflake
