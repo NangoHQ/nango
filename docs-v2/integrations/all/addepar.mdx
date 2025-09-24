@@ -1,0 +1,109 @@
+---
+title: 'Addepar'
+sidebarTitle: 'Addepar'
+description: 'Access the Addepar API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Addepar_. Nango doesn't provide a test OAuth app for Addepar yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and [scopes](https://developers.addepar.com/docs/oauth#scopes) in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Addepar">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Addepar. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Addepar API">
+        Let's make your first request to the Addepar API (fetch a list of all entities). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/v1/entities" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Lists all entities.
+            const res = await nango.get({
+              // https://developers.addepar.com/docs/entities#get-all-entities
+              endpoint: '/v1/entities',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>',
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Addepar accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+    <Step title="Setup your OAuth client">
+        To set up your OAuth client, reach out to your Addepar contact for assistance.
+      </Step>
+      
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+    | Scope                              | Description                                                                                                                        |
+    | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+    | `PROFILE`                            | Read-only access to your name, email, unique user ID, and Addepar firm ID (used to identify your account)                          |
+    | `PORTFOLIO`                          | Read-only access to client portfolio data including name, quantity, and value of clients, legal entities, accounts, and securities |
+    | `TRANSACTIONS` or `TRANSACTIONS_WRITE` | Read or read/write access to client transactions data (e.g., transaction type, owner, and value)                                   |
+    | `FILES` or `FILES_WRITE`               | Read or read/write access to files and their contents associated with each client                                                  |
+    | `GROUPS` or `GROUPS_WRITE`             | Read or read/write access to group details and attributes such as name, date created, and memberships                              |
+    | `USERS` or `USERS_WRITE`               | Read or read/write access to user details (name, email, roles) including contacts and affiliations                                 |
+    | `TEAMS` or `TEAMS_WRITE`               | Read or read/write access to team details and team memberships                                                                     |
+
+
+  </Tab>
+   <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | Authorization | [Guide to connect to Addepar using Connect UI](/integrations/all/addepar/connect) |
+    | General | [Addepar Website](https://addepar.com/) |
+    | Developer | [Addepar API docs](https://developers.addepar.com/docs/welcome) |
+    | | [OAuth Authentication](https://developers.addepar.com/docs/oauth) |
+    | | [OAuth scope lists](https://developers.addepar.com/docs/oauth#scopes)
+    | | [URLs](https://developers.addepar.com/docs/urls) |
+    | | [Rate limiting](https://developers.addepar.com/docs/rate-limiting-1) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/addepar.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/addepar.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

@@ -14,4 +14,5 @@ export { default as xeroWebhookRouting } from './xero-webhook-routing.js';
 export { default as sentryOauthWebhookRouting } from './sentry-oauth.js';
 export { default as attioWebhookRouting } from './attio-webhook-routing.js';
 export { default as gmailWebhookRouting } from './gmail-webhook-routing.js';
+export { default as filloutWebhookRouting } from './fillout-webhook-routing.js';
 export type * from './types.js';
