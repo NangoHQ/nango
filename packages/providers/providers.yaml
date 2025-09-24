@@ -3232,6 +3232,30 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+cursor:
+    display_name: Cursor
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cursor.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/me
+    docs: https://docs.nango.dev/integrations/all/cursor
+    docs_connect: https://docs.nango.dev/integrations/all/cursor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Cursor account
+            doc_section: '#step-1-finding-api-key'
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+
 databricks-account:
     display_name: Databricks (Account Level)
     categories:
