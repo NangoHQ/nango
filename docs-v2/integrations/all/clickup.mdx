@@ -1,88 +1,112 @@
 ---
-title: Clickup
-sidebarTitle: Clickup
+title: 'ClickUp'
+sidebarTitle: 'ClickUp'
+description: 'Access the ClickUp API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/clickup/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/clickup/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ClickUp_. Nango doesn't provide a test OAuth app for ClickUp yet. You'll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+      </Step>
+      <Step title="Authorize ClickUp">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to ClickUp. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the ClickUp API">
+        Let's make your first request to the ClickUp API (fetch the profile of the currently signed-in user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free ClickUp account is sufficient for development. |
-| Paid test account | ✅ Not required | Free ClickUp account is sufficient for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | No review process for OAuth apps. |
-| Security audit | ✅ Not required | |
+                ```bash
+                curl "https://api.nango.dev/proxy/api/v2/user" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/api/v2/user',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
 
 
-## Setup guide
+        </Tabs>
 
-<Steps>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their ClickUp accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+  <Steps>
   <Step title="Create a ClickUp account">
-    1. If you don't already have a ClickUp account, go to [ClickUp's signup page](https://app.clickup.com/signup) and create one.
-    2. Sign in to your ClickUp account.
+    If you don't already have one, sign up for a [ClickUp account](https://app.clickup.com/signup).
   </Step>
   
   <Step title="Create a new OAuth app">
-    1. In the upper-right corner, click on your avatar.
-    2. Select **Settings** from the dropdown menu.
-    3. In the sidebar, click on **Apps**.
-    4. Click the **Create new app** button.
+    1. In the upper-right corner, click on your avatar and select **Settings**.
+    2. In the left sidebar, click **Apps**.
+    3. Click the **Create new app** button.
     
-    Note: Only Workspace owners or admins can create OAuth apps.
+    <Note>Only Workspace owners or admins can create OAuth apps.</Note>
+    
+    4. Fill in all the required information. For the **Redirect URL**, add `https://api.nango.dev/oauth/callback`.
+    5. Click **Create App**.
   </Step>
   
-  <Step title="Configure your OAuth application">
-    Fill in the required fields:
-    
-    1. **App name**: Enter a name for your application.
-    2. **Redirect URL**: Enter `https://api.nango.dev/oauth/callback`
-    
-    This is the URL where ClickUp will redirect users after they authorize your application.
-  </Step>
-  
-  <Step title="Obtain your OAuth credentials">
-    After creating your app, you'll receive:
-    
-    - **Client ID**: A unique identifier for your application
-    - **Client Secret**: A secret key for your application
-    
-    Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango.
-  </Step>
-  
-  <Step title="Configure your integration in Nango">
-    When setting up your ClickUp integration in Nango:
-    
-    - Use your **Client ID** and **Client Secret** from the previous step
+  <Step title="Obtain OAuth credentials">
+    1. After creating your app, you'll receive a **Client ID** and **Client Secret**. Make a copy of these as you'll need them when configuring your integration in Nango.
   </Step>
   
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://clickup.com) |
+    | | [Create a ClickUp account](https://app.clickup.com/signup) |
+    | Developer | [API documentation](https://developer.clickup.com/docs) |
+    | | [OAuth Flow](https://developer.clickup.com/docs/authentication#build-apps-for-others---oauth-flow) |
+    | | [OAuth Endpoints](https://developer.clickup.com/reference/getaccesstoken) |
+    | | [API v2 and v3 Terminology](https://developer.clickup.com/docs/general-v2-v3-api) |
+    | | [API Reference](https://developer.clickup.com/reference/) |
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty when configuring your integration in Nango.
+    - Users can authorize one or more Workspaces for your application. Use the [Get Authorized Teams (Workspaces)](https://developer.clickup.com/reference/getauthorizedteams) endpoint to see which Workspaces are authorized.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
+  </Tab>
+</Tabs>
 
-
-## Useful links
-
--   [ClickUp API Documentation](https://developer.clickup.com/docs)
--   [ClickUp API Reference](https://developer.clickup.com/reference)
--   [OAuth Flow](https://developer.clickup.com/docs/authentication#build-apps-for-others---oauth-flow)
--   [OAuth Endpoints](https://developer.clickup.com/reference/getaccesstoken)
--   [API v2 and v3 Terminology](https://developer.clickup.com/docs/general-v2-v3-api)
-
-## API gotchas
-
-- ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty when configuring your integration.
-
-- Users can authorize one or more Workspaces for your application. Use the [Get Authorized Teams (Workspaces)](https://developer.clickup.com/reference/getauthorizedteams) endpoint to see which Workspaces are authorized.
-
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
