@@ -1,5 +1,3 @@
-const { wait } = require('@nangohq/utils');
-
 exports.config = { transaction: false };
 
 /**
@@ -48,9 +46,6 @@ FROM
                     .returning('id');
                 await knex.raw(`UPDATE _nango_connections SET end_user_id = ${inserted[0].id} WHERE id = ${connection.connection_id}`);
             }
-
-            // Be nice to the database and cpu
-            await wait(5);
         }
 
         console.log('[endUser dup] done');
