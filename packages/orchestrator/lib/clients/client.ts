@@ -377,17 +377,18 @@ export class OrchestratorClient {
     }
 
     public async dequeue({
-        groupKey,
+        groupKeyPattern,
         limit,
         longPolling
     }: {
-        groupKey: string;
+        groupKeyPattern: string;
         limit: number;
         longPolling: boolean;
     }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
-                groupKey,
+                groupKey: groupKeyPattern,
+                groupKeyPattern,
                 limit,
                 longPolling
             }
@@ -396,7 +397,7 @@ export class OrchestratorClient {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error dequeueing tasks`,
-                payload: { groupKey, limit, response: res.error.payload as any }
+                payload: { groupKeyPattern, limit, response: res.error.payload as any }
             });
         } else {
             const dequeuedTasks = res.flatMap((task) => {
