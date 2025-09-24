@@ -237,18 +237,13 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             }
             if (connection.credentials.type === 'API_KEY' && value === '${apiKey}') {
                 url.searchParams.set(key, connection.credentials.apiKey);
-                continue;
-            }
-
-            if (value.includes('connectionConfig.')) {
+            } else if (value.includes('connectionConfig.')) {
                 const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
 
                 if (interpolatedValue && !interpolatedValue.includes('${')) {
                     url.searchParams.set(key, interpolatedValue);
                 }
-                continue;
-            }
-            if (!value.includes('$')) {
+            } else if (!value.includes('$')) {
                 url.searchParams.set(key, value);
             }
         }
