@@ -7,7 +7,6 @@ import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { ButtonLink } from '../../../components/ui/button/Button';
@@ -45,7 +44,7 @@ export const ShowIntegration: React.FC = () => {
 
     if (loadingIntegration) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Integration - Nango</title>
                 </Helmet>
@@ -71,7 +70,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Integration" error={error} page={LeftNavBarItems.Integrations} />;
+        return <ErrorPageComponent title="Integration" error={error} />;
     }
 
     if (!data) {
@@ -79,7 +78,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations} ref={ref}>
+        <DashboardLayout ref={ref}>
             <Helmet>
                 <title>{data.integration.unique_key} - Integration - Nango</title>
             </Helmet>

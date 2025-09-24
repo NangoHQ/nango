@@ -1,29 +1,28 @@
-import { forwardRef } from 'react';
+import React from 'react';
 
 import { AppSidebar } from '../components-v2/AppSidebar';
 import { AppHeader } from '@/components-v2/AppHeader';
 import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
+import { cn } from '@/utils/utils';
 
-import type { LeftNavBarItems } from '../components/LeftNavBar';
-import type { ClassValue } from 'clsx';
-
-interface DashboardLayoutI {
-    children: React.ReactNode;
-    selectedItem: LeftNavBarItems;
+interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;
-    className?: ClassValue;
 }
 
-const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function DashboardLayout({ children }, _) {
+const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(({ children, className, fullWidth = false, ...props }, ref) => {
     return (
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset className="max-h-screen overflow-hidden">
                 <AppHeader />
-                <div className="w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-background-surface p-11">{children}</div>
+                <div ref={ref} className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-background-surface')} {...props}>
+                    <div className={cn('grow h-auto mx-auto', fullWidth ? 'w-full' : 'w-[976px] py-8', className)}>{children}</div>
+                </div>
             </SidebarInset>
         </SidebarProvider>
     );
 });
+
+DashboardLayout.displayName = 'DashboardLayout';
 
 export default DashboardLayout;
