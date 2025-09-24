@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-const publicKey = 'pk_Osn50U6lzOCALPAuP46SfE42xJfMKY914TMzrWE3Tr4';
+import { globalEnv } from '../../../utils/env';
+
 const host = 'https://api.apidownwatch.com';
 const refreshRate = 5;
 
@@ -9,7 +10,7 @@ export function StatusWidget({ service, className = '' }: { service: string; cla
 
     useEffect(() => {
         const fetchWidget = () => {
-            fetch(`${host}/api/embed/${service}?key=${publicKey}`)
+            fetch(`${host}/api/embed/${service}?key=${globalEnv.apiDownWatchPublicKey}`)
                 .then((res) => res.text())
                 .then((html) => setWidgetHtml(html))
                 .catch((err: unknown) => {
