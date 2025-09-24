@@ -3,6 +3,9 @@ import * as React from 'react';
 const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
+    // Nango override because we don't want mobile behavior
+    return false;
+
     const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 
     React.useEffect(() => {
