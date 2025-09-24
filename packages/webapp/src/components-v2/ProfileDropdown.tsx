@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
+import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { useSignout } from '@/utils/user';
 
@@ -13,6 +14,7 @@ export const ProfileDropdown: React.FC = () => {
     const { meta } = useMeta();
     const navigate = useNavigate();
     const signout = useSignout();
+    const { user } = useUser();
 
     const items = useMemo(
         () => [
@@ -35,7 +37,25 @@ export const ProfileDropdown: React.FC = () => {
         [env]
     );
 
-    if (!meta) {
+    const initials = useMemo(() => {
+        if (!user?.name) {
+            return '';
+        }
+
+        const nameParts = user.name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
+
+        // If there's only one name part, just use the first character
+        if (nameParts.length === 1) {
+            return firstName[0]?.toUpperCase() || '';
+        }
+
+        // If there are multiple parts, use first character of first and last name
+        return (firstName[0]?.toUpperCase() || '') + (lastName[0]?.toUpperCase() || '');
+    }, [user]);
+
+    if (!meta || !user) {
         return;
     }
 
@@ -46,11 +66,11 @@ export const ProfileDropdown: React.FC = () => {
                     <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-2.5 inline-flex items-center justify-between bg-dropdown-bg-default active:bg-dropdown-bg-press">
                         <div className="inline-flex gap-2">
                             <div className="size-10 flex items-center justify-center rounded bg-bg-muted border border-border-muted text-text-primary leading-5 group-hover/profile:bg-background-surface group-active/profile:bg-bg-muted">
-                                GH
+                                {initials}
                             </div>
                             <div className="flex flex-col gap-1 items-start">
-                                <span className="text-sm font-semibold text-text-primary truncate max-w-28 ">Khaliq Gant da Silva Costa</span>
-                                <span className="text-text-secondary text-s leading-3 pb-px truncate max-w-28">khaliq@nango.dev</span>
+                                <span className="text-sm font-semibold text-text-primary truncate max-w-28 ">{user?.name}</span>
+                                <span className="text-text-secondary text-s leading-3 pb-px truncate max-w-28">{user?.email}</span>
                             </div>
                         </div>
                         <ChevronsUpDown className="size-4.5 text-text-tertiary group-hover/profile:text-text-secondary group-active/profile:text-text-primary" />
