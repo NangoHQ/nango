@@ -1,14 +1,20 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, ChevronsUpDown, Loader } from 'lucide-react';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from './ui/form';
 import { Input } from './ui/input';
 import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
 import { LogoInverted } from '@/assets/logo-inverted';
+import { apiPostEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {
@@ -79,7 +85,9 @@ export const EnvironmentDropdown: React.FC = () => {
                         <Button
                             variant="primary"
                             onClick={() => {
+                                // We have to close the dropdown because it traps focus
                                 setDropdownMenuOpen(false);
+                                // Managed control because Dialogs within DropdownMenus behave weirdly
                                 setEnvironmentDialogOpen(true);
                             }}
                         >
@@ -98,25 +106,84 @@ interface CreateEnvironmentDialogProps {
     onOpenChange: (open: boolean) => void;
 }
 
+const environmentFormSchema = z.object({
+    name: z
+        .string()
+        .regex(/^[a-z0-9_-]+$/, 'Invalid environment name')
+        .max(255)
+});
+
+type EnvironmentForm = z.infer<typeof environmentFormSchema>;
+
 export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = ({ open, onOpenChange }) => {
-    const [name, setName] = useState('');
+    const form = useForm<EnvironmentForm>({
+        resolver: zodResolver(environmentFormSchema),
+        defaultValues: {
+            name: ''
+        }
+    });
+
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const { mutate: mutateMeta } = useMeta();
+
+    const [loading, setLoading] = useState(false);
+
+    async function onSubmit(data: EnvironmentForm) {
+        setLoading(true);
+
+        const res = await apiPostEnvironment({ name: data.name });
+        if ('error' in res.json) {
+            const err = res.json.error;
+            if (err.code === 'invalid_body') {
+                form.setError('name', { message: 'Invalid environment name' });
+            } else if (['conflict', 'feature_disabled', 'resource_capped'].includes(err.code)) {
+                toast({ title: err.message, variant: 'error' });
+            } else {
+                toast({ title: 'Failed to create environment', variant: 'error' });
+            }
+        } else {
+            navigate(`/${res.json.data.name}`);
+            onOpenChange(false);
+            form.reset();
+            void mutateMeta();
+        }
+
+        setLoading(false);
+    }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
-            <DialogContent className="gap-10">
-                <DialogHeader>
-                    <DialogTitle>Environment Name</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-col gap-2">
-                    <Input type="text" placeholder="my-environment-name" value={name} onChange={(e) => setName(e.target.value)} />
-                    <span className="text-s leading-4 text-text-tertiary">*Must be lowercase letters, numbers, underscores and dashes.</span>
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
-                    <Button variant="primary">Create Environment</Button>
-                </DialogFooter>
+            <DialogContent>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-10">
+                        <DialogHeader>
+                            <DialogTitle>Environment Name</DialogTitle>
+                        </DialogHeader>
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input type="text" placeholder="my-environment-name" {...field} />
+                                    </FormControl>
+                                    <FormDescription>*Must be lowercase letters, numbers, underscores and dashes.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="secondary">Cancel</Button>
+                            </DialogClose>
+                            <Button variant="primary" type="submit" disabled={loading}>
+                                {loading && <Loader className="animate-spin h-full w-full" />}
+                                Create Environment
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
             </DialogContent>
         </Dialog>
     );

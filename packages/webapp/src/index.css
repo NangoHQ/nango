@@ -321,6 +321,11 @@
 
     --color-focus-ring: var(--color-brand-500);
 
+    /* Feedback */
+    --color-feedback-error-fg: var(--color-red-700);
+    --color-feedback-error-bg: var(--color-red-100);
+    --color-feedback-error-border: var(--color-red-300);
+
     /* Dropdown */
     --color-dropdown-bg-default: var(--color-gray-75);
     --color-dropdown-bg-hover: var(--color-gray-150);
@@ -371,6 +376,11 @@
 
             --color-focus-ring: var(--color-brand-500);
 
+            /* Feedback */
+            --color-feedback-error-fg: var(--color-red-500);
+            --color-feedback-error-bg: var(--color-red-900);
+            --color-feedback-error-border: var(--color-red-500);
+
             /* Dropdown */
             --color-dropdown-bg-default: var(--color-gray-825);
             --color-dropdown-bg-hover: var(--color-gray-850);
@@ -408,6 +418,12 @@
     @variant focus {
         outline: 1px solid var(--color-focus-ring);
         box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
+    }
+}
+
+@utility focus-error {
+    @variant focus {
+        box-shadow: 0 0 0 3px rgba(238, 66, 66, 0.2);
     }
 }
 
