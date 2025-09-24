@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from './ui/form';
 import { Input } from './ui/input';
 import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
-import { LogoInverted } from '@/assets/logo-inverted';
+import { LogoInverted } from '@/assets/LogoInverted';
 import { apiPostEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { useToast } from '@/hooks/useToast';

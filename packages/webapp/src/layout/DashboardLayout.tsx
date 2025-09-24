@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import { AppSidebar } from '../components-v2/AppSidebar';
-import TopNavBar from '@/components/TopNavBar';
+import { AppHeader } from '@/components-v2/AppHeader';
 import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
 
 import type { LeftNavBarItems } from '../components/LeftNavBar';
@@ -19,7 +19,7 @@ const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function Da
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset className="max-h-screen overflow-hidden">
-                <TopNavBar />
+                <AppHeader />
                 <div className="w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-background-surface p-11">{children}</div>
             </SidebarInset>
         </SidebarProvider>
