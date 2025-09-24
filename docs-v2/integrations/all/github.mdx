@@ -7,6 +7,10 @@ import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/github/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/github/PreBuiltUseCases.mdx"
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="github" />
+
 <Overview />
 <PreBuiltTooling />
 <PreBuiltUseCases />
@@ -30,56 +34,56 @@ GitHub offers two types of integrations: OAuth Apps and GitHub Apps. This guide 
     1. If you don't already have a GitHub account, go to [GitHub's signup page](https://github.com/signup) and create one.
     2. Sign in to your GitHub account.
   </Step>
-  
+
   <Step title="Register a new OAuth application">
     1. Navigate to your GitHub account settings by clicking on your profile photo in the top-right corner and selecting **Settings**.
     2. In the left sidebar, click on **Developer settings**.
     3. Select **OAuth Apps** in the left sidebar.
     4. Click the **New OAuth App** button.
-    
+
     Note: If this is your first time creating an OAuth app, you'll see a **Register a new application** button instead.
   </Step>
-  
+
   <Step title="Configure your OAuth application">
     Fill in the required fields:
-    
+
     1. **Application name**: Enter a name for your application. This will be shown to users during the authorization process.
     2. **Homepage URL**: Enter the full URL to your application's homepage.
     3. **Application description** (optional): Provide a description of your application to help users understand what it does.
     4. **Authorization callback URL**: Enter `https://api.nango.dev/oauth/callback`
-    
+
     This is the URL where GitHub will redirect users after they authorize your application.
   </Step>
-  
+
   <Step title="Register the application">
     1. Click the **Register application** button.
     2. Your OAuth application is now registered, and you'll be taken to its settings page.
   </Step>
-  
+
   <Step title="Generate a client secret">
     1. On your OAuth App's settings page, you'll see your **Client ID** displayed at the top.
     2. Click the **Generate a new client secret** button.
     3. GitHub will generate a client secret for your application. Make sure to copy and store this securely, as you won't be able to see it again.
-    
+
     Note: Treat your client secret like a password. Never share it publicly or include it in client-side code.
   </Step>
-  
+
   <Step title="Configure your integration in Nango">
     When setting up your GitHub integration in Nango:
-    
+
     - Use your **Client ID** and **Client Secret** from the previous steps
     - For the authorization URL, use: `https://github.com/login/oauth/authorize`
     - For the token URL, use: `https://github.com/login/oauth/access_token`
     - For the scope, select the appropriate permissions your application needs
   </Step>
-  
+
   <Step title="Test the OAuth flow">
     1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
     2. The authorization flow will redirect users to GitHub where they can approve access to their account.
     3. After approval, users will be redirected back to your application with an authorization code.
     4. This code will be exchanged for an access token that can be used to make API requests.
   </Step>
-  
+
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>

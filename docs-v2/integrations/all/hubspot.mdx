@@ -4,6 +4,10 @@ sidebarTitle: 'Hubspot'
 description: 'Access the Hubspot API in 2 minutes 💨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="hubspot" />
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -64,20 +68,20 @@ description: 'Access the Hubspot API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
    <Steps>
   <Step title="Create a developer account">
-    Go to [Hubspot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account. 
+    Go to [Hubspot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account.
   </Step>
   <Step title="Create & configure a Hubspot app">
-    Start creating a Hubspot app by clicking on the _Create app_ button. 
+    Start creating a Hubspot app by clicking on the _Create app_ button.
 
     In the _Auth_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
 
-    Create the Hubspot app. In the _Auth_ tab, copy/paste the `Client ID` and `Client secret`, you will need to specify it in Nango later on. 
+    Create the Hubspot app. In the _Auth_ tab, copy/paste the `Client ID` and `Client secret`, you will need to specify it in Nango later on.
   </Step>
   <Step title="Set up the OAuth scopes">
     Still in the _Auth_ tab, add the scopes that are relevant to how you want to consume the Hubspot API. Copy/paste the list of scopes, you will need to specify it in Nango later on.
   </Step>
   <Step title="Create a Hubspot test account">
-    If you don't have a Hubspot account already, create one to test your integration. 
+    If you don't have a Hubspot account already, create one to test your integration.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).

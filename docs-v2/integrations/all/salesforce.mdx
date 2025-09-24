@@ -4,6 +4,10 @@ sidebarTitle: 'Salesforce'
 description: 'Access the Salesforce API in 2 minutes 💨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="salesforce" />
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -113,7 +117,7 @@ description: 'Access the Salesforce API in 2 minutes 💨'
   - In the summer of 2025, Salesforce released [External Client Apps](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5), an alternative authentication method that allows external applications to connect to Salesforce orgs. Nango fully supports this as well.
   - However, they require packaging and end-users must install them in their Salesforce org to work. For the most frictionless integration experience, Nango recommends using **Connected Apps**.
   - To see how they compare to Connected Apps, check out [Salesforce's comparison guide](https://help.salesforce.com/s/articleView?id=sf.connected_apps_and_external_client_apps_features.htm&language=en_US&type=5).
-  - To learn how to create External Client Apps, see [Salesforce's creation guide](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5). You can also reach out to our community to learn more about setting these up. 
+  - To learn how to create External Client Apps, see [Salesforce's creation guide](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5). You can also reach out to our community to learn more about setting these up.
     ## Common Scopes
     | Scope | Description |
     | ----- | ----------- |

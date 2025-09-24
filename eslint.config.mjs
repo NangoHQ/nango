@@ -21,6 +21,7 @@ export default tseslint.config(
             'packages/node-client/tests',
             'packages/cli/fixtures/',
             'docs-v2/script.js',
+            'docs-v2/snippets/api-down-watch/status-widget.jsx',
             'packages/runner-sdk/models.d.ts'
         ]
     },
