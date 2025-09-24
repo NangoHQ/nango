@@ -32,7 +32,7 @@ export const ENVS = z.object({
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
-    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(5),
+    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
