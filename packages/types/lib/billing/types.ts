@@ -90,7 +90,7 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
             successes: number;
             failures: number;
             durationMs: number;
-            memoryGb: number;
+            compute: number;
             customLogs: number;
             proxyCalls: number;
         };

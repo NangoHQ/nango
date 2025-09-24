@@ -138,7 +138,7 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                             successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
                             failures: _a.properties.telemetry.failures + b.properties.telemetry.failures,
                             durationMs: _a.properties.telemetry.durationMs + b.properties.telemetry.durationMs,
-                            memoryGb: _a.properties.telemetry.memoryGb + b.properties.telemetry.memoryGb,
+                            compute: _a.properties.telemetry.compute + b.properties.telemetry.compute,
                             customLogs: _a.properties.telemetry.customLogs + b.properties.telemetry.customLogs,
                             proxyCalls: _a.properties.telemetry.proxyCalls + b.properties.telemetry.proxyCalls
                         }

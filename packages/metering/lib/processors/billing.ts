@@ -110,7 +110,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                                 successes: success ? event.payload.value : 0,
                                 failures: success ? 0 : event.payload.value,
                                 durationMs: telemetryBag?.durationMs ?? 0,
-                                memoryGb: telemetryBag?.memoryGb ?? 0,
+                                compute: telemetryBag ? telemetryBag?.durationMs * telemetryBag?.memoryGb : 0,
                                 customLogs: telemetryBag?.customLogs ?? 0,
                                 proxyCalls: telemetryBag?.proxyCalls ?? 0
                             },

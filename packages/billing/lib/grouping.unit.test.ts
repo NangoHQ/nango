@@ -64,7 +64,7 @@ describe('BillingEventGrouping', () => {
                         successes: 2,
                         failures: 0,
                         durationMs: 150,
-                        memoryGb: 1,
+                        compute: 230,
                         customLogs: 7,
                         proxyCalls: 3
                     },
@@ -83,7 +83,7 @@ describe('BillingEventGrouping', () => {
                         customLogs: 10,
                         proxyCalls: 3,
                         durationMs: 200,
-                        memoryGb: 1,
+                        compute: 200,
                         successes: 6,
                         failures: 1
                     },
@@ -268,7 +268,7 @@ describe('BillingEventGrouping', () => {
                         successes: 6,
                         failures: 1,
                         durationMs: 200,
-                        memoryGb: 1,
+                        compute: 100,
                         customLogs: 10,
                         proxyCalls: 3
                     },
@@ -287,7 +287,7 @@ describe('BillingEventGrouping', () => {
                         successes: 7,
                         failures: 2,
                         durationMs: 100,
-                        memoryGb: 0.5,
+                        compute: 50,
                         customLogs: 5,
                         proxyCalls: 1
                     },
@@ -309,7 +309,7 @@ describe('BillingEventGrouping', () => {
                         customLogs: 15,
                         failures: 3,
                         durationMs: 300,
-                        memoryGb: 1.5,
+                        compute: 150,
                         proxyCalls: 4,
                         successes: 13
                     }
