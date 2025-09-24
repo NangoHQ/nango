@@ -29,7 +29,7 @@ class JobsClient {
         return Ok(undefined as PostHeartbeat['Success']);
     }
 
-    async putTask({ taskId, nangoProps, error, output }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
+    async putTask({ taskId, nangoProps, error, output, telemetryBag }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
         const res = await retryWithBackoff(async () => {
             const resp = await httpFetch(`${this.baseUrl}/tasks/${taskId}`, {
                 method: 'PUT',
@@ -38,7 +38,7 @@ class JobsClient {
                 },
                 body: JSON.stringify({
                     nangoProps: nangoProps,
-                    ...(error ? { error } : { output })
+                    ...(error ? { error, telemetryBag } : { output, telemetryBag })
                 })
             });
             if (!resp.ok) {
@@ -54,7 +54,8 @@ class JobsClient {
                             payload: {
                                 message: 'Output is too large'
                             }
-                        }
+                        },
+                        telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 }
                     });
                 }
                 return Err(`putTask_failed`);

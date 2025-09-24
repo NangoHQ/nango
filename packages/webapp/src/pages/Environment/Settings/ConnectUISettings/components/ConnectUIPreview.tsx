@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { apiConnectSessions } from '../../../hooks/useConnect';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
-import { createConnectUIPreviewIFrame } from '../../../utils/connect-ui';
-import { globalEnv } from '../../../utils/env';
-import { cn } from '../../../utils/utils';
+import { apiConnectSessions } from '@/hooks/useConnect';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
+import { createConnectUIPreviewIFrame } from '@/utils/connect-ui';
+import { globalEnv } from '@/utils/env';
+import { cn } from '@/utils/utils';
 
-import type { ConnectUIEventSettingsChanged } from '@nangohq/frontend/lib/types';
+import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend/lib/types';
 
 export interface ConnectUIPreviewRef {
     sendSettingsChanged: (settings: ConnectUIEventSettingsChanged['payload']) => void;
@@ -21,6 +21,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
 
     const connectUIContainer = useRef<HTMLDivElement>(null);
     const connectUIIframe = useRef<HTMLIFrameElement>();
+    const [isReady, setIsReady] = useState(false);
 
     useImperativeHandle(ref, () => ({
         sendSettingsChanged: (settings: ConnectUIEventSettingsChanged['payload']) => {
@@ -58,19 +59,41 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
     });
 
     useEffect(() => {
-        if (!sessionToken || !connectUIIframe.current) {
+        function listener(event: MessageEvent) {
+            // Origin validation for security
+            if (event.origin !== globalEnv.connectUrl) {
+                return;
+            }
+
+            if (event?.data?.type === 'ready') {
+                setIsReady(true);
+            }
+        }
+
+        window.addEventListener('message', listener, false);
+
+        return () => {
+            window.removeEventListener('message', listener);
+        };
+    }, []);
+
+    const trySendSessionToken = useCallback(() => {
+        if (!sessionToken || !isReady || !connectUIIframe.current) {
             return;
         }
 
+        const message: ConnectUIEventToken = {
+            type: 'session_token',
+            sessionToken
+        };
+
         const iframe = connectUIIframe.current;
-        iframe.contentWindow?.postMessage(
-            {
-                type: 'session_token',
-                sessionToken
-            },
-            '*'
-        );
-    }, [sessionToken, connectUIIframe]);
+        iframe.contentWindow?.postMessage(message, '*');
+    }, [sessionToken, isReady, connectUIIframe]);
+
+    useEffect(() => {
+        trySendSessionToken();
+    }, [isReady, sessionToken, connectUIIframe, trySendSessionToken]);
 
     useEffect(() => {
         if (!environmentAndAccount || !connectUIContainer.current || connectUIIframe.current) {
@@ -85,9 +108,9 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
 
         connectUIIframe.current = iframe;
         connectUIContainer.current.appendChild(iframe);
-    }, [env, environmentAndAccount, sessionToken]);
+    }, [env, environmentAndAccount, trySendSessionToken, sessionToken]);
 
-    return <div ref={connectUIContainer} className={cn('overflow-hidden', className)} />;
+    return <div ref={connectUIContainer} className={cn('overflow-hidden h-full w-full', className)} />;
 });
 
 ConnectUIPreview.displayName = 'ConnectUIPreview';

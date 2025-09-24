@@ -19,11 +19,12 @@ import { bigQueryClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { pubsub } from '../utils/pubsub.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -135,7 +136,17 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         return Err(error);
     }
 }
-export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
+export async function handleActionSuccess({
+    taskId,
+    nangoProps,
+    output,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    output: JsonValue;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
@@ -160,7 +171,8 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
             team: account,
             environment: environment,
             syncConfig: nangoProps.syncConfig,
-            endUser: nangoProps.endUser
+            endUser: nangoProps.endUser,
+            telemetryBag
         });
         return;
     }
@@ -215,9 +227,34 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
         endUser: nangoProps.endUser
     });
+
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.function_executions',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: nangoProps.team.id,
+                connectionId: connection.id,
+                type: 'action',
+                success: true,
+                telemetryBag
+            }
+        }
+    });
 }
 
-export async function handleActionError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleActionError({
+    taskId,
+    nangoProps,
+    error,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    error: NangoError;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
@@ -242,7 +279,8 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
             team: account,
             environment: environment,
             syncConfig: nangoProps.syncConfig,
-            endUser: nangoProps.endUser
+            endUser: nangoProps.endUser,
+            telemetryBag
         });
         return;
     }
@@ -283,7 +321,8 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
         team: account,
         environment: environment,
         syncConfig: nangoProps.syncConfig,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        telemetryBag
     });
 }
 
@@ -298,7 +337,8 @@ function onFailure({
     syncConfig,
     runTime,
     error,
-    endUser
+    endUser,
+    telemetryBag
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -311,6 +351,7 @@ function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
+    telemetryBag?: TelemetryBag | undefined;
 }): void {
     if (team && environment) {
         try {
@@ -355,6 +396,21 @@ function onFailure({
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
+        });
+
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'action',
+                    success: false,
+                    telemetryBag
+                }
+            }
         });
     }
     metrics.increment(metrics.Types.ACTION_FAILURE);

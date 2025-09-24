@@ -10,6 +10,8 @@
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/1password-scim
@@ -70,6 +72,8 @@ active-campaign:
         base_url: https://${connectionConfig.hostname}/api
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /3/users/me
     docs: https://docs.nango.dev/integrations/all/active-campaign
@@ -105,6 +109,83 @@ acuity-scheduling:
     proxy:
         base_url: https://acuityscheduling.com/api/v1
     docs: https://docs.nango.dev/integrations/all/acuity-scheduling
+
+addepar:
+    display_name: Addepar (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://id.addepar.com/oauth2/authorize
+    disable_pkce: true
+    token_url: https://api.addepar.com/public/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://api.addepar.com
+    docs: https://docs.nango.dev/integrations/all/addepar
+    docs_connect: https://docs.nango.dev/integrations/all/addepar/connect
+    connection_config:
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-firm-id'
+
+addepar-basic:
+    display_name: Addepar (Basic Auth)
+    categories:
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        headers:
+            addepar-firm: ${connectionConfig.firmId}
+        retry:
+            after:
+                - 'x-ratelimit-retry-after'
+        base_url: https://${connectionConfig.subdomain}.addepar.com/api
+    docs: https://docs.nango.dev/integrations/all/addepar-basic
+    docs_connect: https://docs.nango.dev/integrations/all/addepar-basic/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Addepar API Key
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Addepar API Secret
+            example: zidcISqfSGh05JsWwuY9ZdSCkXrhANHvCX0U0gkE
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-4-generating-an-api-key-and-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Firm Domain
+            description: Your Addepar Firm domain
+            pattern: '^[a-z0-9_-]+$'
+            example: myfirm
+            order: 1
+            doc_section: '#step-1-finding-your-firm-domain'
+        firmId:
+            type: string
+            title: Firm ID
+            description: Your Addepar Firm ID
+            pattern: '^[0-9]+$'
+            order: 2
+            doc_section: '#step-2-finding-your-firm-id'
 
 adobe:
     display_name: Adobe
@@ -237,6 +318,8 @@ affinity:
         base_url: https://api.affinity.co
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /lists
     docs: https://docs.nango.dev/integrations/all/affinity
@@ -290,6 +373,8 @@ aircall-basic:
                 - 'x-aircallapi-reset'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/ping
         paginate:
@@ -384,6 +469,8 @@ autotask:
             secret: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1.0/Companies/entityinformation
     docs: https://docs.nango.dev/integrations/all/autotask
@@ -428,6 +515,8 @@ algolia:
             x-algolia-application-id: ${connectionConfig.APP_ID}
             x-algolia-api-key: ${apiKey}
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
@@ -602,6 +691,8 @@ amplitude:
         base_url: https://amplitude.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/2/events/list
     docs: https://docs.nango.dev/integrations/all/amplitude
@@ -634,6 +725,8 @@ anthropic:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
@@ -666,6 +759,8 @@ anthropic-admin:
             after:
                 - 'retry-after'
         verification:
+            headers:
+                content-type: application/json
             method: GET
             endpoints:
                 - /v1/organizations/users
@@ -834,6 +929,8 @@ asana-scim:
         base_url: https://app.asana.com/api
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /1.0/scim/Users
         headers:
@@ -857,6 +954,8 @@ ashby:
         base_url: https://api.ashbyhq.com
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
@@ -1043,6 +1142,8 @@ avalara:
         base_url: https://rest.avatax.com/api/v2
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
@@ -1080,6 +1181,8 @@ avalara-sandbox:
         base_url: https://sandbox-rest.avatax.com/api/v2
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara-sandbox
@@ -1116,6 +1219,8 @@ avoma:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users
     docs: https://docs.nango.dev/integrations/all/avoma
@@ -1222,6 +1327,8 @@ aws-scim:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/aws-scim
@@ -1340,6 +1447,8 @@ bamboohr-basic:
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
         verification:
+            headers:
+                content-type: application/json
             method: GET
             endpoints:
                 - /v1/meta/fields
@@ -1453,6 +1562,8 @@ beehiiv:
         base_url: https://api.beehiiv.com/v2/publications/${connectionConfig.publicationId}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /posts
     docs: https://docs.nango.dev/integrations/all/beehiiv
@@ -1645,6 +1756,8 @@ blandai:
             authorization: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
@@ -1786,6 +1899,8 @@ brevo-api-key:
         base_url: https://api.brevo.com/v3
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
@@ -1867,6 +1982,8 @@ builder-io-private:
             authorization: Bearer ${apiKey}
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
@@ -1902,6 +2019,8 @@ builder-io-public:
             apiKey: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
@@ -1938,6 +2057,8 @@ buildium:
             x-buildium-client-secret: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/rentals
     docs: https://docs.nango.dev/integrations/all/buildium
@@ -1984,6 +2105,52 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+bullhorn:
+    display_name: Bullhorn
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://auth-west.bullhornstaffing.com/oauth/authorize
+    token_url: https://auth-west.bullhornstaffing.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+        username: ${connectionConfig.username}
+        password: ${connectionConfig.password}
+        action: Login
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: ${connectionConfig.restUrl}
+        headers:
+            bhresttoken: ${accessToken}
+    post_connection_script: bullhornPostConnection
+    token_response_metadata:
+        - restUrl
+    refresh_token_response_metadata:
+        - restUrl
+    docs: https://docs.nango.dev/integrations/all/bullhorn
+    docs_connect: https://docs.nango.dev/integrations/all/bullhorn/connect
+    connection_config:
+        restUrl:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        username:
+            type: string
+            title: Username
+            description: Your API Username
+            doc_section: '#step-1-obtain-your-api-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your API Password
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -1998,6 +2165,8 @@ cal-com-v1:
                 - 'x-ratelimit-reset'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /me
     docs: https://docs.nango.dev/integrations/all/cal-com-v1
@@ -2029,6 +2198,8 @@ cal-com-v2:
                 - 'x-ratelimit-reset'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /me
     docs: https://docs.nango.dev/integrations/all/cal-com-v2
@@ -2077,6 +2248,8 @@ callrail:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v3/a.json
     docs_connect: https://docs.nango.dev/integrations/all/callrail/connect
@@ -2101,6 +2274,8 @@ canny:
             apiKey: ${apiKey}
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - /boards/list
     docs: https://docs.nango.dev/integrations/all/canny
@@ -2130,6 +2305,8 @@ canva:
         base_url: https://api.canva.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /rest/v1/users/me
     docs: https://docs.nango.dev/integrations/all/canva
@@ -2149,6 +2326,8 @@ canva-scim:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
@@ -2175,6 +2354,8 @@ certn:
             response_path: results
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
@@ -2202,6 +2383,8 @@ certn-partner:
             limit_name_in_request: limit
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn-partner
@@ -2215,6 +2398,8 @@ chargebee:
         base_url: https://${connectionConfig.subdomain}.chargebee.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/business_entities
         retry:
@@ -2262,6 +2447,8 @@ chattermill:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
@@ -2391,6 +2578,8 @@ chorus:
         base_url: https://chorus.ai
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/users/me
         headers:
@@ -2432,6 +2621,8 @@ clari-copilot:
         base_url: https://rest-api.copilot.clari.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
@@ -2455,6 +2646,8 @@ clicksend:
         base_url: https://rest.clicksend.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v3/account
     docs: https://docs.nango.dev/integrations/all/clicksend
@@ -2496,6 +2689,8 @@ clerk:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/jwks
     docs: https://docs.nango.dev/integrations/all/clerk
@@ -2567,6 +2762,8 @@ coda:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /whoami
     docs: https://docs.nango.dev/integrations/all/coda
@@ -2591,6 +2788,8 @@ codeclimate:
             authorization: Token token=${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
@@ -2620,6 +2819,8 @@ codegen:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/organizations
     docs: https://docs.nango.dev/integrations/all/codegen
@@ -2683,6 +2884,8 @@ companycam:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/company
     docs: https://docs.nango.dev/integrations/all/companycam
@@ -2725,6 +2928,8 @@ copper-api-key:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/account
     docs_connect: https://docs.nango.dev/integrations/all/copper/connect
@@ -2824,6 +3029,8 @@ confluence-basic:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
     docs: https://docs.nango.dev/integrations/all/confluence-basic
@@ -3010,6 +3217,8 @@ cyberimpact:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /ping
     docs: https://docs.nango.dev/integrations/all/cyberimpact
@@ -3022,6 +3231,30 @@ cyberimpact:
             pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
+
+cursor:
+    display_name: Cursor
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cursor.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/me
+    docs: https://docs.nango.dev/integrations/all/cursor
+    docs_connect: https://docs.nango.dev/integrations/all/cursor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Cursor account
+            doc_section: '#step-1-finding-api-key'
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -3086,6 +3319,49 @@ datev:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
 
+datacandy:
+    display_name: DataCandy
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.application_url}/api2
+        query:
+            application_key: ${connectionConfig.application_key}
+            accesskey: ${connectionConfig.access_key}
+        verification:
+            method: GET
+            endpoints:
+                - /merchant?application_key=${connectionConfig.application_key}&accesskey=${connectionConfig.access_key}&limit=1
+    connection_config:
+        application_url:
+            type: string
+            title: Application URL
+            description: The application URL for DataCandy
+            example: app.datacandy.com
+            format: hostname
+        application_key:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            example: c4f9375f9834b4e7f0a528cc65c055702bf5f24a
+        access_key:
+            type: string
+            title: Access Key
+            description: The access key required for read data access
+            example: '3CLJII'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: DataCandy username
+        password:
+            type: string
+            title: Password
+            description: DataCandy password
+            secret: true
+    docs: https://docs.nango.dev/integrations/all/datacandy
+
 datadog:
     display_name: Datadog
     categories:
@@ -3099,6 +3375,8 @@ datadog:
             dd-application-key: ${connectionConfig.applicationKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/validate
         retry:
@@ -3301,6 +3579,8 @@ devin:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/sessions
     docs: https://docs.nango.dev/integrations/all/devin
@@ -3425,6 +3705,8 @@ dixa:
             authorization: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/agents
             base_url_override: https://dev.dixa.io
@@ -3653,6 +3935,8 @@ emarsys:
             x-wsse: ${accessToken}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/settings
         retry:
@@ -3802,6 +4086,8 @@ elevenlabs:
             xi-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/user
     docs: https://docs.nango.dev/integrations/all/elevenlabs
@@ -3892,6 +4178,8 @@ evaluagent:
         base_url: https://${connectionConfig.region}.evaluagent.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/ping
     docs: https://docs.nango.dev/integrations/all/evaluagent
@@ -4052,6 +4340,8 @@ fairing:
             authorization: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /questions
     docs: https://docs.nango.dev/integrations/all/fairing
@@ -4089,6 +4379,8 @@ fathom:
             x-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /external/v1/teams
     docs: https://docs.nango.dev/integrations/all/fathom
@@ -4135,6 +4427,8 @@ figma-scim:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/figma-scim
@@ -4175,6 +4469,8 @@ falai:
         base_url: https://queue.fal.run
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
@@ -4228,6 +4524,8 @@ fireflies:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
@@ -4271,6 +4569,8 @@ fiserv-api-key:
             api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /sandbox/exp/v1/authorisations
     docs: https://docs.nango.dev/integrations/all/fiserv-api-key
@@ -4305,6 +4605,7 @@ fillout-api-key:
             method: GET
             endpoints:
                 - /v1/api/forms
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout-api-key
     docs_connect: https://docs.nango.dev/integrations/all/fillout-api-key/connect
     connection_config:
@@ -4336,6 +4637,7 @@ fillout:
         base_url: ${connectionConfig.base_url}
     token_response_metadata:
         - base_url
+    webhook_routing_script: filloutWebhookRouting
     docs: https://docs.nango.dev/integrations/all/fillout
     connection_config:
         base_url:
@@ -4356,6 +4658,8 @@ float:
         base_url: https://api.float.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v3/tasks
     docs: https://docs.nango.dev/integrations/all/float
@@ -4418,6 +4722,8 @@ freshdesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/settings/helpdesk
     docs: https://docs.nango.dev/integrations/all/freshdesk
@@ -4455,6 +4761,8 @@ freshsales:
         base_url: https://${connectionConfig.subdomain}.freshsales.io
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/settings/leads/fields
         headers:
@@ -4492,6 +4800,8 @@ freshservice:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/tickets
         retry:
@@ -4643,6 +4953,8 @@ google-gemini:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/models
     docs: https://docs.nango.dev/integrations/all/google-gemini
@@ -4668,6 +4980,8 @@ gem:
             x-application-secret: ${connectionConfig.appSecret}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v0/users
     docs: https://docs.nango.dev/integrations/all/gem
@@ -4696,6 +5010,8 @@ gerrit:
         base_url: https://${connectionConfig.host}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /config/server/version
     docs: https://docs.nango.dev/integrations/all/gerrit
@@ -4723,6 +5039,8 @@ grammarly:
         base_url: https://api.grammarly.com/ecosystem/api
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/analytics/users
     docs: https://docs.nango.dev/integrations/all/grammarly
@@ -4736,6 +5054,8 @@ grammarly-scim:
         base_url: https://sso.grammarly.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/scim/Users
         headers:
@@ -4759,6 +5079,8 @@ guru:
         base_url: https://api.getguru.com/api/v1
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /whoami
     docs: https://docs.nango.dev/integrations/all/guru
@@ -4914,6 +5236,8 @@ github-pat:
             accept: application/vnd.github+json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /user
     docs: https://docs.nango.dev/integrations/all/github-pat
@@ -4972,6 +5296,8 @@ ghost-admin:
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /users
     docs: https://docs.nango.dev/integrations/all/ghost-admin
@@ -5013,6 +5339,8 @@ ghost-content:
             key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /tags
     docs: https://docs.nango.dev/integrations/all/ghost-content
@@ -5268,6 +5596,68 @@ google-workspace-admin:
         base_url: https://admin.googleapis.com
     docs: https://docs.nango.dev/integrations/all/google-workspace-admin
 
+google-service-account:
+    display_name: Google Service Account
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.serviceAccountEmailAddress}
+            scope: ${credentials.scopes}
+            aud: https://oauth2.googleapis.com/token
+            sub: ${credentials.delegatedAccessEmailAddress}
+    token_url: https://oauth2.googleapis.com/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${token}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://www.googleapis.com
+    docs: https://docs.nango.dev/integrations/all/google-service-account
+    docs_connect: https://docs.nango.dev/integrations/all/google-service-account/connect
+    credentials:
+        serviceAccountEmailAddress:
+            type: string
+            title: Service Account Email Address
+            description: The email address of the service account
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com$'
+            example: 'test@project.iam.gserviceaccount.com'
+            doc_section: '#step-1-create-a-service-account'
+        scopes:
+            type: string
+            title: Scopes
+            description: Scopes that your application should be granted access to
+            pattern: '^https://[^\s]+( https://[^\s]+)*$'
+            example: 'https://www.googleapis.com/auth/drive'
+            doc_section: '#step-4-finding-your-applications-scopes'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key associated with your Google service account
+            example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
+            pattern: '^-----BEGIN PRIVATE KEY-----\\n([A-Za-z0-9+/=\\n]+)\\n-----END PRIVATE KEY-----\\n?$'
+            doc_section: '#step-3-delegate-domain-wide-authority-optional-for-google-workspace'
+        delegatedAccessEmailAddress:
+            type: string
+            title: Delegated Access Email Address
+            description: The email address of the user for which the application is requesting delegated access
+            format: email
+            example: 'some.user@example.com'
+            optional: true
+            doc_section: '#step-2-generate-a-service-account-key'
+
 gorgias:
     display_name: Gorgias
     categories:
@@ -5337,6 +5727,8 @@ grafana:
     proxy:
         base_url: https://${connectionConfig.domain}
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/access-control/user/permissions
             method: GET
@@ -5391,6 +5783,8 @@ grain-api-key:
         base_url: https://api.grain.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /_/public-api/me
         headers:
@@ -5444,6 +5838,8 @@ greenhouse-basic:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
@@ -5488,6 +5884,8 @@ greenhouse-harvest:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
@@ -5543,6 +5941,8 @@ greenhouse-assessment:
     proxy:
         base_url: https://${connectionConfig.baseUrl}
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
@@ -5594,6 +5994,8 @@ greenhouse-onboarding:
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
@@ -5672,6 +6074,8 @@ hackerrank-work:
         base_url: https://www.hackerrank.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /x/api/v3/users?limit=10&offset=10
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
@@ -5776,6 +6180,8 @@ hibob-service-user:
         base_url: https://api.hibob.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/company/named-lists
         retry:
@@ -5844,6 +6250,8 @@ holded:
             key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /invoicing/v1/contacts
     docs: https://docs.nango.dev/integrations/all/holded
@@ -5911,6 +6319,8 @@ incident-io:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/identity
     docs: https://docs.nango.dev/integrations/all/incident-io
@@ -5933,6 +6343,8 @@ insightly:
         base_url: https://api.${connectionConfig.pod}.insightly.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v3.1/Contacts
     docs: https://docs.nango.dev/integrations/all/insightly
@@ -6004,6 +6416,8 @@ itglue:
             content-type: application/vnd.api+json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /organizations
     docs: https://docs.nango.dev/integrations/all/itglue
@@ -6124,6 +6538,8 @@ jazzhr:
         base_url: https://api.resumatorapi.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users?apikey=${credentials.apiKey}
         query:
@@ -6191,6 +6607,8 @@ jira-basic:
         base_url: https://${connectionConfig.subdomain}.atlassian.net
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /rest/api/3/myself
     docs: https://docs.nango.dev/integrations/all/jira-basic
@@ -6321,6 +6739,8 @@ jobadder:
         base_url: https://api.jobadder.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/users/current
     docs: https://docs.nango.dev/integrations/all/jobadder
@@ -6395,6 +6815,8 @@ jobvite:
             x-jvi-sc: ${connectionConfig.secretKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/candidate
     docs: https://docs.nango.dev/integrations/all/jobvite
@@ -6440,6 +6862,8 @@ jumpcloud:
             x-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /organizations
     docs: https://docs.nango.dev/integrations/all/jumpcloud
@@ -6463,6 +6887,8 @@ helpscout-docs:
         base_url: https://docsapi.helpscout.net
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/sites
     docs: https://docs.nango.dev/integrations/all/helpscout-docs
@@ -6555,6 +6981,8 @@ keeper-scim:
         base_url: https://keepersecurity.com/api/rest/scim/v2/${connectionConfig.node}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/keeper-scim
@@ -6576,6 +7004,66 @@ keeper-scim:
             example: '123435384338765'
             doc_section: '#step-1-finding-your-node-id'
 
+kintone:
+    display_name: Kintone
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.kintone.com/oauth2/authorization
+    token_url: https://${connectionConfig.subdomain}.kintone.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kintone.com
+    docs: https://docs.nango.dev/integrations/all/kintone
+    docs_connect: https://docs.nango.dev/integrations/all/kintone/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain for your Kintone account
+            doc_section: '#step-1-finding-your-subdomain'
+            example: urdzw8p24agp
+            pattern: '^[a-z0-9_-]+$'
+
+kintone-user-api:
+    display_name: Kintone User API
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.kintone.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users.json
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/kintone-user-api
+    docs_connect: https://docs.nango.dev/integrations/all/kintone-user-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Kintone account
+            example: cy.s.api1.eyJraWQiOiJ2MSIsInR5cCI6IkpXVCIsImFsZyI6IkhTMjU2In0.eyJyYW5kIjoiNWQ4ZmNiOGYtMDk3ZC00MWNhLWJkZjAtYTAxN2ZiMDZkYjNlIiwiaXNzIjoieTkwNzgyIiwiZXhwIjoxNzU4MTg1Mzg5fQ.GUoYL6hBFGOywcfjxQB3Y3vSwEq67evDGcmVQvzPY94
+            pattern: '^cy\.s\.api1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-2-generating-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain for your Kintone account
+            doc_section: '#step-1-finding-your-subdomain'
+            example: urdzw8p24agp
+            order: 1
+            pattern: '^[a-z0-9_-]+$'
+
 knowbe4:
     display_name: KnowBe4 (Reporting)
     categories:
@@ -6585,6 +7073,8 @@ knowbe4:
         base_url: https://${connectionConfig.subdomain}.knowbe4.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users
         headers:
@@ -6619,6 +7109,8 @@ klipfolio:
             kf-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/1.0/profile
     docs: https://docs.nango.dev/integrations/all/klipfolio
@@ -6640,6 +7132,8 @@ klaviyo:
             revision: '2024-07-15'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/accounts
         retry:
@@ -6800,6 +7294,8 @@ lemlist:
     proxy:
         base_url: https://api.lemlist.com
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/team
         retry:
@@ -6972,6 +7468,8 @@ loom-scim:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/loom-scim
@@ -7006,6 +7504,8 @@ loops-so:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/api-key
     docs: https://docs.nango.dev/integrations/all/loops-so
@@ -7030,6 +7530,8 @@ lucid-scim:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/lucid-scim
@@ -7053,6 +7555,8 @@ luma:
         base_url: https://api.lu.ma
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /public/v1/user/get-self
     docs: https://docs.nango.dev/integrations/all/luma
@@ -7076,6 +7580,8 @@ listmonk:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /lists
     docs: https://docs.nango.dev/integrations/all/listmonk
@@ -7108,6 +7614,8 @@ make:
             authorization: Token ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /users/me
     docs: https://docs.nango.dev/integrations/all/make
@@ -7136,6 +7644,8 @@ mailgun:
         base_url: https://${connectionConfig.region}.mailgun.net
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v4/domains
     docs: https://docs.nango.dev/integrations/all/mailgun
@@ -7183,6 +7693,8 @@ manatal:
         base_url: https://api.manatal.com/open/v3
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /users
         headers:
@@ -7310,6 +7822,8 @@ metabase:
             x-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
@@ -7493,6 +8007,8 @@ mindbody:
             authorization: ${connectionConfig.staffUserToken}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /public/v6/site/locations
     docs: https://docs.nango.dev/integrations/all/mindbody
@@ -7689,6 +8205,8 @@ miro-scim:
         base_url: https://miro.com/api
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/scim/Users
         headers:
@@ -7929,6 +8447,8 @@ notion-scim:
         base_url: https://api.notion.com/scim
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/Users
         headers:
@@ -8093,6 +8613,8 @@ openai:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/models
         retry:
@@ -8119,6 +8641,8 @@ openai-admin:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/organization/users
         retry:
@@ -8143,6 +8667,8 @@ open-hands:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/conversations
     docs: https://docs.nango.dev/integrations/all/open-hands
@@ -8305,6 +8831,8 @@ pandadoc-api-key:
         base_url: https://api.pandadoc.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /public/v1/logs
         headers:
@@ -8538,6 +9066,8 @@ pendo:
         base_url: https://app.pendo.io
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/page
         headers:
@@ -8803,6 +9333,8 @@ pipedream:
         base_url: https://api.pipedream.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users/me
     docs: https://docs.nango.dev/integrations/all/pipedream
@@ -8841,6 +9373,8 @@ pivotaltracker:
         base_url: https://www.pivotaltracker.com/services/v5
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /accounts
     docs: https://docs.nango.dev/integrations/all/pivotaltracker
@@ -8858,11 +9392,13 @@ plain:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: https://core-api.uk.plain.com/graphql/v1
+        base_url: https://core-api.uk.plain.com/graphql
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /v1?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
@@ -8914,6 +9450,8 @@ posthog:
         base_url: https://${connectionConfig.subdomain}.posthog.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
@@ -9138,6 +9676,8 @@ ragieai:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /documents
     docs: https://docs.nango.dev/integrations/all/ragieai
@@ -9208,6 +9748,8 @@ razorpay:
         base_url: https://api.razorpay.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/orders
     docs: https://docs.nango.dev/integrations/all/razorpay
@@ -9239,6 +9781,8 @@ readwise:
             authorization: Token ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /auth
         retry:
@@ -9266,6 +9810,8 @@ readwise-reader:
             authorization: Token ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             base_url_override: https://readwise.io
             endpoints:
                 - /api/v2/auth
@@ -9314,6 +9860,8 @@ recruitcrm:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/users/search
     docs: https://docs.nango.dev/integrations/all/recruitcrm
@@ -9337,6 +9885,8 @@ recruiterflow:
             rf-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/external/user/list
     docs: https://docs.nango.dev/integrations/all/recruiterflow
@@ -9412,6 +9962,8 @@ refiner:
         base_url: https://api.refiner.io/v1
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /account
     docs: https://docs.nango.dev/integrations/all/refiner
@@ -9430,6 +9982,8 @@ replicate:
         base_url: https://api.replicate.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/account
     docs: https://docs.nango.dev/integrations/all/replicate
@@ -9556,6 +10110,8 @@ roam-scim:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/roam-scim
@@ -9578,6 +10134,8 @@ rock-gym-pro:
         base_url: https://api.rockgympro.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/ping
         paginate:
@@ -9627,6 +10185,8 @@ rootly:
         base_url: https://api.rootly.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users/me
     docs: https://docs.nango.dev/integrations/all/rootly
@@ -9678,6 +10238,8 @@ sage-hr:
             x-auth-token: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/employees
     docs: https://docs.nango.dev/integrations/all/sage-hr
@@ -10193,6 +10755,49 @@ setmore:
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
 
+sellsy:
+    display_name: Sellsy
+    auth_mode: OAUTH2
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    authorization_url: https://login.sellsy.com/oauth2/authorization
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy
+
+sellsy-oauth2-cc:
+    display_name: Sellsy (Client Credentials)
+    auth_mode: OAUTH2_CC
+    categories:
+        - invoicing
+        - accounting
+        - crm
+    token_url: https://login.sellsy.com/oauth2/access-tokens
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.sellsy.com
+    docs: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sellsy-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Client ID
+        client_secret:
+            type: string
+            title: Secret shopper
+            description: Your Secret shopper
+
 servicem8:
     display_name: ServiceM8
     categories:
@@ -10396,6 +11001,8 @@ shipstation:
                 - 'x-rate-limit-reset'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /users
     docs: https://docs.nango.dev/integrations/all/shipstation
@@ -10451,6 +11058,8 @@ shopify-api-key:
             content-type: application/json
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/shopify-api-key
@@ -10487,6 +11096,8 @@ shopify-partner:
             content-type: application/json
         verification:
             method: POST
+            headers:
+                content-type: application/json
             endpoints:
                 - 2025-04/graphql.json
     docs: https://docs.nango.dev/integrations/all/shopify-partner
@@ -10515,6 +11126,8 @@ shopify-scim:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/Users
         retry:
@@ -10541,6 +11154,8 @@ shortcut:
             shortcut-token: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v3/member
     docs: https://docs.nango.dev/integrations/all/shortcut
@@ -10596,6 +11211,8 @@ smartlead-ai:
             api_key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/client
     docs: https://docs.nango.dev/integrations/all/smartlead-ai
@@ -10618,6 +11235,8 @@ smartrecruiters-api-key:
             x-smarttoken: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /feed/publications
     docs: https://docs.nango.dev/integrations/all/smartrecruiters-api-key
@@ -10631,14 +11250,25 @@ smartsheet:
     display_name: Smartsheet
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
-    token_url: https://api.smartsheet.com/2.0/token
+    token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
-        base_url: https://api.smartsheet.com
+        base_url: https://api.${connectionConfig.domain}
     docs: https://docs.nango.dev/integrations/all/smartsheet
+    docs_connect: https://docs.nango.dev/integrations/all/smartsheet/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: The domain where your account is hosted
+            example: smartsheet.com
+            prefix: https://api.
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
 
 smugmug:
     display_name: Smugmug
@@ -10651,6 +11281,25 @@ smugmug:
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
+
+snapchat:
+    display_name: Snapchat (Ads API)
+    auth_mode: OAUTH2
+    categories:
+        - video
+        - social
+    authorization_url: https://accounts.snapchat.com/login/oauth2/authorize
+    disable_pkce: true
+    token_url: https://accounts.snapchat.com/login/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://adsapi.snapchat.com
+    docs: https://docs.nango.dev/integrations/all/snapchat
 
 snowflake:
     display_name: Snowflake
@@ -10707,6 +11356,7 @@ snowflake-jwt:
             data: { 'statement': 'SELECT CURRENT_TIMESTAMP' }
             headers:
                 x-snowflake-authorization-token-type: KEYPAIR_JWT
+                content-type: application/json
     docs: https://docs.nango.dev/integrations/all/snowflake-jwt
     docs_connect: https://docs.nango.dev/integrations/all/snowflake-jwt/connect
     connection_config:
@@ -10729,7 +11379,6 @@ snowflake-jwt:
             title: User Name
             description: The username for your Snowflake account used for authentication
             example: MYUSER
-            pattern: ^[A-Z0-9]+$
             doc_section: '#step-3-finding-your-user-name'
         privateKey:
             type: string
@@ -11108,6 +11757,8 @@ teamtailor:
             x-api-version: '20210218'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/users
     docs: https://docs.nango.dev/integrations/all/teamtailor
@@ -11154,6 +11805,8 @@ terraform:
                 - 'x-ratelimit-reset'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v2/organizations
     docs: https://docs.nango.dev/integrations/all/terraform
@@ -11259,6 +11912,8 @@ thrivecart-api-key:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /ping
     docs: https://docs.nango.dev/integrations/all/thrivecart-api-key
@@ -11388,6 +12043,8 @@ trello-scim:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/users?sortBy=displayName&count=10
     docs: https://docs.nango.dev/integrations/all/trello-scim
@@ -11584,6 +12241,8 @@ twenty-crm:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /companies
     docs: https://docs.nango.dev/integrations/all/twenty-crm
@@ -11609,6 +12268,8 @@ twenty-crm-self-hosted:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /companies
     docs: https://docs.nango.dev/integrations/all/twenty-crm-self-hosted
@@ -11637,6 +12298,8 @@ twilio:
         base_url: https://api.twilio.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /2010-04-01/Accounts/${credentials.username}/Messages.json
     docs: https://docs.nango.dev/integrations/all/twilio
@@ -11688,6 +12351,8 @@ typefully:
             x-api-key: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/notifications/
     docs: https://docs.nango.dev/integrations/all/typefully
@@ -11833,6 +12498,8 @@ unanet:
         base_url: https://compass.cosential.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/projects
     docs: https://docs.nango.dev/integrations/all/unanet
@@ -11880,6 +12547,8 @@ unipile:
             x-api-key: ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /api/v1/accounts
     docs: https://docs.nango.dev/integrations/all/unipile
@@ -11915,6 +12584,8 @@ vercel:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v2/user
     docs: https://docs.nango.dev/integrations/all/vercel
@@ -11954,6 +12625,8 @@ vimeo-basic:
         base_url: https://api.vimeo.com
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /
     docs: https://docs.nango.dev/integrations/all/vimeo-basic
@@ -12015,6 +12688,27 @@ webflow:
         base_url: https://api.webflow.com
     docs: https://docs.nango.dev/integrations/all/webflow
 
+webex:
+    display_name: Webex
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://webexapis.com/v1/authorize
+    token_url: https://webexapis.com/v1/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://webexapis.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/webex
+
 whatsapp-business:
     display_name: WhatsApp Business
     categories:
@@ -12027,6 +12721,8 @@ whatsapp-business:
             content-type: application/json
         base_url: https://graph.facebook.com
         verification:
+            headers:
+                content-type: application/json
             endpoints:
                 - /v21.0/me
             method: GET
@@ -12109,6 +12805,8 @@ woocommerce:
         base_url: https://${connectionConfig.storeURL}
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /wp-json/wc/v3/customers
     docs: https://docs.nango.dev/integrations/all/woocommerce
@@ -12321,6 +13019,8 @@ xai:
             content-type: application/json
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /v1/api-key
     docs: https://docs.nango.dev/integrations/all/xai
@@ -12506,6 +13206,8 @@ zapier-scim:
                 - 'retry-after'
         verification:
             method: GET
+            headers:
+                content-type: application/json
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim

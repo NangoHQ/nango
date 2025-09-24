@@ -86,7 +86,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.defaultConnectUISettings
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
             }
         });
         expect(res.res.status).toBe(200);
@@ -99,6 +99,7 @@ describe(`GET ${endpoint}`, () => {
         // Create custom connect UI settings
         const customConnectUISettings: ConnectUISettings = {
             showWatermark: true,
+            defaultTheme: 'system',
             theme: {
                 light: {
                     primary: '#ffffff'

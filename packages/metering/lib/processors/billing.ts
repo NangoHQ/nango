@@ -13,7 +13,7 @@ import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export class Billing {
+export class BillingProcessor {
     private subscriber: Subscriber;
 
     constructor(transport: Transport) {
@@ -58,11 +58,17 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                     delta: mar
                 });
 
-                return billing.add('monthly_active_records', mar, {
-                    idempotencyKey: event.idempotencyKey,
-                    timestamp: event.createdAt,
-                    ...event.payload.properties
-                });
+                return billing.add([
+                    {
+                        type: 'monthly_active_records',
+                        properties: {
+                            count: mar,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...event.payload.properties
+                        }
+                    }
+                ]);
             }
             case 'usage.actions': {
                 await trackUsage({
@@ -70,11 +76,17 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                     metric: 'actions',
                     delta: event.payload.value
                 });
-                return billing.add('billable_actions', event.payload.value, {
-                    idempotencyKey: event.idempotencyKey,
-                    timestamp: event.createdAt,
-                    ...event.payload.properties
-                });
+                return billing.add([
+                    {
+                        type: 'billable_actions',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...event.payload.properties
+                        }
+                    }
+                ]);
             }
             case 'usage.connections': {
                 await trackUsage({
@@ -85,8 +97,67 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 // No billing action for connections, just tracking usage
                 return Ok(undefined);
             }
+            case 'usage.function_executions': {
+                const { telemetryBag, frequencyMs, success, ...rest } = event.payload.properties;
+                billing.add([
+                    {
+                        type: 'function_executions',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            telemetry: {
+                                successes: success ? event.payload.value : 0,
+                                failures: success ? 0 : event.payload.value,
+                                durationMs: telemetryBag?.durationMs ?? 0,
+                                memoryGb: telemetryBag?.memoryGb ?? 0,
+                                customLogs: telemetryBag?.customLogs ?? 0,
+                                proxyCalls: telemetryBag?.proxyCalls ?? 0
+                            },
+                            ...rest,
+                            ...(frequencyMs ? { frequencyMs } : {})
+                        }
+                    }
+                ]);
+                return Ok(undefined);
+            }
+            case 'usage.proxy': {
+                const { success, ...rest } = event.payload.properties;
+                billing.add([
+                    {
+                        type: 'proxy',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...rest,
+                            telemetry: {
+                                successes: success ? event.payload.value : 0,
+                                failures: success ? 0 : event.payload.value
+                            }
+                        }
+                    }
+                ]);
+                return Ok(undefined);
+            }
+            case 'usage.webhook_forward': {
+                billing.add([
+                    {
+                        type: 'webhook_forwards',
+                        properties: {
+                            count: event.payload.value,
+                            idempotencyKey: event.idempotencyKey,
+                            timestamp: event.createdAt,
+                            ...event.payload.properties
+                        }
+                    }
+                ]);
+                return Ok(undefined);
+            }
             default:
-                return Err(`Unknown billing event type: ${event.type}`);
+                ((_exhaustiveCheck: never) => {
+                    throw new Error(`Unhandled event type: ${JSON.stringify(_exhaustiveCheck)}`);
+                })(event);
         }
     } catch (err) {
         return Err(`Error processing billing event: ${stringifyError(err)}`);

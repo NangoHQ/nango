@@ -126,7 +126,7 @@ export const connectionCreated = async (
     logContextGetter: LogContextGetter,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
+    const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
@@ -146,7 +146,7 @@ export const connectionCreated = async (
         auth_mode,
         endUser,
         success: true,
-        operation: 'creation',
+        operation,
         providerConfig,
         account
     });
@@ -347,9 +347,6 @@ export async function credentialsTest({
             provider,
             providerName: config.provider,
             providerConfigKey: config.unique_key,
-            headers: {
-                'Content-Type': 'application/json'
-            },
             decompress: false
         };
 

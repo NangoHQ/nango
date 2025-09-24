@@ -13,6 +13,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 function getCustomSettings(): ConnectUISettings {
     return {
         showWatermark: false,
+        defaultTheme: 'system',
         theme: {
             light: {
                 primary: '#eeeeee'
@@ -101,6 +102,7 @@ describe(`PUT ${route}`, () => {
         // Update the settings
         const updatedSettings: ConnectUISettings = {
             showWatermark: false,
+            defaultTheme: 'light',
             theme: {
                 light: {
                     primary: '#dddddd'
@@ -134,9 +136,10 @@ describe(`PUT ${route}`, () => {
         const { env } = await seeders.seedAccountEnvAndUser();
 
         const invalidBody = {
-            showWatermark: true
+            showWatermark: true,
+            defaultTheme: 'invalid'
             // Missing theme field
-        } as ConnectUISettings;
+        } as unknown as ConnectUISettings;
 
         const res = await api.fetch(route, {
             method: 'PUT',
@@ -155,6 +158,11 @@ describe(`PUT ${route}`, () => {
                         code: 'invalid_type',
                         message: 'Invalid input: expected object, received undefined',
                         path: ['theme']
+                    },
+                    {
+                        code: 'invalid_value',
+                        message: 'Invalid option: expected one of "light"|"dark"|"system"',
+                        path: ['defaultTheme']
                     }
                 ]
             }
@@ -200,6 +208,11 @@ describe(`PUT ${route}`, () => {
                         path: ['theme', 'dark', 'primary']
                     },
                     {
+                        code: 'invalid_value',
+                        message: 'Invalid option: expected one of "light"|"dark"|"system"',
+                        path: ['defaultTheme']
+                    },
+                    {
                         code: 'invalid_type',
                         message: 'Invalid input: expected boolean, received undefined',
                         path: ['showWatermark']
@@ -231,13 +244,13 @@ describe(`PUT ${route}`, () => {
         isSuccess(res.json);
 
         // Theme should be overridden to defaults in response, but showWatermark should remain custom
-        expect(res.json.data.theme).toStrictEqual(connectUISettingsService.defaultConnectUISettings.theme);
+        expect(res.json.data.theme).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings().theme);
         expect(res.json.data.showWatermark).toBe(false); // Should preserve custom value
 
         // Verify the settings were stored in database with theme overridden
         const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
-        expect(dbSettings.value?.theme).toStrictEqual(connectUISettingsService.defaultConnectUISettings.theme);
+        expect(dbSettings.value?.theme).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings().theme);
         expect(dbSettings.value?.showWatermark).toBe(false);
     });
 
@@ -263,13 +276,13 @@ describe(`PUT ${route}`, () => {
         isSuccess(res.json);
 
         // showWatermark should be overridden to default in response, but theme should remain custom
-        expect(res.json.data.showWatermark).toBe(connectUISettingsService.defaultConnectUISettings.showWatermark);
+        expect(res.json.data.showWatermark).toBe(connectUISettingsService.getDefaultConnectUISettings().showWatermark);
         expect(res.json.data.theme).toStrictEqual(testSettings.theme); // Should preserve custom theme
 
         // Verify the settings were stored in database with showWatermark overridden
         const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
-        expect(dbSettings.value?.showWatermark).toBe(connectUISettingsService.defaultConnectUISettings.showWatermark);
+        expect(dbSettings.value?.showWatermark).toBe(connectUISettingsService.getDefaultConnectUISettings().showWatermark);
         expect(dbSettings.value?.theme).toStrictEqual(testSettings.theme);
     });
 
@@ -292,11 +305,11 @@ describe(`PUT ${route}`, () => {
         isSuccess(res.json);
 
         // Both should be overridden to defaults in response
-        expect(res.json.data).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
+        expect(res.json.data).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
 
         // Verify the settings were stored in database with both features overridden
         const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
-        expect(dbSettings.value).toStrictEqual(connectUISettingsService.defaultConnectUISettings);
+        expect(dbSettings.value).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
     });
 });
