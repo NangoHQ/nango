@@ -3232,6 +3232,30 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+cursor:
+    display_name: Cursor
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cursor.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/me
+    docs: https://docs.nango.dev/integrations/all/cursor
+    docs_connect: https://docs.nango.dev/integrations/all/cursor/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Cursor account
+            doc_section: '#step-1-finding-api-key'
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+
 databricks-account:
     display_name: Databricks (Account Level)
     categories:
@@ -3294,6 +3318,49 @@ datev:
     proxy:
         base_url: https://api.datev.de
     docs: https://docs.nango.dev/integrations/all/datev
+
+datacandy:
+    display_name: DataCandy
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.application_url}/api2
+        query:
+            application_key: ${connectionConfig.application_key}
+            accesskey: ${connectionConfig.access_key}
+        verification:
+            method: GET
+            endpoints:
+                - /merchant?application_key=${connectionConfig.application_key}&accesskey=${connectionConfig.access_key}&limit=1
+    connection_config:
+        application_url:
+            type: string
+            title: Application URL
+            description: The application URL for DataCandy
+            example: app.datacandy.com
+            format: hostname
+        application_key:
+            type: string
+            title: Application Key
+            description: The application key required for read data access
+            example: c4f9375f9834b4e7f0a528cc65c055702bf5f24a
+        access_key:
+            type: string
+            title: Access Key
+            description: The access key required for read data access
+            example: '3CLJII'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: DataCandy username
+        password:
+            type: string
+            title: Password
+            description: DataCandy password
+            secret: true
+    docs: https://docs.nango.dev/integrations/all/datacandy
 
 datadog:
     display_name: Datadog
