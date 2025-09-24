@@ -147,7 +147,15 @@ export const TeamBilling: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-4 gap-4 mt-6">
                             {plans?.list.map((def) => {
-                                return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={hasPaymentMethod} activePlan={plans.activePlan} />;
+                                return (
+                                    <PlanCard
+                                        key={def.plan.code}
+                                        def={def}
+                                        hasPaymentMethod={hasPaymentMethod}
+                                        activePlan={plans.activePlan}
+                                        currentPlan={currentPlan}
+                                    />
+                                );
                             })}
                         </div>
                     )}
