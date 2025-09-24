@@ -23,10 +23,10 @@ export default async function createApp(f: FastifyInstance): Promise<void> {
     });
 
     await f.register(cors, {
-        origin: ['http://localhost:3000', 'http://localhost:5173'],
+        origin: ['*'],
         maxAge: 600,
         credentials: true,
-        exposedHeaders: ['set-cookie']
+        exposedHeaders: ['set-cookie', 'Authorization, Etag, Content-Type, Content-Length, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset']
     });
 
     // Enable Zod validation and serialization

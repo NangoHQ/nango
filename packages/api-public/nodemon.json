@@ -1,17 +1,18 @@
 {
-    "exec": "tsx -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env",
+    "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
     "ext": "js,ts,json",
-    "ignore": ["src/**/*.test.ts"],
+    "ignore": ["lib/**/*.test.ts"],
     "watch": [
         "../../.env",
         "../billing/dist",
-        "../keystore/dist",
+        "../kvstore/dist",
         "../logs/dist",
         "../providers/providers.yaml",
+        "../pubsub/dist",
         "../records/dist",
         "../shared/dist",
+        "../types/dist",
         "../utils/dist",
-        "../webhooks/dist",
         "dist"
     ]
 }
