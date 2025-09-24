@@ -54,7 +54,7 @@ export default function UsageCard() {
     }, []);
 
     return (
-        <div className="flex flex-col rounded-sm bg-background-surface border border-border-muted">
+        <div className="flex flex-col rounded-sm bg-bg-surface border border-border-muted">
             <span className="text-text-primary font-semibold text-sm p-3 border-b border-border-muted">Free plan usage</span>
             <div className="flex flex-col gap-4 p-3 pb-4.5">
                 <div className="flex flex-col gap-2.5 w-full">

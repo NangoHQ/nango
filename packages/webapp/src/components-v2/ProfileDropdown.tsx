@@ -79,7 +79,7 @@ export const ProfileDropdown: React.FC = () => {
                 <DropdownMenu>
                     <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-2.5 inline-flex items-center justify-between bg-dropdown-bg-default active:bg-dropdown-bg-press">
                         <div className="inline-flex gap-2">
-                            <div className="size-10 flex items-center justify-center rounded bg-bg-muted border border-border-muted text-text-primary leading-5 group-hover/profile:bg-background-surface group-active/profile:bg-bg-muted">
+                            <div className="size-10 flex items-center justify-center rounded bg-bg-muted border border-border-muted text-text-primary leading-5 group-hover/profile:bg-bg-surface group-active/profile:bg-bg-muted">
                                 {initials}
                             </div>
                             <div className="flex flex-col gap-1 items-start">

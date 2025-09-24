@@ -303,8 +303,8 @@
     --color-file: #f4f2eb;
 
     /* Functional */
-    --color-background-surface: var(--color-gray-50);
-    --color-background-elevated: var(--color-gray-75);
+    --color-bg-surface: var(--color-gray-50);
+    --color-bg-elevated: var(--color-gray-75);
     --color-bg-muted: var(--color-gray-300);
     --color-bg-subtle: var(--color-gray-150);
 
@@ -359,8 +359,8 @@
     :host {
         @variant dark {
             /* Functional */
-            --color-background-surface: var(--color-gray-1000);
-            --color-background-elevated: var(--color-gray-900);
+            --color-bg-surface: var(--color-gray-1000);
+            --color-bg-elevated: var(--color-gray-900);
             --color-bg-muted: var(--color-gray-700);
             --color-bg-subtle: var(--color-gray-825);
 
@@ -413,7 +413,7 @@
 }
 
 @utility bg-nav-gradient {
-    background: linear-gradient(141deg, var(--color-background-elevated) 0%, var(--color-background-surface) 100%);
+    background: linear-gradient(141deg, var(--color-bg-elevated) 0%, var(--color-bg-surface) 100%);
 }
 
 @utility focus-default {
