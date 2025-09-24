@@ -8,7 +8,7 @@ description: 'Access the Asana API in 2 minutes 💨'
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Asana_. Nango doesn't provide a test OAuth app for Asana yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Asana_. Nango doesn't provide a test OAuth app for Asana yet. You'll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
       </Step>
       <Step title="Authorize Asana">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Asana. Later, you'll let your users do the same directly from your app.
@@ -67,7 +67,7 @@ description: 'Access the Asana API in 2 minutes 💨'
   </Step>
    <Step title="Create & configure an Asana app">
      1. Navigate to [My apps](https://app.asana.com/0/my-apps).
-     2. Click the **Create New App** button.
+     2. Click the **Create new app** button.
      3. Fill in all the required information and click **Create app**.
      4. You will be redirected to your app's settings. Navigate to the **OAuth** tab and click **+ Add redirect URL**. Add `https://api.nango.dev/oauth/callback` as your redirect URL.
      5. Under the **Permission scopes** section, select the various scopes you will need.
@@ -82,6 +82,18 @@ description: 'Access the Asana API in 2 minutes 💨'
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>
+  ## Common Scopes
+  | Scope                | Description                                         |
+  | -------------------- | --------------------------------------------------- |
+  | `openid`           | Enables OpenID Connect authentication and ID tokens |
+  | `profile`          | Access to user’s basic profile information          |
+  | `email`            | Access to the user’s email address                  |
+  | `users:read`      | Read user details and lists of users                |
+  | `workspaces:read` | Read information about workspaces                   |
+  | `projects:read`   | Read project details and lists of projects          |
+  | `tasks:read`      | Read task details, subtasks, and dependencies       |
+  | `tasks:write`     | Create, update, and manage tasks                    |
+
   </Tab>
   <Tab title="🔗 Useful links">
     | Topic | Links |
@@ -94,11 +106,12 @@ description: 'Access the Asana API in 2 minutes 💨'
     | | [How to register an OAuth app](https://developers.asana.com/docs/oauth#register-an-application) |
     | | [List of OAuth scopes](https://developers.asana.com/docs/oauth#oauth-scopes) |
     | | [Details on rate limits](https://developers.asana.com/docs/rate-limits) |
+    | | [How to publish your OAuth app](https://developers.asana.com/docs/publish-your-app) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/asana.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    - If you are getting `The required parameter client_id is missing or invalid`, you will most likely need to go to [Developer Console](https://app.asana.com/0/my-apps) -> Your app -> Manage distribution -> Change from "Specific workspaces" to "Any workspace"
+    - If you are getting `The required parameter client_id is missing or invalid`, you will most likely need to go to [Developer Console](https://app.asana.com/0/my-apps) -> Your app -> Manage distribution -> Change from `Specific workspaces` to `Any workspace`
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/asana.mdx)</Note>
   </Tab>
 </Tabs>
