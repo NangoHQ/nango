@@ -13,11 +13,11 @@ import { FleetError } from './utils/errors.js';
 import { withPgLock } from './utils/locking.js';
 import { waitUntilHealthy } from './utils/url.js';
 
-import type { FleetId } from './instances.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import type { Node, NodeConfigOverride } from './types.js';
 import type { Deployment, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type knex from 'knex';
 
 const defaultDbUrl =
     envs.RUNNERS_DATABASE_URL ||
@@ -30,7 +30,7 @@ export class Fleet {
     private supervisor: Supervisor | undefined = undefined;
     private nodeProvider: NodeProvider;
 
-    constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: FleetId; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
+    constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: string; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         if (nodeProvider) {
@@ -82,6 +82,20 @@ export class Fleet {
     }
 
     public async getRunningNode(routingId: RoutingId): Promise<Result<Node>> {
+        const searchNode = async (trx: knex.Knex): Promise<Result<Node | undefined>> => {
+            const search = await nodes.search(trx, {
+                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED'],
+                routingId
+            });
+            if (search.isErr()) {
+                return Err(search.error);
+            }
+
+            const byState = search.value.get(routingId);
+            const node = byState?.RUNNING?.[0] || byState?.OUTDATED?.[0] || byState?.STARTING?.[0] || byState?.PENDING?.[0];
+            return Ok(node);
+        };
+
         const recurse = async (supervisor: Supervisor | undefined, start: Date): Promise<Result<Node>> => {
             if (!supervisor) {
                 return Err(new FleetError('fleet_misconfigured', { context: { fleetId: this.fleetId } }));
@@ -89,29 +103,28 @@ export class Fleet {
             if (new Date().getTime() - start.getTime() > envs.FLEET_TIMEOUT_GET_RUNNING_NODE_MS) {
                 return Err(new FleetError('fleet_node_not_ready_timeout', { context: { routingId } }));
             }
-            const search = await nodes.search(this.dbClient.db, {
-                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED'],
-                routingId
-            });
-            if (search.isErr()) {
-                return Err(search.error);
-            }
-            const running = search.value.get(routingId)?.RUNNING || [];
-            if (running[0]) {
-                return Ok(running[0]);
-            }
-            const outdated = search.value.get(routingId)?.OUTDATED || [];
-            if (outdated[0]) {
-                return Ok(outdated[0]);
-            }
-            const starting = search.value.get(routingId)?.STARTING || [];
-            const pending = search.value.get(routingId)?.PENDING || [];
 
-            if (!starting[0] && !pending[0]) {
-                await withPgLock({
+            // search for existing node
+            let node = await searchNode(this.dbClient.db);
+            if (node.isErr()) {
+                return Err(node.error);
+            }
+
+            // create node if it does not exist yet
+            if (!node.value) {
+                const createNode = await withPgLock({
                     db: this.dbClient.db,
-                    lockKey: `create_node_${routingId}`,
+                    lockKey: `fleet_${this.fleetId}_create_node_${routingId}`,
                     fn: async (trx): Promise<Result<Node>> => {
+                        // double check node was not created while acquiring lock
+                        const node = await searchNode(trx);
+                        if (node.isErr()) {
+                            return Err(node.error);
+                        }
+                        if (node.value) {
+                            return Ok(node.value);
+                        }
+
                         const deployment = await deployments.getActive(trx);
                         if (deployment.isErr()) {
                             return Err(deployment.error);
@@ -123,6 +136,15 @@ export class Fleet {
                     },
                     timeoutMs: 10 * 1000
                 });
+                if (createNode.isErr()) {
+                    return Err(createNode.error);
+                }
+                node = createNode;
+            }
+
+            // RUNNING or OUTDATED nodes are able to accept tasks
+            if (node.value?.state === 'RUNNING' || node?.value?.state === 'OUTDATED') {
+                return Ok(node.value);
             }
 
             // wait for node to be ready

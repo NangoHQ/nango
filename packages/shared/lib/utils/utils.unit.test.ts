@@ -239,6 +239,26 @@ describe('interpolateStringFromObject', () => {
     });
 });
 
+describe('interpolateObjectValues', () => {
+    it('uses connectionConfig value when present', () => {
+        const obj = {
+            audience: '${connectionConfig.audience} || https://api.pax8.com'
+        };
+
+        const result = utils.interpolateObjectValues(obj, { audience: 'https://custom.example.com' });
+        expect(result['audience']).toBe('https://custom.example.com');
+    });
+
+    it('falls back to literal when connectionConfig value is missing', () => {
+        const obj = {
+            audience: '${connectionConfig.audience} || https://api.pax8.com'
+        };
+
+        const result = utils.interpolateObjectValues(obj, {});
+        expect(result['audience']).toBe('https://api.pax8.com');
+    });
+});
+
 describe('parseTokenExpirationDate', () => {
     it('should return the same Date instance if input is already a Date', () => {
         const now = new Date();
@@ -283,5 +303,11 @@ describe('parseTokenExpirationDate', () => {
         expect(utils.parseTokenExpirationDate(null)).toBeUndefined();
         expect(utils.parseTokenExpirationDate(undefined)).toBeUndefined();
         expect(utils.parseTokenExpirationDate({})).toBeUndefined();
+    });
+
+    it('should handle a full timestamp in milliseconds', () => {
+        const millisecondsTimestamp = Date.now();
+        const expected = new Date(millisecondsTimestamp);
+        expect(utils.parseTokenExpirationDate(millisecondsTimestamp)?.getTime()).toBe(expected.getTime());
     });
 });

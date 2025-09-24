@@ -261,8 +261,8 @@ export class SyncManagerService {
         initiator: string;
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
-        const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
-        const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
+        const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
+        const account = (await environmentService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: syncCommandToOperation[command] } },
@@ -289,7 +289,7 @@ export class SyncManagerService {
             for (const { syncName, syncVariant } of syncs) {
                 const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doesn't exists.`);
+                    throw new Error(`Sync "${syncName}" doesn't exists.`); // Todo: return this error instead of throwing
                 }
 
                 await orchestrator.runSyncCommand({
@@ -514,7 +514,7 @@ export class SyncManagerService {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
 
-        const countRes = await recordsService.getRecordCountsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
+        const countRes = await recordsService.getRecordStatsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }

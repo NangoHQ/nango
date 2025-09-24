@@ -6,6 +6,7 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
+import { envs } from '../env.js';
 import { deepMergeRecordData } from '../helpers/merge.js';
 import { getUniqueId, removeDuplicateKey } from '../helpers/uniqueKey.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
@@ -27,13 +28,15 @@ import type { Knex } from 'knex';
 
 dayjs.extend(utc);
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
 interface UpsertResult {
     external_id: string;
     id: string;
     last_modified_at: string;
     previous_last_modified_at: string | null;
+    size_bytes: number;
+    previous_size_bytes: number | null;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -52,7 +55,7 @@ function getInactiveThisMonth(records: UpsertResult[]): UpsertResult[] {
     });
 }
 
-export async function getRecordCountsByModel({
+export async function getRecordStatsByModel({
     connectionId,
     environmentId
 }: {
@@ -68,22 +71,42 @@ export async function getRecordCountsByModel({
             })
             .select<RecordCount[]>('*');
 
-        const countsByModel: Record<string, RecordCount> = results.reduce((acc, result) => ({ ...acc, [result.model]: result }), {});
-        return Ok(countsByModel);
+        const statsByModel: Record<string, RecordCount> = results.reduce(
+            (acc, result) => ({
+                ...acc,
+                [result.model]: {
+                    ...result,
+                    size_bytes: Number(result.size_bytes) // bigint is returned as string by pg
+                }
+            }),
+            {}
+        );
+        return Ok(statsByModel);
     } catch {
-        const e = new Error(`Count records error for connection ${connectionId} and environment ${environmentId}`);
+        const e = new Error(`Failed to fetch stats for connection ${connectionId} and environment ${environmentId}`);
         return Err(e);
     }
 }
 
-export async function countMetric(): Promise<Result<{ count: string }>> {
-    // Note: count is a string because pg returns bigint as string
+export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeInBytes: number }[]>> {
     try {
-        const [count] = await db.from(RECORD_COUNTS_TABLE).sum('count as count');
-        if (!count) {
+        const res = await db
+            .from(RECORD_COUNTS_TABLE)
+            .select<
+                { environment_id: number; count: number; size_bytes: number }[]
+            >('environment_id', db.raw('SUM(count) as count'), db.raw('SUM(size_bytes) as size_bytes'))
+            .groupBy('environment_id')
+            .having(db.raw('sum(size_bytes) > 10000000 OR sum(count) > 1000000')); // only return if > 10MB or > 1M records to avoid sending too many metrics
+
+        if (!res) {
             return Err(new Error(`Failed to count records`));
         }
-        return Ok({ count });
+        const metrics = res.map((r) => ({
+            environmentId: r.environment_id,
+            count: Number(r.count),
+            sizeInBytes: Number(r.size_bytes)
+        }));
+        return Ok(metrics);
     } catch {
         return Err(new Error(`Failed to count records`));
     }
@@ -334,6 +357,7 @@ export async function upsert({
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
+            let deltaSizeInBytes = 0;
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                 const encryptedRecords = encryptRecords(chunk);
@@ -359,7 +383,7 @@ export async function upsert({
                 const externalIds = chunk.map((r) => r.external_id);
                 const query = trx
                     .with('existing', (qb) => {
-                        qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at')
+                        qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes'))
                             .from(RECORDS_TABLE)
                             .where({
                                 connection_id: connectionId,
@@ -370,7 +394,7 @@ export async function upsert({
                     .with('upsert', (qb) => {
                         qb.insert(encryptedRecords)
                             .into(RECORDS_TABLE)
-                            .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at'])
+                            .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
                             .onConflict(['connection_id', 'external_id', 'model'])
                             .merge();
                         if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
@@ -388,6 +412,8 @@ export async function upsert({
                             upsert.id as id,
                             upsert.external_id as external_id,
                             to_json(upsert.updated_at) as last_modified_at,
+                            upsert.size_bytes as size_bytes,
+                            existing.size_bytes as previous_size_bytes,
                             CASE
                               WHEN existing.updated_at IS NULL THEN NULL
                               ELSE to_json(existing.updated_at)
@@ -456,20 +482,23 @@ export async function upsert({
                         };
                     }
                 }
+                deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
             }
             const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
-            if (delta !== 0) {
+            if (delta !== 0 || deltaSizeInBytes !== 0) {
                 await trx
                     .from(RECORD_COUNTS_TABLE)
                     .insert({
                         connection_id: connectionId,
                         model,
                         environment_id: environmentId,
-                        count: delta
+                        count: delta,
+                        size_bytes: deltaSizeInBytes
                     })
                     .onConflict(['connection_id', 'environment_id', 'model'])
                     .merge({
                         count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
+                        size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes`),
                         updated_at: trx.fn.now()
                     });
             }
@@ -526,6 +555,7 @@ export async function update({
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent updates
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
+            let deltaSizeInBytes = 0;
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
@@ -556,10 +586,22 @@ export async function update({
                 if (recordsToUpdate.length > 0) {
                     const encryptedRecords = encryptRecords(recordsToUpdate);
                     const query = trx
+                        .with('existing', (qb) => {
+                            qb.select('external_id', 'id', trx.raw('pg_column_size(json) as previous_size_bytes'))
+                                .from(RECORDS_TABLE)
+                                .where({
+                                    connection_id: connectionId,
+                                    model
+                                })
+                                .whereIn(
+                                    'external_id',
+                                    encryptedRecords.map((r) => r.external_id)
+                                );
+                        })
                         .with('upsert', (qb) => {
                             qb.from<{ external_id: string; id: string; last_modified_at: string }>(RECORDS_TABLE)
                                 .insert(encryptedRecords)
-                                .returning(['external_id', 'id', 'updated_at'])
+                                .returning(['external_id', 'id', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
                                 .onConflict(['connection_id', 'external_id', 'model'])
                                 .merge();
                             if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
@@ -577,14 +619,19 @@ export async function update({
                                 external_id: string;
                                 id: string;
                                 last_modified_at: string;
+                                previous_size_bytes: number;
+                                size_bytes: number;
                             }[]
                         >(
                             trx.raw(`
                             upsert.id as id,
                             upsert.external_id as external_id,
-                            to_json(upsert.updated_at) as last_modified_at`)
+                            to_json(upsert.updated_at) as last_modified_at,
+                            existing.previous_size_bytes as previous_size_bytes,
+                            upsert.size_bytes as size_bytes`)
                         )
                         .from('upsert')
+                        .join('existing', 'upsert.external_id', 'existing.external_id')
                         .orderBy([
                             { column: 'updated_at', order: 'asc' },
                             { column: 'id', order: 'asc' }
@@ -609,7 +656,20 @@ export async function update({
                             cursor: Cursor.new(lastRecord)
                         };
                     }
+                    deltaSizeInBytes += updated.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
                 }
+            }
+            if (deltaSizeInBytes !== 0) {
+                await trx
+                    .from(RECORD_COUNTS_TABLE)
+                    .where({
+                        connection_id: connectionId,
+                        model
+                    })
+                    .update({
+                        size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + ?`, [deltaSizeInBytes]),
+                        updated_at: trx.fn.now()
+                    });
             }
         });
         return Ok({
@@ -672,7 +732,7 @@ export async function deleteRecordCount({ connectionId, environmentId, model }: 
 
 // Mark all non-deleted records from previous generations as deleted
 // returns the ids of records being deleted
-export async function markPreviousGenerationRecordsAsDeleted({
+export async function deleteOutdatedRecords({
     connectionId,
     model,
     syncId,
@@ -684,60 +744,68 @@ export async function markPreviousGenerationRecordsAsDeleted({
     syncId: string;
     generation: number;
     batchSize?: number;
-}): Promise<string[]> {
-    const now = db.fn.now(6);
-    return db.transaction(async (trx) => {
-        const deletedIds: string[] = [];
-        let hasMore = true;
-        while (hasMore) {
-            const res = await trx
-                .from<FormattedRecord>(RECORDS_TABLE)
-                .whereIn('id', function (sub) {
-                    sub.select('id')
-                        .from(RECORDS_TABLE)
-                        .where({
-                            connection_id: connectionId,
-                            model,
-                            sync_id: syncId,
-                            deleted_at: null
-                        })
-                        .where('sync_job_id', '<', generation)
-                        .limit(batchSize);
-                })
-                .update({
-                    deleted_at: now,
-                    updated_at: now,
-                    sync_job_id: generation
-                })
-                // records table is partitioned by connection_id and model
-                // to avoid table scan, we must always filter by connection_id and model
-                .where({
-                    connection_id: connectionId,
-                    model
-                })
-                .returning('external_id');
+}): Promise<Result<string[]>> {
+    try {
+        const now = db.fn.now(6);
+        return await db.transaction(async (trx) => {
+            const deletedIds: string[] = [];
+            let hasMore = true;
+            while (hasMore) {
+                const res = await trx
+                    .from<FormattedRecord>(RECORDS_TABLE)
+                    .whereIn('id', function (sub) {
+                        sub.select('id')
+                            .from(RECORDS_TABLE)
+                            .where({
+                                connection_id: connectionId,
+                                model,
+                                sync_id: syncId,
+                                deleted_at: null
+                            })
+                            .where('sync_job_id', '<', generation)
+                            .limit(batchSize);
+                    })
+                    .update({
+                        deleted_at: now,
+                        updated_at: now,
+                        sync_job_id: generation
+                    })
+                    // records table is partitioned by connection_id and model
+                    // to avoid table scan, we must always filter by connection_id and model
+                    .where({
+                        connection_id: connectionId,
+                        model
+                    })
+                    .returning('external_id');
 
-            if (res.length < batchSize) {
-                hasMore = false;
+                if (res.length < batchSize) {
+                    hasMore = false;
+                }
+
+                deletedIds.push(...res.map((r) => r.external_id));
             }
 
-            deletedIds.push(...res.map((r) => r.external_id));
-        }
-
-        // update records count
-        const count = deletedIds.length;
-        if (count > 0) {
-            await trx(RECORD_COUNTS_TABLE)
-                .where({
-                    connection_id: connectionId,
-                    model
-                })
-                .update({
-                    count: trx.raw('GREATEST(0, count - ?)', [count])
-                });
-        }
-        return deletedIds;
-    });
+            // update records count
+            const count = deletedIds.length;
+            if (count > 0) {
+                await trx(RECORD_COUNTS_TABLE)
+                    .where({
+                        connection_id: connectionId,
+                        model
+                    })
+                    .update({
+                        count: trx.raw('GREATEST(0, count - ?)', [count])
+                    });
+            }
+            return Ok(deletedIds);
+        });
+    } catch (err) {
+        const e = new Error(
+            `Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, syncId ${syncId}, generation ${generation}`,
+            { cause: err }
+        );
+        return Err(e);
+    }
 }
 
 /**

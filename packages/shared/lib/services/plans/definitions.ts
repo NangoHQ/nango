@@ -21,7 +21,10 @@ export const freePlan: PlanDefinition = {
         monthly_actions_max: 1000,
         monthly_active_records_max: 5000,
         has_webhooks_script: false,
-        has_webhooks_forward: false
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
     },
     display: {
         features: [
@@ -64,7 +67,10 @@ export const starterPlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: false,
-        has_webhooks_forward: false
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
     },
     display: {
         featuresHeading: 'Everything in Free, plus:',
@@ -104,7 +110,10 @@ export const growthPlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: true,
-        has_webhooks_forward: true
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: true,
+        can_disable_connect_ui_watermark: true
     },
     display: {
         featuresHeading: 'Everything in Starter, plus:',
@@ -114,6 +123,7 @@ export const growthPlan: PlanDefinition = {
             { title: '50k synced records', sub: 'then $0.002 per record' },
             { title: '10 environments' },
             { title: 'Real-time syncing' },
+            { title: 'Remove Nango branding' },
             { title: 'Private Slack channel' },
             { title: 'Request new APIs' }
         ]
@@ -146,7 +156,10 @@ export const enterprisePlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: true,
-        has_webhooks_forward: true
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: true,
+        can_disable_connect_ui_watermark: true
     },
     display: {
         features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
@@ -179,7 +192,10 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: true,
-        has_webhooks_forward: true
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
     }
 };
 export const scaleLegacyPlan: PlanDefinition = {
@@ -207,7 +223,10 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: true,
-        has_webhooks_forward: true
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
@@ -235,7 +254,10 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_extension_count: 0,
         trial_expired: null,
         has_webhooks_script: true,
-        has_webhooks_forward: true
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: true,
+        can_disable_connect_ui_watermark: true
     }
 };
 

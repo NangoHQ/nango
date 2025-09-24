@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
@@ -15,7 +16,8 @@ export default defineConfig({
         svgr(),
         checker({
             typescript: true
-        })
+        }),
+        tailwindcss()
     ] as PluginOption[],
     resolve: {
         alias: {

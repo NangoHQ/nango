@@ -62,19 +62,19 @@ description: 'Access the Aircall API in 2 minutes 💨'
     <Tab title="🧑‍💻 OAuth app setup">
     <Steps>
       <Step title="Create a partner-specific account">
-        You can create a partner-specific account by signing up at [https://aircall.io/partners/technology/signup/](https://aircall.io/partners/technology/signup/).
+        If you don't already have one, sign up for a [partner-specific account](https://aircall.io/partners/technology/signup/)
       </Step>
       <Step title="Prepare your URIs">
         Before proceeding, make sure you have these URIs ready:
         - **redirect_uri**: `https://api.nango.dev/oauth/callback`
-        - **install_uri**: Your application's installation/setup page URL
+        - **install_uri**: Your application's setup page URL. To satisfy Aircall's requirement, you can provide a link that shows users what the app is about. This is only necessary if you are initiating the authorization flow outside Nango; since you are initiating it within Nango, it is not required.
 
         Refer to the [Aircall OAuth documentation](https://developer.aircall.io/api-references/#oauth-technology-partners) to understand how these URIs are used in the OAuth process.
       </Step>
       <Step title="Request OAuth credentials">
         1. Email [marketplace@aircall.io](mailto:marketplace@aircall.io) and request OAuth credentials.
         2. In your message, mention that you're building a Technology Partner app and provide your **install_uri** and **redirect_uri**.
-        3. Aircall will reply with your **Client ID** and **Client Secret** once approved.
+        3. Aircall will reply with your **Client ID** and **Client Secret** once approved, you'll need these when configuring your integration in Nango.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
@@ -82,8 +82,8 @@ description: 'Access the Aircall API in 2 minutes 💨'
     </Steps>
     </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
+    | Topic | Links |
+    | - | - |
     | General | [Aircall Website](https://aircall.io/) |
     | | [Become a Technology Partner](https://aircall.io/partners/technology/) |
     | Developer | [API Documentation](https://developer.aircall.io/api-references/) |

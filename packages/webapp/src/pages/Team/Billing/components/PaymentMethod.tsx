@@ -11,6 +11,7 @@ import { apiDeleteStripePayment, apiPostStripeCollectPayment, useStripePaymentMe
 import { useToast } from '../../../../hooks/useToast';
 import { queryClient, useStore } from '../../../../store';
 import { stripePromise } from '../../../../utils/stripe';
+import { useEnvironment } from '@/hooks/useEnvironment';
 
 import type { PostStripeCollectPayment } from '@nangohq/types';
 import type { StripeElementsOptions } from '@stripe/stripe-js';
@@ -18,6 +19,7 @@ import type { StripeElementsOptions } from '@stripe/stripe-js';
 export const PaymentMethods: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data, isLoading } = useStripePaymentMethods(env);
+    const { plan: currentPlan } = useEnvironment(env);
 
     const hasCard = useMemo<boolean>(() => {
         if (!data || !data.data || data.data.length <= 0) {
@@ -35,15 +37,17 @@ export const PaymentMethods: React.FC = () => {
     }
 
     return (
-        <div className="flex gap-8">
+        <div className="flex gap-8 items-end">
             {data?.data.map((card) => {
-                return <PaymentMethod key={card.id} {...card} />;
+                return <PaymentMethod key={card.id} {...card} canDelete={currentPlan?.name === 'free'} />;
             })}
+
+            <CreditCardButton replace />
         </div>
     );
 };
 
-const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) => {
+const PaymentMethod: React.FC<{ id: string; last4: string; canDelete: boolean }> = ({ id, last4, canDelete }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
 
@@ -63,23 +67,25 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
     }, [id]);
 
     return (
-        <div className="relative flex bg-grayscale-4 w-[300px] py-6 px-5 rounded">
+        <div className="relative flex bg-grayscale-4 w-[300px] py-6 px-5 rounded-sm">
             <div className="absolute right-2 top-2">
-                <ConfirmModal
-                    title="Delete payment method"
-                    description="This action is destructive & irreversible. Are you sure you want to delete your payment method?"
-                    confirmButtonText="Delete Payment Method"
-                    trigger={
-                        <Button variant={'icon'} size="xs" isLoading={loading}>
-                            <IconTrash size={16} />
-                        </Button>
-                    }
-                    loading={loading}
-                    onConfirm={onDelete}
-                />
+                {canDelete && (
+                    <ConfirmModal
+                        title="Delete payment method"
+                        description="This action is destructive & irreversible. Are you sure you want to delete your payment method?"
+                        confirmButtonText="Delete Payment Method"
+                        trigger={
+                            <Button variant={'icon'} size="xs" isLoading={loading}>
+                                <IconTrash size={16} />
+                            </Button>
+                        }
+                        loading={loading}
+                        onConfirm={onDelete}
+                    />
+                )}
             </div>
             <div className="text-sm text-white flex gap-4 items-start">
-                <div className="bg-grayscale-14 text-grayscale-4 w-10 h-10 rounded flex items-center justify-center">
+                <div className="bg-grayscale-14 text-grayscale-4 w-10 h-10 rounded-sm flex items-center justify-center">
                     <IconCreditCard size={30} stroke={1} />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -91,7 +97,7 @@ const PaymentMethod: React.FC<{ id: string; last4: string }> = ({ id, last4 }) =
     );
 };
 
-const CreditCardButton: React.FC = () => {
+const CreditCardButton: React.FC<{ replace?: boolean }> = ({ replace }) => {
     const [open, setOpen] = useState(false);
 
     return (
@@ -99,7 +105,7 @@ const CreditCardButton: React.FC = () => {
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <Button size={'sm'}>
-                        <IconCreditCard /> Add payment method
+                        <IconCreditCard /> {replace ? 'Replace payment method' : 'Add payment method'}
                     </Button>
                 </DialogTrigger>
 

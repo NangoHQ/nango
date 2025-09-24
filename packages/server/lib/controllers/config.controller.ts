@@ -1,6 +1,14 @@
 import crypto from 'crypto';
 
-import { configService, connectionService, errorManager, getGlobalWebhookReceiveUrl, getProvider, getProviders } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    errorManager,
+    getGlobalWebhookReceiveUrl,
+    getProvider,
+    getProviders,
+    sharedCredentialsService
+} from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -16,26 +24,28 @@ class ConfigController {
         }
 
         try {
-            const sharedCredentials = await configService.getPreConfiguredProviderScopes();
+            const sharedCredentials = await sharedCredentialsService.getPreConfiguredProviderScopes();
 
-            const list = Object.entries(providers).map((providerProperties) => {
-                const [provider, properties] = providerProperties;
-                // check if provider has nango's preconfigured credentials
-                const preConfiguredInfo = sharedCredentials[provider];
-                const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
-                const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
+            const list = Object.entries(providers)
+                .filter(([, properties]) => properties.auth_mode !== 'MCP_OAUTH2')
+                .map((providerProperties) => {
+                    const [provider, properties] = providerProperties;
+                    // check if provider has nango's preconfigured credentials
+                    const preConfiguredInfo = sharedCredentials.isOk() ? sharedCredentials.value[provider] : undefined;
+                    const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
+                    const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 
-                return {
-                    name: provider,
-                    displayName: properties.display_name,
-                    defaultScopes: properties.default_scopes,
-                    authMode: properties.auth_mode,
-                    categories: properties.categories,
-                    docs: properties.docs,
-                    preConfigured: isPreConfigured,
-                    preConfiguredScopes: preConfiguredScopes
-                };
-            });
+                    return {
+                        name: provider,
+                        displayName: properties.display_name,
+                        defaultScopes: properties.default_scopes,
+                        authMode: properties.auth_mode,
+                        categories: properties.categories,
+                        docs: properties.docs,
+                        preConfigured: isPreConfigured,
+                        preConfiguredScopes: preConfiguredScopes
+                    };
+                });
             const sortedList = list.sort((a, b) => a.name.localeCompare(b.name));
             res.status(200).send(sortedList);
         } catch (err) {

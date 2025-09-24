@@ -62,9 +62,9 @@ export const ConnectionCreate: React.FC = () => {
                     <div className="pr-10 flex flex-col gap-10">
                         <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
-                            <Skeleton className="w-[100%] h-10" />
-                            <Skeleton className="w-[100%]" />
-                            <Skeleton className="w-[100%]" />
+                            <Skeleton className="w-full h-10" />
+                            <Skeleton className="w-full" />
+                            <Skeleton className="w-full" />
                         </div>
                     </div>
                 </div>
@@ -285,7 +285,7 @@ export const ConnectionCreate: React.FC = () => {
                         <h1 className="text-2xl">Embed in your app</h1>
                         <a
                             className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                            href="https://docs.nango.dev/integrate/guides/authorize-an-api"
+                            href="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth"
                             target="_blank"
                             rel="noreferrer"
                         >

@@ -1,12 +1,12 @@
 import * as z from 'zod';
 
+import { getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { updatePlan } from '@nangohq/shared';
+import { freePlan, updatePlan } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../../utils/stripe.js';
 
 import type { DeleteStripePayment } from '@nangohq/types';
 
@@ -31,6 +31,16 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
     const valQuery = schemaQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
+        return;
+    }
+
+    if (plan.name !== freePlan.code) {
+        res.status(400).send({
+            error: {
+                code: 'invalid_body',
+                message: 'Cannot delete payment method with an active subscription. Reach out to support if you need to delete or change your payment method.'
+            }
+        });
         return;
     }
 

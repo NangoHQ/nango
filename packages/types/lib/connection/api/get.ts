@@ -1,9 +1,18 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
-import type { AllAuthCredentials } from '../../auth/api.js';
+import type {
+    AllAuthCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
+    TbaCredentials
+} from '../../auth/api.js';
+import type { EndUserInput } from '../../connect/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
-import type { DBConnection, DBConnectionDecrypted } from '../db.js';
+import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
@@ -59,6 +68,29 @@ export type GetPublicConnections = Endpoint<{
     };
 }>;
 
+export type PostPublicConnection = Endpoint<{
+    Method: 'POST';
+    Path: '/connections';
+    Body: {
+        connection_id?: string | undefined;
+        provider_config_key: string;
+        metadata?: Record<string, unknown> | undefined;
+        connection_config?: ConnectionConfig | undefined;
+        credentials:
+            | Omit<OAuth2Credentials, 'raw'>
+            | Omit<OAuth2ClientCredentials, 'raw'>
+            | Omit<OAuth1Credentials, 'raw'>
+            | Omit<ApiKeyCredentials, 'raw'>
+            | Omit<BasicApiCredentials, 'raw'>
+            | Omit<TbaCredentials, 'raw'>
+            | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'CUSTOM'; app_id: string; installation_id: string }
+            | { type: 'NONE' };
+        end_user?: EndUserInput | undefined;
+    };
+    Success: ApiPublicConnectionFull;
+}>;
+
 export type ApiConnectionFull = Omit<
     ReplaceInObject<DBConnectionDecrypted, Date, string>,
     'credentials_iv' | 'end_user_id' | 'credentials_tag' | 'deleted' | 'deleted_at'
@@ -104,10 +136,27 @@ export type GetPublicConnection = Endpoint<{
         provider_config_key: string;
         refresh_token?: boolean | undefined;
         force_refresh?: boolean | undefined;
+        refresh_github_app_jwt_token?: boolean | undefined;
     };
     Path: '/connection/:connectionId';
     Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;
     Success: ApiPublicConnectionFull;
+}>;
+
+export type PatchPublicConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{

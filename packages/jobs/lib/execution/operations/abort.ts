@@ -34,13 +34,17 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
 }
 
 export async function abortTaskWithId({ taskId, teamId }: { taskId: string; teamId: number }): Promise<Result<void>> {
-    const runner = await getRunner(teamId);
-    if (runner.isErr()) {
-        return Err(runner.error);
+    try {
+        const runner = await getRunner(teamId);
+        if (runner.isErr()) {
+            return Err(runner.error);
+        }
+        const isAborted = await runner.value.client.abort.mutate({ taskId });
+        if (!isAborted) {
+            return Err(`Error aborting script for task: ${taskId}`);
+        }
+        return Ok(undefined);
+    } catch (err) {
+        return Err(new Error(`Error aborting script for task: ${taskId}`, { cause: err }));
     }
-    const isAborted = await runner.value.client.abort.mutate({ taskId });
-    if (!isAborted) {
-        return Err(`Error aborting script for task: ${taskId}`);
-    }
-    return Ok(undefined);
 }

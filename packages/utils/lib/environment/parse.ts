@@ -63,16 +63,63 @@ export const ENVS = z.object({
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
+    JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    JOBS_PROCESSOR_CONFIG: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`Invalid JSON in JOBS_PROCESSOR_CONFIG`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z.array(
+                z.object({
+                    groupKeyPattern: z.string(),
+                    maxConcurrency: z.coerce.number()
+                })
+            )
+        )
+        .default([
+            {
+                groupKeyPattern: 'sync*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'webhook*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'on-event*',
+                maxConcurrency: 50
+            }
+        ]),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
+    RUNNER_FLEET_ID: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]+$/)
+        .optional()
+        .default('nango_runners'),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -84,10 +131,13 @@ export const ENVS = z.object({
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
-    JOBS_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+    RUNNER_CLIENT_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    RUNNER_CLIENT_RESPONSE_TIMEOUT_MS: z.coerce.number().optional().default(15_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
+    FLEET_SUPERVISOR_LOCK_KEY: z.string().default('fleet_supervisor'),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
@@ -99,7 +149,7 @@ export const ENVS = z.object({
     FLEET_TIMEOUT_FINISHING_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000), // 24 hours
+        .default(25 * 60 * 60 * 1000), // 25 hours
     FLEET_TIMEOUT_IDLE_MS: z.coerce
         .number()
         .optional()
@@ -172,6 +222,9 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
+    NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
+    NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
+    NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
 
     // Koala
     PUBLIC_KOALA_API_URL: z.url().optional(),
@@ -186,7 +239,8 @@ export const ENVS = z.object({
 
     // SMTP
     SMTP_URL: z.url().optional(),
-    SMTP_FROM: z.string().default('Nango <support@nango.dev>'),
+    SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
+    SMTP_DOMAIN: z.string().default('email.nango.dev'),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
@@ -216,6 +270,10 @@ export const ENVS = z.object({
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
+    RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
+    RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
+    RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
+    RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),

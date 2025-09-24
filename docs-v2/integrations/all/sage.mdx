@@ -44,7 +44,7 @@ _No setup guide yet._
 
 -   Sage OAuth scopes can only be `readonly` or `full_access`.
 -   Sage also supports XML integration. When creating a new connection on Nango for Sage Intacct, please provide your web service `senderId` and `password`, as well as credentials to access the target company. These credentials include `userId`, `companyId`, and `userPassword`. Additionally, the target company must [authorize your sender ID]https://developer.intacct.com/support/faq/#why-am-i-getting-an-error-about-an-invalid-web-services-authorization to allow API calls.
--   After successfully creating a new connection, you can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve the `sessionId`, for subsequent api calls.
+-   After successfully creating a new connection, you can use [getConnection](/reference/functions#get-the-connection-credentials) in your [integration function](/guides/platform/functions) to retrieve the `sessionId`, for subsequent api calls.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage.mdx)</Note>
 

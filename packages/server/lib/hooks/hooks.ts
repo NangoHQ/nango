@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { onUsageIncreased } from '@nangohq/account-usage';
 import {
     NangoError,
     ProxyRequest,
@@ -14,10 +13,11 @@ import {
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
+import { pubsub } from '../pubsub.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
-import { postConnectionCreation } from './connection/on/connection-created.js';
+import { postConnectionCreation } from './connection/on/post-connection-creation.js';
 import postConnection from './connection/post-connection.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
@@ -126,7 +126,7 @@ export const connectionCreated = async (
     logContextGetter: LogContextGetter,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
+    const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
@@ -146,12 +146,24 @@ export const connectionCreated = async (
         auth_mode,
         endUser,
         success: true,
-        operation: 'creation',
+        operation,
         providerConfig,
         account
     });
 
-    void onUsageIncreased({ accountId: account.id, metric: 'connections', delta: 1 });
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.connections',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: account.id,
+                connectionId: connection.id,
+                environmentId: connection.environment_id,
+                providerConfigKey: providerConfig.unique_key
+            }
+        }
+    });
 };
 
 export const connectionCreationFailed = async (
@@ -335,9 +347,6 @@ export async function credentialsTest({
             provider,
             providerName: config.provider,
             providerConfigKey: config.unique_key,
-            headers: {
-                'Content-Type': 'application/json'
-            },
             decompress: false
         };
 

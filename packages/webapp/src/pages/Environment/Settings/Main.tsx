@@ -23,8 +23,8 @@ export const MainSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Main</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-10 w-3/5">
-                <div className="flex flex-col gap-4">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
+                <div className="flex flex-col gap-4 w-full">
                     <EditableInput
                         title="Environment Name"
                         name="environmentName"
@@ -41,8 +41,8 @@ export const MainSettings: React.FC = () => {
                     />
                     {env !== PROD_ENVIRONMENT_NAME && (
                         <Info>
-                            If you’re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable name
-                            is based on your Nango environment name, update it if you rename the environment.
+                            If you&apos;re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable
+                            name is based on your Nango environment name, update it if you rename the environment.
                         </Info>
                     )}
                 </div>

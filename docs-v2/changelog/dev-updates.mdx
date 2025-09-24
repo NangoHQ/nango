@@ -1,0 +1,179 @@
+---
+title: 'Dev Updates'
+sidebarTitle: 'Dev Updates'
+description: "Updates and breaking changes for developers."
+---
+
+<Info>
+[Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
+</Info>
+
+<Update label="Sep 1, 2025"  tags={["Breaking changes", "API"]}>
+
+  ## End-user info is no longer shared between connections
+
+Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and it was impossible to declare multiple organizations for a given user.
+
+  ### 🗓️ Timeline
+
+  - **September 8, 2025**: End user updates will stop being replicated across connections.
+
+  ### 🧐 Am I impacted?
+
+  - If your users can be tied to multiple organizations
+  - If you were relying on the end user auto-replication to maintain data freshness
+
+  ### 💡 What should I do?
+
+  End user fields are mostly for display and tagging purposes:
+  - If you are not using them, you can safely ignore this update.
+
+  - If you are using them, and wish to keep them in sync (e.g: display name, across connections) you will need to patch each connection when your end user is updated on your side
+
+
+  ```ts
+  await nango.patchConnection({
+    connectionId,
+    provider_config_key
+  } , {
+    end_user: {
+      id: '123',
+      email: 'new-email@nango.dev'
+    }
+  });
+  ```
+
+  NB: if you don't keep them in sync, the only side effect is that data will be stale in the Nango platform.
+
+  There is no batch endpoint for this operation. If you need one, please reach out on Slack.
+
+  ---
+
+</Update>
+
+<Update label="August 22, 2025" description="Action output limit" tags={["Breaking changes"]}>
+
+  ## Action payload output limit
+
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit
+  to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](https://docs.nango.dev/guides/proxy-requests#proxy-requests).
+
+  Additionally, we will also soon restrict action inputs so please take note of your inputs.
+
+  ### 🗓️ Timeline
+
+  - **October 1, 2025**: We will throw an error when an action output exceeds the stated limitation of 2MB.
+
+  ### 🧐 Am I impacted?
+
+  - If you use actions and have a heavy output from the action. Typically the actions that have a large output are [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts) and in general any fetching any object from an external system. We have added dedicated proxy code for such operations to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts)
+  - If you're using a now deprecated prebuilt template that fetches objects from an external system
+
+  ### 💡 What should I do?
+
+  - Check your action logs for a warning that you've exceeded the action output limitation.
+  - Verify the actions you're using and log the output size of the action
+  - Migrate the action to use the proxy instead
+
+  If your action logs exceed the 2MB limitation you'll now see a warning like this
+  <img src="/images/action-output-size-warning.png" />
+
+
+  Please reach out with any questions or concerns in our Slack community.
+
+  ---
+
+</Update>
+
+
+<Update label="August 20, 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
+
+  ## Deprecation of `/connection` endpoints
+
+  In this release, we've made some changes to the API that are breaking for some users.
+
+  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead.
+  They all, except one, take and return the same data. Only the base path has changed.
+
+  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body, but returns the same data as previously.
+  This new body is more flexible and ensure stricter typings on your side and validation on our side.
+
+  - The endpoint `POST /connection/:connectionId/metadata` and `PATCH /connection/:connectionId/metadata` who have been deprecated for a while will not be migrated to /connections and will be removed at the end of the grace period.
+
+  ### 🗓️ Timeline
+
+  - **January 20, 2026**: All `/connection` endpoints will be removed.
+
+  ### 🧐 Am I impacted?
+
+  - If you manually use any endpoint under `/connection`
+  - If you use the CLI
+  - If you use the official Nango SDKs
+
+  ### 💡 What should I do?
+
+  - If you use the CLI, you should upgrade to `>=0.67.0`
+  - If you use the official Nango SDKs, you should upgrade to `>=0.67.0`
+  - If you manually use any endpoint under `/connection`, you should migrate to `/connections`
+  - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints, you should migrate to `/connections/metadata`
+  - If you specifically use the `POST /connection` endpoint to import connections, check the migration section below.
+
+
+  ### Migrating to `POST /connections`
+
+  Only this endpoint requires a manual migration.
+  Previously, the credentials were all at the root of the body.
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connection \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "access_token": "some-access-token",
+    [...]
+  }'
+  ```
+
+  Now they are nested under the `credentials` key:
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connections \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "credentials": {
+      "type": "OAUTH2",
+      "access_token": "some-access-token",
+      [...]
+    }
+  }'
+  ```
+
+  Please report any inconsistencies or issues with the new endpoints in our slack community.
+
+  ---
+
+</Update>
+
+
+<Update label="July 21, 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
+
+  ## Deprecation of `nango.yaml` configuration file
+
+The new script format is now officially released under `>=0.64.0`.
+If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4.
+By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install zod: `4.0.5`
+
+  ### 🗓️ Timeline
+
+  - **December 1st, 2025**: `nango.yaml` support will be removed.
+
+  ### 🧐 Am I impacted?
+
+  - If you use custom scripts
+
+  ### 💡 What should I do?
+
+  - Follow migration guide -> https://docs.nango.dev/guides/custom-integrations/migrate-to-zero-yaml
+
+</Update>

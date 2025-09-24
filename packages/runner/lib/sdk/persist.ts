@@ -266,6 +266,35 @@ export class PersistClient {
         return res;
     }
 
+    public async deleteOutdatedRecords({
+        model,
+        environmentId,
+        nangoConnectionId,
+        syncId,
+        syncJobId,
+        activityLogId
+    }: {
+        model: string;
+        environmentId: number;
+        nangoConnectionId: number;
+        syncId: string;
+        syncJobId: number;
+        activityLogId: string;
+    }): Promise<Result<{ deletedKeys: string[] }>> {
+        const res = await this.makeRequest<{ deletedKeys: string[] }>({
+            method: 'DELETE',
+            url: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`,
+            data: {
+                model,
+                activityLogId
+            }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to delete outdated records: ${res.error.message}`));
+        }
+        return res;
+    }
+
     public async getCursor({
         environmentId,
         nangoConnectionId,

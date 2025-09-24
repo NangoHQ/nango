@@ -1,6 +1,6 @@
 ---
-title: 'Google Security Review'
-sidebarTitle: 'Google Security Review'
+title: 'Google App & Security Review'
+sidebarTitle: 'Google App Review'
 description: 'A detailed guide to pass your Google OAuth app review as fast as possible'
 ---
 
@@ -52,7 +52,7 @@ If you are pressed for time and want more tips to speed things up, [reach out to
 
 # Recommended process
 
-For App verification + CASA assessment.  
+For App verification + CASA assessment.
 If you only need to do App verification, skip step 4 and 5.
 
 1. Implement the integration in your app with your Google OAuth app in test mode
@@ -112,12 +112,12 @@ Both the "Brand verification requirements" and "Sensitive and Restricted Scope R
 
 <Tip>
     Good preparation greatly accelerates your review process.
-    
+
     Google takes 24-48h to answer emails. A good demo video and precise answers will save you days of back-and-forth with your reviewer.
 </Tip>
 
 Most importantly:
-* Switch to a [custom callback URL in Nango](/guides/api-authorization/whitelabel-the-oauth-flow#use-a-custom-callback-url), and verify the domain of your callback URL in your Google Cloud project.
+* Switch to a [custom callback URL in Nango](/implementation-guides/api-auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional), and verify the domain of your callback URL in your Google Cloud project.
 * Make sure your contact details in the Google Cloud console project are up to date. All communication is sent there!
 * Prepare a [demo video](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=2.%20App%20functionality%20demonstration%20video) exactly as requested by Google (shows end to end flow, including OAuth flow, etc.)
 * For each scope you request, prepare a [detailed justification](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=Request%20narrowest%20scopes) which includes:
@@ -140,7 +140,7 @@ Your vendor must be listed on the [CASA Authorized Assessors](https://appdefense
 
 We have compiled a list of the most common vendors:
 
-**[TAC Security](https://tacsecurity.com/google-casa-cloud-application-security-assessment/) (recommended)** - $540 - $720  
+**[TAC Security](https://tacsecurity.com/google-casa-cloud-application-security-assessment/) (recommended)** - $540 - $720
 $540 gets you two revalidation. $720 will get you unlimited revalidations. Sometimes runs 10% discounts, check their website.
 
 A validation is a single scan and output of issues. If you do a pre-scan and fix issues first, you’ll probably only need the two validations to fix remaining issues. Try to avoid scanning again without a fix or an accepted omission for everything picked up in the first scan.
@@ -156,13 +156,13 @@ Much more expensive but much better support and guidance throughout the process.
 Prices are as of August 2025, if you have updates, let us know.
 
 Engage a vendor before you start your review, so you can avoid delays from back-and-forth negotiations.
-    
+
 
 ## Step 3: Start the App verification
 
 Ready? Let's go to prod!
 
-In your GCP console go to  _API & Services_ -> _OAuth consent screen_ -> _Audience_  
+In your GCP console go to  _API & Services_ -> _OAuth consent screen_ -> _Audience_
 Under "Publishing status", click on "Publish app". Confirm the consent screen.
 
 Now go to _Verification Center_ in the navbar and you should see a form to start the app verification process.

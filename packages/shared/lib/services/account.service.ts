@@ -10,6 +10,51 @@ import { createPlan } from './plans/plans.js';
 import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
+const freeEmailDomains = new Set([
+    'gmail.com',
+    'duck.com',
+    'anonaddy.me',
+    'me.com',
+    'hey.com',
+    'icloud.com',
+    'hotmail.com',
+    'outlook.com',
+    'aol.com',
+    'yahoo.com',
+    'gmx.com',
+    'protonmail.com',
+    'proton.me',
+    'googlemail.com',
+    'sina.com',
+    'mail.com',
+    'zoho.com',
+    'zohomail.com',
+    'fastmail.com',
+    'tutanota.com',
+    'tuta.io',
+    'yandex.com',
+    'yandex.ru',
+    'inbox.com',
+    'hushmail.com',
+    'rediffmail.com',
+    '163.com',
+    '126.com',
+    'yeah.net',
+    'qq.com',
+    'seznam.cz',
+    'web.de',
+    'mail.ru',
+    'lycos.com',
+    'excite.com',
+    'rocketmail.com',
+    'blueyonder.co.uk',
+    'btinternet.com',
+    'talktalk.net',
+    'shaw.ca',
+    'rogers.com',
+    'sympatico.ca'
+]);
+
 class AccountService {
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
@@ -71,7 +116,7 @@ class AccountService {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount(name);
+            return await this.createAccount({ name });
         }
 
         return account[0];
@@ -81,9 +126,11 @@ class AccountService {
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount(name: string): Promise<DBTeam | null> {
+    async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
         // TODO: use transaction
-        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
+        const emailTeamName = emailToTeamName({ email });
+        const teamName = `${emailTeamName || name}'s Team`;
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
         if (!result[0]) {
             return null;
@@ -110,5 +157,51 @@ class AccountService {
         return result[0] || null;
     }
 }
+
+function emailToTeamName({ email }: { email?: string | undefined }): string | false {
+    const parts = email?.split('@');
+    const emailDomain = parts?.[parts.length - 1]?.toLowerCase();
+    const domainParts = emailDomain?.split('.');
+
+    if (!email || !parts || parts.length < 2 || !emailDomain?.includes('.') || freeEmailDomains.has(emailDomain) || !domainParts || domainParts.length < 2) {
+        return false;
+    }
+
+    // Check if the domain has at least 3 parts and follows two-part TLD pattern
+    // Common two-part TLDs follow the pattern: .{second-level}.{country-code}
+    // Second-level domains are typically: co, com, net, org, edu, gov, ac, etc.
+    // Country codes are typically 2-3 letters
+    const secondToLastPart = domainParts[domainParts.length - 2];
+    const lastPart = domainParts[domainParts.length - 1];
+
+    // Create Sets for domain lookups
+    const secondLevelDomains = new Set(['co', 'com', 'net', 'org', 'edu', 'gov', 'ac', 'mil', 'int']);
+    const genericTLDs = new Set(['com', 'net', 'org', 'edu', 'gov', 'mil', 'int', 'info', 'biz', 'name', 'pro', 'aero', 'coop', 'museum']);
+
+    const hasTwoPartTLD =
+        domainParts.length >= 3 &&
+        secondToLastPart &&
+        lastPart &&
+        // Check if second-to-last part is a common second-level domain
+        secondLevelDomains.has(secondToLastPart) &&
+        // Check if last part is a country code (2-3 letters, not a generic TLD)
+        lastPart.length >= 2 &&
+        lastPart.length <= 3 &&
+        !genericTLDs.has(lastPart);
+
+    // Extract domain name excluding TLD(s)
+    const domainName = hasTwoPartTLD
+        ? domainParts.slice(0, -2).join('.') // Remove two parts for two-part TLDs
+        : domainParts.slice(0, -1).join('.'); // Remove one part for single TLDs
+
+    // Return false for invalid domains (e.g., .com, .co.uk)
+    if (!domainName || domainName === '') {
+        return false;
+    }
+
+    return domainName.charAt(0).toUpperCase() + domainName.slice(1);
+}
+
+export { emailToTeamName };
 
 export default new AccountService();

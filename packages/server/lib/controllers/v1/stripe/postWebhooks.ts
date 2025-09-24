@@ -1,11 +1,10 @@
-import { billing } from '@nangohq/billing';
+import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, getPlanBy, plansList, productTracking, updatePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getStripe } from '../../../utils/stripe.js';
 
 import type { DBPlan, PostStripeWebhooks, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
@@ -44,10 +43,18 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     }
 
     logger.info('Received', event.type);
-    const handled = await handleWebhook(event, stripe);
-    if (handled.isErr()) {
-        report(handled.error, { body: req.body });
-        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+    try {
+        const handled = await handleWebhook(event, stripe);
+
+        if (handled.isErr()) {
+            report(handled.error, { body: req.body });
+            res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+            return;
+        }
+    } catch (err) {
+        report(new Error('[stripe] error handling webhook', { cause: err }));
+        // On purpose, we don't want to fail the webhook on unexpected errors
+        res.status(200).send({ success: true });
         return;
     }
 
@@ -76,12 +83,23 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err(updated.error);
             }
 
+            // We added a new card, so we need to set it as the default payment method
+            if (plan.stripe_payment_id) {
+                await stripe.customers.update(data.customer, {
+                    invoice_settings: {
+                        default_payment_method: data.payment_method as string
+                    }
+                });
+                await stripe.paymentMethods.detach(plan.stripe_payment_id);
+            }
+
             return Ok(undefined);
         }
 
         // payment method was updated through our UI
         // we replicate to the customer to keep it in sync and to be able to generate invoices
         // It might be incorrect in some cases, but it's better than nothing
+        case 'payment_method.attached':
         case 'payment_method.updated': {
             const data = event.data.object;
             if (typeof data.customer !== 'string') {
@@ -92,8 +110,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             const billingDetails = paymentMethod.billing_details;
 
             await stripe.customers.update(data.customer, {
-                address: billingDetails.address as any,
-                name: billingDetails.name || ''
+                address: billingDetails.address as any
             });
             return Ok(undefined);
         }

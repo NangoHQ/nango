@@ -89,6 +89,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return Err(def.error);
         }
 
+        for (const integration of def.value.integrations) {
+            for (const sync of integration.syncs) {
+                if (sync.track_deletes) {
+                    console.warn(
+                        chalk.yellow(
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                        )
+                    );
+                }
+            }
+        }
+
         generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
@@ -164,7 +176,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
     try {
-        const { plugin, bag } = nangoPlugin();
+        const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -237,6 +249,28 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 })
             );
         }
+        if (bag.deleteRecordsFromPreviousExecutionsLines.length > 1) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called only once per sync`,
+                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
+        if (
+            bag.deleteRecordsFromPreviousExecutionsLines.length > 0 &&
+            bag.batchingRecordsLines.length > 0 &&
+            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionsLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called after any batching records function`,
+                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
 
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
@@ -287,6 +321,9 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+
 /**
  * This plugin is used to remove the create wrappers from the exports.
  *
@@ -294,15 +331,21 @@ export function tsToJsPath(filePath: string) {
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
-function nangoPlugin() {
+function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
+    const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
-        setMergingStrategyLines
+        setMergingStrategyLines,
+        deleteRecordsFromPreviousExecutionsLines
     };
+
+    const normalizedEntryPoint = path.resolve(entryPoint);
+    // Get actual path even if entryPoint is a symlink
+    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace('.js', '.ts')).replace('.ts', '.js');
 
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
@@ -322,7 +365,9 @@ function nangoPlugin() {
         'delete',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction'
+        'triggerAction',
+        'setMergingStrategy',
+        'deleteRecordsFromPreviousExecutions'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -354,9 +399,9 @@ function nangoPlugin() {
                         }
                     },
 
-                    CallExpression(path) {
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const callee = path.node.callee;
+                    CallExpression(astPath) {
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const callee = astPath.node.callee;
                         if (!('object' in callee) || !('property' in callee)) {
                             return;
                         }
@@ -364,14 +409,14 @@ function nangoPlugin() {
                             return;
                         }
 
-                        const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
-                        const isThenOrCatch = path.findParent(
+                        const isAwaited = astPath.findParent((parentPath) => parentPath.isAwaitExpression());
+                        const isThenOrCatch = astPath.findParent(
                             (parentPath) =>
                                 t.isMemberExpression(parentPath.node) &&
                                 (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
                         );
 
-                        const isReturned = Boolean(path.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
+                        const isReturned = Boolean(astPath.findParent((parentPath) => t.isReturnStatement(parentPath.node)));
 
                         if (!isAwaited && !isThenOrCatch && !isReturned && needsAwait.includes(callee.property.name)) {
                             throw new CompileError(
@@ -381,7 +426,7 @@ function nangoPlugin() {
                             );
                         }
 
-                        const callArguments = path.node.arguments;
+                        const callArguments = astPath.node.arguments;
                         if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
                             let retriesPropertyFound = false;
                             let retryOnPropertyFound = false;
@@ -402,24 +447,121 @@ function nangoPlugin() {
                             }
                         }
 
-                        if (callsProxy.includes(callee.property.name)) {
-                            proxyLines.push(lineNumber);
-                        }
-                        if (callsBatchingRecords.includes(callee.property.name)) {
-                            batchingRecordsLines.push(lineNumber);
-                        }
-                        if (callee.property.name === 'setMergingStrategy') {
-                            setMergingStrategyLines.push(lineNumber);
+                        // Check the main file and only the exec method for common errors
+                        // If you abstract those calls in functions then it's not checking since it's quite hard to determine order
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath === realEntryPoint) {
+                                // Check if we're inside a createSync's exec function
+                                const isInCreateSyncExec = astPath.findParent((parentPath) => {
+                                    if (!parentPath.isObjectProperty()) {
+                                        return false;
+                                    }
+                                    const prop = parentPath.node;
+                                    return t.isIdentifier(prop.key) && prop.key.name === 'exec';
+                                });
+
+                                if (isInCreateSyncExec) {
+                                    if (callsProxy.includes(callee.property.name)) {
+                                        proxyLines.push(lineNumber);
+                                    }
+                                    if (callsBatchingRecords.includes(callee.property.name)) {
+                                        batchingRecordsLines.push(lineNumber);
+                                    }
+                                    if (callee.property.name === 'setMergingStrategy') {
+                                        setMergingStrategyLines.push(lineNumber);
+                                    }
+
+                                    if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
+                                        deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
+                                    }
+                                }
+                            }
                         }
                     },
 
-                    ExportDefaultDeclaration(path) {
-                        if ((path.node as any).__transformedByRemoveCreateWrappers) {
+                    ExportNamedDeclaration(astPath) {
+                        // Skip internally transformed exports
+                        if ((astPath.node as AugmentedExport).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
-                        const lineNumber = path.node.loc?.start.line || 0;
-                        const decl = path.node.declaration;
+                        // Skip processing if the current file is not an entry point
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath !== realEntryPoint) {
+                                return;
+                            }
+                        }
+
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const node = astPath.node;
+
+                        // Check if this is a re-export (export { something } from 'module')
+                        if (node.source) {
+                            return; // Allow re-exports
+                        }
+
+                        const namedExportError = (exportedName: string) => {
+                            throw new CompileError(
+                                'nango_named_export_not_allowed',
+                                lineNumber,
+                                `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
+                            );
+                        };
+
+                        // Check if any exported specifiers are not in allowedExports
+                        if (node.specifiers) {
+                            for (const specifier of node.specifiers) {
+                                if (t.isExportSpecifier(specifier) && t.isIdentifier(specifier.exported)) {
+                                    const exportedName = specifier.exported.name;
+                                    if (!allowedExports.includes(exportedName)) {
+                                        namedExportError(exportedName);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Check if this is a variable/function declaration export
+                        if (node.declaration) {
+                            const exportedNames: string[] = [];
+
+                            if (t.isFunctionDeclaration(node.declaration) && node.declaration.id) {
+                                exportedNames.push(node.declaration.id.name);
+                            } else if (t.isVariableDeclaration(node.declaration)) {
+                                for (const declarator of node.declaration.declarations) {
+                                    if (t.isIdentifier(declarator.id)) {
+                                        exportedNames.push(declarator.id.name);
+                                    }
+                                }
+                            }
+
+                            for (const exportedName of exportedNames) {
+                                if (!allowedExports.includes(exportedName)) {
+                                    namedExportError(exportedName);
+                                }
+                            }
+                        }
+                    },
+
+                    ExportDefaultDeclaration(astPath) {
+                        if ((astPath.node as AugmentedExportDefault).__transformedByRemoveCreateWrappers) {
+                            return;
+                        }
+
+                        // Skip processing if the current file is not an entry point
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath !== realEntryPoint) {
+                                return;
+                            }
+                        }
+
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const decl = astPath.node.declaration;
                         let calleeName = null;
                         let arg = null;
 
@@ -446,16 +588,17 @@ function nangoPlugin() {
                             );
                             // Insert: export default <varName>;
                             const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
-                            (exportConst as any).__transformedByRemoveCreateWrappers = true;
-                            (exportDefault as any).__transformedByRemoveCreateWrappers = true;
-                            path.replaceWithMultiple([exportConst, exportDefault]);
+                            (exportConst as AugmentedExport).__transformedByRemoveCreateWrappers = true;
+                            (exportDefault as AugmentedExportDefault).__transformedByRemoveCreateWrappers = true;
+                            astPath.replaceWithMultiple([exportConst, exportDefault]);
                         }
                         // Case 2: export default action; (or sync/onEvent)
                         else if (t.isIdentifier(decl)) {
-                            const binding = path.scope.getBinding(decl.name);
+                            const binding = astPath.scope.getBinding(decl.name);
                             if (!binding || !binding.path.isVariableDeclarator()) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
                             }
+
                             const init = binding.path.node.init;
                             if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
@@ -467,6 +610,7 @@ function nangoPlugin() {
                             if (!t.isObjectExpression(arg)) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
+
                             if (calleeName === 'createAction') varName = 'action';
                             if (calleeName === 'createSync') varName = 'sync';
                             if (calleeName === 'createOnEvent') varName = 'onEvent';

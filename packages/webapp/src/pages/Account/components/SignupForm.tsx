@@ -18,6 +18,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
     const [showResendEmail, setShowResendEmail] = useState(false);
     const [email, setEmail] = useState(() => invitation?.email || '');
     const [name, setName] = useState('');
+    const [foundUs, setFoundUs] = useState('');
     const [password, setPassword] = useState('');
     const [passwordStrength, setPasswordStrength] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
         setShowResendEmail(false);
         setLoading(true);
 
-        const res = await signupAPI({ name, email, password, token });
+        const res = await signupAPI({ name, email, password, token, foundUs });
 
         if (res?.status === 200) {
             const response: PostSignup['Success'] = await res.json();
@@ -111,6 +112,20 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                                 setPasswordStrength(tmpStrength);
                             }}
                         />
+                        {!invitation && (
+                            <Input
+                                id="found_us"
+                                name="found_us"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="How did you hear about Nango?"
+                                inputSize="lg"
+                                value={foundUs}
+                                required
+                                onChange={(e) => setFoundUs(e.target.value)}
+                                className="border-border-gray bg-dark-600"
+                            />
+                        )}
                     </div>
 
                     <div className="grid">
@@ -118,7 +133,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             type="submit"
                             size={'lg'}
                             className="justify-center disabled:bg-dark-700"
-                            disabled={!name || !email || !password || !passwordStrength}
+                            disabled={!name || !email || !password || !passwordStrength || (!invitation && !foundUs)}
                             isLoading={loading}
                         >
                             Sign up
@@ -138,9 +153,9 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                 {globalEnv.features.managedAuth && (
                     <>
                         <div className="flex items-center justify-center my-4 text-xs">
-                            <div className="border-t border-gray-600 flex-grow mr-7"></div>
+                            <div className="border-t border-gray-600 grow mr-7"></div>
                             <span className="text-dark-500">or continue with</span>
-                            <div className="border-t border-gray-600 flex-grow ml-7"></div>
+                            <div className="border-t border-gray-600 grow ml-7"></div>
                         </div>
                         <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} />
                     </>

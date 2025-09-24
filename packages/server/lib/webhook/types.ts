@@ -1,15 +1,11 @@
 import type { InternalNango } from './internal-nango.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
-    integration: ProviderConfig,
     headers: Record<string, string>,
     body: T,
-    rawBody: string,
-    logContextGetter: LogContextGetter
+    rawBody: string
 ) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
@@ -124,4 +120,26 @@ interface AttioWebhookEvent {
 export interface AttioWebhook {
     webhook_id: string;
     events: AttioWebhookEvent[];
+}
+
+export interface HubSpotWebhook {
+    objectId: number;
+    propertyName?: string;
+    propertyValue?: string;
+    changeSource?: string;
+    eventId: number;
+    subscriptionId: number;
+    portalId: number;
+    appId?: number;
+    occurredAt: number;
+    subscriptionType: string;
+    attemptNumber: number;
+    messageId?: string;
+    messageType?: 'MESSAGE' | 'COMMENT';
+    primaryObjectId?: string;
+    mergedObjectIds?: string[];
+    newObjectId?: string;
+    numberOfPropertiesMoved?: number;
+    sourceId?: string;
+    changeFlag?: string;
 }

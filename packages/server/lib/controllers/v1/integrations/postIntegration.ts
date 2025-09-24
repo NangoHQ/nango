@@ -1,13 +1,13 @@
 import * as z from 'zod';
 
-import { configService, getProvider } from '@nangohq/shared';
+import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { providerSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PostIntegration } from '@nangohq/types';
+import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -40,11 +40,24 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
 
-    const integration = body.useSharedCredentials
-        ? await configService.createPreprovisionedProvider(body.provider, environment.id, provider)
-        : await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+    let integration: IntegrationConfig;
+    if (body.useSharedCredentials) {
+        const result = await sharedCredentialsService.createPreprovisionedProvider({ providerName: body.provider, environment_id: environment.id, provider });
+        if (result.isErr()) {
+            res.status(400).send({
+                error: { code: 'invalid_body', message: result.error.message }
+            });
+            return;
+        }
+        integration = result.value;
+    } else if (provider.auth_mode === 'MCP_OAUTH2') {
+        const client_id = await mcpClient.registerClientId({ provider, environment, team: account });
+        integration = await configService.createEmptyProviderConfigWithCreds(body.provider, environment.id, provider, client_id, '');
+    } else {
+        integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+    }
 
     res.status(200).send({
         data: integrationToApi(integration)

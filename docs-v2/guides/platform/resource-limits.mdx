@@ -1,0 +1,33 @@
+---
+title: 'Limits'
+sidebarTitle: 'Limits'
+description: 'Overview of resource limits on Nango Cloud.'
+---
+
+<Note>
+    For plan-specific limits, please refer to our [pricing page](https://www.nango.dev/pricing) and the [Usage & Billing](https://app.nango.dev/dev/team/billing) page in your Nango account.
+</Note>
+
+## Global limits
+
+### API rate limit
+
+These limits apply to API requests from your application to Nango.
+
+- Free tier: 200 requests per minute
+- If the limit is exceeded, use the standard rate-limit headers to determine when to resume requests
+- Higher limits are available for paying customers
+
+### Functions
+
+Functions have the following limits:
+
+| Function Type | Max execution time | Max enqueuing time |
+| - | - | - |
+| [Syncs](/guides/use-cases/syncs) | 24h | 1h |
+| [Actions](/guides/use-cases/actions) | 15min | 1h |
+| [External webhooks](/guides/use-cases/webhooks) | 1h | 1min |
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

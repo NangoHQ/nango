@@ -431,7 +431,7 @@ export class NangoError extends NangoInternalError {
                 this.status = 400;
                 // TODO docs link
                 this.message =
-                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
+                    'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections.';
                 break;
 
             case 'deploy_missing_json_schema_model':
@@ -477,6 +477,11 @@ export class NangoError extends NangoInternalError {
             case 'script_http_error':
                 this.status = 424;
                 this.message = `An error occurred during an HTTP call`;
+                break;
+
+            case 'script_api_rate_limit_error':
+                this.status = 424;
+                this.message = `Script API rate limit exceeded. Your Nango scripts made too many calls to the Nango API within the allowed window. Mitigation: reduce how often scripts run (e.g. lower sync frequency, fewer actions). Need higher limits? Contact Nango support.`;
                 break;
 
             case 'script_internal_error':

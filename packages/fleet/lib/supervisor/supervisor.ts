@@ -109,7 +109,7 @@ export class Supervisor {
         while (this.state === 'running') {
             const res = await withPgLock({
                 db: this.dbClient.db,
-                lockKey: `fleet_supervisor`,
+                lockKey: envs.FLEET_SUPERVISOR_LOCK_KEY,
                 fn: async () => this.tick(),
                 timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
                 onTimeout: () => {
@@ -428,17 +428,14 @@ export class Supervisor {
     }
 
     private async finishingTimeout({ node }: { type: 'FINISHING_TIMEOUT'; node: Node }): Promise<Result<Node>> {
-        // Locally we assume the node is IDLE
-        // since the process is likely already killed
-        // and the node is not able to notify back that it is idle
-        if (envs.RUNNER_TYPE === 'LOCAL') {
-            return nodes.transitionTo(this.dbClient.db, {
-                nodeId: node.id,
-                newState: 'IDLE'
-            });
-        }
-        // TODO: find a better way to warn and alert
-        logger.warning('Node is taking too long to finish:', node);
-        return Promise.resolve(Ok(node));
+        logger.warning('Node is taking too long to finish. Idling it.', node);
+        // Locally, the runner process is likely already killed
+        // and it is not able to notify back that it is idle
+        // In prod/staging, the node might have crashed while in FINISHING state
+        // and never notified that it is idle
+        return nodes.transitionTo(this.dbClient.db, {
+            nodeId: node.id,
+            newState: 'IDLE'
+        });
     }
 }

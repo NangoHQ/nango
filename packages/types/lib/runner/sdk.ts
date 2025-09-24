@@ -31,6 +31,7 @@ export interface NangoProps {
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
     heartbeatTimeoutSecs?: number | undefined;
+    isCLI?: boolean | undefined;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -43,4 +44,11 @@ export interface NangoProps {
 
 export interface UserLogParameters {
     level?: 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+}
+
+export interface TelemetryBag extends Record<string, number> {
+    customLogs: number;
+    proxyCalls: number;
+    durationMs: number;
+    memoryGb: number;
 }

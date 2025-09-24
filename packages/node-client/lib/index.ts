@@ -27,6 +27,7 @@ import type {
     DeleteSyncVariant,
     GetPublicConnection,
     GetPublicConnections,
+    GetPublicEnvironmentVariables,
     GetPublicIntegration,
     GetPublicListIntegrations,
     GetPublicProvider,
@@ -36,6 +37,7 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     OpenAIFunction,
+    PatchPublicConnection,
     PatchPublicIntegration,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
@@ -76,6 +78,7 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     dryRun = false;
+    isScript = false;
     activityLogId?: string | undefined;
     userAgent: string;
     http: AxiosInstance;
@@ -104,6 +107,10 @@ export class Nango {
 
         if (config.isSync) {
             this.isSync = config.isSync;
+        }
+
+        if (config.isScript) {
+            this.isScript = config.isScript;
         }
 
         if (config.dryRun) {
@@ -238,7 +245,7 @@ export class Nango {
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
-        const url = new URL(`${this.serverUrl}/connection`);
+        const url = new URL(`${this.serverUrl}/connections`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
@@ -266,15 +273,29 @@ export class Nango {
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
      * @param refreshToken - Optional. When set to true, this returns the refresh token as part of the response
+     * @param refreshGithubAppJwtToken - Optional. When set to true, this will refresh the JWT token for GitHub App / Github App OAuth connections
      * @returns A promise that resolves with a connection object
      */
     public async getConnection(
         providerConfigKey: string,
         connectionId: string,
         forceRefresh?: boolean,
-        refreshToken?: boolean
+        refreshToken?: boolean,
+        refreshGithubAppJwtToken?: boolean
     ): Promise<GetPublicConnection['Success']> {
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
+        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshToken, refreshGithubAppJwtToken });
+        return response.data;
+    }
+
+    /**
+     * Patch a connection
+     * @param params - The parameters for the connection
+     * @param body - The body of the connection
+     * @returns The response from the server
+     */
+    public async patchConnection(params: PatchPublicConnection['QP'], body: PatchPublicConnection['Body']): Promise<PatchPublicConnection['Success']> {
+        const url = `${this.serverUrl}/connections/${params.connectionId}?provider_config_key=${params.provider_config_key}`;
+        const response = await this.http.patch(url, body, { headers: this.enrichHeaders({ 'Content-Type': 'application/json' }) });
         return response.data;
     }
 
@@ -286,11 +307,13 @@ export class Nango {
      * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @param refreshGithubAppJwtToken - Optional. When set to true, this will refresh the JWT token for GitHub App / Github App OAuth connections
      */
     public async getToken(
         providerConfigKey: string,
         connectionId: string,
-        forceRefresh?: boolean
+        forceRefresh?: boolean,
+        refreshGithubAppJwtToken?: boolean
     ): Promise<
         | string
         | OAuth1Token
@@ -307,7 +330,7 @@ export class Nango {
         | TwoStepCredentials
         | SignatureCredentials
     > {
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
@@ -325,10 +348,16 @@ export class Nango {
      * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param forceRefresh - Optional. When set to true, this obtains a new access token from the provider before the current token has expired
+     * @param refreshGithubAppJwtToken - Optional. When set to true, this will refresh the JWT token for GitHub App / Github App OAuth connections
      * @returns A promise that resolves with the raw token response
      */
-    public async getRawTokenResponse<T = Record<string, any>>(providerConfigKey: string, connectionId: string, forceRefresh?: boolean): Promise<T> {
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+    public async getRawTokenResponse<T = Record<string, any>>(
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh?: boolean,
+        refreshGithubAppJwtToken?: boolean
+    ): Promise<T> {
+        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
         const credentials = response.data.credentials as CredentialsCommon;
         return credentials.raw as T;
     }
@@ -348,10 +377,7 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, {
-            'Nango-Is-Sync': true,
-            'Nango-Is-Dry-Run': this.dryRun
-        });
+        const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh: false, refreshToken: false });
 
         return response.data.metadata as T;
     }
@@ -376,7 +402,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.post(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -405,7 +431,7 @@ export class Nango {
             throw new Error('Metadata is required');
         }
 
-        const url = `${this.serverUrl}/connection/metadata`;
+        const url = `${this.serverUrl}/connections/metadata`;
 
         return this.http.patch(url, { metadata, connection_id: connectionId, provider_config_key: providerConfigKey }, { headers: this.enrichHeaders() });
     }
@@ -417,7 +443,7 @@ export class Nango {
      * @returns A promise that resolves with the Axios response from the server
      */
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
-        const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connections/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
             'Content-Type': 'application/json'
@@ -745,7 +771,7 @@ export class Nango {
      * Retrieve the environment variables as added in the Nango dashboard
      * @returns A promise that resolves with an array of environment variables
      */
-    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+    public async getEnvironmentVariables(): Promise<GetPublicEnvironmentVariables['Success']> {
         const url = `${this.serverUrl}/environment-variables`;
 
         const headers = {
@@ -881,8 +907,6 @@ export class Nango {
             'Connection-Id': connectionId!,
             'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customPrefixedHeaders
         };
@@ -1046,48 +1070,62 @@ export class Nango {
 
     /**
      * Retrieves details of a specific connection
-     * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param connectionId - The ID of the connection for which to retrieve connection details
-     * @param forceRefresh - An optional flag indicating whether to force a refresh of the access tokens. Defaults to false
-     * @param refreshToken - An optional flag indicating whether to send the refresh token as part of the response. Defaults to false
-     * @param additionalHeader - Optional. Additional headers to include in the request
+     * @param options - An object containing the following properties:
+     *   - providerConfigKey: The key identifying the provider configuration on Nango
+     *   - connectionId: The ID of the connection for which to retrieve connection details
+     *   - forceRefresh: Optional. Whether to force a refresh of the access tokens. Defaults to false
+     *   - refreshToken: Optional. Whether to send the refresh token as part of the response. Defaults to false
+     *   - additionalHeader: Optional. Additional headers to include in the request
+     *   - refreshGithubAppJwtToken: Optional. Whether to refresh the JWT token for GitHub App / Github App OAuth connections. Defaults to false
      * @returns A promise that resolves with the response containing connection details
      */
-    private async getConnectionDetails(
-        providerConfigKey: string,
-        connectionId: string,
-        forceRefresh: boolean = false,
-        refreshToken: boolean = false,
-        additionalHeader: Record<string, any> = {}
-    ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
-        const url = `${this.serverUrl}/connection/${connectionId}`;
+    private async getConnectionDetails(options: {
+        providerConfigKey: string;
+        connectionId: string;
+        forceRefresh?: boolean | undefined;
+        refreshToken?: boolean | undefined;
+        additionalHeader?: Record<string, any>;
+        refreshGithubAppJwtToken?: boolean | undefined;
+    }): Promise<AxiosResponse<GetPublicConnection['Success']>> {
+        const {
+            providerConfigKey,
+            connectionId,
+            forceRefresh = false,
+            refreshToken = false,
+            additionalHeader = {},
+            refreshGithubAppJwtToken = false
+        } = options;
+
+        const url = `${this.serverUrl}/connections/${connectionId}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Nango-Is-Sync': this.isSync,
-            'Nango-Is-Dry-Run': this.dryRun
+            'Content-Type': 'application/json'
         };
 
-        if (additionalHeader) {
+        if (additionalHeader && Object.keys(additionalHeader).length > 0) {
             Object.assign(headers, additionalHeader);
         }
 
-        const params = {
+        const params: Record<string, string | boolean> = {
             provider_config_key: providerConfigKey,
             force_refresh: forceRefresh,
-            refresh_token: refreshToken
+            refresh_token: refreshToken,
+            refresh_github_app_jwt_token: refreshGithubAppJwtToken
         };
 
-        return this.http.get(url, { params: params, headers: this.enrichHeaders(headers) });
+        return this.http.get(url, { params, headers: this.enrichHeaders(headers) });
     }
 
     /**
-     * Enriches the headers with the Authorization token
+     * Enriches the headers with the Authorization token and internal flags
      * @param headers - Optional. The headers to enrich
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
         headers['Authorization'] = 'Bearer ' + this.secretKey;
+        headers['Nango-Is-Sync'] = this.isSync;
+        headers['Nango-Is-Script'] = this.isScript;
+        headers['Nango-Is-Dry-Run'] = this.dryRun;
 
         return headers;
     }

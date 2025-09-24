@@ -68,7 +68,7 @@ export const EnvironmentPicker: React.FC = () => {
                     {meta.environments.length >= 5 && (
                         <CommandInput
                             placeholder="Search..."
-                            className="text-white ring-0 focus:ring-0 focus-visible:outline-none border-transparent border-b-grayscale-700 rounded-b-none px-2.5    "
+                            className="text-white ring-0 focus:ring-0 focus-visible:outline-hidden border-transparent border-b-grayscale-700 rounded-b-none px-2.5    "
                         ></CommandInput>
                     )}
                     <CommandList className="max-h-[400px]">

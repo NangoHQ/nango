@@ -10,13 +10,19 @@ import type {
     DBEnvironment,
     DBExternalWebhook,
     DBTeam,
-    EndUser,
     ErrorPayload,
     IntegrationConfig,
+    InternalEndUser,
     NangoAuthWebhookBodyBase,
     NangoAuthWebhookBodyError,
     NangoAuthWebhookBodySuccess
 } from '@nangohq/types';
+
+const AUTH_OPERATION_TO_TYPE = {
+    creation: 'auth_creation',
+    override: 'auth_override',
+    refresh: 'auth_refresh'
+} as const;
 
 export async function sendAuth({
     connection,
@@ -35,7 +41,7 @@ export async function sendAuth({
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
-    endUser?: EndUser | undefined;
+    endUser?: InternalEndUser | null | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
     providerConfig?: IntegrationConfig | undefined;
@@ -45,11 +51,11 @@ export async function sendAuth({
         return;
     }
 
-    if (operation !== 'creation' && operation !== 'refresh') {
+    if (operation === 'unknown') {
         return;
     }
 
-    if (!shouldSend({ success, type: operation === 'creation' ? 'auth_creation' : 'auth_refresh', webhookSettings })) {
+    if (!shouldSend({ success, type: AUTH_OPERATION_TO_TYPE[operation], webhookSettings })) {
         return;
     }
 
@@ -65,7 +71,7 @@ export async function sendAuth({
         provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
         operation,
-        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId } : undefined
+        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId, tags: endUser.tags || {} } : undefined
     };
 
     if (success) {

@@ -27,3 +27,6 @@ export { default as linearPreConnectionDeletion } from './providers/linear/pre-c
 export { default as attioPostConnection } from './providers/attio/post-connection.js';
 export { default as mailchimpPostConnection } from './providers/mailchimp/post-connection.js';
 export { default as snipeItCredentialsVerification } from './providers/snipe-it/credentials-verification.js';
+export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
+export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
+export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';

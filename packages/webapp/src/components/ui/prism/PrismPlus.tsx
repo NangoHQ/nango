@@ -26,7 +26,7 @@ export default function PrismPlus({ children, ...props }: PrismProps) {
             {isSecretVisible ? (
                 <Switch />
             ) : (
-                <div className={classNames('absolute z-10', { 'h-full w-full backdrop-blur-sm bg-black/0': !isSecretVisible })}>
+                <div className={classNames('absolute z-10', { 'h-full w-full backdrop-blur-xs bg-black/0': !isSecretVisible })}>
                     <Switch />
                 </div>
             )}

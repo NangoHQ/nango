@@ -48,6 +48,7 @@ function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
         .mutation((arg): boolean => {
+            const startTime = Date.now();
             const { taskId, nangoProps, code, codeParams } = arg.input;
             logger.info('Received task', {
                 taskId: taskId,
@@ -94,12 +95,14 @@ function startProcedure() {
                 }, heartbeatIntervalMs);
 
                 try {
-                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
+                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks });
 
+                    const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
+                    telemetryBag.durationMs = Date.now() - startTime;
                     await jobsClient.putTask({
                         taskId,
                         nangoProps,
-                        ...(error ? { error } : { output: output as any })
+                        ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
                     });
                 } finally {
                     clearInterval(heartbeat);

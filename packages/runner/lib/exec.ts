@@ -10,15 +10,15 @@ import * as soap from 'soap';
 import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
-import { ActionError, SDKError } from '@nangohq/runner-sdk';
-import { errorToObject, truncateJson } from '@nangohq/utils';
+import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
+import { Err, Ok, errorToObject, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
 import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import type { NangoProps, RunnerOutput } from '@nangohq/types';
+import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
@@ -37,7 +37,7 @@ export async function exec({
     codeParams?: object | undefined;
     abortController?: AbortController;
     locks?: Locks;
-}): Promise<RunnerOutput> {
+}): Promise<Result<RunnerOutput, ExecutionError>> {
     const rawNango = (() => {
         switch (nangoProps.scriptType) {
             case 'sync':
@@ -58,7 +58,7 @@ export async function exec({
 
     const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.cjs`;
 
-    return await tracer.trace<Promise<RunnerOutput>>('nango.runner.exec', async (span) => {
+    return await tracer.trace<Promise<Result<RunnerOutput, ExecutionError>>>('nango.runner.exec', async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
@@ -121,7 +121,7 @@ export async function exec({
                     }
 
                     const output = await payload.onWebhook(nango as any, codeParams);
-                    return { success: true, response: output, error: null };
+                    return Ok({ output, telemetryBag: nango.telemetryBag });
                 } else {
                     if (!scriptExports.onWebhookPayloadReceived) {
                         const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
@@ -130,7 +130,7 @@ export async function exec({
                     }
 
                     const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                    return { success: true, response: output, error: null };
+                    return Ok({ output, telemetryBag: nango.telemetryBag });
                 }
             }
 
@@ -155,7 +155,7 @@ export async function exec({
                     output = await def(nango, inputParams);
                 }
 
-                return { success: true, response: output, error: null };
+                return Ok({ output, telemetryBag: nango.telemetryBag });
             }
 
             // Action
@@ -173,7 +173,7 @@ export async function exec({
                 } else {
                     output = await def(nango);
                 }
-                return { success: true, response: output, error: null };
+                return Ok({ output, telemetryBag: nango.telemetryBag });
             }
 
             // Sync
@@ -187,40 +187,38 @@ export async function exec({
                 }
 
                 await payload.exec(nango as any);
-                return { success: true, response: true, error: null };
+                return Ok({ output: true, telemetryBag: nango.telemetryBag });
             } else {
                 await def(nango);
-                return { success: true, response: true, error: null };
+                return Ok({ output: true, telemetryBag: nango.telemetryBag });
             }
         } catch (err) {
             if (err instanceof ActionError) {
                 // It's not a mistake, we don't want to report user generated error
                 // span.setTag('error', error);
                 const { type, payload } = err;
-                return {
-                    success: false,
-                    error: {
+                return Err(
+                    new ExecutionError({
                         type,
                         payload: truncateJson(
                             Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
                         ), // TODO: fix ActionError so payload is always an object
-                        status: 500
-                    },
-                    response: null
-                };
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
+                    })
+                );
             }
 
             if (err instanceof SDKError) {
                 span.setTag('error', err);
-                return {
-                    success: false,
-                    error: {
+                return Err(
+                    new ExecutionError({
                         type: err.code,
                         payload: truncateJson(err.payload),
-                        status: 500
-                    },
-                    response: null
-                };
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
+                    })
+                );
             } else if (isAxiosError<unknown, unknown>(err)) {
                 // isAxiosError lets us use something the shape of an axios error in
                 // testing, which is handy with how strongly typed everything is
@@ -246,10 +244,18 @@ export async function exec({
                         errorResponse && typeof errorResponse === 'object' ? (errorResponse as Record<string, unknown>) : { message: errorResponse }
                     );
 
-                    return {
-                        success: false,
-                        error: {
-                            type: 'script_http_error',
+                    let type = 'script_http_error';
+                    // If the error is a rate limit error from Nango API, we return a specific type/message
+                    if (err.response.status === 429 && err.response.config.url) {
+                        const url = new URL(err.response.config.url);
+                        if (url.hostname === 'api.nango.dev' || url.hostname === 'localhost') {
+                            type = 'script_api_rate_limit_error';
+                        }
+                    }
+
+                    return Err(
+                        new ExecutionError({
+                            type,
                             payload: responseBody,
                             status: err.response.status,
                             additional_properties: {
@@ -258,35 +264,33 @@ export async function exec({
                                     headers,
                                     body: responseBody
                                 }
-                            }
-                        },
-                        response: null
-                    };
+                            },
+                            telemetryBag: nango.telemetryBag
+                        })
+                    );
                 } else {
                     const tmp = errorToObject(err);
-                    return {
-                        success: false,
-                        error: {
+                    return Err(
+                        new ExecutionError({
                             type: 'script_network_error',
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
-                            status: 500
-                        },
-                        response: null
-                    };
+                            status: 500,
+                            telemetryBag: nango.telemetryBag
+                        })
+                    );
                 }
             } else if (err instanceof Error) {
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
 
-                return {
-                    success: false,
-                    error: {
+                return Err(
+                    new ExecutionError({
                         type: 'script_internal_error',
                         payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
-                        status: 500
-                    },
-                    response: null
-                };
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
+                    })
+                );
             } else {
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
@@ -299,9 +303,8 @@ export async function exec({
                           .slice(0, 5) // max 5 lines
                     : [];
 
-                return {
-                    success: false,
-                    error: {
+                return Err(
+                    new ExecutionError({
                         type: 'script_internal_error',
                         payload: truncateJson({
                             name: tmp.name || 'Error',
@@ -309,10 +312,10 @@ export async function exec({
                             message: tmp.message,
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
-                        status: 500
-                    },
-                    response: null
-                };
+                        status: 500,
+                        telemetryBag: nango.telemetryBag
+                    })
+                );
             }
         } finally {
             try {

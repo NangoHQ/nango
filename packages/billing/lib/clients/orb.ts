@@ -1,10 +1,11 @@
 import Orb from 'orb-billing';
+import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -16,7 +17,7 @@ export class OrbClient implements BillingClient {
         });
     }
 
-    async ingest(events: BillingIngestEvent[]) {
+    async ingest(events: BillingEvent[]) {
         // Orb limit the number of events per batch to 500
         const batchSize = 500;
 
@@ -53,6 +54,15 @@ export class OrbClient implements BillingClient {
             return Ok({ id: customer.id, portalUrl: customer.portal_url });
         } catch (err) {
             return Err(new Error('failed_to_upsert_customer', { cause: err }));
+        }
+    }
+
+    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
+        try {
+            await this.orbSDK.customers.update(customerId, { name });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('failed_to_update_customer', { cause: err }));
         }
     }
 
@@ -257,12 +267,27 @@ export class OrbClient implements BillingClient {
     }
 }
 
-function toOrbEvent(event: BillingIngestEvent): Orb.Events.EventIngestParams.Event {
+function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
+    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
+
+    // orb doesn't accept nested properties, we need to flatten them with dot notation
+    const properties: Record<string, string | number | boolean> = {};
+    for (const [topLevelKey, value] of Object.entries(rest)) {
+        if (!value) continue;
+        if (typeof value === 'object') {
+            for (const [k, v] of Object.entries(value)) {
+                properties[`${topLevelKey}.${k}`] = v;
+            }
+        } else {
+            properties[topLevelKey] = value;
+        }
+    }
+
     return {
         event_name: event.type,
-        idempotency_key: event.idempotencyKey,
-        external_customer_id: event.accountId.toString(),
-        timestamp: event.timestamp.toISOString(),
-        properties: event.properties
+        idempotency_key: idempotencyKey || uuidv7(),
+        external_customer_id: accountId.toString(),
+        timestamp: timestamp.toISOString(),
+        properties
     };
 }

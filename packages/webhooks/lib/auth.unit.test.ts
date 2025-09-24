@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance } from '@nangohq/utils';
+import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendAuth } from './auth.js';
 
@@ -12,6 +12,7 @@ const account: DBTeam = {
     id: 1,
     name: 'account',
     uuid: 'uuid',
+    found_us: '',
     created_at: new Date(),
     updated_at: new Date()
 };
@@ -286,14 +287,17 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             operation: 'refresh'
         };
+        const bodyString = stringifyStable(body).unwrap();
 
         expect(spy).toHaveBeenNthCalledWith(
             1,
             'http://example.com/webhook',
-            expect.objectContaining(body),
+            bodyString,
             expect.objectContaining({
                 headers: {
-                    'X-Nango-Signature': expect.toBeSha256()
+                    'X-Nango-Signature': expect.toBeSha256(),
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
                 }
             })
         );
@@ -301,10 +305,12 @@ describe('Webhooks: auth notification tests', () => {
         expect(spy).toHaveBeenNthCalledWith(
             2,
             'http://example.com/webhook-secondary',
-            expect.objectContaining(body),
+            bodyString,
             expect.objectContaining({
                 headers: {
-                    'X-Nango-Signature': expect.toBeSha256()
+                    'X-Nango-Signature': expect.toBeSha256(),
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
                 }
             })
         );

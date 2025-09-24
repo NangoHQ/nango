@@ -27,6 +27,8 @@ import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
+import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
@@ -43,6 +45,8 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
+import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
@@ -60,7 +64,6 @@ import { searchFilters } from './controllers/v1/logs/searchFilters.js';
 import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
-import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -92,7 +95,7 @@ let webAuth: RequestHandler[] = flagHasAuth
 
 // For integration test, we want to bypass session auth
 if (isTest) {
-    webAuth = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware];
 }
 
 const web = express.Router();
@@ -177,6 +180,9 @@ web.route('/environment/admin-auth').get(webAuth, environmentController.getAdmin
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
 
+web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
+web.route('/connect-ui-settings').put(webAuth, putConnectUISettings);
+
 web.route('/integrations').get(webAuth, getIntegrations);
 web.route('/integrations').post(webAuth, postIntegration);
 web.route('/integrations/:providerConfigKey').get(webAuth, getIntegration);
@@ -207,7 +213,9 @@ web.route('/flows/:id/enable').patch(webAuth, patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
-web.route('/onboarding').patch(webAuth, patchOnboarding);
+// Getting Started
+web.route('/getting-started').get(webAuth, getGettingStarted);
+web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 web.route('/logs/operations').post(webAuth, searchOperations);
 web.route('/logs/messages').post(webAuth, searchMessages);

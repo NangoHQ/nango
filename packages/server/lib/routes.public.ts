@@ -6,6 +6,7 @@ import multer from 'multer';
 import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
+import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -27,9 +28,11 @@ import { deletePublicConnection } from './controllers/connection/connectionId/de
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
+import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
+import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
-import environmentController from './controllers/environment.controller.js';
+import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -39,17 +42,20 @@ import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
-import proxyController from './controllers/proxy.controller.js';
+import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
+import { getPublicSyncStatus } from './controllers/sync/getSyncStatus.js';
+import { postPublicSyncPause } from './controllers/sync/postSyncPause.js';
+import { postPublicSyncStart } from './controllers/sync/postSyncStart.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import { putSyncConnectionFrequency } from './controllers/sync/putSyncConnectionFrequency.js';
-import syncController from './controllers/sync.controller.js';
+import { allPublicV1 } from './controllers/v1/getV1.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
@@ -143,6 +149,7 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
 
+// @deprecated rollbacked for one customer, to delete asap
 publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 
 publicAPI.use('/integrations', jsonContentTypeMiddleware);
@@ -152,18 +159,36 @@ publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, patchPublicIntegratio
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, deletePublicIntegration);
 
+// @deprecated
 publicAPI.use('/connection', jsonContentTypeMiddleware);
+// @deprecated
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
+// @deprecated
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
+// @deprecated
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
+// @deprecated
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
+// @deprecated
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
+// @deprecated
 publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
+// @deprecated
 publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
+// @deprecated
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 
+publicAPI.use('/connections', jsonContentTypeMiddleware);
+publicAPI.route('/connections').post(apiAuth, postPublicConnection);
+publicAPI.route('/connections').get(apiAuth, getPublicConnections);
+publicAPI.route('/connections/metadata').post(apiAuth, postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(apiAuth, patchPublicMetadata);
+publicAPI.route('/connections/:connectionId').get(apiAuth, getPublicConnection);
+publicAPI.route('/connections/:connectionId').patch(apiAuth, patchPublicConnection);
+publicAPI.route('/connections/:connectionId').delete(apiAuth, deletePublicConnection);
+
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
+publicAPI.route('/environment-variables').get(apiAuth, getPublicEnvironmentVariables);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
@@ -176,9 +201,9 @@ publicAPI.route('/records').get(apiAuth, getPublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);
-publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
-publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
-publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
+publicAPI.route('/sync/pause').post(apiAuth, postPublicSyncPause);
+publicAPI.route('/sync/start').post(apiAuth, postPublicSyncStart);
+publicAPI.route('/sync/status').get(apiAuth, getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
@@ -190,7 +215,7 @@ publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
+publicAPI.route('/action/trigger').post(apiAuth, postPublicTriggerAction); //TODO: to deprecate
 publicAPI.route('/action/:id').get(apiAuth, getAsyncActionResult);
 
 publicAPI.use('/connect', jsonContentTypeMiddleware);
@@ -201,6 +226,6 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(apiAuth, syncController.actionOrModel.bind(syncController));
+publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
 
-publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
+publicAPI.route('/proxy/*splat').all(apiAuth, upload.any(), allPublicProxy);

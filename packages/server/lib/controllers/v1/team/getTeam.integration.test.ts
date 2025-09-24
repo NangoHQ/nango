@@ -51,7 +51,8 @@ describe(`GET ${route}`, () => {
                     name: account.name,
                     created_at: expect.toBeIsoDate(),
                     updated_at: expect.toBeIsoDate(),
-                    uuid: account.uuid
+                    uuid: account.uuid,
+                    found_us: null
                 },
                 users: [
                     {
@@ -59,7 +60,8 @@ describe(`GET ${route}`, () => {
                         email: user.email,
                         id: user.id,
                         name: user.name,
-                        uuid: user.uuid
+                        uuid: user.uuid,
+                        gettingStartedClosed: user.getting_started_closed
                     }
                 ]
             }

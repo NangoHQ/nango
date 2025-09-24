@@ -10,17 +10,19 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    linkConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { ConnectionConfig, PostPublicOauthOutboundAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
@@ -67,6 +69,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
     }
 
     let logCtx: LogContext | undefined;
+    let config: ProviderConfig | null = null;
 
     try {
         logCtx =
@@ -88,7 +91,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             }
         }
 
-        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             void logCtx.error('Unknown provider config');
             await logCtx.failed();
@@ -149,11 +152,36 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             return;
         }
 
-        if (isConnectSession) {
-            await linkConnection(db.knex, {
-                endUserId: connectSession.endUserId,
-                connection: updatedConnection.connection
+        const customValidationResponse = await validateConnection({
+            connection: updatedConnection.connection,
+            config,
+            account,
+            logCtx
+        });
+
+        if (customValidationResponse.isErr()) {
+            void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+            await logCtx.failed();
+
+            if (updatedConnection.operation === 'creation') {
+                // since this is a new invalid connection, delete it with no trace of it
+                await connectionService.hardDelete(updatedConnection.connection.id);
+            }
+
+            const payload = customValidationResponse.error?.payload;
+            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+
+            res.status(400).send({
+                error: {
+                    code: 'connection_validation_failed',
+                    message
+                }
             });
+            return;
+        }
+
+        if (isConnectSession) {
+            await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
         }
 
         await logCtx.enrichOperation({
@@ -171,14 +199,14 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 account,
                 auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
-                endUser: isConnectSession ? res.locals['endUser'] : undefined
+                endUser: res.locals.endUser
             },
             account,
             config,
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -211,7 +239,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', ...(config ? { provider: config.provider } : {}) });
 
         next(err);
     }

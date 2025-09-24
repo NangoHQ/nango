@@ -3,15 +3,15 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, getEndUser, upsertEndUser } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { EndUserMapper, configService, connectionService, getEndUser } from '@nangohq/shared';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { EndUser, PostPublicConnectSessionsReconnect } from '@nangohq/types';
+import type { PostPublicConnectSessionsReconnect } from '@nangohq/types';
 
 const bodySchema = z
     .object({
@@ -58,34 +58,19 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             };
         }
 
-        // NB: this is debatable, right now it's safer to do it this way
-        if (!connection.end_user_id && !body.end_user) {
+        if (!connection.end_user_id) {
             return {
                 status: 400,
                 response: { error: { code: 'invalid_body', message: "Can't update a connection that was not created with a session token" } }
             };
         }
 
-        let endUser: EndUser;
-        if (body.end_user) {
-            const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
-            if (endUserRes.isErr()) {
-                return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
-            }
-
-            endUser = endUserRes.value;
-        } else {
-            const endUserRes = await getEndUser(
-                trx,
-                { accountId: account.id, environmentId: environment.id, id: connection.end_user_id! },
-                { forUpdate: true }
-            );
-            if (endUserRes.isErr()) {
-                return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
-            }
-
-            endUser = endUserRes.value;
+        const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
+        if (endUserRes.isErr()) {
+            return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
         }
+
+        const endUser = endUserRes.value;
 
         if (body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
@@ -105,7 +90,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                 };
             }
 
-            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
+            const canOverrideDocsConnectUrl = (flagHasPlan && plan?.can_override_docs_connect_url) ?? true;
             const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
             if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
                 return {
@@ -123,6 +108,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
             endUserId: endUser.id,
+            endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
             accountId: account.id,
             environmentId: environment.id,
             connectionId: connection.id,

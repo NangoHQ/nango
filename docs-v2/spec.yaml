@@ -237,7 +237,7 @@ paths:
 
     /connection:
         get:
-            description: Returns a list of connections without credentials
+            description: Returns a list of connections without credentials. This endpoint is deprecated, use the /connections endpoint instead.
             parameters:
                 - name: connectionId
                   in: query
@@ -315,7 +315,7 @@ paths:
                                                     $ref: '#/components/schemas/ConnectionEndUser'
 
         post:
-            description: Adds a connection for which you already have credentials.
+            description: Adds a connection for which you already have credentials. This endpoint is deprecated, use the /connections endpoint instead.
             requestBody:
                 required: true
                 content:
@@ -389,7 +389,7 @@ paths:
 
     /connection/{connectionId}:
         get:
-            description: Returns a specific connection with credentials
+            description: Returns a specific connection with credentials. This endpoint is deprecated, use the /connections/{connectionId} endpoint instead.
             parameters:
                 - name: connectionId
                   in: path
@@ -455,7 +455,7 @@ paths:
                                     message:
                                         type: string
         delete:
-            description: Deletes a specific connection
+            description: Deletes a specific connection. This endpoint is deprecated, use the /connections/{connectionId} endpoint instead.
             parameters:
                 - name: connectionId
                   in: path
@@ -498,6 +498,457 @@ paths:
                                     message:
                                         type: string
     /connection/metadata:
+        post:
+            description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string. This endpoint is deprecated, use the /connections/metadata endpoint instead.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: 'connection-123'
+                                          description: The connection ID used to set the metadata on.
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: 'connection-123'
+                                          description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '201':
+                    description: Successfully set the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: 'connection-123'
+                                              description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: 'connection-123'
+                                              description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        patch:
+            description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string. This endpoint is deprecated, use the /connections/metadata endpoint instead.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - metadata
+                                - connection_id
+                                - provider_config_key
+                            properties:
+                                connection_id:
+                                    oneOf:
+                                        - type: string
+                                          example: 'connection-123'
+                                          description: The connection ID used to update the metadata on. Accepts an array of connection ids as well
+                                        - type: array
+                                          items:
+                                              type: string
+                                              example: 'connection-123'
+                                          description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used to create the connection (aka Unique Key).
+                                metadata:
+                                    type: object
+
+            responses:
+                '200':
+                    description: Successfully updated the metadata for the connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    connection_id:
+                                        oneOf:
+                                            - type: string
+                                              example: 'connection-123'
+                                              description: The connection ID used to update the metadata on. Returns an array of connection ids if an array is passed in.
+                                            - type: array
+                                              items:
+                                                  type: string
+                                                  example: 'connection-123'
+                                              description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
+                                    provider_config_key:
+                                        type: string
+                                        description: The integration ID used to create the connection (aka Unique Key).
+                                    metadata:
+                                        type: object
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+
+    /connection/{connectionId}/metadata:
+        post:
+            description: Set custom metadata for the connection.
+            deprecated: true
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+
+            responses:
+                '201':
+                    description: Successfully created an integrations
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+
+        patch:
+            description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
+            deprecated: true
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            responses:
+                '200':
+                    description: Successfully updated the metadata
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+
+    /connections:
+        get:
+            description: Returns a list of connections without credentials
+            parameters:
+                - name: connectionId
+                  in: query
+                  schema:
+                      type: string
+                  description: Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                  description: Will partially match connection IDs or end user profiles.
+                - name: endUserId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user id.
+                - name: endUserOrganizationId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user's organization id.
+            responses:
+                '200':
+                    description: Successfully returned a list of connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - configs
+                                properties:
+                                    connections:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                                - id
+                                                - connection_id
+                                                - provider
+                                                - provider_config_key
+                                                - created
+                                                - metadata
+                                                - errors
+                                                - end_user
+                                            properties:
+                                                id:
+                                                    type: integer
+                                                    description: The internal Nango ID used for the connection.
+                                                connection_id:
+                                                    type: string
+                                                    description: The connection ID used to create the connection.
+                                                provider:
+                                                    type: string
+                                                    description: The Nango API Configuration.
+                                                provider_config_key:
+                                                    type: string
+                                                    description: The integration ID used to create the connection (aka Unique Key, Provider Config Key).
+                                                created:
+                                                    type: string
+                                                    description: Connection creation date.
+                                                metadata:
+                                                    type: object
+                                                    description: Custom metadata attached to the connection
+                                                    nullable: true
+                                                errors:
+                                                    type: array
+                                                    items:
+                                                        $ref: '#/components/schemas/ConnectionError'
+                                                    description: |
+                                                        List of connection errors. Ex:
+                                                        - Connection credentials are invalid (type=auth)
+                                                        - Last sync for the connection has failed (type=sync)
+                                                end_user:
+                                                    nullable: true
+                                                    $ref: '#/components/schemas/ConnectionEndUser'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+
+        post:
+            description: Adds a connection for which you already have credentials.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - credentials
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID that you created on Nango.
+                                metadata:
+                                    type: object
+                                    description: (OAuth, required for some APIs) Metadata to be attached to the connection.
+                                connection_id:
+                                    type: string
+                                    description: The connection ID used to create the connection.
+                                connection_config:
+                                    type: object
+                                    description: (OAuth, required for some APIs) Additional configuration to be attached to the connection.
+                                credentials:
+                                    type: object
+                                    description: The credentials to be attached to the connection.
+                                    anyOf:
+                                        - $ref: '#/components/schemas/OAuth1Credentials'
+                                        - $ref: '#/components/schemas/OAuth2Credentials'
+                                        - $ref: '#/components/schemas/BasicApiCredentials'
+                                        - $ref: '#/components/schemas/ApiKeyCredentials'
+                                        - $ref: '#/components/schemas/OAuth2ClientCredentials'
+                                        - $ref: '#/components/schemas/UnauthCredentialsWithType'
+                                        - $ref: '#/components/schemas/TbaCredentials'
+                                        - type: object
+                                          title: GitHub App
+                                          additionalProperties: false
+                                          required:
+                                              - type
+                                              - app_id
+                                              - installation_id
+                                          properties:
+                                              type:
+                                                  type: string
+                                                  enum: [APP]
+                                              app_id:
+                                                  type: string
+                                              installation_id:
+                                                  type: string
+                                end_user:
+                                    $ref: '#/components/schemas/EndUser'
+            responses:
+                '200':
+                    description: Successfully created an integrations
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConnectionFull'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+
+    /connections/{connectionId}:
+        get:
+            description: Returns a specific connection with credentials
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+                - name: force_refresh
+                  in: query
+                  description: If true, Nango will attempt to refresh the access access token regardless of its expiration status (false by default).
+                  schema:
+                      type: boolean
+                - name: refresh_token
+                  in: query
+                  description: If true, return the refresh token as part of the response (false by default).
+                  schema:
+                      type: boolean
+                - name: refresh_github_app_jwt_token
+                  in: query
+                  description: If true, this will refresh the JWT token for GitHub App / Github App OAuth connections
+                  schema:
+                      type: boolean
+            responses:
+                '200':
+                    description: Successfully returned a connection
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConnectionFull'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '424':
+                    description: Connection refresh exhausted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                description: The error code
+                                            message:
+                                                type: string
+                                                description: A human-readable error message
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+        patch:
+            description: Edit a connection
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                end_user:
+                                    $ref: '#/components/schemas/EndUser'
+            responses:
+                '200':
+                    description: Successfully updated the connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+        delete:
+            description: Deletes a specific connection
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Successfully deleted an connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+    /connections/metadata:
         post:
             description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
             requestBody:
@@ -621,83 +1072,9 @@ paths:
                                     message:
                                         type: string
 
-    /connection/{connectionId}/metadata:
-        post:
-            description: Set custom metadata for the connection.
-            parameters:
-                - name: connectionId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The connection ID used to create the connection.
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-
-            responses:
-                '201':
-                    description: Successfully created an integrations
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-
-        patch:
-            description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
-            parameters:
-                - name: connectionId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The connection ID used to create the connection.
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-            responses:
-                '200':
-                    description: Successfully updated the metadata
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-
     /scripts/config:
         get:
-            description: Return the configuration for all integration scripts.
+            description: Return the configuration for all integration functions.
             parameters:
                 - name: format
                   in: query
@@ -708,7 +1085,7 @@ paths:
                   description: The output type of the script configuration
             responses:
                 '200':
-                    description: Successfully returned integration scripts config
+                    description: Successfully returned integration functions config
                     content:
                         application/json:
                             schema:
@@ -1075,7 +1452,7 @@ paths:
                                 syncs:
                                     oneOf:
                                         - type: array
-                                          description: A list of sync names that you wish to start.
+                                          description: A list of sync names that you wish to start. If empty, all syncs are triggered
                                           items:
                                               type: string
                                               description: Sync name
@@ -1136,7 +1513,7 @@ paths:
                                 syncs:
                                     oneOf:
                                         - type: array
-                                          description: A list of sync names that you wish to pause.
+                                          description: A list of sync names that you wish to pause. If empty, all syncs are triggered
                                           items:
                                               type: string
                                               description: Sync name
@@ -1248,14 +1625,9 @@ paths:
                                                     type: object
                                                     description: Total count of records for each model synced by the sync
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/{name}/variant/{variant}:
         post:
@@ -1460,7 +1832,7 @@ paths:
                   description: The ID of the asynchronous action (returned from triggering an action with X-Async header)
             responses:
                 '200':
-                    description: The action has completed successfully (output cannot exceed 10MB)
+                    description: The action has completed successfully (output cannot exceed 2MB)
                     content:
                         application/json:
                             schema:
@@ -2434,19 +2806,11 @@ components:
                 - end_user
             properties:
                 end_user:
-                    type: object
-                    required:
-                        - id
-                    properties:
-                        id:
-                            type: string
-                            description: Uniquely identifies the end user.
-                        email:
-                            type: string
-                        display_name:
-                            type: string
+                    $ref: '#/components/schemas/EndUser'
                 organization:
                     type: object
+                    deprecated: true
+                    description: Deprecated, use tags instead
                     required:
                         - id
                     properties:
@@ -2527,18 +2891,18 @@ components:
 
         AllAuthCredentials:
             anyOf:
-                - $ref: '#/components/schemas/OAuth1Credentials'
-                - $ref: '#/components/schemas/OAuth2Credentials'
+                - $ref: '#/components/schemas/OAuth1CredentialsWithRaw'
+                - $ref: '#/components/schemas/OAuth2CredentialsWithRaw'
                 - $ref: '#/components/schemas/BasicApiCredentials'
                 - $ref: '#/components/schemas/ApiKeyCredentials'
                 - $ref: '#/components/schemas/AppCredentials'
                 - $ref: '#/components/schemas/JwtCredentials'
-                - $ref: '#/components/schemas/OAuth2ClientCredentials'
-                - $ref: '#/components/schemas/AppStoreCredentials'
+                - $ref: '#/components/schemas/OAuth2ClientCredentialsWithRaw'
+                - $ref: '#/components/schemas/AppStoreCredentialsWithRaw'
                 - $ref: '#/components/schemas/UnauthCredentials'
                 - $ref: '#/components/schemas/CustomCredentials'
                 - $ref: '#/components/schemas/TbaCredentials'
-                - $ref: '#/components/schemas/BillCredentials'
+                - $ref: '#/components/schemas/BillCredentialsWithRaw'
                 - $ref: '#/components/schemas/TwoStepCredentials'
                 - $ref: '#/components/schemas/SignatureCredentials'
 
@@ -2587,15 +2951,23 @@ components:
                     format: date-time
                 private_key:
                     type: string
-                raw:
-                    type: object
                 type:
                     type: string
                     enum: [APP_STORE]
             required:
                 - access_token
-                - raw
                 - private_key
+        AppStoreCredentialsWithRaw:
+            title: App Store
+            allOf:
+                - $ref: '#/components/schemas/AppStoreCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         BasicApiCredentials:
             type: object
             title: Basic Auth
@@ -2626,8 +2998,6 @@ components:
                     type: string
                 password:
                     type: string
-                raw:
-                    type: object
                 session_id:
                     type: string
                 type:
@@ -2644,6 +3014,17 @@ components:
                 - raw
                 - type
                 - username
+        BillCredentialsWithRaw:
+            title: Bill
+            allOf:
+                - $ref: '#/components/schemas/BillCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         CustomCredentials:
             type: object
             title: Custom
@@ -2699,16 +3080,24 @@ components:
                     type: string
                 oauth_token_secret:
                     type: string
-                raw:
-                    type: object
                 type:
                     type: string
                     enum: [OAUTH1]
             required:
                 - oauth_token
                 - oauth_token_secret
-                - raw
                 - type
+        OAuth1CredentialsWithRaw:
+            title: OAuth1
+            allOf:
+                - $ref: '#/components/schemas/OAuth1Credentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         OAuth2ClientCredentials:
             type: object
             title: OAuth2 Client
@@ -2721,8 +3110,6 @@ components:
                 expires_at:
                     type: string
                     format: date-time
-                raw:
-                    type: object
                 token:
                     type: string
                 type:
@@ -2731,9 +3118,19 @@ components:
             required:
                 - client_id
                 - client_secret
-                - raw
                 - token
                 - type
+        OAuth2ClientCredentialsWithRaw:
+            title: OAuth2 Client
+            allOf:
+                - $ref: '#/components/schemas/OAuth2ClientCredentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         OAuth2Credentials:
             type: object
             title: OAuth2
@@ -2752,8 +3149,6 @@ components:
                 expires_at:
                     format: date-time
                     type: string
-                raw:
-                    type: object
                 refresh_token:
                     type: string
                 type:
@@ -2761,8 +3156,18 @@ components:
                     type: string
             required:
                 - access_token
-                - raw
                 - type
+        OAuth2CredentialsWithRaw:
+            title: OAuth2
+            allOf:
+                - $ref: '#/components/schemas/OAuth2Credentials'
+                - type: object
+                  additionalProperties: false
+                  required:
+                      - raw
+                  properties:
+                      raw:
+                          type: object
         SignatureCredentials:
             type: object
             title: Signature
@@ -2831,6 +3236,16 @@ components:
             type: object
             title: Unauthenticated
             additionalProperties: false
+        UnauthCredentialsWithType:
+            type: object
+            title: Unauthenticated
+            additionalProperties: false
+            required:
+                - type
+            properties:
+                type:
+                    type: string
+                    enum: [NONE]
 
         ## ---------------------- Connection
         ConnectionEndUser:
@@ -2847,6 +3262,10 @@ components:
                 display_name:
                     nullable: true
                     type: string
+                tags:
+                    type: object
+                    additionalProperties: true
+                    description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
                 organization:
                     type: object
                     nullable: true
@@ -2859,6 +3278,24 @@ components:
                         display_name:
                             type: string
                             nullable: true
+        EndUser:
+            type: object
+            required:
+                - id
+            properties:
+                id:
+                    type: string
+                    description: Uniquely identifies the end user.
+                email:
+                    type: string
+                display_name:
+                    type: string
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
+                        maxLength: 64
+                    description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
         ConnectionError:
             type: object
             required:
@@ -2989,6 +3426,10 @@ components:
                       scopes:
                           type: string
                           pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
+                          nullable: true
+                      webhook_secret:
+                          type: string
+                          maxLength: 255
                           nullable: true
                 - type: object
                   required:

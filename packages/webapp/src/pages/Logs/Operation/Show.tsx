@@ -107,15 +107,15 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="flex">
                         <StatusTag state={operation.state} />
                     </div>
-                    <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                    <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconClockHour4 stroke={1} size={18} />
-                        <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
+                        <div className="text-gray-400 text-s pt-px font-code">{duration}</div>
                     </div>
-                    <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                    <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconCalendar stroke={1} size={18} />
-                        <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
+                        <div className="text-gray-400 text-s pt-px font-code">{createdAt}</div>
                     </div>
                 </div>
             </header>
@@ -123,7 +123,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             <div className="flex gap-5 flex-wrap">
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
-                    <div className="text-gray-400 text-xs pt-[1px]">
+                    <div className="text-gray-400 text-xs pt-px">
                         <OperationTag message={operation.message} operation={operation.operation} />
                     </div>
                 </div>
@@ -148,7 +148,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                         )}
                     </div>
                 </div>
-                <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                 <div className="flex gap-2 items-center max-w-[30%]">
                     <div className="font-semibold text-sm">Connection</div>
                     <div className="text-gray-400 text-s font-code truncate">
@@ -168,10 +168,10 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                         )}
                     </div>
                 </div>
-                <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                 <div className="flex gap-2 items-center max-w-[30%]">
                     <div className="font-semibold text-sm">Script</div>
-                    <div className="text-gray-400 text-s pt-[1px] truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
+                    <div className="text-gray-400 text-s pt-px truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
                 </div>
             </div>
             <div className="">

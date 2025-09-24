@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, linkConnection } from '@nangohq/shared';
+import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -105,7 +105,7 @@ class AppAuthController {
                 return;
             }
 
-            const connectionConfig = {
+            const connectionConfig: Record<string, string | undefined> = {
                 installation_id,
                 app_id: config.oauth_client_id
             };
@@ -134,10 +134,14 @@ class AppAuthController {
                 return;
             }
 
+            const { value: parsedRawCredentials } = credentialsRes;
+            const { jwtToken } = parsedRawCredentials;
+            connectionConfig['jwtToken'] = jwtToken;
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                parsedRawCredentials: credentialsRes.value,
+                parsedRawCredentials,
                 connectionConfig,
                 environmentId: environment.id
             });
@@ -163,7 +167,12 @@ class AppAuthController {
                 }
 
                 connectSession = connectSessionRes.value;
-                await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
+                await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -174,7 +183,7 @@ class AppAuthController {
                     account,
                     auth_mode: 'APP',
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.endUser
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,

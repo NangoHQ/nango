@@ -13,6 +13,7 @@ describe('zodToNango', () => {
                     foo: z.literal('bar'),
                     literalArray: z.literal(['bar', 'baz']),
                     num: z.number(),
+                    bigint: z.bigint(),
                     bool: z.boolean(),
                     null: z.null(),
                     enum: z.enum(['tip', 'top']),
@@ -23,13 +24,29 @@ describe('zodToNango', () => {
                     reco: z.record(z.string(), z.date()),
                     opt: z.any().optional(),
                     nullable: z.string().nullable(),
+                    nullableOptional: z.string().nullable().optional(),
                     nullish: z.string().nullish(),
                     ref: ref,
                     void: z.void(),
                     never: z.never(),
-                    date: z.date()
-                    // Not supported
+                    date: z.date(),
+                    emptyObject: z.object({}),
+                    unknown: z.unknown(),
+                    discriminatedUnion: z.discriminatedUnion('type', [
+                        z.object({ type: z.literal('a'), foo: z.string() }),
+                        z.object({ type: z.literal('b'), bar: z.string() })
+                    ]),
+                    coerce: z.coerce.string()
+
+                    // Not supported yet
+                    // email: z.email(), // Not supported yet by "ts-json-schema-generator" (2.4.0)
+                    // url: z.url() // Not supported yet by "ts-json-schema-generator" (2.4.0)
+                    // tuple: z.tuple([z.string(), z.number()]) // legacy model shape is blocking us
+
+                    // Not supported on purpose
+                    // undefined: z.undefined()
                     // lazy: z.lazy(() => ref)
+                    // default: z.string().default(z.string())
                 })
             )
         ).toStrictEqual({
@@ -47,6 +64,7 @@ describe('zodToNango', () => {
                     ]
                 },
                 { name: 'num', optional: false, tsType: true, value: 'number' },
+                { name: 'bigint', optional: false, tsType: true, value: 'bigint' },
                 { name: 'bool', optional: false, tsType: true, value: 'boolean' },
                 { name: 'null', optional: false, tsType: true, value: null },
                 {
@@ -81,7 +99,8 @@ describe('zodToNango', () => {
                     value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'Date' }]
                 },
                 { name: 'opt', optional: true, tsType: true, value: 'any' },
-                { name: 'nullable', optional: true, tsType: true, value: 'string' },
+                { name: 'nullable', optional: false, tsType: true, value: 'string' },
+                { name: 'nullableOptional', optional: true, tsType: true, value: 'string' },
                 { name: 'nullish', optional: true, tsType: true, value: 'string' },
                 {
                     name: 'ref',
@@ -90,7 +109,45 @@ describe('zodToNango', () => {
                 },
                 { name: 'void', tsType: true, value: 'void' },
                 { name: 'never', optional: false, tsType: true, value: 'never' },
-                { name: 'date', optional: false, tsType: true, value: 'Date' }
+                { name: 'date', optional: false, tsType: true, value: 'Date' },
+                { name: 'emptyObject', optional: false, value: [] },
+                { name: 'unknown', optional: true, tsType: true, value: 'unknown' },
+                {
+                    name: 'discriminatedUnion',
+                    optional: false,
+                    tsType: true,
+                    union: true,
+                    value: [
+                        {
+                            name: '0',
+                            optional: false,
+                            value: [
+                                { name: 'type', optional: false, value: 'a' },
+                                { name: 'foo', optional: false, tsType: true, value: 'string' }
+                            ]
+                        },
+                        {
+                            name: '1',
+                            optional: false,
+                            value: [
+                                { name: 'type', optional: false, value: 'b' },
+                                { name: 'bar', optional: false, tsType: true, value: 'string' }
+                            ]
+                        }
+                    ]
+                },
+                { name: 'coerce', optional: true, tsType: true, value: 'string' }
+
+                // {
+                //     name: 'tuple',
+                //     optional: false,
+                //     tsType: true,
+                //     array: true,
+                //     value: [
+                //         { name: '0', optional: false, tsType: true, value: 'string' },
+                //         { name: '1', optional: false, tsType: true, value: 'number' }
+                //     ]
+                // }
             ]
         });
     });

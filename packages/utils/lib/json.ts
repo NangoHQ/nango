@@ -1,7 +1,10 @@
 import safeStringify from 'fast-safe-stringify';
 import truncateJsonPkg from 'truncate-json';
 
+import { Err, Ok } from './result.js';
 import { truncateBytes } from './string.js';
+
+import type { Result } from '@nangohq/types';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
 
@@ -63,4 +66,16 @@ export function truncateJson<TObject extends Record<string, any>>(value: TObject
  */
 export function truncateJsonString(value: string, maxSize: number = MAX_LOG_PAYLOAD): string {
     return truncateJsonPkg(value, maxSize).jsonString;
+}
+
+/**
+ * Stringify a json object in a stable way.
+ * Properties will be ordered alphabetically.
+ */
+export function stringifyStable(value: unknown): Result<string> {
+    try {
+        return Ok(safeStringify.default.stableStringify(value));
+    } catch (err) {
+        return Err(new Error('Failed to stringify value', { cause: err }));
+    }
 }

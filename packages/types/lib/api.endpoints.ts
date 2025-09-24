@@ -9,7 +9,7 @@ import type {
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
 import type {
@@ -32,6 +32,7 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -39,7 +40,8 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
-    PostConnectionRefresh
+    PostConnectionRefresh,
+    PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
@@ -47,6 +49,7 @@ import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './env
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
+import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -62,12 +65,18 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PatchOnboarding } from './onboarding/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
+import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
-import type { PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type {
+    GetSharedCredentialsProvider,
+    GetSharedCredentialsProviders,
+    PatchSharedCredentialsProvider,
+    PostSharedCredentialsProvider
+} from './sharedCredentials/api.js';
+import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -108,7 +117,14 @@ export type PublicApiEndpoints =
     | PostPublicIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
-    | PostPublicOauthOutboundAuthorization;
+    | PostPublicOauthOutboundAuthorization
+    | PostPublicConnection
+    | PostPublicSyncStart
+    | PostPublicSyncPause
+    | GetPublicSyncStatus
+    | GetPublicV1
+    | PostPublicTriggerAction
+    | AllPublicProxy;
 
 export type PrivateApiEndpoints =
     | PostSignup
@@ -129,7 +145,6 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | PatchOnboarding
     | PostInternalConnectSessions
     | GetIntegrationFlows
     | DeleteIntegration
@@ -156,7 +171,15 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | PatchWebhook
     | PostEnvironmentVariables
-    | PostImpersonate;
+    | PostImpersonate
+    | GetSharedCredentialsProviders
+    | GetSharedCredentialsProvider
+    | PostSharedCredentialsProvider
+    | PatchSharedCredentialsProvider
+    | GetGettingStarted
+    | PatchGettingStarted
+    | GetConnectUISettings
+    | PutConnectUISettings;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

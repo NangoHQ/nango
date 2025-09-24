@@ -16,7 +16,7 @@ Ship integrations fast. Maintain full control.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">400+ pre-configured APIs</a>
+    <a href="https://nango.dev/integrations">500+ pre-configured APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
@@ -27,11 +27,11 @@ Ship integrations fast. Maintain full control.
 
 Nango is a single API to interact with all other external APIs. It should be the only API you need to integrate to your app.
 
-<img src="/docs-v2/images/overview.png">
+<img src="/docs-v2/images/readme/overview.png">
 
 # 📺 Demo video
 
-[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://youtu.be/oTpWlmnv7dM)
+[![what-is-nango](/docs-v2/images/readme/video-thumbnail.png)](https://youtu.be/oTpWlmnv7dM)
 
 # 👩‍💻 Sample code
 
@@ -59,9 +59,9 @@ Nango's flexibility ensures it supports any API integration:
 2. **Custom integrations**: Build your own integrations in code with limitless customization capabilities.
 3. **Managed integrations**: Leverage Nango experts to create and maintain your integrations end-to-end.
 
-# 🔌 400+ pre-built APIs & integrations, or build your own!
+# 🔌 500+ pre-built APIs & integrations, or build your own!
 
-[Over 400 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+[Over 500 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
 
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...
@@ -90,7 +90,7 @@ Sign up for free:
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 
 - [Contribute an API](https://docs.nango.dev/guides/api-authorization/new-api-support)
-- [Create a custom integration](https://docs.nango.dev/guides/custom-integrations/overview)
+- [Create a custom integration](https://docs.nango.dev/guides/platform/functions)
 - [Extend an integration template](https://docs.nango.dev/guides/custom-integrations/extend-a-pre-built-integration)
 
 # 📚 Learn more

@@ -1,0 +1,69 @@
+---
+title: 'Initial Functions setup'
+sidebarTitle: 'Initial Functions setup'
+description: 'Prepare your setup to create Nango functions'
+---
+
+To work with Nango Functions, you need the Nango CLI and `nango-integrations` folder set up.
+
+## Install the Nango CLI
+
+Install the Nango CLI globally:
+```bash
+npm install -g nango
+```
+
+Type `nango help` to get an overview of all CLI functions or take a look at the [CLI reference](/reference/cli).
+
+## Create your `nango-integrations` folder
+
+All your integrations live in a folder called `nango-integrations`. Whether located in your main codebase or a dedicated repository, this folder should be version-controlled.
+
+To initialize your integrations folder (e.g., at the root of your repository), run:
+```bash
+nango init nango-integrations
+```
+
+<Note>
+    You can also ask Nango to seed your `nango-integrations` folder with instructions for AI agents:
+
+    ```bash
+    nango init --ai cursor
+    ```
+
+    For more details, read our [guide to leveraging AI agents](/implementation-guides/building-integrations/leverage-ai-agents)
+
+</Note>
+
+This creates the `./nango-integrations` folder with some initial configuration and an example sync script. The `nango-integrations` directory looks like this:
+```
+nango-integrations/
+├── .nango
+├── .env
+├── index.ts
+├── package.json
+└── demo-github-integration # this is the integration unique ID and must match an integration ID in your Nango UI
+    └── syncs/
+        └── github-issue-example.ts
+```
+
+## Authenticate the CLI
+
+In an `.env` file in `./nango-integrations`, add the following environment variables:
+```bash
+NANGO_SECRET_KEY_PROD='<PROD-SECRET-KEY>'
+NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
+```
+
+Get your secret keys from the **Environment Settings** tab (toggle between the `Production` and `Development` environment in the left nav bar).
+
+## Next steps
+
+Take a look at the example `github-issues-example` sync.
+
+You can also find more examples in our [reference implementations repo](https://www.nango.dev/templates) on GitHub.
+
+When you are ready, remove the example integration and create your own function:
+- [Implement a sync](/implementation-guides/syncs/implement-a-sync)
+- [Implement an action](/implementation-guides/actions/implement-an-action)
+- [Implement webhook processing](/implementation-guides/webhooks/implement-webhooks)

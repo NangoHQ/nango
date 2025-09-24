@@ -1,11 +1,16 @@
 import './tracer.js';
+import * as cron from 'node-cron';
 
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { initSentry, once, report } from '@nangohq/utils';
 
+import { persistAccountUsageCron } from './crons/persistAccountUsage.js';
+import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
-import { Billing } from './processors/billing.js';
+import { BillingProcessor } from './processors/billing.js';
+import { CustomerTrackingProcessor } from './processors/customer-tracking.js';
+import { TeamProcessor } from './processors/team.js';
 import { logger } from './utils.js';
 
 try {
@@ -30,8 +35,20 @@ try {
     }
 
     // Billing processor
-    const billingProc = new Billing(pubsubTransport);
+    const billingProc = new BillingProcessor(pubsubTransport);
     billingProc.start();
+
+    // Team processor
+    const teamProc = new TeamProcessor(pubsubTransport);
+    teamProc.start();
+
+    // customer tracking
+    const customerTrackingProc = new CustomerTrackingProcessor(pubsubTransport);
+    customerTrackingProc.start();
+
+    // Crons
+    exportUsageCron();
+    persistAccountUsageCron();
 
     // Graceful shutdown
     const close = once(async () => {
@@ -40,6 +57,7 @@ try {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);
         }
         await billing.shutdown();
+        cron.getTasks().forEach((task) => task.stop());
         process.exit();
     });
 

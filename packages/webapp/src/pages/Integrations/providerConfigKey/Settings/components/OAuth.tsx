@@ -115,7 +115,12 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                 </InfoBloc>
 
                 {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
-                    <InfoBloc title="Scopes">
+                    <InfoBloc
+                        title="Scopes"
+                        {...(!shouldShowCredentials && {
+                            help: 'Scopes are fixed for Nango-provided credentials. Use your own credentials to change the scopes.'
+                        })}
+                    >
                         <TagsInput
                             id="scopes"
                             name="scopes"
@@ -131,6 +136,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                             onScopeChange={handleScopeChange}
                             minLength={1}
                             readOnly={!shouldShowCredentials}
+                            clipboard={true}
                         />
                     </InfoBloc>
                 )}

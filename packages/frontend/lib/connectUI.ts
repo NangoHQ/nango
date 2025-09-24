@@ -1,5 +1,5 @@
 import type { ConnectUIEvent, ConnectUIEventToken } from './types.js';
-import type { MaybePromise } from '@nangohq/types';
+import type { MaybePromise, Theme } from '@nangohq/types';
 
 export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
@@ -33,6 +33,12 @@ export interface ConnectUIProps {
      * @example `en` or `fr`
      */
     lang?: string;
+
+    /**
+     * The theme (light, dark, system) to use for the UI.
+     * Overrides your global setting in the dashboard.
+     */
+    themeOverride?: Theme;
 }
 
 export class ConnectUI {
@@ -46,6 +52,7 @@ export class ConnectUI {
     private onEvent;
     private detectClosedAuthWindow?: boolean | undefined;
     private lang?: string | undefined;
+    private themeOverride?: Theme | undefined;
 
     constructor({
         sessionToken,
@@ -53,7 +60,8 @@ export class ConnectUI {
         apiURL = 'https://api.nango.dev',
         detectClosedAuthWindow,
         onEvent,
-        lang
+        lang,
+        themeOverride
     }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
@@ -61,13 +69,22 @@ export class ConnectUI {
         this.onEvent = onEvent;
         this.detectClosedAuthWindow = detectClosedAuthWindow;
         this.lang = lang;
+        this.themeOverride = themeOverride;
     }
 
     /**
      * Open UI in an iframe and listen to events
      */
     open() {
-        console.log('Opening connect ui');
+        this.iframe = this.createIframe();
+        document.body.append(this.iframe);
+
+        document.body.style.overflow = 'hidden';
+
+        this.setupEventListeners();
+    }
+
+    private createIframe() {
         const baseURL = new URL(this.baseURL);
         if (this.apiURL) {
             baseURL.searchParams.append('apiURL', this.apiURL);
@@ -78,11 +95,14 @@ export class ConnectUI {
         if (this.lang) {
             baseURL.searchParams.append('lang', this.lang);
         }
+        if (this.themeOverride) {
+            baseURL.searchParams.append('theme', this.themeOverride);
+        }
 
-        // Create an iframe that will contain the ConnectUI on top of existing UI
         const iframe = document.createElement('iframe');
         iframe.src = baseURL.href;
         iframe.id = 'connect-ui';
+
         iframe.style.position = 'fixed';
         iframe.style.zIndex = '9999';
         iframe.style.top = '0';
@@ -93,12 +113,10 @@ export class ConnectUI {
         iframe.style.height = '100vh';
         iframe.style.backgroundColor = 'transparent';
 
-        this.iframe = iframe;
-        document.body.append(iframe);
+        return iframe;
+    }
 
-        document.body.style.overflow = 'hidden';
-
-        // Listen to event sent from ConnectUI
+    private setupEventListeners() {
         this.listener = (event) => {
             if (event.origin !== this.baseURL) {
                 return;

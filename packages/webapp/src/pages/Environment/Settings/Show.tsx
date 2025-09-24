@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { AuthorizationSettings } from './Authorization';
 import { BackendSettings } from './Backend';
+import { ConnectUISettings } from './ConnectUISettings';
 import { DeleteButton } from './DeleteButton';
 import { ExportSettings } from './Export';
 import { MainSettings } from './Main';
@@ -15,6 +16,7 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { apiDeleteEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
+import { useTeam } from '../../../hooks/useTeam';
 import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
@@ -26,6 +28,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { mutate: mutateMeta } = useMeta();
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
+    const { team } = useTeam(env);
 
     const { environmentAndAccount } = useEnvironment(env);
     const [scrolled, setScrolled] = useState(false);
@@ -70,7 +73,7 @@ export const EnvironmentSettings: React.FC = () => {
         }
     };
 
-    if (!environmentAndAccount) {
+    if (!environmentAndAccount || !team) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} className="p-6">
                 <Helmet>
@@ -88,8 +91,9 @@ export const EnvironmentSettings: React.FC = () => {
         );
     }
 
+    const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} className="p-6">
+        <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} fullWidth={true} className="p-6">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
@@ -109,17 +113,20 @@ export const EnvironmentSettings: React.FC = () => {
             <div className="flex flex-col gap-20 h-fit" key={env}>
                 <MainSettings />
                 <BackendSettings />
+                <ConnectUISettings />
                 <NotificationSettings />
                 <VariablesSettings />
                 <ExportSettings />
-                <Accordion type="single" collapsible>
-                    <AccordionItem value="item-1" id="authorization">
-                        <AccordionTrigger>Deprecated authorization settings</AccordionTrigger>
-                        <AccordionContent>
-                            <AuthorizationSettings />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                {canSeeDeprecatedAuthorization && (
+                    <Accordion type="single" collapsible>
+                        <AccordionItem value="item-1" id="authorization">
+                            <AccordionTrigger>Deprecated authorization settings</AccordionTrigger>
+                            <AccordionContent>
+                                <AuthorizationSettings />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                )}
             </div>
         </DashboardLayout>
     );

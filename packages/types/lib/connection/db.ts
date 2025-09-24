@@ -1,6 +1,6 @@
 import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { TimestampsAndDeletedCorrect } from '../db.js';
-import type { EndUser } from '../endUser/index.js';
+import type { InternalEndUser } from '../endUser/index.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
 import type { ReplaceInObject } from '../utils.js';
@@ -10,8 +10,9 @@ export type Metadata = Record<string, unknown>;
 
 export interface ConnectionConfig {
     [key: string]: any;
-    oauth_scopes?: string;
-    authorization_params?: Record<string, string>;
+    oauth_scopes_override?: string[] | undefined;
+    oauth_scopes?: string | undefined;
+    authorization_params?: Record<string, string> | undefined;
 }
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {
@@ -46,7 +47,7 @@ export interface RecentlyCreatedConnection {
     operation: AuthOperationType;
     environment: DBEnvironment;
     account: DBTeam;
-    endUser: EndUser | undefined;
+    endUser: InternalEndUser | null | undefined;
 }
 
 export interface FailedConnectionError {
