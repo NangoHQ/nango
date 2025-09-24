@@ -1,4 +1,4 @@
-import { ChevronsUpDown, CreditCard, LogOut, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, LogOut, Sparkle, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 
 export const ProfileDropdown: React.FC = () => {
@@ -15,9 +16,10 @@ export const ProfileDropdown: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
-    const items = useMemo(
-        () => [
+    const items = useMemo(() => {
+        const list = [
             {
                 label: 'Team',
                 icon: Users,
@@ -27,15 +29,27 @@ export const ProfileDropdown: React.FC = () => {
                 label: 'Profile',
                 icon: UserRoundCog,
                 href: `/${env}/user-settings`
-            },
-            {
+            }
+        ];
+
+        if (meta && meta.gettingStartedClosed && showGettingStarted) {
+            list.push({
+                label: 'Getting Started',
+                icon: Sparkle,
+                href: `/${env}/getting-started`
+            });
+        }
+
+        if (globalEnv.features.plan) {
+            list.push({
                 label: 'Usage & Billing',
                 icon: CreditCard,
                 href: `/${env}/team/billing`
-            }
-        ],
-        [env]
-    );
+            });
+        }
+
+        return list;
+    }, [env, meta, showGettingStarted]);
 
     const initials = useMemo(() => {
         if (!user?.name) {
@@ -82,7 +96,7 @@ export const ProfileDropdown: React.FC = () => {
                                 onSelect={() => navigate(item.href)}
                                 className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
                             >
-                                <item.icon className="size-5 text-text-secondary group-hover:text-text-primary" />
+                                <item.icon className="size-4 text-text-secondary group-hover:text-text-primary" />
                                 <span>{item.label}</span>
                             </DropdownMenuItem>
                         ))}
@@ -90,7 +104,7 @@ export const ProfileDropdown: React.FC = () => {
                             onSelect={() => signout()}
                             className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
                         >
-                            <LogOut className="size-5 text-text-secondary group-hover:text-text-primary" />
+                            <LogOut className="size-4 text-text-secondary group-hover:text-text-primary" />
                             <span>Log Out</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
