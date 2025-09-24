@@ -1,24 +1,24 @@
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
+import { SimpleTooltip } from '../components/SimpleTooltip.js';
+import { Skeleton } from '../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../hooks/usePlan.js';
 import { useStore } from '../store.js';
-import { SimpleTooltip } from './SimpleTooltip.js';
-import { Skeleton } from './ui/Skeleton.js';
 import { cn } from '../utils/utils.js';
-import { ButtonLink } from './ui/button/Button.js';
+import { ButtonLink } from '@/components-v2/ui/button.js';
 
 function getColorForUsage(usage: number, limit: number | null) {
     if (!limit) {
-        return 'text-text-secondary';
+        return 'text-text-primary';
     }
     if (usage >= limit) {
-        return 'text-alert-4';
+        return 'text-feedback-error-fg';
     }
     if (usage >= limit * 0.8) {
-        return 'text-warning-4';
+        return 'text-yellow-500';
     }
-    return 'text-text-secondary';
+    return 'text-text-primary';
 }
 
 function getDaysUntilNextMonth() {
@@ -54,10 +54,10 @@ export default function UsageCard() {
     }, []);
 
     return (
-        <div className="flex flex-col gap-[20px] p-3 rounded-sm">
-            <span className="text-white font-semibold text-sm">Free plan usage</span>
-            <div className="flex flex-col gap-[10px]">
-                <div className="flex flex-col gap-[10px] w-full">
+        <div className="flex flex-col rounded-sm bg-background-surface border border-border-muted">
+            <span className="text-text-primary font-semibold text-sm p-3 border-b border-border-muted">Free plan usage</span>
+            <div className="flex flex-col gap-4 p-3 pb-4.5">
+                <div className="flex flex-col gap-2.5 w-full">
                     {isLoading ? (
                         <>
                             <Skeleton className="h-[24px]" />
@@ -68,7 +68,7 @@ export default function UsageCard() {
                         Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
                             <div key={metric} className="flex flex-row justify-between items-center">
                                 <div className="flex flex-row items-center gap-1">
-                                    <span className="text-text-secondary text-s">{usage.label}</span>
+                                    <span className="text-text-secondary text-s leading-5">{usage.label}</span>
                                     {metric === 'active_records' && (
                                         <SimpleTooltip
                                             className="text-text-secondary"
@@ -80,19 +80,19 @@ export default function UsageCard() {
                                     )}
                                 </div>
                                 <div>
-                                    <span className={cn('text-s', getColorForUsage(usage.usage, usage.limit))}>{usage.usage}</span>
+                                    <span className={cn('text-s font-bold', getColorForUsage(usage.usage, usage.limit))}>{usage.usage}</span>
                                     {usage.limit && <span className="text-text-tertiary text-s">/{formatLimit(usage.limit)}</span>}
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
-            </div>
-            <div className="flex flex-col gap-[10px] items-center">
-                <ButtonLink to={`/${env}/team/billing`} variant="secondary" className="w-full justify-center">
-                    Upgrade
-                </ButtonLink>
-                <span className="text-text-tertiary text-s">{usageResetMessage}</span>
+                <div className="flex flex-col gap-2.5 items-center">
+                    <ButtonLink to={`/${env}/team/billing`} variant="secondary" className="w-full justify-center">
+                        Upgrade
+                    </ButtonLink>
+                    <span className="text-text-secondary text-s leading-4">{usageResetMessage}</span>
+                </div>
             </div>
         </div>
     );
