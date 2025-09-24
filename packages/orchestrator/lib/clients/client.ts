@@ -387,7 +387,6 @@ export class OrchestratorClient {
     }): Promise<Result<OrchestratorTask[], ClientError>> {
         const res = await this.routeFetch(postDequeueRoute)({
             body: {
-                groupKey: groupKeyPattern,
                 groupKeyPattern,
                 limit,
                 longPolling
