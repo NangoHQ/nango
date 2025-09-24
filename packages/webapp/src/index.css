@@ -306,6 +306,7 @@
     --color-background-surface: var(--color-gray-50);
     --color-background-elevated: var(--color-gray-75);
     --color-bg-muted: var(--color-gray-300);
+    --color-bg-subtle: var(--color-gray-150);
 
     /* Nav */
     --color-nav-bg-hover: var(--color-gray-50);
@@ -361,6 +362,7 @@
             --color-background-surface: var(--color-gray-1000);
             --color-background-elevated: var(--color-gray-900);
             --color-bg-muted: var(--color-gray-700);
+            --color-bg-subtle: var(--color-gray-825);
 
             /* Nav */
             --color-nav-bg-hover: var(--color-gray-850);

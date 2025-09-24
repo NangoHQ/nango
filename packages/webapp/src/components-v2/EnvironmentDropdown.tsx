@@ -5,14 +5,16 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import { StyledLink } from './StyledLink';
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from './ui/form';
 import { Input } from './ui/input';
 import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { LogoInverted } from '@/assets/LogoInverted';
-import { apiPostEnvironment } from '@/hooks/useEnvironment';
+import { apiPostEnvironment, useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -20,11 +22,15 @@ import { useStore } from '@/store';
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
+    const envs = useStore((state) => state.envs);
+    const environment = useEnvironment(env);
     const { meta } = useMeta();
     const [dropdownMenuOpen, setDropdownMenuOpen] = useState(false);
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const navigate = useNavigate();
+
+    const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -56,7 +62,7 @@ export const EnvironmentDropdown: React.FC = () => {
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <DropdownMenu open={dropdownMenuOpen} onOpenChange={setDropdownMenuOpen}>
+                <DropdownMenu open={dropdownMenuOpen} onOpenChange={setDropdownMenuOpen} modal={false}>
                     <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default hover:bg-dropdown-bg-press border border-border-muted hover:border-0 hover:my-px hover:border-l data-[state=open]:bg-dropdown-bg-press data-[state=open]:border">
                         <div className="flex gap-2 items-center">
                             <LogoInverted className="h-6 w-6 text-text-primary" />
@@ -82,17 +88,37 @@ export const EnvironmentDropdown: React.FC = () => {
                                 <span className="capitalize">{environment.name}</span>
                             </DropdownMenuItem>
                         ))}
-                        <Button
-                            variant="primary"
-                            onClick={() => {
-                                // We have to close the dropdown because it traps focus
-                                setDropdownMenuOpen(false);
-                                // Managed control because Dialogs within DropdownMenus behave weirdly
-                                setEnvironmentDialogOpen(true);
-                            }}
-                        >
-                            Create Environment
-                        </Button>
+                        <Tooltip delayDuration={0}>
+                            <TooltipTrigger asChild>
+                                <span tabIndex={0} className="w-full">
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => {
+                                            // We have to close the dropdown because it traps focus
+                                            setDropdownMenuOpen(false);
+                                            // Managed control because Dialogs within DropdownMenus behave weirdly
+                                            setEnvironmentDialogOpen(true);
+                                        }}
+                                        disabled={!!isMaxEnvironmentsReached}
+                                        className="w-full"
+                                    >
+                                        Create Environment
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {isMaxEnvironmentsReached && (
+                                <TooltipContent side="right" align="center">
+                                    Max number of environments reached.{' '}
+                                    {environment?.plan?.name.includes('legacy') ? (
+                                        <>Contact Nango to add more</>
+                                    ) : (
+                                        <>
+                                            <StyledLink to={`/${env}/team/billing`}>Upgrade</StyledLink> to add more
+                                        </>
+                                    )}
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />
