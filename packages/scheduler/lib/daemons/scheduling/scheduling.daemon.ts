@@ -65,7 +65,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                         name: `${schedule.name}:${now.toISOString()}`,
                                         payload: schedule.payload,
                                         groupKey: schedule.groupKey,
-                                        groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
+                                        groupMaxConcurrency: 0,
                                         retryCount: 0,
                                         retryMax: schedule.retryMax,
                                         createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
