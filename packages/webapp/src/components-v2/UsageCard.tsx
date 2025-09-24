@@ -1,11 +1,11 @@
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
-import { SimpleTooltip } from '../components/SimpleTooltip.js';
 import { Skeleton } from '../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../hooks/usePlan.js';
 import { useStore } from '../store.js';
 import { cn } from '../utils/utils.js';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';
 
 function getColorForUsage(usage: number, limit: number | null) {
@@ -70,13 +70,14 @@ export default function UsageCard() {
                                 <div className="flex flex-row items-center gap-1">
                                     <span className="text-text-secondary text-s leading-5">{usage.label}</span>
                                     {metric === 'active_records' && (
-                                        <SimpleTooltip
-                                            className="text-text-secondary"
-                                            tooltipContent="Synced records are only counted for connections that are at least 1 month old"
-                                            side="bottom"
-                                        >
-                                            <IconInfoCircle className="w-3 h-3 text-text-tertiary" />
-                                        </SimpleTooltip>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <IconInfoCircle className="w-3 h-3 text-text-tertiary" />
+                                            </TooltipTrigger>
+                                            <TooltipContent side="bottom" align="center">
+                                                Synced records are only counted for connections that are at least 1 month old
+                                            </TooltipContent>
+                                        </Tooltip>
                                     )}
                                 </div>
                                 <div>
