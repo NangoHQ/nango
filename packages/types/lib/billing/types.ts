@@ -118,6 +118,10 @@ export type WebhookForwardBillingEvent = BillingEventBase<
         environmentId: number;
         providerConfigKey: string;
         provider: string;
+        telemetry: {
+            successes: number;
+            failures: number;
+        };
     }
 >;
 

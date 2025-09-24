@@ -47,7 +47,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 6,
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    telemetry: {
+                        successes: 6,
+                        failures: 0
+                    }
                 }
             },
             {
@@ -372,7 +376,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 6,
-                    timestamp: new Date('2024-01-01T00:00:00Z')
+                    timestamp: new Date('2024-01-01T00:00:00Z'),
+                    telemetry: {
+                        successes: 6,
+                        failures: 0
+                    }
                 }
             };
             const b: BillingEvent = {
@@ -383,7 +391,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 15,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    telemetry: {
+                        successes: 15,
+                        failures: 0
+                    }
                 }
             };
             const aggregated = grouping.aggregate(a, b);
@@ -395,7 +407,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 21,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    telemetry: {
+                        successes: 21,
+                        failures: 0
+                    }
                 }
             });
         });

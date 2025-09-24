@@ -141,6 +141,7 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                 return Ok(undefined);
             }
             case 'usage.webhook_forward': {
+                const { success, ...rest } = event.payload.properties;
                 billing.add([
                     {
                         type: 'webhook_forwards',
@@ -148,7 +149,11 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                             count: event.payload.value,
                             idempotencyKey: event.idempotencyKey,
                             timestamp: event.createdAt,
-                            ...event.payload.properties
+                            ...rest,
+                            telemetry: {
+                                successes: success ? event.payload.value : 0,
+                                failures: success ? 0 : event.payload.value
+                            }
                         }
                     }
                 ]);

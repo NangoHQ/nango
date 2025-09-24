@@ -19,7 +19,7 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                 case 'proxy':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'webhook_forwards':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'function_executions':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'monthly_active_records':
@@ -88,7 +88,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                     }
                 };
             }
-            case 'webhook_forwards':
+            case 'webhook_forwards': {
+                const _a = a as typeof b; // To satisfy ts compiler that b has the same type as a
                 return {
                     type: b.type,
                     properties: {
@@ -98,9 +99,14 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         environmentId: b.properties.environmentId,
                         provider: b.properties.provider,
                         providerConfigKey: b.properties.providerConfigKey,
-                        count: a.properties.count + b.properties.count
+                        count: a.properties.count + b.properties.count,
+                        telemetry: {
+                            successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
+                            failures: _a.properties.telemetry.failures + b.properties.telemetry.failures
+                        }
                     }
                 };
+            }
             case 'monthly_active_records':
                 return {
                     type: b.type,
