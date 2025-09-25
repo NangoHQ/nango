@@ -15,6 +15,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import PageNotFound from '../../PageNotFound';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
+import { StatusWidget } from '../components/StatusWidget';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -102,6 +103,9 @@ export const ShowIntegration: React.FC = () => {
                                         <BookOpenIcon className="h-5 w-5" />
                                     </ButtonLink>
                                 )}
+                            </div>
+                            <div className="flex">
+                                <StatusWidget className="text-white" service={data.integration.provider} />
                             </div>
                         </div>
                     </div>

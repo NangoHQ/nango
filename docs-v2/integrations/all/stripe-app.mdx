@@ -9,6 +9,10 @@ import PreBuiltUseCases from "/snippets/generated/stripe-app/PreBuiltUseCases.md
 import CommonScopes from "/snippets/stripe-app/common-scopes.mdx"
 import UsefulLinks from "/snippets/stripe-app/useful-links.mdx"
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="stripe" />
+
 <Overview />
 <PreBuiltTooling />
 <PreBuiltUseCases />
@@ -30,25 +34,25 @@ import UsefulLinks from "/snippets/stripe-app/useful-links.mdx"
   </Step>
   <Step title="Install Stripe CLI">
     1. If you haven't already, install the [Stripe CLI](https://docs.stripe.com/stripe-cli#install).
-    2. Log in using your Stripe account:  
+    2. Log in using your Stripe account:
        ```shell
        stripe login
        ```
   </Step>
 
   <Step title="Install the Stripe Apps CLI plugin">
-    1. Run the following command to install the Stripe Apps plugin:  
+    1. Run the following command to install the Stripe Apps plugin:
        ```shell
        stripe plugin install apps
        ```
-    2. Verify the plugin version is 1.5.12 or newer:  
+    2. Verify the plugin version is 1.5.12 or newer:
         ```shell
         stripe apps -v
         ```
   </Step>
 
   <Step title="Create your Stripe App">
-    1. Create a new app project using the CLI:  
+    1. Create a new app project using the CLI:
        ```shell
        stripe apps create my-stripe-app
        ```
@@ -90,7 +94,7 @@ import UsefulLinks from "/snippets/stripe-app/useful-links.mdx"
   </Step>
   <Step title="Upload your app to Stripe (requires live account)">
     1. Ensure you're logged into a fully activated (non-sandbox) Stripe account.
-    2. Upload your app to Stripe:  
+    2. Upload your app to Stripe:
        ```shell
        stripe apps upload
        ```
