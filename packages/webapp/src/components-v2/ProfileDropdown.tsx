@@ -77,7 +77,7 @@ export const ProfileDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default active:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
+                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default hover:bg-dropdown-bg-hover active:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
                         <div className="inline-flex gap-2">
                             <div className="size-10 flex items-center justify-center rounded bg-bg-surface border border-border-muted text-text-primary leading-5">
                                 {initials}
