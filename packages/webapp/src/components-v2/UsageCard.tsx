@@ -74,7 +74,7 @@ export default function UsageCard() {
                                             <TooltipTrigger asChild>
                                                 <IconInfoCircle className="w-3 h-3 text-text-tertiary" />
                                             </TooltipTrigger>
-                                            <TooltipContent side="bottom" align="center">
+                                            <TooltipContent side="right" align="center">
                                                 Synced records are only counted for connections that are at least 1 month old
                                             </TooltipContent>
                                         </Tooltip>
@@ -92,7 +92,7 @@ export default function UsageCard() {
                     <ButtonLink to={`/${env}/team/billing`} variant="secondary" className="w-full justify-center">
                         Upgrade
                     </ButtonLink>
-                    <span className="text-text-secondary text-s leading-4">{usageResetMessage}</span>
+                    <span className="text-text-tertiary text-s leading-4">{usageResetMessage}</span>
                 </div>
             </div>
         </div>

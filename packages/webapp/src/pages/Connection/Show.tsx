@@ -167,7 +167,7 @@ export const ConnectionShow: React.FC = () => {
                             <Link to={`/${env}/integrations/${connection.connection.provider_config_key}`}>
                                 <div className="shrink-0">
                                     <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
-                                        {connection.provider && <IntegrationLogo provider={connection.provider} height={16} width={16} />}
+                                        {connection.provider && <IntegrationLogo provider={connection.provider} height={12} width={12} />}
                                     </div>
                                 </div>
                             </Link>

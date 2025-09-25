@@ -62,7 +62,7 @@ export const AppSidebar: React.FC = () => {
 
     return (
         <Sidebar collapsible="none">
-            <SidebarHeader className="p-3 py-2.5">
+            <SidebarHeader className="p-0 px-3 pt-2.5">
                 <EnvironmentDropdown />
             </SidebarHeader>
             <SidebarContent>
@@ -90,7 +90,7 @@ export const AppSidebar: React.FC = () => {
             </SidebarContent>
             <SidebarFooter className="p-0">
                 {plan?.name === 'free' && (
-                    <div className="p-3 mb-25">
+                    <div className="px-3 mb-8">
                         <UsageCard />
                     </div>
                 )}

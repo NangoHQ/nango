@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown, Loader } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader, Lock } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -63,11 +63,11 @@ export const EnvironmentDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu open={dropdownMenuOpen} onOpenChange={setDropdownMenuOpen} modal={false}>
-                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default hover:bg-dropdown-bg-press border border-border-muted hover:border-0 hover:my-px hover:border-l data-[state=open]:bg-dropdown-bg-press data-[state=open]:border">
+                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default border-[0.5px] border-border-muted hover:bg-dropdown-bg-press hover:border-0 hover:border-l-[0.5px] hover:border-r-[0.5px] hover:border-r-transparent hover:not-data-[state=open]:my-px data-[state=open]:bg-dropdown-bg-press data-[state=open]:border-[0.5px] data-[state=open]:border-border-muted">
                         <div className="flex gap-2 items-center">
                             <LogoInverted className="h-6 w-6 text-text-primary" />
                             <div className="flex flex-col items-start">
-                                <span className="text-s text-text-secondary">Environment</span>
+                                <span className="text-s leading-3 text-text-secondary">Environment</span>
                                 <span className="text-sm leading-4 text-text-primary font-semibold capitalize truncate max-w-28">{env}</span>
                             </div>
                         </div>
@@ -102,6 +102,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                         disabled={!!isMaxEnvironmentsReached}
                                         className="w-full"
                                     >
+                                        {!!isMaxEnvironmentsReached && <Lock className="size-4" />}
                                         Create Environment
                                     </Button>
                                 </span>
@@ -113,7 +114,10 @@ export const EnvironmentDropdown: React.FC = () => {
                                         <>Contact Nango to add more</>
                                     ) : (
                                         <>
-                                            <StyledLink to={`/${env}/team/billing`}>Upgrade</StyledLink> to add more
+                                            <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                Upgrade
+                                            </StyledLink>{' '}
+                                            to add more
                                         </>
                                     )}
                                 </TooltipContent>
