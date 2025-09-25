@@ -9,6 +9,18 @@ on:
     merge_group:
 
 jobs:
+    changes:
+        runs-on: ubuntu-latest
+        outputs:
+            docs_only: ${{ steps.filter.outputs.docs_only }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs_only:
+                          - 'docs-v2/**'
     compute-matrix:
         runs-on: ubuntu-latest
         outputs:
@@ -23,7 +35,9 @@ jobs:
                     echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
                   fi
     tests:
-        needs: compute-matrix
+        needs:
+            - changes
+            - compute-matrix
         strategy:
             fail-fast: false
             matrix:
@@ -34,10 +48,12 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              if: needs.changes.outputs.docs_only != 'true'
               with:
                   fetch-depth: '0'
 
             - name: Use Node.js ${{ matrix.node-version }}
+              if: needs.changes.outputs.docs_only != 'true'
               uses: actions/setup-node@v4
               with:
                   cache: 'npm'
@@ -45,18 +61,25 @@ jobs:
                   cache-dependency-path: 'package-lock.json'
 
             - run: npm ci
+              if: needs.changes.outputs.docs_only != 'true'
 
             - name: Build Typescript
+              if: needs.changes.outputs.docs_only != 'true'
               run: npm run ts-build
 
             - run: npm run test:cli
+              if: needs.changes.outputs.docs_only != 'true'
+
             - run: npm run test:unit -- packages/cli
+              if: needs.changes.outputs.docs_only != 'true'
 
             - name: Build Node Client
+              if: needs.changes.outputs.docs_only != 'true'
               run: |
                   npm run -w @nangohq/node build
 
             - name: Test Node CJS
+              if: needs.changes.outputs.docs_only != 'true'
               shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.cjs)
@@ -64,6 +87,7 @@ jobs:
                   [ "$RES" != *"Done"* ] || { exit 1; }
 
             - name: Test Node ESM
+              if: needs.changes.outputs.docs_only != 'true'
               shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.js)

@@ -13,22 +13,43 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    tests:
+    changes:
         runs-on: ubuntu-latest
-
+        outputs:
+            docs_only: ${{ steps.filter.outputs.docs_only }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs_only:
+                          - 'docs-v2/**'
+    tests:
+        needs: changes
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout
+              if: needs.changes.outputs.docs_only != 'true'
               uses: actions/checkout@v4
               with:
                   fetch-depth: '0'
 
             - name: Use Node.js
+              if: needs.changes.outputs.docs_only != 'true'
               uses: actions/setup-node@v4
               with:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
             - run: npm ci
+              if: needs.changes.outputs.docs_only != 'true'
+
             - run: npm run ts-build
+              if: needs.changes.outputs.docs_only != 'true'
+
             - run: npm run test:unit -- --exclude packages/cli/
+              if: needs.changes.outputs.docs_only != 'true'
+
             - run: npm run test:integration
+              if: needs.changes.outputs.docs_only != 'true'
