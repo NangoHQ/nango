@@ -174,7 +174,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                         return (
                             <span
                                 key={selectedScope + i}
-                                className={`${!readOnly ? 'cursor-pointer pl-4 pr-2' : 'px-3'} flex flex-wrap gap-1 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg bg-green-600 bg-opacity-20 text-green-600`}
+                                className={`${!readOnly ? 'cursor-pointer pl-4 pr-2' : 'px-3'} flex flex-wrap gap-1 py-1 mt-0.5 justify-between items-center text-sm font-medium rounded-lg bg-green-600/20 text-green-600`}
                             >
                                 {selectedScope}
                                 {!readOnly && <X onClick={() => removeScope(selectedScope)} className="h-5 w-5" />}

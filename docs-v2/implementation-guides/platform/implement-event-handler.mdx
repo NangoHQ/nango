@@ -1,0 +1,76 @@
+---
+title: 'Implement an event handler'
+sidebarTitle: 'Implement an event handler'
+description: 'Guide on how to implement a lifecycle event handler in Nango'
+---
+
+## How to implement an event handler
+
+### Step 1 - Initial Functions setup
+
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/building-integrations/functions-setup) first.
+
+Otherwise, you can skip to the next step.
+
+### Step 2 - Create your event function file
+
+Create a new file in your integration's folder, which should be nested unser your `nango-integrations` folder.
+
+For example, if you want to react to an event in your `salesforce` integration, your folder structure should look like this:
+
+```
+nango-integrations/
+├── .nango
+├── .env
+├── index.ts
+├── package.json
+└── salesforce # this is the integration id and must match an integration id in your Nango dashboard
+    └── on-events
+        └── setup.ts # your new event handler function
+```
+
+Paste the following scaffold into the file:
+
+```typescript setup.ts
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    description: "<description of your event handler>",
+    event: 'post-connection-creation' | 'pre-connection-deletion' | 'validate-connection', // event to trigger on
+    exec: async (nango) => {
+        // Your integration code goes here.
+    }
+});
+```
+
+The `exec` function kicks off when the associated event occurs.
+
+Also import your new event file in your `index.ts` file:
+
+```typescript index.ts
+import './salesforce/on-events/setup';
+```
+
+### Step 3 - Implement the event function
+
+Implement your handler logic in the `exec` function.
+
+The following can help you with your implementation:
+- [`nango` object reference](/reference/functions) to understand the SDK methods available in event functions
+- [Our reference implementations repo](https://www.nango.dev/templates) has many examples of event handlers. Search for `onEvent(`.
+- [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build actions with claude code, cursor & other AI agents
+
+### Step 4 - Deploy your integrations
+
+To run your event function in Nango, you need to deploy it to an environment in your Nango account.
+
+To deploy all integrations in your `nango-integrations` folder, run:
+```bash
+nango deploy dev # dev is the name of the environment to which you are deploying
+```
+
+Currently it's not possible to deploy specific event functions, or to test the them locally.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

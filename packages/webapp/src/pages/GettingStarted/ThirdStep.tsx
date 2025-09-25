@@ -32,7 +32,7 @@ export const ThirdStep = ({ onDocumentationLinkClicked, onSlackLinkClicked }: Th
                     Embed the auth flow in your app
                 </LinkWithIcon>
                 <LinkWithIcon
-                    to="https://docs.nango.dev/guides/syncs/overview"
+                    to="https://docs.nango.dev/guides/use-cases/syncs"
                     type="external"
                     onClick={() => onDocumentationLinkClicked('explore-syncs-actions-webhooks')}
                 >

@@ -4,6 +4,10 @@ sidebarTitle: 'Airtable'
 description: 'Access the Airtable API in 2 minutes 💨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="airtable" />
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -72,30 +76,36 @@ description: 'Access the Airtable API in 2 minutes 💨'
         5. Click **Register integration**.
       </Step>
       <Step title="Configure OAuth scopes and details">
-        1. Select the scopes your application requires:
-           - `data.records:read` - Read records from bases
-           - `data.records:write` - Create, update, and delete records
-           - `data.recordComments:read` - Read record comments
-           - `data.recordComments:write` - Create, update, and delete record comments
-           - `schema.bases:read` - Read base schema information
+        1. Select the [scopes](https://airtable.com/developers/web/api/scopes) your application requires.
         2. Add optional details like tagline, homepage URL, and logo.
         3. For public integrations, add required fields: support email, privacy policy URL, and terms of service URL.
         4. Click **Save changes**.
       </Step>
       <Step title="Generate credentials">
         1. Click **Generate client secret** and confirm the action.
-        2. Copy the client secret (you'll only see it once).
-        3. Note your client ID from the integration management page.
+        2. Copy the **Client Secret** (you'll only see it once).
+        3. Note your **Client ID** from the integration management page.
         4. You'll need both when configuring your integration in Nango.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
       </Step>
     </Steps>
+     ## Common Scopes
+    | Scope | Description |
+    | ----- | ----------- |
+    | `data.records:read` | Read records from bases. |
+    | `data.records:write` | Create, update, and delete records. |
+    | `schema.bases:read` | Read base schema (table/field names and types). |
+    | `data.recordComments:read` | Read comments on records. |
+    | `data.recordComments:write` | Create and delete record comments. |
+    | `user.email:read` | Read the email of the authenticated user. |
+    | `workspacesAndBases:read` | List the user's workspaces and bases to select from. |
+
   </Tab>
   <Tab title="🔗 Useful links">
-    | Topic | Links | 
-    | - | - | 
+    | Topic | Links |
+    | - | - |
     | General | [Airtable Website](https://airtable.com/) |
     | | [Create an Airtable account](https://airtable.com/signup) |
     | | [OAuth Integrations Panel](https://airtable.com/create/oauth) |
@@ -114,7 +124,6 @@ description: 'Access the Airtable API in 2 minutes 💨'
     - During the OAuth flow, users can decide which resources (Bases) your app should have access to. This means your app might not have access to all bases in their workspace.
     - Airtable requires specific scopes for different operations. Make sure to request all necessary scopes during OAuth setup.
     - Rate limits apply per workspace, not per integration, so high-volume usage might affect other integrations in the same workspace.
-    - See the full list of available scopes in the [Airtable OAuth Scopes documentation](https://airtable.com/developers/web/api/scopes).
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
   </Tab>

@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.67.0",
+    "version": "0.68.0",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -48,7 +48,7 @@
         "@types/unzipper": "0.10.11",
         "ajv": "8.17.1",
         "ajv-errors": "3.0.0",
-        "axios": "1.11.0",
+        "axios": "1.12.0",
         "chalk": "5.4.1",
         "chokidar": "3.5.3",
         "columnify": "1.6.0",
@@ -76,7 +76,7 @@
         "zod": "4.0.5"
     },
     "devDependencies": {
-        "@nangohq/types": "0.67.0",
+        "@nangohq/types": "0.68.0",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",

@@ -7,10 +7,14 @@ import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/stripe/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/stripe/PreBuiltUseCases.mdx"
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="stripe" />
+
 <Overview />
 
-**Note**  
-- Looking to integrate with existing Stripe accounts? Use [Stripe App](/integrations/all/stripe-app) instead.  
+**Note**
+- Looking to integrate with existing Stripe accounts? Use [Stripe App](/integrations/all/stripe-app) instead.
 - Stripe Connect is only for use with [Stripe's Connect product](https://stripe.com/connect), and does **not** let you access existing Stripe accounts through the REST API.
 
 <PreBuiltTooling />

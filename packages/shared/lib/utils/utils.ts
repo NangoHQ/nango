@@ -203,6 +203,9 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
         if (b.startsWith('base64(')) {
             return a;
         }
+        if (b in replacers && replacers[b] != null) {
+            return `${replacers[b]}`;
+        }
         const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
@@ -232,6 +235,17 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         const resolvedInner = interpolateStringFromObject(inner, replacers);
         return Buffer.from(resolvedInner).toString('base64');
     });
+
+    if (str.includes('||')) {
+        const [left, right = ''] = str.split('||').map((part) => part.trim());
+
+        if (left) {
+            const interpolated = interpolateStringFromObject(left, replacers);
+            if (interpolated && interpolated !== left) return interpolated;
+        }
+
+        return right ? interpolateStringFromObject(right, replacers) : '';
+    }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
@@ -429,7 +443,9 @@ export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): str
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
 
-    const normalized = pem
+    const withRealNewlines = pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
+
+    const normalized = withRealNewlines
         .replace(/\r\n/g, '\n')
         .replace(/^\s+|\s+$/g, '')
         .replace(/-----(BEGIN|END) [^-]+-----/g, '')

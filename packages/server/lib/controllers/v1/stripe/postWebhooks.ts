@@ -43,10 +43,18 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     }
 
     logger.info('Received', event.type);
-    const handled = await handleWebhook(event, stripe);
-    if (handled.isErr()) {
-        report(handled.error, { body: req.body });
-        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+    try {
+        const handled = await handleWebhook(event, stripe);
+
+        if (handled.isErr()) {
+            report(handled.error, { body: req.body });
+            res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+            return;
+        }
+    } catch (err) {
+        report(new Error('[stripe] error handling webhook', { cause: err }));
+        // On purpose, we don't want to fail the webhook on unexpected errors
+        res.status(200).send({ success: true });
         return;
     }
 
@@ -73,6 +81,16 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             const updated = await updatePlan(db.knex, { id: plan.id, stripe_payment_id: data.payment_method as string });
             if (updated.isErr()) {
                 return Err(updated.error);
+            }
+
+            // We added a new card, so we need to set it as the default payment method
+            if (plan.stripe_payment_id) {
+                await stripe.customers.update(data.customer, {
+                    invoice_settings: {
+                        default_payment_method: data.payment_method as string
+                    }
+                });
+                await stripe.paymentMethods.detach(plan.stripe_payment_id);
             }
 
             return Ok(undefined);

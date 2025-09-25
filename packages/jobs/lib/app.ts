@@ -11,6 +11,7 @@ import { envs } from './env.js';
 import { Processor } from './processor/processor.js';
 import { runnersFleet } from './runner/fleet.js';
 import { server } from './server.js';
+import { pubsub } from './utils/pubsub.js';
 
 const logger = getLogger('Jobs');
 
@@ -57,14 +58,19 @@ try {
     };
     void check();
 
+    const pubsubConnect = await pubsub.connect();
+    if (pubsubConnect.isErr()) {
+        logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
+    }
+
     const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
-            processor.stop();
             otlp.stop();
+            await processor.stop();
             await destroyLogs();
             await runnersFleet.stop();
             await db.knex.destroy();

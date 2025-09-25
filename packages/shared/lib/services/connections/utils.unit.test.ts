@@ -16,8 +16,8 @@ describe('getExpiresAtFromCredentials', () => {
         const credentials = {
             type: 'CUSTOM',
             raw: {},
-            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z') },
-            user: { type: 'OAUTH2', access_token: 'user_token', raw: {}, expires_at: new Date('2025-07-18T10:00:00Z') }
+            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z').toISOString() },
+            user: { type: 'OAUTH2', access_token: 'user_token', raw: {}, expires_at: new Date('2025-07-18T10:00:00Z').toISOString() }
         } as AllAuthCredentials;
 
         const result = getExpiresAtFromCredentials(credentials);
@@ -28,7 +28,7 @@ describe('getExpiresAtFromCredentials', () => {
         const credentials = {
             type: 'CUSTOM',
             raw: {},
-            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z') }
+            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z').toISOString() }
         } as AllAuthCredentials;
 
         const result = getExpiresAtFromCredentials(credentials);
@@ -39,8 +39,8 @@ describe('getExpiresAtFromCredentials', () => {
         const credentials = {
             type: 'CUSTOM',
             raw: {},
-            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-18T09:00:00Z') },
-            user: { type: 'OAUTH2', access_token: 'user_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z') }
+            app: { type: 'APP', access_token: 'app_token', raw: {}, expires_at: new Date('2025-07-18T09:00:00Z').toISOString() },
+            user: { type: 'OAUTH2', access_token: 'user_token', raw: {}, expires_at: new Date('2025-07-20T10:00:00Z').toISOString() }
         } as AllAuthCredentials;
 
         const result = getExpiresAtFromCredentials(credentials);

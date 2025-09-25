@@ -8,7 +8,7 @@ import type {
     OAuth2Credentials,
     TbaCredentials
 } from '../../auth/api.js';
-import type { ConnectSessionInput } from '../../connect/api.js';
+import type { EndUserInput } from '../../connect/api.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
@@ -84,8 +84,9 @@ export type PostPublicConnection = Endpoint<{
             | Omit<BasicApiCredentials, 'raw'>
             | Omit<TbaCredentials, 'raw'>
             | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'CUSTOM'; app_id: string; installation_id: string }
             | { type: 'NONE' };
-        end_user?: ConnectSessionInput['end_user'] | undefined;
+        end_user?: EndUserInput | undefined;
     };
     Success: ApiPublicConnectionFull;
 }>;
@@ -135,10 +136,27 @@ export type GetPublicConnection = Endpoint<{
         provider_config_key: string;
         refresh_token?: boolean | undefined;
         force_refresh?: boolean | undefined;
+        refresh_github_app_jwt_token?: boolean | undefined;
     };
     Path: '/connection/:connectionId';
     Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;
     Success: ApiPublicConnectionFull;
+}>;
+
+export type PatchPublicConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{

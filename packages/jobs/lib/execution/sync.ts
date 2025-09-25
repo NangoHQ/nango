@@ -17,6 +17,7 @@ import {
     errorNotificationService,
     externalWebhookService,
     getApiUrl,
+    getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
     getPlan,
@@ -27,7 +28,7 @@ import {
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, getFrequencyMs, metrics, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
@@ -36,11 +37,12 @@ import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { pubsub } from '../utils/pubsub.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBPlan, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBPlan, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -213,6 +215,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncJobId,
             activityLogId: logCtx?.id,
             debug: task.debug,
+            lastSyncDate: lastSyncDate || undefined,
             team: team,
             environment,
             syncConfig,
@@ -226,7 +229,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     }
 }
 
-export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+export async function handleSyncSuccess({
+    taskId,
+    nangoProps,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
@@ -290,12 +301,19 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
         for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
-                deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
+                void logCtx.warn(
+                    `'track_deletes' is deprecated and will be removed in future versions. To detect deletions please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script.`
+                );
+                const res = await records.deleteOutdatedRecords({
                     connectionId: nangoProps.nangoConnectionId,
                     model,
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                deletedKeys = res.value;
                 void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
@@ -327,7 +345,8 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     syncConfig: nangoProps.syncConfig,
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model }),
                     endUser: nangoProps.endUser,
-                    startedAt: nangoProps.startedAt
+                    startedAt: nangoProps.startedAt,
+                    telemetryBag
                 });
                 return;
             }
@@ -470,6 +489,32 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
         metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
         metrics.increment(metrics.Types.SYNC_SUCCESS);
 
+        const sync = await getSyncById(nangoProps.syncId);
+        const frequency = sync?.frequency || nangoProps.syncConfig.runs;
+        let frequencyMs = 0;
+        if (frequency) {
+            const res: Result<number> = getFrequencyMs(frequency);
+            if (res.isOk()) {
+                frequencyMs = res.value;
+            }
+        }
+
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'sync',
+                    success: true,
+                    frequencyMs,
+                    telemetryBag
+                }
+            }
+        });
+
         await logCtx.success();
     } catch (err) {
         await onFailure({
@@ -498,12 +543,23 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             isCancel: false,
             error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err }),
             endUser: nangoProps.endUser,
-            startedAt: nangoProps.startedAt
+            startedAt: nangoProps.startedAt,
+            telemetryBag
         });
     }
 }
 
-export async function handleSyncError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleSyncError({
+    taskId,
+    nangoProps,
+    error,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    error: NangoError;
+    telemetryBag?: TelemetryBag | undefined;
+}): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null = null;
@@ -541,6 +597,7 @@ export async function handleSyncError({ taskId, nangoProps, error }: { taskId: s
         syncType: nangoProps.syncConfig.sync_type!,
         syncJobId: nangoProps.syncJobId!,
         activityLogId: nangoProps.activityLogId,
+        lastSyncDate: nangoProps.lastSyncDate,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
         models: nangoProps.syncConfig.models || [],
@@ -549,7 +606,8 @@ export async function handleSyncError({ taskId, nangoProps, error }: { taskId: s
         isCancel: false,
         error,
         endUser: nangoProps.endUser,
-        startedAt: nangoProps.startedAt
+        startedAt: nangoProps.startedAt,
+        telemetryBag
     });
 }
 
@@ -660,7 +718,8 @@ async function onFailure({
     failureSource,
     error,
     endUser,
-    startedAt
+    startedAt,
+    telemetryBag
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -683,6 +742,7 @@ async function onFailure({
     failureSource?: ErrorSourceEnum;
     error: NangoError;
     endUser: NangoProps['endUser'];
+    telemetryBag?: TelemetryBag | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -838,4 +898,21 @@ async function onFailure({
 
     metrics.increment(metrics.Types.SYNC_FAILURE);
     metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime());
+
+    if (team) {
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'sync',
+                    success: false,
+                    telemetryBag
+                }
+            }
+        });
+    }
 }

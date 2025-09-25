@@ -47,9 +47,7 @@ export interface BaseProvider {
         base_url: string;
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
-        query?: {
-            api_key: string;
-        };
+        query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
@@ -136,6 +134,11 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
     };
 }
 
+export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
+    auth_mode: 'MCP_OAUTH2';
+    registration_url?: string;
+}
+
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
@@ -172,6 +175,23 @@ export interface ProviderGithubApp extends BaseProvider {
 
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
+    signature?: {
+        protocol: 'RSA';
+    };
+    token?: {
+        signing_key: string;
+        expires_in_ms: number;
+        header: {
+            alg: string;
+            typ?: string;
+        };
+        payload: {
+            iss?: string;
+            scope?: string;
+            aud?: string;
+            sub?: string;
+        };
+    };
     token_request_method?: 'GET';
     token_headers?: Record<string, string>;
     token_response: {
@@ -216,7 +236,8 @@ export type Provider =
     | ProviderBill
     | ProviderGithubApp
     | ProviderAppleAppStore
-    | ProviderCustom;
+    | ProviderCustom
+    | ProviderMcpOAUTH2;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

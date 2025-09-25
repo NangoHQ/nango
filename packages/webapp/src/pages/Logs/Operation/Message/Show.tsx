@@ -63,17 +63,17 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </div>
                     {message.durationMs ? (
                         <div className="flex gap-2 items-center">
-                            <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                            <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                             <div className="flex gap-2 items-center">
                                 <IconClockHour4 stroke={1} size={18} />
-                                <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
+                                <div className="text-gray-400 text-s pt-px font-code">{duration}</div>
                             </div>
                         </div>
                     ) : null}
-                    <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
+                    <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconCalendar stroke={1} size={18} />
-                        <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
+                        <div className="text-gray-400 text-s pt-px font-code">{createdAt}</div>
                     </div>
                 </div>
             </header>
@@ -81,7 +81,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             <div className="flex gap-5 flex-wrap mt-4">
                 <div className="flex gap-2 items-center w-[48%]">
                     <div className="font-semibold text-sm">Source</div>
-                    <div className="text-gray-400 text-xs pt-[1px]">
+                    <div className="text-gray-400 text-xs pt-px">
                         <Tag>{message.source === 'internal' ? 'System' : 'User'}</Tag>
                     </div>
                 </div>

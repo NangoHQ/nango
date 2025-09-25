@@ -4,6 +4,7 @@ import { getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
 import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
 
+import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
@@ -56,6 +57,7 @@ interface RefreshProps {
               logCtx: LogContextStateless;
           }) => Promise<Result<{ tested: boolean }, NangoError>>)
         | undefined;
+    refreshGithubAppJwtToken?: boolean;
 }
 
 const logger = getLogger('connectionRefresh');
@@ -158,7 +160,17 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
  * only relevant for some providers that have refresh_token (and alike)
  */
 async function refreshCredentials(
-    { environment, integration, account, connection: oldConnection, instantRefresh, logContextGetter, onRefreshFailed, onRefreshSuccess }: RefreshProps,
+    {
+        environment,
+        integration,
+        account,
+        connection: oldConnection,
+        instantRefresh,
+        logContextGetter,
+        onRefreshFailed,
+        onRefreshSuccess,
+        refreshGithubAppJwtToken
+    }: RefreshProps,
     provider: RefreshableProvider
 ): Promise<Result<DBConnectionDecrypted, NangoError>> {
     const logsBuffer = logContextGetter.getBuffer({ accountId: account.id });
@@ -169,7 +181,8 @@ async function refreshCredentials(
         provider: provider,
         environment_id: environment.id,
         instantRefresh,
-        logCtx: logsBuffer
+        logCtx: logsBuffer,
+        refreshGithubAppJwtToken
     });
 
     if (refreshRes.isErr()) {
@@ -315,7 +328,8 @@ export async function refreshCredentialsIfNeeded({
     provider,
     environment_id,
     instantRefresh = false,
-    logCtx
+    logCtx,
+    refreshGithubAppJwtToken
 }: {
     connectionId: string;
     environmentId: number;
@@ -324,6 +338,7 @@ export async function refreshCredentialsIfNeeded({
     environment_id: number;
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
     const locking = await getLocking();
@@ -345,7 +360,8 @@ export async function refreshCredentialsIfNeeded({
             credentials: connection.credentials as RefreshableCredentials,
             providerConfig,
             provider,
-            instantRefresh
+            instantRefresh,
+            refreshGithubAppJwtToken
         });
 
         return {
@@ -398,7 +414,7 @@ export async function refreshCredentialsIfNeeded({
             success,
             error,
             response: newCredentials
-        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx });
+        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
         if (!success || !newCredentials) {
             return Err(error!);
         }
@@ -415,12 +431,14 @@ export async function refreshCredentialsIfNeeded({
             connectionToRefresh.credentials = newCredentials;
         }
 
-        // for github app and github-app oauth we also store the jwt token in the connection config
-        if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
-            connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
-        }
-        if (newCredentials.type === 'CUSTOM' && 'app' in newCredentials && 'jwtToken' in newCredentials.app && newCredentials.app.jwtToken) {
-            connectionToRefresh['connection_config']['jwtToken'] = newCredentials['app']['jwtToken'];
+        if (refreshGithubAppJwtToken) {
+            if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
+                connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
+            }
+
+            if (newCredentials.type === 'CUSTOM' && 'app' in newCredentials && 'jwtToken' in newCredentials.app && newCredentials.app.jwtToken) {
+                connectionToRefresh['connection_config']['jwtToken'] = newCredentials['app']['jwtToken'];
+            }
         }
 
         connectionToRefresh = await connectionService.updateConnection({
@@ -458,32 +476,35 @@ export async function shouldRefreshCredentials({
     credentials,
     providerConfig,
     provider,
-    instantRefresh
+    instantRefresh,
+    refreshGithubAppJwtToken
 }: {
     connection: DBConnectionDecrypted;
     credentials: RefreshableCredentials;
     providerConfig: ProviderConfig;
     provider: RefreshableProvider;
     instantRefresh: boolean;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<{ should: boolean; reason: string }> {
+    if (refreshGithubAppJwtToken && (providerConfig.provider === 'github-app' || providerConfig.provider === 'github-app-oauth')) {
+        if (connection.connection_config['jwtToken']) {
+            const tokenValue = connection.connection_config['jwtToken'];
+            const decodedValue = decodeJwt(tokenValue);
+            if (decodedValue && decodedValue['exp']) {
+                const exp = new Date(decodedValue['exp'] * 1000);
+                if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+                    return { should: true, reason: 'expired_jwt_token' };
+                }
+            }
+        }
+    }
+
     if (!instantRefresh) {
         if (providerClient.shouldIntrospectToken(providerConfig.provider)) {
             if (await providerClient.introspectedTokenExpired(providerConfig, connection)) {
                 return { should: true, reason: 'expired_introspected_token' };
             }
             return { should: false, reason: 'fresh_introspected_token' };
-        }
-
-        if (credentials.type === 'APP' || credentials.type === 'CUSTOM') {
-            // A Github App or Custom (Github App OAuth) have a jwt expiration and
-            // an access token expiration
-            const connection_config = connection.connection_config;
-            if (connection_config['jwtToken']) {
-                const jwtTokenExpiration = connection_config['jwtToken']['expires_at'];
-                if (jwtTokenExpiration && isTokenExpired(new Date(jwtTokenExpiration), REFRESH_MARGIN_S)) {
-                    return { should: true, reason: 'expired_jwt_token' };
-                }
-            }
         }
 
         if (!credentials.expires_at) {

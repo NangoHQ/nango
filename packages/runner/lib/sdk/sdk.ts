@@ -118,6 +118,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             }
         });
         const response = (await proxy.request()).unwrap();
+        this.telemetryBag.proxyCalls += 1;
 
         return response;
     }
@@ -152,6 +153,8 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             meta,
             createdAt: new Date().toISOString()
         });
+
+        this.telemetryBag.customLogs += 1;
     }
 
     public triggerSync(
@@ -311,7 +314,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             await this.sendLogToPersist({
                 type: 'log',
                 level: 'warn',
-                source: 'user',
+                source: 'internal',
                 message: `Merging strategy for model ${model} is already set. Skipping`,
                 createdAt: now.toISOString(),
                 meta: { model, merging }
@@ -341,7 +344,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         await this.sendLogToPersist({
             type: 'log',
             level: 'info',
-            source: 'user',
+            source: 'internal',
             message: `Merging strategy set to '${merging.strategy}' for model ${model}.`,
             createdAt: now.toISOString()
         });
@@ -480,6 +483,22 @@ export class NangoSyncRunner extends NangoSyncBase {
             this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
         }
         return true;
+    }
+
+    public async deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }> {
+        this.throwIfAborted();
+        const res = await this.persistClient.deleteOutdatedRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            syncId: this.syncId!,
+            syncJobId: this.syncJobId!,
+            activityLogId: this.activityLogId
+        });
+        if (res.isErr()) {
+            throw res.error;
+        }
+        return res.value;
     }
 
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {

@@ -23,7 +23,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, EndUser } from '@nangohq/types';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -201,7 +201,7 @@ export class AccessMiddleware {
             account: DBTeam;
             environment: DBEnvironment;
             connectSession: ConnectSession;
-            endUser: EndUser;
+            endUser: InternalEndUser | null;
             plan: DBPlan | null;
         }>
     > {
@@ -235,7 +235,7 @@ export class AccessMiddleware {
             account: result.account,
             environment: result.environment,
             connectSession: getConnectSession.value.connectSession,
-            endUser: getConnectSession.value.endUser,
+            endUser: getConnectSession.value.connectSession.endUser,
             plan
         });
     }
@@ -416,7 +416,7 @@ export class AccessMiddleware {
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
 
-                metrics.increment(metrics.Types.AUTH_WITH_CONNECT_SESSION);
+                metrics.increment(metrics.Types.AUTH_WITH_CONNECT_SESSION, 1, { accountId: connectSessionResult.value.account.id });
             } else {
                 const publicKey = req.query['public_key'] as string;
 
@@ -452,7 +452,7 @@ export class AccessMiddleware {
                 res.locals['plan'] = result.value.plan;
                 tagTraceUser(result.value);
 
-                metrics.increment(metrics.Types.AUTH_WITH_PUBLIC_KEY);
+                metrics.increment(metrics.Types.AUTH_WITH_PUBLIC_KEY, 1, { accountId: result.value.account.id });
             }
             next();
         } catch (err) {

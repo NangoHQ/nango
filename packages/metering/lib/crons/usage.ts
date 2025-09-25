@@ -4,13 +4,12 @@ import * as cron from 'node-cron';
 import { billing as usageBilling } from '@nangohq/billing';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, environmentService } from '@nangohq/shared';
 import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { BillingMetric } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -67,10 +66,10 @@ const observability = {
                     throw connRes.error;
                 }
                 for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
-                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks);
                 }
             } catch (err) {
                 span.setTag('error', err);
@@ -81,11 +80,33 @@ const observability = {
     exportRecordsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.records', async (span) => {
             try {
-                const countRes = await records.countMetric();
-                if (countRes.isErr()) {
-                    throw countRes.error;
+                const res = await records.metrics();
+                if (res.isErr()) {
+                    throw res.error;
                 }
-                metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, Number(countRes.value.count));
+
+                // Group by account
+                const envIds = res.value.map((r) => r.environmentId);
+                const envs = await environmentService.getEnvironmentsByIds(envIds);
+                const metricsByAccount = new Map<number, { count: number; sizeInBytes: number }>();
+                for (const env of envs) {
+                    const metrics = res.value.find((r) => r.environmentId === env.id);
+                    if (!metrics) {
+                        continue;
+                    }
+                    const existing = metricsByAccount.get(env.account_id);
+                    if (existing) {
+                        existing.count += metrics.count;
+                        existing.sizeInBytes += metrics.sizeInBytes;
+                    } else {
+                        metricsByAccount.set(env.account_id, { count: metrics.count, sizeInBytes: metrics.sizeInBytes });
+                    }
+                }
+
+                for (const [accountId, { count, sizeInBytes: sizeBytes }] of metricsByAccount.entries()) {
+                    metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
+                    metrics.gauge(metrics.Types.RECORDS_TOTAL_SIZE_IN_BYTES, sizeBytes, { accountId });
+                }
             } catch (err) {
                 span.setTag('error', err);
                 report(new Error('cron_failed_to_export_records_metrics', { cause: err }));
@@ -104,11 +125,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }
@@ -127,11 +148,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_active_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_active_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }

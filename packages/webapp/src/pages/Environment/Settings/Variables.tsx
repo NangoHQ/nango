@@ -122,7 +122,7 @@ export const VariablesSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Script Settings</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-10 w-3/5">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
                 <fieldset className="flex flex-col gap-2.5">
                     <label htmlFor="envvar" className="font-semibold">
                         Environment variables

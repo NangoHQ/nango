@@ -1,3 +1,6 @@
+import { setTimeout } from 'node:timers/promises';
+
+import tracer from 'dd-trace';
 import PQueue from 'p-queue';
 
 import { getLogger, stringifyError } from '@nangohq/utils';
@@ -5,78 +8,85 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import type { Result } from '@nangohq/utils';
-import type { Tracer } from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');
 
 export class OrchestratorProcessor {
     private handler: (task: OrchestratorTask) => Promise<Result<void>>;
-    private groupKey: string;
+    private groupKeyPattern: string;
     private orchestratorClient: OrchestratorClient;
     private queue: PQueue;
-    private stopped: boolean;
-    private terminatedTimer: NodeJS.Timeout | null = null;
+    private status: 'running' | 'stopping' | 'stopped';
 
     constructor({
-        handler,
-        opts
+        orchestratorClient,
+        groupKeyPattern,
+        maxConcurrency,
+        handler
     }: {
         handler: (task: OrchestratorTask) => Promise<Result<void>>;
-        opts: { orchestratorClient: OrchestratorClient; groupKey: string; maxConcurrency: number; checkForTerminatedInterval?: number };
+        orchestratorClient: OrchestratorClient;
+        groupKeyPattern: string;
+        maxConcurrency: number;
     }) {
-        this.stopped = true;
+        this.status = 'stopped';
         this.handler = handler;
-        this.groupKey = opts.groupKey;
-        this.orchestratorClient = opts.orchestratorClient;
-        this.queue = new PQueue({ concurrency: opts.maxConcurrency });
+        this.groupKeyPattern = groupKeyPattern;
+        this.orchestratorClient = orchestratorClient;
+        this.queue = new PQueue({ concurrency: maxConcurrency });
     }
 
-    public start(ctx: { tracer: Tracer }) {
-        this.stopped = false;
-        void this.processingLoop(ctx);
+    public start(): void {
+        this.status = 'running';
+        void this.processingLoop();
     }
 
-    public stop() {
-        this.stopped = true;
-        if (this.terminatedTimer) {
-            clearInterval(this.terminatedTimer);
-        }
+    public async stop(): Promise<void> {
+        const waitUntilStopped = async (): Promise<void> => {
+            await this.queue.onIdle();
+            while (this.status !== 'stopped') {
+                await setTimeout(100); // Wait until the processing loop exits
+            }
+        };
+        this.status = 'stopping';
+        await waitUntilStopped();
     }
 
-    public queueSize() {
+    public queueSize(): number {
         return this.queue.size;
     }
 
-    private async processingLoop(ctx: { tracer: Tracer }) {
-        while (!this.stopped) {
+    private async processingLoop(): Promise<void> {
+        while (this.status === 'running') {
             // wait for the queue to have space before dequeuing more tasks
             await this.queue.onSizeLessThan(this.queue.concurrency);
             const available = this.queue.concurrency - this.queue.size;
             const limit = available + this.queue.concurrency; // fetching more than available to keep the queue full
-            const tasks = await this.orchestratorClient.dequeue({ groupKey: this.groupKey, limit, longPolling: true });
+            const tasks = await this.orchestratorClient.dequeue({ groupKeyPattern: this.groupKeyPattern, limit, longPolling: true });
             if (tasks.isErr()) {
                 logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
-                await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
+                await setTimeout(1000); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
                 continue;
             }
             for (const task of tasks.value) {
-                const active = ctx.tracer.scope().active();
-                const span = ctx.tracer.startSpan('processor.process', {
+                const active = tracer.scope().active();
+                const span = tracer.startSpan('processor.process', {
                     ...(active ? { childOf: active } : {}),
                     tags: { 'task.id': task.id }
                 });
-                void this.processTask(task, ctx)
+                void this.processTask(task)
                     .catch((err: unknown) => span.setTag('error', err))
                     .finally(() => span.finish());
             }
         }
+        this.status = 'stopped';
         return;
     }
 
-    private async processTask(task: OrchestratorTask, ctx: { tracer: Tracer }): Promise<void> {
+    private async processTask(task: OrchestratorTask): Promise<void> {
         await this.queue.add(async () => {
-            const active = ctx.tracer.scope().active();
-            const span = ctx.tracer.startSpan('processor.process.task', {
+            const active = tracer.scope().active();
+            const span = tracer.startSpan('processor.process.task', {
                 ...(active ? { childOf: active } : {}),
                 tags: { 'task.id': task.id }
             });

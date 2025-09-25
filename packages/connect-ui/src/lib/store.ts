@@ -13,13 +13,19 @@ interface State {
     nango: Nango | null;
     apiURL: string;
     detectClosedAuthWindow: boolean;
+    isEmbedded: boolean;
+    isPreview: boolean;
+    showWatermark: boolean;
     setApiURL: (value: string) => void;
     setDetectClosedAuthWindow: (value: boolean) => void;
+    setIsEmbedded: (value: boolean) => void;
+    setIsPreview: (value: boolean) => void;
     setSessionToken: (value: string) => void;
     setSession: (value: ConnectSessionOutput) => void;
     setNango: (value: Nango) => void;
     setIsDirty: (value: boolean) => void;
     setIsSingleIntegration: (value: boolean) => void;
+    setShowWatermark: (value: boolean) => void;
     set: (provider: GetPublicProvider['Success']['data'], integration: GetPublicIntegration['Success']['data']) => void;
     reset: () => void;
 }
@@ -33,14 +39,20 @@ export const useGlobal = create<State>((set) => ({
     session: null,
     nango: null,
     apiURL: 'https://api.nango.dev',
+    isEmbedded: false,
     detectClosedAuthWindow: false,
+    isPreview: false,
+    showWatermark: false,
     setApiURL: (value) => set({ apiURL: value }),
+    setIsEmbedded: (value) => set({ isEmbedded: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
+    setIsPreview: (value) => set({ isPreview: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
     setNango: (value) => set({ nango: value }),
     setIsDirty: (value) => set({ isDirty: value }),
     setIsSingleIntegration: (value) => set({ isSingleIntegration: value }),
+    setShowWatermark: (value) => set({ showWatermark: value }),
     set: (provider, integration) => {
         set({ provider, integration });
     },

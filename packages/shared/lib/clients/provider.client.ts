@@ -12,6 +12,10 @@ import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
 const workdayOauthExpiresIn = 3600;
+const bullhornExpiresInMinutes = 10080;
+const bullhornLoginUrl = 'https://rest-west.bullhornstaffing.com/rest-services/login';
+const jobberExpiresIn = 3600;
+
 const logger = getLogger('Provider.Client');
 
 class ProviderClient {
@@ -19,11 +23,13 @@ class ProviderClient {
         switch (provider) {
             case 'braintree':
             case 'braintree-sandbox':
+            case 'bullhorn':
             case 'coros':
             case 'coros-sandbox':
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'jobber':
             case 'tiktok-ads':
             case 'tiktok-accounts':
             case 'sentry-oauth':
@@ -52,12 +58,16 @@ class ProviderClient {
             case 'braintree':
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
+            case 'bullhorn':
+                return this.createBullhornSession(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'coros':
             case 'coros-sandbox':
                 return this.createCorosToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'jobber':
+                return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'tiktok-ads':
@@ -91,6 +101,13 @@ class ProviderClient {
         }
 
         switch (config.provider) {
+            case 'bullhorn':
+                return this.refreshBullhornSession(
+                    provider.token_url as string,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
             case 'braintree':
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
@@ -106,6 +123,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
                 return this.refreshFigmaToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'jobber':
+                return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'tiktok-accounts':
@@ -264,6 +283,145 @@ class ProviderClient {
             throw new NangoError('sentry_oauth_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sentry_oauth_token_request_error', err);
+        }
+    }
+
+    private async createBullhornSession(tokenUrl: string, code: string, client_id: string, client_secret: string, redirect_uri: string): Promise<object> {
+        const tokenParams = {
+            client_id,
+            client_secret,
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri
+        };
+
+        try {
+            const response = await axios.post(tokenUrl, null, { params: tokenParams });
+            if (response.status === 200 && response.data?.access_token && response.data?.refresh_token) {
+                const { access_token, refresh_token } = response.data;
+
+                const sessionParams = {
+                    version: '*',
+                    access_token,
+                    ttl: bullhornExpiresInMinutes
+                };
+
+                const sessionResponse = await axios.post(bullhornLoginUrl, null, { params: sessionParams });
+
+                if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
+                    throw new NangoError('bullhorn_session_creation_failed', { cause: sessionResponse.data });
+                }
+
+                const { restUrl, BhRestToken } = sessionResponse.data;
+
+                return {
+                    restUrl,
+                    expires_in: bullhornExpiresInMinutes * 60,
+                    access_token: BhRestToken,
+                    refresh_token
+                };
+            }
+
+            throw new NangoError('bullhorn_session_request_error', { cause: response.data });
+        } catch (err: any) {
+            throw new NangoError('bullhorn_session_request_error', { cause: err });
+        }
+    }
+
+    private async refreshBullhornSession(tokenUrl: string, refresh_token: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const tokenParams = {
+                client_id,
+                client_secret,
+                grant_type: 'refresh_token',
+                refresh_token
+            };
+
+            const response = await axios.post(tokenUrl, null, { params: tokenParams });
+
+            if (response.status === 200 && response.data?.access_token && response.data?.refresh_token) {
+                const { access_token, refresh_token } = response.data;
+
+                const sessionParams = {
+                    version: '*',
+                    access_token,
+                    ttl: bullhornExpiresInMinutes
+                };
+
+                const sessionResponse = await axios.post(bullhornLoginUrl, null, { params: sessionParams });
+
+                if (sessionResponse.status !== 200 || !sessionResponse.data?.restUrl || !sessionResponse.data?.BhRestToken) {
+                    throw new NangoError('bullhorn_session_refresh_failed', { cause: sessionResponse.data });
+                }
+
+                const { BhRestToken, restUrl } = sessionResponse.data;
+
+                return {
+                    restUrl,
+                    expires_in: bullhornExpiresInMinutes * 60,
+                    access_token: BhRestToken,
+                    refresh_token
+                };
+            }
+
+            throw new NangoError('bullhorn_session_refresh_error', { cause: response.data });
+        } catch (err: any) {
+            throw new NangoError('bullhorn_session_refresh_error', { cause: err });
+        }
+    }
+
+    private async createJobberToken(tokenUrl: string, code: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'authorization_code',
+                code
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    expires_in: jobberExpiresIn
+                };
+            }
+
+            throw new NangoError('jobber_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('jobber_token_request_error', err);
+        }
+    }
+
+    private async refreshJobberToken(refreshTokenUrl: string, refresh_token: string, client_id: string, client_secret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id,
+                client_secret,
+                grant_type: 'refresh_token',
+                refresh_token
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    expires_in: jobberExpiresIn
+                };
+            }
+
+            throw new NangoError('jobber_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('jobber_refresh_token_request_error', err);
         }
     }
 

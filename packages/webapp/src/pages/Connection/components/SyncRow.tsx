@@ -213,7 +213,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
-                        <div className="bg-grayscale-800 rounded">
+                        <div className="bg-grayscale-800 rounded-sm">
                             <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
                                     variant="popoverItem"
@@ -290,7 +290,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                 <>
                                                                     Incremental sync mode will fetch the data modified since the last execution.{' '}
                                                                     <Link
-                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#incremental-syncing"
+                                                                        to="https://docs.nango.dev/implementation-guides/syncs/large-datasets#incremental-syncing"
                                                                         className="underline"
                                                                     >
                                                                         Learn more
@@ -300,7 +300,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                 <>
                                                                     Full refresh sync mode will fetch all the data.{' '}
                                                                     <Link
-                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#full-refresh-syncing-small-datasets-only"
+                                                                        to="https://docs.nango.dev/implementation-guides/syncs/large-datasets#full-refresh-syncing-small-datasets-only"
                                                                         className="underline"
                                                                     >
                                                                         Learn more

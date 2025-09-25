@@ -89,6 +89,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
             return Err(def.error);
         }
 
+        for (const integration of def.value.integrations) {
+            for (const sync of integration.syncs) {
+                if (sync.track_deletes) {
+                    console.warn(
+                        chalk.yellow(
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                        )
+                    );
+                }
+            }
+        }
+
         generateAdditionalExports({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
@@ -237,6 +249,28 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 })
             );
         }
+        if (bag.deleteRecordsFromPreviousExecutionsLines.length > 1) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called only once per sync`,
+                    line: Math.max(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
+        if (
+            bag.deleteRecordsFromPreviousExecutionsLines.length > 0 &&
+            bag.batchingRecordsLines.length > 0 &&
+            bag.batchingRecordsLines.some((line) => line > Math.min(...bag.deleteRecordsFromPreviousExecutionsLines))
+        ) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `deleteRecordsFromPreviousExecutions should be called after any batching records function`,
+                    line: Math.min(...bag.deleteRecordsFromPreviousExecutionsLines)
+                })
+            );
+        }
 
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
@@ -287,6 +321,9 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
+
 /**
  * This plugin is used to remove the create wrappers from the exports.
  *
@@ -298,10 +335,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
+    const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
-        setMergingStrategyLines
+        setMergingStrategyLines,
+        deleteRecordsFromPreviousExecutionsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -326,7 +365,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'delete',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction'
+        'triggerAction',
+        'setMergingStrategy',
+        'deleteRecordsFromPreviousExecutions'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -431,13 +472,82 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     if (callee.property.name === 'setMergingStrategy') {
                                         setMergingStrategyLines.push(lineNumber);
                                     }
+
+                                    if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
+                                        deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    ExportNamedDeclaration(astPath) {
+                        // Skip internally transformed exports
+                        if ((astPath.node as AugmentedExport).__transformedByRemoveCreateWrappers) {
+                            return;
+                        }
+
+                        // Skip processing if the current file is not an entry point
+                        const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
+                        if (currentFilePath) {
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            if (normalizedCurrentPath !== realEntryPoint) {
+                                return;
+                            }
+                        }
+
+                        const lineNumber = astPath.node.loc?.start.line || 0;
+                        const node = astPath.node;
+
+                        // Check if this is a re-export (export { something } from 'module')
+                        if (node.source) {
+                            return; // Allow re-exports
+                        }
+
+                        const namedExportError = (exportedName: string) => {
+                            throw new CompileError(
+                                'nango_named_export_not_allowed',
+                                lineNumber,
+                                `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
+                            );
+                        };
+
+                        // Check if any exported specifiers are not in allowedExports
+                        if (node.specifiers) {
+                            for (const specifier of node.specifiers) {
+                                if (t.isExportSpecifier(specifier) && t.isIdentifier(specifier.exported)) {
+                                    const exportedName = specifier.exported.name;
+                                    if (!allowedExports.includes(exportedName)) {
+                                        namedExportError(exportedName);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Check if this is a variable/function declaration export
+                        if (node.declaration) {
+                            const exportedNames: string[] = [];
+
+                            if (t.isFunctionDeclaration(node.declaration) && node.declaration.id) {
+                                exportedNames.push(node.declaration.id.name);
+                            } else if (t.isVariableDeclaration(node.declaration)) {
+                                for (const declarator of node.declaration.declarations) {
+                                    if (t.isIdentifier(declarator.id)) {
+                                        exportedNames.push(declarator.id.name);
+                                    }
+                                }
+                            }
+
+                            for (const exportedName of exportedNames) {
+                                if (!allowedExports.includes(exportedName)) {
+                                    namedExportError(exportedName);
                                 }
                             }
                         }
                     },
 
                     ExportDefaultDeclaration(astPath) {
-                        if ((astPath.node as any).__transformedByRemoveCreateWrappers) {
+                        if ((astPath.node as AugmentedExportDefault).__transformedByRemoveCreateWrappers) {
                             return;
                         }
 
@@ -478,8 +588,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             );
                             // Insert: export default <varName>;
                             const exportDefault = t.exportDefaultDeclaration(t.identifier(varName));
-                            (exportConst as any).__transformedByRemoveCreateWrappers = true;
-                            (exportDefault as any).__transformedByRemoveCreateWrappers = true;
+                            (exportConst as AugmentedExport).__transformedByRemoveCreateWrappers = true;
+                            (exportDefault as AugmentedExportDefault).__transformedByRemoveCreateWrappers = true;
                             astPath.replaceWithMultiple([exportConst, exportDefault]);
                         }
                         // Case 2: export default action; (or sync/onEvent)
@@ -500,6 +610,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             if (!t.isObjectExpression(arg)) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
+
                             if (calleeName === 'createAction') varName = 'action';
                             if (calleeName === 'createSync') varName = 'sync';
                             if (calleeName === 'createOnEvent') varName = 'onEvent';

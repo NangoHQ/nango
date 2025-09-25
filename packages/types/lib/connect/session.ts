@@ -1,6 +1,8 @@
+import type { InternalEndUser } from '../endUser/index.js';
+
 export interface ConnectSession {
     readonly id: number;
-    readonly endUserId: number;
+    readonly endUserId: number | null;
     readonly accountId: number;
     readonly environmentId: number;
     readonly connectionId: number | null;
@@ -8,6 +10,7 @@ export interface ConnectSession {
     readonly allowedIntegrations: string[] | null;
     readonly integrationsConfigDefaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
+    readonly endUser: InternalEndUser | null;
     readonly createdAt: Date;
     readonly updatedAt: Date | null;
 }

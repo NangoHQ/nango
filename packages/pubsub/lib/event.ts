@@ -11,9 +11,11 @@ interface EventBase<TSubject extends string, TType extends string, TPayload exte
     createdAt: Date;
 }
 
-// Enforce that all events extend the base Event type
+// All events
 type EnforceEventBase<T extends EventBase<any, any, any>> = T;
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent>;
 
+// User events
 export type UserCreatedEvent = EventBase<
     'user',
     'user.created',
@@ -23,19 +25,8 @@ export type UserCreatedEvent = EventBase<
     }
 >;
 
-export type UsageEvent = EventBase<
-    'usage',
-    'usage.monthly_active_records' | 'usage.actions' | 'usage.connections',
-    {
-        value: number;
-        properties: {
-            accountId: number;
-            connectionId: number;
-        } & Record<string, Serializable>;
-    }
->;
-
-export type TeamEvent = EventBase<
+// Team events
+export type TeamUpdatedEvent = EventBase<
     'team',
     'team.updated',
     {
@@ -43,4 +34,106 @@ export type TeamEvent = EventBase<
     }
 >;
 
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamEvent>;
+// Usage events
+interface UsageEventBase<TType extends string, TPayload extends Serializable> extends EventBase<'usage', TType, TPayload> {
+    subject: 'usage';
+    type: TType;
+    payload: TPayload & {
+        value: number;
+        properties: { accountId: number };
+    };
+}
+
+export type UsageMarEvent = UsageEventBase<
+    'usage.monthly_active_records',
+    {
+        value: number;
+        properties: {
+            environmentId: number;
+            providerConfigKey: string;
+            connectionId: number;
+            syncId: string;
+            model: string;
+        };
+    }
+>;
+
+export type UsageActionsEvent = UsageEventBase<
+    'usage.actions',
+    {
+        value: number;
+        properties: {
+            connectionId: number;
+            environmentId: number;
+            providerConfigKey: string;
+            actionName: string;
+        };
+    }
+>;
+
+export type UsageConnectionsEvent = UsageEventBase<
+    'usage.connections',
+    {
+        value: number;
+        properties: {
+            environmentId: number;
+            providerConfigKey: string;
+            connectionId: number;
+        };
+    }
+>;
+
+export type UsageFunctionExecutionsEvent = UsageEventBase<
+    'usage.function_executions',
+    {
+        value: number;
+        properties: {
+            type: 'sync' | 'action' | 'webhook' | 'on-event';
+            success: boolean;
+            accountId: number;
+            connectionId: number;
+            telemetryBag:
+                | {
+                      durationMs: number;
+                      memoryGb: number;
+                      customLogs: number;
+                      proxyCalls: number;
+                  }
+                | undefined;
+            frequencyMs?: number | undefined;
+        };
+    }
+>;
+
+export type UsageProxyEvent = UsageEventBase<
+    'usage.proxy',
+    {
+        value: number;
+        properties: {
+            accountId: number;
+            environmentId: number;
+            providerConfigKey: string;
+            connectionId: number;
+            provider: string;
+            success: boolean;
+        };
+    }
+>;
+
+export type UsageWebhookForwardEvent = UsageEventBase<
+    'usage.webhook_forward',
+    {
+        value: number;
+        properties: {
+            environmentId: number;
+            provider: string;
+            providerConfigKey: string;
+            success: boolean;
+        };
+    }
+>;
+
+type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
+export type UsageEvent = EnforceUsageEventBase<
+    UsageMarEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+>;

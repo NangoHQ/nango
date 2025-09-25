@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { nanoid } from '@nangohq/utils';
@@ -10,7 +12,7 @@ import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import { noopNodeProvider } from './node-providers/noop.js';
 
 describe('fleet', () => {
-    const fleetId = 'nango_runners';
+    const fleetId = 'test_runners';
     const dbClient = getTestDbClient(fleetId);
     const nodeProvider = noopNodeProvider;
     const fleet = new Fleet({
@@ -90,6 +92,20 @@ describe('fleet', () => {
             });
             const res = await fleet.getRunningNode(routingId);
             expect(res.unwrap()).toStrictEqual(outdatedNode);
+        });
+        it('should create a single node when called concurrently', async () => {
+            const routingId = nanoid();
+            const promises = Array.from({ length: 100 }).map(() => fleet.getRunningNode(routingId).then(() => {}));
+            // wait and transition nodes to RUNNING to simulate the nodes being ready
+            promises.push(
+                setTimeout(200).then(async () => {
+                    await dbClient.db.from('nodes').where({ routing_id: routingId }).update({ state: 'RUNNING' });
+                })
+            );
+            await Promise.all(promises);
+
+            const nodes = await dbClient.db.from('nodes').where({ routing_id: routingId });
+            expect(nodes.length).toBe(1);
         });
     });
 

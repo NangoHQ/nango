@@ -15,6 +15,7 @@ export interface AuthModes {
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
+    MCP_OAUTH2: 'MCP_OAUTH2';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -72,10 +73,7 @@ export interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
-    jwtToken?: {
-        token: string;
-        expires_at?: number;
-    };
+    jwtToken?: string;
 }
 
 export interface AppStoreCredentials {
@@ -103,11 +101,6 @@ export interface OAuth2Credentials extends CredentialsCommon {
 
 export interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
-    expires_at?: Date | undefined;
-    jwtToken?: {
-        token: string;
-        expires_at?: number;
-    };
 }
 
 export interface OAuth2ClientCredentials extends CredentialsCommon {
@@ -198,7 +191,6 @@ export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaC
 export type RefreshableCredentials =
     | OAuth2Credentials
     | AppCredentials
-    | CustomCredentials
     | AppStoreCredentials
     | OAuth2ClientCredentials
     | JwtCredentials

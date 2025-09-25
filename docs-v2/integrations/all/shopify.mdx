@@ -4,6 +4,10 @@ sidebarTitle: 'Shopify (OAuth)'
 description: 'Access the Shopify API in 2 minutes 💨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="shopify" />
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -65,7 +69,7 @@ description: 'Access the Shopify API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
     <Steps>
       <Step title="Create a Shopify Partner account">
-        Go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
+        If you don't already have one, go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
       </Step>
       <Step title="Create a new app in your Partner account">
         1. From your Partner Dashboard, navigate to **Apps** > **Create app**.
@@ -81,13 +85,11 @@ description: 'Access the Shopify API in 2 minutes 💨'
       </Step>
       <Step title="Obtain API credentials">
         1. Navigate to the created app's **Overview** tab.
-        2. Copy the **Client ID** (also called API key) and **Client secret** (also called API secret key) from Client credentials.
-        3. You will need these credentials when configuring your integration in Nango.
+        2. Copy the **Client ID** and **Client secret** from Client credentials, you’ll need these credentials when configuring your integration in Nango.
       </Step>
-      <Step title="Create a development store for testing">
+      <Step title="Create a development store for testing (optional)">
         If you don't have a Shopify store already:
-        1. From your Partner Dashboard, go to **Stores** > **Add store**.
-        2. Select **Development store** and follow the prompts to create a test store.
+        1. From your Partner's Dashboard, go to **Stores** then select **Development store** and follow the prompts to create a test store.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
@@ -103,12 +105,10 @@ description: 'Access the Shopify API in 2 minutes 💨'
     | | [How to create a development store](https://help.shopify.com/en/partners/dashboard/development-stores) |
     | Developer | [API documentation](https://shopify.dev/docs/api/admin) |
     | | [Developer console](https://partners.shopify.com/) |
-    | | [Authentication documentation](https://shopify.dev/docs/apps/auth/oauth) |
     | | [OAuth getting started guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant) |
     | | [How to register an OAuth app](https://shopify.dev/docs/apps/build/authentication-authorization/client-secrets) |
     | | [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes) |
     | | [Details on rate limits](https://shopify.dev/docs/api/usage/rate-limits) |
-    | | [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
   </Tab>

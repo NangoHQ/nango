@@ -1,7 +1,7 @@
 import type { AsyncActionResponse } from '../action/api.js';
 import type { ErrorPayload } from '../api.js';
 import type { AuthModeType, AuthOperationType } from '../auth/api.js';
-import type { SyncResult } from '../scripts/syncs/api.js';
+import type { SyncResult } from '../sync/index.js';
 
 export type WebhookTypes = 'sync' | 'auth' | 'forward' | 'async_action';
 
@@ -56,7 +56,7 @@ export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     /**
      * Only presents if the connection happened with a session token
      */
-    endUser?: { endUserId: string; organizationId?: string | undefined } | undefined;
+    endUser?: { endUserId: string; organizationId?: string | undefined; tags: Record<string, string> } | undefined;
 }
 
 export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {

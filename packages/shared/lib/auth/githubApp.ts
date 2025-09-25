@@ -1,9 +1,8 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import * as jwtClient from './jwt.js';
-import { REFRESH_MARGIN_TEN } from '../services/connections/utils.js';
 import { AuthCredentialsError } from '../utils/error.js';
-import { interpolateStringFromObject, isTokenExpired } from '../utils/utils.js';
+import { interpolateStringFromObject } from '../utils/utils.js';
 
 import type { AppCredentials, ConnectionConfig, DBConnectionDecrypted, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -15,12 +14,14 @@ export async function createCredentials({
     connection,
     provider,
     integration,
-    connectionConfig
+    connectionConfig,
+    refreshGithubAppJwtToken
 }: {
     connection?: DBConnectionDecrypted;
     provider: ProviderGithubApp | ProviderCustom;
     integration: IntegrationConfig;
     connectionConfig: ConnectionConfig;
+    refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<AppCredentials, AuthCredentialsError>> {
     try {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : provider.token_url.APP;
@@ -51,7 +52,7 @@ export async function createCredentials({
             connection.credentials &&
             'expires_at' in connection.credentials &&
             'access_token' in connection.credentials &&
-            !isTokenExpired(connection.credentials.expires_at, REFRESH_MARGIN_TEN)
+            refreshGithubAppJwtToken
         ) {
             const createdJwtToken = jwtClient.fetchJwtToken({
                 privateKey,
@@ -62,19 +63,21 @@ export async function createCredentials({
                 return Err(createdJwtToken.error);
             }
             const { jwtToken } = createdJwtToken.value;
-            const decodedJwt = jwtClient.decode(jwtToken);
-            const expirationFromJwt = decodedJwt?.['exp'];
+
+            if ('jwtToken' in connection.credentials) {
+                connection.credentials['jwtToken'] = jwtToken;
+            }
+
+            if ('jwtToken' in connection.credentials.raw) {
+                delete connection.credentials.raw['jwtToken'];
+            }
 
             return Ok({
                 type: 'APP',
                 access_token: connection.credentials['access_token'],
                 expires_at: connection.credentials['expires_at'],
-                raw: connection.credentials,
-                jwtToken: {
-                    token: jwtToken,
-                    expires_at: expirationFromJwt ? expirationFromJwt * 1000 : 0
-                },
-                app: connection.credentials
+                raw: connection.credentials.raw,
+                jwtToken
             });
         }
 
@@ -92,18 +95,12 @@ export async function createCredentials({
 
         const { tokenResponse, jwtToken } = create.value;
 
-        const decodedJwt = jwtClient.decode(jwtToken);
-        const expirationFromJwt = decodedJwt?.['exp'];
-
         const credentials: AppCredentials = {
             type: 'APP',
             access_token: tokenResponse.token!,
             expires_at: tokenResponse.expires_at,
             raw: tokenResponse,
-            jwtToken: {
-                token: jwtToken,
-                expires_at: expirationFromJwt ? expirationFromJwt * 1000 : 0
-            }
+            jwtToken
         };
 
         return Ok(credentials);

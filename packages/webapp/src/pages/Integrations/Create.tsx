@@ -161,7 +161,7 @@ export default function Create() {
                                 name="search"
                                 type="text"
                                 placeholder="Search APIs or category"
-                                className="border-border-gray bg-active-gray indent-8 text-white block w-full appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                                className="border-border-gray bg-active-gray indent-8 text-white block w-full appearance-none rounded-md border px-3 py-2 text-sm placeholder-gray-400 shadow-xs focus:outline-hidden"
                                 onChange={handleInputChange}
                                 onKeyUp={handleInputChange}
                             />
@@ -171,7 +171,7 @@ export default function Create() {
                         {providers.map((provider) => (
                             <div
                                 key={provider.name}
-                                className="flex justify-between px-2 p-2 mr-2 mt-4 mb-5 w-[14.7rem] border border-transparent rounded cursor-pointer items-center text-sm hover:bg-hover-gray"
+                                className="flex justify-between px-2 p-2 mr-2 mt-4 mb-5 w-[14.7rem] border border-transparent rounded-sm cursor-pointer items-center text-sm hover:bg-hover-gray"
                                 onClick={() => onSelectProvider(provider)}
                             >
                                 <div className="flex items-center">
@@ -200,13 +200,13 @@ export default function Create() {
                                     <IntegrationLogo provider={selectedProvider.name} height={10} width={10} classNames="mr-2" />
                                     <span className="text-white font-medium">{selectedProvider.displayName}</span>
                                 </div>
-                                <div className="bg-gray-700 px-2 py-1 rounded text-sm">
+                                <div className="bg-gray-700 px-2 py-1 rounded-sm text-sm">
                                     <span className="text-gray-500">Type: </span>
                                     <span className="text-gray-300">{selectedProvider.authMode}</span>
                                 </div>
                             </div>
                             <div className="relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-center min-h-10 bg-blue-base-35 border-blue-base text-blue-base">
-                                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path
                                         fillRule="evenodd"
                                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -221,14 +221,19 @@ export default function Create() {
                                 </div>
                             </div>
                             <div className="flex justify-between">
-                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} disabled={isCreatingShared} variant="primary">
+                                <Button type="button" onClick={() => handleIntegrationCreation(env !== 'prod')} isLoading={isCreatingShared} variant="primary">
                                     {isCreatingShared && env !== 'prod'
                                         ? 'Creating...'
                                         : env !== 'prod'
                                           ? "Use Nango's developer app"
                                           : 'Use your own developer app'}
                                 </Button>
-                                <Button type="button" onClick={() => handleIntegrationCreation(env === 'prod')} disabled={isCreatingShared} variant="secondary">
+                                <Button
+                                    type="button"
+                                    onClick={() => handleIntegrationCreation(env === 'prod')}
+                                    isLoading={isCreatingShared}
+                                    variant="secondary"
+                                >
                                     {isCreatingShared && env === 'prod'
                                         ? 'Creating...'
                                         : env === 'prod'

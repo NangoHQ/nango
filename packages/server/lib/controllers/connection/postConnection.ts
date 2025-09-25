@@ -30,7 +30,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
-const schemaBody = z.object({
+const schemaBody = z.strictObject({
     provider_config_key: z.string(),
     metadata: z.record(z.string(), z.unknown()).optional(),
     connection_config: z
@@ -78,6 +78,11 @@ const schemaBody = z.object({
         z
             .strictObject({
                 type: z.literal('APP')
+            })
+            .extend(connectionCredentialsGithubAppSchema.shape),
+        z
+            .strictObject({
+                type: z.literal('CUSTOM')
             })
             .extend(connectionCredentialsGithubAppSchema.shape)
     ]),
@@ -221,6 +226,38 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             }
             break;
         }
+        case 'CUSTOM': {
+            const connectionConfig: ConnectionConfig = {
+                app_id: body.credentials.app_id,
+                installation_id: body.credentials.installation_id,
+                ...body.connection_config
+            };
+
+            const credentialsRes = await githubAppClient.createCredentials({
+                provider: provider as ProviderGithubApp,
+                integration,
+                connectionConfig
+            });
+            if (credentialsRes.isErr()) {
+                res.status(500).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
+                return;
+            }
+
+            const [imported] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey: body.provider_config_key,
+                parsedRawCredentials: credentialsRes.value,
+                connectionConfig: body.connection_config || {},
+                environmentId: environment.id,
+                metadata: body.metadata || {}
+            });
+
+            if (imported) {
+                updatedConnection = imported;
+                connCreatedHook(updatedConnection);
+            }
+            break;
+        }
         case 'TBA': {
             if (!body.connection_config || !body.connection_config['accountId']) {
                 res.status(400).send({
@@ -284,13 +321,22 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     let endUser: EndUser | undefined;
     if (body.end_user) {
         await db.knex.transaction(async (trx) => {
-            const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user! });
+            const endUserRes = await upsertEndUser(trx, {
+                connection: updatedConnection.connection,
+                account,
+                environment,
+                endUser: EndUserMapper.apiToEndUser(body.end_user!)
+            });
             if (endUserRes.isErr()) {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                 return;
             }
 
             endUser = endUserRes.value;
+
+            if (updatedConnection.connection.end_user_id) {
+                return;
+            }
 
             await linkConnection(trx, { endUserId: endUserRes.value.id, connection: updatedConnection.connection });
         });

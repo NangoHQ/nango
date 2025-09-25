@@ -365,7 +365,7 @@ program
     .command('generate:docs')
     .option('-p, --path [path]', 'Optional: The relative path to generate the docs for. Defaults to the same directory as the script.')
     .option('--integration-templates', 'Optional: for the nango integration templates repo', false)
-    .description('Generate documentation for the integration scripts')
+    .description('Generate documentation for the integration functions')
     .action(async function (this: Command) {
         const { debug, path: optionalPath, integrationTemplates } = this.opts();
         const fullPath = path.resolve(process.cwd(), this.args[0] || '');

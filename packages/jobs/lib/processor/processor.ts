@@ -1,59 +1,39 @@
+import { OrchestratorClient, OrchestratorProcessor } from '@nangohq/nango-orchestrator';
 import { getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { ProcessorWorker } from './processor.worker.js';
+import { handler } from './handler.js';
 
 const logger = getLogger('jobs.processor');
 
 export class Processor {
-    private orchestratorServiceUrl: string;
-    private workers: ProcessorWorker[];
+    private processors: OrchestratorProcessor[];
 
     constructor(orchestratorServiceUrl: string) {
-        this.orchestratorServiceUrl = orchestratorServiceUrl;
-        this.workers = [];
+        const orchestratorClient = new OrchestratorClient({ baseUrl: orchestratorServiceUrl });
+
+        const processorConfigs = envs.JOBS_PROCESSOR_CONFIG;
+
+        this.processors = processorConfigs
+            .filter((config) => config.maxConcurrency > 0)
+            .map(
+                (config) =>
+                    new OrchestratorProcessor({
+                        handler,
+                        orchestratorClient,
+                        groupKeyPattern: config.groupKeyPattern,
+                        maxConcurrency: config.maxConcurrency
+                    })
+            );
     }
 
     start() {
-        logger.info('Starting task processors');
-        try {
-            const syncWorker = new ProcessorWorker({
-                orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'sync',
-                maxConcurrency: envs.SYNC_PROCESSOR_MAX_CONCURRENCY
-            });
-            syncWorker.start();
-
-            const actionWorker = new ProcessorWorker({
-                orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'action',
-                maxConcurrency: envs.ACTION_PROCESSOR_MAX_CONCURRENCY
-            });
-            actionWorker.start();
-
-            const webhookWorker = new ProcessorWorker({
-                orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'webhook',
-                maxConcurrency: envs.WEBHOOK_PROCESSOR_MAX_CONCURRENCY
-            });
-            webhookWorker.start();
-
-            const onEventWorker = new ProcessorWorker({
-                orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'on-event',
-                maxConcurrency: envs.ONEVENT_PROCESSOR_MAX_CONCURRENCY
-            });
-            onEventWorker.start();
-
-            this.workers = [syncWorker, actionWorker, webhookWorker, onEventWorker];
-        } catch (err) {
-            logger.error(err);
-        }
+        logger.info(`Starting ${this.processors.length} task processors`);
+        this.processors.forEach((p) => p.start());
     }
 
-    stop() {
-        if (this.workers) {
-            this.workers.forEach((worker) => worker.stop());
-        }
+    async stop() {
+        logger.info('Stopping task processors');
+        await Promise.all(this.processors.map((p) => p.stop()));
     }
 }

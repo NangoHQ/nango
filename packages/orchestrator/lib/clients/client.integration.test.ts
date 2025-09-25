@@ -13,16 +13,7 @@ import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
-const eventsHandler = new TaskEventsHandler(dbClient.db, {
-    on: {
-        CREATED: () => {},
-        STARTED: () => {},
-        SUCCEEDED: () => {},
-        FAILED: () => {},
-        EXPIRED: () => {},
-        CANCELLED: () => {}
-    }
-});
+const eventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
     on: eventsHandler.onCallbacks,
@@ -278,7 +269,7 @@ describe('OrchestratorClient', async () => {
         it('should support big output', async () => {
             const groupKey = nanoid();
             const actionA = await immediateAction(client, { groupKey });
-            await client.dequeue({ groupKey, limit: 1, longPolling: false });
+            await client.dequeue({ groupKeyPattern: groupKey, limit: 1, longPolling: false });
             const res = await client.succeed({ taskId: actionA.unwrap().taskId, output: { a: 'a'.repeat(10_000_000) } });
             expect(res.isOk()).toBe(true);
         });
@@ -296,7 +287,7 @@ describe('OrchestratorClient', async () => {
     });
     describe('dequeue', () => {
         it('should returns nothing if no scheduled task', async () => {
-            const res = await client.dequeue({ groupKey: 'abc', limit: 1, longPolling: false });
+            const res = await client.dequeue({ groupKeyPattern: 'abc', limit: 1, longPolling: false });
             expect(res.unwrap()).toEqual([]);
         });
         it('should return scheduled tasks', async () => {
@@ -321,7 +312,7 @@ describe('OrchestratorClient', async () => {
                     input: { foo: 'bar' }
                 }
             });
-            const res = await client.dequeue({ groupKey, limit: 2, longPolling: false });
+            const res = await client.dequeue({ groupKeyPattern: groupKey, limit: 2, longPolling: false });
             expect(res.unwrap().length).toBe(2);
             expect(res.unwrap()[0]?.isAction()).toBe(true);
             expect(res.unwrap()[1]?.isWebhook()).toBe(true);
@@ -529,7 +520,7 @@ class MockProcessor {
             for (const task of tasks) {
                 switch (task.state) {
                     case 'CREATED':
-                        scheduler.dequeue({ groupKey, limit: 1 });
+                        scheduler.dequeue({ groupKeyPattern: groupKey, limit: 1 });
                         break;
                     case 'STARTED':
                         process(task);

@@ -81,6 +81,10 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   <ResponseField name="lang" type="string">
     The language to use for the UI. Defaults to browser language or english if not supported.
   </ResponseField>
+
+  <ResponseField name="themeOverride" type="string">
+    The theme (light, dark, system) to use for the UI. Overrides your global setting in the dashboard.
+  </ResponseField>
 </Expandable>
 
 **Response**
@@ -151,7 +155,7 @@ const result = nango.auth('<INTEGRATION-ID>', {
   <ResponseField name="options" type="object">
     <Expandable title="options" defaultOpen>
       <ResponseField name="params" type="object">
-        Specify additional [connection configuration](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization) necessary to perform the authorization request.
+        Specify additional connection configuration necessary to perform the authorization request.
       </ResponseField>
 
       <ResponseField name="hmac" type="string" deprecated>
@@ -258,7 +262,7 @@ The Nango Frontend SDK may throw different types of errors during authentication
 
 8. `resource_capped`
     - Occurs when the resource usage limit has been reached.
-    - Message: "Reached maximum number of allowed connections for your plan" or "Reached maximum number of connections with scripts enabled"
+    - Message: "Reached maximum number of allowed connections for your plan" or "Reached maximum number of connections with functions enabled"
 
 ## Error Response Structure
 

@@ -1,6 +1,5 @@
 import { setTimeout } from 'timers/promises';
 
-import { tracer } from 'dd-trace';
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, it, vi } from 'vitest';
 
@@ -17,16 +16,7 @@ import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
 const dbClient = getTestDbClient();
-const taskEventsHandler = new TaskEventsHandler(dbClient.db, {
-    on: {
-        CREATED: () => {},
-        STARTED: () => {},
-        SUCCEEDED: () => {},
-        FAILED: () => {},
-        EXPIRED: () => {},
-        CANCELLED: () => {}
-    }
-});
+const taskEventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
     on: taskEventsHandler.onCallbacks,
@@ -80,9 +70,11 @@ async function processN({
 }) {
     const processor = new OrchestratorProcessor({
         handler,
-        opts: { orchestratorClient, groupKey, maxConcurrency: n }
+        orchestratorClient,
+        groupKeyPattern: groupKey,
+        maxConcurrency: n
     });
-    processor.start({ tracer });
+    processor.start();
 
     for (let i = 0; i < n; i++) {
         await immediateTask({ groupKey });
@@ -100,7 +92,7 @@ async function processN({
         }
     }
 
-    processor.stop();
+    await processor.stop();
     return processor;
 }
 

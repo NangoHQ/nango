@@ -16,6 +16,8 @@ const de: Translation = {
         title: 'Integration auswählen',
         description: 'Bitte wählen Sie eine API-Integration aus der Liste unten aus.',
         noIntegrations: 'Keine Integration gefunden.',
+        noIntegrationsDescription:
+            'Sie haben noch keine Integration in dieser Umgebung konfiguriert. Fügen Sie Ihre erste Integration im Nango-Dashboard hinzu.',
         connectTo: 'Mit {provider} verbinden',
         error: 'Beim Laden der Konfiguration ist ein Fehler aufgetreten'
     },
@@ -23,7 +25,7 @@ const de: Translation = {
         linkAccount: '{provider}-Konto verknüpfen',
         connect: 'Verbinden',
         success: 'Erfolgreich!',
-        successMessage: 'Sie haben Ihre {provider}-Integration erfolgreich eingerichtet',
+        successMessage: 'Sie haben Ihre {provider}-Integration erfolgreich eingerichtet.',
         connectionFailed: 'Verbindung fehlgeschlagen',
         tryAgain: 'Bitte versuchen Sie es erneut',
         backToList: 'Zurück zur Integrationsliste',

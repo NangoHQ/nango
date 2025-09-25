@@ -3,7 +3,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, upsertEndUser } from '@nangohq/shared';
+import { EndUserMapper, configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -107,11 +107,6 @@ export function checkIntegrationsExist(
 export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
     const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
-        const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
-        if (endUserRes.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
-        }
-
         if (body.allowed_integrations || body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
 
@@ -158,10 +153,13 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
             }
         }
 
+        const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { connectSession: endUserToMeta(endUserRes.value) },
+                meta: {
+                    connectSession: endUser ? endUserToMeta(endUser) : undefined
+                },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -169,7 +167,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: endUserRes.value.id,
+            endUserId: null,
             accountId: account.id,
             environmentId: environment.id,
             allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
@@ -182,7 +180,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                   )
                 : null,
             operationId: logCtx.id,
-            overrides: body.overrides || null
+            overrides: body.overrides || null,
+            endUser
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

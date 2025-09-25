@@ -19,10 +19,10 @@ import {
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
-    linkConnection,
     makeUrl,
     oauth2Client,
-    providerClientManager
+    providerClientManager,
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -55,6 +55,7 @@ import type {
     Provider,
     ProviderCustom,
     ProviderGithubApp,
+    ProviderMcpOAUTH2,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -256,6 +257,9 @@ class OAuthController {
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
                 await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
                 return;
+            } else if (provider.auth_mode === 'MCP_OAUTH2') {
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
+                return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
                 return;
@@ -315,6 +319,7 @@ class OAuthController {
         }
 
         let logCtx: LogContext | undefined;
+        let config: ProviderConfig | null = null;
 
         try {
             logCtx =
@@ -344,7 +349,7 @@ class OAuthController {
                 }
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+            config = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!config) {
                 void logCtx.error('Unknown provider config');
                 await logCtx.failed();
@@ -446,7 +451,7 @@ class OAuthController {
             }
 
             if (isConnectSession) {
-                await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+                await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -459,14 +464,14 @@ class OAuthController {
                     account,
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
-                    endUser: isConnectSession ? res.locals['endUser'] : undefined
+                    endUser: res.locals.endUser
                 },
                 account,
                 config,
                 logContextGetter
             );
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
@@ -501,7 +506,7 @@ class OAuthController {
                 }
             });
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC', ...(config ? { provider: config.provider } : {}) });
 
             next(err);
         }
@@ -534,42 +539,20 @@ class OAuthController {
         const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
-            if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
-
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
+            if (!passedInterpolationCheck) {
                 return;
             }
 
-            if (missesInterpolationParam(tokenUrl, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
-
-            if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
-                const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
-                void logCtx.error(error.message, { connectionConfig });
-                await logCtx.failed();
-
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-                return;
-            }
             if (
                 provider.token_params == undefined ||
                 provider.token_params.grant_type == undefined ||
@@ -752,6 +735,90 @@ class OAuthController {
         }
     }
 
+    private async mcpOauth2Request({
+        provider,
+        config,
+        session,
+        res,
+        connectionConfig,
+        callbackUrl,
+        logCtx
+    }: {
+        provider: ProviderMcpOAUTH2;
+        config: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        connectionConfig: Record<string, string>;
+        callbackUrl: string;
+        logCtx: LogContext;
+    }) {
+        const channel = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
+
+        try {
+            const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
+                provider,
+                connectionConfig,
+                tokenUrl,
+                logCtx,
+                channel,
+                providerConfigKey,
+                connectionId,
+                res
+            });
+            if (!passedInterpolationCheck) {
+                return;
+            }
+
+            const codeChallenge = crypto
+                .createHash('sha256')
+                .update(session.codeVerifier)
+                .digest('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            await oAuthSessionService.create(session);
+
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
+
+            const authParams = {
+                response_type: 'code',
+                code_challenge: codeChallenge,
+                code_challenge_method: 'S256'
+            };
+
+            const authorizationUri = simpleOAuthClient.authorizeURL({
+                client_id: config.oauth_client_id,
+                redirect_uri: callbackUrl,
+                scope: config.oauth_scopes || '',
+                state: session.id,
+                ...authParams
+            });
+
+            void logCtx.info('Redirecting', {
+                authorizationUri,
+                providerConfigKey,
+                connectionId,
+                allAuthParams: authParams,
+                connectionConfig,
+                grantType: provider.token_params?.['grant_type'] as string,
+                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+            });
+
+            res.redirect(authorizationUri);
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            void logCtx.error('Unknown error', { connectionConfig });
+            await logCtx.failed();
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+        }
+    }
+
     // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
@@ -871,7 +938,7 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
+            if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
@@ -893,7 +960,7 @@ class OAuthController {
             void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx?.failed();
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -956,7 +1023,7 @@ class OAuthController {
                         account,
                         auth_mode: 'APP',
                         operation: res.operation,
-                        endUser: connectSession?.endUser
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
@@ -977,7 +1044,12 @@ class OAuthController {
             if (session.connectSessionId && connectionResponse.isOk()) {
                 const upsertedConnection = connectionResponse.value;
                 if (upsertedConnection?.connection && connectSession) {
-                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: upsertedConnection.connection });
+                    await syncEndUserToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: upsertedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
             }
 
@@ -1144,6 +1216,7 @@ class OAuthController {
             ...webhookMetadata,
             ...session.connectionConfig
         };
+
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
         let additionalTokenParams: Record<string, string | undefined> = {};
         if (provider.token_params !== undefined) {
@@ -1345,7 +1418,12 @@ class OAuthController {
                 }
 
                 connectSession = connectSessionRes.value;
-                await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
+                await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
             }
 
             void logCtx.debug(
@@ -1370,7 +1448,7 @@ class OAuthController {
                     account,
                     auth_mode: provider.auth_mode,
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.endUser
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,
@@ -1388,7 +1466,7 @@ class OAuthController {
                             account,
                             auth_mode: provider.auth_mode,
                             operation: res.operation,
-                            endUser: connectSession?.endUser
+                            endUser: connectSession?.connectSession.endUser ?? undefined
                         },
                         account,
                         config,
@@ -1405,7 +1483,20 @@ class OAuthController {
                     connCreatedHook
                 );
                 if (createRes.isErr()) {
-                    void logCtx.error('Failed to create credentials');
+                    let responseData = null;
+                    if (
+                        createRes.error instanceof Error &&
+                        'cause' in createRes.error &&
+                        createRes.error.cause &&
+                        typeof createRes.error.cause === 'object' &&
+                        'response' in createRes.error.cause
+                    ) {
+                        responseData = (createRes.error.cause as any).response?.data;
+                    }
+
+                    void logCtx.error('Failed to create credentials', {
+                        responseData: responseData ? JSON.stringify(responseData, null, 2) : null
+                    });
                     await logCtx.failed();
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create credentials'));
@@ -1416,7 +1507,7 @@ class OAuthController {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
             if (res) {
                 await publisher.notifySuccess({
@@ -1460,7 +1551,7 @@ class OAuthController {
                 config
             );
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2' });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1557,7 +1648,12 @@ class OAuthController {
                     }
 
                     connectSession = connectSessionRes.value;
-                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
+                    await syncEndUserToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: updatedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
 
                 void logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
@@ -1576,7 +1672,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
-                        endUser: connectSession?.endUser
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
@@ -1585,7 +1681,7 @@ class OAuthController {
                 );
                 await logCtx.success();
 
-                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
                 return publisher.notifySuccess({
                     res,
@@ -1626,10 +1722,69 @@ class OAuthController {
                     account,
                     config
                 );
-                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1' });
+                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider });
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
+    }
+
+    private async passesInterpolationParamsCheck({
+        provider,
+        connectionConfig,
+        tokenUrl,
+        logCtx,
+        channel,
+        providerConfigKey,
+        connectionId,
+        res
+    }: {
+        provider: ProviderOAuth2 | ProviderMcpOAUTH2;
+        connectionConfig: Record<string, string>;
+        tokenUrl: string;
+        logCtx: LogContext;
+        channel: string | undefined;
+        providerConfigKey: string;
+        connectionId: string;
+        res: Response;
+    }): Promise<boolean> {
+        if (missesInterpolationParam(provider.authorization_url!, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(provider.authorization_url!, JSON.stringify(connectionConfig));
+
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('authorization_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
+            const error = WSErrBuilder.InvalidConnectionConfig('token_params', JSON.stringify(connectionConfig));
+            void logCtx.error(error.message, { connectionConfig });
+            await logCtx.failed();
+
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return false;
+        }
+
+        return true;
     }
 }
 
