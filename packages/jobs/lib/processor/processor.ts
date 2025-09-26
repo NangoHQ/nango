@@ -21,7 +21,7 @@ export class Processor {
                     new OrchestratorProcessor({
                         handler,
                         orchestratorClient,
-                        groupKey: config.groupKeyPattern,
+                        groupKeyPattern: config.groupKeyPattern,
                         maxConcurrency: config.maxConcurrency
                     })
             );

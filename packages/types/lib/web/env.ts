@@ -1,5 +1,6 @@
 export interface WindowEnv {
     apiUrl: string;
+    apiDownWatchPublicKey: string;
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;
