@@ -4,16 +4,15 @@ import { Info } from './Info';
 import DashboardLayout from '../layout/DashboardLayout';
 import PageNotFound from '../pages/PageNotFound';
 
-import type { LeftNavBarItems } from './LeftNavBar';
 import type { ApiError } from '@nangohq/types';
 
-export const ErrorPageComponent: React.FC<{ title: string; error: ApiError<string>; page: LeftNavBarItems }> = ({ title, error, page }) => {
+export const ErrorPageComponent: React.FC<{ title: string; error: ApiError<string> }> = ({ title, error }) => {
     if (error.error.code === 'not_found') {
         return <PageNotFound />;
     }
 
     return (
-        <DashboardLayout selectedItem={page}>
+        <DashboardLayout>
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>

@@ -3,7 +3,6 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Button } from '../../components/ui/button/Button';
 import { Tag } from '../../components/ui/label/Tag';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -70,7 +69,7 @@ export const ClassicGettingStarted: React.FC = () => {
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.GettingStarted} className="flex flex-col gap-9">
+        <DashboardLayout className="flex flex-col gap-9">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>

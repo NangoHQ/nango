@@ -7,7 +7,6 @@ import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 import VerticalSteps from './components/VerticalSteps';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -37,7 +36,7 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.GettingStarted}>
+        <DashboardLayout>
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>

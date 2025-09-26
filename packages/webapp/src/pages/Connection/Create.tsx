@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 
 import { Info } from '../../components/Info';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/Collapsible';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -54,7 +53,7 @@ export const ConnectionCreate: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
@@ -73,7 +72,7 @@ export const ConnectionCreate: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+        <DashboardLayout>
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>

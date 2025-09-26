@@ -7,7 +7,6 @@ import { PaymentMethods } from './components/PaymentMethod';
 import { PlanCard } from './components/PlanCard';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { Info } from '../../../components/Info';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
@@ -73,7 +72,7 @@ export const TeamBilling: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.TeamBilling}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Billing - Nango</title>
                 </Helmet>
@@ -87,7 +86,7 @@ export const TeamBilling: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Billing" error={error} page={LeftNavBarItems.TeamBilling} />;
+        return <ErrorPageComponent title="Billing" error={error} />;
     }
 
     if (!currentPlan) {
@@ -97,7 +96,7 @@ export const TeamBilling: React.FC = () => {
     const hasUsage = usageIsLoading || !usageError;
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.TeamBilling}>
+        <DashboardLayout>
             <Helmet>
                 <title>Billing - Nango</title>
             </Helmet>

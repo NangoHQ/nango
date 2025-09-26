@@ -2,7 +2,7 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { extendTailwindMerge } from 'tailwind-merge';
 
-import { globalEnv } from './env';
+import { globalEnv } from './env.js';
 
 import type { SyncResult } from '../types.js';
 import type { ClassValue } from 'clsx';

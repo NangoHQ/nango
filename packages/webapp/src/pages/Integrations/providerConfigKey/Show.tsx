@@ -7,7 +7,6 @@ import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { ButtonLink } from '../../../components/ui/button/Button';
@@ -46,7 +45,7 @@ export const ShowIntegration: React.FC = () => {
 
     if (loadingIntegration) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Integration - Nango</title>
                 </Helmet>
@@ -54,7 +53,7 @@ export const ShowIntegration: React.FC = () => {
                     <div className="flex gap-6">
                         <div className="shrink-0">
                             <div className="w-[80px] h-[80px] p-5 border border-border-gray rounded-xl">
-                                <Skeleton className="w-[40px] h-[40px]" />
+                                <Skeleton className="w-[48px] h-[48px]" />
                             </div>
                         </div>
                         <div className="my-3 flex flex-col gap-4">
@@ -72,7 +71,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Integration" error={error} page={LeftNavBarItems.Integrations} />;
+        return <ErrorPageComponent title="Integration" error={error} />;
     }
 
     if (!data) {
@@ -80,7 +79,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations} ref={ref}>
+        <DashboardLayout ref={ref}>
             <Helmet>
                 <title>{data.integration.unique_key} - Integration - Nango</title>
             </Helmet>
@@ -88,7 +87,7 @@ export const ShowIntegration: React.FC = () => {
                 <div className="flex gap-6">
                     <div className="shrink-0">
                         <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
-                            <IntegrationLogo provider={data.integration.provider} height={16} width={16} />
+                            <IntegrationLogo provider={data.integration.provider} height={12} width={12} />
                         </div>
                     </div>
                     <div className="my-2">
