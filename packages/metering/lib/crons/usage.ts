@@ -44,6 +44,7 @@ export async function exec(): Promise<void> {
         }
 
         try {
+            // TODO: get rid of billing exports which are legacy events
             await billing.exportBillableConnections();
             await billing.exportActiveConnections();
             await observability.exportConnectionsMetrics();
@@ -61,11 +62,23 @@ const observability = {
     exportConnectionsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.connections', async (span) => {
             try {
-                const connRes = await connectionService.countMetric();
-                if (connRes.isErr()) {
-                    throw connRes.error;
+                const counts = await connectionService.countMetric();
+                if (counts.isErr()) {
+                    throw counts.error;
                 }
-                for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
+                for (const { accountId, count, withActions, withSyncs, withWebhooks } of counts.value) {
+                    usageBilling.add([
+                        {
+                            type: 'billable_connections_v2' as const,
+                            properties: {
+                                accountId,
+                                count,
+                                timestamp: new Date(),
+                                frequencyMs: cronMinutes * 60 * 1000
+                            }
+                        }
+                    ]);
+
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
                     metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
@@ -98,8 +111,12 @@ const observability = {
                 });
 
                 // Send billing events
+                const frequencyMs = cronMinutes * 60 * 1000;
                 const billingEvents = metricsWithAccount.map(({ accountId, environmentId, count, sizeBytes }) => {
-                    return { type: 'records' as const, properties: { count, accountId, environmentId, timestamp: new Date(), telemetry: { sizeBytes } } };
+                    return {
+                        type: 'records' as const,
+                        properties: { count, accountId, environmentId, timestamp: new Date(), frequencyMs, telemetry: { sizeBytes } }
+                    };
                 });
                 const sendBilling = usageBilling.add(billingEvents);
                 if (sendBilling.isErr()) {

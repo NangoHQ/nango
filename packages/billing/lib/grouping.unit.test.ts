@@ -111,9 +111,19 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 100,
                     timestamp: new Date(),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 2048
                     }
+                }
+            },
+            {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 10,
+                    timestamp: new Date(),
+                    frequencyMs: 86_400_000
                 }
             },
             {
@@ -142,6 +152,7 @@ describe('BillingEventGrouping', () => {
             'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
             'records|accountId:1|environmentId:3',
+            'billable_connections_v2|accountId:1',
             'billable_connections|accountId:1',
             'billable_active_connections|accountId:1'
         ]);
@@ -428,7 +439,7 @@ describe('BillingEventGrouping', () => {
                 }
             });
         });
-        it('should aggregate recoreds', () => {
+        it('should aggregate records', () => {
             const a: BillingEvent = {
                 type: 'records',
                 properties: {
@@ -436,6 +447,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 2048
                     }
@@ -448,6 +460,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 4096
                     }
@@ -461,9 +474,40 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 36,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 6144
                     }
+                }
+            });
+        });
+        it('should aggregate billable_connections_v2', () => {
+            const a: BillingEvent = {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 7,
+                    timestamp: new Date('2024-01-01T00:00:00Z'),
+                    frequencyMs: 60_000
+                }
+            };
+            const b: BillingEvent = {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 40,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000
+                }
+            };
+            const aggregated = grouping.aggregate(a, b);
+            expect(aggregated).toMatchObject({
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 47,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000
                 }
             });
         });

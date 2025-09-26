@@ -25,11 +25,13 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                 case 'monthly_active_records':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'records':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
                 case 'billable_active_connections':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'billable_connections':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                case 'billable_connections_v2':
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
                 default:
                     ((_: never) => {
                         throw new Error(`Unhandled event type`);
@@ -136,6 +138,7 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         telemetry: {
                             sizeBytes: _a.properties.telemetry.sizeBytes + b.properties.telemetry.sizeBytes
                         },
+                        frequencyMs: b.properties.frequencyMs,
                         count: a.properties.count + b.properties.count
                     }
                 };
@@ -160,6 +163,18 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                             customLogs: _a.properties.telemetry.customLogs + b.properties.telemetry.customLogs,
                             proxyCalls: _a.properties.telemetry.proxyCalls + b.properties.telemetry.proxyCalls
                         }
+                    }
+                };
+            }
+            case 'billable_connections_v2': {
+                return {
+                    type: b.type,
+                    properties: {
+                        timestamp: b.properties.timestamp,
+                        idempotencyKey: b.properties.idempotencyKey,
+                        accountId: b.properties.accountId,
+                        count: a.properties.count + b.properties.count,
+                        frequencyMs: b.properties.frequencyMs
                     }
                 };
             }

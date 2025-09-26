@@ -75,6 +75,7 @@ export type RecordsBillingEvent = BillingEventBase<
     'records',
     {
         environmentId: number;
+        frequencyMs: number;
         telemetry: {
             sizeBytes: number;
         };
@@ -137,6 +138,13 @@ export type WebhookForwardBillingEvent = BillingEventBase<
 
 export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
 
+export type ConnectionsBillingEventV2 = BillingEventBase<
+    'billable_connections_v2',
+    {
+        frequencyMs: number;
+    }
+>;
+
 export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
 
 export type BillingEvent =
@@ -147,4 +155,5 @@ export type BillingEvent =
     | WebhookForwardBillingEvent
     | FunctionExecutionsBillingEvent
     | ConnectionsBillingEvent
+    | ConnectionsBillingEventV2
     | ActiveConnectionsBillingEvent;
