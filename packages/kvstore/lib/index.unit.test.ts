@@ -16,7 +16,7 @@ describe('getKVStore', () => {
         vi.clearAllMocks();
         // Clear environment variables
         delete process.env['NANGO_REDIS_URL'];
-        delete process.env['NANGO_REDIS_ENDPOINT'];
+        delete process.env['NANGO_REDIS_HOST'];
         delete process.env['NANGO_REDIS_PORT'];
         delete process.env['NANGO_REDIS_AUTH'];
 
@@ -37,7 +37,7 @@ describe('getKVStore', () => {
     });
 
     it('should use RedisKVStore when endpoint, auth, and port are provided', async () => {
-        process.env['NANGO_REDIS_ENDPOINT'] = 'localhost';
+        process.env['NANGO_REDIS_HOST'] = 'localhost';
         process.env['NANGO_REDIS_PORT'] = '6379';
         process.env['NANGO_REDIS_AUTH'] = 'password';
 
@@ -46,7 +46,7 @@ describe('getKVStore', () => {
         expect(store).toBeInstanceOf(RedisKVStore);
     });
     it('should return InMemoryKVStore when partial Redis config is provided', async () => {
-        process.env['NANGO_REDIS_ENDPOINT'] = 'localhost';
+        process.env['NANGO_REDIS_HOST'] = 'localhost';
         const store = await getKVStore();
 
         expect(store).toBeInstanceOf(InMemoryKVStore);

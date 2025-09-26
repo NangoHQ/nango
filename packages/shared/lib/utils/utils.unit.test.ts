@@ -326,7 +326,7 @@ describe('getRedisUrl', () => {
 
     it('should return undefined when no relevant env vars are set', () => {
         delete process.env['NANGO_REDIS_URL'];
-        delete process.env['NANGO_REDIS_ENDPOINT'];
+        delete process.env['NANGO_REDIS_HOST'];
         delete process.env['NANGO_REDIS_PORT'];
         delete process.env['NANGO_REDIS_AUTH'];
 
@@ -336,7 +336,7 @@ describe('getRedisUrl', () => {
 
     it('should return NANGO_REDIS_URL when it is set', () => {
         process.env['NANGO_REDIS_URL'] = 'redis://localhost:6379';
-        delete process.env['NANGO_REDIS_ENDPOINT'];
+        delete process.env['NANGO_REDIS_HOST'];
         delete process.env['NANGO_REDIS_PORT'];
         delete process.env['NANGO_REDIS_AUTH'];
 
@@ -346,7 +346,7 @@ describe('getRedisUrl', () => {
 
     it('should return undefined when only some of the other env vars are set', () => {
         delete process.env['NANGO_REDIS_URL'];
-        process.env['NANGO_REDIS_ENDPOINT'] = 'localhost';
+        process.env['NANGO_REDIS_HOST'] = 'localhost';
         process.env['NANGO_REDIS_PORT'] = '6379';
         // NANGO_REDIS_AUTH is missing
 
@@ -356,7 +356,7 @@ describe('getRedisUrl', () => {
 
     it('should return constructed URL when all other env vars are set', () => {
         delete process.env['NANGO_REDIS_URL'];
-        process.env['NANGO_REDIS_ENDPOINT'] = 'localhost';
+        process.env['NANGO_REDIS_HOST'] = 'localhost';
         process.env['NANGO_REDIS_PORT'] = '6379';
         process.env['NANGO_REDIS_AUTH'] = 'password';
 
