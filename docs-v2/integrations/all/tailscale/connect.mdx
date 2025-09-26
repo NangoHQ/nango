@@ -6,7 +6,7 @@ sidebarTitle: Tailscale (OAuth)
 # Overview
 
 To authenticate with Tailscale (OAuth), you need:
-1. **Organization Name** - The unique identifier for your organization.
+1. **Organization Name** - The unique name for your organization.
 2. **Client ID** - A unique identifier for your OAuth client in Tailscale.
 3. **Client Secret** - A confidential key used to authenticate the identity of the OAuth client.
 
@@ -19,22 +19,22 @@ This guide will walk you through finding or creating those credentials within Ta
 ### Instructions:
 
 #### Step 1: Finding Your Organization Name
-1. Log in to your Tailscale admin console at [admin.tailscale.com](https://admin.tailscale.com).
+1. Log in to your Tailscale [Admin console](https://login.tailscale.com/admin).
 2. Navigate to the [General page](https://login.tailscale.com/admin/settings/general).
-3. Your Organization Name will be displayed in the **Organization** field.
+3. Your **Organization Name** will be displayed in the **Organization** field.
 <img src="/integrations/all/tailscale-api-key/general.png" />
 
 #### Step 2: Generating your OAuth Client Credentials
 
-1. In the Tailscale admin console, navigate to the [OAuth clients page](https://login.tailscale.com/admin/settings/keys).
-2. Click **Generate OAuth Client** to create a new pair of OAuth client credentials.
+1. In the Tailscale admin console, navigate to the [OAuth clients page](https://login.tailscale.com/admin/settings/oauth).
+2. Click **Generate OAuth Client** to create a new pair of **OAuth client credentials**.
 <img src="/integrations/all/tailscale/generate_oauth_client.png" />
-3. From the popup that appears, fill in all the required information and select scopes you want to grant the OAuth client and click **Generate client**.
+3. From the popup that appears, fill in all the required information and select scopes you want to grant the **OAuth client** and click **Generate client**.
 <img src="/integrations/all/tailscale/generate_client_form.png" />
 
 #### Step 3: Enter credentials in the Connect UI
 
-Once you have both your **Organization Name**, **Client ID** and **Client secret**:
+Once you have your **Organization Name**, **Client ID** and **Client secret**:
 1. Open the form where you need to authenticate with Tailscale (OAuth).
 2. Enter your **Organization Name**, **Client ID** and **Client secret** in their designated fields.
 3. Submit the form, and you should be successfully authenticated.

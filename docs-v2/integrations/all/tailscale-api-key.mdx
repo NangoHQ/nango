@@ -19,7 +19,7 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
             <Tab title="cURL">
 
                 ```bash
-                curl -X GET "https://api.nango.dev/proxy/api/v2/tailnet/{connectionConfig.organizationName}/users" \
+                curl -X GET "https://api.nango.dev/proxy/v2/tailnet/{connectionConfig.organizationName}/users" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>" 
@@ -35,14 +35,13 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
 
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-            // Lists all devices in your tailnet.
             const res = await nango.get({
-              endpoint: '/api/v2/tailnet/{connectionConfig.organizationName}/users',
+              endpoint: '/v2/tailnet/{connectionConfig.organizationName}/users',
               providerConfigKey: '<INTEGRATION-ID>',
               connectionId: '<CONNECTION-ID>'
             });
 
-            console.log(res.data);
+            console.log(res.data.users);
             ```
             </Tab>
 
@@ -51,7 +50,7 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
        <Note>
-        The `{connectionConfig.organizationName}` in the URL represents the organizationName. You can get this value from your connection configuration after creating the connection.
+        The `{connectionConfig.organizationName}` in the URL represents the `organizationName`. You can get this value from your connection configuration after creating the connection.
         </Note>
 
       </Step>

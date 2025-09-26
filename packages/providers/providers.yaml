@@ -11646,8 +11646,8 @@ tailscale:
     display_name: Tailscale (OAuth)
     auth_mode: TWO_STEP
     categories:
-        - marketing
-        - analytics
+        - dev-tools
+        - productivity
     token_url: https://api.tailscale.com/api/v2/oauth/token
     token_params:
         client_id: ${credentials.clientId}
@@ -11678,7 +11678,7 @@ tailscale:
             description: Your OAuth Client ID
             example: kcLBRFmtYZ11CNTRL
             pattern: '^[A-Za-z0-9]+CNTRL$'
-            doc_section: '#step-2-generating-your-client-credentials'
+            doc_section: '#step-2-generating-your-oauth-client-credentials'
         clientSecret:
             type: string
             title: Client secret
@@ -11686,12 +11686,13 @@ tailscale:
             secret: true
             example: 'tskey-client-kdC27MPR3X11CNTRL-tjtxjop8mdawckVitWkNdaBaNRtZ48GN'
             pattern: '^tskey-client-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
-            doc_section: '#step-2-generating-your-client-credentials'
+            doc_section: '#step-2-generating-your-oauth-client-credentials'
 
 tailscale-api-key:
     display_name: Tailscale (API Key)
     categories:
-        - ats
+        - dev-tools
+        - productivity
     auth_mode: API_KEY
     proxy:
         base_url: https://api.tailscale.com/api

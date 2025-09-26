@@ -6,7 +6,7 @@ sidebarTitle: Tailscale (API Key)
 # Overview
 
 To authenticate with Tailscale (API Key), you need:
-1. **Organization Name** - The unique identifier for your organization.
+1. **Organization Name** - The unique name for your organization.
 2. **API Access Token** - A key that grants Nango permission to interact with Tailscale's API resources and services.
 
 This guide will walk you through finding or creating those credentials within Tailscale.
@@ -18,20 +18,20 @@ This guide will walk you through finding or creating those credentials within Ta
 ### Instructions:
 
 #### Step 1: Finding Your Organization Name
-1. Log in to your Tailscale admin console at [admin.tailscale.com](https://admin.tailscale.com).
+1. Log in to your Tailscale [Admin console](https://login.tailscale.com/admin).
 2. Navigate to the [General page](https://login.tailscale.com/admin/settings/general).
-3. Your Organization Name will be displayed in the **Organization** field.
+3. Your **Organization Name** will be displayed in the **Organization** field.
 <img src="/integrations/all/tailscale-api-key/general.png" />
 
 #### Step 2: Generating an API Access Token
 
 1. In the Tailscale admin console, navigate to the [Keys page](https://login.tailscale.com/admin/settings/keys).
-2. Click **Generate access token** to create a new API access token.
+2. Click **Generate access token** to create a new **API Access Token**.
 <img src="/integrations/all/tailscale-api-key/generate_access_token.png" />
 3. From the popup that appears, fill in all the required information and click **Generate access token**.
 <img src="/integrations/all/tailscale-api-key/generate_key_form.png" />
 
-<Note>These tokens will have the same [roles](https://tailscale.com/kb/1138/user-roles) as the owning user</Note>
+<Note>These tokens will have the same [roles](https://tailscale.com/kb/1138/user-roles) as the owning user.</Note>
 #### Step 3: Enter credentials in the Connect UI
 
 Once you have both your **Organization Name** and **API Access Token**:

@@ -35,14 +35,13 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
 
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-            // Lists all devices in your tailnet.
             const res = await nango.get({
               endpoint: '/v2/tailnet/{connectionConfig.organizationName}/users',
               providerConfigKey: '<INTEGRATION-ID>',
               connectionId: '<CONNECTION-ID>'
             });
 
-            console.log(res.data);
+            console.log(res.data.users);
             ```
             </Tab>
 
@@ -51,7 +50,7 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
        <Note>
-        The `{connectionConfig.organizationName}` in the URL represents the organizationName. You can get this value from your connection configuration after creating the connection.
+        The `{connectionConfig.organizationName}` in the URL represents the `organizationName`. You can get this value from your connection configuration after creating the connection.
         </Note>
 
       </Step>
@@ -70,7 +69,7 @@ description: 'Access the Tailscale API in 2 minutes 🔗'
   | General       | [Tailscale Website](https://tailscale.com/) |
   |              | [Tailscale Admin Console](https://login.tailscale.com/admin) |
   | Developer     | [Generate an OAuth client](https://login.tailscale.com/admin/settings/oauth) |
-  |              | [OAuth clients](https://tailscale.com/kb/1215/oauth-clients) |
+  |              | [OAuth clients documentation](https://tailscale.com/kb/1215/oauth-clients) |
   |              | [List of OAuth Scopes](https://tailscale.com/kb/1215/oauth-clients#scopes) |
   |              | [How to generate an OAuth client access token](https://tailscale.com/kb/1215/oauth-clients#verifying-you-can-generate-api-access-tokens) |
   |              | [Tailscale API docs](https://tailscale.com/api#description/overview) |

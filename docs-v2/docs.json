@@ -736,6 +736,8 @@
               "integrations/all/timely",
               "integrations/all/todoist",
               "integrations/all/trafft",
+              "integrations/all/tailscale",
+              "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
               "integrations/all/trello",
               "integrations/all/tldv",
