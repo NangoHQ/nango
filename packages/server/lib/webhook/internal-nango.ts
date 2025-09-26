@@ -42,15 +42,15 @@ export class InternalNango {
     }: {
         body: Record<string, any>;
         webhookType: string;
-        connectionIdentifier: string;
+        connectionIdentifier?: string;
         propName?: string;
     }): Promise<{ connectionIds: string[] }> {
-        if (!get(body, connectionIdentifier)) {
-            return { connectionIds: [] };
-        }
-
         let connections: DBConnectionDecrypted[] | null = null;
-        if (propName === 'connectionId') {
+        if (!connectionIdentifier || connectionIdentifier === '') {
+            connections = await connectionService.getDecryptedConnectionsByEnvironmentAndConfig(this.environment.id, this.integration.unique_key);
+        } else if (!get(body, connectionIdentifier)) {
+            return { connectionIds: [] };
+        } else if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(
                 get(body, connectionIdentifier),
                 this.integration.unique_key,

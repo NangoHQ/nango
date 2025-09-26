@@ -528,6 +528,19 @@ class ConnectionService {
         return result;
     }
 
+    public async getDecryptedConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<DBConnectionDecrypted[]> {
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('*')
+            .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
+
+        if (!result || result.length == 0) {
+            return [];
+        }
+
+        return result.map((connection) => encryptionManager.decryptConnection(connection));
+    }
+
     public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<DBConnection[]> {
         const result = await db.knex.from<DBConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
 
