@@ -56,7 +56,6 @@ async function createKVStore(): Promise<KVStore> {
         const port = process.env['NANGO_REDIS_PORT'] || 6379;
         const auth = process.env['NANGO_REDIS_AUTH'];
         if (endpoint && port && auth) {
-            console.log('creating redis store with endpoint', endpoint, 'port', port, 'auth', auth);
             const store = new RedisKVStore(await getRedis(`rediss://:${auth}@${endpoint}:${port}`));
             return store;
         }
@@ -68,7 +67,6 @@ async function createKVStore(): Promise<KVStore> {
 let kvstorePromise: Promise<KVStore> | undefined;
 export async function getKVStore(): Promise<KVStore> {
     if (kvstorePromise) {
-        console.log('promise is defined');
         return await kvstorePromise;
     }
 
