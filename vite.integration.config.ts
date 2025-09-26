@@ -27,6 +27,13 @@ export default defineConfig({
             forks: {
                 singleFork: true
             }
+        },
+
+        // needed for the api-public package
+        server: {
+            deps: {
+                inline: ['@fastify/autoload']
+            }
         }
     }
 });

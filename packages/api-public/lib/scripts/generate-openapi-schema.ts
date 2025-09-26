@@ -15,8 +15,10 @@ if (app.swagger === null || app.swagger === undefined) {
     throw new Error('@fastify/swagger plugin is not loaded');
 }
 
-const schema = JSON.stringify(app.swagger(), null, 2);
+const schema = JSON.stringify(app.swagger(), null, 4);
 // const schema = JSON.stringify(app.swagger(), undefined, 2); for pretty print
 await writeFile(path.join(import.meta.dirname, '..', '..', 'openapi.json'), schema, { flag: 'w+' });
 
 await app.close();
+
+process.exit(0);

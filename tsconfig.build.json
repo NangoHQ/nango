@@ -93,6 +93,6 @@
         },
         {
             "path": "packages/api-public"
-        },
+        }
     ]
 }

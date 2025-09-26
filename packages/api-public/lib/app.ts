@@ -22,7 +22,7 @@ try {
     // Instantiate Fastify with some config
     const app = Fastify();
 
-    // Register your application as a normal plugin.
+    // Register all plugins and routes
     await createApp(app);
 
     // Graceful shutdown

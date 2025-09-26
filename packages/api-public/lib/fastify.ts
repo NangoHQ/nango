@@ -3,11 +3,10 @@ import path from 'node:path';
 import cors from '@fastify/cors';
 import { jsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
-import { report } from '@nangohq/utils';
+import { isProd, isTest, report } from '@nangohq/utils';
 
 import { authPlugin } from './middlewares/auth.js';
 import { resNotFound, resServerError } from './schemas/errors.js';
-import { envs } from './utils/envs.js';
 import { logger } from './utils/logger.js';
 
 import type { FastifyInstance } from 'fastify';
@@ -34,7 +33,7 @@ export default async function createApp(f: FastifyInstance): Promise<void> {
     f.setSerializerCompiler(serializerCompiler);
 
     // Generate openapi specs
-    if (envs.NODE_ENV !== 'production') {
+    if (!isProd && !isTest) {
         await f.register(import('@fastify/swagger'), {
             openapi: {
                 openapi: '3.0.0',
@@ -94,6 +93,8 @@ export default async function createApp(f: FastifyInstance): Promise<void> {
         dir: path.join(import.meta.dirname, 'routes'),
         autoHooks: true,
         cascadeHooks: true,
-        routeParams: true
+        routeParams: true,
+        ignorePattern: /.test.ts$/,
+        logLevel: 'debug'
     });
 }
