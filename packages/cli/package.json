@@ -15,6 +15,11 @@
             "types": "./dist/sdkScripts.d.ts",
             "default": "./dist/sdkScripts.js"
         },
+        "./test": {
+            "require": "./dist/testMocks/utils.js",
+            "types": "./dist/testMocks/utils.d.ts",
+            "default": "./dist/testMocks/utils.js"
+        },
         "./package.json": "./package.json"
     },
     "keywords": [],
@@ -37,6 +42,7 @@
         "@babel/preset-typescript": "7.27.1",
         "@nangohq/nango-yaml": "0.68.0",
         "@nangohq/node": "0.68.0",
+        "@nangohq/providers": "0.68.0",
         "@nangohq/runner-sdk": "0.68.0",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
