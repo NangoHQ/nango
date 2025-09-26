@@ -416,7 +416,7 @@ export class AccessMiddleware {
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
 
-                metrics.increment(metrics.Types.AUTH_WITH_CONNECT_SESSION);
+                metrics.increment(metrics.Types.AUTH_WITH_CONNECT_SESSION, 1, { accountId: connectSessionResult.value.account.id });
             } else {
                 const publicKey = req.query['public_key'] as string;
 
@@ -452,7 +452,7 @@ export class AccessMiddleware {
                 res.locals['plan'] = result.value.plan;
                 tagTraceUser(result.value);
 
-                metrics.increment(metrics.Types.AUTH_WITH_PUBLIC_KEY);
+                metrics.increment(metrics.Types.AUTH_WITH_PUBLIC_KEY, 1, { accountId: result.value.account.id });
             }
             next();
         } catch (err) {

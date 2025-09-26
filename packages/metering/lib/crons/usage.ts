@@ -10,7 +10,6 @@ import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { BillingMetric } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -67,10 +66,10 @@ const observability = {
                     throw connRes.error;
                 }
                 for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
-                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
+                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks);
                 }
             } catch (err) {
                 span.setTag('error', err);
@@ -86,25 +85,40 @@ const observability = {
                     throw res.error;
                 }
 
-                // Group by account
+                // records metrics are per environment, we need to get the account ids
                 const envIds = res.value.map((r) => r.environmentId);
                 const envs = await environmentService.getEnvironmentsByIds(envIds);
-                const metricsByAccount = new Map<number, { count: number; sizeInBytes: number }>();
-                for (const env of envs) {
-                    const metrics = res.value.find((r) => r.environmentId === env.id);
-                    if (!metrics) {
-                        continue;
+
+                const metricsWithAccount = res.value.flatMap(({ environmentId, count, sizeBytes }) => {
+                    const env = envs.find((e) => e.id === environmentId);
+                    if (!env) {
+                        return [];
                     }
-                    const existing = metricsByAccount.get(env.account_id);
+                    return [{ environmentId, accountId: env.account_id, count, sizeBytes }];
+                });
+
+                // Send billing events
+                const billingEvents = metricsWithAccount.map(({ accountId, environmentId, count, sizeBytes }) => {
+                    return { type: 'records' as const, properties: { count, accountId, environmentId, timestamp: new Date(), telemetry: { sizeBytes } } };
+                });
+                const sendBilling = usageBilling.add(billingEvents);
+                if (sendBilling.isErr()) {
+                    throw sendBilling.error;
+                }
+
+                // Group by account and send to datadog
+                const metricsByAccount = new Map<number, { count: number; sizeBytes: number }>();
+                for (const metrics of metricsWithAccount) {
+                    const existing = metricsByAccount.get(metrics.accountId);
                     if (existing) {
                         existing.count += metrics.count;
-                        existing.sizeInBytes += metrics.sizeInBytes;
+                        existing.sizeBytes += metrics.sizeBytes;
                     } else {
-                        metricsByAccount.set(env.account_id, { count: metrics.count, sizeInBytes: metrics.sizeInBytes });
+                        metricsByAccount.set(metrics.accountId, { count: metrics.count, sizeBytes: metrics.sizeBytes });
                     }
                 }
 
-                for (const [accountId, { count, sizeInBytes: sizeBytes }] of metricsByAccount.entries()) {
+                for (const [accountId, { count, sizeBytes }] of metricsByAccount.entries()) {
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_SIZE_IN_BYTES, sizeBytes, { accountId });
                 }
@@ -126,11 +140,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }
@@ -149,11 +163,11 @@ const billing = {
                     throw res.error;
                 }
 
-                const events = res.value.map<BillingMetric>(({ accountId, count }) => {
-                    return { type: 'billable_active_connections', value: count, properties: { accountId, timestamp: now } };
+                const events = res.value.map(({ accountId, count }) => {
+                    return { type: 'billable_active_connections' as const, properties: { count, accountId, timestamp: now } };
                 });
 
-                const sendRes = usageBilling.addAll(events);
+                const sendRes = usageBilling.add(events);
                 if (sendRes.isErr()) {
                     throw sendRes.error;
                 }

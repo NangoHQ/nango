@@ -25,7 +25,7 @@ vi.mock('@nangohq/utils', () => ({
 vi.mock('../env.js', () => ({
     envs: {
         JOBS_PROCESSOR_CONFIG: [
-            { groupKeyPattern: 'sync*', maxConcurrency: 200 },
+            { groupKeyPattern: 'sync*', maxConcurrency: 100 },
             { groupKeyPattern: 'action*', maxConcurrency: 100 },
             { groupKeyPattern: 'webhook*', maxConcurrency: 0 },
             { groupKeyPattern: 'on-event*', maxConcurrency: 50 }
@@ -49,9 +49,9 @@ describe('Processor', () => {
         expect(OrchestratorProcessor).toHaveBeenCalledTimes(3);
 
         // Verify correct processors were created
-        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKey: 'sync*', maxConcurrency: 200 }));
-        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKey: 'action*', maxConcurrency: 100 }));
-        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKey: 'on-event*', maxConcurrency: 50 }));
+        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'sync*', maxConcurrency: 100 }));
+        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'action*', maxConcurrency: 100 }));
+        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'on-event*', maxConcurrency: 50 }));
 
         // Verify webhook* was not created
         const webhookCall = (OrchestratorProcessor as any).mock.calls.find((call: any) => call[0].groupKey === 'webhook*');
