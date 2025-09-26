@@ -1,0 +1,87 @@
+---
+title: 'Tailscale (API Key)'
+sidebarTitle: 'Tailscale (API Key)'
+description: 'Access the Tailscale API in 2 minutes 🔗'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Tailscale (API Key)_.
+      </Step>
+      <Step title="Authorize Tailscale (API Key)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Tailscale credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Tailscale API">
+        Let's make your first request to the Tailscale API (fetch a list of all users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/api/v2/tailnet/{connectionConfig.organizationName}/users" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" 
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Lists all devices in your tailnet.
+            const res = await nango.get({
+              endpoint: '/api/v2/tailnet/{connectionConfig.organizationName}/users',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+       <Note>
+        The `{connectionConfig.organizationName}` in the URL represents the organizationName. You can get this value from your connection configuration after creating the connection.
+        </Note>
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Tailscale accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic        | Links |
+    |--------------|-------|
+    | Authorization | [Guide to connect to Tailscale (API Key) using Connect UI](/integrations/all/tailscale-api-key/connect) |
+    | General       | [Tailscale Website](https://tailscale.com/) |
+    |              | [Tailscale Admin Console](https://login.tailscale.com/admin) |
+    | Developer     | [Generate an API Access Token](https://login.tailscale.com/admin/settings/keys) |
+    |              | [API Authentication](https://tailscale.com/api#description/authentication) |
+    |              | [Tailscale API docs](https://tailscale.com/api#description/overview) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tailscale.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tailscale.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

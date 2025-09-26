@@ -11642,6 +11642,84 @@ survey-monkey:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
 
+tailscale:
+    display_name: Tailscale (OAuth)
+    auth_mode: TWO_STEP
+    categories:
+        - marketing
+        - analytics
+    token_url: https://api.tailscale.com/api/v2/oauth/token
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    body_format: form
+    proxy:
+        base_url: https://api.tailscale.com/api
+        connection_config:
+            organizationName: ${connectionConfig.organizationName}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/tailscale
+    docs_connect: https://docs.nango.dev/integrations/all/tailscale/connect
+    connection_config:
+        organizationName:
+            type: string
+            title: Organization Name
+            description: Your Tailscale organization name
+            example: example.com
+            order: 1
+            doc_section: '#step-1-finding-your-organization-name'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your OAuth Client ID
+            example: kcLBRFmtYZ11CNTRL
+            pattern: '^[A-Za-z0-9]+CNTRL$'
+            doc_section: '#step-2-generating-your-client-credentials'
+        clientSecret:
+            type: string
+            title: Client secret
+            description: Your OAuth Client secret
+            secret: true
+            example: 'tskey-client-kdC27MPR3X11CNTRL-tjtxjop8mdawckVitWkNdaBaNRtZ48GN'
+            pattern: '^tskey-client-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
+            doc_section: '#step-2-generating-your-client-credentials'
+
+tailscale-api-key:
+    display_name: Tailscale (API Key)
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tailscale.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/tailnet/${connectionConfig.organizationName}/users
+    docs: https://docs.nango.dev/integrations/all/tailscale-api-key
+    docs_connect: https://docs.nango.dev/integrations/all/tailscale-api-key/connect
+    connection_config:
+        organizationName:
+            type: string
+            title: Organization Name
+            description: Your Tailscale organization name
+            example: example.com
+            order: 1
+            doc_section: '#step-1-finding-your-organization-name'
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: The API Access Token for your Tailscale account
+            example: tskey-api-k7Hpb9Lcv611CNTRL-WJ9YG52LqXJXY9oJ7RtmXJdzWkdRMgBG
+            pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
+            doc_section: '#step-2-generating-an-api-access-token'
+
 tapclicks:
     display_name: TapClicks
     auth_mode: OAUTH2_CC
