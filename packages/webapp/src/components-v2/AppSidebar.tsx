@@ -1,4 +1,4 @@
-import { Blocks, ChartBar, Logs, Plug, Settings2, Sparkle, X } from 'lucide-react';
+import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -55,14 +55,14 @@ export const AppSidebar: React.FC = () => {
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: Logs },
-            { title: 'Metrics', url: `/${env}`, icon: ChartBar },
+            { title: 'Metrics', url: `/${env}`, icon: AreaChart },
             { title: 'Environment Settings', url: `/${env}/environment-settings`, icon: Settings2 }
         ].filter((item) => item !== null);
     }, [env, meta, mutateMeta, showGettingStarted]);
 
     return (
         <Sidebar collapsible="none">
-            <SidebarHeader className="p-0 px-3 pt-2.5">
+            <SidebarHeader className="p-0 px-3 pt-2.5 mb-7">
                 <EnvironmentDropdown />
             </SidebarHeader>
             <SidebarContent>
