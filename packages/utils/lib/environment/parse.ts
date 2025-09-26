@@ -276,6 +276,9 @@ export const ENVS = z.object({
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),
+    NANGO_REDIS_HOST: z.string().optional(),
+    NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
+    NANGO_REDIS_AUTH: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
