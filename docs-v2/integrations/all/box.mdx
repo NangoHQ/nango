@@ -1,45 +1,120 @@
 ---
-title: Box
-sidebarTitle: Box
+title: 'Box'
+sidebarTitle: 'Box'
+description: 'Access the Box API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/box/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/box/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Box_. Nango doesn't provide a test OAuth app for Box yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+      </Step>
+      <Step title="Authorize Box">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Box. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Box API">
+        Let's make your first request to the Box API (fetch the profile of the currently signed-in user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+                ```bash
+                curl "https://api.nango.dev/proxy/2.0/users/me" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/2.0/users/me',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
 
 
-## Setup guide
+        </Tabs>
 
-_No setup guide yet._
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+      </Step>
+    </Steps>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/box.mdx)</Note>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Box accounts.
+    </Tip>
+  </Tab>
+    <Tab title="🧑‍💻 OAuth app setup">
+        <Steps>
+    <Step title="Create a Box account">
+        If you don't already have one, sign up for a free trial [Box account](https://www.box.com/pricing).
+    </Step>
 
-## Useful links
+    <Step title="Create a new application">
+        1. Go to the [Box Developer Console](https://app.box.com/developers/console).  
+        2. Click **Create Platform App**.  
+        3. Select **Custom App** as your **Platform App** from the list of application types.  
+        4. Enter the basic application details and choose **User Authentication (OAuth 2.0)** as your app's **Authentication Method**.  
+        5. In your app's **Configuration** tab, add `https://api.nango.dev/oauth/callback` as your **Redirect URI**, then click **Save Changes**.
+        6. Scroll down to the **Application Scopes** section and select the scopes you need.
+    </Step>
 
--   [Create Box account](https://box.com)
--   [Box Developer console](https://app.box.com/developers/)
--   [Web API OAuth docs](https://developer.box.com/guides/authentication/oauth2/)
--   [List of scopes](https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/)
--   [Web API docs (their REST API)](https://developer.box.com/reference/resources/classification)
+    <Step title="Obtain OAuth credentials">
+        1. In the same **Configuration** tab, under the **OAuth 2.0 Credentials** section, copy your **Client ID** and **Client Secret**, you’ll need these when configuring your integration in Nango.  
+    </Step>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/box.mdx)</Note>
+    <Step title="Start building your integration">
+        Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.  
+    </Step>
+    </Steps>
 
-## API gotchas
+    ## Common Scopes
+    | Scope                  | Description                                                          |
+    | ---------------------- | -------------------------------------------------------------------- |
+    | `root_readwrite`       | Read and write access to all files and folders in the user's account |
+    | `root_readonly`        | Read-only access to all files and folders in the user's account      |
+    | `manage_managed_users` | Manage Managed Users (create, update, reset password, change roles)  |
+    | `manage_app_users`     | Manage App Users (for server-side JWT apps)                          |
+    | `manage_groups`        | Create, update, delete groups, and manage group memberships          |
+    | `manage_webhook`       | Create and manage webhooks for a user                                |
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/box.mdx)</Note>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://box.com) |
+    | | [Create a Box account](https://www.box.com/pricing) |
+    | Developer | [Developer console](https://app.box.com/developers/) |
+    | | [API reference](https://developer.box.com/reference) |
+    | | [OAuth documentation](https://developer.box.com/guides/authentication/oauth2/) |
+    | | [List of scopes](https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/box.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/box.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
