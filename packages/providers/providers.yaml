@@ -263,6 +263,12 @@ adp:
             secret: true
             doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
+adp-lyric:
+    alias: adp
+    display_name: ADP Lyric
+    docs: https://docs.nango.dev/integrations/all/adp-lyric
+    docs_connect: https://docs.nango.dev/integrations/all/adp-lyric/connect
+
 adp-run:
     alias: adp
     display_name: RUN Powered by ADP
