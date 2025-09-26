@@ -9874,6 +9874,48 @@ recruitcrm:
             example: 9SKXL**************************************
             doc_section: '#step-1-generating-your-api-key'
 
+recruitee:
+    display_name: Recruitee
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruitee.com/c/${connectionConfig.companyId}
+        headers:
+            authorization: Bearer ${apiKey}
+        connection_config:
+            companyName: ${connectionConfig.companyName}
+        verification:
+            method: GET
+            endpoints:
+                - /candidates
+    docs: https://docs.nango.dev/integrations/all/recruitee
+    docs_connect: https://docs.nango.dev/integrations/all/recruitee/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: The Company ID for your Recruitee account
+            example: '126786'
+            pattern: '^[0-9]+$'
+            order: 1
+            doc_section: '#step-1-finding-your-company-id-and-company-name'
+        companyName:
+            type: string
+            title: Company Name
+            description: The Company name for your Recruitee account
+            example: acme
+            order: 2
+            doc_section: '#step-1-finding-your-company-id-and-company-name'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Token
+            description: The Personal API Token for your Recruitee account
+            example: 'OTlHOGlWNUFJRkErekoxd1lXMGd6dz09'
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            doc_section: '#step-2-generating-your-personal-api-token'
+
 recruiterflow:
     display_name: Recruiterflow
     categories:
