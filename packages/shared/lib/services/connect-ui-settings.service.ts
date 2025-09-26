@@ -1,4 +1,4 @@
-import { Err, Ok, flagHasPlan, isEnterprise } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, isEnterprise, isHosted } from '@nangohq/utils';
 
 import type { ConnectUISettings, DBConnectUISettings, DBPlan, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
@@ -66,7 +66,7 @@ export function canCustomizeConnectUITheme(plan?: DBPlan | null): boolean {
 
 export function canDisableConnectUIWatermark(plan?: DBPlan | null): boolean {
     if (!flagHasPlan || !plan) {
-        return isEnterprise;
+        return isHosted;
     }
 
     return plan.can_disable_connect_ui_watermark;
