@@ -21,11 +21,18 @@ export default defineConfig({
             FLAG_API_RATE_LIMIT_ENABLED: 'false'
         },
         fileParallelism: false,
-        pool: 'forks',
+        pool: 'threads',
 
         poolOptions: {
-            forks: {
-                singleFork: true
+            threads: {
+                singleThread: true
+            }
+        },
+
+        // needed for the api-public package
+        server: {
+            deps: {
+                inline: ['@fastify/autoload']
             }
         }
     }

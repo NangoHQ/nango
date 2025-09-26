@@ -17,7 +17,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
 
-    // API
+    // SERVER
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
@@ -26,6 +26,10 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+
+    // API
+    NANGO_PUBLIC_API_URL: z.url().optional().default('http://localhost:3003'),
+    NANGO_PUBLIC_API_PORT: z.coerce.number().optional().default(3013),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

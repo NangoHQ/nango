@@ -5,7 +5,13 @@ set -e
 
 npx lint-staged --allow-empty
 
-if [ $(git diff --cached --numstat -- ./docs-v2/integrations/all/ ./packages/shared/flows.yaml | wc -l) -gt "0" ]; then
+diff=$(git diff --cached --numstat)
+if [ $(echo "$diff" | grep -c "./docs-v2/integrations/all/" | grep -c "./packages/shared/flows.yaml") -gt "0" ]; then
     npm run docs:generate
     git add ./docs-v2/snippets/generated/
+fi
+
+if [ $(echo "$diff" | grep -c "./packages/api-public/") -gt "0" ]; then
+    npm run openapi:generate -w @nangohq/api-public
+    git add ./packages/api-public/openapi.json
 fi
