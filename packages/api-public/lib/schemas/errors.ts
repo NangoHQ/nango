@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { apiSchemaRegistry } from './schema.js';
+
 import type { FastifyReply, RawServerDefault, RouteGenericInterface } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -27,9 +29,9 @@ export const schemaUnauthorized = z.object({
     })
 });
 
-z.globalRegistry.add(schemaNotFound, { id: 'ResponseNotFound' });
-z.globalRegistry.add(schemaServerError, { id: 'ResponseServerError' });
-z.globalRegistry.add(schemaUnauthorized, { id: 'ResponseUnauthorized' });
+apiSchemaRegistry.add(schemaNotFound, { id: 'ResponseNotFound' });
+apiSchemaRegistry.add(schemaServerError, { id: 'ResponseServerError' });
+apiSchemaRegistry.add(schemaUnauthorized, { id: 'ResponseUnauthorized' });
 
 type FastifyReplyError<TCode extends number, TError extends z.ZodObject<any>> = FastifyReply<
     RouteGenericInterface,

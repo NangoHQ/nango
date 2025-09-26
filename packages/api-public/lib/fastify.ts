@@ -1,12 +1,13 @@
 import path from 'node:path';
 
 import cors from '@fastify/cors';
-import { jsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import { createJsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
 import { isProd, isTest, report } from '@nangohq/utils';
 
 import { authPlugin } from './middlewares/auth.js';
 import { resNotFound, resServerError } from './schemas/errors.js';
+import { apiSchemaRegistry } from './schemas/schema.js';
 import { logger } from './utils/logger.js';
 
 import type { FastifyInstance } from 'fastify';
@@ -57,7 +58,9 @@ export default async function createApp(f: FastifyInstance): Promise<void> {
                     description: 'Documentation'
                 }
             },
-            transform: jsonSchemaTransform,
+            transform: createJsonSchemaTransform({
+                schemaRegistry: apiSchemaRegistry
+            }),
             transformObject: jsonSchemaTransformObject
         });
     }

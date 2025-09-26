@@ -2,6 +2,8 @@ import * as z from 'zod';
 
 import { basePublicUrl } from '@nangohq/utils';
 
+import { apiSchemaRegistry } from './schema.js';
+
 import type { IntegrationConfig } from '@nangohq/types';
 
 export const schemaIntegration = z.strictObject({
@@ -13,7 +15,7 @@ export const schemaIntegration = z.strictObject({
     updatedAt: z.iso.datetime()
 });
 
-z.globalRegistry.add(schemaIntegration, { id: 'Integration' });
+apiSchemaRegistry.add(schemaIntegration, { id: 'Integration' });
 
 export type APIIntegration = z.infer<typeof schemaIntegration>;
 
