@@ -7,6 +7,10 @@ import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/confluence/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/confluence/PreBuiltUseCases.mdx"
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="confluence" />
+
 <Overview />
 <PreBuiltTooling />
 <PreBuiltUseCases />
@@ -59,11 +63,11 @@ import PreBuiltUseCases from "/snippets/generated/confluence/PreBuiltUseCases.md
   </Step>
   <Step title="Make your app available to users (optional)">
     If you want to distribute your app to other users:
-    
+
     1. In the left sidebar, select **Distribution**.
     2. In **Distribution controls**, click the **Edit** button, then select the **Sharing** radio button.
     3. Return to the Authorization page and copy the Authorization URL to share with your users.
-    
+
     Note: By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.
   </Step>
   <Step title="Next">
@@ -76,8 +80,8 @@ import PreBuiltUseCases from "/snippets/generated/confluence/PreBuiltUseCases.md
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
+| Topic | Links |
+| - | - |
 | General | [Atlassian Developer Portal](https://developer.atlassian.com/) |
 | | [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/) |
 | | [Confluence Cloud Platform Documentation](https://developer.atlassian.com/cloud/confluence/) |

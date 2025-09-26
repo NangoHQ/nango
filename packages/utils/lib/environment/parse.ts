@@ -36,7 +36,7 @@ export const ENVS = z.object({
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
-    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(5),
+    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
@@ -229,6 +229,9 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
+
+    // API Down Watch
+    API_DOWN_WATCH_PUBLIC_KEY: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
