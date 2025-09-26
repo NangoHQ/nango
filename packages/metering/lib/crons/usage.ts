@@ -98,8 +98,12 @@ const observability = {
                 });
 
                 // Send billing events
+                const frequencyMs = cronMinutes * 60 * 1000; // for simplicity we use the cron frequency as the event interval
                 const billingEvents = metricsWithAccount.map(({ accountId, environmentId, count, sizeBytes }) => {
-                    return { type: 'records' as const, properties: { count, accountId, environmentId, timestamp: new Date(), telemetry: { sizeBytes } } };
+                    return {
+                        type: 'records' as const,
+                        properties: { count, accountId, environmentId, timestamp: new Date(), frequencyMs, telemetry: { sizeBytes } }
+                    };
                 });
                 const sendBilling = usageBilling.add(billingEvents);
                 if (sendBilling.isErr()) {

@@ -25,7 +25,7 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                 case 'monthly_active_records':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'records':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
                 case 'billable_active_connections':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'billable_connections':
@@ -136,6 +136,7 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         telemetry: {
                             sizeBytes: _a.properties.telemetry.sizeBytes + b.properties.telemetry.sizeBytes
                         },
+                        frequencyMs: b.properties.frequencyMs,
                         count: a.properties.count + b.properties.count
                     }
                 };

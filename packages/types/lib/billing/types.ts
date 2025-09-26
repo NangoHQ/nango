@@ -75,6 +75,7 @@ export type RecordsBillingEvent = BillingEventBase<
     'records',
     {
         environmentId: number;
+        frequencyMs: number;
         telemetry: {
             sizeBytes: number;
         };

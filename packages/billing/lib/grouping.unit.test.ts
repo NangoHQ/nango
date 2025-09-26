@@ -111,6 +111,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 100,
                     timestamp: new Date(),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 2048
                     }
@@ -428,7 +429,7 @@ describe('BillingEventGrouping', () => {
                 }
             });
         });
-        it('should aggregate recoreds', () => {
+        it('should aggregate records', () => {
             const a: BillingEvent = {
                 type: 'records',
                 properties: {
@@ -436,6 +437,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 2048
                     }
@@ -448,6 +450,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 4096
                     }
@@ -461,6 +464,7 @@ describe('BillingEventGrouping', () => {
                     environmentId: 3,
                     count: 36,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
                     telemetry: {
                         sizeBytes: 6144
                     }
