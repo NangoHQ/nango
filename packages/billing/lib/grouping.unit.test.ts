@@ -133,14 +133,6 @@ describe('BillingEventGrouping', () => {
                     count: 11,
                     timestamp: new Date()
                 }
-            },
-            {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 12,
-                    timestamp: new Date()
-                }
             }
         ];
         const keys = events.map((event) => grouping.groupingKey(event));
@@ -153,32 +145,11 @@ describe('BillingEventGrouping', () => {
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
             'records|accountId:1|environmentId:3',
             'billable_connections_v2|accountId:1',
-            'billable_connections|accountId:1',
-            'billable_active_connections|accountId:1'
+            'billable_connections|accountId:1'
         ]);
     });
 
     describe('aggregate', () => {
-        it('should aggregate billable_active_connections', () => {
-            const a: BillingEvent = {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 5,
-                    timestamp: new Date('2024-01-01T00:00:00Z')
-                }
-            };
-            const b: BillingEvent = {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 7,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
-                }
-            };
-            const aggregated = grouping.aggregate(a, b);
-            expect(aggregated).toEqual(b);
-        });
         it('should aggregate billable_connections', () => {
             const a: BillingEvent = {
                 type: 'billable_connections',

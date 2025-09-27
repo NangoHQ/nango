@@ -26,8 +26,6 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'records':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
-                case 'billable_active_connections':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'billable_connections':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
                 case 'billable_connections_v2':
@@ -180,8 +178,6 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
             }
             case 'billable_connections':
                 return b; // billable connections are already aggregated
-            case 'billable_active_connections':
-                return b; // billable active connections are already aggregated
             default:
                 ((_: never) => {
                     throw new Error(`Unhandled event type`);

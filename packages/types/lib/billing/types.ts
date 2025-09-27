@@ -145,8 +145,6 @@ export type ConnectionsBillingEventV2 = BillingEventBase<
     }
 >;
 
-export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
-
 export type BillingEvent =
     | MarBillingEvent
     | RecordsBillingEvent
@@ -155,5 +153,4 @@ export type BillingEvent =
     | WebhookForwardBillingEvent
     | FunctionExecutionsBillingEvent
     | ConnectionsBillingEvent
-    | ConnectionsBillingEventV2
-    | ActiveConnectionsBillingEvent;
+    | ConnectionsBillingEventV2;
