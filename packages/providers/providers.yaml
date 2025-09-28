@@ -7849,6 +7849,14 @@ microsoft:
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 
+microsoft-excel:
+    display_name: Microsoft Excel
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/microsoft-excel
+
 microsoft-oauth2-cc:
     display_name: Microsoft (Client Credentials)
     auth_mode: OAUTH2_CC
