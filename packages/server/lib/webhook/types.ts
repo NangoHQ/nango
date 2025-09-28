@@ -143,3 +143,10 @@ export interface HubSpotWebhook {
     sourceId?: string;
     changeFlag?: string;
 }
+
+export interface jobdivaWebhookResponse {
+    type: 'activity' | 'contact' | 'job' | 'candidate' | 'company';
+    operation: 'Insert' | 'Update' | 'delete';
+    id: string;
+    data: any[];
+}
