@@ -438,7 +438,7 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     return new URL(interpolatedUrl);
 }
 
-export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
     if (!pem || typeof pem !== 'string') {
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
