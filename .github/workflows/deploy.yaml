@@ -8,7 +8,7 @@ on:
                 type: choice
                 description: 'stage to deploy to, defaults to staging'
                 required: true
-                default: 'staging'
+                default: 'development'
                 options:
                     - development
                     - staging
