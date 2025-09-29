@@ -118,6 +118,7 @@ jobs:
     deploy_runners_aws:
         if: inputs.service == 'runner'
         runs-on: ubuntu-latest
+        environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -125,10 +126,9 @@ jobs:
               env:
                   API_KEY: ${{ secrets.RENDER_API_KEY }}
                   ENVIRONMENT: ${{ inputs.stage }}
-                  INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
               run: |
-                  NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev", "development": "api-development.nango.dev" }')[inputs.stage] }}
-                  curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners_k8s/rollout" \
+                  curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_k8s/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
@@ -171,6 +171,7 @@ jobs:
     deploy_runners:
         if: inputs.service == 'runner' && inputs.stage == 'production'
         runs-on: ubuntu-latest
+        environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -179,7 +180,7 @@ jobs:
                   API_KEY: ${{ secrets.RENDER_API_KEY }}
                   ENVIRONMENT: ${{ inputs.stage }}
                   RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
-                  INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
               run: |
                   NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev" }')[inputs.stage] }}
                   curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners/rollout" \
