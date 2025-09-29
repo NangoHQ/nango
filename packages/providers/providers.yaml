@@ -269,6 +269,12 @@ adp-run:
     docs: https://docs.nango.dev/integrations/all/adp-run
     docs_connect: https://docs.nango.dev/integrations/all/adp-run/connect
 
+adp-workforce-now:
+    alias: adp
+    display_name: ADP Workforce Now
+    docs: https://docs.nango.dev/integrations/all/adp-workforce-now
+    docs_connect: https://docs.nango.dev/integrations/all/adp-workforce-now/connect
+
 adp-workforce-now-next-gen:
     alias: adp
     display_name: ADP Workforce Now Next Generation
