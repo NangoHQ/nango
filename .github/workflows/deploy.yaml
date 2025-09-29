@@ -6,7 +6,7 @@ on:
         inputs:
             stage:
                 type: choice
-                description: 'stage to deploy to, defaults to staging'
+                description: 'stage to deploy to, defaults to development'
                 required: true
                 default: 'development'
                 options:
