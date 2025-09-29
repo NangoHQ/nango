@@ -39,6 +39,7 @@ async function getRedis(url: string): Promise<RedisClientType> {
 export async function destroy() {
     if (kvstorePromise) {
         await (await kvstorePromise).destroy();
+        kvstorePromise = undefined;
     }
     if (redis) {
         await redis.disconnect();
@@ -50,6 +51,14 @@ async function createKVStore(): Promise<KVStore> {
     if (url) {
         const store = new RedisKVStore(await getRedis(url));
         return store;
+    } else {
+        const endpoint = process.env['NANGO_REDIS_HOST'];
+        const port = process.env['NANGO_REDIS_PORT'] || 6379;
+        const auth = process.env['NANGO_REDIS_AUTH'];
+        if (endpoint && port && auth) {
+            const store = new RedisKVStore(await getRedis(`rediss://:${auth}@${endpoint}:${port}`));
+            return store;
+        }
     }
 
     return new InMemoryKVStore();
