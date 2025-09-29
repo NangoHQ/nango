@@ -158,7 +158,7 @@ describe(`POST ${endpoint}`, () => {
             runs: 'every day',
             sdk_version: expect.any(String),
             sync_type: 'full',
-            track_deletes: true,
+            track_deletes: false,
             updated_at: expect.any(Date),
             version: '1.0.0',
             webhook_subscriptions: null
