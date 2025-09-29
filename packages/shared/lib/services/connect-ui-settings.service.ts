@@ -23,7 +23,7 @@ export function getDefaultConnectUISettings(): ConnectUISettings {
     };
 }
 
-export async function getConnectUISettings(db: Knex, environmentId: number): Promise<Result<ConnectUISettings | null>> {
+export async function getRawConnectUISettings(db: Knex, environmentId: number): Promise<Result<ConnectUISettings | null>> {
     try {
         const settings = await db<DBConnectUISettings>('connect_ui_settings').where('environment_id', environmentId).first();
         if (!settings) {
@@ -37,6 +37,33 @@ export async function getConnectUISettings(db: Knex, environmentId: number): Pro
     } catch (err) {
         return Err(new Error('failed_to_get_connect_ui_settings', { cause: err }));
     }
+}
+
+export async function getConnectUISettings(db: Knex, environmentId: number, plan?: DBPlan | null): Promise<Result<ConnectUISettings>> {
+    const connectUISettings = await getRawConnectUISettings(db, environmentId);
+    if (connectUISettings.isErr()) {
+        return Err(connectUISettings.error);
+    }
+
+    const defaultSettings = getDefaultConnectUISettings();
+
+    if (!connectUISettings.value) {
+        return Ok(defaultSettings);
+    }
+
+    const finalSettings = connectUISettings.value;
+
+    // Override settings to defaults if the plan does not have the feature
+    // This way if the plan downgrades, they go back to default without resetting settings in db
+    if (!canCustomizeConnectUITheme(plan)) {
+        finalSettings.theme = defaultSettings.theme;
+    }
+
+    if (!canDisableConnectUIWatermark(plan)) {
+        finalSettings.showWatermark = defaultSettings.showWatermark;
+    }
+
+    return Ok(finalSettings);
 }
 
 export async function upsertConnectUISettings(db: Knex, environmentId: number, settings: ConnectUISettings): Promise<Result<void>> {
