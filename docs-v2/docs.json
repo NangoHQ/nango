@@ -272,6 +272,7 @@
               "integrations/all/adobe",
               "integrations/all/adobe-umapi",
               "integrations/all/adp",
+              "integrations/all/adp-lyric",
               "integrations/all/adp-run",
               "integrations/all/adp-workforce-now",
               "integrations/all/adp-workforce-now-next-gen",
