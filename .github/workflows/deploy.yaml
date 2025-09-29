@@ -134,7 +134,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_server:
-        if: inputs.service == 'server' && inputs.stage != 'staging'
+        if: inputs.service == 'server' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -152,7 +152,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_jobs:
-        if: inputs.service == 'jobs' && inputs.stage != 'staging'
+        if: inputs.service == 'jobs' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -169,7 +169,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_runners:
-        if: inputs.service == 'runner' && inputs.stage != 'staging'
+        if: inputs.service == 'runner' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -188,7 +188,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_persist:
-        if: inputs.service == 'persist' && inputs.stage != 'staging'
+        if: inputs.service == 'persist' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -205,7 +205,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
-        if: inputs.service == 'orchestrator' && inputs.stage != 'staging'
+        if: inputs.service == 'orchestrator' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -222,7 +222,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_metering:
-        if: inputs.service == 'metering' && inputs.stage != 'staging'
+        if: inputs.service == 'metering' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
