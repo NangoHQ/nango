@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { EnvironmentDropdown } from './EnvironmentDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
+import UsageCard from './UsageCard';
 import {
     Sidebar,
     SidebarContent,
@@ -15,8 +16,7 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem
-} from './ui/sidebar';
-import UsageCard from '@/components-v2/UsageCard';
+} from '../ui/sidebar';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { apiPatchUser } from '@/hooks/useUser';

@@ -1,11 +1,11 @@
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
-import { Skeleton } from '../components/ui/Skeleton.js';
-import { useApiGetUsage } from '../hooks/usePlan.js';
-import { useStore } from '../store.js';
-import { cn } from '../utils/utils.js';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.js';
+import { Skeleton } from '../../components/ui/Skeleton.js';
+import { useApiGetUsage } from '../../hooks/usePlan.js';
+import { useStore } from '../../store.js';
+import { cn } from '../../utils/utils.js';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';
 
 function getColorForUsage(usage: number, limit: number | null) {

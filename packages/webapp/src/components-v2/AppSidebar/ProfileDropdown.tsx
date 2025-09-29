@@ -2,8 +2,8 @@ import { ChevronsUpDown, CreditCard, LogOut, Sparkle, UserRoundCog, Users } from
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuItem } from './ui/sidebar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
