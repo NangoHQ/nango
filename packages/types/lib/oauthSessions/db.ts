@@ -15,7 +15,7 @@ export interface DBOAuthSession extends Timestamps {
     activity_log_id: string;
 
     // Needed for OAuth 2.0 PKCE
-    code_verifier: string;
+    code_verifier: string | null;
 
     // Needed for oAuth 1.0a
     request_token_secret: string | null;
