@@ -70,7 +70,7 @@ jobs:
                   ./scripts/build_docker.sh build ${{ env.SHA }}
 
             - name: Push image
-              if: needs.changes.outputs.should_skip != 'true'
+              if: needs.changes.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
               run: |
                   docker push nangohq/nango:${{ env.SHA }}
 
