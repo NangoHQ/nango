@@ -44,8 +44,8 @@ export async function exec(): Promise<void> {
         }
 
         try {
+            // TODO: get rid of billing exports which are legacy events
             await billing.exportBillableConnections();
-            await billing.exportActiveConnections();
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
             logger.info(`✅ done`);
@@ -61,11 +61,23 @@ const observability = {
     exportConnectionsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.connections', async (span) => {
             try {
-                const connRes = await connectionService.countMetric();
-                if (connRes.isErr()) {
-                    throw connRes.error;
+                const counts = await connectionService.countMetric();
+                if (counts.isErr()) {
+                    throw counts.error;
                 }
-                for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
+                for (const { accountId, count, withActions, withSyncs, withWebhooks } of counts.value) {
+                    usageBilling.add([
+                        {
+                            type: 'billable_connections_v2' as const,
+                            properties: {
+                                accountId,
+                                count,
+                                timestamp: new Date(),
+                                frequencyMs: cronMinutes * 60 * 1000
+                            }
+                        }
+                    ]);
+
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
                     metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
@@ -98,8 +110,12 @@ const observability = {
                 });
 
                 // Send billing events
+                const frequencyMs = cronMinutes * 60 * 1000;
                 const billingEvents = metricsWithAccount.map(({ accountId, environmentId, count, sizeBytes }) => {
-                    return { type: 'records' as const, properties: { count, accountId, environmentId, timestamp: new Date(), telemetry: { sizeBytes } } };
+                    return {
+                        type: 'records' as const,
+                        properties: { count, accountId, environmentId, timestamp: new Date(), frequencyMs, telemetry: { sizeBytes } }
+                    };
                 });
                 const sendBilling = usageBilling.add(billingEvents);
                 if (sendBilling.isErr()) {
@@ -151,29 +167,6 @@ const billing = {
             } catch (err) {
                 span.setTag('error', err);
                 report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
-            }
-        });
-    },
-    exportActiveConnections: async (): Promise<void> => {
-        await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.active.connections', async (span) => {
-            try {
-                const now = new Date();
-                const res = await connectionService.billableActiveConnections(now);
-                if (res.isErr()) {
-                    throw res.error;
-                }
-
-                const events = res.value.map(({ accountId, count }) => {
-                    return { type: 'billable_active_connections' as const, properties: { count, accountId, timestamp: now } };
-                });
-
-                const sendRes = usageBilling.add(events);
-                if (sendRes.isErr()) {
-                    throw sendRes.error;
-                }
-            } catch (err) {
-                span.setTag('error', err);
-                report(new Error('cron_failed_to_export_billable_active_connections', { cause: err }));
             }
         });
     }

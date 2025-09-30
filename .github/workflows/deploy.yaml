@@ -6,10 +6,11 @@ on:
         inputs:
             stage:
                 type: choice
-                description: 'stage to deploy to, defaults to staging'
+                description: 'stage to deploy to, defaults to development'
                 required: true
-                default: 'staging'
+                default: 'development'
                 options:
+                    - development
                     - staging
                     - production
             service:
@@ -31,12 +32,7 @@ jobs:
     deploy_app_ui_aws:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
-        env:
-            API_DOMAIN: ${{ (inputs.stage == 'production' && 'https://api.nango.dev' || 'https://api-staging.nango.dev') }}
-            DEPLOY_APP_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_APP_UI_ROLE || secrets.STAGING_DEPLOY_APP_UI_ROLE) }}
-            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
-            APP_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_BUCKET || secrets.STAGING_APP_UI_BUCKET) }}
-            APP_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_APP_UI_DISTRIBUTION_ID || secrets.STAGING_APP_UI_DISTRIBUTION_ID) }}
+        environment: ${{ inputs.stage }}
         permissions:
             id-token: write
             contents: read
@@ -50,30 +46,26 @@ jobs:
             - name: Replace env.js source with api path in dist/index.html
               run: |
                   FILE="packages/webapp/dist/index.html"
-                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ env.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
+                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ vars.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ env.DEPLOY_APP_UI_ROLE }}
+                  role-to-assume: ${{ vars.DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ env.AWS_REGION }}
+                  aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Webapp to S3
               run: |
-                  aws s3 sync packages/webapp/dist/ s3://${{ env.APP_UI_BUCKET }} --delete
+                  aws s3 sync packages/webapp/dist/ s3://${{ vars.APP_UI_BUCKET }} --delete
             - name: Create invalidation
               run: |
-                  aws cloudfront create-invalidation --distribution-id ${{ env.APP_UI_DISTRIBUTION_ID }} --paths "/*"
+                  aws cloudfront create-invalidation --distribution-id ${{ vars.APP_UI_DISTRIBUTION_ID }} --paths "/*"
     deploy_connect_ui_aws:
         if: inputs.service == 'connect_ui'
         runs-on: ubuntu-latest
         permissions:
             id-token: write
             contents: read
-        env:
-            DEPLOY_CONNECT_UI_ROLE: ${{ (inputs.stage == 'production' && secrets.PROD_DEPLOY_CONNECT_UI_ROLE || secrets.STAGING_DEPLOY_CONNECT_UI_ROLE) }}
-            AWS_REGION: ${{ (inputs.stage == 'production' && secrets.PROD_AWS_REGION || secrets.STAGING_AWS_REGION) }}
-            CONNECT_UI_BUCKET: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_BUCKET || secrets.STAGING_CONNECT_UI_BUCKET) }}
-            CONNECT_UI_DISTRIBUTION_ID: ${{ (inputs.stage == 'production' && secrets.PROD_CONNECT_UI_DISTRIBUTION_ID || secrets.STAGING_CONNECT_UI_DISTRIBUTION_ID) }}
+        environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -84,15 +76,15 @@ jobs:
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{ env.DEPLOY_CONNECT_UI_ROLE }}
+                  role-to-assume: ${{ vars.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ env.AWS_REGION }}
+                  aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Connect UI to S3
               run: |
-                  aws s3 sync packages/connect-ui/dist/ s3://${{ env.CONNECT_UI_BUCKET }} --delete
+                  aws s3 sync packages/connect-ui/dist/ s3://${{ vars.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
               run: |
-                  aws cloudfront create-invalidation --distribution-id ${{ env.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
+                  aws cloudfront create-invalidation --distribution-id ${{ vars.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
 
     deploy_aws:
         if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
@@ -126,6 +118,7 @@ jobs:
     deploy_runners_aws:
         if: inputs.service == 'runner'
         runs-on: ubuntu-latest
+        environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -133,16 +126,15 @@ jobs:
               env:
                   API_KEY: ${{ secrets.RENDER_API_KEY }}
                   ENVIRONMENT: ${{ inputs.stage }}
-                  INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
               run: |
-                  NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev" }')[inputs.stage] }}
-                  curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners_k8s/rollout" \
+                  curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_k8s/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_server:
-        if: inputs.service == 'server' && inputs.stage != 'staging'
+        if: inputs.service == 'server' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -160,7 +152,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_jobs:
-        if: inputs.service == 'jobs' && inputs.stage != 'staging'
+        if: inputs.service == 'jobs' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -177,8 +169,9 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_runners:
-        if: inputs.service == 'runner' && inputs.stage != 'staging'
+        if: inputs.service == 'runner' && inputs.stage == 'production'
         runs-on: ubuntu-latest
+        environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -187,7 +180,7 @@ jobs:
                   API_KEY: ${{ secrets.RENDER_API_KEY }}
                   ENVIRONMENT: ${{ inputs.stage }}
                   RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
-                  INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
               run: |
                   NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev" }')[inputs.stage] }}
                   curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners/rollout" \
@@ -196,7 +189,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
 
     deploy_persist:
-        if: inputs.service == 'persist' && inputs.stage != 'staging'
+        if: inputs.service == 'persist' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -213,7 +206,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
-        if: inputs.service == 'orchestrator' && inputs.stage != 'staging'
+        if: inputs.service == 'orchestrator' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -230,7 +223,7 @@ jobs:
                     --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_metering:
-        if: inputs.service == 'metering' && inputs.stage != 'staging'
+        if: inputs.service == 'metering' && inputs.stage == 'production'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
