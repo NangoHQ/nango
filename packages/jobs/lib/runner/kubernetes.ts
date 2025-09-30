@@ -171,7 +171,7 @@ class Kubernetes {
                 template: {
                     metadata: {
                         annotations: {
-                            'ad.datadoghq.com/orchestrator.logs': `[{"source":"nango","service":"${name}"}]`
+                            [`ad.datadoghq.com/${name}.logs`]: `[{"source":"nango","service":"${name}"}]`
                         },
                         labels: { app: name }
                     },
