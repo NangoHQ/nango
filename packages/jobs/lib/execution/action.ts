@@ -12,7 +12,7 @@ import {
     getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
@@ -99,8 +99,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
-        metrics.increment(metrics.Types.ACTION_EXECUTION, 1, { accountId: account.id });
-
         const res = await startScript({
             taskId: task.id,
             nangoProps,
@@ -182,8 +180,6 @@ export async function handleActionSuccess({
         integration: nangoProps.providerConfigKey
     });
     void logCtx.success();
-
-    metrics.increment(metrics.Types.ACTION_SUCCESS);
 
     const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId,
@@ -413,7 +409,6 @@ function onFailure({
             }
         });
     }
-    metrics.increment(metrics.Types.ACTION_FAILURE);
 }
 
 function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): string {
