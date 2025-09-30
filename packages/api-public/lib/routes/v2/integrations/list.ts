@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { configService } from '@nangohq/shared';
 
 import { auth } from '../../../middlewares/auth.js';
-import { resServerError, schemaNotFound, schemaServerError } from '../../../schemas/errors.js';
+import { resServerError, schemaBadRequest, schemaNotFound, schemaServerError } from '../../../schemas/errors.js';
 import { formatIntegration, schemaIntegration } from '../../../schemas/integrations.js';
 
 import type { FastifyPluginCallback } from 'fastify';
@@ -28,6 +28,7 @@ const plugin: FastifyPluginCallback = (fastify) => {
                     success: z.boolean(),
                     data: z.array(schemaIntegration)
                 }),
+                400: schemaBadRequest,
                 404: schemaNotFound,
                 500: schemaServerError
             }
@@ -41,7 +42,10 @@ const plugin: FastifyPluginCallback = (fastify) => {
             }
 
             const configs = await configService.listProviderConfigs(db.knex, env.id);
-            res.status(200).send({ success: true, data: configs.map(formatIntegration) });
+            res.status(200).send({
+                success: true,
+                data: configs.map(formatIntegration)
+            });
         }
     });
 };

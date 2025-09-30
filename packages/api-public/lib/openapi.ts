@@ -30,10 +30,10 @@ export interface paths {
                     };
                 };
                 /** @description Default Response */
-                404: {
+                400: {
                     headers: Record<string, unknown>;
                     content: {
-                        'application/json': components['schemas']['ResponseNotFound'];
+                        'application/json': components['schemas']['ResponseBadRequest'];
                     };
                 };
             };
@@ -115,6 +115,20 @@ export interface components {
                 message: string;
             };
         };
+        ResponseBadRequestInput: {
+            error: {
+                /** @constant */
+                code: 'bad_request';
+                message: string;
+                validation: ({
+                    keyword: string;
+                    instancePath: string;
+                    schemaPath: string;
+                    message: string;
+                    params?: Record<string, never>;
+                } & Record<string, unknown>)[];
+            };
+        };
         IntegrationInput: {
             uniqueName: string;
             displayName: string;
@@ -148,6 +162,20 @@ export interface components {
                 /** @constant */
                 code: 'unauthorized';
                 message: string;
+            };
+        };
+        ResponseBadRequest: {
+            error: {
+                /** @constant */
+                code: 'bad_request';
+                message: string;
+                validation: ({
+                    keyword: string;
+                    instancePath: string;
+                    schemaPath: string;
+                    message: string;
+                    params?: Record<string, never>;
+                } & Record<string, unknown>)[];
             };
         };
         Integration: {
@@ -191,6 +219,13 @@ export interface operations {
                 };
             };
             /** @description Default Response */
+            400: {
+                headers: Record<string, unknown>;
+                content: {
+                    'application/json': components['schemas']['ResponseBadRequest'];
+                };
+            };
+            /** @description Default Response */
             404: {
                 headers: Record<string, unknown>;
                 content: {
@@ -225,6 +260,13 @@ export interface operations {
                         success: boolean;
                         data: components['schemas']['Integration'];
                     };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: Record<string, unknown>;
+                content: {
+                    'application/json': components['schemas']['ResponseBadRequest'];
                 };
             };
             /** @description Default Response */

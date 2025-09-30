@@ -37,7 +37,8 @@
                         "additionalProperties": false
                     }
                 },
-                "required": ["error"]
+                "required": ["error"],
+                "additionalProperties": false
             },
             "ResponseServerErrorInput": {
                 "type": "object",
@@ -62,7 +63,8 @@
                         "additionalProperties": false
                     }
                 },
-                "required": ["error"]
+                "required": ["error"],
+                "additionalProperties": false
             },
             "ResponseUnauthorizedInput": {
                 "type": "object",
@@ -82,7 +84,55 @@
                         "additionalProperties": false
                     }
                 },
-                "required": ["error"]
+                "required": ["error"],
+                "additionalProperties": false
+            },
+            "ResponseBadRequestInput": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "bad_request"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "validation": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "keyword": {
+                                            "type": "string"
+                                        },
+                                        "instancePath": {
+                                            "type": "string"
+                                        },
+                                        "schemaPath": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "params": {
+                                            "type": "object",
+                                            "properties": {}
+                                        }
+                                    },
+                                    "required": ["keyword", "instancePath", "schemaPath", "message"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["code", "message", "validation"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"],
+                "additionalProperties": false
             },
             "IntegrationInput": {
                 "type": "object",
@@ -186,6 +236,54 @@
                 "required": ["error"],
                 "additionalProperties": false
             },
+            "ResponseBadRequest": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "const": "bad_request"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "validation": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "keyword": {
+                                            "type": "string"
+                                        },
+                                        "instancePath": {
+                                            "type": "string"
+                                        },
+                                        "schemaPath": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "params": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["keyword", "instancePath", "schemaPath", "message"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["code", "message", "validation"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": ["error"],
+                "additionalProperties": false
+            },
             "Integration": {
                 "type": "object",
                 "properties": {
@@ -238,12 +336,12 @@
                             }
                         }
                     },
-                    "404": {
+                    "400": {
                         "description": "Default Response",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ResponseNotFound"
+                                    "$ref": "#/components/schemas/ResponseBadRequest"
                                 }
                             }
                         }
@@ -295,6 +393,16 @@
                                     },
                                     "required": ["success", "data"],
                                     "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseBadRequest"
                                 }
                             }
                         }
@@ -360,6 +468,16 @@
                                     },
                                     "required": ["success", "data"],
                                     "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseBadRequest"
                                 }
                             }
                         }

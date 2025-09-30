@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { schemaNotFound } from '../schemas/errors.js';
+import { schemaBadRequest } from '../schemas/errors.js';
 
 import type { FastifyPluginCallback } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -15,7 +15,7 @@ const plugin: FastifyPluginCallback = (fastify) => {
                 200: z.object({
                     success: z.boolean()
                 }),
-                404: schemaNotFound
+                400: schemaBadRequest
             }
         },
         handler: (_, res) => {

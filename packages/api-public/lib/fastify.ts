@@ -1,12 +1,18 @@
 import path from 'node:path';
 
 import cors from '@fastify/cors';
-import { createJsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import {
+    createJsonSchemaTransform,
+    createJsonSchemaTransformObject,
+    hasZodFastifySchemaValidationErrors,
+    serializerCompiler,
+    validatorCompiler
+} from 'fastify-type-provider-zod';
 
 import { isProd, isTest, report } from '@nangohq/utils';
 
 import { authPlugin } from './middlewares/auth.js';
-import { resNotFound, resServerError } from './schemas/errors.js';
+import { resBadRequest, resNotFound, resServerError } from './schemas/errors.js';
 import { apiSchemaRegistry } from './schemas/schema.js';
 import { logger } from './utils/logger.js';
 
@@ -61,11 +67,16 @@ export default async function createApp(f: FastifyInstance): Promise<void> {
             transform: createJsonSchemaTransform({
                 schemaRegistry: apiSchemaRegistry
             }),
-            transformObject: jsonSchemaTransformObject
+            transformObject: createJsonSchemaTransformObject({
+                schemaRegistry: apiSchemaRegistry
+            })
         });
     }
 
     f.setErrorHandler(function (error, _req, res) {
+        if (hasZodFastifySchemaValidationErrors(error)) {
+            return resBadRequest(res as any, 'Invalid payload', error.validation);
+        }
         return resServerError(res as any, error instanceof Error ? error.message : 'Server Error', report(error));
     });
 

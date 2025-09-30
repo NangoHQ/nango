@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { configService } from '@nangohq/shared';
 
 import { auth } from '../../../../middlewares/auth.js';
-import { resNotFound, resServerError, schemaNotFound, schemaServerError } from '../../../../schemas/errors.js';
+import { resNotFound, resServerError, schemaBadRequest, schemaNotFound, schemaServerError } from '../../../../schemas/errors.js';
 import { formatIntegration, schemaIntegration } from '../../../../schemas/integrations.js';
 
 import type { FastifyPluginCallback } from 'fastify';
@@ -29,6 +29,7 @@ const plugin: FastifyPluginCallback = (fastify) => {
                     success: z.boolean(),
                     data: schemaIntegration
                 }),
+                400: schemaBadRequest,
                 404: schemaNotFound,
                 500: schemaServerError
             }
