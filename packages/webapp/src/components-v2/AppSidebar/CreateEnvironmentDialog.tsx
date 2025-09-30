@@ -78,7 +78,7 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input type="text" placeholder="my-environment-name" autoComplete="off" data-form-type="other" {...field} />
+                                        <Input type="text" placeholder="my-environment-name" {...field} />
                                     </FormControl>
                                     <FormDescription>*Must be lowercase letters, numbers, underscores and dashes.</FormDescription>
                                     <FormMessage />

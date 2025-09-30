@@ -14,6 +14,10 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
                 'aria-invalid:focus-error aria-invalid:border-feedback-error-border',
                 className
             )}
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
+            data-protonpass-ignore="true"
             {...props}
         />
     );
