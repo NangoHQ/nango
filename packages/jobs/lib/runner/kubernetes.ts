@@ -463,7 +463,7 @@ class Kubernetes {
         return {
             requests: {
                 cpu: '500m',
-                memory: '1023Mi'
+                memory: '512Mi'
             },
             limits: {
                 cpu: '500m',
