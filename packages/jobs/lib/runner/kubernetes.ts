@@ -170,6 +170,9 @@ class Kubernetes {
                 selector: { matchLabels: { app: name } },
                 template: {
                     metadata: {
+                        annotations: {
+                            'ad.datadoghq.com/orchestrator.logs': `[{"source":"nango","service":"${name}"}]`
+                        },
                         labels: { app: name }
                     },
                     spec: {
