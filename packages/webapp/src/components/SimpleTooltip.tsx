@@ -5,7 +5,7 @@ import type React from 'react';
 
 export const SimpleTooltip: React.FC<
     React.PropsWithChildren<{ tooltipContent: React.ReactNode; delay?: number } & React.ComponentPropsWithoutRef<typeof Content>>
-> = ({ tooltipContent, delay, children, ...rest }) => {
+> = ({ tooltipContent, delay, children, className, ...rest }) => {
     if (!tooltipContent) {
         return <>{children}</>;
     }
