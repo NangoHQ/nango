@@ -1,48 +1,85 @@
 ---
-title: Greenhouse (Harvest API)
-sidebarTitle: Greenhouse (Harvest API)
+title: 'Greenhouse (Harvest API)'
+sidebarTitle: 'Greenhouse (Harvest API)'
+description: 'Access the Greenhouse Harvest API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/greenhouse-harvest/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/greenhouse-harvest/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Greenhouse (Harvest API)_.
+      </Step>
+      <Step title="Authorize Greenhouse">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Greenhouse Harvest credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Greenhouse Harvest API">
+        Let's make your first request to the Greenhouse Harvest API (fetch a list of organization's candidates). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v1/candidates?per_page=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            <Tab title="Node">
 
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-## Setup guide
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-_No setup guide yet._
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const res = await nango.get({
+              endpoint: '/v1/candidates',
+              params: {
+                per_page: 10
+              }
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-harvest.mdx)</Note>
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
 
+        </Tabs>
 
-## Useful links
--   [Authentication docs](https://developers.greenhouse.io/harvest.html#authentication)
--   [API Docs](https://developers.greenhouse.io/harvest.html#introduction)
--   [Rate Limiting](https://developers.greenhouse.io/harvest.html#rate-limiting) 
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-harvest.mdx)</Note>
+      </Step>
+    </Steps>
 
-## API gotchas
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-- Greenhouse (Harvest API) uses `Basic` auth mode by passing Greenhouse API key as the username and leaving the password field blank.
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Greenhouse accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | Authorization | [Guide to connect to Greenhouse Harvest API using Connect UI](/integrations/all/greenhouse-harvest/connect) |
+    | General | [Greenhouse Website](https://www.greenhouse.io/) |
+    | | [Greenhouse Dashboard](https://app.greenhouse.io/) |
+    | Developer | [Authentication docs](https://developers.greenhouse.io/harvest.html#authentication) |
+    | | [Harvest API Docs](https://developers.greenhouse.io/harvest.html#introduction) |
+    | | [Rate Limiting](https://developers.greenhouse.io/harvest.html#rate-limiting) |
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-harvest.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-harvest.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+     _None yet, add yours!_
 
-<Card title="Connect to Greenhouse (Harvest API)" icon="link" href="/integrations/all/greenhouse-harvest/connect" horizontal>
-  Guide to connect to Greenhouse (Harvest API) using Nango Connect.
-</Card>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-harvest.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

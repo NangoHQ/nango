@@ -5813,15 +5813,17 @@ greenhouse:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse/connect
     connection_config:
         resource:
             type: string
             title: Greenhouse API Domain
-            description: The Greenhouse API Domain you want to connect to
+            description: The Greenhouse API product domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: harvest
+            example: api
             suffix: .greenhouse.io
             prefix: https://
+            doc_section: '#step-1-finding-your-greenhouse-api-domain'
 
 greenhouse-basic:
     display_name: Greenhouse (Basic Auth)
@@ -5848,7 +5850,7 @@ greenhouse-basic:
         resource:
             type: string
             title: Greenhouse API Domain
-            description: The Greenhouse API Domain you want to connect to
+            description: The Greenhouse API product domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
             example: harvest
             suffix: .greenhouse.io
@@ -5862,7 +5864,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-2-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5897,7 +5899,7 @@ greenhouse-harvest:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-1-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5914,6 +5916,12 @@ greenhouse-job-board:
         - ats
     proxy:
         base_url: https://boards-api.greenhouse.io
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/boards/${connectionConfig.boardToken}
     docs: https://docs.nango.dev/integrations/all/greenhouse-job-board
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-job-board/connect
     credentials:
@@ -5923,7 +5931,7 @@ greenhouse-job-board:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5932,6 +5940,13 @@ greenhouse-job-board:
             # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
+    connection_config:
+        boardToken:
+            type: string
+            title: Board Token
+            description: The Job Board URL token to your Greenhouse account
+            order: 1
+            doc_section: '#step-1-finding-your-board-token'
 
 greenhouse-assessment:
     display_name: Greenhouse (Assessment API)
@@ -5957,7 +5972,7 @@ greenhouse-assessment:
             prefix: https://
             format: hostname
             order: 1
-            doc_section: '#step-1-obtaining-your-base-url'
+            doc_section: '#step-1-obtaining-your-assessment-base-url'
     credentials:
         username:
             type: string
@@ -5992,25 +6007,25 @@ greenhouse-onboarding:
     categories:
         - ats
     proxy:
-        base_url: https://onboarding-api.greenhouse.io/graphql
+        base_url: https://onboarding-api.greenhouse.io
         verification:
             headers:
                 content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /graphql?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
             title: Access Key
             description: The Access Key to your Greenhouse Onboarding account
             pattern: '^[a-zA-Z0-9-]+$'
-            doc_section: '#step-1-generating-your-access-and-secret-key'
+            doc_section: '#step-1-generating-your-access-and-secret-keys'
         password:
             type: string
             title: Secret Key
             description: The Secret Key to your Greenhouse Onboarding account
             pattern: '^[a-zA-Z0-9-]+$'
-            doc_section: '#step-1-generating-your-access-and-secret-key'
+            doc_section: '#step-1-generating-your-access-and-secret-keys'
     docs: https://docs.nango.dev/integrations/all/greenhouse-onboarding
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-onboarding/connect
 
