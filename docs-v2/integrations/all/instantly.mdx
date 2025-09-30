@@ -1,58 +1,89 @@
 ---
-title: Instantly
-sidebarTitle: Instantly
+title: 'Instantly'
+sidebarTitle: 'Instantly'
+description: 'Access the Instantly API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/instantly/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/instantly/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Instantly_.
+      </Step>
+      <Step title="Authorize Instantly">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Instantly credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Instantly API">
+        Let's make your first request to the Instantly API (fetch a list of campaigns). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v2/campaigns" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Accept: application/json"
+                ```
+            </Tab>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Required | Hypergrowth plan required for full API access |
-| Paid test account | ✅ Not required | Free account includes 100 tokens for testing |
-| Partnership | ❌ Not required | |
-| App review | ❌ Not required | |
-| Security audit | ❌ Not required | |
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-_No setup guide yet._
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+            const res = await nango.get({
+              endpoint: '/v2/campaigns',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
-## Useful links
+            console.log(JSON.stringify(res.data, 2, null));
+            ```
+            </Tab>
 
-- [Generate an API key](https://app.instantly.ai/app/settings/integrations)
-- [API docs](https://developer.instantly.ai)
-- [Rate limits documentation](https://developer.instantly.ai/getting-started/rate-limit)
+        </Tabs>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## API gotchas
+      </Step>
+    </Steps>
 
-- The Hypergrowth plan is required for full API access
-- Free accounts start with 100 API tokens for testing
-- Instantly has two API versions:
-  - v2 (current) - Recommended for new integrations
-    - Uses Bearer token authentication
-    - Supports multiple API keys with granular scopes
-    - Follows REST API standards
-    - No compatibility with v1
-  - v1 (deprecated 2025, maintained for a while)
-- Rate limit: 10 requests per second for both API versions
-- API keys can only be viewed once during creation
-- Multiple API keys can be created with different scopes for enhanced security
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Instantly accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | Authorization | [Guide to connect to Instantly using Connect UI](/integrations/all/instantly/connect) |
+    | General | [Instantly Website](https://instantly.ai/) |
+    | | [Instantly Dashboard](https://app.instantly.ai/app/accounts) |
+    | Developer | [Generate an API Key](https://app.instantly.ai/app/settings/integrations) |
+    | | [API Authorization](https://developer.instantly.ai/getting-started/authorization) |
+    | | [API Explorer (2.0.0)](https://developer.instantly.ai/api/v2) |
+    | | [Rate limits documentation](https://developer.instantly.ai/getting-started/rate-limit) |
 
-<Card title="Connect to Instantly" icon="link" href="/integrations/all/instantly/connect" horizontal>
-  Guide to connect to Instantly using Connect UI
-</Card>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+      - The Hypergrowth plan is required for full API access. Free accounts start with 100 API tokens for testing.
+      - Instantly has two API versions:
+        - **v2 (current)** - Recommended for new integrations. Uses Bearer token authentication, supports multiple API keys with granular scopes, follows REST API standards, and has no compatibility with v1.
+        - **v1 (deprecated 2025)** - Maintained for a while but not recommended for new integrations.
+      - Rate limit: 10 requests per second for both API versions.
+      - Multiple API keys can be created with different scopes for enhanced security.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
