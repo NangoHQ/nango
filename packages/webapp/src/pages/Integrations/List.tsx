@@ -6,7 +6,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CopyText } from '../../components/CopyText';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -26,12 +25,12 @@ export default function IntegrationList() {
     const { list, error } = useListIntegration(env);
 
     if (error) {
-        return <ErrorPageComponent title="Integrations" error={error.json} page={LeftNavBarItems.Integrations} />;
+        return <ErrorPageComponent title="Integrations" error={error.json} />;
     }
 
     if (!list) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Integrations - Nango</title>
                 </Helmet>
@@ -41,7 +40,7 @@ export default function IntegrationList() {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+        <DashboardLayout>
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
