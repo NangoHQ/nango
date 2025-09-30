@@ -9,24 +9,41 @@ on:
     merge_group:
 
 jobs:
-    lint-code:
+    changes:
         runs-on: ubuntu-latest
-
+        outputs:
+            docs_only: ${{ steps.filter.outputs.docs_only }}
         steps:
             - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs_only:
+                          - 'docs-v2/**'
+    lint-code:
+        needs: changes
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              if: needs.changes.outputs.docs_only != 'true'
               with:
                   fetch-depth: '0'
 
             - uses: actions/setup-node@v4
+              if: needs.changes.outputs.docs_only != 'true'
               with:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
             - name: Install dependencies
+              if: needs.changes.outputs.docs_only != 'true'
               run: npm ci
 
             - name: Build
+              if: needs.changes.outputs.docs_only != 'true'
               run: npm run ts-build
 
             - name: Lint
+              if: needs.changes.outputs.docs_only != 'true'
               run: npm run lint -- --quiet
