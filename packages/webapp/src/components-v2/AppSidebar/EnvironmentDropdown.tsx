@@ -66,21 +66,23 @@ export const EnvironmentDropdown: React.FC = () => {
                         </div>
                         <ChevronsUpDown className="w-4.5 h-4.5 text-text-primary" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="bottom" className="w-50 flex flex-col gap-2">
-                        {meta?.environments.map((environment) => (
-                            <DropdownMenuItem
-                                key={environment.name}
-                                onSelect={() => onSelect(environment.name)}
-                                data-active={env === environment.name}
-                                className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
-                            >
-                                <Check
-                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                    <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
+                        <div className="flex flex-col">
+                            {meta?.environments.map((environment) => (
+                                <DropdownMenuItem
+                                    key={environment.name}
+                                    onSelect={() => onSelect(environment.name)}
                                     data-active={env === environment.name}
-                                />
-                                <span className="capitalize">{environment.name}</span>
-                            </DropdownMenuItem>
-                        ))}
+                                    className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                >
+                                    <Check
+                                        className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                                        data-active={env === environment.name}
+                                    />
+                                    <span className="capitalize">{environment.name}</span>
+                                </DropdownMenuItem>
+                            ))}
+                        </div>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>
                                 <span tabIndex={0} className="w-full">
