@@ -118,7 +118,7 @@ export class ConnectUI {
 
     private setupEventListeners() {
         this.listener = (event) => {
-            if (event.origin !== baseURL.origin) {
+            if (event.origin !== new URL(this.baseURL).origin) {
                 return;
             }
 
