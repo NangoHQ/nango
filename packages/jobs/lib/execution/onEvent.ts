@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
@@ -98,8 +98,6 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        metrics.increment(metrics.Types.ON_EVENT_SCRIPT_EXECUTION, 1, { accountId: account.id });
 
         const res = await startScript({
             taskId: task.id,
