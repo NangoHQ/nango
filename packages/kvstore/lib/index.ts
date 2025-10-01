@@ -22,7 +22,7 @@ async function getRedis(url: string): Promise<RedisClientType> {
     if (redis) {
         return redis;
     }
-    redis = createClient({ url });
+    redis = createClient({ url, disableOfflineQueue: true, pingInterval: 30_000, socket: { keepAlive: 60_000 } });
 
     redis.on('error', (err) => {
         // TODO: report error

@@ -6230,6 +6230,9 @@ highlevel:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    post_connection_script: highlevelPostConnection
+    webhook_routing_script: highlevelWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/highlevel
 
 highlevel-white-label:
@@ -6247,6 +6250,9 @@ highlevel-white-label:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    post_connection_script: highlevelPostConnection
+    webhook_routing_script: highlevelWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/highlevel-white-label
 
 holded:

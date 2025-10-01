@@ -10,9 +10,9 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { makeUrl } from '../utils/utils.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
-import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/index.js';
 import type { LogContextStateless } from '@nangohq/logs';
-import type { DBConnectionDecrypted, Provider, ProviderCustom, ProviderOAuth2 } from '@nangohq/types';
+import type { DBConnectionDecrypted, OAuth2Credentials, Provider, ProviderCustom, ProviderOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import type { Merge } from 'type-fest';
 
