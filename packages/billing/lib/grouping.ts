@@ -132,7 +132,6 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         timestamp: b.properties.timestamp,
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
-                        environmentId: b.properties.environmentId,
                         telemetry: {
                             sizeBytes: _a.properties.telemetry.sizeBytes + b.properties.telemetry.sizeBytes
                         },
