@@ -1,9 +1,17 @@
 import { configService, flowService, getSyncConfigById, getSyncConfigsAsStandardConfig, remoteFileService } from '@nangohq/shared';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { FlowDownloadBody } from '@nangohq/shared';
 import type { ScriptTypeLiteral } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
+
+interface FlowDownloadBody {
+    id?: number;
+    name: string;
+    provider: string;
+    is_public: boolean;
+    providerConfigKey: string;
+    flowType: string;
+}
 
 class FlowController {
     public async downloadFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {

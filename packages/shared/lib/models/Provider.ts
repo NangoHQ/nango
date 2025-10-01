@@ -1,6 +1,5 @@
-import type { TimestampsAndDeleted } from './Generic.js';
 import type { Action } from './Sync.js';
-import type { AuthModeType, DBConnection, DBSyncConfig } from '@nangohq/types';
+import type { AuthModeType, DBConnection, DBSyncConfig, TimestampsAndDeleted } from '@nangohq/types';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number | undefined;
