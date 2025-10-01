@@ -32,7 +32,7 @@ export async function exec(): Promise<void> {
         logger.info(`Starting`);
 
         const locking = await getLocking();
-        const ttlMs = cronMinutes * 60 * 1000;
+        const ttlMs = cronMinutes * 60 * 1000 * 0.8; // slightly less than the cron interval to avoid overlap
         let lock: Lock | undefined;
         const lockKey = `lock:cron:exportUsage`;
 
@@ -49,10 +49,12 @@ export async function exec(): Promise<void> {
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
             logger.info(`✅ done`);
-        } finally {
+        } catch {
             if (lock) {
                 await locking.release(lock);
             }
+            // only releasing the lock on error
+            // and letting it expires otherwise so no other execution can occur until the next cron
         }
     });
 }
