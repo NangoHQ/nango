@@ -1,7 +1,7 @@
 import Orb from 'orb-billing';
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
@@ -17,16 +17,36 @@ export class OrbClient implements BillingClient {
         });
     }
 
-    async ingest(events: BillingEvent[]) {
+    async ingest(events: BillingEvent[]): Promise<Result<void>> {
         // Orb limit the number of events per batch to 500
         const batchSize = 500;
-
         for (let i = 0; i < events.length; i += batchSize) {
             const batch = events.slice(i, i + batchSize);
-            await this.orbSDK.events.ingest({
-                events: batch.map(toOrbEvent)
-            });
+            try {
+                const initialDelayMs = 10_000;
+                await retry(
+                    () => {
+                        return this.orbSDK.events.ingest({
+                            events: batch.map(toOrbEvent)
+                        });
+                    },
+                    {
+                        maxAttempts: 3,
+                        delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
+                        retryOnError: (e) => {
+                            // retry only on 429
+                            if (e instanceof Orb.APIError) {
+                                return e.status === 429;
+                            }
+                            return false;
+                        }
+                    }
+                );
+            } catch (err) {
+                return Err(new Error('failed_to_ingest_events', { cause: err }));
+            }
         }
+        return Ok(undefined);
     }
 
     async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
