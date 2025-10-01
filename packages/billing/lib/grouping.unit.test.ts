@@ -108,7 +108,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
                     count: 100,
                     timestamp: new Date(),
                     frequencyMs: 60_000,
@@ -143,7 +142,7 @@ describe('BillingEventGrouping', () => {
             'function_executions|accountId:1|connectionId:2|type:action',
             'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
-            'records|accountId:1|environmentId:3',
+            'records|accountId:1',
             'billable_connections_v2|accountId:1',
             'billable_connections|accountId:1'
         ]);
@@ -415,7 +414,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -428,7 +426,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -442,7 +439,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
                     count: 36,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
