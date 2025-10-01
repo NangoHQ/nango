@@ -318,7 +318,7 @@ export const Go: React.FC = () => {
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
-                        <p className="text-center text-text-secondary">{t('go.successMessage', { provider: provider.name })}</p>
+                        <p className="text-center text-text-secondary">{t('go.successMessage', { provider: provider.display_name })}</p>
                     </div>
                     <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
                         {t('common.finish')}

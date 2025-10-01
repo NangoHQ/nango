@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
 import { Button } from '../../components/ui/button/Button';
@@ -34,7 +33,7 @@ export const UserSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
@@ -48,7 +47,7 @@ export const UserSettings: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Profile Settings" error={error} page={LeftNavBarItems.UserSettings} />;
+        return <ErrorPageComponent title="Profile Settings" error={error} />;
     }
 
     if (!user) {
@@ -56,7 +55,7 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.UserSettings}>
+        <DashboardLayout>
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>

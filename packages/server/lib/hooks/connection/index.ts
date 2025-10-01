@@ -2,7 +2,6 @@ export { default as githubAppOauthPostConnection } from './providers/github-app-
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
 export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
 export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';
-export { default as slackPreConnectionDeletion } from './providers/slack/pre-connection-deletion.js';
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
@@ -29,3 +28,4 @@ export { default as mailchimpPostConnection } from './providers/mailchimp/post-c
 export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
+export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';

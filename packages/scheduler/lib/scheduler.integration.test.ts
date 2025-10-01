@@ -42,28 +42,28 @@ describe('Scheduler', () => {
 
     it('mark task as SUCCEEDED', async () => {
         const task = await immediate(scheduler);
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         const succeeded = (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(succeeded.state).toBe('SUCCEEDED');
     });
     it('should retry failed task if max retries is not reached', async () => {
         const task = await immediate(scheduler, { taskProps: { retryMax: 2, retryCount: 1 } });
-        await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 });
+        await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 });
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
-        const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const retried = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(1);
         expect(retried[0]?.retryKey).toBe(task.retryKey);
     });
     it('should not retry failed task if reached max retries', async () => {
         const task = await immediate(scheduler, { taskProps: { retryMax: 2, retryCount: 2 } });
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
-        const retried = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const retried = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(retried.length).toBe(0);
     });
     it('should dequeue task', async () => {
         const task = await immediate(scheduler);
-        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
     });
     it('should call callback when task is created', async () => {
@@ -72,24 +72,24 @@ describe('Scheduler', () => {
     });
     it('should call callback when task is started', async () => {
         const task = await immediate(scheduler);
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(callbacks.STARTED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is failed', async () => {
         const task = await immediate(scheduler);
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         expect(callbacks.FAILED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is succeeded', async () => {
         const task = await immediate(scheduler);
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         expect(callbacks.SUCCEEDED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is cancelled', async () => {
         const task = await immediate(scheduler);
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         (await scheduler.cancel({ taskId: task.id, reason: 'cancelled by user' })).unwrap();
         expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
     });
@@ -109,7 +109,7 @@ describe('Scheduler', () => {
     it('should monitor and expires started tasks if timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeoutMs / 1000 } });
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
         expect(taskAfter?.state).toBe('EXPIRED');
@@ -117,7 +117,7 @@ describe('Scheduler', () => {
     it('should monitor and expires started tasks if heartbeat timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeoutMs / 1000 } });
-        (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
         const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
         expect(taskAfter?.state).toBe('EXPIRED');
@@ -131,7 +131,7 @@ describe('Scheduler', () => {
     it('should update last scheduled task when task is succeeded', async () => {
         const schedule = await recurring({ scheduler });
         const task = await immediate(scheduler, { schedule });
-        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
         (await scheduler.succeed({ taskId: task.id, output: { foo: 'bar' } })).unwrap();
         const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
@@ -142,7 +142,7 @@ describe('Scheduler', () => {
     it('should update last scheduled task when task is failed', async () => {
         const schedule = await recurring({ scheduler });
         const task = await immediate(scheduler, { schedule });
-        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
         (await scheduler.fail({ taskId: task.id, error: { message: 'failure happened' } })).unwrap();
         const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
@@ -153,7 +153,7 @@ describe('Scheduler', () => {
     it('should update last scheduled task when task is cancelled', async () => {
         const schedule = await recurring({ scheduler });
         const task = await immediate(scheduler, { schedule });
-        const dequeued = (await scheduler.dequeue({ groupKey: task.groupKey, limit: 1 })).unwrap();
+        const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued.length).toBe(1);
         (await scheduler.cancel({ taskId: task.id, reason: 'cancelled by user' })).unwrap();
         const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();

@@ -150,3 +150,11 @@ export interface jobdivaWebhookResponse {
     id: string;
     data: any[];
 }
+
+export interface HighLevelWebhookResponse {
+    type?: string;
+    companyId?: string;
+    locationId?: string;
+    altId?: string;
+    altType?: string;
+}
