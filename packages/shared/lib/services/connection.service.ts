@@ -38,22 +38,19 @@ import {
 } from '../utils/utils.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type {
-    ApiKeyCredentials,
-    AppCredentials,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    OAuth2ClientCredentials,
-    OAuth2Credentials
-} from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type {
+    AllAuthCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
     AuthModeType,
+    BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
     ConnectionConfig,
@@ -68,6 +65,9 @@ import type {
     JwtCredentials,
     MaybePromise,
     Metadata,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
     Provider,
     ProviderAppleAppStore,
     ProviderBill,
@@ -103,7 +103,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        parsedRawCredentials: AuthCredentials;
+        parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
         environmentId: number;
         metadata?: Metadata | null;
@@ -857,7 +857,11 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom): AuthCredentials {
+    public parseRawCredentials(
+        rawCredentials: object,
+        authMode: AuthModeType,
+        template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom
+    ): AllAuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
