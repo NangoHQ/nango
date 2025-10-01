@@ -32,7 +32,7 @@ export async function exec(): Promise<void> {
         logger.info(`Starting`);
 
         const locking = await getLocking();
-        const ttlMs = cronMinutes * 60 * 1000;
+        const ttlMs = cronMinutes * 60 * 1000 * 0.8; // slightly less than the cron interval to avoid overlap
         let lock: Lock | undefined;
         const lockKey = `lock:cron:exportUsage`;
 
@@ -49,10 +49,13 @@ export async function exec(): Promise<void> {
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
             logger.info(`✅ done`);
-        } finally {
+        } catch (err) {
+            logger.error('Failed to export usage metrics', err);
             if (lock) {
                 await locking.release(lock);
             }
+            // only releasing the lock on error
+            // and letting it expires otherwise so no other execution can occur until the next cron
         }
     });
 }
@@ -100,7 +103,6 @@ const observability = {
                 // records metrics are per environment, we need to get the account ids
                 const envIds = res.value.map((r) => r.environmentId);
                 const envs = await environmentService.getEnvironmentsByIds(envIds);
-
                 const metricsWithAccount = res.value.flatMap(({ environmentId, count, sizeBytes }) => {
                     const env = envs.find((e) => e.id === environmentId);
                     if (!env) {
@@ -109,32 +111,36 @@ const observability = {
                     return [{ environmentId, accountId: env.account_id, count, sizeBytes }];
                 });
 
-                // Send billing events
-                const frequencyMs = cronMinutes * 60 * 1000;
-                const billingEvents = metricsWithAccount.map(({ accountId, environmentId, count, sizeBytes }) => {
-                    return {
-                        type: 'records' as const,
-                        properties: { count, accountId, environmentId, timestamp: new Date(), frequencyMs, telemetry: { sizeBytes } }
-                    };
-                });
-                const sendBilling = usageBilling.add(billingEvents);
-                if (sendBilling.isErr()) {
-                    throw sendBilling.error;
-                }
-
-                // Group by account and send to datadog
+                // Group by account
                 const metricsByAccount = new Map<number, { count: number; sizeBytes: number }>();
-                for (const metrics of metricsWithAccount) {
-                    const existing = metricsByAccount.get(metrics.accountId);
+                for (const metric of metricsWithAccount) {
+                    const existing = metricsByAccount.get(metric.accountId);
                     if (existing) {
-                        existing.count += metrics.count;
-                        existing.sizeBytes += metrics.sizeBytes;
+                        existing.count += metric.count;
+                        existing.sizeBytes += metric.sizeBytes;
                     } else {
-                        metricsByAccount.set(metrics.accountId, { count: metrics.count, sizeBytes: metrics.sizeBytes });
+                        metricsByAccount.set(metric.accountId, { count: metric.count, sizeBytes: metric.sizeBytes });
                     }
                 }
 
                 for (const [accountId, { count, sizeBytes }] of metricsByAccount.entries()) {
+                    // to orb
+                    const toOrb = usageBilling.add([
+                        {
+                            type: 'records' as const,
+                            properties: {
+                                count,
+                                accountId,
+                                timestamp: new Date(),
+                                frequencyMs: cronMinutes * 60 * 1000,
+                                telemetry: { sizeBytes }
+                            }
+                        }
+                    ]);
+                    if (toOrb.isErr()) {
+                        logger.error(`Failed to ingest records metric for account ${accountId}: ${toOrb.error}`);
+                    }
+                    // to datadog
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_SIZE_IN_BYTES, sizeBytes, { accountId });
                 }

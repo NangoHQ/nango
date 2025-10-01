@@ -20,7 +20,7 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         return;
     }
 
-    const { connectSession, account, environment } = res.locals;
+    const { connectSession, account, environment, plan } = res.locals;
 
     let endUser: InternalEndUser;
     if (connectSession.endUserId) {
@@ -42,7 +42,7 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         return;
     }
 
-    const connectUISettingsResult = await connectUISettingsService.getConnectUISettings(db.knex, environment.id);
+    const connectUISettingsResult = await connectUISettingsService.getConnectUISettings(db.knex, environment.id, plan);
     if (connectUISettingsResult.isErr()) {
         // Not critical - report, but don't fail
         report(connectUISettingsResult.error);

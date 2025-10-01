@@ -11,6 +11,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         orb_subscription_id: null,
         orb_future_plan: null,
         orb_future_plan_at: null,
+        orb_subscribed_at: null,
         trial_start_at: new Date(),
         trial_end_at: new Date(),
         trial_extension_count: 0,

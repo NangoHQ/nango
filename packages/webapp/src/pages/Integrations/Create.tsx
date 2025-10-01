@@ -5,7 +5,6 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Button } from '../../components/ui/button/Button';
@@ -146,7 +145,7 @@ export default function Create() {
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+        <DashboardLayout>
             <Helmet>
                 <title>Integrations Create - Nango</title>
             </Helmet>

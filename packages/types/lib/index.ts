@@ -53,7 +53,7 @@ export type * from './integration/api.js';
 export type * from './integration/db.js';
 export type * from './providers/provider.js';
 export type * from './auth/api.js';
-export type * from './auth/db.js';
+export type * from './oauthSessions/db.js';
 export type * from './auth/http.api.js';
 export type * from './deploy/api.js';
 export type * from './deploy/index.js';

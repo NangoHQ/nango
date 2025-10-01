@@ -10,7 +10,6 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -617,7 +616,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+        <DashboardLayout>
             <Helmet>
                 <title>Create Connection - Nango</title>
             </Helmet>
