@@ -13,7 +13,7 @@ export class OrbClient implements BillingClient {
     constructor() {
         this.orbSDK = new Orb({
             apiKey: envs.ORB_API_KEY || 'empty',
-            maxRetries: 3
+            maxRetries: envs.ORB_MAX_RETRIES
         });
     }
 
@@ -23,7 +23,7 @@ export class OrbClient implements BillingClient {
         for (let i = 0; i < events.length; i += batchSize) {
             const batch = events.slice(i, i + batchSize);
             try {
-                const initialDelayMs = 10_000;
+                const initialDelayMs = envs.ORB_RETRY_INITIAL_DELAY_MS;
                 await retry(
                     () => {
                         return this.orbSDK.events.ingest({
@@ -31,7 +31,7 @@ export class OrbClient implements BillingClient {
                         });
                     },
                     {
-                        maxAttempts: 3,
+                        maxAttempts: envs.ORB_RETRY_MAX_ATTEMPTS,
                         delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
                         retryOnError: (e) => {
                             // retry only on 429

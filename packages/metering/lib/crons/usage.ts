@@ -49,7 +49,7 @@ export async function exec(): Promise<void> {
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
             logger.info(`✅ done`);
-        } catch {
+        } catch (err) {
             logger.error('Failed to export usage metrics', err);
             if (lock) {
                 await locking.release(lock);
