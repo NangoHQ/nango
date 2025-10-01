@@ -21,9 +21,11 @@ import { postConnectionCreation } from './connection/on/post-connection-creation
 import postConnection from './connection/post-connection.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
-import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
 import type {
+    ApiKeyCredentials,
     ApplicationConstructedProxyConfiguration,
+    BasicApiCredentials,
     ConnectionConfig,
     DBConnectionDecrypted,
     DBEnvironment,

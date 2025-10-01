@@ -46,12 +46,15 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
-import type { Config as ProviderConfig, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type {
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
     DBTeam,
+    OAuth1RequestTokenResult,
+    OAuth2Credentials,
+    OAuthSession,
     Provider,
     ProviderCustom,
     ProviderGithubApp,
@@ -189,7 +192,10 @@ class OAuthController {
                 connectionConfig,
                 environmentId,
                 webSocketClientId: wsClientId,
-                activityLogId: logCtx.id
+                activityLogId: logCtx.id,
+                requestTokenSecret: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
             };
 
             if (userScope) {
@@ -565,7 +571,7 @@ class OAuthController {
                 if (!provider.disable_pkce) {
                     const h = crypto
                         .createHash('sha256')
-                        .update(session.codeVerifier)
+                        .update(session.codeVerifier!)
                         .digest('base64')
                         .replace(/\+/g, '-')
                         .replace(/\//g, '_')
@@ -774,7 +780,7 @@ class OAuthController {
 
             const codeChallenge = crypto
                 .createHash('sha256')
-                .update(session.codeVerifier)
+                .update(session.codeVerifier!)
                 .digest('base64')
                 .replace(/\+/g, '-')
                 .replace(/\//g, '_')
@@ -1228,7 +1234,7 @@ class OAuthController {
         // We always implement PKCE, no matter whether the server requires it or not,
         // unless it has been explicitly disabled for this provider template
         if (!provider.disable_pkce) {
-            additionalTokenParams['code_verifier'] = session.codeVerifier;
+            additionalTokenParams['code_verifier'] = session.codeVerifier!;
         }
 
         const headers: Record<string, string> = {};
@@ -1259,7 +1265,7 @@ class OAuthController {
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
-                    session.codeVerifier
+                    session.codeVerifier!
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(

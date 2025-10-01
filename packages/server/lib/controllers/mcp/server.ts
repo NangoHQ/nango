@@ -60,12 +60,13 @@ async function getActionsForProvider(environment: DBEnvironment, providerConfig:
 }
 
 function actionToTool(action: DBSyncConfig): Tool | null {
-    const inputSchema =
-        action.input && action.models_json_schema?.definitions && action.models_json_schema?.definitions?.[action.input]
-            ? (action.models_json_schema.definitions[action.input] as JSONSchema7)
-            : ({ type: 'object' } as JSONSchema7);
+    let inputSchema = action.input ? (action.models_json_schema?.definitions?.[action.input] as JSONSchema7 | undefined) : undefined;
 
-    if (inputSchema.type !== 'object') {
+    if (inputSchema && inputSchema.type === 'null') {
+        inputSchema = undefined;
+    }
+
+    if (inputSchema && inputSchema.type !== 'object') {
         // Invalid input schema, skip this action
         return null;
     }
@@ -76,8 +77,8 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         name: action.sync_name,
         inputSchema: {
             type: 'object',
-            properties: inputSchema.properties,
-            required: inputSchema.required
+            properties: inputSchema?.properties,
+            required: inputSchema?.required
         },
         description
     };

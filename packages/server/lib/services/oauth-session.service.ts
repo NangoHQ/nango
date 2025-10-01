@@ -2,17 +2,20 @@ import db from '@nangohq/database';
 
 import { convertJsonKeysToCamelCase, convertJsonKeysToSnakeCase } from '../utils/utils.js';
 
-import type { OAuthSession } from '@nangohq/shared';
+import type { DBOAuthSession, OAuthSession } from '@nangohq/types';
 
 class OAuthSessionService {
     async create(oAuthSession: OAuthSession) {
-        const authSession = convertJsonKeysToSnakeCase<OAuthSession>(oAuthSession);
+        const authSession = convertJsonKeysToSnakeCase<DBOAuthSession>(oAuthSession);
         await this.queryBuilder().insert({ ...authSession });
     }
 
     async findById(id: string): Promise<OAuthSession | null> {
         const session = await this.queryBuilder().where({ id }).first();
-        return convertJsonKeysToCamelCase<OAuthSession>(session as Record<string, any>);
+        if (!session) {
+            return null;
+        }
+        return convertJsonKeysToCamelCase<OAuthSession>(session);
     }
 
     async delete(id: string) {
@@ -41,7 +44,7 @@ class OAuthSessionService {
     }
 
     private queryBuilder() {
-        return db.knex.select('*').from<OAuthSession>('_nango_oauth_sessions');
+        return db.knex.select('*').from<DBOAuthSession>('_nango_oauth_sessions');
     }
 }
 
