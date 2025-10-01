@@ -53,6 +53,7 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
+export const publicKeySchema = z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----');
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [

@@ -143,3 +143,11 @@ export interface HubSpotWebhook {
     sourceId?: string;
     changeFlag?: string;
 }
+
+export interface HighLevelWebhookResponse {
+    type?: string;
+    companyId?: string;
+    locationId?: string;
+    altId?: string;
+    altType?: string;
+}
