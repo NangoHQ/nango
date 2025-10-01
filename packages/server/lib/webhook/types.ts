@@ -144,6 +144,13 @@ export interface HubSpotWebhook {
     changeFlag?: string;
 }
 
+export interface jobdivaWebhookResponse {
+    type: 'activity' | 'contact' | 'job' | 'candidate' | 'company';
+    operation: 'Insert' | 'Update' | 'delete';
+    id: string;
+    data: any[];
+}
+
 export interface HighLevelWebhookResponse {
     type?: string;
     companyId?: string;

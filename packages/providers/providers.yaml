@@ -6775,6 +6775,8 @@ jobdiva:
         base_url: https://api.jobdiva.com
     token_response:
         token: ''
+    webhook_routing_script: jobdivaWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://docs.nango.dev/integrations/all/jobdiva
     docs_connect: https://docs.nango.dev/integrations/all/jobdiva/connect
     credentials:
