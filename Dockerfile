@@ -45,6 +45,7 @@ COPY packages/pubsub/package.json ./packages/pubsub/package.json
 COPY packages/account-usage/package.json ./packages/account-usage/package.json
 COPY packages/email/package.json ./packages/email/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
+COPY packages/api-public/package.json ./packages/api-public/package.json
 COPY package*.json  ./
 
 # Install every dependencies
