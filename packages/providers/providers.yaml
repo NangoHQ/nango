@@ -263,11 +263,23 @@ adp:
             secret: true
             doc_section: '#step-2-generating-the-private-key-and-certificate-signing-request'
 
+adp-lyric:
+    alias: adp
+    display_name: ADP Lyric
+    docs: https://docs.nango.dev/integrations/all/adp-lyric
+    docs_connect: https://docs.nango.dev/integrations/all/adp-lyric/connect
+
 adp-run:
     alias: adp
     display_name: RUN Powered by ADP
     docs: https://docs.nango.dev/integrations/all/adp-run
     docs_connect: https://docs.nango.dev/integrations/all/adp-run/connect
+
+adp-workforce-now:
+    alias: adp
+    display_name: ADP Workforce Now
+    docs: https://docs.nango.dev/integrations/all/adp-workforce-now
+    docs_connect: https://docs.nango.dev/integrations/all/adp-workforce-now/connect
 
 adp-workforce-now-next-gen:
     alias: adp
@@ -6787,6 +6799,28 @@ jobdiva:
             example: password
             doc_section: '#step-2-creating-an-api-user'
 
+jobber:
+    display_name: Jobber
+    categories:
+        - crm
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.getjobber.com/api/oauth/authorize
+    token_url: https://api.getjobber.com/api/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        headers:
+            x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
+        base_url: https://api.getjobber.com/api
+    docs: https://docs.nango.dev/integrations/all/jobber
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 jobvite:
     display_name: Jobvite
     categories:
@@ -9858,6 +9892,48 @@ recruitcrm:
             example: 9SKXL**************************************
             doc_section: '#step-1-generating-your-api-key'
 
+recruitee:
+    display_name: Recruitee
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruitee.com/c/${connectionConfig.companyId}
+        headers:
+            authorization: Bearer ${apiKey}
+        connection_config:
+            companyName: ${connectionConfig.companyName}
+        verification:
+            method: GET
+            endpoints:
+                - /candidates
+    docs: https://docs.nango.dev/integrations/all/recruitee
+    docs_connect: https://docs.nango.dev/integrations/all/recruitee/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: The Company ID for your Recruitee account
+            example: '126786'
+            pattern: '^[0-9]+$'
+            order: 1
+            doc_section: '#step-1-finding-your-company-id-and-company-name'
+        companyName:
+            type: string
+            title: Company Name
+            description: The Company name for your Recruitee account
+            example: acme
+            order: 2
+            doc_section: '#step-1-finding-your-company-id-and-company-name'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Token
+            description: The Personal API Token for your Recruitee account
+            example: 'OTlHOGlWNUFJRkErekoxd1lXMGd6dz09'
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            doc_section: '#step-2-generating-your-personal-api-token'
+
 recruiterflow:
     display_name: Recruiterflow
     categories:
@@ -11177,7 +11253,6 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
-    pre_connection_deletion_script: slackPreConnectionDeletion
     docs: https://docs.nango.dev/integrations/all/slack
 
 smartlead-ai:
@@ -11647,6 +11722,85 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+
+tailscale:
+    display_name: Tailscale (OAuth)
+    auth_mode: TWO_STEP
+    categories:
+        - dev-tools
+        - productivity
+    token_url: https://api.tailscale.com/api/v2/oauth/token
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    body_format: form
+    proxy:
+        base_url: https://api.tailscale.com/api
+        connection_config:
+            organizationName: ${connectionConfig.organizationName}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/tailscale
+    docs_connect: https://docs.nango.dev/integrations/all/tailscale/connect
+    connection_config:
+        organizationName:
+            type: string
+            title: Organization Name
+            description: Your Tailscale organization name
+            example: example.com
+            order: 1
+            doc_section: '#step-1-finding-your-organization-name'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your OAuth Client ID
+            example: kcLBRFmtYZ11CNTRL
+            pattern: '^[A-Za-z0-9]+CNTRL$'
+            doc_section: '#step-2-generating-your-oauth-client-credentials'
+        clientSecret:
+            type: string
+            title: Client secret
+            description: Your OAuth Client secret
+            secret: true
+            example: 'tskey-client-kdC27MPR3X11CNTRL-tjtxjop8mdawckVitWkNdaBaNRtZ48GN'
+            pattern: '^tskey-client-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
+            doc_section: '#step-2-generating-your-oauth-client-credentials'
+
+tailscale-api-key:
+    display_name: Tailscale (API Key)
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tailscale.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/tailnet/${connectionConfig.organizationName}/users
+    docs: https://docs.nango.dev/integrations/all/tailscale-api-key
+    docs_connect: https://docs.nango.dev/integrations/all/tailscale-api-key/connect
+    connection_config:
+        organizationName:
+            type: string
+            title: Organization Name
+            description: Your Tailscale organization name
+            example: example.com
+            order: 1
+            doc_section: '#step-1-finding-your-organization-name'
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: The API Access Token for your Tailscale account
+            example: tskey-api-k7Hpb9Lcv611CNTRL-WJ9YG52LqXJXY9oJ7RtmXJdzWkdRMgBG
+            pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
+            doc_section: '#step-2-generating-an-api-access-token'
 
 tapclicks:
     display_name: TapClicks
