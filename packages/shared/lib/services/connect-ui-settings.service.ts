@@ -66,7 +66,7 @@ export function canCustomizeConnectUITheme(plan?: DBPlan | null): boolean {
 
 export function canDisableConnectUIWatermark(plan?: DBPlan | null): boolean {
     if (!flagHasPlan || !plan) {
-        return isHosted;
+        return isHosted || isEnterprise;
     }
 
     return plan.can_disable_connect_ui_watermark;
