@@ -5,7 +5,7 @@ import { billing as usageBilling } from '@nangohq/billing';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService } from '@nangohq/shared';
-import { flagHasUsage, getLogger, metrics, report } from '@nangohq/utils';
+import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
@@ -88,7 +88,7 @@ const observability = {
                 }
             } catch (err) {
                 span.setTag('error', err);
-                report(new Error('cron_failed_to_export_connections_metrics', { cause: err }));
+                logger.error('Failed to export connections metrics', err);
             }
         });
     },
@@ -146,7 +146,7 @@ const observability = {
                 }
             } catch (err) {
                 span.setTag('error', err);
-                report(new Error('cron_failed_to_export_records_metrics', { cause: err }));
+                logger.error('Failed to export records metrics', err);
             }
         });
     }
@@ -172,7 +172,7 @@ const billing = {
                 }
             } catch (err) {
                 span.setTag('error', err);
-                report(new Error('cron_failed_to_export_billable_connections', { cause: err }));
+                logger.error('Failed to export billable connections', err);
             }
         });
     }
