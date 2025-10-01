@@ -11,7 +11,7 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
-import { Err, Ok, errorToObject, truncateJson } from '@nangohq/utils';
+import { Err, Ok, actionAllowListCustomers, errorToObject, isCloud, isEnterprise, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
@@ -19,6 +19,8 @@ import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js'
 
 import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
+
+const actionPayloadAllowSet = isCloud ? new Set(actionAllowListCustomers) : new Set();
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
@@ -153,6 +155,20 @@ export async function exec({
                     output = await payload.exec(nango as any, codeParams);
                 } else {
                     output = await def(nango, inputParams);
+                }
+
+                if (output) {
+                    const stringifiedOutput = JSON.stringify(output);
+                    const outputSizeInBytes = Buffer.byteLength(stringifiedOutput, 'utf8');
+                    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+
+                    if (!isEnterprise && nangoProps.team?.id !== undefined && !actionPayloadAllowSet.has(nangoProps.team.id)) {
+                        if (outputSizeInBytes > maxSizeInBytes) {
+                            throw new Error(
+                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://docs.nango.dev/changelog/dev-updates#action-payload-output-limit`
+                            );
+                        }
+                    }
                 }
 
                 return Ok({ output, telemetryBag: nango.telemetryBag });

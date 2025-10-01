@@ -33,3 +33,5 @@ export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] ===
 export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID'])
 };
+
+export const actionAllowListCustomers = [0, 662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254];
