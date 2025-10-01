@@ -50,6 +50,7 @@ export async function exec(): Promise<void> {
             await observability.exportRecordsMetrics();
             logger.info(`✅ done`);
         } catch {
+            logger.error('Failed to export usage metrics', err);
             if (lock) {
                 await locking.release(lock);
             }
