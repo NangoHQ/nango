@@ -358,7 +358,7 @@ export async function handleSyncSuccess({
             let deleted = 0;
 
             if (result && result[model]) {
-                const modelResult = result[model] as SyncResult;
+                const modelResult = result[model];
                 added = modelResult.added;
                 updated = modelResult.updated;
                 deleted = modelResult.deleted;
