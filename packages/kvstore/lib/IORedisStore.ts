@@ -21,18 +21,23 @@ export class IORedisKVStore implements KVStoreRedis {
     }
 
     public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlInMs?: number }): Promise<void> {
-        const options: any = {};
-        if (opts) {
-            if (opts.ttlInMs && opts.ttlInMs > 0) {
-                options['PX'] = opts.ttlInMs;
-            }
-            if (opts.canOverride === false) {
-                options['NX'] = true;
-            }
+        const nx = opts?.canOverride === false;
+        const ttl = opts?.ttlInMs && opts.ttlInMs > 0 ? opts.ttlInMs : undefined;
+
+        let res: 'OK' | null;
+
+        if (ttl && nx) {
+            res = await this.client.set(key, value, 'PX', ttl, 'NX');
+        } else if (ttl) {
+            res = await this.client.set(key, value, 'PX', ttl);
+        } else if (nx) {
+            res = await this.client.set(key, value, 'NX');
+        } else {
+            res = await this.client.set(key, value);
         }
-        const res = await this.client.set(key, value, options);
+
         if (res !== 'OK') {
-            throw new Error(`Failed to set key: ${key}, value: ${value}, ${JSON.stringify(options)}`);
+            throw new Error(`SET failed for "${key}" (result=${res})`);
         }
     }
 
