@@ -41,6 +41,7 @@ The sample app uses both Slack and Google Drive as example integrations and is s
   <Step title="Create a Google Drive integration">
     - Go to [Integrations](https://app.nango.dev/dev/integrations?source=sample-app) and create a Google Drive integration.
     - Go to [Google Cloud Console](https://console.cloud.google.com/auth/clients) and create a new OAuth Client with **Redirect URIs**: `https://api.nango.dev/oauth/callback`.
+    - Copy the "Project Number" which can be found in the Google Cloud console under "IAM" > "Settings" > "Project Number"
     - Go back to the Google Drive integration in Nango. In the "Authorization" tab, add the credentials:
       - `client_id`: from Google Cloud Console
       - `client_secret`: from Google Cloud Console
@@ -61,6 +62,11 @@ The sample app uses both Slack and Google Drive as example integrations and is s
     - Copy your Nango Secret Key, found in [Environment Settings](https://app.nango.dev/dev/environment-settings?source=sample-app).
     - Create a file to store environment variables and fill in the Nango Secret Key:
     ```sh
+    cp .env.example .env
+    ```
+    - Paste the value you copied for your "Project Number" from the Google Console and paste it into the .env file as created below:
+    ```
+    cd front-end
     cp .env.example .env
     ```
   </Step>
