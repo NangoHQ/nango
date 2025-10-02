@@ -1,0 +1,15 @@
+{
+    "name": "backfill-orb-subscription-dates",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b tsconfig.json .",
+        "dryrun": "npm run build && DRY_RUN=true node dist/backfill.js",
+        "run": "npm run build && node dist/backfill.js"
+    },
+    "author": "",
+    "dependencies": {
+        "knex": "^3.1.0"
+    }
+}
